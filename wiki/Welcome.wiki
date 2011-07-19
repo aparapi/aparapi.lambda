@@ -1,9 +1,8 @@
-#summary Welcome page and placeholder
+#summary Welcome page and placeholder until aparapi project goes live
 
 = Introduction =
 
-Add your content here.
-
+Intended new home for [http://developer.amd.com/Aparapi Aparapi]
 
 = Details =
 
