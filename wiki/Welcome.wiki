@@ -1,4 +1,4 @@
-#Welcome page and placeholder
+#summary Welcome page and placeholder
 
 = Introduction =
 
