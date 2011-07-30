@@ -1,4 +1,5 @@
 #summary Welcome page and placeholder until aparapi project goes live
+#labels Featured
 
 = Introduction =
 
