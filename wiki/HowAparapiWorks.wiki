@@ -2,7 +2,7 @@
 
 = Introduction =
 
-We will detail how Aparapi converts bytecode to OpenCL
+We will detail how Aparapi converts bytecode to [OpenCL]
 
 
 = Details =
