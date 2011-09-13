@@ -46,5 +46,4 @@ When patch is committed the commit team member will update the CREDITS.txt file 
 ==Contributions made under a different license than the existing BSD derived license==
 We cannot accept contributions or patches which are subject to other licenses.
 
-
-
+[Attribution]
