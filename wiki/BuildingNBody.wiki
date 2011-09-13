@@ -1,0 +1,105 @@
+#summary How to build the NBody example.
+
+=*Building NBody*=
+The NBody example is located in the/ examples subdirectory under the Aparapi trunk:  
+
+{{{
+    trunk/
+       ...
+       examples/
+         ...
+         nbody/
+            src/java/com.amd.aparapi.nbody/
+            build.xml
+            nbody.sh
+            nbody.bat
+
+}}}
+
+The NBody example requires a little more work to build because it depends on a third party project named ‘JOGL’.
+
+JOGL is a set of OpenGL™ bindings for Java® and the NBody example uses this library to render the particles/bodies (potentially many thousands of them) at runtime.  More information about JOGL can be found here http://jogamp.org/jogl/www.
+
+Download JOGL for your platform.  JOGL contains both Java jar files and JNI shared libraries, so obtain the appropriate version for your platform.
+
+http://jogamp.org/deployment/webstart/archive/.
+
+At the time of writing the platform options were:-
+
+{{{
+jogl-2.0-b23-20110303-windows-amd64.7z 
+jogl-2.0-b23-20110303-windows-i586.7z 
+jogl-2.0-b23-20110303-linux-amd64.7z 
+jogl-2.0-b23-20110303-linux-i586.7z
+}}}
+
+Probably the most convenient place to install JOGL is as a sibling to your trunk/examples/nbody directory.  This way if you experiment with your own Aparapi JOGL projects, they can also conveniently use JOGL. 
+
+Note the location of the install directory. You will need the location to update the build.xml and the nbody.bat or nbody.sh scripts.
+
+This is how your tree might look if you were to install the Microsoft Windows® x86 JOGL version as suggested above. 
+
+{{{
+    trunk/
+       ...
+       examples/
+         ...
+         nbody/
+            src/java/com.amd.aparapi.nbody/
+            build.xml
+            nbody.sh
+            nbody.bat
+        jogl-2.0-b23-20110303-windows-i586/
+            jar/*.jar
+            lib/*.dll
+
+}}}
+
+Edit the build.xml file and modify the jogldir property value.
+
+{{{
+  <property name="jogldir" value="../jogl-2.0-b23-20110303-windows-I586"/>
+}}}
+
+To build, perform the following commands.
+
+{{{
+C:> cd examples/nbody
+C:> ant clean build
+}}}
+
+The NBody build.xml file includes a ‘run’ target so you can launch the application using.
+
+{{{
+C:> ant run
+}}}
+
+If you prefer to launch from either the nbody.sh or nbody.bat script, you will need to edit these files so the script can locate the JOGL jars and shared libraries at runtime. The JOGLDIR variable is located at the top of the script.
+
+For Microsoft Windows®, edit nbody.bat and set JOGLDIR  to =..\jogl-2.0-b23-20110303-windows-i586.
+{{{
+set JOGLDIR=..\jogl-2.0-b23-20110303-windows-i586
+}}}
+
+For Linux®, edit nbody.sh and set JOGLDIR  to =..\jogl-2.0-b23-20110303-windows-i586.
+
+{{{
+export JOGLDIR=../jogl-2.0-b23-20110303-linux-i586
+}}}
+
+For Linux® we also need to chmod nbody.sh in order to execute it.
+{{{
+chmod +x nbody.sh
+}}}
+
+The nbody scripts take the execution mode as the first argument, the number of bodies as the second argument, and then the height and width (in pixels).
+
+Windows example:
+{{{
+C:> nbody  GPU 32768 800 800 
+}}} 
+
+Linux example:
+{{{
+$ ./nbody.sh  GPU 32768 800 800 
+}}} 
