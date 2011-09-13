@@ -26,3 +26,5 @@ We have broken the Developer Guide into two separate docs.  One for Linux® (32-
 [DevelopersGuideLinux]
 
 [DevelopersGuideWindows]
+
+[Attribution]
