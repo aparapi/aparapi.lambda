@@ -71,7 +71,7 @@ while (true){
 The NBodyUniverse.adjustPostions() method contains the nested loops (adjusting each body position based on forces impinging on it from all of the other bodies),  making it an ideal Aparapi candidate. 
 Even though this code can now be written by accessing the x, y and z ordinates of Body[] via getters/setters,  the most performant Aparapi implementation is the one that operates on parallel arrays of floats containing x, y and z ordinates, with Body[10]’s state conceptually stored across  x[10], y[10] and z[10].
 So for performance reasons, you can do something like this:
-{{{{
+{{{
 class Body{
     int idx;
     NBodyUniverse universe;
