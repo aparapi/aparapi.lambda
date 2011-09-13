@@ -7,7 +7,7 @@ At present Aparapi has been tested with AMD's OpenCL enabled drivers and AMD GPU
 Aparapi may be used in JTP (Java Thread Pool) mode on any platform supported by Oracle®’s JDK.   
 ==Will there be an Aparapi-like translator for .NET?==
 This is still an early technology and Aparapi is currently focused on Java® enablement.
-There are similar projects targeting .NET (See [http://gpu.net gpu.net])
+There are similar projects targeting .NET (See [http://www.tidepowerd.com/ www.tidepowerd.com])
 ==How can I profile the OpenCL kernels that Aparapi generates? Can I get details on the latency of my kernel request?How do I optimize my kernel?==
 AMD offers the ‘AMD APP Profiler’ which can be used to profile the kernels. With Aparapi, we recommend using the command line mode of the profiler, which is described in the release notes. Using the ‘AMD APP Profiler’ you can see how much time is taken by each kernel execution and buffer transfer. Also, in each kernel, you can get more detailed information on things like memory reads and writes, and other useful data.
 ==Does Aparapi only work with AMD graphics cards?==
