@@ -77,3 +77,5 @@ In the [NewFeatures] page we discuss a couple of Aparapi enhancements which will
 ==Do I have to refactor my code to use arrays of primitives? Why can’t Aparapi just work with Java Objects? ==
 Aparapi creates OpenCL from the bytecode.  Generally, OpenCL constrains us to using parallel primitive arrays (OpenCL does indeed allow structs, but Java and OpenCL do not have comparable memory layouts for these structures).  Therefore, you will probably need to refactor your code to use primitive arrays. 
 In this initial contribution, we have included some limited support for Arrays of simple Objects and hope contributors extend them. Check the [NewFeatures] page which shows how you can use this feature.
+
+[Attribution]
