@@ -18,7 +18,7 @@ No, there is nothing restricting Aparapi to AMD CPUs. The JNI code that we use m
 ==Can I have multiple threads all using the GPU compute capabilities?==
 Yes.  There might be a performance impact if the device becomes a bottleneck.  However, OpenCL and your GPU driver are designed to coordinate the various threads of execution.
 ==Can I make method calls from the run method?==
-You can generally only make calls to other methods declared in the same class as the initial run() method. Aparapi will follow this call chain to try to determine whether it can create OpenCL.  If, for example, Aparapi encounters System.out.println("Hello World") ( call to a method not in the users Kernel class) it will detect this and refuse to consider the call chain as an OpenCL candidate.
+You can generally only make calls to other methods declared in the same class as the initial run() method. Aparapi will follow this call chain to try to determine whether it can create OpenCL.  If, for example, Aparapi encounters {{{System.out.println("Hello World")}}} ( call to a method not in the users Kernel class) it will detect this and refuse to consider the call chain as an OpenCL candidate.
 One exception to this rule allows a kernel to access or mutate the state of objects held in simple arrays via their setters/getters. For example a kernel can include :-
 {{{
 out[i].setValue(in[i].getValue()*5);
@@ -27,7 +27,7 @@ out[i].setValue(in[i].getValue()*5);
 ==Does Aparapi support vectorized types?==
 Due to Java's lack of vector types (float4 for example) Aparapi can't directly use them. Also, due to Java's lack of operator overloading, simulating these with Java abstracts could lead to very complex and unwieldy code.
 ==Is there a way I can see the generated OpenCL?==
-Yes, by using adding `-Dcom.amd.aparapi.enableShowGeneratedOpenCL=true` to your command line when you start your JVM.
+Yes, by using adding {{{-Dcom.amd.aparapi.enableShowGeneratedOpenCL=true}} to your command line when you start your JVM.
 ==Does Aparapi support sharing buffers with JOGL? Can I exploit the features of JOGAMP/glugen?==
 Rather than only supporting display-oriented compute, we are pursuing general data parallel compute. Therefore, we have chosen not to bind Aparapi too closely with JOGL.
 ==What is the performance delta from handcrafted OpenCL?==
@@ -53,26 +53,26 @@ Kernel kernel = new Kernel(){
 kernel.execute(1024);
 System.out.priintln(“Execution mode = “+kernel.getExecutionMode());
 }}}
-The above code fragment will print either ‘GPU’ if the kernel executed on the GPU or ‘JTP’ if Aparapi executed the Kernel in a Java Thread Pool. 
+The above code fragment will print either ‘GPU’ if the kernel executed on the GPU or {{{JTP}}} if Aparapi executed the Kernel in a Java Thread Pool. 
 
-Alternatively, setting the property –Dcom.amd.aparapi.enableShowExecutionModes=true when you start your JVM will cause Aparapi to automatically report the execution mode of all kernels to stdout.
+Alternatively, setting the property {{{–Dcom.amd.aparapi.enableShowExecutionModes=true}}} when you start your JVM will cause Aparapi to automatically report the execution mode of all kernels to stdout.
 ==Why does Aparapi need me to compile my code with -g?==
-Aparapi extracts most of the information required to create OpenCL from the bytecode of your run() and run-reachable methods.  We use the debug information to re-create the original variable name and to determine the local variable scope information. 
+Aparapi extracts most of the information required to create OpenCL from the bytecode of your {{{Kernel.run()}}} (and run-reachable) methods.  We use the debug information to re-create the original variable name and to determine the local variable scope information. 
 ==Why does the Aparapi documentation suggest I use Oracle's JDK/JRE? Why can't I use any JVM/JDK?==
 The documentation suggests using Oracle's JDK/JRE for coverage reasons and not as a requirement. AMD focused its testing on Oracle's JVM/JDK.
 There are two parts to this. 
-Our bytecode to OpenCL engine is somewhat 'tuned' to the bytecode structures created by javac supplied by Oracle®.  Specifically, there are some optimizations that other javac implementation might perform that Aparapi won't recognize.  (Eclipse does not presently use Oracle's javac!) and so we have some experience determining some Eclipse specific bytecode 'quirks'. 
-At runtime, we piggyback on the (aptly named) sun.misc.Unsafe class, which is included in rt.jar from Oracle®. This class is useful because it helps us avoid some JNI calls by providing low level routines for accessing object field addresses (in real memory) and useful routines for Atomic operations.  All accesses to 'sun.misc.Unsafe' are handled by an Aparapi class called UnsafeWrapper with the intent that this could be refactored to avoid this dependency.
+Our bytecode to OpenCL engine is somewhat tuned to the bytecode structures created by javac supplied by Oracle®.  Specifically, there are some optimizations that other javac implementation might perform that Aparapi won't recognize. Eclipse (for example) does not presently use Oracle's javac, and so we do have some experience handling Eclipse specific bytecode patterns. 
+At runtime, we piggyback on the (aptly named) {{{sun.misc.Unsafe}}} class, which is included in rt.jar from Oracle®. This class is useful because it helps us avoid some JNI calls by providing low level routines for accessing object field addresses (in real memory) and useful routines for Atomic operations.  All accesses to 'sun.misc.Unsafe' are handled by an Aparapi class called {{{UnsafeWrapper}}} with the intent that this could be refactored to avoid this dependency.
 == I am using a dynamic language (Clojure, Scala, Groovy, Beanshell,  etc) will I be able to use  Aparapi? ==
 No.
-To access the bytecode for a method Aparapi needs to parse the original class file. For Java code, Aparapi can use something like YourClass.getClassLoader().loadAsResource(YourClass.getName()+".class")) to reload the class file bytes and parse the constant pool, attributes, fields, methods and method bytecode.
+To access the bytecode for a method Aparapi needs to parse the original class file. For Java code, Aparapi can use something like {{{YourClass.getClassLoader().loadAsResource(YourClass.getName()+".class"))}}} to reload the class file bytes and parse the constant pool, attributes, fields, methods and method bytecode.
 It is unlikely that this process would work with a dynamically created class based on the presumption that dynamic languages employ some form of custom classloader to make dynamically generated bytecode available to the JVM.  Therefore, it is unlikely that these classloaders would yield the classfile bytes.  However, we encourage contributors to investigate opportunities here.   
-Even if the class bytes were loadable, Aparapi would also expect debug information to be available (see previous FAQ entry).  Again, this is not currently possible for a dynamic language to do, indeed it would probably even be desirable as it would allow the code to be debugged using JDB compatible debugger.
+Even if the class bytes were loadable, Aparapi would also expect debug information to be available (see previous FAQ entry).  Again, this is not impossible for a dynamic language to do, indeed it would probably even be desirable as it would allow the code to be debugged using JDB compatible debugger.
 Finally, Aparapi recognizes bytecode patterns created by the javac supplied by Oracle® and it is possible that the code generated by a particular dynamic language may not be compatible with Aparapi current code analyzer.  However, we already have to deal with this to some extent to work with code generated by Eclipse’s javac, which creates significantly different code than Oracle's javac. 
 Therefore, at present this is unlikely to work.  However, these would be excellent contributions to Aparapi.  It would be great to see Aparapi being adopted by other JVM based dynamic language.  
 ==Aparapi seems to be copying data unnecessarily back and forth between host and GPU. Why is this? Can I stop Aparapi from doing this?==
-Aparapi ensures that required data is moved to the GPU prior to kernel execution and returned to their Java equivalent before Java execution resumes.  Generally, this is what the Java user will expect. However, for some fairly common code patterns (where there are no Java accesses to arrays between successive kernel.execute() invocations) this proves to be inefficient. 
-In the NewFeatures page we discuss a couple of Aparapi enhancements which will allow to developer to elect to make alterations to reduce copies. 
+Aparapi ensures that required data is moved to the GPU prior to kernel execution and returned to their Java equivalent before Java execution resumes.  Generally, this is what the Java user will expect. However, for some fairly common code patterns (where there are no Java accesses to arrays between successive {{{Kernel.execute()}}} invocations) this proves to be inefficient. 
+In the [NewFeatures] page we discuss a couple of Aparapi enhancements which will allow to developer to elect to make alterations to reduce copies. 
 ==Do I have to refactor my code to use arrays of primitives? Why can’t Aparapi just work with Java Objects? ==
 Aparapi creates OpenCL from the bytecode.  Generally, OpenCL constrains us to using parallel primitive arrays (OpenCL does indeed allow structs, but Java and OpenCL do not have comparable memory layouts for these structures).  Therefore, you will probably need to refactor your code to use primitive arrays. 
-In this initial contribution, we have included some limited support for ‘Arrays of simple Objects’ and hope contributors extend them. Check the NewFeatures page which shows how you can use this feature.
+In this initial contribution, we have included some limited support for Arrays of simple Objects and hope contributors extend them. Check the [NewFeatures] page which shows how you can use this feature.
