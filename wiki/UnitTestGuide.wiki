@@ -186,3 +186,6 @@ public class CharType extends Kernel{
 
 /**{Throws{ClassParseException}Throws}**/
 }}}
+
+
+[Attribution]
