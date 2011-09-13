@@ -1,4 +1,5 @@
 #summary Frequently Asked Questions
+#sidebar FAQ
 =*Frequently Asked Questions*=
 ==Can I get Aparapi for platforms other than those listed?== 
 At present Aparapi has been tested with AMD's OpenCL enabled drivers and AMD GPU devices, the build system is currently configured for AMD APP SDK. Of course OpenCL is an open standard and we look forward to contributions which will allow Aparapi to support other OpenCL compatible platforms in the future. 
