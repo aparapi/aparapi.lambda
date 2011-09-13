@@ -162,3 +162,5 @@ Once your build has completed you should see an additional subdirectory named di
  * a samples directory containing the source and binaries for the mandel and squares sample projects.
 
 The root directory also contains either dist_windows_x86_64.zip or dist_windows_x86.zip containing a compressed archive of the distribution tree.
+
+[Attribution]
