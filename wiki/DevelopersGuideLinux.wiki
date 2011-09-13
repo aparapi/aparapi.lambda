@@ -155,3 +155,5 @@ The distribution directory contains:
  * a samples directory containing the source and binaries for the mandel and squares sample projects.
 
 The root directory also contains either dist_linux_x86_64.zip or dist_linux_x86.zip containing a compressed archive of the distribution tree.
+
+[Attribution]
