@@ -1,4 +1,4 @@
-#New Features added to this open source release of Aparapi
+#summary New Features added to this open source release of Aparapi.
 
 =*New Features*= 
 Aparapi has two new, especially useful features:
