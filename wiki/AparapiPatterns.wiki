@@ -120,3 +120,5 @@ while (true){
 }}} 
 
 This example allows Java™ code to treat each Body in a traditional object-oriented fashion and also allows Aparapi kernels to act on the parallel primitive array form, in order to access/mutate the position of the bodies. 
+
+[Attribution]
