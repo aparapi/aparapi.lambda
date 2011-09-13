@@ -23,6 +23,6 @@ Clearly we will also depend on platform specific Oracle® Java® JDK 6 component
 ==Platform Specific Developer Guides==
 We have broken the Developer Guide into two separate docs.  One for Linux® (32- and 64- bit) and another for Microsoft® Windows® (32- and 64- bit).  Please follow the appropriate link below.
 
-[[DeveloperGuideLinux]]
+[DevelopersGuideLinux]
 
-[[DeveloperGuideWindows]]
+[DevelopersGuideWindows]
