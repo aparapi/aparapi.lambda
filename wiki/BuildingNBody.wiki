@@ -103,3 +103,6 @@ Linux example:
 {{{
 $ ./nbody.sh  GPU 32768 800 800 
 }}} 
+
+
+[Attribution]
