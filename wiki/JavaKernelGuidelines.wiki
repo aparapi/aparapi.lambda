@@ -69,3 +69,5 @@ The C99/OpenCL standard does not define this and so the result would be undefine
 ==Runtime Exceptions==
  * When run on the GPU, array accesses will not generate an {{{ArrayIndexOutOfBoundsException}}}.  Instead the behavior will be unspecified.
  * When run on the GPU, ArithmeticExceptions will not be generated, for example with integer division by zero. Instead the behavior will be unspecified.
+
+[Attribution]
