@@ -1,6 +1,6 @@
-#summary Attributions
+#summary Attribution
 
-=*Attributions*= 
+=*Attribution*= 
 
  * AMD, AMD Radeon, the AMD arrow logo, and combinations thereof are trademarks of Advanced Micro Devices, Inc.
 
@@ -23,5 +23,3 @@
  * OpenGL® and the oval logo are trademarks or registered trademarks of Silicon Graphics, Inc. in the United States and/or other countries worldwide.
 
 All other names used in this documentation are for identification purposes only and may be trademarks of their respective owners. 
-
-
