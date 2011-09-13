@@ -243,3 +243,6 @@ class Universe{
 From this code sample, we see that the Universe.adjustPositions() method is compute intensive and an ideal candidate for refactoring to use Aparapi. 
 Previous versions of Aparapi would have required the ordinates x, y, and z to be extracted into parallel arrays, but the current version is able to deal with the object form of the Body.   
 Now when Aparapi encounters an array of objects and the accesses to these objects are via simple getter and setters, Aparapi will automatically extract the values of the accessed fields into a data parallel form on your behalf, execute the kernel and replace the results back in the original objects.  This happens on each call to Kernel.execute() and is fairly costly (from a performance point of view), however, for embarrassingly parallel code (such as NBody), we can still show considerable performance gains over standard Java Thread Pool
+
+
+[Attribution]
