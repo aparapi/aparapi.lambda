@@ -47,7 +47,7 @@ C:\> firefox junit\html\index.html
 ===Adding a new OpenCL™ code generation test===
 The test cases for OpenCL™ code generation are not strictly JUnit tests.  Instead the codegen Java tree contains a tool (CreateJUnitTests) to create JUnit test cases from specially formatted test source files. 
 The package com.amd.aparapi.test (in codegen/src/java/com/amd/aparapi/test) contains all of the existing code generation tests. 
-Here is an example that tests the code generation resulting from a call to Kernel.getPassId().  This example is taken from http://code.google.com/p/aparapi/trunk/test/codegen/src/java/com/amd/aparapi/test/CallGetPassId.java
+Here is an example that tests the code generation resulting from a call to Kernel.getPassId().  This example is taken from http://code.google.com/p/aparapi/source/browse/#svn%2Ftrunk%2Ftest%2Fcodegen%2Fsrc%2Fjava%2Fcom%2Famd%2Faparapi%2Ftest%2FCallGetPassId.java
 {{{
 package com.amd.aparapi.test;
 
