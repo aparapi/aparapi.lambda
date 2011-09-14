@@ -22,7 +22,7 @@ final Boolean found[] = new Boolean[]{false};
 kernel.execute(buffer.length);
 }}}
 
-This code does include a race condition, whereby more than one value of {{{Kernel.getGlobalId()}}} might contain 1234 and try to set {{{found[0]}}}.  This is not a problem here, because we don't care if multiple kernel executions match, provided one flips the value of {{{done[0]}}}.
+This code does include a race condition, whereby more than one value of {{{Kernel.getGlobalId()}}} might contain 1234 and try to set {{{found[0]}}}.  This is not a problem here, because we don't care if multiple kernel executions match, provided one flips the value of {{{found[0]}}}.
 == How can I use Aparapi and still maintain an object-oriented view of my data? ==
 See the [[NewFeatures]] page.  Aparapi can now handle simple arrays of objects, which minimizes the amount of refactoring required to experiment with Aparapi. However, performance is still likely to be better if your algorithm operates on data held in parallel primitive arrays.
 To get higher performance from Aparapi with minimal exposure to data in this parallel primitive array form, we can (with a little work) allow both forms of data to co-exist. 
