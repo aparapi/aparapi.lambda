@@ -2,9 +2,7 @@
 #sidebar FAQ
 =*Frequently Asked Questions*=
 ==Why is this project called Aparapi and how is it pronounced?==
-*Aparapi* is just a contraction of *A PAR{allel} API*.
-
-It is pronounced _(ap-er-rap-ee)_.
+*Aparapi* is just a contraction of *A PAR*{allel} *API* and is pronounced _(ap-per-rap-ee)_.
 
 ==Can I get Aparapi for platforms other than those listed?== 
 At present Aparapi has been tested with AMD's OpenCL enabled drivers and AMD GPU devices, the build system is currently configured for AMD APP SDK. Of course OpenCL is an open standard and we look forward to contributions which will allow Aparapi to support other OpenCL compatible platforms in the future. 
