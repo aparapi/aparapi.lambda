@@ -1,10 +1,13 @@
 #summary Examples and code fragments to demonstrate Aparapi fetaures.
 
 =*Aparapi Patterns*= 
-The following  suggestions help solve some common problems found in using Aparapi.  Your additional suggestions and solutions are welcome.  
+The following  suggestions help solve some common problems found in using Aparapi.
+
+Additional suggestions and solutions to extend this list would be welcome.  
 ==How do I return data from a kernel if I can’t write to kernel fields?==
 Use a small array buffer (possibly containing a single element) and assign it from the kernel. 
-For example, the following kernel code detects whether the buffer[] contains the value 1234. The  flag (true or false) is returned in found[0].
+
+For example, the following kernel code detects whether the {{{buffer[]}}} contains the value 1234. The  flag (true or false) is returned in {{{found[0]}}}.
 {{{
 final int buffer[] = new int[HUGE];
 final Boolean found[] = new Boolean[]{false};
@@ -19,11 +22,13 @@ final Boolean found[] = new Boolean[]{false};
 kernel.execute(buffer.length);
 }}}
 
-This code does include a race condition, whereby more than one value of getGlobalId() might contain 1234 and try to set found[0].  If so, the code will still work because it does not matter which value of getGlobalId() successfully locates the value provided the value is changed.
+This code does include a race condition, whereby more than one value of {{{Kernel.getGlobalId()}}} might contain 1234 and try to set {{{found[0]}}}.  This is not a problem here, because we don't care if multiple kernel executions match, provided one flips the value of {{{done[0]}}}.
 == How can I use Aparapi and still maintain an object-oriented view of my data? ==
 See the [[NewFeatures]] page.  Aparapi can now handle simple arrays of objects, which minimizes the amount of refactoring required to experiment with Aparapi. However, performance is still likely to be better if your algorithm operates on data held in parallel primitive arrays.
-To get higher performance from Aparapi with minimal exposure to data in this parallel primitive array form, we can (with a little work) allow both forms of data to co-exist.  
+To get higher performance from Aparapi with minimal exposure to data in this parallel primitive array form, we can (with a little work) allow both forms of data to co-exist. 
+ 
 Let’s reconsider the NBody problem (http://en.wikipedia.org/wiki/N-body_problem) .
+
 A Java developer writing an NBody solution would most likely create a Body class:
 {{{
 class Body{
@@ -69,7 +74,9 @@ while (true){
 }}}
 
 The NBodyUniverse.adjustPostions() method contains the nested loops (adjusting each body position based on forces impinging on it from all of the other bodies),  making it an ideal Aparapi candidate. 
+
 Even though this code can now be written by accessing the x, y and z ordinates of Body[] via getters/setters,  the most performant Aparapi implementation is the one that operates on parallel arrays of floats containing x, y and z ordinates, with Body[10]’s state conceptually stored across  x[10], y[10] and z[10].
+
 So for performance reasons, you can do something like this:
 {{{
 class Body{
