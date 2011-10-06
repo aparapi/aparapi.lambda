@@ -6,10 +6,11 @@ To contribute to Aparapi you will need an SVN client to access the latest source
 This page lists a number of SVN client providers http://subversion.apache.org/packages.html
 Also you might want to consider one of the SVN-based plugins for Eclipse®. 
 http://wiki.eclipse.org/SVN_Howto
-==Oracle® Java JDK install (JDK1.6 or later) ==
+==OpenJDK or Oracle® Java JDK install (JDK1.6 or later) ==
+[http://OpenJDK.java.net]
 [http://www.oracle.com/technetwork/java/javase/downloads/index.html]
 
-Many Linux® distributions come with Java JDK pre-installed or available as an optional install component. However, often the version that comes pre-installed is not the JDK from Oracle®; it is more likely to be GCJ (http://gcc.gnu.org/java/). For Aparapi you will need to ensure that you have a copy of the JDK from Oracle®.
+Many Linux® distributions come with Java JDK pre-installed or available as an optional install component. Sometimes the version that comes pre-installed is GCJ (http://gcc.gnu.org/java/). For Aparapi you will need to ensure that you have a copy of the JDK from either the OpenJDK project or from Oracle®.
 
 The Oracle® J2SE JDK site contains downloads and documentation showing how to install for various Linux distributions. 
 
