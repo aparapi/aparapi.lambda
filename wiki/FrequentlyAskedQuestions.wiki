@@ -64,6 +64,8 @@ The above code fragment will print either ‘GPU’ if the kernel executed on th
 Alternatively, setting the property {{{–Dcom.amd.aparapi.enableShowExecutionModes=true}}} when you start your JVM will cause Aparapi to automatically report the execution mode of all kernels to stdout.
 ==Why does Aparapi need me to compile my code with -g?==
 Aparapi extracts most of the information required to create OpenCL from the bytecode of your {{{Kernel.run()}}} (and run-reachable) methods.  We use the debug information to re-create the original variable name and to determine the local variable scope information. 
+
+Of course only the derived Kernel class (or accessed Objects using new Arrays of Objects feature) need to be compiled using -g.
 ==Why does the Aparapi documentation suggest I use Oracle's JDK/JRE? Why can't I use any JVM/JDK?==
 The documentation suggests using Oracle's JDK/JRE for coverage reasons and not as a requirement. AMD focused its testing on Oracle's JVM/JDK.
 
