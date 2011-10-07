@@ -26,11 +26,14 @@ http://jogamp.org/deployment/autobuilds/master/
 
 I have heard some reported issues building against later jogl binaries (some API changes) and recommend using one from March of 2011.
 
+http://jogamp.org/deployment/autobuilds/master/jogl-b363-2011-03-30_18-30-41
+
+
 {{{
-jogl-2.0-b23-20110303-windows-amd64.7z 
-jogl-2.0-b23-20110303-windows-i586.7z 
-jogl-2.0-b23-20110303-linux-amd64.7z 
-jogl-2.0-b23-20110303-linux-i586.7z
+jogl-2.0-b23-20110330-windows-amd64.7z 
+jogl-2.0-b23-20110330-windows-i586.7z 
+jogl-2.0-b23-20110330-linux-amd64.7z 
+jogl-2.0-b23-20110330-linux-i586.7z
 }}}
 
 Probably the most convenient place to install JOGL is as a sibling to your trunk/examples/nbody directory.  This way if you experiment with your own Aparapi JOGL projects, they can also conveniently use JOGL. 
@@ -49,7 +52,7 @@ This is how your tree might look if you were to install the Microsoft Windows® 
             build.xml
             nbody.sh
             nbody.bat
-        jogl-2.0-b23-20110303-windows-i586/
+        jogl-2.0-b23-20110330-windows-i586/
             jar/*.jar
             lib/*.dll
 
@@ -58,7 +61,7 @@ This is how your tree might look if you were to install the Microsoft Windows® 
 Edit the build.xml file and modify the jogldir property value.
 
 {{{
-  <property name="jogldir" value="../jogl-2.0-b23-20110303-windows-I586"/>
+  <property name="jogldir" value="../jogl-2.0-b23-20110330-windows-I586"/>
 }}}
 
 To build, perform the following commands.
@@ -78,13 +81,13 @@ If you prefer to launch from either the nbody.sh or nbody.bat script, you will n
 
 For Microsoft Windows®, edit nbody.bat and set JOGLDIR  to =..\jogl-2.0-b23-20110303-windows-i586.
 {{{
-set JOGLDIR=..\jogl-2.0-b23-20110303-windows-i586
+set JOGLDIR=..\jogl-2.0-b23-20110330-windows-i586
 }}}
 
-For Linux®, edit nbody.sh and set JOGLDIR  to =..\jogl-2.0-b23-20110303-windows-i586.
+For Linux®, edit nbody.sh and set JOGLDIR  to =..\jogl-2.0-b23-20110330-windows-i586.
 
 {{{
-export JOGLDIR=../jogl-2.0-b23-20110303-linux-i586
+export JOGLDIR=../jogl-2.0-b23-20110330-linux-i586
 }}}
 
 For Linux® we also need to chmod nbody.sh in order to execute it.
