@@ -22,9 +22,9 @@ JOGL is a set of OpenGL™ bindings for Java® and the NBody example uses this l
 
 Download JOGL for your platform.  JOGL contains both Java jar files and JNI shared libraries, so obtain the appropriate version for your platform.
 
-http://jogamp.org/deployment/webstart/archive/.
+http://jogamp.org/deployment/autobuilds/master/
 
-At the time of writing the platform options were:-
+I have heard some reported issues building against later jogl binaries (some API changes) and recommend using one from March of 2011.
 
 {{{
 jogl-2.0-b23-20110303-windows-amd64.7z 
