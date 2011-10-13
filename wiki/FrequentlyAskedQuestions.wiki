@@ -3,22 +3,25 @@
 =*Frequently Asked Questions*=
 ==Why is this project called Aparapi and how is it pronounced?==
 *Aparapi* is just a contraction of *A PAR*{allel} *API* and is pronounced _(ap-per-rap-ee)_.
+==Does Aparapi only work with AMD graphics cards?==
 
-==Can I get Aparapi for platforms other than those listed?== 
-At present Aparapi has been tested with AMD's OpenCL enabled drivers and AMD GPU devices, the build system is currently configured for AMD APP SDK. Of course OpenCL is an open standard and we look forward to contributions which will allow Aparapi to support other OpenCL compatible platforms in the future. 
+No. Aparapi has been tested with AMD's OpenCL enabled drivers and devices as well as a limited set of NVidia devices and drivers on both Windows and Linux platforms. The minimal requirement at runtime is OpenCL 1.1. If you have a compatible OpenCL 1.1 runtime and supported devices Aparapi should work. 
 
- 
+Although the build is currently configured for AMD APP SDK OpenCL is an open standard and we look forward to contributions which will allow Aparapi to be built against other OpenCL SDK's.
+
+Note that dll's built using AMD APP SDK will work on other platforms at runtime. So the binary builds are expected to work on all OpenCL 1.1 platforms.
+
+Witold Bolt has kindly supplied the patches to allow Mac OS support. The Mac OS build will run against OpenCL 1.1 and 1.0 runtimes, but we won't fix any issues reported against the OpenCL 1.0, your code may run, or may not. 
+
 Aparapi may be used in JTP (Java Thread Pool) mode on any platform supported by Oracle®’s JDK.   
+==Does Aparapi only support AMD CPUs?==
+No, there is nothing restricting Aparapi to AMD CPUs. The JNI code that we use may run on any x86/x64 machine provided there is a compatible Java Virtual Machine®  JVM implementation for your platform.
 ==Will there be an Aparapi-like translator for .NET?==
 This is still an early technology and Aparapi is currently focused on Java® enablement.
 There are similar projects targeting .NET (See [http://www.tidepowerd.com/ www.tidepowerd.com])
 ==How can I profile the OpenCL kernels that Aparapi generates? Can I get details on the latency of my kernel request?How do I optimize my kernel?==
 AMD offers the ‘AMD APP Profiler’ which can be used to profile the kernels. With Aparapi, we recommend using the command line mode of the profiler, which is described in the release notes. Using the ‘AMD APP Profiler’ you can see how much time is taken by each kernel execution and buffer transfer. Also, in each kernel, you can get more detailed information on things like memory reads and writes, and other useful data.
-==Does Aparapi only work with AMD graphics cards?==
-At present Aparapi only works with AMD graphics cards. Our alpha test matrix focused on testing against with ‘AMD APP SDK’ and as such our JNI code currently looks for the first available AMD GPU device. 
-Aparapi is licensed under a permissive open source license.  We expect contributions and other community support for other OpenCL platforms and devices. 
-==Does Aparapi only work on AMD CPUs?==
-No, there is nothing restricting Aparapi to AMD CPUs. The JNI code that we use may run on any x86/x64 machine provided there is a compatible Java Virtual Machine®  JVM implementation for your platform. 
+ 
 ==Can I have multiple threads all using the GPU compute capabilities?==
 Yes.  There might be a performance impact if the device becomes a bottleneck.  However, OpenCL and your GPU driver are designed to coordinate the various threads of execution.
 ==Can I make method calls from the run method?==
