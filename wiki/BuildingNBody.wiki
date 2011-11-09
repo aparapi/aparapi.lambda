@@ -20,54 +20,20 @@ The NBody example requires a little more work to build because it depends on a t
 
 JOGL is a set of OpenGL™ bindings for Java® and the NBody example uses this library to render the particles/bodies (potentially many thousands of them) at runtime.  More information about JOGL can be found here http://jogamp.org/jogl/www.
 
-Download JOGL for your platform.  JOGL contains both Java jar files and JNI shared libraries, so obtain the appropriate version for your platform.
+The {{{build.xml}}} file contains a target {{{getjogl}}} which will download the jars required to build and run the nbody example.
 
-http://jogamp.org/deployment/autobuilds/master/
-
-I have heard some reported issues building against later jogl binaries (some API changes) and recommend using one from March of 2011.
-
-http://jogamp.org/deployment/autobuilds/master/jogl-b363-2011-03-30_18-30-41
-
-
-{{{
-jogl-2.0-b23-20110330-windows-amd64.7z 
-jogl-2.0-b23-20110330-windows-i586.7z 
-jogl-2.0-b23-20110330-linux-amd64.7z 
-jogl-2.0-b23-20110330-linux-i586.7z
-}}}
-
-Probably the most convenient place to install JOGL is as a sibling to your trunk/examples/nbody directory.  This way if you experiment with your own Aparapi JOGL projects, they can also conveniently use JOGL. 
-
-Note the location of the install directory. You will need the location to update the build.xml and the nbody.bat or nbody.sh scripts.
-
-This is how your tree might look if you were to install the Microsoft Windows® x86 JOGL version as suggested above. 
-
-{{{
-    trunk/
-       ...
-       examples/
-         ...
-         nbody/
-            src/java/com.amd.aparapi.nbody/
-            build.xml
-            nbody.sh
-            nbody.bat
-        jogl-2.0-b23-20110330-windows-i586/
-            jar/*.jar
-            lib/*.dll
-
-}}}
-
-Edit the build.xml file and modify the jogldir property value.
-
-{{{
-  <property name="jogldir" value="../jogl-2.0-b23-20110330-windows-I586"/>
-}}}
-
-To build, perform the following commands.
+To set up jogl perform the following commands.
 
 {{{
 C:> cd examples/nbody
+C:> ant getjogl
+}}}
+
+This will populate the {{{lib}}} sub directory with appropriate jogl jars and binaries. 
+
+To build nbody, perform the following commands.
+
+{{{
 C:> ant clean build
 }}}
 
@@ -77,18 +43,7 @@ The NBody build.xml file includes a ‘run’ target so you can launch the appli
 C:> ant run
 }}}
 
-If you prefer to launch from either the nbody.sh or nbody.bat script, you will need to edit these files so the script can locate the JOGL jars and shared libraries at runtime. The JOGLDIR variable is located at the top of the script.
-
-For Microsoft Windows®, edit nbody.bat and set JOGLDIR  to =..\jogl-2.0-b23-20110303-windows-i586.
-{{{
-set JOGLDIR=..\jogl-2.0-b23-20110330-windows-i586
-}}}
-
-For Linux®, edit nbody.sh and set JOGLDIR  to =..\jogl-2.0-b23-20110330-windows-i586.
-
-{{{
-export JOGLDIR=../jogl-2.0-b23-20110330-linux-i586
-}}}
+Or if you prefer to launch from either the nbody.sh or nbody.bat script.
 
 For Linux® we also need to chmod nbody.sh in order to execute it.
 {{{
