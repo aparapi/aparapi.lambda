@@ -20,16 +20,8 @@ The NBody example requires a little more work to build because it depends on a t
 
 JOGL is a set of OpenGL™ bindings for Java® and the NBody example uses this library to render the particles/bodies (potentially many thousands of them) at runtime.  More information about JOGL can be found here http://jogamp.org/jogl/www.
 
-The {{{build.xml}}} file contains a target {{{getjogl}}} which will download the jars required to build and run the nbody example.
+The {{{build.xml}}} file {{{build}}} target will download the jars required to build and run the nbody example if the files do not exist.
 
-To set up jogl perform the following commands.
-
-{{{
-C:> cd examples/nbody
-C:> ant getjogl
-}}}
-
-This will populate the {{{lib}}} sub directory with appropriate jogl jars and binaries. 
 
 To build nbody, perform the following commands.
 
