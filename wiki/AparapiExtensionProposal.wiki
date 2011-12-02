@@ -40,7 +40,7 @@ The main method then would just execute the Kernel using the familiar {{{kernel.
       kernel.execute(data.length);
    }
 }}}
-Essentially we want the (((FFT.forward(float[] _real, float[] _imaginary)}}} and {{{FFT.reverse(float[] _real, float[] _imaginary)}}}  methods to be callable from Aparapi Kernel code. We want Aparapi to handle the call-forwarding and the argument/buffer mapping transfers. We want Aparapi to call the Java methods normally if OpenCL is not available  but would like Aparapi to use the implementor provided OpenCL if it is.
+Essentially we want the {{{FFT.forward(float[] _real, float[] _imaginary)}}} and {{{FFT.reverse(float[] _real, float[] _imaginary)}}}  methods to be callable from Aparapi Kernel code. We want Aparapi to handle the call-forwarding and the argument/buffer mapping transfers. We want Aparapi to call the Java methods normally if OpenCL is not available  but would like Aparapi to use the implementor provided OpenCL if it is.
  
 So the implementor will be required to provide both a  Java and an OpenCL version of the callable methods because Aparapi will decide which version needs to be called ant runtime.  
 
