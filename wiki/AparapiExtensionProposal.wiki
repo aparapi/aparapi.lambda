@@ -1,3 +1,5 @@
+#A proposed aparapi extension mechanism. 
+
 =Here is a proposed Aparapi extension mechanism=
 
 This would allow a developer to create a library that could be used by Aparapi Kernel code. The library would include OpenCL and Java implementations. 
