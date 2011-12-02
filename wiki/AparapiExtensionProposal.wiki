@@ -1,4 +1,4 @@
-#A proposed aparapi extension mechanism. 
+#summary A proposed aparapi extension mechanism.
 
 =Here is a proposed Aparapi extension mechanism=
 
