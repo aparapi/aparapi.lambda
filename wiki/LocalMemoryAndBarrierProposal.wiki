@@ -1,0 +1,73 @@
+#summary A proposal for handling local memory and barriers
+
+==DRAFT==
+
+At present all Aparapi data is considered global.  Primitive arrays (such as {{{int buf[]}}) arre mapped to {{{__global}}} pointers (such as {{{__global int *buf}}}). This makes Aparapi easy to use from Java which does not expose tiered memory hierarchies. 
+
+In the alpha version of Aparapi we allowed the @Local annotation to be applied to primitive arrays (not sadly captured final fields).
+
+{{{
+int globalArray[] = new int[512];
+Kernel kernel = new Kernel(){
+   @Local int localArray[] = new int[64];
+   @Override public void run(){
+       localArray[getLocalId())=getLocalId();
+       localBarrier();
+       globalArray[getGlobalId()] = localArray[getLocalId());
+       
+   }
+}
+}}}
+
+Sure the code is kind of nonesense, but it did show that we could declare local buffers, create them and use local barriers to wait for the group to all complete and then use the local buffers. 
+
+The main issues with the alpha version were:
+  # The size of any local buffers needed to be proportional to the groupsize.
+  # The size of group was not known until the kernel is executed
+  # It was tricky to emulate groups in Java and to make local barriers work, these all cost cycles in the Java version and usually resulted in performance loss. 
+
+The solution we came to in alpha was to have a callback (sadly called {{{setSizes(int globalSize, int localSize)}}}) in the base Kernel class.  This callback was called we were confident we knew what globalSize and localSize were (we know the algorithm used by AMD OpenCL runtime which is based on common AMD device configurations).  The kernel writer was expected to use this callback to create local buffers. 
+
+{{{
+int globalArray[] = new int[512];
+Kernel kernel = new Kernel(){
+   @Local int localArray[] = null;
+   @Override public void setSizes(int _globalSize, int _localSize){
+      localArray = new int[_localSize];
+      super.setSize(_globalSize, _localSize);
+   }
+   @Override public void run(){
+       localArray[getLocalId())=getLocalId();
+       localBarrier();
+       globalArray[getGlobalId()] = localArray[getLocalId());
+       
+   }
+}
+}}}
+
+This worked well for GPU (for single dimension executions - remember we don't map {{{get_local_size(1)}}} or {{{get_local_size(2)}}}), but we probably should. 
+
+Sadly for JTP mode (fallback) we could honor the callback, we could create a barrier (across all threads - so a group was basically always the # of cores), but this really slowed JTP execution.
+
+Note also the rookie API mistakes. 
+
+  # The implementer was obliged to invoke {{{super.setSizes()}}}, that was a big mistake. 
+  # The name {{{setSizes}}} was bad, it should have been {{{sizeCallback()}}} or something 
+  # Should have been {{{protected}}}. 
+
+These three bad API decisions :) meant lots of bugs. Folk would override and forget to call {{{super.setSizes()}}} also because it was public folk would call {{{kernel.setSizes(1024, 23)}}} assuming this would set global and localsize and finally people would override but change the value passed down to {{{super.setSizes()}}}.  This was all the result of these bad API decisions.
+
+Before OpenSourcing I removed all this code (well remnants remain in some KernelRunner static fields and in the JNI layer bitfields for args), with the idea of addressing it again later when we had a better idea whether people would want to use local memory and or barriers.
+
+Now might be that time ;)
+
+So this page is intended to look at this problem again and hopefully come up with a better solution.
+ 
+
+
+  
+ 
+ 
+
+
+ 
