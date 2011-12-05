@@ -1,8 +1,22 @@
 #summary A proposal for handling local memory and barriers
 
-==DRAFT==
+=DRAFT : I am tinkering with this doc as of 12/5/2011=
 
-At present all Aparapi data is considered global.  Primitive arrays (such as {{{int buf[]}}) arre mapped to {{{__global}}} pointers (such as {{{__global int *buf}}}). This makes Aparapi easy to use from Java which does not expose tiered memory hierarchies. 
+At present all Aparapi data is considered global.  Primitive arrays (such as {{{int buf[]}}}) are mapped to {{{__global}}} pointers (such as {{{__global int *buf}}}).
+
+Although this makes Aparapi easy to use (especially to Java developers not used to being exposed to tiered memory hierarchies), it does limit the ability of the 'power developer' wishing to extract more performance from Aparapi on the GPU.
+
+
+
+This page from AMD's website shows the different types of memory that OpenCL programmers need to worry about. 
+
+http://www.amd.com/us/products/technologies/stream-technology/opencl/pages/opencl-intro.aspx?cmpid=cp_article_2_2010
+
+In Aparapi our primitive Java arrays are stored in host memory and are copied to Global memory (the RAM of the GPU card).  
+
+Because local memory is 'closer' to the compute devices, the use of local memory on OpenCL can lead to much more performant code.  The cost of fetching from local memory is much lower. 
+----
+==Some History==
 
 In the alpha version of Aparapi we allowed the @Local annotation to be applied to primitive arrays (not sadly captured final fields).
 
@@ -63,10 +77,65 @@ Now might be that time ;)
 
 So this page is intended to look at this problem again and hopefully come up with a better solution.
  
+----
+
+Some proposals. 
+
+One proposal of course is to retread the alpha steps and reintroduce the notion of @Local annotations (for Kernel buffers - won't work for captured final fields used by anonymous inner classes).
+
+We will cleanup the callback name, undo the API mistakes and allow code such as this. 
+
+{{{
+int globalArray[] = new int[512];
+Kernel kernel = new Kernel(){
+   @Local int localArray[] = null;
+   @Override protected void preExecuteCallback(int _globalSize, int _localSize){
+      localArray = new int[_localSize];
+   }
+   @Override public void run(){
+       localArray[getLocalId())=getLocalId();
+       localBarrier();
+       globalArray[getGlobalId()] = localArray[getLocalId());
+       
+   }
+}
+}}}
+  
+
+Another alternate is to use the annotations themselves to size the local buffers. 
+
+They can either use absolute values or can use multipliers/divisors based on other runtime OpenCL values. 
+
+For example 
+
+{{{  @Local(size=512) int localArray[]; }}}
+
+This is an absolute buffer local array which is to be 512*sizeof(int). 
+
+If you wondering why not just use {{{@Local int[] localArray = new int[512];}}} for this then remember that when we execute on the GPU we don't pass the array, we just tell the OpenCL how big the buffer is. If we declared the buffer as above and the code was actually executed on the GPU the array would never be used. If we fallback in JTP mode the KernelRunner can just allocate the actual array for us.
+
+It is common for local buffers to be some function of the group size or local size. In the example above we create a buffer 1:1 mapped to this. 
+
+We could just use 'scale' properties attached to the @Local annotation to signal this ratio. Either as a multiplier
+
+{{{
+  // Provide a localArray which will be 2*get_local_size(0)
+  @Local(localMultiplier=2) int localArray[]; 
+}}}
+
+or as a divisor
+{{{
+  // Provide a localArray which will be get_local_size(0)/2
+  @Local(localDivisor=2) int localArray[]; 
+}}}
+
+Then just prior to execution the runtime can size all local buffers accordingly. 
+
+
+
 
 
   
- 
  
 
 
