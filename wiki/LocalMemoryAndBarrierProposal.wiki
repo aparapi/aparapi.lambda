@@ -2,6 +2,8 @@
 
 =DRAFT : I am tinkering with this doc as of 12/5/2011=
 
+There is a discussion list here http://groups.google.com/group/aparapi-discuss/browse_thread/thread/c544ffd2aec7ff50 for this as well. 
+
 At present all Aparapi data is considered global.  Primitive arrays (such as {{{int buf[]}}}) are mapped to {{{__global}}} pointers (such as {{{__global int *buf}}}).
 
 Although this makes Aparapi easy to use (especially to Java developers not used to being exposed to tiered memory hierarchies), it does limit the ability of the 'power developer' wishing to extract more performance from Aparapi on the GPU.
