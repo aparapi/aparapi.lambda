@@ -681,7 +681,7 @@ class KernelRunner{
 
          kernel.localBarrier = new CyclicBarrier(1);
 
-         kernel.setSizes(_globalSize, 1);
+         kernel.setSizes(new int[]{_globalSize}, new int[]{1});
 
          kernel.setNumGroups(_globalSize);
          Kernel worker = (Kernel) kernel.clone();
@@ -689,7 +689,7 @@ class KernelRunner{
             worker.setPassId(passid);
             for (int id = 0; id < _globalSize; id++) {
                worker.setGroupId(id);
-               worker.setGlobalId(id);
+               worker.setGlobalId(0, id);
                worker.setLocalId(0);
                worker.run();
             }
@@ -716,7 +716,7 @@ class KernelRunner{
 
          // each threadSet shares a CyclicBarrier of size localSize
          final CyclicBarrier localBarriers[] = new CyclicBarrier[numThreadSets];
-         kernel.setSizes(_globalSize, localSize);
+         kernel.setSizes(new int[]{_globalSize}, new int[]{localSize});
          kernel.setNumGroups(numGroups);
          for (int passid = 0; passid < _passes; passid++) {
             kernel.setPassId(passid);
@@ -739,7 +739,7 @@ class KernelRunner{
                         for (int groupId = startGroupId; groupId < endGroupId; groupId++) {
                            int globalId = (groupId * localSize) + localId;
                            worker.setGroupId(groupId);
-                           worker.setGlobalId(globalId);
+                           worker.setGlobalId(0, globalId);
                            // System.out.println("running worker with gid=" + globalId + ", lid=" + localId
                            // + ", groupId=" + groupId + ", threadId=" + threadId);
                            worker.run();
@@ -1108,7 +1108,7 @@ class KernelRunner{
       assert localSize <= _globalSize : "localSize = " + localSize;
 
       // Call back to kernel for last minute changes
-      kernel.setSizes(_globalSize, localSize);
+      kernel.setSizes(new int[]{_globalSize}, new int[]{localSize});
 
       if (needSync && logger.isLoggable(Level.FINE)) {
          logger.fine("Need to resync arrays on " + kernel.getClass().getName());
@@ -1256,9 +1256,11 @@ class KernelRunner{
                      args[i].name = field.getName();
                      args[i].field = field;
                      args[i].isStatic = (field.getModifiers() & Modifier.STATIC) == Modifier.STATIC;
-
                      Class<?> type = field.getType();
                      if (type.isArray()) {
+                        if (args[i].name.endsWith("_$local$")){
+                           args[i].type |= ARG_GLOBAL;
+                        }
                         args[i].array = null; // will get updated in updateKernelArrayRefs
                         args[i].type |= ARG_ARRAY;
                         if (isExplicit()) {

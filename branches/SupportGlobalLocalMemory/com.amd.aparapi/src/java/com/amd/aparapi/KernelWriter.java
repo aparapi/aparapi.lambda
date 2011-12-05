@@ -92,14 +92,41 @@ abstract class KernelWriter extends BlockWriter{
 
    final static Map<String, String> javaToCLIdentifierMap = new HashMap<String, String>();
    {
+
       javaToCLIdentifierMap.put("getGlobalId()I", "get_global_id(0)");
+      javaToCLIdentifierMap.put("getGlobalX()I", "get_global_id(0)");
+      javaToCLIdentifierMap.put("getGlobalY()I", "get_global_id(1)");
+      javaToCLIdentifierMap.put("getGlobalZ()I", "get_global_id(2)");
+     
       javaToCLIdentifierMap.put("getGlobalSize()I", "get_global_size(0)");
+      javaToCLIdentifierMap.put("getGlobalWidth()I", "get_global_size(0)");
+      javaToCLIdentifierMap.put("getGlobalHeight()I", "get_global_size(1)");
+      javaToCLIdentifierMap.put("getGlobalDepth()I", "get_global_size(2)");
+      
       javaToCLIdentifierMap.put("getLocalId()I", "get_local_id(0)");
+      javaToCLIdentifierMap.put("getLocalX()I", "get_local_id(0)");
+      javaToCLIdentifierMap.put("getLocalY()I", "get_local_id(1)");
+      javaToCLIdentifierMap.put("getLocalZ()I", "get_local_id(2)");
+      
       javaToCLIdentifierMap.put("getLocalSize()I", "get_local_size(0)");
+      javaToCLIdentifierMap.put("getLocalWidth()I", "get_local_size(0)");
+      javaToCLIdentifierMap.put("getLocalHeight()I", "get_local_size(1)");
+      javaToCLIdentifierMap.put("getLocalDepth()I", "get_local_size(2)");
+      
       javaToCLIdentifierMap.put("getNumGroups()I", "get_num_groups(0)");
+      javaToCLIdentifierMap.put("getNumGroupsX()I", "get_num_groups(0)");
+      javaToCLIdentifierMap.put("getNumGroupsY()I", "get_num_groups(1)");
+      javaToCLIdentifierMap.put("getNumGroupsZ()I", "get_num_groups(2)");
+      
       javaToCLIdentifierMap.put("getGroupId()I", "get_group_id(0)");
+      javaToCLIdentifierMap.put("getGroupX()I", "get_group_id(0)");
+      javaToCLIdentifierMap.put("getGroupY()I", "get_group_id(1)");
+      javaToCLIdentifierMap.put("getGroupZ()I", "get_group_id(2)");
+      
       javaToCLIdentifierMap.put("getPassId()I", "get_pass_id(this)");
+      
       javaToCLIdentifierMap.put("localBarrier()V", "barrier(CLK_LOCAL_MEM_FENCE)");
+      
       javaToCLIdentifierMap.put("globalBarrier()V", "barrier(CLK_GLOBAL_MEM_FENCE)");
 
    }
@@ -239,14 +266,14 @@ abstract class KernelWriter extends BlockWriter{
          String signature = field.getDescriptor();
 
          boolean isPointer = false;
-         RuntimeAnnotationsEntry visibleAnnotations = field.fieldAttributePool.getRuntimeVisibleAnnotationsEntry();
+        // RuntimeAnnotationsEntry visibleAnnotations = field.fieldAttributePool.getRuntimeVisibleAnnotationsEntry();
 
-         String type = "__global";
-         if (visibleAnnotations != null) {
+         String type = field.getName().endsWith("_$local$")?"__local":"__global";
+//         if (visibleAnnotations != null) {
             // for (AnnotationInfo ai : visibleAnnotations) {
             // String typeDescriptor = ai.getTypeDescriptor();
             // }
-         }
+  //       }
 
          if (signature.startsWith("[")) {
             argLine.append(type + " ");

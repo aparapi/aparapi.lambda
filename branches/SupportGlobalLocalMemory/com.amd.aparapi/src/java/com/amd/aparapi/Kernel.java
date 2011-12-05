@@ -292,15 +292,15 @@ public abstract class Kernel implements Cloneable{
 
    private EXECUTION_MODE executionMode = EXECUTION_MODE.getDefaultExecutionMode();
 
-   private int globalId;
+   private int[] globalId;
 
-   private int localId;
+   private int[] localId;
 
-   private int localSize;
+   private int[] localSize;
 
-   private int globalSize;
+   private int[] globalSize;
 
-   private int groupId;
+   private int[] groupId;
 
    private int passId;
 
@@ -308,8 +308,8 @@ public abstract class Kernel implements Cloneable{
 
    volatile CyclicBarrier localBarrier;
 
-   void setGlobalId(int _globalId) {
-      globalId = _globalId;
+   void setGlobalId(int _dim, int _globalId) {
+      globalId[_dim] = _globalId;
    }
 
    /**
@@ -349,11 +349,20 @@ public abstract class Kernel implements Cloneable{
     */
 
    @OpenCLDelegate protected final int getGlobalId() {
-      return (globalId);
+      return (globalId[0]);
    }
-
+   @OpenCLDelegate protected final int getGlobalX() {
+      return (globalId[0]);
+   }
+   @OpenCLDelegate protected final int getGlobalY() {
+      return (globalId[1]);
+   }
+   @OpenCLDelegate protected final int getGlobalZ() {
+      return (globalId[2]);
+   }
+   
    void setGroupId(int _groupId) {
-      groupId = _groupId;
+      groupId[0] = _groupId;
 
    }
 
@@ -394,7 +403,17 @@ public abstract class Kernel implements Cloneable{
     * @return The groupId for this Kernel being executed
     */
    @OpenCLDelegate protected final int getGroupId() {
-      return (groupId);
+      return (groupId[0]);
+   }
+   
+   @OpenCLDelegate protected final int getGroupX() {
+      return (groupId[0]);
+   }
+   @OpenCLDelegate protected final int getGroupY() {
+      return (groupId[1]);
+   }
+   @OpenCLDelegate protected final int getGroupZ() {
+      return (groupId[2]);
    }
 
    /**
@@ -417,7 +436,7 @@ public abstract class Kernel implements Cloneable{
    }
 
    void setLocalId(int _localId) {
-      localId = _localId;
+      localId[0] = _localId;
    }
 
    /**
@@ -451,7 +470,19 @@ public abstract class Kernel implements Cloneable{
     * @return The local id for this Kernel being executed
     */
    @OpenCLDelegate protected final int getLocalId() {
-      return (localId);
+      return (localId[0]);
+   }
+   
+   @OpenCLDelegate protected final int getLocalX() {
+      return (localId[0]);
+   }
+   
+   @OpenCLDelegate protected final int getLocalY() {
+      return (localId[1]);
+   }
+   
+   @OpenCLDelegate protected final int getLocalZ() {
+      return (localId[2]);
    }
 
    /**
@@ -472,7 +503,17 @@ public abstract class Kernel implements Cloneable{
     * @return The size of the currently executing group.
     */
    @OpenCLDelegate protected final int getLocalSize() {
-      return (localSize);
+      return (localSize[0]);
+   }
+   
+   @OpenCLDelegate protected final int getLocalWidth() {
+      return (localSize[0]);
+   }
+   @OpenCLDelegate protected final int getLocalHeight() {
+      return (localSize[1]);
+   }
+   @OpenCLDelegate protected final int getLocalDepth() {
+      return (localSize[2]);
    }
 
    /**
@@ -486,9 +527,17 @@ public abstract class Kernel implements Cloneable{
     * @return The value passed to <code>Kernel.execute(int globalSize)</code> causing the current execution.
     */
    @OpenCLDelegate protected final int getGlobalSize() {
-      return (globalSize);
+      return (globalSize[0]);
    }
-
+   @OpenCLDelegate protected final int getGlobalWidth() {
+      return (globalSize[0]);
+   }
+   @OpenCLDelegate protected final int getGlobalHeight() {
+      return (globalSize[1]);
+   }
+   @OpenCLDelegate protected final int getGlobalDepth() {
+      return (globalSize[2]);
+   }
    void setNumGroups(int _numGroups) {
       numGroups = _numGroups;
 
@@ -1387,7 +1436,7 @@ public abstract class Kernel implements Cloneable{
       }
    }
 
-   final void setSizes(int _globalSize, int _localSize) {
+   final void setSizes(int[] _globalSize, int[] _localSize) {
       localSize = _localSize;
       globalSize = _globalSize;
 
@@ -1694,7 +1743,7 @@ public abstract class Kernel implements Cloneable{
    }
 
    void setLocalSize(int _localSize) {
-      localSize = _localSize;
+      localSize[0] = _localSize;
 
    }
 
@@ -1868,6 +1917,10 @@ public abstract class Kernel implements Cloneable{
       }
       kernelRunner.get(array);
       return (this);
+   }
+   
+   protected void preExecuteCallback(){
+      System.out.println("preExecuteCallback");
    }
 
 }

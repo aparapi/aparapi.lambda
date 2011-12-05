@@ -3,7 +3,7 @@
 <project name="codegen" default="junit" basedir=".">
 
    <!--<property name="junit.jar" value="/home/gfrost/aparapi/trunk/tools/junit/junit.jar"/>-->
-   <property name="junit.jar" value="C:\Users\gfrost\javalabs\projects\aparapi\trunk\tools\junit\junit.jar"/>
+   <property name="junit.jar" value="c:\Users\Gary\Devel\javalabs\projects\tools\junit\junit.jar"/>
 
    <path id="classpath">
       <pathelement path="..\..\com.amd.aparapi\aparapi.jar"/>
