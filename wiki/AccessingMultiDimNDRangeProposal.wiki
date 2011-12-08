@@ -1,0 +1,120 @@
+#summary A proposal for accessing multi-dim ND range execution
+
+Note this is nothing to do with accessing Java 2D arrays in Aparapi. 
+
+At present an Aparapi kernel can only be executed using a single dimension. If we wish to represent execution over {{{WIDTH x HEIGHT}}} element grid we would execute over the range {{{(WIDTH*HEIGHT)}}} and manually divide/mod {{{getGlobalID()}}} by {{{WIDTH}}} to determine the {{{x}}} and {{{y}}} for each. 
+
+Similarly we would multiply {{{y}}} by {{{WIDTH}}} and add {{{x}}} {{{(y*WIDTH+x)}}} to convert an {{{X,Y}}} location to a linear global id  
+
+{{{
+final static int WIDTH=128;
+final static int HEIGHT=64;
+final int in[] = new int[WIDTH*HEIGHT];
+final int out[] = new int[WIDTH*HEIGHT];
+Kernel kernel = new Kernel(){
+   public void run(){
+      int x = getGlobaId()%WIDTH;
+      int y = getGlobalID()/WIDTH;
+      if (!(x==1 || x==(WIDTH-1) || y==1 || y==(HEIGHT-1)){
+         int sum = 0;
+         for (int dx =-1; dx<2; dx++){
+           for (int dy =-1; dy<2; dy++){
+             sum+=in[(y+dy)*WIDTH+(x+dx)];
+           }
+         }
+         out[y*WIDTH+x] = sum/9;
+         // or out[getGlobalID()] = sum/9;
+      } 
+   }
+
+};
+kernel.execute(WIDTH*HEIGHT);
+}}}
+
+OpenCL natively allows the user to execute over 1, 2 or 3 dimension grids via the [http://www.khronos.org/registry/cl/sdk/1.2/docs/man/xhtml/clEnqueueNDRangeKernel.html clEnqueueNDRangeKernel()] method. 
+
+We chose not to expose this in Aparapi but there have been requests for us to allow it. 
+
+There are a number of things to consider here:
+  # Extending the syntax of {{{kernel.execute()}}} to allow multi dimensional grids. 
+  # Mapping Kernel methods to OpenCL's {{{get_local_id(int dim), get_local_size(int dim), get_group_id(int_dim), etc}}}. At present we map {{{kernel.getGlobalId()}}} to {{{get_local_id(0)}}}.
+  # Handling all of these when an application drops back to JTP mode.
+
+==Extending {{{Kernel.execute(int range)}}}==
+Sadly we can't overload {{{Kernel.execute(int range), Kernel.execute(int xrange, int yrange) and Kernel.execute(int xrange, int yrange, int zrange)}}} because we already have kernel.execute(int, int) mapped for executing mutiple passes over the linear range.
+
+Remember
+
+{{{
+for (int pass=0; pass<20; pass++){
+   kernel(1024);
+}
+}}}
+
+Is equivalent to 
+
+{{{
+kernel(1024, 20);
+}}} 
+
+I think I would prefer 
+ * {{{Kernel.execute(int range)}}}
+ * {{{Kernel.execute(int range, int passes)}}}
+ * {{{Kernel.executeXY(int xrange, int yrange)}}}
+ * {{{Kernel.executeXY(int xrange, int yrange, int passes)}}}
+ * {{{Kernel.executeXYZ(int xrange, int yrange, int zrange)}}}
+ * {{{Kernel.executeXYZ(int xrange, int yrange, int zrange, int passes)}}}
+
+==Mapping to OpenCL multi dim methods. {{{i.e get_global_id(1), get_local_size(2) etc}}}==
+
+We could just add {{{getGlobalId(int dim), getLocalSize(int dim)}}} etc to replicate OpenCL methods. 
+
+I would prefer to offer the following global  mappings
+|| *Kernel* || *OpenCL* || 
+||getGlobalId()||get_global_id(0)||
+||getGlobalX()||get_global_id(0)||
+||getGlobalY()||get_global_id(1)||
+||getGlobalZ()||get_global_id(2)||
+||getGlobalSize()||get_global_size(0)||
+||getGlobalWidth()||get_global_size(0)||
+||getGlobalHeight()||get_global_size(1)||
+||getGlobalDepth()||get_global_size(2)||
+
+And the following local  mappings
+|| *Kernel* || *OpenCL* || 
+||getLocalId()||get_local_id(0)||
+||getLocalX()||get_local_id(0)||
+||getLocalY()||get_local_id(1)||
+||getLocalZ()||get_local_id(2)||
+||getLocalSize()||get_local_size(0)||
+||getLocalWidth()||get_local_size(0)||
+||getLocalHeight()||get_local_size(1)||
+||getLocalDepth()||get_local_size(2)||
+
+== An example ==
+
+{{{
+final static int WIDTH=128;
+final static int HEIGHT=64;
+final int in[] = new int[WIDTH*HEIGHT];
+final int out[] = new int[WIDTH*HEIGHT];
+Kernel kernel = new Kernel(){
+   public void run(){
+      int x = getGlobalX();
+      int y = getGlobalY();
+      if (!(x==1 || x==(getGlobalWidth()-1) || y==1 || y==(getGlobalHeight()-1)){
+         int sum = 0;
+         for (int dx =-1; dx<2; dx++){
+           for (int dy =-1; dy<2; dy++){
+             sum+=in[(y+dy)*getGlobalWidth()+(x+dx)];
+           }
+         }
+         out[y*getGlobalWidth()+x] = sum/9;
+         // or out[getGlobalID()] = sum/9;
+      } 
+   }
+
+};
+kernel.executeXY(WIDTH, HEIGHT);
+}}}
+  
