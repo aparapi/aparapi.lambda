@@ -1,5 +1,7 @@
 #summary A proposal for accessing multi-dim ND range execution
 
+We can discuss this proposal either here (in comments) or via the discussion list [http://groups.google.com/group/aparapi-discuss/browse_thread/thread/27e407cce98d9af0 here]. 
+
 Note this is nothing to do with accessing Java 2D arrays in Aparapi. 
 
 At present an Aparapi kernel can only be executed using a single dimension. If we wish to represent execution over {{{WIDTH x HEIGHT}}} element grid we would execute over the range {{{(WIDTH*HEIGHT)}}} and manually divide/mod {{{getGlobalID()}}} by {{{WIDTH}}} to determine the {{{x}}} and {{{y}}} for each. 
