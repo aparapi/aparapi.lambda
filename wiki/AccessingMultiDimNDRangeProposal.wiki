@@ -67,6 +67,16 @@ I think I would prefer
  * {{{Kernel.executeXYZ(int xrange, int yrange, int zrange)}}}
  * {{{Kernel.executeXYZ(int xrange, int yrange, int zrange, int passes)}}}
 
+Obviously in the above calls we are only supplying the _global_ bounds for the grid. We could also provide mappings allowing local ranges.
+I think I would prefer 
+ * {{{Kernel.executeLocal(int range, int local)}}}
+ * {{{Kernel.executeLocal(int range, int local, int passes)}}}
+ * {{{Kernel.executeXYLocal(int xrange, int yrange, int xlocalrange, int ylocalrange)}}}
+ * {{{Kernel.executeXYLocal(int xrange, int yrange, int xlocalrange, int ylocalrange, int passes)}}}
+ * {{{Kernel.executeXYZLocal(int xrange, int yrange, int zrange, int xlocalrange, int ylocalrange, int zlocalrange)}}}
+ * {{{Kernel.executeXYZLocal(int xrange, int yrange, int zrange,  int xlocalrange, int ylocalrange, int zlocalrange, int passes)}}}
+
+
 ==Mapping to OpenCL multi dim methods. {{{i.e get_global_id(1), get_local_size(2) etc}}}==
 
 We could just add {{{getGlobalId(int dim), getLocalSize(int dim)}}} etc to replicate OpenCL methods. 
@@ -119,4 +129,15 @@ Kernel kernel = new Kernel(){
 };
 kernel.executeXY(WIDTH, HEIGHT);
 }}}
+
+==Handling this from JTP mode==
+
+Mapping to OpenCL for this is all fairly straightforward.
+
+In Java JTP mode we will have to emulate this. For {{{get_global_id(0..3)}}} ({{{getGlobalX()}}}, {{{getGlobalY()}}} and {{{getGlobalZ()}}} using our proposed Aparapi Java mappings) we can of course easily offer reasonable implementations, this just requires the Java code to essentially nest 3 loops (or emulate) and set {{{globalX}}}, {{{globalY}}}, {{{globalZ}}} inside each nesting. 
+
+For {{{get_local_size(0..3)}}} ({{{getLocalWidth()}}}, {{{getLocalHeight()}}} and {{{getLocalDepth()}}} using our proposed Aparapi Java mappings) we will need to break the {{{globalWidth}}}/{{{globalHeight}}} and {{{globalDepth}}} into some arbitrary equal 'chunks' (note I am avoiding using the word _groups_ here to avoid confusion with {{{get_group_size(0..3)}}}!
+
+
+
   
