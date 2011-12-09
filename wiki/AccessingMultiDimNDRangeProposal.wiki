@@ -76,6 +76,38 @@ I think I would prefer
  * {{{Kernel.executeXYZLocal(int xrange, int yrange, int zrange, int xlocalrange, int ylocalrange, int zlocalrange)}}}
  * {{{Kernel.executeXYZLocal(int xrange, int yrange, int zrange,  int xlocalrange, int ylocalrange, int zlocalrange, int passes)}}}
 
+Another alternative may be to create Range classes
+
+{{{
+class Range{
+  int passes;
+  int width;
+  static Range create(int width);
+  static Range create(int width, int passes);
+}
+
+class RangeWidthHeight extends Range{
+   int height;
+   static Range create(int width, int height);
+   static Range create(int width, int height, int passes);
+
+}
+
+class RangeWidthHeightDepth extends RangeWidthHeight{
+   int depth; 
+   static Range create(int width, int height);
+   static Range create(int width, int height, int passes);
+}
+}}}
+
+With appropriate constructors (or factory methods) to allow
+
+{{{Kernel.execute(Range range)}}}
+
+Then execute would be simply.
+
+{{{Kernel.execute(Range.create(1,1))}}}
+
 
 ==Mapping to OpenCL multi dim methods. {{{i.e get_global_id(1), get_local_size(2) etc}}}==
 
