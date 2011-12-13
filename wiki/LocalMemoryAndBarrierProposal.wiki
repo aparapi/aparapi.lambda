@@ -61,9 +61,9 @@ Kernel kernel = new Kernel(){
 }
 }}}
 
-This worked well for GPU (for single dimension executions - remember we don't map {{{get_local_size(1)}}} or {{{get_local_size(2)}}}), but we probably should. 
+This worked well for GPU (for single dimension executions - remember we don't map {{{get_local_size(1)}}} or {{{get_local_size(2)}}}), but we probably should. There is a separate AccessingMultiDimNDRangeProposal page looking into that.
 
-Sadly for JTP mode (fallback) we could honor the callback, we could create a barrier (across all threads - so a group was basically always the # of cores), but this really slowed JTP execution.
+For JTP mode (fallback) we can honor the callback, we can create a barrier (across all threads - so a group was basically always the # of cores), but this just slows JTP execution.
 
 Note also the rookie API mistakes. 
 
@@ -73,7 +73,7 @@ Note also the rookie API mistakes.
 
 These three bad API decisions :) meant lots of bugs. Folk would override and forget to call {{{super.setSizes()}}} also because it was public folk would call {{{kernel.setSizes(1024, 23)}}} assuming this would set global and localsize and finally people would override but change the value passed down to {{{super.setSizes()}}}.  This was all the result of these bad API decisions.
 
-Before OpenSourcing I removed all this code (well remnants remain in some KernelRunner static fields and in the JNI layer bitfields for args), with the idea of addressing it again later when we had a better idea whether people would want to use local memory and or barriers.
+Before open sourcing I removed all this code (well remnants remain in some !KernelRunner static fields and in the JNI layer bitfields for args), with the idea of addressing it again later when we had a better idea whether people would want to use local memory and or barriers.
 
 Now might be that time ;)
 
@@ -139,18 +139,18 @@ After discussions with some OpenCL guru's I am rethinking the 'ask' here.  All o
 From [http://www.khronos.org/registry/cl/sdk/1.2/docs/man/xhtml/clEnqueueNDRangeKernel.html clEnqueuNDRangeKernel] we get the following definitions
 
 ==={{{work_dim}}}===
-   The number of dimensions used to specify the global work-items and work-items in the work-group. work_dim must be greater than zero and less than or equal to CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS.
+   The number of dimensions used to specify the global work-items and work-items in the work-group. work_dim must be greater than zero and less than or equal to {{{CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS}}}.
 
 ==={{{global_work_offset}}}===
    global_work_offset can be used to specify an array of work_dim unsigned values that describe the offset used to calculate the global ID of a work-item. If global_work_offset is NULL, the global IDs start at offset (0, 0, ... 0).
 
 ==={{{global_work_size}}}===
-   Points to an array of work_dim unsigned values that describe the number of global work-items in work_dim dimensions that will execute the kernel function. The total number of global work-items is computed as global_work_size[0] *...* global_work_size[work_dim - 1].
+   Points to an array of work_dim unsigned values that describe the number of global work-items in work_dim dimensions that will execute the kernel function. The total number of global work-items is computed as {{{global_work_size[0] *...* global_work_size[work_dim - 1]}}}.
 
 ==={{{local_work_size}}}===
-   Points to an array of work_dim unsigned values that describe the number of work-items that make up a work-group (also referred to as the size of the work-group) that will execute the kernel specified by kernel. The total number of work-items in a work-group is computed as local_work_size[0] *... * local_work_size[work_dim - 1]. The total number of work-items in the work-group must be less than or equal to the CL_DEVICE_MAX_WORK_GROUP_SIZE value specified in table of OpenCL Device Queries for clGetDeviceInfo and the number of work-items specified in local_work_size[0],... local_work_size[work_dim - 1] must be less than or equal to the corresponding values specified by CL_DEVICE_MAX_WORK_ITEM_SIZES[0],.... CL_DEVICE_MAX_WORK_ITEM_SIZES[work_dim - 1]. The explicitly specified local_work_size will be used to determine how to break the global work-items specified by global_work_size into appropriate work-group instances. If local_work_size is specified, the values specified in global_work_size[0],... global_work_size[work_dim - 1] must be evenly divisible by the corresponding values specified in local_work_size[0],... local_work_size[work_dim - 1].
+   Points to an array of work_dim unsigned values that describe the number of work-items that make up a work-group (also referred to as the size of the work-group) that will execute the kernel specified by kernel. The total number of work-items in a work-group is computed as {{{local_work_size[0] *... * local_work_size[work_dim - 1]}}}. The total number of work-items in the work-group must be less than or equal to the {{{CL_DEVICE_MAX_WORK_GROUP_SIZE}}} value specified in table of OpenCL Device Queries for clGetDeviceInfo and the number of work-items specified in local_work_size[0],... local_work_size[work_dim - 1] must be less than or equal to the corresponding values specified by {{{CL_DEVICE_MAX_WORK_ITEM_SIZES[0],.... CL_DEVICE_MAX_WORK_ITEM_SIZES[work_dim - 1]}}}. The explicitly specified local_work_size will be used to determine how to break the global work-items specified by global_work_size into appropriate work-group instances. If local_work_size is specified, the values specified in global_work_size[0],... global_work_size[work_dim - 1] must be evenly divisible by the corresponding values specified in {{{local_work_size[0],... local_work_size[work_dim - 1]}}}.
 
-   local_work_size can also be a NULL value in which case the OpenCL implementation will determine how to be break the global work-items into appropriate work-group instances.
+   {{{local_work_size}}} can also be a {{{NULL}}} value in which case the OpenCL implementation will determine how to be break the global work-items into appropriate work-group instances.
 
 
 
