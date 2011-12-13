@@ -10,7 +10,9 @@ Although this makes Aparapi easy to use (especially to Java developers not used 
 
 
 
-This [http://www.amd.com/us/products/technologies/stream-technology/opencl/pages/opencl-intro.aspx?cmpid=cp_article_2_2010 page] from AMD's website shows the different types of memory that OpenCL programmers need to worry about. 
+This [http://www.amd.com/us/products/technologies/stream-technology/opencl/pages/opencl-intro.aspx?cmpid=cp_article_2_2010 page] from AMD's website shows the different types of memory that OpenCL programmers need to worry about.
+
+http://www.amd.com/PublishingImages/Public/Graphic_Illustrations/375WJPEG/47039A_OpenCLMemoryModel_375W.jpg 
 
 Curently in Aparapi our primitive Java arrays are stored in host memory and are copied to Global memory (the RAM of the GPU card).  
 
