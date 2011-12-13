@@ -2,7 +2,7 @@
 
 We can discuss this proposal either here (in comments) or via the discussion list [http://groups.google.com/group/aparapi-discuss/browse_thread/thread/27e407cce98d9af0 here]. 
 
-Note this is nothing to do with accessing Java 2D arrays in Aparapi. 
+Note this is nothing to do with accessing Java 2D arrays in Aparapi. This discussion is focused on the ability to expose the execution of kernels over 1, 2 or 3 dimensions.  The memory in each case is a single contiguous region (like a single dimension primitive array).   
 
 At present an Aparapi kernel can only be executed using a single dimension. If we wish to represent execution over {{{WIDTH x HEIGHT}}} element grid we would execute over the range {{{(WIDTH*HEIGHT)}}} and manually divide/mod {{{getGlobalID()}}} by {{{WIDTH}}} to determine the {{{x}}} and {{{y}}} for each. 
 
@@ -86,14 +86,14 @@ class Range{
   static Range create(int width, int passes);
 }
 
-class RangeWidthHeight extends Range{
+class Range2D extends Range{
    int height;
    static Range create(int width, int height);
    static Range create(int width, int height, int passes);
 
 }
 
-class RangeWidthHeightDepth extends RangeWidthHeight{
+class Range3D extends Range2D{
    int depth; 
    static Range create(int width, int height);
    static Range create(int width, int height, int passes);
@@ -107,6 +107,19 @@ With appropriate constructors (or factory methods) to allow
 Then execute would be simply.
 
 {{{Kernel.execute(Range.create(1,1))}}}
+
+We can also arrange for the group size to be placed in the base Range class. 
+
+{{{
+class Range{
+  int groupSize;
+  int passes;
+  int width;
+  static Range create(int width);
+  static Range create(int width, int passes);
+}
+}}}
+
 
 
 ==Mapping to OpenCL multi dim methods. {{{i.e get_global_id(1), get_local_size(2) etc}}}==
@@ -160,6 +173,33 @@ Kernel kernel = new Kernel(){
 
 };
 kernel.executeXY(WIDTH, HEIGHT);
+}}}
+
+Or if we choose the {{{Range}}} class approach.
+
+{{{
+final static int WIDTH=128;
+final static int HEIGHT=64;
+final int in[] = new int[WIDTH*HEIGHT];
+final int out[] = new int[WIDTH*HEIGHT];
+Kernel kernel = new Kernel(){
+   public void run(){
+      int x = getGlobalX();
+      int y = getGlobalY();
+      if (!(x==1 || x==(getGlobalWidth()-1) || y==1 || y==(getGlobalHeight()-1)){
+         int sum = 0;
+         for (int dx =-1; dx<2; dx++){
+           for (int dy =-1; dy<2; dy++){
+             sum+=in[(y+dy)*getGlobalWidth()+(x+dx)];
+           }
+         }
+         out[y*getGlobalWidth()+x] = sum/9;
+         // or out[getGlobalID()] = sum/9;
+      } 
+   }
+
+};
+kernel.execute(Range2D.create(WIDTH, HEIGHT));
 }}}
 
 ==Handling this from JTP mode==
