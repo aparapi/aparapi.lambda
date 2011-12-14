@@ -210,6 +210,9 @@ In Java JTP mode we will have to emulate this. For {{{get_global_id(0..3)}}} ({{
 
 For {{{get_local_size(0..3)}}} ({{{getLocalWidth()}}}, {{{getLocalHeight()}}} and {{{getLocalDepth()}}} using our proposed Aparapi Java mappings) we will need to break the {{{globalWidth}}}/{{{globalHeight}}} and {{{globalDepth}}} into some arbitrary equal 'chunks' (note I am avoiding using the word _groups_ here to avoid confusion with {{{get_group_size(0..3)}}}!
 
+At present we always create a synthetic group in JTP mode which is the the # or cores. This will need to be changed.  If the user requests a grid (64,64,8,8) (global width 64, global height 64, local width 8, local height 8) then we will have to create a JTP group of 64 (8x8) and just in case the kernel code contains a barrier, we will need to ensure we launch 64 threads for this group. From our experience it is best to launch one thread per core, so we may lose some JTP performance executing in this mode. 
+
+
 
 
   
