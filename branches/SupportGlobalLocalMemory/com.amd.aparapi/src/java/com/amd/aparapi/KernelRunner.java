@@ -534,12 +534,11 @@ class KernelRunner{
 
    private native int setArgsJNI(long _jniContextHandle, KernelArg[] _args, int argc);
 
-   private native int runKernelJNI(long _jniContextHandle, int _globalSize, int _localSize, boolean _needSync,
-         boolean useNullForLocalSize, int _passes);
+   private native int runKernelJNI(long _jniContextHandle, Range _range, boolean _needSync, boolean useNullForLocalSize, int _passes);
 
    private native int disposeJNI(long _jniContextHandle);
 
-   private native int getLocalSizeJNI(long _jniContextHandle, int _globalSize, int localBytesPerLocalId);
+   private native int updateRangeJNI(long _jniContextHandle, Range _range, int localBytesPerLocalId);
 
    private native String getExtensions(long _jniContextHandle);
 
@@ -672,27 +671,29 @@ class KernelRunner{
     *          The # of passes requested by the user (via <code>Kernel.execute(globalSize, passes)</code>). Note this is usually defaulted to 1 via <code>Kernel.execute(globalSize)</code>.
     * @return
     */
-   private long executeJava(final int _globalSize, final int _passes) {
+   private long executeJava(final Range _range, final int _passes) {
       if (logger.isLoggable(Level.FINE)) {
-         logger.fine("executeJava: _globalSize=" + _globalSize);
+         logger.fine("executeJava: range = " + _range);
       }
 
       if (kernel.getExecutionMode().equals(EXECUTION_MODE.SEQ)) {
+         if (!(_range instanceof Range || _range instanceof Range2D)) {
 
-         kernel.localBarrier = new CyclicBarrier(1);
+            kernel.localBarrier = new CyclicBarrier(1);
 
-         kernel.setSizes(new int[]{_globalSize}, new int[]{1});
-
-         kernel.setNumGroups(_globalSize);
-         Kernel worker = (Kernel) kernel.clone();
-         for (int passid = 0; passid < _passes; passid++) {
-            worker.setPassId(passid);
-            for (int id = 0; id < _globalSize; id++) {
-               worker.setGroupId(id);
-               worker.setGlobalId(0, id);
-               worker.setLocalId(0);
-               worker.run();
+            kernel.setSizes(_range);
+            Kernel worker = (Kernel) kernel.clone();
+            for (int passid = 0; passid < _passes; passid++) {
+               worker.setPassId(passid);
+               for (int id = 0; id < _range.getGlobalWidth(); id++) {
+                  worker.setGroupId(id);
+                  worker.setGlobalId(0, id);
+                  worker.setLocalId(0);
+                  worker.run();
+               }
             }
+         } else {
+            System.out.println("No seq support for 2d/3d ranges yet ");
          }
       } else {
          // note uses of final so we can use in anonymous inner class
@@ -716,7 +717,11 @@ class KernelRunner{
 
          // each threadSet shares a CyclicBarrier of size localSize
          final CyclicBarrier localBarriers[] = new CyclicBarrier[numThreadSets];
-         kernel.setSizes(new int[]{_globalSize}, new int[]{localSize});
+         kernel.setSizes(new int[] {
+            _globalSize
+         }, new int[] {
+            localSize
+         });
          kernel.setNumGroups(numGroups);
          for (int passid = 0; passid < _passes; passid++) {
             kernel.setPassId(passid);
@@ -1089,7 +1094,7 @@ class KernelRunner{
 
    // private int numAvailableProcessors = Runtime.getRuntime().availableProcessors();
 
-   private Kernel executeOpenCL(final String _entrypointName, final int _globalSize, final int _passes) throws AparapiException {
+   private Kernel executeOpenCL(final String _entrypointName, final Range _range, final int _passes) throws AparapiException {
 
       // Read the array refs after kernel may have changed them
       // We need to do this as input to computing the localSize
@@ -1098,28 +1103,27 @@ class KernelRunner{
 
       // note: the above will also recompute the value localBytesPerLocalId
 
-      int localSize = getLocalSizeJNI(jniContextHandle, _globalSize, localBytesPerLocalId);
-      if (localSize == 0) {
+      updateRangeJNI(jniContextHandle, _range, localBytesPerLocalId);
+      if (!_range.isValid()) {
          // should fall back to java?
          logger.warning("getLocalSizeJNI failed, reverting java");
          kernel.setFallbackExecutionMode();
-         return execute(_entrypointName, _globalSize, _passes);
+         return execute(_entrypointName, _range, _passes);
       }
-      assert localSize <= _globalSize : "localSize = " + localSize;
 
       // Call back to kernel for last minute changes
-      kernel.setSizes(new int[]{_globalSize}, new int[]{localSize});
+      kernel.setSizes(_range);
 
       if (needSync && logger.isLoggable(Level.FINE)) {
          logger.fine("Need to resync arrays on " + kernel.getClass().getName());
       }
 
       // native side will reallocate array buffers if necessary
-      if (runKernelJNI(jniContextHandle, _globalSize, localSize, needSync, kernel.useNullForLocalSize, _passes) != 0) {
+      if (runKernelJNI(jniContextHandle, _range, needSync, kernel.useNullForLocalSize, _passes) != 0) {
          //System.out.println("CL exec seems to have failed");
          logger.warning("### CL exec seems to have failed. Trying to revert to Java ###");
          kernel.setFallbackExecutionMode();
-         return execute(_entrypointName, _globalSize, _passes);
+         return execute(_entrypointName, _range, _passes);
       }
 
       if (usesOopConversion == true) {
@@ -1127,42 +1131,41 @@ class KernelRunner{
       }
 
       if (logger.isLoggable(Level.FINE)) {
-         logger.fine("executeOpenCL completed. _globalSize=" + _globalSize);
+         logger.fine("executeOpenCL completed. " + _range);
       }
       return kernel;
    }
 
-   synchronized Kernel execute(Kernel.Entry entry, final int _globalSize, final int _passes) {
+   synchronized Kernel execute(Kernel.Entry entry, final Range _range, final int _passes) {
       System.out.println("execute(Kernel.Entry, size) not implemented");
       return (kernel);
    }
 
-   synchronized private Kernel fallBackAndExecute(String _entrypointName, final int _globalSize, final int _passes) {
+   synchronized private Kernel fallBackAndExecute(String _entrypointName, final Range _range, final int _passes) {
 
       kernel.setFallbackExecutionMode();
-      return execute(_entrypointName, _globalSize, _passes);
+      return execute(_entrypointName, _range, _passes);
    }
 
-   synchronized private Kernel warnFallBackAndExecute(String _entrypointName, final int _globalSize, final int _passes,
+   synchronized private Kernel warnFallBackAndExecute(String _entrypointName, final Range _range, final int _passes,
          Exception _exception) {
       if (logger.isLoggable(Level.WARNING)) {
          logger.warning("Reverting to Java Thread Pool (JTP) for " + kernel.getClass() + ": " + _exception.getMessage());
          _exception.printStackTrace();
       }
-      return fallBackAndExecute(_entrypointName, _globalSize, _passes);
+      return fallBackAndExecute(_entrypointName, _range, _passes);
    }
 
-   synchronized private Kernel warnFallBackAndExecute(String _entrypointName, final int _globalSize, final int _passes,
-         String _excuse) {
+   synchronized private Kernel warnFallBackAndExecute(String _entrypointName, final Range _range, final int _passes, String _excuse) {
       logger.warning("Reverting to Java Thread Pool (JTP) for " + kernel.getClass() + ": " + _excuse);
-      return fallBackAndExecute(_entrypointName, _globalSize, _passes);
+      return fallBackAndExecute(_entrypointName, _range, _passes);
    }
 
-   synchronized Kernel execute(String _entrypointName, final int _globalSize, final int _passes) {
+   synchronized Kernel execute(String _entrypointName, final Range _range, final int _passes) {
 
       long executeStartTime = System.currentTimeMillis();
-      if (_globalSize == 0) {
-         throw new IllegalStateException("global size can't be 0");
+      if (_range == null) {
+         throw new IllegalStateException("range can't be null");
       }
 
       if (kernel.getExecutionMode().isOpenCL()) {
@@ -1173,7 +1176,7 @@ class KernelRunner{
                entryPoint = classModel.getEntrypoint(_entrypointName, kernel);
             } catch (Exception exception) {
 
-               return warnFallBackAndExecute(_entrypointName, _globalSize, _passes, exception);
+               return warnFallBackAndExecute(_entrypointName, _range, _passes, exception);
             }
             if ((entryPoint != null) && !entryPoint.shouldFallback()) {
 
@@ -1186,7 +1189,7 @@ class KernelRunner{
                // code that requires the capabilities.
                jniContextHandle = initJNI(kernel, jniFlags, Runtime.getRuntime().availableProcessors(), getMaxJTPLocalSize());
                if (jniContextHandle == 0) {
-                  return warnFallBackAndExecute(_entrypointName, _globalSize, _passes, "initJNI failed to return a valid handle");
+                  return warnFallBackAndExecute(_entrypointName, _range, _passes, "initJNI failed to return a valid handle");
                }
 
                String extensions = getExtensions(jniContextHandle);
@@ -1201,12 +1204,12 @@ class KernelRunner{
 
                if (entryPoint.requiresDoublePragma() && !hasFP64Support()) {
 
-                  return warnFallBackAndExecute(_entrypointName, _globalSize, _passes, "FP64 required but not supported");
+                  return warnFallBackAndExecute(_entrypointName, _range, _passes, "FP64 required but not supported");
                }
 
                if (entryPoint.requiresByteAddressableStorePragma() && !hasByteAddressableStoreSupport()) {
 
-                  return warnFallBackAndExecute(_entrypointName, _globalSize, _passes,
+                  return warnFallBackAndExecute(_entrypointName, _range, _passes,
                         "Byte addressable stores required but not supported");
                }
 
@@ -1215,7 +1218,7 @@ class KernelRunner{
 
                if (entryPoint.requiresAtomic32Pragma() && !all32AtomicsAvailable) {
 
-                  return warnFallBackAndExecute(_entrypointName, _globalSize, _passes, "32 bit Atomics required but not supported");
+                  return warnFallBackAndExecute(_entrypointName, _range, _passes, "32 bit Atomics required but not supported");
                }
 
                final StringBuilder openCLStringBuilder = new StringBuilder();
@@ -1230,7 +1233,7 @@ class KernelRunner{
                   openCLWriter.write(entryPoint);
 
                } catch (CodeGenException codeGenException) {
-                  return warnFallBackAndExecute(_entrypointName, _globalSize, _passes, codeGenException);
+                  return warnFallBackAndExecute(_entrypointName, _range, _passes, codeGenException);
                }
                String openCL = openCLStringBuilder.toString();
                if (Config.enableShowGeneratedOpenCL) {
@@ -1243,7 +1246,7 @@ class KernelRunner{
                // Send the string to OpenCL to compile it
                if (buildProgramJNI(jniContextHandle, openCLStringBuilder.toString()) == 0) {
 
-                  return warnFallBackAndExecute(_entrypointName, _globalSize, _passes, "OpenCL compile failed");
+                  return warnFallBackAndExecute(_entrypointName, _range, _passes, "OpenCL compile failed");
                }
 
                args = new KernelArg[entryPoint.getReferencedFields().size()];
@@ -1258,7 +1261,7 @@ class KernelRunner{
                      args[i].isStatic = (field.getModifiers() & Modifier.STATIC) == Modifier.STATIC;
                      Class<?> type = field.getType();
                      if (type.isArray()) {
-                        if (args[i].name.endsWith("_$local$")){
+                        if (args[i].name.endsWith("_$local$")) {
                            args[i].type |= ARG_GLOBAL;
                         }
                         args[i].array = null; // will get updated in updateKernelArrayRefs
@@ -1353,26 +1356,26 @@ class KernelRunner{
                conversionTime = System.currentTimeMillis() - executeStartTime;
 
                try {
-                  executeOpenCL(_entrypointName, _globalSize, _passes);
+                  executeOpenCL(_entrypointName, _range, _passes);
                } catch (AparapiException e) {
-                  warnFallBackAndExecute(_entrypointName, _globalSize, _passes, e);
+                  warnFallBackAndExecute(_entrypointName, _range, _passes, e);
                }
             } else {
-               warnFallBackAndExecute(_entrypointName, _globalSize, _passes, "failed to locate entrypoint");
+               warnFallBackAndExecute(_entrypointName, _range, _passes, "failed to locate entrypoint");
             }
 
          } else {
 
             try {
-               executeOpenCL(_entrypointName, _globalSize, _passes);
+               executeOpenCL(_entrypointName, _range, _passes);
             } catch (AparapiException e) {
 
-               warnFallBackAndExecute(_entrypointName, _globalSize, _passes, e);
+               warnFallBackAndExecute(_entrypointName, _range, _passes, e);
             }
          }
 
       } else {
-         executeJava(_globalSize, _passes);
+         executeJava(_range, _passes);
       }
       if (Config.enableExecutionModeReporting) {
          System.out.println(kernel.getClass().getCanonicalName() + ":" + kernel.getExecutionMode());
