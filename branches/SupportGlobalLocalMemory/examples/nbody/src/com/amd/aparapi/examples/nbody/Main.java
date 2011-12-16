@@ -62,6 +62,7 @@ import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 
 import com.amd.aparapi.Kernel;
+import com.amd.aparapi.Range;
 import com.jogamp.opengl.util.FPSAnimator;
 import com.jogamp.opengl.util.texture.Texture;
 import com.jogamp.opengl.util.texture.TextureIO;
@@ -77,6 +78,8 @@ public class Main{
 
       private final int bodies;
 
+      private final Range range;
+
       private final float[] xyz; // positions xy and z of bodies
 
       private final float[] vxyz; // velocity component of x,y and z of bodies 
@@ -87,6 +90,7 @@ public class Main{
        */
       public NBodyKernel(int _bodies) {
          bodies = _bodies;
+         range = Range.create(bodies);
          xyz = new float[bodies * 3];
          vxyz = new float[bodies * 3];
          float maxDist = 20f;
@@ -256,7 +260,7 @@ public class Main{
 
             glu.gluLookAt(xeye, yeye, zeye * zoomFactor, xat, yat, zat, 0f, 1f, 0f);
             if (running) {
-               kernel.execute(kernel.bodies);
+               kernel.execute(kernel.range);
             }
             kernel.render(gl);
 
