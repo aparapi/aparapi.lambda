@@ -677,7 +677,7 @@ class KernelRunner{
       }
 
       if (kernel.getExecutionMode().equals(EXECUTION_MODE.SEQ)) {
-         if (!(_range instanceof Range || _range instanceof Range2D)) {
+         if (_range.getDims() == 1) {
 
             kernel.localBarrier = new CyclicBarrier(1);
 
@@ -697,9 +697,9 @@ class KernelRunner{
          }
       } else {
          // note uses of final so we can use in anonymous inner class
-         final int localSize = getJTPLocalSizeForGlobalSize(_globalSize);
+         final int localSize = getJTPLocalSizeForGlobalSize(_range.getGlobalWidth());
          // if (localSize == 0) return 0; // should never happen
-         final int numGroups = _globalSize / localSize;
+         final int numGroups = _range.getGlobalWidth() / localSize;
 
          // compute numThreadSets by multiplying localSize until bigger than numCores
          final int numThreadSets = localSize >= numCores ? 1 : (numCores + (localSize - 1)) / localSize;
@@ -717,12 +717,12 @@ class KernelRunner{
 
          // each threadSet shares a CyclicBarrier of size localSize
          final CyclicBarrier localBarriers[] = new CyclicBarrier[numThreadSets];
-         kernel.setSizes(new int[] {
-            _globalSize
-         }, new int[] {
-            localSize
-         });
-         kernel.setNumGroups(numGroups);
+         // kernel.setSizes(new int[] {
+         //   _globalSize
+         // }, new int[] {
+         //    localSize
+         // });
+         // kernel.setNumGroups(numGroups);
          for (int passid = 0; passid < _passes; passid++) {
             kernel.setPassId(passid);
             for (int thrSetId = 0; thrSetId < numThreadSets; thrSetId++) {

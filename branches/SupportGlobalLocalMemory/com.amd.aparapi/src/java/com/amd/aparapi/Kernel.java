@@ -292,13 +292,25 @@ public abstract class Kernel implements Cloneable{
 
    private EXECUTION_MODE executionMode = EXECUTION_MODE.getDefaultExecutionMode();
 
-   private int[] globalId;
+   private int[] globalId = new int[] {
+         0,
+         0,
+         0
+   };
 
-   private int[] localId;
+   private int[] localId = new int[] {
+         0,
+         0,
+         0
+   };
 
    private Range range;
 
-   private int[] groupId;
+   private int[] groupId = new int[] {
+         0,
+         0,
+         0
+   };
 
    private int passId;
 

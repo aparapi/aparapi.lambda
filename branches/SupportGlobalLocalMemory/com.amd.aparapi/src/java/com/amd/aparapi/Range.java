@@ -17,11 +17,8 @@ public class Range{
 
    protected int dims;
 
-   public Range(int _globalWidth, int _localWidth) {
-      globalWidth = _globalWidth;
-      localWidth = _localWidth;
-      valid = globalWidth % localWidth == 0;
-      dims = 1;
+   Range(int _dims) {
+      dims = _dims;
    }
 
    public int getGlobalWidth() {
@@ -57,6 +54,51 @@ public class Range{
    }
 
    public int getNumGroups() {
-      return (globalWidth / localWidth);
+      return ((globalWidth * globalHeight * globalDepth) / (localWidth * globalHeight * globalDepth));
    }
+
+   public static Range create(int _globalWidth, int _localWidth) {
+      Range range = new Range(1);
+      range.globalWidth = _globalWidth;
+      range.localWidth = _localWidth;
+      return (range);
+   }
+
+   public static Range create(int _globalWidth) {
+      return (create(_globalWidth, 1));
+   }
+
+   public static Range create2D(int _globalWidth, int _globalHeight, int _localWidth, int _localHeight) {
+      Range range = new Range(2);
+      range.globalWidth = _globalWidth;
+      range.localWidth = _localWidth;
+      range.globalHeight = _globalHeight;
+      range.localHeight = _localHeight;
+      return (range);
+   }
+
+   public static Range create2D(int _globalWidth, int _globalHeight) {
+      return (create2D(_globalWidth, _globalHeight, 1, 1));
+   }
+
+   public static Range create3D(int _globalWidth, int _globalHeight, int _globalDepth, int _localWidth, int _localHeight,
+         int _localDepth) {
+      Range range = new Range(3);
+      range.globalWidth = _globalWidth;
+      range.localWidth = _localWidth;
+      range.globalHeight = _globalHeight;
+      range.localHeight = _localHeight;
+      range.globalDepth = _globalDepth;
+      range.localDepth = _localDepth;
+      return (range);
+   }
+
+   public static Range create3D(int _globalWidth, int _globalHeight, int _globalDepth) {
+      return (create3D(_globalWidth, _globalHeight, _globalDepth, 1, 1, 1));
+   }
+
+   public int getDims() {
+      return (dims);
+   }
+
 }
