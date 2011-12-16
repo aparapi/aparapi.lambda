@@ -48,6 +48,7 @@ import javax.swing.JFrame;
 import javax.swing.WindowConstants;
 
 import com.amd.aparapi.Kernel;
+import com.amd.aparapi.Range;
 
 /**
  * An example Aparapi application which demonstrates Conways 'Game Of Life'.
@@ -94,6 +95,8 @@ public class Main{
 
       private final int height;
 
+      private final Range range;
+
       private int fromBase;
 
       private int toBase;
@@ -102,15 +105,16 @@ public class Main{
          imageData = ((DataBufferInt) _image.getRaster().getDataBuffer()).getData();
          width = _width;
          height = _height;
+         range = Range.create(width, height);
          fromBase = height * width;
          toBase = 0;
          setExplicit(true); // This gives us a performance boost
-         
+
          /** draw a line across the image **/
          for (int i = width * (height / 2) + width / 10; i < width * (height / 2 + 1) - width / 10; i++) {
             imageData[i] = LifeKernel.ALIVE;
          }
-         
+
          put(imageData); // Because we are using explicit buffer management we must put the imageData array
 
       }
@@ -153,7 +157,7 @@ public class Main{
          fromBase = toBase;
          toBase = swap;
 
-         execute(width * height);
+         execute(range);
       }
 
    }
@@ -189,7 +193,7 @@ public class Main{
       // Set the default size and add to the frames content pane
       viewer.setPreferredSize(new Dimension(width, height));
       frame.getContentPane().add(viewer);
-      
+
       // Swing housekeeping
       frame.pack();
       frame.setVisible(true);
@@ -198,8 +202,8 @@ public class Main{
       long start = System.currentTimeMillis();
       long generations = 0;
       while (true) {
-         lifeKernel.nextGeneration();  // Work is performed here
-         viewer.repaint();             // Request a repaint of the viewer (causes paintComponent(Graphics) to be called later not synchronous
+         lifeKernel.nextGeneration(); // Work is performed here
+         viewer.repaint(); // Request a repaint of the viewer (causes paintComponent(Graphics) to be called later not synchronous
          generations++;
          long now = System.currentTimeMillis();
          if (now - start > 1000) {
