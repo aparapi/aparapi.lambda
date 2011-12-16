@@ -16,6 +16,12 @@ public class Range{
    protected boolean valid;
 
    protected int dims;
+   
+   final boolean local = true;
+   
+   protected boolean hasLocal(){
+      return(local);
+   }
 
    Range(int _dims) {
       dims = _dims;
@@ -78,6 +84,7 @@ public class Range{
    }
 
    public static Range create2D(int _globalWidth, int _globalHeight) {
+  
       return (create2D(_globalWidth, _globalHeight, 1, 1));
    }
 

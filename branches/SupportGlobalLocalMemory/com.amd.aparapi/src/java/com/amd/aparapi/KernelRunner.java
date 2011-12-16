@@ -677,24 +677,50 @@ class KernelRunner{
       }
 
       if (kernel.getExecutionMode().equals(EXECUTION_MODE.SEQ)) {
-         if (_range.getDims() == 1) {
 
-            kernel.localBarrier = new CyclicBarrier(1);
+         kernel.localBarrier = new CyclicBarrier(1);
 
-            kernel.setSizes(_range);
-            Kernel worker = (Kernel) kernel.clone();
-            for (int passid = 0; passid < _passes; passid++) {
-               worker.setPassId(passid);
+         kernel.setSizes(_range);
+         Kernel worker = (Kernel) kernel.clone();
+
+         for (int passid = 0; passid < _passes; passid++) {
+            worker.setPassId(passid);
+            if (_range.getDims() == 1) {
                for (int id = 0; id < _range.getGlobalWidth(); id++) {
                   worker.setGroupId(id);
                   worker.setGlobalId(0, id);
                   worker.setLocalId(0);
                   worker.run();
                }
+            } else if (_range.getDims() == 2) {
+               for (int x = 0; x < _range.getGlobalWidth(); x++) {
+                  worker.setGroupId(x);
+                  worker.setGlobalId(0, x);
+                  for (int y = 0; y < _range.getGlobalHeight(); y++) {
+                     worker.setGlobalId(1, y);
+                   
+                     worker.run();
+                  }
+               }
+            } else if (_range.getDims() == 3) {
+               for (int x = 0; x < _range.getGlobalWidth(); x++) {
+                  worker.setGroupId(x);
+                  worker.setGlobalId(0, x);
+                  for (int y = 0; y < _range.getGlobalHeight(); y++) {
+                     worker.setGlobalId(1, y);
+                     for (int z = 0; z < _range.getGlobalDepth(); z++) {
+                        worker.setGlobalId(2, z);
+                      
+                        worker.run();
+                     }
+                     worker.run();
+                  }
+               }
+            } else {
+               System.out.println("No seq support for 2d/3d ranges yet ");
             }
-         } else {
-            System.out.println("No seq support for 2d/3d ranges yet ");
          }
+
       } else {
          // note uses of final so we can use in anonymous inner class
          final int localSize = getJTPLocalSizeForGlobalSize(_range.getGlobalWidth());
