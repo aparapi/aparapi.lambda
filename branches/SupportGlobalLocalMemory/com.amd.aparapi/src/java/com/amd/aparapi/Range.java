@@ -1,29 +1,31 @@
 package com.amd.aparapi;
 
 public class Range implements Cloneable{
-   protected int globalWidth=1;
+   protected int globalWidth = 1;
 
-   protected int localWidth=1;
+   protected int localWidth = 1;
 
-   protected int globalHeight=1;
+   protected int globalHeight = 1;
 
-   protected int localHeight=1;
+   protected int localHeight = 1;
 
-   protected int globalDepth=1;
+   protected int globalDepth = 1;
 
-   protected int localDepth=1;
+   protected int localDepth = 1;
 
    protected boolean valid;
 
    protected int dims;
-   
+
    boolean local = true;
-   
-   protected boolean hasLocal(){
-      return(local);
+
+   protected boolean hasLocal() {
+      return (local);
    }
+
    private Range() {
    }
+
    Range(int _dims) {
       this();
       dims = _dims;
@@ -60,10 +62,11 @@ public class Range implements Cloneable{
    public int getLocalDepth() {
       return localDepth;
    }
+
    public int getGroupSize() {
-      return(localWidth * localHeight * localDepth);
+      return (localWidth * localHeight * localDepth);
    }
-  
+
    public int getNumGroups() {
       return ((globalWidth * globalHeight * globalDepth) / getGroupSize());
    }
@@ -76,9 +79,9 @@ public class Range implements Cloneable{
    }
 
    public static Range create(int _globalWidth) {
-   
+
       Range withoutLocal = create(_globalWidth, 1);
-      withoutLocal.local=false;
+      withoutLocal.local = false;
       return (withoutLocal);
    }
 
@@ -93,7 +96,7 @@ public class Range implements Cloneable{
 
    public static Range create2D(int _globalWidth, int _globalHeight) {
       Range withoutLocal = create2D(_globalWidth, _globalHeight, 1, 1);
-      withoutLocal.local=false;
+      withoutLocal.local = false;
       return (withoutLocal);
    }
 
@@ -111,14 +114,15 @@ public class Range implements Cloneable{
 
    public static Range create3D(int _globalWidth, int _globalHeight, int _globalDepth) {
       Range withoutLocal = create3D(_globalWidth, _globalHeight, _globalDepth, 1, 1, 1);
-      withoutLocal.local=false;
+      withoutLocal.local = false;
       return (withoutLocal);
-     
+
    }
 
    public int getDims() {
       return (dims);
    }
+
    @Override protected Object clone() {
       try {
          Range worker = (Range) super.clone();

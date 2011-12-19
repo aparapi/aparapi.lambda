@@ -805,9 +805,9 @@ class KernelRunner{
                   case 2:
                      range.localWidth = 1;
                      range.localHeight = groupSize;
-                     while (range.localWidth<range.localHeight){
-                        range.localWidth<<=2;
-                        range.localHeight>>=2;
+                     while (range.localWidth < range.localHeight) {
+                        range.localWidth <<= 2;
+                        range.localHeight >>= 2;
                      }
                      break;
                }
@@ -836,11 +836,11 @@ class KernelRunner{
                      threads[localId] = new Thread(new Runnable(){
                         @Override public void run() {
                            for (int groupId = 0; groupId < groupCount; groupId++) {
-                              
+
                               int globalId = finalLocalId + (groupId * threadCount);
                               worker.setGroupId(groupId);
                               worker.setGlobalX(globalId);
-                              worker.setLocalX(finalLocalId%range.getLocalWidth());
+                              worker.setLocalX(finalLocalId % range.getLocalWidth());
                               // System.out.println("running worker with gid=" + globalId + ", lid=" + localId
                               // + ", groupId=" + groupId + ", threadId=" + threadId);
                               worker.run();
@@ -854,13 +854,13 @@ class KernelRunner{
                }
             }
             await(joinBarrier);
-            
+
          }
       } // execution mode == JTP
       return 0;
    }
-   
-   private static void await(CyclicBarrier _barrier){
+
+   private static void await(CyclicBarrier _barrier) {
       try {
          _barrier.await();
       } catch (InterruptedException e) {

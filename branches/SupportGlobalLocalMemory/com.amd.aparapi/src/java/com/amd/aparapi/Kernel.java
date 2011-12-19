@@ -306,19 +306,20 @@ public abstract class Kernel implements Cloneable{
 
    private int groupId;
 
-  // private int groupId_1;
+   // private int groupId_1;
 
    //private int groupId_2;
 
    private Range range;
-   
-   public void setRange(Range _range){
+
+   public void setRange(Range _range) {
       range = _range;
    }
 
    private int passId;
 
    volatile CyclicBarrier localBarrier;
+
    void setGlobalId(int _globalId) {
       globalId_0 = _globalId;
 
@@ -332,10 +333,10 @@ public abstract class Kernel implements Cloneable{
    void setGlobalY(int _globalY) {
       globalId_1 = _globalY;
    }
+
    void setGlobalZ(int _globalZ) {
       globalId_2 = _globalZ;
    }
-  
 
    /**
     * Determine the globalId of an executing kernel.
@@ -393,10 +394,12 @@ public abstract class Kernel implements Cloneable{
       localId_0 = _localX;
 
    }
+
    void setLocalY(int _localY) {
       localId_1 = _localY;
 
    }
+
    void setLocalZ(int _localZ) {
       localId_2 = _localZ;
 
@@ -442,23 +445,22 @@ public abstract class Kernel implements Cloneable{
       return (groupId);
    }
 
-  // @OpenCLDelegate protected final int getGroupX() {
-  //    return (groupId_0);
-  // }
+   // @OpenCLDelegate protected final int getGroupX() {
+   //    return (groupId_0);
+   // }
 
-  // @OpenCLDelegate protected final int getGroupY() {
-  //    return (groupId_1);
- //  }
+   // @OpenCLDelegate protected final int getGroupY() {
+   //    return (groupId_1);
+   //  }
 
-  // @OpenCLDelegate protected final int getGroupZ() {
-  //    return (groupId_2);
- //  }
+   // @OpenCLDelegate protected final int getGroupZ() {
+   //    return (groupId_2);
+   //  }
    void setGroupId(int _groupId) {
       groupId = _groupId;
 
    }
 
-  
    /**
     * Determine the passId of an executing kernel.
     * <p>
@@ -1478,7 +1480,6 @@ public abstract class Kernel implements Cloneable{
       }
    }
 
-  
    private KernelRunner kernelRunner = null;
 
    KernelRunner getKernelRunner() {
