@@ -182,10 +182,10 @@ public class Main{
    public static void main(String[] _args) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
 
       int size = Integer.getInteger("size", 512);
-      Range range = Range.create(size); 
-      int iterations = Integer.getInteger("iterations", 5); 
-      System.out.println("size ="+size);
-      System.out.println("iterations ="+iterations);
+      Range range = Range.create(size);
+      int iterations = Integer.getInteger("iterations", 5);
+      System.out.println("size =" + size);
+      System.out.println("iterations =" + iterations);
       BlackScholesKernel kernel = new BlackScholesKernel(size);
 
       long totalExecTime = 0;
