@@ -680,37 +680,38 @@ class KernelRunner{
 
          kernel.localBarrier = new CyclicBarrier(1);
 
-         kernel.setSizes(_range);
+         kernel.setRange(_range);
          Kernel worker = (Kernel) kernel.clone();
 
          for (int passid = 0; passid < _passes; passid++) {
             worker.setPassId(passid);
             if (_range.getDims() == 1) {
                for (int id = 0; id < _range.getGlobalWidth(); id++) {
-                  worker.setGroupId(id);
-                  worker.setGlobalId(0, id);
-                  worker.setLocalId(0);
+                  worker.setGroupId(0);
+
+                  worker.setGlobalX(id);
+                  worker.setLocalId(id);
                   worker.run();
                }
             } else if (_range.getDims() == 2) {
                for (int x = 0; x < _range.getGlobalWidth(); x++) {
                   worker.setGroupId(x);
-                  worker.setGlobalId(0, x);
+                  worker.setGlobalX(x);
                   for (int y = 0; y < _range.getGlobalHeight(); y++) {
-                     worker.setGlobalId(1, y);
-                   
+                     worker.setGlobalY(y);
+
                      worker.run();
                   }
                }
             } else if (_range.getDims() == 3) {
                for (int x = 0; x < _range.getGlobalWidth(); x++) {
                   worker.setGroupId(x);
-                  worker.setGlobalId(0, x);
+                  worker.setGlobalX(x);
                   for (int y = 0; y < _range.getGlobalHeight(); y++) {
-                     worker.setGlobalId(1, y);
+                     worker.setGlobalY(y);
                      for (int z = 0; z < _range.getGlobalDepth(); z++) {
-                        worker.setGlobalId(2, z);
-                      
+                        worker.setGlobalZ(z);
+
                         worker.run();
                      }
                      worker.run();
@@ -722,87 +723,153 @@ class KernelRunner{
          }
 
       } else {
-         // note uses of final so we can use in anonymous inner class
-         final int localSize = getJTPLocalSizeForGlobalSize(_range.getGlobalWidth());
-         // if (localSize == 0) return 0; // should never happen
-         final int numGroups = _range.getGlobalWidth() / localSize;
+         boolean old = false;
 
-         // compute numThreadSets by multiplying localSize until bigger than numCores
-         final int numThreadSets = localSize >= numCores ? 1 : (numCores + (localSize - 1)) / localSize;
-         final int numThreads = numThreadSets * localSize;
-         // when dividing to get groupsPerThreadSet, round up
-         final int groupsPerThreadSet = (numGroups + (numThreadSets - 1)) / numThreadSets;
-         if (logger.isLoggable(Level.FINE)) {
-            logger.fine("executeJava: localSize=" + localSize + ", numThreads=" + numThreads + ", numThreadSets=" + numThreadSets
-                  + ", numGroups=" + numGroups);
-         }
+         if (old) {
+            // note uses of final so we can use in anonymous inner class
+            final int localSize = getJTPLocalSizeForGlobalSize(_range.getGlobalWidth());
+            // if (localSize == 0) return 0; // should never happen
+            final int numGroups = _range.getGlobalWidth() / localSize;
 
-         Thread[] threads = new Thread[numThreads];
-         // joinBarrier that says all threads are finished
-         final CyclicBarrier joinBarrier = new CyclicBarrier(numThreads + 1);
+            // compute numThreadSets by multiplying localSize until bigger than numCores
+            final int numThreadSets = localSize >= numCores ? 1 : (numCores + (localSize - 1)) / localSize;
+            final int numThreads = numThreadSets * localSize;
+            // when dividing to get groupsPerThreadSet, round up
+            final int groupsPerThreadSet = (numGroups + (numThreadSets - 1)) / numThreadSets;
+            if (logger.isLoggable(Level.FINE)) {
+               logger.fine("executeJava: localSize=" + localSize + ", numThreads=" + numThreads + ", numThreadSets="
+                     + numThreadSets + ", numGroups=" + numGroups);
+            }
 
-         // each threadSet shares a CyclicBarrier of size localSize
-         final CyclicBarrier localBarriers[] = new CyclicBarrier[numThreadSets];
-         // kernel.setSizes(new int[] {
-         //   _globalSize
-         // }, new int[] {
-         //    localSize
-         // });
-         // kernel.setNumGroups(numGroups);
-         for (int passid = 0; passid < _passes; passid++) {
-            kernel.setPassId(passid);
-            for (int thrSetId = 0; thrSetId < numThreadSets; thrSetId++) {
-               final int startGroupId = thrSetId * groupsPerThreadSet;
-               final int endGroupId = Math.min((thrSetId + 1) * groupsPerThreadSet, numGroups);
-               // System.out.println("thrSetId=" + thrSetId + " running groups from " + startGroupId + " thru " + (endGroupId-1));
-               localBarriers[thrSetId] = new CyclicBarrier(localSize);
+            Thread[] threads = new Thread[numThreads];
+            // joinBarrier that says all threads are finished
+            final CyclicBarrier joinBarrier = new CyclicBarrier(numThreads + 1);
 
-               // each threadSet has localSize threads
-               for (int lid = 0; lid < localSize; lid++) { // for each thread in threadSet
-                  final int localId = lid;
-                  final int threadId = thrSetId * localSize + localId;
-                  final Kernel worker = (Kernel) kernel.clone();
-                  worker.setLocalId(localId);
-                  worker.localBarrier = localBarriers[thrSetId]; // barrier that the kernel has access to
+            // each threadSet shares a CyclicBarrier of size localSize
+            final CyclicBarrier localBarriers[] = new CyclicBarrier[numThreadSets];
+            // kernel.setSizes(new int[] {
+            //   _globalSize
+            // }, new int[] {
+            //    localSize
+            // });
+            // kernel.setNumGroups(numGroups);
+            for (int passid = 0; passid < _passes; passid++) {
+               kernel.setPassId(passid);
+               for (int thrSetId = 0; thrSetId < numThreadSets; thrSetId++) {
+                  final int startGroupId = thrSetId * groupsPerThreadSet;
+                  final int endGroupId = Math.min((thrSetId + 1) * groupsPerThreadSet, numGroups);
+                  // System.out.println("thrSetId=" + thrSetId + " running groups from " + startGroupId + " thru " + (endGroupId-1));
+                  localBarriers[thrSetId] = new CyclicBarrier(localSize);
 
-                  threads[threadId] = new Thread(new Runnable(){
-                     @Override public void run() {
-                        for (int groupId = startGroupId; groupId < endGroupId; groupId++) {
-                           int globalId = (groupId * localSize) + localId;
-                           worker.setGroupId(groupId);
-                           worker.setGlobalId(0, globalId);
-                           // System.out.println("running worker with gid=" + globalId + ", lid=" + localId
-                           // + ", groupId=" + groupId + ", threadId=" + threadId);
-                           worker.run();
+                  // each threadSet has localSize threads
+                  for (int lid = 0; lid < localSize; lid++) { // for each thread in threadSet
+                     final int localId = lid;
+                     final int threadId = thrSetId * localSize + localId;
+                     final Kernel worker = (Kernel) kernel.clone();
+                     worker.setLocalId(localId);
+                     worker.localBarrier = localBarriers[thrSetId]; // barrier that the kernel has access to
+
+                     threads[threadId] = new Thread(new Runnable(){
+                        @Override public void run() {
+                           for (int groupId = startGroupId; groupId < endGroupId; groupId++) {
+                              int globalId = (groupId * localSize) + localId;
+                              worker.setGroupId(groupId);
+                              worker.setGlobalId(globalId);
+                              // System.out.println("running worker with gid=" + globalId + ", lid=" + localId
+                              // + ", groupId=" + groupId + ", threadId=" + threadId);
+                              worker.run();
+                           }
+                           await(joinBarrier);
                         }
-                        try {
-                           joinBarrier.await();
-                        } catch (InterruptedException e) {
-                           // TODO Auto-generated catch block
-                           e.printStackTrace();
-                        } catch (BrokenBarrierException e) {
-                           // TODO Auto-generated catch block
-                           e.printStackTrace();
-                        }
-                     }
-                  });
-                  threads[threadId].start();
-               }
+                     });
+                     threads[threadId].start();
+                  }
 
-               // this is where the main thread waits on the join barrier
-               try {
-                  joinBarrier.await();
-               } catch (InterruptedException e) {
-                  // TODO Auto-generated catch block
-                  e.printStackTrace();
-               } catch (BrokenBarrierException e) {
-                  // TODO Auto-generated catch block
-                  e.printStackTrace();
+                  // this is where the main thread waits on the join barrier
+                  await(joinBarrier);
                }
             }
+         } else {
+            final Range range = (Range) _range.clone();
+
+            if (!range.hasLocal()) {
+               // find a good common factor from # of cores. 
+               int groupSize = numCores * 16;
+               while (((range.getGlobalWidth() * range.getGlobalHeight() * range.getGlobalDepth()) % groupSize) != 0) {
+                  groupSize--;
+               }
+               switch (range.getDims()) {
+                  case 1:
+                     range.localWidth = groupSize;
+                     break;
+                  case 2:
+                     range.localWidth = 1;
+                     range.localHeight = groupSize;
+                     while (range.localWidth<range.localHeight){
+                        range.localWidth<<=2;
+                        range.localHeight>>=2;
+                     }
+                     break;
+               }
+
+            }
+
+            final int threadCount = range.getGroupSize();
+            final int groupCount = range.getNumGroups();
+            final Thread threads[] = new Thread[threadCount];
+            // This is the barrier that we provide for the kernel threads to rendezvous with the current thread so it needs to be threadCount+1 wide
+            final CyclicBarrier joinBarrier = new CyclicBarrier(threadCount + 1);
+            // This is only ever used by the kernels.  If the kernel does not use the barrier the threads can get out of sync, we promised nothing. 
+            // As with OpenCL in kernel code all threads within a group must wait at the barrier or none.  It is a user error (deadlock!) if the barrier is in a conditional that 
+            // is only executed by some of the threads within a group.
+            final CyclicBarrier localBarrier = new CyclicBarrier(threadCount);
+            for (int passid = 0; passid < _passes; passid++) {
+               kernel.setPassId(passid);
+               if (range.getDims() == 1) {
+                  for (int localId = 0; localId < threadCount; localId++) {
+                     final int finalLocalId = localId;
+                     final Kernel worker = (Kernel) kernel.clone();
+                     worker.setRange(range);
+                     worker.setLocalId(localId);
+                     worker.localBarrier = localBarrier;
+
+                     threads[localId] = new Thread(new Runnable(){
+                        @Override public void run() {
+                           for (int groupId = 0; groupId < groupCount; groupId++) {
+                              
+                              int globalId = finalLocalId + (groupId * threadCount);
+                              worker.setGroupId(groupId);
+                              worker.setGlobalX(globalId);
+                              worker.setLocalX(finalLocalId%range.getLocalWidth());
+                              // System.out.println("running worker with gid=" + globalId + ", lid=" + localId
+                              // + ", groupId=" + groupId + ", threadId=" + threadId);
+                              worker.run();
+                           }
+                           await(joinBarrier);
+
+                        }
+                     });
+                     threads[localId].start();
+                  }
+               }
+            }
+            await(joinBarrier);
+            
          }
       } // execution mode == JTP
       return 0;
+   }
+   
+   private static void await(CyclicBarrier _barrier){
+      try {
+         _barrier.await();
+      } catch (InterruptedException e) {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      } catch (BrokenBarrierException e) {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }
    }
 
    private KernelArg[] args = null;
@@ -1138,7 +1205,7 @@ class KernelRunner{
       }
 
       // Call back to kernel for last minute changes
-      kernel.setSizes(_range);
+      kernel.setRange(_range);
 
       if (needSync && logger.isLoggable(Level.FINE)) {
          logger.fine("Need to resync arrays on " + kernel.getClass().getName());

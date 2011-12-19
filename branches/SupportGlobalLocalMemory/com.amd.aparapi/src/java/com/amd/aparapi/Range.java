@@ -1,29 +1,31 @@
 package com.amd.aparapi;
 
-public class Range{
-   protected int globalWidth;
+public class Range implements Cloneable{
+   protected int globalWidth=1;
 
-   protected int localWidth;
+   protected int localWidth=1;
 
-   protected int globalHeight;
+   protected int globalHeight=1;
 
-   protected int localHeight;
+   protected int localHeight=1;
 
-   protected int globalDepth;
+   protected int globalDepth=1;
 
-   protected int localDepth;
+   protected int localDepth=1;
 
    protected boolean valid;
 
    protected int dims;
    
-   final boolean local = true;
+   boolean local = true;
    
    protected boolean hasLocal(){
       return(local);
    }
-
+   private Range() {
+   }
    Range(int _dims) {
+      this();
       dims = _dims;
    }
 
@@ -58,9 +60,12 @@ public class Range{
    public int getLocalDepth() {
       return localDepth;
    }
-
+   public int getGroupSize() {
+      return(localWidth * localHeight * localDepth);
+   }
+  
    public int getNumGroups() {
-      return ((globalWidth * globalHeight * globalDepth) / (localWidth * globalHeight * globalDepth));
+      return ((globalWidth * globalHeight * globalDepth) / getGroupSize());
    }
 
    public static Range create(int _globalWidth, int _localWidth) {
@@ -71,7 +76,10 @@ public class Range{
    }
 
    public static Range create(int _globalWidth) {
-      return (create(_globalWidth, 1));
+   
+      Range withoutLocal = create(_globalWidth, 1);
+      withoutLocal.local=false;
+      return (withoutLocal);
    }
 
    public static Range create2D(int _globalWidth, int _globalHeight, int _localWidth, int _localHeight) {
@@ -84,8 +92,9 @@ public class Range{
    }
 
    public static Range create2D(int _globalWidth, int _globalHeight) {
-  
-      return (create2D(_globalWidth, _globalHeight, 1, 1));
+      Range withoutLocal = create2D(_globalWidth, _globalHeight, 1, 1);
+      withoutLocal.local=false;
+      return (withoutLocal);
    }
 
    public static Range create3D(int _globalWidth, int _globalHeight, int _globalDepth, int _localWidth, int _localHeight,
@@ -101,11 +110,24 @@ public class Range{
    }
 
    public static Range create3D(int _globalWidth, int _globalHeight, int _globalDepth) {
-      return (create3D(_globalWidth, _globalHeight, _globalDepth, 1, 1, 1));
+      Range withoutLocal = create3D(_globalWidth, _globalHeight, _globalDepth, 1, 1, 1);
+      withoutLocal.local=false;
+      return (withoutLocal);
+     
    }
 
    public int getDims() {
       return (dims);
    }
+   @Override protected Object clone() {
+      try {
+         Range worker = (Range) super.clone();
 
+         return worker;
+      } catch (CloneNotSupportedException e) {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+         return (null);
+      }
+   }
 }

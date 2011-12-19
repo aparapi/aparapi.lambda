@@ -292,33 +292,50 @@ public abstract class Kernel implements Cloneable{
 
    private EXECUTION_MODE executionMode = EXECUTION_MODE.getDefaultExecutionMode();
 
-   private int[] globalId = new int[] {
-         0,
-         0,
-         0
-   };
+   private int globalId_0;
 
-   private int[] localId = new int[] {
-         0,
-         0,
-         0
-   };
+   private int globalId_1;
+
+   private int globalId_2;
+
+   private int localId_0;
+
+   private int localId_1;
+
+   private int localId_2;
+
+   private int groupId;
+
+  // private int groupId_1;
+
+   //private int groupId_2;
 
    private Range range;
-
-   private int[] groupId = new int[] {
-         0,
-         0,
-         0
-   };
+   
+   public void setRange(Range _range){
+      range = _range;
+   }
 
    private int passId;
 
    volatile CyclicBarrier localBarrier;
+   void setGlobalId(int _globalId) {
+      globalId_0 = _globalId;
 
-   void setGlobalId(int _dim, int _globalId) {
-      globalId[_dim] = _globalId;
    }
+
+   void setGlobalX(int _globalX) {
+      globalId_0 = _globalX;
+
+   }
+
+   void setGlobalY(int _globalY) {
+      globalId_1 = _globalY;
+   }
+   void setGlobalZ(int _globalZ) {
+      globalId_2 = _globalZ;
+   }
+  
 
    /**
     * Determine the globalId of an executing kernel.
@@ -357,23 +374,31 @@ public abstract class Kernel implements Cloneable{
     */
 
    @OpenCLDelegate protected final int getGlobalId() {
-      return (globalId[0]);
+      return (globalId_0);
    }
 
    @OpenCLDelegate protected final int getGlobalX() {
-      return (globalId[0]);
+      return (globalId_0);
    }
 
    @OpenCLDelegate protected final int getGlobalY() {
-      return (globalId[1]);
+      return (globalId_1);
    }
 
    @OpenCLDelegate protected final int getGlobalZ() {
-      return (globalId[2]);
+      return (globalId_2);
    }
 
-   void setGroupId(int _groupId) {
-      groupId[0] = _groupId;
+   void setLocalX(int _localX) {
+      localId_0 = _localX;
+
+   }
+   void setLocalY(int _localY) {
+      localId_1 = _localY;
+
+   }
+   void setLocalZ(int _localZ) {
+      localId_2 = _localZ;
 
    }
 
@@ -414,21 +439,26 @@ public abstract class Kernel implements Cloneable{
     * @return The groupId for this Kernel being executed
     */
    @OpenCLDelegate protected final int getGroupId() {
-      return (groupId[0]);
+      return (groupId);
    }
 
-   @OpenCLDelegate protected final int getGroupX() {
-      return (groupId[0]);
+  // @OpenCLDelegate protected final int getGroupX() {
+  //    return (groupId_0);
+  // }
+
+  // @OpenCLDelegate protected final int getGroupY() {
+  //    return (groupId_1);
+ //  }
+
+  // @OpenCLDelegate protected final int getGroupZ() {
+  //    return (groupId_2);
+ //  }
+   void setGroupId(int _groupId) {
+      groupId = _groupId;
+
    }
 
-   @OpenCLDelegate protected final int getGroupY() {
-      return (groupId[1]);
-   }
-
-   @OpenCLDelegate protected final int getGroupZ() {
-      return (groupId[2]);
-   }
-
+  
    /**
     * Determine the passId of an executing kernel.
     * <p>
@@ -449,7 +479,7 @@ public abstract class Kernel implements Cloneable{
    }
 
    void setLocalId(int _localId) {
-      localId[0] = _localId;
+      localId_0 = _localId;
    }
 
    /**
@@ -483,19 +513,19 @@ public abstract class Kernel implements Cloneable{
     * @return The local id for this Kernel being executed
     */
    @OpenCLDelegate protected final int getLocalId() {
-      return (localId[0]);
+      return (localId_0);
    }
 
    @OpenCLDelegate protected final int getLocalX() {
-      return (localId[0]);
+      return (localId_0);
    }
 
    @OpenCLDelegate protected final int getLocalY() {
-      return (localId[1]);
+      return (localId_1);
    }
 
    @OpenCLDelegate protected final int getLocalZ() {
-      return (localId[2]);
+      return (localId_2);
    }
 
    /**
@@ -592,8 +622,6 @@ public abstract class Kernel implements Cloneable{
    @Override protected Object clone() {
       try {
          Kernel worker = (Kernel) super.clone();
-         // if there are any private buffers, go thru the fields here
-         // and allocate a new instance for each clone
 
          return worker;
       } catch (CloneNotSupportedException e) {
@@ -1450,11 +1478,7 @@ public abstract class Kernel implements Cloneable{
       }
    }
 
-   final void setSizes(Range _range) {
-      range = _range;
-
-   }
-
+  
    private KernelRunner kernelRunner = null;
 
    KernelRunner getKernelRunner() {
