@@ -120,7 +120,7 @@ public class Main2D{
       @Override public void run() {
 
          /** Determine which RGB value we are going to process (0..RGB.length). */
-         int gid = (getGlobalWidth()*getGlobalY())+getGlobalX();
+         int gid = (getGlobalWidth() * getGlobalY()) + getGlobalX();
 
          /** Translate the gid into an x an y value. */
          float x = (((getGlobalX() * scale) - ((scale / 2) * width)) / width) + offsetx;
