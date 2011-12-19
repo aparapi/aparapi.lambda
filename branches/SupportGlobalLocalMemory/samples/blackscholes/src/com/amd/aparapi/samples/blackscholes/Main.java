@@ -38,6 +38,7 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 package com.amd.aparapi.samples.blackscholes;
 
 import com.amd.aparapi.Kernel;
+import com.amd.aparapi.Range;
 
 public class Main{
 
@@ -181,6 +182,7 @@ public class Main{
    public static void main(String[] _args) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
 
       int size = Integer.getInteger("size", 512);
+      Range range = Range.create(size); 
       int iterations = Integer.getInteger("iterations", 5); 
       System.out.println("size ="+size);
       System.out.println("iterations ="+iterations);
@@ -193,7 +195,7 @@ public class Main{
          iterExecTime = kernel.execute(size).getExecutionTime();
          totalExecTime += iterExecTime;
       }*/
-      kernel.execute(size, iterations);
+      kernel.execute(range, iterations);
       System.out.println("Average execution time " + kernel.getAccumulatedExecutionTime() / iterations);
       kernel.showResults(10);
 
