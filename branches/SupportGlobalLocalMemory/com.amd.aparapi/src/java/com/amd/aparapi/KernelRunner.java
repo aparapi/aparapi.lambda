@@ -826,21 +826,21 @@ class KernelRunner{
             for (int passid = 0; passid < _passes; passid++) {
                kernel.setPassId(passid);
                if (range.getDims() == 1) {
-                  for (int localId = 0; localId < threadCount; localId++) {
-                     final int finalLocalId = localId;
+                  for (int threadId = 0; threadId < threadCount; threadId++) {
+
                      final Kernel worker = (Kernel) kernel.clone();
                      worker.setRange(range);
-                     worker.setLocalId(localId);
                      worker.localBarrier = localBarrier;
 
-                     threads[localId] = new Thread(new Runnable(){
+                     final int localId = threadId;
+                     worker.setLocalId(threadId);
+                     threads[threadId] = new Thread(new Runnable(){
                         @Override public void run() {
                            for (int groupId = 0; groupId < groupCount; groupId++) {
-
-                              int globalId = finalLocalId + (groupId * threadCount);
+                              int globalId = localId + (groupId * threadCount);
                               worker.setGroupId(groupId);
                               worker.setGlobalX(globalId);
-                              worker.setLocalX(finalLocalId % range.getLocalWidth());
+                              worker.setLocalX(localId % range.getLocalWidth());
                               // System.out.println("running worker with gid=" + globalId + ", lid=" + localId
                               // + ", groupId=" + groupId + ", threadId=" + threadId);
                               worker.run();
@@ -849,8 +849,46 @@ class KernelRunner{
 
                         }
                      });
-                     threads[localId].start();
+
+                     threads[threadId].start();
                   }
+
+               } else if (range.getDims() == 2) {
+                  int threadGroupWidth = range.getGlobalWidth() / threadCount;
+                  for (int xgroup = 0; xgroup < threadGroupWidth; xgroup++) {
+                     for (int threadId = 0; threadId < threadCount; threadId++) {
+                        final int globalX = (xgroup * threadGroupWidth) + threadId;
+                       
+
+                        final Kernel worker = (Kernel) kernel.clone();
+                        worker.setRange(range);
+                        worker.localBarrier = localBarrier;
+
+                        worker.setLocalX(threadId);
+                        worker.setGlobalX(globalX);
+                        threads[threadId] = new Thread(new Runnable(){
+                           @Override public void run() {
+                              
+                              for (int globalY = 0; globalY<range.getGlobalHeight(); globalY++) {
+                                 
+                                 worker.setGroupId(0);//?
+                                 worker.setGlobalY(globalY);
+                                 worker.setLocalY(globalY%range.getLocalHeight());
+                                 // System.out.println("running worker with gid=" + globalId + ", lid=" + localId
+                                 // + ", groupId=" + groupId + ", threadId=" + threadId);
+                                 worker.run();
+                              }
+                              await(joinBarrier);
+
+                           }
+                        });
+
+                        threads[threadId].start();
+                     }
+                  }
+
+               } else if (range.getDims() == 3) {
+
                }
             }
             await(joinBarrier);
