@@ -813,6 +813,7 @@ class KernelRunner{
                }
 
             }
+            System.out.println("cloned range="+range);
 
             final int threadCount = range.getGroupSize();
             final int groupCount = range.getNumGroups();
