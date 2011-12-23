@@ -38,14 +38,13 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 
 package com.amd.aparapi.sample.dims;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
-import java.io.File;
 import java.io.IOException;
 
-import javax.imageio.ImageIO;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.WindowConstants;
@@ -62,58 +61,40 @@ import com.amd.aparapi.Range;
  * @author Gary Frost
  */
 public class Main{
-   // http://docs.gimp.org/en/plug-in-convmatrix.html
 
-   final static class ConvolutionFilter{
-      private float[] weights;
+   public static class DimsKernel extends Kernel{
 
-      private int offset;
+      private final int[] image;
 
-      ConvolutionFilter(float _nw, float _n, float ne, float _w, float _o, float _e, float _sw, float _s, float _se, int _offset) {
-         weights = new float[] {
-               _nw,
-               _w,
-               ne,
-               _w,
-               _o,
-               _e,
-               _sw,
-               _s,
-               _se
-         };
-         offset = _offset;
+      final int global_pallette[];
+
+      final int width_pallette[];
+
+      final int height_pallette[];
+
+      final int group_pallette[];
+
+      public int[] createPallette(int _range) {
+         int pallette[] = new int[_range + 1];
+         for (int i = 0; i < _range; i++) {
+            float h = i / (float) _range;
+            float b = 1.0f - h * h;
+            pallette[i] = Color.HSBtoRGB(h, 1f, b);
+         }
+         return (pallette);
       }
 
-   }
+      public DimsKernel(BufferedImage _image, Range _range) {
+         System.out.println(_range);
+         image = ((DataBufferInt) _image.getRaster().getDataBuffer()).getData();
+         int width = _range.getGlobalWidth();
+         int height = _range.getGlobalHeight();
 
-   private static final ConvolutionFilter NONE = new ConvolutionFilter(0f, 0f, 0f, 0f, 1f, 0f, 0f, 0f, 0f, 0);
+         global_pallette = createPallette(width * height);
+         width_pallette = createPallette(width);
+         height_pallette = createPallette(height);
+         group_pallette = createPallette(_range.getNumGroups());
 
-   private static final ConvolutionFilter BLUR = new ConvolutionFilter(1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 0);
-
-   private static final ConvolutionFilter EMBOSS = new ConvolutionFilter(-2f, -1f, 0f, -1f, 1f, 1f, 0f, 1f, 2f, 0);
-
-   public static class ConvolutionKernel extends Kernel{
-
-      private final float[] filter = new float[10];
-
-      private final int[] inputData;
-
-      private final int[] outputData;
-
-      private final int width;
-
-      private final int height;
-
-      private int offset;
-
-      public ConvolutionKernel(int _width, int _height, BufferedImage _inputImage, BufferedImage _outputImage) {
-         inputData = ((DataBufferInt) _inputImage.getRaster().getDataBuffer()).getData();
-         outputData = ((DataBufferInt) _outputImage.getRaster().getDataBuffer()).getData();
-         width = _width;
-         height = _height;
-
-         // setExplicit(true); // This gives us a performance boost
-         //  put(inputData); // Because we are using explicit buffer management we must put the imageData array
       }
 
       public void run() {
@@ -122,73 +103,29 @@ public class Main{
          int y = getGlobalY();
          int w = getGlobalWidth();
          int h = getGlobalHeight();
-         if (x > 1 && x < (w - 1) && y > 1 && y < (h - 1)) {
+         image[y * w + x] = width_pallette[getGroupId()];
+         // image[y*w+x] = height_pallette[x];
 
-            int result = 0;
-            // We handle each color separately using rgbshift as an 8 bit mask for red, green, blue
-            for (int rgbShift = 0; rgbShift < 24; rgbShift += 8) { // 0,8,16
-               int channelAccum = 0;
-               float accum = 0;
-               int count = 0;
-               for (int dx = -1; dx < 2; dx++) { // west to east
-                  for (int dy = -1; dy < 2; dy++) { // north to south
-                     int rgb = (inputData[((y + dy) * w) + (x + dx)]);
-                     int channelValue = ((rgb >> rgbShift) & 0xff);
-                     accum += filter[count];
-                     channelAccum += channelValue * filter[count++];
-
-                  }
-               }
-               channelAccum /= accum;
-               channelAccum += offset;
-               channelAccum = max(0, min(channelAccum, 0xff));
-               result |= (channelAccum << rgbShift);
-            }
-            outputData[y * w + x] = result;
-         }
       }
 
-      public void convolve(ConvolutionFilter _filter) {
-         System.arraycopy(_filter.weights, 0, filter, 0, _filter.weights.length);
-         offset = _filter.offset;
-         put(filter);
-         execute(Range.create2D(width, height));
-         get(outputData);
-      }
    }
 
    public static void main(String[] _args) throws IOException {
 
-      JFrame frame = new JFrame("Convolution");
+      JFrame frame = new JFrame("Dims");
 
-      BufferedImage testCard = ImageIO.read(new File("testcard.jpg"));
+      final int width = 256;
 
-      int imageHeight = testCard.getHeight();
+      final int height = 256;
 
-      int imageWidth = testCard.getWidth();
+      final BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+      final Range range = Range.create2D(width, height, 4, 4);
+      final DimsKernel lifeKernel = new DimsKernel(image, range);
 
-      int padWidth = 64 - (imageWidth % 64);
-
-      int padHeight = 64 - (imageHeight % 64);
-
-      final int width = imageWidth + padWidth; // now multiple of 64
-
-      final int height = imageHeight + padHeight; // now multiple of 64
-
-      final BufferedImage inputImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-
-      inputImage.getGraphics().drawImage(testCard, padWidth / 2, padHeight / 2, null);
-      final BufferedImage outputImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-      outputImage.getGraphics().drawImage(testCard, padWidth / 2, padHeight / 2, null);
-      final ConvolutionKernel lifeKernel = new ConvolutionKernel(width, height, inputImage, outputImage);
-
-      // Create a component for viewing the offsecreen image
       @SuppressWarnings("serial") JComponent viewer = new JComponent(){
          @Override public void paintComponent(Graphics g) {
-            //  if (lifeKernel.isExplicit()) {
-            //    lifeKernel.get(lifeKernel.inputData); // We only pull the imageData when we intend to use it.
-            //  }
-            g.drawImage(outputImage, 0, 0, width, height, 0, 0, width, height, this);
+
+            g.drawImage(image, 0, 0, width, height, 0, 0, width, height, this);
          }
       };
 
@@ -200,23 +137,9 @@ public class Main{
       frame.pack();
       frame.setVisible(true);
       frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+      lifeKernel.execute(range);
 
-      ConvolutionFilter filters[] = new ConvolutionFilter[] {
-            NONE,
-            BLUR,
-            EMBOSS,
-      };
-      long start = System.nanoTime();
-      for (int i = 0; i < 100; i++) {
-         for (ConvolutionFilter filter : filters) {
-          
-            lifeKernel.convolve(filter); // Work is performed here
-          
-            viewer.repaint(); // Request a repaint of the viewer (causes paintComponent(Graphics) to be called later not synchronous
-
-         }
-      }
-      System.out.println((System.nanoTime() - start) / 1000000);
+      viewer.repaint(); // Request a repaint of the viewer (causes paintComponent(Graphics) to be called later not synchronous
 
    }
 }
