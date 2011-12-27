@@ -813,7 +813,7 @@ class KernelRunner{
                }
 
             }
-            System.out.println("cloned range="+range);
+            System.out.println("cloned range=" + range);
 
             final int threadCount = range.getGroupSize();
             final int groupCount = range.getNumGroups();
@@ -859,7 +859,6 @@ class KernelRunner{
                   for (int xgroup = 0; xgroup < threadGroupWidth; xgroup++) {
                      for (int threadId = 0; threadId < threadCount; threadId++) {
                         final int globalX = (xgroup * threadGroupWidth) + threadId;
-                       
 
                         final Kernel worker = (Kernel) kernel.clone();
                         worker.setRange(range);
@@ -869,12 +868,12 @@ class KernelRunner{
                         worker.setGlobalX(globalX);
                         threads[threadId] = new Thread(new Runnable(){
                            @Override public void run() {
-                              
-                              for (int globalY = 0; globalY<range.getGlobalHeight(); globalY++) {
-                                 
+
+                              for (int globalY = 0; globalY < range.getGlobalHeight(); globalY++) {
+
                                  worker.setGroupId(0);//?
                                  worker.setGlobalY(globalY);
-                                 worker.setLocalY(globalY%range.getLocalHeight());
+                                 worker.setLocalY(globalY % range.getLocalHeight());
                                  // System.out.println("running worker with gid=" + globalId + ", lid=" + localId
                                  // + ", groupId=" + groupId + ", threadId=" + threadId);
                                  worker.run();

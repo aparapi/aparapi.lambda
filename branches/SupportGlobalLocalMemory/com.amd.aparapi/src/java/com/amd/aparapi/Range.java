@@ -137,36 +137,37 @@ public class Range implements Cloneable{
 
    public String toString() {
       StringBuilder sb = new StringBuilder();
-      
+
       switch (dims) {
          case 1:
             if (!local) {
                sb.append(globalWidth);
 
-            }else{
-               sb.append("global:"+globalWidth+" local:"+localWidth);
+            } else {
+               sb.append("global:" + globalWidth + " local:" + localWidth);
             }
             break;
          case 2:
             sb.append("2D(");
             if (!local) {
-               sb.append(globalWidth+"x"+globalHeight);
-            }else{
-               sb.append("global:"+globalWidth+"x"+globalHeight+" local:"+localWidth+"x"+localHeight);
+               sb.append(globalWidth + "x" + globalHeight);
+            } else {
+               sb.append("global:" + globalWidth + "x" + globalHeight + " local:" + localWidth + "x" + localHeight);
             }
             sb.append(")");
             break;
          case 3:
             sb.append("3D");
             if (!local) {
-               sb.append(globalWidth+"x"+globalHeight+"x"+globalDepth);
-            }else{
-               sb.append("global:"+globalWidth+"x"+globalHeight+"x"+globalDepth+" local:"+localWidth+"x"+localHeight+"x"+localWidth);
+               sb.append(globalWidth + "x" + globalHeight + "x" + globalDepth);
+            } else {
+               sb.append("global:" + globalWidth + "x" + globalHeight + "x" + globalDepth + " local:" + localWidth + "x"
+                     + localHeight + "x" + localWidth);
             }
             sb.append(")");
             break;
 
       }
-      return(sb.toString());
+      return (sb.toString());
    }
 }

@@ -209,9 +209,9 @@ public class Main{
       long start = System.nanoTime();
       for (int i = 0; i < 100; i++) {
          for (ConvolutionFilter filter : filters) {
-          
+
             lifeKernel.convolve(filter); // Work is performed here
-          
+
             viewer.repaint(); // Request a repaint of the viewer (causes paintComponent(Graphics) to be called later not synchronous
 
          }
