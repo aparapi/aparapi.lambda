@@ -120,8 +120,11 @@ public class Main{
 
          int x = getGlobalX();
          int y = getGlobalY();
+         int lx = getLocalX();
+         int ly = getLocalY();
          int w = getGlobalWidth();
          int h = getGlobalHeight();
+         // System.out.println(x+","+y+" "+lx+","+ly+" "+w+","+h);
          if (x > 1 && x < (w - 1) && y > 1 && y < (h - 1)) {
 
             int result = 0;
@@ -152,12 +155,12 @@ public class Main{
          System.arraycopy(_filter.weights, 0, filter, 0, _filter.weights.length);
          offset = _filter.offset;
          put(filter);
-         execute(Range.create2D(width, height));
+         execute(Range.create2D(width, height, 16, 16));
          get(outputData);
       }
    }
 
-   public static void main(String[] _args) throws IOException {
+   public static void main(String[] _args) throws IOException, InterruptedException {
 
       JFrame frame = new JFrame("Convolution");
 
@@ -174,6 +177,8 @@ public class Main{
       final int width = imageWidth + padWidth; // now multiple of 64
 
       final int height = imageHeight + padHeight; // now multiple of 64
+
+      System.out.println("image width,height=" + width + "," + height);
 
       final BufferedImage inputImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 
@@ -213,7 +218,7 @@ public class Main{
             lifeKernel.convolve(filter); // Work is performed here
 
             viewer.repaint(); // Request a repaint of the viewer (causes paintComponent(Graphics) to be called later not synchronous
-
+            //Thread.sleep(1000);
          }
       }
       System.out.println((System.nanoTime() - start) / 1000000);

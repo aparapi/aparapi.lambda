@@ -947,7 +947,6 @@ class KernelRunner{
                         for (int groupId = 0; groupId < groups; groupId++) {
                            worker.setGroupId(groupId);
 
-                         
                            if (range.getDims() == 1) {
                               int globalThreadId = threadId + groupId * threads;
 
@@ -960,7 +959,7 @@ class KernelRunner{
                               int globalX = globalThreadId;
                               worker.setGlobalX(globalX);
                            } else if (range.getDims() == 2) {
-                             
+
                               /**
                                * Consider a 12x4 grid of 4*2 local groups
                                * <pre>
@@ -970,11 +969,17 @@ class KernelRunner{
                                *                                             globalWidth=12
                                *                                             globalHeight=4
                                * 
+                               *    00 01 02 03 | 04 05 06 07 | 08 09 10 11  
+                               *    12 13 14 15 | 16 17 18 19 | 20 21 22 23
+                               *    ------------+-------------+------------
+                               *    24 25 26 27 | 28 29 30 31 | 32 33 34 35
+                               *    36 37 38 39 | 40 41 42 43 | 44 45 46 47  
+                               *    
                                *    00 01 02 03 | 00 01 02 03 | 00 01 02 03  threadIds : [0..7]*6
-                               *    04 05 05 07 | 04 05 05 07 | 04 05 05 07
+                               *    04 05 06 07 | 04 05 06 07 | 04 05 06 07
                                *    ------------+-------------+------------
                                *    00 01 02 03 | 00 01 02 03 | 00 01 02 03
-                               *    04 05 05 07 | 04 05 05 07 | 04 05 05 07  
+                               *    04 05 06 07 | 04 05 06 07 | 04 05 06 07  
                                *    
                                *    00 00 00 00 | 01 01 01 01 | 02 02 02 02  groupId : 0..6 
                                *    00 00 00 00 | 01 01 01 01 | 02 02 02 02   
@@ -983,7 +988,7 @@ class KernelRunner{
                                *    03 03 03 03 | 04 04 04 04 | 05 05 05 05
                                *         
                                *    00 01 02 03 | 08 09 10 11 | 16 17 18 19  globalThreadIds == threadId + groupId * threads;
-                               *    04 05 05 07 | 12 13 14 15 | 20 21 22 23
+                               *    04 05 06 07 | 12 13 14 15 | 20 21 22 23
                                *    ------------+-------------+------------
                                *    24 25 26 27 | 32[33]34 35 | 40 41 42 43
                                *    28 29 30 31 | 36 37 38 39 | 44 45 46 47   
@@ -1000,14 +1005,14 @@ class KernelRunner{
                                *    00 00 00 00 | 00[00]00 00 | 00 00 00 00 
                                *    01 01 01 01 | 01 01 01 01 | 01 01 01 01
                                *     
-                               *    00 01 02 03 | 04 05 06 07 | 08 09 10 11  globalX = ((globalThreadId%globalWidth)%localWidth) for (33 = ((33%12)%4) = 1 
-                               *    00 01 02 03 | 04 05 06 07 | 08 09 10 11   
-                               *    ------------+-------------+------------
+                               *    00 01 02 03 | 04 05 06 07 | 08 09 10 11  globalX=
+                               *    00 01 02 03 | 04 05 06 07 | 08 09 10 11     groupsPerLineWidth=globalWidth/localWidth (=12/4 =3)
+                               *    ------------+-------------+------------     groupInset =groupId%groupsPerLineWidth (=4%3 = 1)
                                *    00 01 02 03 | 04[05]06 07 | 08 09 10 11 
-                               *    00 01 02 03 | 04 05 06 07 | 08 09 10 11
+                               *    00 01 02 03 | 04 05 06 07 | 08 09 10 11     globalX = groupInset*localWidth+localX (= 1*4+1 = 5)
                                *     
                                *    00 00 00 00 | 00 00 00 00 | 00 00 00 00  globalY
-                               *    01 01 01 01 | 01 01 01 01 | 01 01 01 01   
+                               *    01 01 01 01 | 01 01 01 01 | 01 01 01 01      
                                *    ------------+-------------+------------
                                *    02 02 02 02 | 02[02]02 02 | 02 02 02 02 
                                *    03 03 03 03 | 03 03 03 03 | 03 03 03 03
@@ -1017,37 +1022,31 @@ class KernelRunner{
                                *
                                */
                               int globalThreadId = threadId + groupId * threads;
+                              worker.setGlobalThreadId(globalThreadId);
+                              worker.setThreadId(threadId);
 
                               int localWidth = range.getLocalWidth();
                               int globalWidth = range.getGlobalWidth();
 
-                            
-                              if (globalThreadId == 33) {
-                                 System.out.println("yep");
-                              }
-                                                         
-                              int localX = threadId % localWidth;                   // localX = threadId % localWidth =  (for 33 = 1 % 4 = 1)
+                              int localX = threadId % localWidth; // localX = threadId % localWidth =  (for 33 = 1 % 4 = 1)
                               worker.setLocalX(localX);
 
-                              int localY = threadId / localWidth;                   // localY = threadId / localWidth = (for 33 = 1 / 4 == 0)
+                              int localY = threadId / localWidth; // localY = threadId / localWidth = (for 33 = 1 / 4 == 0)
                               worker.setLocalY(localY);
 
-                              int xinset = globalThreadId % globalWidth;            // 33 % 12 = 9
-                              int group = xinset/range.getGroupSize();             // 9/8 = 1
-                              int globalX = group*localWidth +localX;              // 1*4+1=5
+                              int groupsPerLineWidth = globalWidth / localWidth; // = 12/4 = 3
+
+                              int groupInset = groupId % groupsPerLineWidth; // 4%3 = 1
+                              int globalX = groupInset * localWidth + localX; // 1*4+1=5
                               worker.setGlobalX(globalX);
                               // For global Y we need to work out how many groups bridge the width
-                              int groupsPerLineWidth = range.getGlobalWidth() / range.getLocalWidth();
+
                               // Then divide groupId by the groupsPerLineWidth
-                              int groupLines = groupId / groupsPerLineWidth;
+                              int groupLines = groupId / groupsPerLineWidth; // 4/3 =1
                               // Multiply the 
-                              int completeLines = groupLines * range.getLocalHeight();
-                              int globalY = completeLines + localY;
+                              int completeLines = groupLines * range.getLocalHeight(); // 1 * 2
+                              int globalY = completeLines + localY; //2+0 = 2
                               worker.setGlobalY(globalY);
-
-                             
-
-                           
 
                            } else if (range.getDims() == 3) {
                               int globalThreadId = threadId + groupId * threads;
@@ -1058,10 +1057,9 @@ class KernelRunner{
                               int localX = threadId % localWidth;
                               worker.setLocalX(localX);
 
-                             
-                             
                            }
                            worker.run();
+
                         }
                         await(joinBarrier); // We rendezvous with waiting thread here
 

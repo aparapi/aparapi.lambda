@@ -1952,4 +1952,26 @@ public abstract class Kernel implements Cloneable{
       return (this);
    }
 
+   int globalThreadId;
+
+   public void setGlobalThreadId(int _globalThreadId) {
+      globalThreadId = _globalThreadId;
+
+   }
+
+   public int getGlobalThreadId() {
+      return (globalThreadId);
+   }
+
+   int threadId;
+
+   public void setThreadId(int _threadId) {
+      threadId = _threadId;
+
+   }
+
+   public int getThreadId() {
+      return (threadId);
+   }
+
 }
