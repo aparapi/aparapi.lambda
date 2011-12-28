@@ -723,6 +723,7 @@ class KernelRunner{
          }
 
       } else {
+
          boolean old = false;
 
          if (old) {
@@ -790,90 +791,59 @@ class KernelRunner{
                }
             }
          } else {
-            final Range range = (Range) _range.clone();
+            if (false) {
+               final Range range = (Range) _range.clone();
 
-            if (!range.hasLocal()) {
-               // find a good common factor from # of cores. 
-               int groupSize = numCores * 16;
-               while (((range.getGlobalWidth() * range.getGlobalHeight() * range.getGlobalDepth()) % groupSize) != 0) {
-                  groupSize--;
-               }
-               switch (range.getDims()) {
-                  case 1:
-                     range.localWidth = groupSize;
-                     break;
-                  case 2:
-                     range.localWidth = 1;
-                     range.localHeight = groupSize;
-                     while (range.localWidth < range.localHeight) {
-                        range.localWidth <<= 2;
-                        range.localHeight >>= 2;
-                     }
-                     break;
-               }
-
-            }
-            System.out.println("cloned range=" + range);
-
-            final int threadCount = range.getGroupSize();
-            final int groupCount = range.getNumGroups();
-            final Thread threads[] = new Thread[threadCount];
-            // This is the barrier that we provide for the kernel threads to rendezvous with the current thread so it needs to be threadCount+1 wide
-            final CyclicBarrier joinBarrier = new CyclicBarrier(threadCount + 1);
-            // This is only ever used by the kernels.  If the kernel does not use the barrier the threads can get out of sync, we promised nothing. 
-            // As with OpenCL in kernel code all threads within a group must wait at the barrier or none.  It is a user error (deadlock!) if the barrier is in a conditional that 
-            // is only executed by some of the threads within a group.
-            final CyclicBarrier localBarrier = new CyclicBarrier(threadCount);
-            for (int passid = 0; passid < _passes; passid++) {
-               kernel.setPassId(passid);
-               if (range.getDims() == 1) {
-                  for (int threadId = 0; threadId < threadCount; threadId++) {
-
-                     final Kernel worker = (Kernel) kernel.clone();
-                     worker.setRange(range);
-                     worker.localBarrier = localBarrier;
-
-                     final int localId = threadId;
-                     worker.setLocalId(threadId);
-                     threads[threadId] = new Thread(new Runnable(){
-                        @Override public void run() {
-                           for (int groupId = 0; groupId < groupCount; groupId++) {
-                              int globalId = localId + (groupId * threadCount);
-                              worker.setGroupId(groupId);
-                              worker.setGlobalX(globalId);
-                              worker.setLocalX(localId % range.getLocalWidth());
-                              // System.out.println("running worker with gid=" + globalId + ", lid=" + localId
-                              // + ", groupId=" + groupId + ", threadId=" + threadId);
-                              worker.run();
-                           }
-                           await(joinBarrier);
-
+               if (!range.hasLocal()) {
+                  // find a good common factor from # of cores. 
+                  int groupSize = numCores * 16;
+                  while (((range.getGlobalWidth() * range.getGlobalHeight() * range.getGlobalDepth()) % groupSize) != 0) {
+                     groupSize--;
+                  }
+                  switch (range.getDims()) {
+                     case 1:
+                        range.localWidth = groupSize;
+                        break;
+                     case 2:
+                        range.localWidth = 1;
+                        range.localHeight = groupSize;
+                        while (range.localWidth < range.localHeight) {
+                           range.localWidth <<= 2;
+                           range.localHeight >>= 2;
                         }
-                     });
-
-                     threads[threadId].start();
+                        break;
                   }
 
-               } else if (range.getDims() == 2) {
-                  int threadGroupWidth = range.getGlobalWidth() / threadCount;
-                  for (int xgroup = 0; xgroup < threadGroupWidth; xgroup++) {
+               }
+               System.out.println("cloned range=" + range);
+
+               final int threadCount = range.getGroupSize();
+               final int groupCount = range.getNumGroups();
+               final Thread threads[] = new Thread[threadCount];
+               // This is the barrier that we provide for the kernel threads to rendezvous with the current thread so it needs to be threadCount+1 wide
+               final CyclicBarrier joinBarrier = new CyclicBarrier(threadCount + 1);
+               // This is only ever used by the kernels.  If the kernel does not use the barrier the threads can get out of sync, we promised nothing. 
+               // As with OpenCL in kernel code all threads within a group must wait at the barrier or none.  It is a user error (deadlock!) if the barrier is in a conditional that 
+               // is only executed by some of the threads within a group.
+               final CyclicBarrier localBarrier = new CyclicBarrier(threadCount);
+               for (int passid = 0; passid < _passes; passid++) {
+                  kernel.setPassId(passid);
+                  if (range.getDims() == 1) {
                      for (int threadId = 0; threadId < threadCount; threadId++) {
-                        final int globalX = (xgroup * threadGroupWidth) + threadId;
 
                         final Kernel worker = (Kernel) kernel.clone();
                         worker.setRange(range);
                         worker.localBarrier = localBarrier;
 
-                        worker.setLocalX(threadId);
-                        worker.setGlobalX(globalX);
+                        final int localId = threadId;
+                        worker.setLocalId(threadId);
                         threads[threadId] = new Thread(new Runnable(){
                            @Override public void run() {
-
-                              for (int globalY = 0; globalY < range.getGlobalHeight(); globalY++) {
-
-                                 worker.setGroupId(0);//?
-                                 worker.setGlobalY(globalY);
-                                 worker.setLocalY(globalY % range.getLocalHeight());
+                              for (int groupId = 0; groupId < groupCount; groupId++) {
+                                 int globalId = localId + (groupId * threadCount);
+                                 worker.setGroupId(groupId);
+                                 worker.setGlobalX(globalId);
+                                 worker.setLocalX(localId % range.getLocalWidth());
                                  // System.out.println("running worker with gid=" + globalId + ", lid=" + localId
                                  // + ", groupId=" + groupId + ", threadId=" + threadId);
                                  worker.run();
@@ -885,14 +855,224 @@ class KernelRunner{
 
                         threads[threadId].start();
                      }
+
+                  } else if (range.getDims() == 2) {
+                     int threadGroupWidth = range.getGlobalWidth() / threadCount;
+                     for (int xgroup = 0; xgroup < threadGroupWidth; xgroup++) {
+                        for (int threadId = 0; threadId < threadCount; threadId++) {
+                           final int globalX = (xgroup * threadGroupWidth) + threadId;
+
+                           final Kernel worker = (Kernel) kernel.clone();
+                           worker.setRange(range);
+                           worker.localBarrier = localBarrier;
+
+                           worker.setLocalX(threadId);
+                           worker.setGlobalX(globalX);
+                           threads[threadId] = new Thread(new Runnable(){
+                              @Override public void run() {
+
+                                 for (int globalY = 0; globalY < range.getGlobalHeight(); globalY++) {
+
+                                    worker.setGroupId(0);//?
+                                    worker.setGlobalY(globalY);
+                                    worker.setLocalY(globalY % range.getLocalHeight());
+                                    // System.out.println("running worker with gid=" + globalId + ", lid=" + localId
+                                    // + ", groupId=" + groupId + ", threadId=" + threadId);
+                                    worker.run();
+                                 }
+                                 await(joinBarrier);
+
+                              }
+                           });
+
+                           threads[threadId].start();
+                        }
+                     }
+
+                  } else if (range.getDims() == 3) {
+
+                  }
+               }
+               await(joinBarrier);
+            } else {
+               final Range range = (Range) _range.clone();
+
+               if (!range.hasLocal()) {
+                  // find a good common factor from # of cores. 
+                  int groupSize = numCores * 4;
+                  while (((range.getGlobalWidth() * range.getGlobalHeight() * range.getGlobalDepth()) % groupSize) != 0) {
+                     groupSize--;
+                  }
+                  switch (range.getDims()) {
+                     case 1:
+                        range.localWidth = groupSize;
+                        break;
+                     case 2:
+                        range.localWidth = 1;
+                        range.localHeight = groupSize;
+                        while (range.localWidth < range.localHeight) {
+                           range.localWidth <<= 1;
+                           range.localHeight >>= 1;
+                        }
+                        break;
                   }
 
-               } else if (range.getDims() == 3) {
+               }
+               range.local = true;
+               System.out.println("cloned range=" + range);
+               final int threads = range.getGroupSize();
+               final int groups = range.getNumGroups();
+               final Thread threadArray[] = new Thread[threads];
+               // This is the barrier that we provide for the kernel threads to rendezvous with the current thread so it needs to be threadCount+1 wide
+               final CyclicBarrier joinBarrier = new CyclicBarrier(threads + 1);
+               // This is only ever used by the kernels.  If the kernel does not use the barrier the threads can get out of sync, we promised nothing. 
+               // As with OpenCL in kernel code all threads within a group must wait at the barrier or none.  It is a user error (deadlock!) if the barrier is in a conditional that 
+               // is only executed by some of the threads within a group.
+               final CyclicBarrier localBarrier = new CyclicBarrier(threads);
+
+               for (int id = 0; id < threads; id++) {
+                  final int threadId = id;
+                  final Kernel worker = (Kernel) kernel.clone();
+                  worker.setGlobalX(0);
+                  worker.setGlobalY(0);
+                  worker.setGlobalZ(0);
+
+                  worker.setLocalX(0);
+                  worker.setLocalY(0);
+                  worker.setLocalZ(0);
+                  worker.setRange(range);
+                  worker.localBarrier = localBarrier;
+                  threadArray[threadId] = new Thread(new Runnable(){
+                     @Override public void run() {
+                        for (int groupId = 0; groupId < groups; groupId++) {
+                           worker.setGroupId(groupId);
+
+                         
+                           if (range.getDims() == 1) {
+                              int globalThreadId = threadId + groupId * threads;
+
+                              int localWidth = range.getLocalWidth();
+
+                              // localX is same across all dimensions. 
+                              int localX = threadId % localWidth;
+                              worker.setLocalX(localX);
+
+                              int globalX = globalThreadId;
+                              worker.setGlobalX(globalX);
+                           } else if (range.getDims() == 2) {
+                             
+                              /**
+                               * Consider a 12x4 grid of 4*2 local groups
+                               * <pre>
+                               *                                             threads = 4*2 = 8
+                               *                                             localWidth=4
+                               *                                             localHeight=2
+                               *                                             globalWidth=12
+                               *                                             globalHeight=4
+                               * 
+                               *    00 01 02 03 | 00 01 02 03 | 00 01 02 03  threadIds : [0..7]*6
+                               *    04 05 05 07 | 04 05 05 07 | 04 05 05 07
+                               *    ------------+-------------+------------
+                               *    00 01 02 03 | 00 01 02 03 | 00 01 02 03
+                               *    04 05 05 07 | 04 05 05 07 | 04 05 05 07  
+                               *    
+                               *    00 00 00 00 | 01 01 01 01 | 02 02 02 02  groupId : 0..6 
+                               *    00 00 00 00 | 01 01 01 01 | 02 02 02 02   
+                               *    ------------+-------------+------------
+                               *    03 03 03 03 | 04 04 04 04 | 05 05 05 05 
+                               *    03 03 03 03 | 04 04 04 04 | 05 05 05 05
+                               *         
+                               *    00 01 02 03 | 08 09 10 11 | 16 17 18 19  globalThreadIds == threadId + groupId * threads;
+                               *    04 05 05 07 | 12 13 14 15 | 20 21 22 23
+                               *    ------------+-------------+------------
+                               *    24 25 26 27 | 32[33]34 35 | 40 41 42 43
+                               *    28 29 30 31 | 36 37 38 39 | 44 45 46 47   
+                               *          
+                               *    00 01 02 03 | 00 01 02 03 | 00 01 02 03  localX = threadId % localWidth; (for globalThreadId 33 = threadId = 01 : 01%4 =1)
+                               *    00 01 02 03 | 00 01 02 03 | 00 01 02 03   
+                               *    ------------+-------------+------------
+                               *    00 01 02 03 | 00[01]02 03 | 00 01 02 03 
+                               *    00 01 02 03 | 00 01 02 03 | 00 01 02 03
+                               *     
+                               *    00 00 00 00 | 00 00 00 00 | 00 00 00 00  localY = threadId /localWidth  (for globalThreadId 33 = threadId = 01 : 01/4 =0)
+                               *    01 01 01 01 | 01 01 01 01 | 01 01 01 01   
+                               *    ------------+-------------+------------
+                               *    00 00 00 00 | 00[00]00 00 | 00 00 00 00 
+                               *    01 01 01 01 | 01 01 01 01 | 01 01 01 01
+                               *     
+                               *    00 01 02 03 | 04 05 06 07 | 08 09 10 11  globalX = ((globalThreadId%globalWidth)%localWidth) for (33 = ((33%12)%4) = 1 
+                               *    00 01 02 03 | 04 05 06 07 | 08 09 10 11   
+                               *    ------------+-------------+------------
+                               *    00 01 02 03 | 04[05]06 07 | 08 09 10 11 
+                               *    00 01 02 03 | 04 05 06 07 | 08 09 10 11
+                               *     
+                               *    00 00 00 00 | 00 00 00 00 | 00 00 00 00  globalY
+                               *    01 01 01 01 | 01 01 01 01 | 01 01 01 01   
+                               *    ------------+-------------+------------
+                               *    02 02 02 02 | 02[02]02 02 | 02 02 02 02 
+                               *    03 03 03 03 | 03 03 03 03 | 03 03 03 03
+                               *    
+                               * </pre>
+                               * Assume we are trying to locate the id's for #33 
+                               *
+                               */
+                              int globalThreadId = threadId + groupId * threads;
+
+                              int localWidth = range.getLocalWidth();
+                              int globalWidth = range.getGlobalWidth();
+
+                            
+                              if (globalThreadId == 33) {
+                                 System.out.println("yep");
+                              }
+                                                         
+                              int localX = threadId % localWidth;                   // localX = threadId % localWidth =  (for 33 = 1 % 4 = 1)
+                              worker.setLocalX(localX);
+
+                              int localY = threadId / localWidth;                   // localY = threadId / localWidth = (for 33 = 1 / 4 == 0)
+                              worker.setLocalY(localY);
+
+                              int xinset = globalThreadId % globalWidth;            // 33 % 12 = 9
+                              int group = xinset/range.getGroupSize();             // 9/8 = 1
+                              int globalX = group*localWidth +localX;              // 1*4+1=5
+                              worker.setGlobalX(globalX);
+                              // For global Y we need to work out how many groups bridge the width
+                              int groupsPerLineWidth = range.getGlobalWidth() / range.getLocalWidth();
+                              // Then divide groupId by the groupsPerLineWidth
+                              int groupLines = groupId / groupsPerLineWidth;
+                              // Multiply the 
+                              int completeLines = groupLines * range.getLocalHeight();
+                              int globalY = completeLines + localY;
+                              worker.setGlobalY(globalY);
+
+                             
+
+                           
+
+                           } else if (range.getDims() == 3) {
+                              int globalThreadId = threadId + groupId * threads;
+
+                              int localWidth = range.getLocalWidth();
+
+                              // localX is same across all dimensions. 
+                              int localX = threadId % localWidth;
+                              worker.setLocalX(localX);
+
+                             
+                             
+                           }
+                           worker.run();
+                        }
+                        await(joinBarrier); // We rendezvous with waiting thread here
+
+                     }
+                  });
+                  threadArray[threadId].start();
 
                }
-            }
-            await(joinBarrier);
+               await(joinBarrier); // only when all threads have completed do we get passed here.
 
+            }
          }
       } // execution mode == JTP
       return 0;
