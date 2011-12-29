@@ -1,23 +1,23 @@
 package com.amd.aparapi;
 
 public class Range implements Cloneable{
-   protected int globalWidth = 1;
+   @KernelRunner.UsedByJNICode private int globalWidth = 1;
 
-   protected int localWidth = 1;
+   @KernelRunner.UsedByJNICode private int localWidth = 1;
 
-   protected int globalHeight = 1;
+   @KernelRunner.UsedByJNICode private int globalHeight = 1;
 
-   protected int localHeight = 1;
+   @KernelRunner.UsedByJNICode private int localHeight = 1;
 
-   protected int globalDepth = 1;
+   @KernelRunner.UsedByJNICode private int globalDepth = 1;
 
-   protected int localDepth = 1;
+   @KernelRunner.UsedByJNICode private int localDepth = 1;
 
-   protected boolean valid;
+   @KernelRunner.UsedByJNICode private boolean valid;
 
-   protected int dims;
+   @KernelRunner.UsedByJNICode private int dims;
 
-   boolean local = true;
+   @KernelRunner.UsedByJNICode private boolean local = true;
 
    protected boolean hasLocal() {
       return (local);
@@ -169,5 +169,20 @@ public class Range implements Cloneable{
 
       }
       return (sb.toString());
+   }
+
+   public void setLocalWidth(int _localWidth) {
+      localWidth = _localWidth;
+
+   }
+
+   public void setLocalHeight(int _localHeight) {
+      localHeight = _localHeight;
+
+   }
+
+   public void setLocal(boolean _local) {
+      local = _local;
+
    }
 }

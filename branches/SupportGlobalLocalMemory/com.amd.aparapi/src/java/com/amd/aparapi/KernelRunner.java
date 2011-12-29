@@ -447,7 +447,7 @@ class KernelRunner{
        * 
        * At present only set for AparapiLocalBuffer objs, JNI multiplies this by localSize
        */
-      @Annotations.Unused @UsedByJNICode public int bytesPerLocalSize;
+      @Annotations.Unused @UsedByJNICode public int bytesPerLocalWidth;
 
       /**
        * Only set for array objs, not used on JNI
@@ -540,7 +540,7 @@ class KernelRunner{
 
    private native int updateRangeJNI(long _jniContextHandle, Range _range, int localBytesPerLocalId);
 
-   private native String getExtensions(long _jniContextHandle);
+   private native String getExtensionsJNI(long _jniContextHandle);
 
    private Set<String> capabilitiesSet;
 
@@ -802,14 +802,14 @@ class KernelRunner{
                   }
                   switch (range.getDims()) {
                      case 1:
-                        range.localWidth = groupSize;
+                        range.setLocalWidth(groupSize);
                         break;
                      case 2:
-                        range.localWidth = 1;
-                        range.localHeight = groupSize;
-                        while (range.localWidth < range.localHeight) {
-                           range.localWidth <<= 2;
-                           range.localHeight >>= 2;
+                        range.setLocalWidth(1);
+                        range.setLocalHeight(groupSize);
+                        while (range.getLocalWidth() < range.getLocalHeight()) {
+                           range.setLocalWidth(range.getLocalWidth() << 2);
+                           range.setLocalHeight(range.getLocalWidth() >> 2);
                         }
                         break;
                   }
@@ -905,20 +905,20 @@ class KernelRunner{
                   }
                   switch (range.getDims()) {
                      case 1:
-                        range.localWidth = groupSize;
+                        range.setLocalWidth(groupSize);
                         break;
                      case 2:
-                        range.localWidth = 1;
-                        range.localHeight = groupSize;
-                        while (range.localWidth < range.localHeight) {
-                           range.localWidth <<= 1;
-                           range.localHeight >>= 1;
+                        range.setLocalWidth(1);
+                        range.setLocalHeight(groupSize);
+                        while (range.getLocalWidth() < range.getLocalHeight()) {
+                           range.setLocalWidth(range.getLocalWidth() << 1);
+                           range.setLocalHeight(range.getLocalHeight() >> 1);
                         }
                         break;
                   }
 
                }
-               range.local = true;
+               range.setLocal(true);
                System.out.println("cloned range=" + range);
                final int threads = range.getGroupSize();
                final int groups = range.getNumGroups();
@@ -1412,13 +1412,13 @@ class KernelRunner{
 
       // note: the above will also recompute the value localBytesPerLocalId
 
-      updateRangeJNI(jniContextHandle, _range, localBytesPerLocalId);
-      if (!_range.isValid()) {
-         // should fall back to java?
-         logger.warning("getLocalSizeJNI failed, reverting java");
-         kernel.setFallbackExecutionMode();
-         return execute(_entrypointName, _range, _passes);
-      }
+      // updateRangeJNI(jniContextHandle, _range, localBytesPerLocalId);
+      // if (!_range.isValid()) {
+      // should fall back to java?
+      //  logger.warning("updateRangeJNI failed, reverting java");
+      // kernel.setFallbackExecutionMode();
+      // return execute(_entrypointName, _range, _passes);
+      // }
 
       // Call back to kernel for last minute changes
       kernel.setRange(_range);
@@ -1501,7 +1501,7 @@ class KernelRunner{
                   return warnFallBackAndExecute(_entrypointName, _range, _passes, "initJNI failed to return a valid handle");
                }
 
-               String extensions = getExtensions(jniContextHandle);
+               String extensions = getExtensionsJNI(jniContextHandle);
                capabilitiesSet = new HashSet<String>();
                StringTokenizer strTok = new StringTokenizer(extensions);
                while (strTok.hasMoreTokens()) {

@@ -140,13 +140,22 @@ jfieldID typeFieldID;
 jfieldID isStaticFieldID;
 jfieldID nameFieldID;
 jfieldID javaArrayFieldID;
-jfieldID bytesPerLocalSizeFieldID;
+jfieldID bytesPerLocalWidthFieldID;
 jfieldID sizeInBytesFieldID;
 jfieldID numElementsFieldID;
+jfieldID globalWidthFieldID;
+jfieldID globalHeightFieldID;
+jfieldID globalDepthFieldID;
+jfieldID localWidthFieldID;
+jfieldID localHeightFieldID;
+jfieldID localDepthFieldID;
+jfieldID dimsFieldID;
+jfieldID localFieldID;
 
 // we rely on these being 0 initially to detect whether we have cached the above fieldId's 
 jclass clazz = (jclass)0;
 jclass argClazz = (jclass)0;
+jclass rangeClazz = (jclass)0;
 
 static const char *CLErrString(cl_int status) {
    static struct { cl_int code; const char *msg; } error_table[] = {
@@ -368,7 +377,7 @@ class JNIContext{
       JNIEnv *jenv;
       jobject kernelObject;
       jint numProcessors;
-      jint maxJTPLocalSize;
+      jint maxJTPLocalWidth;
       jclass kernelClass;
       cl_uint deviceIdc;
       cl_device_id* deviceIds;
@@ -399,13 +408,13 @@ class JNIContext{
          return((JNIContext*)jniContextHandle);
       }
 
-      JNIContext(JNIEnv *_jenv, jobject _kernelObject, jint _flags, jint _numProcessors, jint _maxJTPLocalSize): 
+      JNIContext(JNIEnv *_jenv, jobject _kernelObject, jint _flags, jint _numProcessors, jint _maxJTPLocalWidth): 
          jenv(_jenv),
          kernelObject(jenv->NewGlobalRef(_kernelObject)),
          kernelClass((jclass)jenv->NewGlobalRef(jenv->GetObjectClass(_kernelObject))), 
          flags(_flags),
          numProcessors(_numProcessors),
-         maxJTPLocalSize(_maxJTPLocalSize),
+         maxJTPLocalWidth(_maxJTPLocalWidth),
          platform(NULL),
          profileBaseTime(0),
          deviceType(((flags&com_amd_aparapi_KernelRunner_JNI_FLAG_USE_GPU)==com_amd_aparapi_KernelRunner_JNI_FLAG_USE_GPU)?CL_DEVICE_TYPE_GPU:CL_DEVICE_TYPE_CPU),
@@ -625,13 +634,26 @@ void unpinAll() {
 
 };
 
+jclass cacheRangeFields(JNIEnv *jenv, jobject jobj){
+   jclass c = jenv->GetObjectClass(jobj); 
+   globalWidthFieldID = jenv->GetFieldID(c, "globalWidth", "I"); ASSERT_FIELD(globalWidth);
+   globalHeightFieldID = jenv->GetFieldID(c, "globalHeight", "I"); ASSERT_FIELD(globalHeight);
+   globalDepthFieldID = jenv->GetFieldID(c, "globalDepth", "I"); ASSERT_FIELD(globalDepth);
+   localWidthFieldID = jenv->GetFieldID(c, "localWidth", "I"); ASSERT_FIELD(localWidth);
+   localHeightFieldID = jenv->GetFieldID(c, "localHeight", "I"); ASSERT_FIELD(localHeight);
+   localDepthFieldID = jenv->GetFieldID(c, "localDepth", "I"); ASSERT_FIELD(localDepth);
+   dimsFieldID = jenv->GetFieldID(c, "dims", "I"); ASSERT_FIELD(dims);
+   localFieldID = jenv->GetFieldID(c, "local", "Z"); ASSERT_FIELD(local);
+   return(c);
+}
+
 jclass cacheKernelArgFields(JNIEnv *jenv, jobject jobj){
    jclass c = jenv->GetObjectClass(jobj); 
    nameFieldID = jenv->GetFieldID(c, "name", "Ljava/lang/String;"); ASSERT_FIELD(name);
    typeFieldID = jenv->GetFieldID(c, "type", "I"); ASSERT_FIELD(type);
    isStaticFieldID = jenv->GetFieldID(c, "isStatic", "Z"); ASSERT_FIELD(isStatic);
    javaArrayFieldID = jenv->GetFieldID(c, "javaArray", "Ljava/lang/Object;"); ASSERT_FIELD(javaArray);
-   bytesPerLocalSizeFieldID = jenv->GetFieldID(c, "bytesPerLocalSize", "I"); ASSERT_FIELD(bytesPerLocalSize);
+   bytesPerLocalWidthFieldID = jenv->GetFieldID(c, "bytesPerLocalWidth", "I"); ASSERT_FIELD(bytesPerLocalWidth);
    sizeInBytesFieldID = jenv->GetFieldID(c, "sizeInBytes", "I"); ASSERT_FIELD(sizeInBytes);
    numElementsFieldID = jenv->GetFieldID(c, "numElements", "I"); ASSERT_FIELD(numElements);
    return(c);
@@ -842,9 +864,20 @@ jint updateKernel(JNIEnv *jenv, jobject jobj, JNIContext* jniContext) {
 
 
 JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_runKernelJNI(JNIEnv *jenv,
-      jobject jobj, jlong jniContextHandle, jint globalSize, jint localSize, jboolean needSync,
-      jboolean useNullForLocalSize, jint passes) {
+      jobject jobj, jlong jniContextHandle, jobject range, jboolean needSync,
+      jboolean useNullForLocalWidth, jint passes) {
 
+   if (rangeClazz == 0){
+      rangeClazz = cacheRangeFields(jenv, range);
+   }
+   jint localWidth = jenv->GetIntField(range, localWidthFieldID);
+   jint localHeight = jenv->GetIntField(range, localHeightFieldID);
+   jint localDepth = jenv->GetIntField(range, localDepthFieldID);
+   jint globalWidth = jenv->GetIntField(range, globalWidthFieldID);
+   jint globalHeight = jenv->GetIntField(range, globalHeightFieldID);
+   jint globalDepth = jenv->GetIntField(range, globalDepthFieldID);
+   jint dims = jenv->GetIntField(range, dimsFieldID);
+   jboolean hasLocal = jenv->GetBooleanField(range, localFieldID);
    cl_int status = CL_SUCCESS;
    JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);
    if (jniContext->isVerbose()){
@@ -1001,9 +1034,9 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_runKernelJNI(JNIEnv *je
       } else if (arg->isLocal()){
          fprintf(stderr, "found local array!\n");
          if (jniContext->firstRun){
-            // must multiply perlocalByteSize by localSize to get real opencl buffer size
-            int bytesPerLocalSize = jenv->GetIntField(arg->javaArg, bytesPerLocalSizeFieldID);
-            int adjustedLocalBufSize = bytesPerLocalSize * localSize;
+            // must multiply perlocalByteSize by localWidth to get real opencl buffer size
+            int bytesPerLocalWidth = jenv->GetIntField(arg->javaArg, bytesPerLocalWidthFieldID);
+            int adjustedLocalBufSize = bytesPerLocalWidth * localWidth; // GRF
 
             if (jniContext->isVerbose()){
                fprintf(stderr, "ISLOCAL, clSetKernelArg(jniContext->kernel, %d, %d, NULL);\n", i, adjustedLocalBufSize);
@@ -1081,14 +1114,14 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_runKernelJNI(JNIEnv *je
       }
    }  // for each arg
 
-   size_t globalSizeAsSizeT = (globalSize /jniContext->deviceIdc);
-   size_t localSizeAsSizeT = localSize;
+   size_t globalWidthAsSizeT = (globalWidth /jniContext->deviceIdc);
+   size_t localWidthAsSizeT = localWidth;
 
    // To support multiple passes we add a 'secret' final arg called 'passid' and just schedule multiple enqueuendrange kernels.  Each of which having a separate value of passid
 
    for (int passid=0; passid<passes; passid++){
       for (int dev =0; dev < jniContext->deviceIdc; dev++){
-         size_t offset = (size_t)((globalSize/jniContext->deviceIdc)*dev);
+         size_t offset = (size_t)((globalWidth/jniContext->deviceIdc)*dev);
          status = clSetKernelArg(jniContext->kernel, kernelArgPos, sizeof(passid), &(passid));
          if (status != CL_SUCCESS) {
             PRINT_CL_ERR(status, "clSetKernelArg() (passid)");
@@ -1102,16 +1135,16 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_runKernelJNI(JNIEnv *je
             // there is one pass and this is it
             // enqueue depends on write enqueues 
             // we don't block but and we populate the executeEvents
-            status = clEnqueueNDRangeKernel(jniContext->commandQueues[dev], jniContext->kernel, 1, &offset, &globalSizeAsSizeT,
-                  useNullForLocalSize ? NULL : &localSizeAsSizeT,
+            status = clEnqueueNDRangeKernel(jniContext->commandQueues[dev], jniContext->kernel, 1, &offset, &globalWidthAsSizeT,
+                  useNullForLocalWidth ? NULL : &localWidthAsSizeT,
                   writeEventCount, writeEventCount?jniContext->writeEvents:NULL, &jniContext->executeEvents[dev]);
          }else if (passid == 0){
             //fprintf(stderr, "setting passid to %d of %d first not last\n", passid, passes);
             // this is the first of multiple passes
             // enqueue depends on write enqueues 
             // we block but do not populate executeEvents (only the last pass does this)
-            status = clEnqueueNDRangeKernel(jniContext->commandQueues[dev], jniContext->kernel, 1, &offset, &globalSizeAsSizeT,
-                  useNullForLocalSize ? NULL : &localSizeAsSizeT,
+            status = clEnqueueNDRangeKernel(jniContext->commandQueues[dev], jniContext->kernel, 1, &offset, &globalWidthAsSizeT,
+                  useNullForLocalWidth ? NULL : &localWidthAsSizeT,
                   writeEventCount, writeEventCount?jniContext->writeEvents:NULL, &jniContext->executeEvents[dev]);
 
          }else if (passid < passes-1){
@@ -1119,21 +1152,21 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_runKernelJNI(JNIEnv *je
             // we don't depend on write enqueues
             // we block and do not supply executeEvents (only the last pass does this)
             //fprintf(stderr, "setting passid to %d of %d not first not last\n", passid, passes);
-            status = clEnqueueNDRangeKernel(jniContext->commandQueues[dev], jniContext->kernel, 1, &offset, &globalSizeAsSizeT,
-                  useNullForLocalSize ? NULL : &localSizeAsSizeT, 0, NULL, &jniContext->executeEvents[dev]);
+            status = clEnqueueNDRangeKernel(jniContext->commandQueues[dev], jniContext->kernel, 1, &offset, &globalWidthAsSizeT,
+                  useNullForLocalWidth ? NULL : &localWidthAsSizeT, 0, NULL, &jniContext->executeEvents[dev]);
          }else{
             // we are the last pass of >1
             // we don't depend on write enqueues
             // we block and supply executeEvents
             //fprintf(stderr, "setting passid to %d of %d  last\n", passid, passes);
-            status = clEnqueueNDRangeKernel(jniContext->commandQueues[dev], jniContext->kernel, 1, &offset, &globalSizeAsSizeT,
-                  useNullForLocalSize ? NULL : &localSizeAsSizeT, 0, NULL, &jniContext->executeEvents[dev]);
+            status = clEnqueueNDRangeKernel(jniContext->commandQueues[dev], jniContext->kernel, 1, &offset, &globalWidthAsSizeT,
+                  useNullForLocalWidth ? NULL : &localWidthAsSizeT, 0, NULL, &jniContext->executeEvents[dev]);
          }
 
 
          if (status != CL_SUCCESS) {
             PRINT_CL_ERR(status, "clEnqueueNDRangeKernel()");
-            fprintf(stderr, "after clEnqueueNDRangeKernel, globalSize=%d localSize=%d usingNull=%d\n", (int)globalSizeAsSizeT, (int)localSizeAsSizeT, useNullForLocalSize);
+            fprintf(stderr, "after clEnqueueNDRangeKernel, globalWidth=%d localWidth=%d usingNull=%d\n", (int)globalWidthAsSizeT, (int)localWidthAsSizeT, useNullForLocalWidth);
             jniContext->unpinAll();
             return status;
          }
@@ -1282,9 +1315,9 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_runKernelJNI(JNIEnv *je
 // we return the JNIContext from here 
 JNIEXPORT jlong JNICALL Java_com_amd_aparapi_KernelRunner_initJNI(JNIEnv *jenv, jclass clazz, jobject kernelObject, 
       jint flags, jint numProcessors,
-      jint maxJTPLocalSize) {
+      jint maxJTPLocalWidth) {
    cl_int status = CL_SUCCESS;
-   JNIContext* jniContext = new JNIContext(jenv, kernelObject, flags, numProcessors, maxJTPLocalSize);
+   JNIContext* jniContext = new JNIContext(jenv, kernelObject, flags, numProcessors, maxJTPLocalWidth);
    if (jniContext->isValid()){
       return((jlong)jniContext);
    }else{
@@ -1507,7 +1540,18 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_setArgsJNI(JNIEnv *jenv
    return(status);
 }
 
-JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_getLocalSizeJNI(JNIEnv *jenv, jobject jobj, jlong jniContextHandle, jint globalSize, jint localBytesPerLocalId) {
+JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_updateRangeJNI(JNIEnv *jenv, jobject jobj, jlong jniContextHandle, jobject range, jint localBytesPerLocalId) {
+   if (rangeClazz == 0){
+      rangeClazz = cacheRangeFields(jenv, range);
+   }
+   jint localWidth = jenv->GetIntField(range, localWidthFieldID);
+   jint localHeight = jenv->GetIntField(range, localHeightFieldID);
+   jint localDepth = jenv->GetIntField(range, localDepthFieldID);
+   jint globalWidth = jenv->GetIntField(range, globalWidthFieldID);
+   jint globalHeight = jenv->GetIntField(range, globalHeightFieldID);
+   jint globalDepth = jenv->GetIntField(range, globalDepthFieldID);
+   jint dims = jenv->GetIntField(range, dimsFieldID);
+   jboolean hasLocal = jenv->GetBooleanField(range, localFieldID);
    size_t kernelMaxWorkGroupSize = 0;
    size_t kernelWorkGroupSizeMultiple = 0;
    cl_int status = CL_SUCCESS;
@@ -1517,31 +1561,31 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_getLocalSizeJNI(JNIEnv 
       ASSERT_CL("clGetKernelWorkGroupInfo()");
       // starting value depends on device type
       // not sure why the CPU has a different starting size, but it does
-      int startLocalSize = (jniContext->deviceType == CL_DEVICE_TYPE_GPU ? kernelMaxWorkGroupSize : globalSize/(jniContext->numProcessors*4));
+      int startLocalWidth = (jniContext->deviceType == CL_DEVICE_TYPE_GPU ? kernelMaxWorkGroupSize : globalWidth/(jniContext->numProcessors*4));
 
-      if (startLocalSize == 0) startLocalSize = 1;
-      if (startLocalSize > kernelMaxWorkGroupSize) startLocalSize = kernelMaxWorkGroupSize;
-      if (startLocalSize > globalSize) startLocalSize = globalSize;
+      if (startLocalWidth == 0) startLocalWidth = 1;
+      if (startLocalWidth > kernelMaxWorkGroupSize) startLocalWidth = kernelMaxWorkGroupSize;
+      if (startLocalWidth > globalWidth) startLocalWidth = globalWidth;
       // if the kernel uses any local memory, determine our max local memory size so we can possibly limit localsize
       cl_ulong devLocalMemSize;
       if (localBytesPerLocalId > 0) {
          status = clGetDeviceInfo(jniContext->deviceIds[0], CL_DEVICE_LOCAL_MEM_SIZE, sizeof(cl_ulong), &devLocalMemSize, NULL);
-         cl_uint localSizeLimitFromLocalMem = devLocalMemSize/localBytesPerLocalId;
-         if (startLocalSize > localSizeLimitFromLocalMem) startLocalSize = localSizeLimitFromLocalMem;
+         cl_uint localWidthLimitFromLocalMem = devLocalMemSize/localBytesPerLocalId;
+         if (startLocalWidth > localWidthLimitFromLocalMem) startLocalWidth = localWidthLimitFromLocalMem;
          if (jniContext->isVerbose()){
-            fprintf(stderr, "localBytesPerLocalId=%d, device localMemMax=%d, localSizeLimitFromLocalMem=%d\n",
-                  localBytesPerLocalId, (cl_uint) devLocalMemSize, localSizeLimitFromLocalMem);
+            fprintf(stderr, "localBytesPerLocalId=%d, device localMemMax=%d, localWidthLimitFromLocalMem=%d\n",
+                  localBytesPerLocalId, (cl_uint) devLocalMemSize, localWidthLimitFromLocalMem);
          }
 
       }
 
-      // then iterate down until we find a localSize that divides globalSize equally
-      for (int localSize = startLocalSize; localSize>0; localSize--) {
-         if (globalSize % localSize == 0) {
+      // then iterate down until we find a localWidth that divides globalWidth equally
+      for (int localWidth = startLocalWidth; localWidth>0; localWidth--) {
+         if (globalWidth % localWidth == 0) {
             if (jniContext->isVerbose()){
-               fprintf(stderr, "for globalSize=%d, stepping localSize from %d, returning localSize=%d\n", globalSize, startLocalSize, localSize);
+               fprintf(stderr, "for globalWidth=%d, stepping localWidth from %d, returning localWidth=%d\n", globalWidth, startLocalWidth, localWidth);
             }
-            return localSize;
+            return localWidth;
          }
       }
    }
@@ -1549,7 +1593,7 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_getLocalSizeJNI(JNIEnv 
    return 0;
 }
 
-JNIEXPORT jstring JNICALL Java_com_amd_aparapi_KernelRunner_getExtensions(JNIEnv *jenv, jobject jobj, jlong jniContextHandle) {
+JNIEXPORT jstring JNICALL Java_com_amd_aparapi_KernelRunner_getExtensionsJNI(JNIEnv *jenv, jobject jobj, jlong jniContextHandle) {
    jstring jextensions = NULL;
    JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);
    if (jniContext != NULL){
