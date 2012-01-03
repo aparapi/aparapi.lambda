@@ -34,7 +34,7 @@
    found in Supplement 1 to Part 774 of EAR).  For the most current Country Group listings, or for additional 
    information about the EAR or your obligations under those regulations, please refer to the U.S. Bureau of Industry
    and Security’s website at http://www.bis.doc.gov/. 
-*/
+   */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -134,28 +134,19 @@ MicrosecondTimer timer;
    ASSERT_CL_NO_RETURN( "clGetDeviceInfo().");\
    /*fprintf(stderr, #param " " format " \n", val);*/ \
 }
+jfieldID nameFieldID; // argClazz
+jfieldID typeFieldID; // argClazz
+jfieldID isStaticFieldID; // argClazz
+jfieldID javaArrayFieldID; // argClazz
+jfieldID bytesPerLocalWidthFieldID; // argClazz
+jfieldID sizeInBytesFieldID; // argClazz
+jfieldID numElementsFieldID; // argClazz
 
 
-jfieldID typeFieldID;
-jfieldID isStaticFieldID;
-jfieldID nameFieldID;
-jfieldID javaArrayFieldID;
-jfieldID bytesPerLocalWidthFieldID;
-jfieldID sizeInBytesFieldID;
-jfieldID numElementsFieldID;
-jfieldID globalWidthFieldID;
-jfieldID globalHeightFieldID;
-jfieldID globalDepthFieldID;
-jfieldID localWidthFieldID;
-jfieldID localHeightFieldID;
-jfieldID localDepthFieldID;
-jfieldID dimsFieldID;
-jfieldID localFieldID;
 
 // we rely on these being 0 initially to detect whether we have cached the above fieldId's 
-jclass clazz = (jclass)0;
 jclass argClazz = (jclass)0;
-jclass rangeClazz = (jclass)0;
+
 
 static const char *CLErrString(cl_int status) {
    static struct { cl_int code; const char *msg; } error_table[] = {
@@ -223,7 +214,72 @@ static const char *CLErrString(cl_int status) {
 #endif
    return unknown;
 }
+class Range{
+   public:
+      static jclass rangeClazz;
+      static jfieldID globalWidthFieldID;
+      static jfieldID globalHeightFieldID;
+      static jfieldID globalDepthFieldID;
+      static jfieldID localWidthFieldID;
+      static jfieldID localHeightFieldID;
+      static jfieldID localDepthFieldID;
+      static jfieldID dimsFieldID;
+      static jfieldID localFieldID; 
+      cl_int dims;
+      size_t *globalDims;
+      size_t *localDims;
+      jboolean hasLocal;
+      Range(JNIEnv *jenv, jobject range):
+         dims(0),
+         globalDims(NULL),
+         localDims(NULL){
+            if (rangeClazz ==NULL){
+               jclass rangeClazz = jenv->GetObjectClass(range); 
+               globalWidthFieldID = jenv->GetFieldID(rangeClazz, "globalWidth", "I");
+               globalHeightFieldID = jenv->GetFieldID(rangeClazz, "globalHeight", "I"); //ASSERT_FIELD(globalHeight);
+               globalDepthFieldID = jenv->GetFieldID(rangeClazz, "globalDepth", "I"); //ASSERT_FIELD(globalDepth);
+               localWidthFieldID = jenv->GetFieldID(rangeClazz, "localWidth", "I"); //ASSERT_FIELD(localWidth);
+               localHeightFieldID = jenv->GetFieldID(rangeClazz, "localHeight", "I"); //ASSERT_FIELD(localHeight);
+               localDepthFieldID = jenv->GetFieldID(rangeClazz, "localDepth", "I"); //ASSERT_FIELD(localDepth);
+               dimsFieldID = jenv->GetFieldID(rangeClazz, "dims", "I"); //ASSERT_FIELD(dims);
+               localFieldID = jenv->GetFieldID(rangeClazz, "local", "Z"); //ASSERT_FIELD(local);
+            }
+            dims = jenv->GetIntField(range, dimsFieldID);
+            hasLocal = jenv->GetBooleanField(range, localFieldID);
+            if (dims >0){
+               globalDims = new size_t[dims];
+               localDims = new size_t[dims];
+               localDims[0]= jenv->GetIntField(range, localWidthFieldID);
+               globalDims[0]= jenv->GetIntField(range, globalWidthFieldID);
+               if (dims >1){
+                  localDims[1]= jenv->GetIntField(range, localHeightFieldID);
+                  globalDims[1]= jenv->GetIntField(range, globalHeightFieldID);
+                  if (dims >2){
+                     localDims[2]= jenv->GetIntField(range, localDepthFieldID);
+                     globalDims[2]= jenv->GetIntField(range, globalDepthFieldID);
+                  }
+               }
 
+            }
+         }
+      ~Range(){
+         if (globalDims!= NULL){
+            delete globalDims;
+         }
+         if (localDims!= NULL){
+            delete localDims;
+         }
+      }
+};
+jclass Range::rangeClazz = (jclass)0;
+jfieldID  Range::globalWidthFieldID=0;
+jfieldID  Range::globalHeightFieldID=0;
+jfieldID  Range::globalDepthFieldID=0;
+jfieldID  Range::localWidthFieldID=0;
+jfieldID  Range::localHeightFieldID=0;
+jfieldID  Range::localDepthFieldID=0;
+jfieldID  Range::dimsFieldID=0;
+jfieldID  Range::localFieldID=0; 
 
 class ProfileInfo{
    public:
@@ -634,18 +690,7 @@ void unpinAll() {
 
 };
 
-jclass cacheRangeFields(JNIEnv *jenv, jobject jobj){
-   jclass c = jenv->GetObjectClass(jobj); 
-   globalWidthFieldID = jenv->GetFieldID(c, "globalWidth", "I"); ASSERT_FIELD(globalWidth);
-   globalHeightFieldID = jenv->GetFieldID(c, "globalHeight", "I"); ASSERT_FIELD(globalHeight);
-   globalDepthFieldID = jenv->GetFieldID(c, "globalDepth", "I"); ASSERT_FIELD(globalDepth);
-   localWidthFieldID = jenv->GetFieldID(c, "localWidth", "I"); ASSERT_FIELD(localWidth);
-   localHeightFieldID = jenv->GetFieldID(c, "localHeight", "I"); ASSERT_FIELD(localHeight);
-   localDepthFieldID = jenv->GetFieldID(c, "localDepth", "I"); ASSERT_FIELD(localDepth);
-   dimsFieldID = jenv->GetFieldID(c, "dims", "I"); ASSERT_FIELD(dims);
-   localFieldID = jenv->GetFieldID(c, "local", "Z"); ASSERT_FIELD(local);
-   return(c);
-}
+
 
 jclass cacheKernelArgFields(JNIEnv *jenv, jobject jobj){
    jclass c = jenv->GetObjectClass(jobj); 
@@ -864,20 +909,11 @@ jint updateKernel(JNIEnv *jenv, jobject jobj, JNIContext* jniContext) {
 
 
 JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_runKernelJNI(JNIEnv *jenv,
-      jobject jobj, jlong jniContextHandle, jobject range, jboolean needSync,
+      jobject jobj, jlong jniContextHandle, jobject _range, jboolean needSync,
       jboolean useNullForLocalWidth, jint passes) {
 
-   if (rangeClazz == 0){
-      rangeClazz = cacheRangeFields(jenv, range);
-   }
-   jint localWidth = jenv->GetIntField(range, localWidthFieldID);
-   jint localHeight = jenv->GetIntField(range, localHeightFieldID);
-   jint localDepth = jenv->GetIntField(range, localDepthFieldID);
-   jint globalWidth = jenv->GetIntField(range, globalWidthFieldID);
-   jint globalHeight = jenv->GetIntField(range, globalHeightFieldID);
-   jint globalDepth = jenv->GetIntField(range, globalDepthFieldID);
-   jint dims = jenv->GetIntField(range, dimsFieldID);
-   jboolean hasLocal = jenv->GetBooleanField(range, localFieldID);
+   Range range(jenv, _range);
+
    cl_int status = CL_SUCCESS;
    JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);
    if (jniContext->isVerbose()){
@@ -907,7 +943,6 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_runKernelJNI(JNIEnv *je
          fprintf(stderr, "got type for arg %d, %s, type=%08x\n", i, arg->name, arg->type);
       }
       if (!arg->isPrimitive() && !arg->isLocal()) {
-         fprintf(stderr, "found non-local array!\n");
          // pin the arrays so that GC does not move them during the call
 
          // get the C memory address for the region being transferred
@@ -1036,7 +1071,7 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_runKernelJNI(JNIEnv *je
          if (jniContext->firstRun){
             // must multiply perlocalByteSize by localWidth to get real opencl buffer size
             int bytesPerLocalWidth = jenv->GetIntField(arg->javaArg, bytesPerLocalWidthFieldID);
-            int adjustedLocalBufSize = bytesPerLocalWidth * localWidth; // GRF
+            int adjustedLocalBufSize = bytesPerLocalWidth * range.localDims[0];
 
             if (jniContext->isVerbose()){
                fprintf(stderr, "ISLOCAL, clSetKernelArg(jniContext->kernel, %d, %d, NULL);\n", i, adjustedLocalBufSize);
@@ -1114,14 +1149,14 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_runKernelJNI(JNIEnv *je
       }
    }  // for each arg
 
-   size_t globalWidthAsSizeT = (globalWidth /jniContext->deviceIdc);
-   size_t localWidthAsSizeT = localWidth;
+   size_t globalWidthAsSizeT = (range.globalDims[0] /jniContext->deviceIdc);
+   size_t localWidthAsSizeT = range.localDims[0];
 
    // To support multiple passes we add a 'secret' final arg called 'passid' and just schedule multiple enqueuendrange kernels.  Each of which having a separate value of passid
 
    for (int passid=0; passid<passes; passid++){
       for (int dev =0; dev < jniContext->deviceIdc; dev++){
-         size_t offset = (size_t)((globalWidth/jniContext->deviceIdc)*dev);
+         size_t offset = (size_t)((range.globalDims[0]/jniContext->deviceIdc)*dev);
          status = clSetKernelArg(jniContext->kernel, kernelArgPos, sizeof(passid), &(passid));
          if (status != CL_SUCCESS) {
             PRINT_CL_ERR(status, "clSetKernelArg() (passid)");
@@ -1540,18 +1575,8 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_setArgsJNI(JNIEnv *jenv
    return(status);
 }
 
-JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_updateRangeJNI(JNIEnv *jenv, jobject jobj, jlong jniContextHandle, jobject range, jint localBytesPerLocalId) {
-   if (rangeClazz == 0){
-      rangeClazz = cacheRangeFields(jenv, range);
-   }
-   jint localWidth = jenv->GetIntField(range, localWidthFieldID);
-   jint localHeight = jenv->GetIntField(range, localHeightFieldID);
-   jint localDepth = jenv->GetIntField(range, localDepthFieldID);
-   jint globalWidth = jenv->GetIntField(range, globalWidthFieldID);
-   jint globalHeight = jenv->GetIntField(range, globalHeightFieldID);
-   jint globalDepth = jenv->GetIntField(range, globalDepthFieldID);
-   jint dims = jenv->GetIntField(range, dimsFieldID);
-   jboolean hasLocal = jenv->GetBooleanField(range, localFieldID);
+JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_updateRangeJNI(JNIEnv *jenv, jobject jobj, jlong jniContextHandle, jobject _range, jint localBytesPerLocalId) {
+   Range range(jenv, _range);
    size_t kernelMaxWorkGroupSize = 0;
    size_t kernelWorkGroupSizeMultiple = 0;
    cl_int status = CL_SUCCESS;
@@ -1561,11 +1586,11 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_updateRangeJNI(JNIEnv *
       ASSERT_CL("clGetKernelWorkGroupInfo()");
       // starting value depends on device type
       // not sure why the CPU has a different starting size, but it does
-      int startLocalWidth = (jniContext->deviceType == CL_DEVICE_TYPE_GPU ? kernelMaxWorkGroupSize : globalWidth/(jniContext->numProcessors*4));
+      int startLocalWidth = (jniContext->deviceType == CL_DEVICE_TYPE_GPU ? kernelMaxWorkGroupSize : range.globalDims[0]/(jniContext->numProcessors*4));
 
       if (startLocalWidth == 0) startLocalWidth = 1;
       if (startLocalWidth > kernelMaxWorkGroupSize) startLocalWidth = kernelMaxWorkGroupSize;
-      if (startLocalWidth > globalWidth) startLocalWidth = globalWidth;
+      if (startLocalWidth > range.globalDims[0]) startLocalWidth = range.globalDims[0];
       // if the kernel uses any local memory, determine our max local memory size so we can possibly limit localsize
       cl_ulong devLocalMemSize;
       if (localBytesPerLocalId > 0) {
@@ -1581,9 +1606,9 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_updateRangeJNI(JNIEnv *
 
       // then iterate down until we find a localWidth that divides globalWidth equally
       for (int localWidth = startLocalWidth; localWidth>0; localWidth--) {
-         if (globalWidth % localWidth == 0) {
+         if (range.globalDims[0] % localWidth == 0) {
             if (jniContext->isVerbose()){
-               fprintf(stderr, "for globalWidth=%d, stepping localWidth from %d, returning localWidth=%d\n", globalWidth, startLocalWidth, localWidth);
+               fprintf(stderr, "for globalWidth=%d, stepping localWidth from %d, returning localWidth=%d\n", range.globalDims[0], startLocalWidth, localWidth);
             }
             return localWidth;
          }
