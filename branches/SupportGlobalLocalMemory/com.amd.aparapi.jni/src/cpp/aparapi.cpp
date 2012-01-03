@@ -110,6 +110,10 @@ MicrosecondTimer timer;
 
 #include "com_amd_aparapi_KernelRunner.h"
 
+#define CHECK_NO_RETURN(condition, msg) if(condition){\
+   fprintf(stderr, "!!!!!!! %s failed !!!!!!!\n", msg);\
+}
+
 #define CHECK(condition, msg) if(condition){\
    fprintf(stderr, "!!!!!!! %s failed !!!!!!!\n", msg);\
    return 0;\
@@ -127,25 +131,14 @@ MicrosecondTimer timer;
 
 #define PRINT_CL_ERR(status, msg) fprintf(stderr, "!!!!!!! %s failed %s\n", msg, CLErrString(status));
 
-#define ASSERT_FIELD(id) CHECK(id##FieldID == 0, "No such field as " #id)
+#define ASSERT_FIELD(id) CHECK_NO_RETURN(id##FieldID == 0, "No such field as " #id)
 
 #define GET_DEV_INFO(deviceId, param, val, format){\
    status = clGetDeviceInfo(deviceId, param, sizeof(val), &(val), NULL);\
    ASSERT_CL_NO_RETURN( "clGetDeviceInfo().");\
    /*fprintf(stderr, #param " " format " \n", val);*/ \
 }
-jfieldID nameFieldID; // argClazz
-jfieldID typeFieldID; // argClazz
-jfieldID isStaticFieldID; // argClazz
-jfieldID javaArrayFieldID; // argClazz
-jfieldID bytesPerLocalWidthFieldID; // argClazz
-jfieldID sizeInBytesFieldID; // argClazz
-jfieldID numElementsFieldID; // argClazz
 
-
-
-// we rely on these being 0 initially to detect whether we have cached the above fieldId's 
-jclass argClazz = (jclass)0;
 
 
 static const char *CLErrString(cl_int status) {
@@ -235,14 +228,14 @@ class Range{
          localDims(NULL){
             if (rangeClazz ==NULL){
                jclass rangeClazz = jenv->GetObjectClass(range); 
-               globalWidthFieldID = jenv->GetFieldID(rangeClazz, "globalWidth", "I");
-               globalHeightFieldID = jenv->GetFieldID(rangeClazz, "globalHeight", "I"); //ASSERT_FIELD(globalHeight);
-               globalDepthFieldID = jenv->GetFieldID(rangeClazz, "globalDepth", "I"); //ASSERT_FIELD(globalDepth);
-               localWidthFieldID = jenv->GetFieldID(rangeClazz, "localWidth", "I"); //ASSERT_FIELD(localWidth);
-               localHeightFieldID = jenv->GetFieldID(rangeClazz, "localHeight", "I"); //ASSERT_FIELD(localHeight);
-               localDepthFieldID = jenv->GetFieldID(rangeClazz, "localDepth", "I"); //ASSERT_FIELD(localDepth);
-               dimsFieldID = jenv->GetFieldID(rangeClazz, "dims", "I"); //ASSERT_FIELD(dims);
-               localFieldID = jenv->GetFieldID(rangeClazz, "local", "Z"); //ASSERT_FIELD(local);
+               globalWidthFieldID = jenv->GetFieldID(rangeClazz, "globalWidth", "I"); ASSERT_FIELD(globalWidth);
+               globalHeightFieldID = jenv->GetFieldID(rangeClazz, "globalHeight", "I"); ASSERT_FIELD(globalHeight);
+               globalDepthFieldID = jenv->GetFieldID(rangeClazz, "globalDepth", "I"); ASSERT_FIELD(globalDepth);
+               localWidthFieldID = jenv->GetFieldID(rangeClazz, "localWidth", "I"); ASSERT_FIELD(localWidth);
+               localHeightFieldID = jenv->GetFieldID(rangeClazz, "localHeight", "I"); ASSERT_FIELD(localHeight);
+               localDepthFieldID = jenv->GetFieldID(rangeClazz, "localDepth", "I"); ASSERT_FIELD(localDepth);
+               dimsFieldID = jenv->GetFieldID(rangeClazz, "dims", "I"); ASSERT_FIELD(dims);
+               localFieldID = jenv->GetFieldID(rangeClazz, "local", "Z"); ASSERT_FIELD(local);
             }
             dims = jenv->GetIntField(range, dimsFieldID);
             hasLocal = jenv->GetBooleanField(range, localFieldID);
@@ -308,7 +301,17 @@ class KernelArgRef{
 class JNIContext ; // forward reference
 
 class KernelArg{
+   private:
+      static jclass argClazz;
+      static jfieldID nameFieldID;
+      static jfieldID typeFieldID; 
+      static jfieldID isStaticFieldID; 
+      static jfieldID sizeInBytesFieldID;
+      static jfieldID numElementsFieldID; 
    public:
+      static jfieldID javaArrayFieldID; 
+      static jfieldID bytesPerLocalWidthFieldID;
+
       char *name;        // used for debugging printfs
       jfieldID fieldID;  // The field that this arg represents in the kernel (java), used only for primitive updates
       jint type;         // a bit mask determining the type of this arg
@@ -323,6 +326,29 @@ class KernelArg{
          cl_long j;
          KernelArgRef ref;
       } value;
+
+      KernelArg(JNIEnv *jenv, jobject argObj){
+         javaArg = jenv->NewGlobalRef(argObj);   // save a global ref to the java Arg Object
+         if (argClazz == 0){
+            jclass c = jenv->GetObjectClass(argObj); 
+            nameFieldID = jenv->GetFieldID(c, "name", "Ljava/lang/String;"); ASSERT_FIELD(name);
+            typeFieldID = jenv->GetFieldID(c, "type", "I"); ASSERT_FIELD(type);
+            isStaticFieldID = jenv->GetFieldID(c, "isStatic", "Z"); ASSERT_FIELD(isStatic);
+            javaArrayFieldID = jenv->GetFieldID(c, "javaArray", "Ljava/lang/Object;"); ASSERT_FIELD(javaArray);
+            bytesPerLocalWidthFieldID = jenv->GetFieldID(c, "bytesPerLocalWidth", "I"); ASSERT_FIELD(bytesPerLocalWidth);
+            sizeInBytesFieldID = jenv->GetFieldID(c, "sizeInBytes", "I"); ASSERT_FIELD(sizeInBytes);
+            numElementsFieldID = jenv->GetFieldID(c, "numElements", "I"); ASSERT_FIELD(numElements);
+         }
+         type = jenv->GetIntField(argObj, typeFieldID);
+         isStatic = jenv->GetBooleanField(argObj, isStaticFieldID);
+         jstring nameString  = (jstring)jenv->GetObjectField(argObj, nameFieldID);
+         const char *nameChars = jenv->GetStringUTFChars(nameString, NULL);
+         name=strdup(nameChars);
+         jenv->ReleaseStringUTFChars(nameString, nameChars);
+      }
+
+      ~KernelArg(){
+      }
 
       void unpinAbort(JNIEnv *jenv){
          jenv->ReleasePrimitiveArrayCritical((jarray)value.ref.javaArray, value.ref.addr,JNI_ABORT);
@@ -419,8 +445,28 @@ class KernelArg{
       int mustWriteBuffer(){
          return ((isImplicit()&&isRead()&&!isConstant())||(isExplicit()&&isExplicitWrite()));
       }
-
+      void syncType(JNIEnv *jenv){
+         type = jenv->GetIntField(javaArg, typeFieldID);
+      }
+      void syncSizeInBytes(JNIEnv *jenv){
+         sizeInBytes = jenv->GetIntField(javaArg, sizeInBytesFieldID);
+      }
+      void syncJavaArrayLength(JNIEnv *jenv){
+         value.ref.javaArrayLength = jenv->GetIntField(javaArg, numElementsFieldID);
+      }
+      void clearExplicitBufferBit(JNIEnv *jenv){
+         type &= ~com_amd_aparapi_KernelRunner_ARG_EXPLICIT_WRITE;
+         jenv->SetIntField(javaArg, typeFieldID,type );
+      }
 };
+jclass KernelArg::argClazz=(jclass)0;
+jfieldID KernelArg::nameFieldID=0;
+jfieldID KernelArg::typeFieldID=0; 
+jfieldID KernelArg::isStaticFieldID=0; 
+jfieldID KernelArg::javaArrayFieldID=0; 
+jfieldID KernelArg::bytesPerLocalWidthFieldID=0;
+jfieldID KernelArg::sizeInBytesFieldID=0;
+jfieldID KernelArg::numElementsFieldID=0; 
 
 class JNIContext{
    private: 
@@ -692,17 +738,6 @@ void unpinAll() {
 
 
 
-jclass cacheKernelArgFields(JNIEnv *jenv, jobject jobj){
-   jclass c = jenv->GetObjectClass(jobj); 
-   nameFieldID = jenv->GetFieldID(c, "name", "Ljava/lang/String;"); ASSERT_FIELD(name);
-   typeFieldID = jenv->GetFieldID(c, "type", "I"); ASSERT_FIELD(type);
-   isStaticFieldID = jenv->GetFieldID(c, "isStatic", "Z"); ASSERT_FIELD(isStatic);
-   javaArrayFieldID = jenv->GetFieldID(c, "javaArray", "Ljava/lang/Object;"); ASSERT_FIELD(javaArray);
-   bytesPerLocalWidthFieldID = jenv->GetFieldID(c, "bytesPerLocalWidth", "I"); ASSERT_FIELD(bytesPerLocalWidth);
-   sizeInBytesFieldID = jenv->GetFieldID(c, "sizeInBytes", "I"); ASSERT_FIELD(sizeInBytes);
-   numElementsFieldID = jenv->GetFieldID(c, "numElements", "I"); ASSERT_FIELD(numElements);
-   return(c);
-}
 
 JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_disposeJNI(JNIEnv *jenv, jobject jobj, jlong jniContextHandle) {
    cl_int status = CL_SUCCESS;
@@ -841,14 +876,14 @@ jint updateKernel(JNIEnv *jenv, jobject jobj, JNIContext* jniContext) {
       // we need to step through the array of KernelArg's to create the info required to create the cl_mem buffers.
       for (jint i=0; i<jniContext->argc; i++){ 
          KernelArg *arg=jniContext->args[i];
+         arg->syncType(jenv);
 
-         arg->type = jenv->GetIntField(arg->javaArg, typeFieldID);
          if (jniContext->isVerbose()){
             fprintf(stderr, "got type for %s: %08x\n", arg->name, arg->type);
          }
          if (!arg->isPrimitive()) {
             // Following used for all primitive arrays, object arrays  and nio Buffers
-            jarray newRef = (jarray)jenv->GetObjectField(arg->javaArg, javaArrayFieldID);
+            jarray newRef = (jarray)jenv->GetObjectField(arg->javaArg, KernelArg::javaArrayFieldID);
             if (jniContext->isVerbose()){
 
                fprintf(stderr, "testing for Resync javaArray %s: old=%p, new=%p\n", arg->name, arg->value.ref.javaArray, newRef);         
@@ -893,7 +928,7 @@ jint updateKernel(JNIEnv *jenv, jobject jobj, JNIContext* jniContext) {
                arg->value.ref.isArray = !arg->isAparapiBufIsDirect();
 
                // Save the sizeInBytes which was set on the java side
-               arg->sizeInBytes = jenv->GetIntField(arg->javaArg, sizeInBytesFieldID);
+               arg->syncSizeInBytes(jenv);
 
                if (jniContext->isVerbose()){
                   fprintf(stderr, "updateKernel, args[%d].sizeInBytes=%d\n", i, arg->sizeInBytes);
@@ -937,8 +972,8 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_runKernelJNI(JNIEnv *je
 
    for (int i=0; i< jniContext->argc; i++){
       KernelArg *arg = jniContext->args[i];
-      // TODO: see if we can get rid of this read
-      arg->type = jenv->GetIntField(arg->javaArg, typeFieldID);
+      // TODO: see if we can get rid of this read 
+      arg->syncType(jenv);
       if (jniContext->isVerbose()){
          fprintf(stderr, "got type for arg %d, %s, type=%08x\n", i, arg->name, arg->type);
       }
@@ -1014,7 +1049,8 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_runKernelJNI(JNIEnv *je
 
             // Add the array length if needed
             if (arg->usesArrayLength()){
-               arg->value.ref.javaArrayLength = jenv->GetIntField(arg->javaArg, numElementsFieldID);
+               arg->syncJavaArrayLength(jenv);
+
                status = clSetKernelArg(jniContext->kernel, kernelArgPos++, sizeof(jint), &(arg->value.ref.javaArrayLength));
 
                if (jniContext->isVerbose()){
@@ -1059,18 +1095,17 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_runKernelJNI(JNIEnv *je
                return status;
             }
             if (arg->isExplicit() && arg->isExplicitWrite()){
-               arg->type &= ~com_amd_aparapi_KernelRunner_ARG_EXPLICIT_WRITE;
 #ifdef VERBOSE_EXPLICIT
                fprintf(stderr, "clearing explicit buffer bit %d %s\n", i, arg->name);
 #endif
-               jenv->SetIntField(arg->javaArg, typeFieldID,arg->type );
+               arg->clearExplicitBufferBit(jenv);
             }
          }
       } else if (arg->isLocal()){
          fprintf(stderr, "found local array!\n");
          if (jniContext->firstRun){
             // must multiply perlocalByteSize by localWidth to get real opencl buffer size
-            int bytesPerLocalWidth = jenv->GetIntField(arg->javaArg, bytesPerLocalWidthFieldID);
+            int bytesPerLocalWidth = jenv->GetIntField(arg->javaArg, KernelArg::bytesPerLocalWidthFieldID);
             int adjustedLocalBufSize = bytesPerLocalWidth * range.localDims[0];
 
             if (jniContext->isVerbose()){
@@ -1474,21 +1509,11 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_setArgsJNI(JNIEnv *jenv
 
       // Step through the array of KernelArg's to capture the type data for the Kernel's data members.
       for (jint i=0; i<jniContext->argc; i++){ 
-         KernelArg* arg = jniContext->args[i] = new KernelArg;
 
 
          jobject argObj = jenv->GetObjectArrayElement(argArray, i);
-         if (argClazz == 0){
-            argClazz = cacheKernelArgFields(jenv, argObj);
-         }
-         arg->javaArg = jenv->NewGlobalRef(argObj);   // save a global ref to the java Arg Object
+         KernelArg* arg = jniContext->args[i] = new KernelArg(jenv, argObj);
 
-         arg->type = jenv->GetIntField(argObj, typeFieldID);
-         arg->isStatic = jenv->GetBooleanField(argObj, isStaticFieldID);
-         jstring name  = (jstring)jenv->GetObjectField(argObj, nameFieldID);
-         const char *nameChars = jenv->GetStringUTFChars(name, NULL);
-         arg->name=strdup(nameChars);
-         jenv->ReleaseStringUTFChars(name, nameChars);
 #ifdef VERBOSE_EXPLICIT
          if (arg->isExplicit()){
             fprintf(stderr, "%s is explicit!\n", arg->name);
