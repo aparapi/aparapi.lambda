@@ -218,11 +218,15 @@ class Range{
       static jfieldID localDepthFieldID;
       static jfieldID dimsFieldID;
       static jfieldID localFieldID; 
+      jobject range;
+      JNIEnv *jenv;
       cl_int dims;
       size_t *globalDims;
       size_t *localDims;
       jboolean hasLocal;
       Range(JNIEnv *jenv, jobject range):
+         jenv(jenv),
+         range(range),
          dims(0),
          globalDims(NULL),
          localDims(NULL){
@@ -311,7 +315,8 @@ class KernelArg{
    public:
       static jfieldID javaArrayFieldID; 
       static jfieldID bytesPerLocalWidthFieldID;
-
+      JNIEnv *jenv;
+      jobject argObj;
       char *name;        // used for debugging printfs
       jfieldID fieldID;  // The field that this arg represents in the kernel (java), used only for primitive updates
       jint type;         // a bit mask determining the type of this arg
@@ -327,7 +332,9 @@ class KernelArg{
          KernelArgRef ref;
       } value;
 
-      KernelArg(JNIEnv *jenv, jobject argObj){
+      KernelArg(JNIEnv *jenv, jobject argObj):
+         jenv(jenv), 
+         argObj(argObj){
          javaArg = jenv->NewGlobalRef(argObj);   // save a global ref to the java Arg Object
          if (argClazz == 0){
             jclass c = jenv->GetObjectClass(argObj); 
@@ -445,16 +452,16 @@ class KernelArg{
       int mustWriteBuffer(){
          return ((isImplicit()&&isRead()&&!isConstant())||(isExplicit()&&isExplicitWrite()));
       }
-      void syncType(JNIEnv *jenv){
+      void syncType(){
          type = jenv->GetIntField(javaArg, typeFieldID);
       }
-      void syncSizeInBytes(JNIEnv *jenv){
+      void syncSizeInBytes(){
          sizeInBytes = jenv->GetIntField(javaArg, sizeInBytesFieldID);
       }
-      void syncJavaArrayLength(JNIEnv *jenv){
+      void syncJavaArrayLength(){
          value.ref.javaArrayLength = jenv->GetIntField(javaArg, numElementsFieldID);
       }
-      void clearExplicitBufferBit(JNIEnv *jenv){
+      void clearExplicitBufferBit(){
          type &= ~com_amd_aparapi_KernelRunner_ARG_EXPLICIT_WRITE;
          jenv->SetIntField(javaArg, typeFieldID,type );
       }
@@ -876,7 +883,7 @@ jint updateKernel(JNIEnv *jenv, jobject jobj, JNIContext* jniContext) {
       // we need to step through the array of KernelArg's to create the info required to create the cl_mem buffers.
       for (jint i=0; i<jniContext->argc; i++){ 
          KernelArg *arg=jniContext->args[i];
-         arg->syncType(jenv);
+         arg->syncType();
 
          if (jniContext->isVerbose()){
             fprintf(stderr, "got type for %s: %08x\n", arg->name, arg->type);
@@ -928,7 +935,7 @@ jint updateKernel(JNIEnv *jenv, jobject jobj, JNIContext* jniContext) {
                arg->value.ref.isArray = !arg->isAparapiBufIsDirect();
 
                // Save the sizeInBytes which was set on the java side
-               arg->syncSizeInBytes(jenv);
+               arg->syncSizeInBytes();
 
                if (jniContext->isVerbose()){
                   fprintf(stderr, "updateKernel, args[%d].sizeInBytes=%d\n", i, arg->sizeInBytes);
@@ -973,7 +980,7 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_runKernelJNI(JNIEnv *je
    for (int i=0; i< jniContext->argc; i++){
       KernelArg *arg = jniContext->args[i];
       // TODO: see if we can get rid of this read 
-      arg->syncType(jenv);
+      arg->syncType();
       if (jniContext->isVerbose()){
          fprintf(stderr, "got type for arg %d, %s, type=%08x\n", i, arg->name, arg->type);
       }
@@ -1049,7 +1056,7 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_runKernelJNI(JNIEnv *je
 
             // Add the array length if needed
             if (arg->usesArrayLength()){
-               arg->syncJavaArrayLength(jenv);
+               arg->syncJavaArrayLength();
 
                status = clSetKernelArg(jniContext->kernel, kernelArgPos++, sizeof(jint), &(arg->value.ref.javaArrayLength));
 
@@ -1098,7 +1105,7 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_runKernelJNI(JNIEnv *je
 #ifdef VERBOSE_EXPLICIT
                fprintf(stderr, "clearing explicit buffer bit %d %s\n", i, arg->name);
 #endif
-               arg->clearExplicitBufferBit(jenv);
+               arg->clearExplicitBufferBit();
             }
          }
       } else if (arg->isLocal()){
