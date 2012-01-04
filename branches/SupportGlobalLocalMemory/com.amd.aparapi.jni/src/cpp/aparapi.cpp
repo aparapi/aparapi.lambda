@@ -225,7 +225,7 @@ class Range{
       size_t *globalDims;
       size_t *localDims;
       jboolean hasLocal;
-      Range(JNIEnv *jenv, jobject range):
+      Range(JNIEnv *jenv, jobject range, jboolean useNullForLocalWidth):
          jenv(jenv),
          range(range),
          dims(0),
@@ -249,24 +249,38 @@ class Range{
                fprintf(stderr, "native range dims == %d\n", dims);
                offsets = new size_t[dims];
                globalDims = new size_t[dims];
-               localDims = new size_t[dims];
+               if (!useNullForLocalWidth){
+                  localDims = new size_t[dims];
+               }
                offsets[0]= 0;
-               localDims[0]= jenv->GetIntField(range, localWidthFieldID);
+               if (!useNullForLocalWidth){
+                  localDims[0]= jenv->GetIntField(range, localWidthFieldID);
+                  fprintf(stderr, "native range localWidth == %d\n", localDims[0]);
+               }else{
+                  fprintf(stderr, "native range localWidth == NULL\n");
+               }
                globalDims[0]= jenv->GetIntField(range, globalWidthFieldID);
                fprintf(stderr, "native range globalWidth == %d\n", globalDims[0]);
-               fprintf(stderr, "native range localWidth == %d\n", localDims[0]);
                if (dims >1){
                   offsets[1]= 0;
-                  localDims[1]= jenv->GetIntField(range, localHeightFieldID);
+                  if (!useNullForLocalWidth){
+                     localDims[1]= jenv->GetIntField(range, localHeightFieldID);
+                     fprintf(stderr, "native range localHeight == %d\n", localDims[1]);
+                  }else{
+                     fprintf(stderr, "native range localHeight == NULL\n");
+                  }
                   globalDims[1]= jenv->GetIntField(range, globalHeightFieldID);
-               fprintf(stderr, "native range globalHeight == %d\n", globalDims[1]);
-               fprintf(stderr, "native range localHeight == %d\n", localDims[1]);
+                  fprintf(stderr, "native range globalHeight == %d\n", globalDims[1]);
                   if (dims >2){
                      offsets[2]= 0;
-                     localDims[2]= jenv->GetIntField(range, localDepthFieldID);
+                     if (!useNullForLocalWidth){
+                        localDims[2]= jenv->GetIntField(range, localDepthFieldID);
+                        fprintf(stderr, "native range localDepth == %d\n", localDims[2]);
+                     }else{
+                        fprintf(stderr, "native range localDepth == NULL\n");
+                     }
                      globalDims[2]= jenv->GetIntField(range, globalDepthFieldID);
-               fprintf(stderr, "native range globalDepth == %d\n", globalDims[2]);
-               fprintf(stderr, "native range localDepth == %d\n", localDims[2]);
+                     fprintf(stderr, "native range globalDepth == %d\n", globalDims[2]);
                   }
                }
 
@@ -351,24 +365,24 @@ class KernelArg{
       KernelArg(JNIEnv *jenv, jobject argObj):
          jenv(jenv), 
          argObj(argObj){
-         javaArg = jenv->NewGlobalRef(argObj);   // save a global ref to the java Arg Object
-         if (argClazz == 0){
-            jclass c = jenv->GetObjectClass(argObj); 
-            nameFieldID = jenv->GetFieldID(c, "name", "Ljava/lang/String;"); ASSERT_FIELD(name);
-            typeFieldID = jenv->GetFieldID(c, "type", "I"); ASSERT_FIELD(type);
-            isStaticFieldID = jenv->GetFieldID(c, "isStatic", "Z"); ASSERT_FIELD(isStatic);
-            javaArrayFieldID = jenv->GetFieldID(c, "javaArray", "Ljava/lang/Object;"); ASSERT_FIELD(javaArray);
-            bytesPerLocalWidthFieldID = jenv->GetFieldID(c, "bytesPerLocalWidth", "I"); ASSERT_FIELD(bytesPerLocalWidth);
-            sizeInBytesFieldID = jenv->GetFieldID(c, "sizeInBytes", "I"); ASSERT_FIELD(sizeInBytes);
-            numElementsFieldID = jenv->GetFieldID(c, "numElements", "I"); ASSERT_FIELD(numElements);
+            javaArg = jenv->NewGlobalRef(argObj);   // save a global ref to the java Arg Object
+            if (argClazz == 0){
+               jclass c = jenv->GetObjectClass(argObj); 
+               nameFieldID = jenv->GetFieldID(c, "name", "Ljava/lang/String;"); ASSERT_FIELD(name);
+               typeFieldID = jenv->GetFieldID(c, "type", "I"); ASSERT_FIELD(type);
+               isStaticFieldID = jenv->GetFieldID(c, "isStatic", "Z"); ASSERT_FIELD(isStatic);
+               javaArrayFieldID = jenv->GetFieldID(c, "javaArray", "Ljava/lang/Object;"); ASSERT_FIELD(javaArray);
+               bytesPerLocalWidthFieldID = jenv->GetFieldID(c, "bytesPerLocalWidth", "I"); ASSERT_FIELD(bytesPerLocalWidth);
+               sizeInBytesFieldID = jenv->GetFieldID(c, "sizeInBytes", "I"); ASSERT_FIELD(sizeInBytes);
+               numElementsFieldID = jenv->GetFieldID(c, "numElements", "I"); ASSERT_FIELD(numElements);
+            }
+            type = jenv->GetIntField(argObj, typeFieldID);
+            isStatic = jenv->GetBooleanField(argObj, isStaticFieldID);
+            jstring nameString  = (jstring)jenv->GetObjectField(argObj, nameFieldID);
+            const char *nameChars = jenv->GetStringUTFChars(nameString, NULL);
+            name=strdup(nameChars);
+            jenv->ReleaseStringUTFChars(nameString, nameChars);
          }
-         type = jenv->GetIntField(argObj, typeFieldID);
-         isStatic = jenv->GetBooleanField(argObj, isStaticFieldID);
-         jstring nameString  = (jstring)jenv->GetObjectField(argObj, nameFieldID);
-         const char *nameChars = jenv->GetStringUTFChars(nameString, NULL);
-         name=strdup(nameChars);
-         jenv->ReleaseStringUTFChars(nameString, nameChars);
-      }
 
       ~KernelArg(){
       }
@@ -970,7 +984,8 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_runKernelJNI(JNIEnv *je
       jobject jobj, jlong jniContextHandle, jobject _range, jboolean needSync,
       jboolean useNullForLocalWidth, jint passes) {
 
-   Range range(jenv, _range);
+   fprintf(stderr, "use null for localwidth = %d\n", useNullForLocalWidth);
+   Range range(jenv, _range, useNullForLocalWidth);
 
    cl_int status = CL_SUCCESS;
    JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);
@@ -1211,10 +1226,11 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_runKernelJNI(JNIEnv *je
    // POssibly cloning the range per device and mutating each to handle a unique subrange (of global) and
    // maybe even pushing the offset into the range class.
 
-//   size_t globalWidthAsSizeT = (range.globalDims[0] /jniContext->deviceIdc);
-//   size_t localWidthAsSizeT = range.localDims[0];
+   //   size_t globalWidthAsSizeT = (range.globalDims[0] /jniContext->deviceIdc);
+   //   size_t localWidthAsSizeT = range.localDims[0];
 
    // To support multiple passes we add a 'secret' final arg called 'passid' and just schedule multiple enqueuendrange kernels.  Each of which having a separate value of passid
+   //
 
    for (int passid=0; passid<passes; passid++){
       for (int dev =0; dev < jniContext->deviceIdc; dev++){ // this will always be 1 until we reserect multi-dim support
@@ -1237,7 +1253,7 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_runKernelJNI(JNIEnv *je
                   jniContext->kernel,
                   range.dims,
                   range.offsets, range.globalDims,
-                  useNullForLocalWidth ? NULL : range.localDims,
+                  range.localDims,
                   writeEventCount,
                   writeEventCount?jniContext->writeEvents:NULL,
                   &jniContext->executeEvents[dev]);
@@ -1252,7 +1268,7 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_runKernelJNI(JNIEnv *je
                   range.dims,
                   range.offsets,
                   range.globalDims,
-                  useNullForLocalWidth ? NULL : range.localDims,
+                  range.localDims,
                   writeEventCount,
                   writeEventCount?jniContext->writeEvents:NULL,
                   &jniContext->executeEvents[dev]);
@@ -1268,7 +1284,7 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_runKernelJNI(JNIEnv *je
                   range.dims,
                   range.offsets,
                   range.globalDims,
-                  useNullForLocalWidth ? NULL : range.localDims,
+                  range.localDims,
                   0,    // wait for this event count
                   NULL, // list of events to wait for
                   &jniContext->executeEvents[dev]);
@@ -1283,7 +1299,7 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_runKernelJNI(JNIEnv *je
                   range.dims,
                   range.offsets, 
                   range.globalDims,
-                  useNullForLocalWidth ? NULL : range.localDims,
+                  range.localDims,
                   0,    // wait for this event count
                   NULL, // list of events to wait for
                   &jniContext->executeEvents[dev]);
@@ -1292,7 +1308,7 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_runKernelJNI(JNIEnv *je
 
          if (status != CL_SUCCESS) {
             PRINT_CL_ERR(status, "clEnqueueNDRangeKernel()");
-            fprintf(stderr, "after clEnqueueNDRangeKernel, globalWidth=%d localWidth=%d usingNull=%d\n", (int)range.globalDims[0], (int)range.localDims[0], useNullForLocalWidth);
+            fprintf(stderr, "after clEnqueueNDRangeKernel, globalWidth=%d localWidth=%d usingNull=%d\n", (int)range.globalDims[0], useNullForLocalWidth?-1:(int)range.localDims[0], useNullForLocalWidth);
             jniContext->unpinAll();
             return status;
          }
@@ -1657,7 +1673,7 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_setArgsJNI(JNIEnv *jenv
 }
 
 JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_updateRangeJNI(JNIEnv *jenv, jobject jobj, jlong jniContextHandle, jobject _range, jint localBytesPerLocalId) {
-   Range range(jenv, _range);
+   Range range(jenv, _range, false);
    size_t kernelMaxWorkGroupSize = 0;
    size_t kernelWorkGroupSizeMultiple = 0;
    cl_int status = CL_SUCCESS;
