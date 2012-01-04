@@ -221,6 +221,7 @@ class Range{
       jobject range;
       JNIEnv *jenv;
       cl_int dims;
+      size_t *offsets;
       size_t *globalDims;
       size_t *localDims;
       jboolean hasLocal;
@@ -228,6 +229,7 @@ class Range{
          jenv(jenv),
          range(range),
          dims(0),
+         offsets(NULL),
          globalDims(NULL),
          localDims(NULL){
             if (rangeClazz ==NULL){
@@ -244,22 +246,36 @@ class Range{
             dims = jenv->GetIntField(range, dimsFieldID);
             hasLocal = jenv->GetBooleanField(range, localFieldID);
             if (dims >0){
+               fprintf(stderr, "native range dims == %d\n", dims);
+               offsets = new size_t[dims];
                globalDims = new size_t[dims];
                localDims = new size_t[dims];
+               offsets[0]= 0;
                localDims[0]= jenv->GetIntField(range, localWidthFieldID);
                globalDims[0]= jenv->GetIntField(range, globalWidthFieldID);
+               fprintf(stderr, "native range globalWidth == %d\n", globalDims[0]);
+               fprintf(stderr, "native range localWidth == %d\n", localDims[0]);
                if (dims >1){
+                  offsets[1]= 0;
                   localDims[1]= jenv->GetIntField(range, localHeightFieldID);
                   globalDims[1]= jenv->GetIntField(range, globalHeightFieldID);
+               fprintf(stderr, "native range globalHeight == %d\n", globalDims[1]);
+               fprintf(stderr, "native range localHeight == %d\n", localDims[1]);
                   if (dims >2){
+                     offsets[2]= 0;
                      localDims[2]= jenv->GetIntField(range, localDepthFieldID);
                      globalDims[2]= jenv->GetIntField(range, globalDepthFieldID);
+               fprintf(stderr, "native range globalDepth == %d\n", globalDims[2]);
+               fprintf(stderr, "native range localDepth == %d\n", localDims[2]);
                   }
                }
 
             }
          }
       ~Range(){
+         if (offsets!= NULL){
+            delete offsets;
+         }
          if (globalDims!= NULL){
             delete globalDims;
          }
@@ -1191,14 +1207,18 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_runKernelJNI(JNIEnv *je
       }
    }  // for each arg
 
-   size_t globalWidthAsSizeT = (range.globalDims[0] /jniContext->deviceIdc);
-   size_t localWidthAsSizeT = range.localDims[0];
+   // We will need to revisit the execution of multiple devices.  
+   // POssibly cloning the range per device and mutating each to handle a unique subrange (of global) and
+   // maybe even pushing the offset into the range class.
+
+//   size_t globalWidthAsSizeT = (range.globalDims[0] /jniContext->deviceIdc);
+//   size_t localWidthAsSizeT = range.localDims[0];
 
    // To support multiple passes we add a 'secret' final arg called 'passid' and just schedule multiple enqueuendrange kernels.  Each of which having a separate value of passid
 
    for (int passid=0; passid<passes; passid++){
-      for (int dev =0; dev < jniContext->deviceIdc; dev++){
-         size_t offset = (size_t)((range.globalDims[0]/jniContext->deviceIdc)*dev);
+      for (int dev =0; dev < jniContext->deviceIdc; dev++){ // this will always be 1 until we reserect multi-dim support
+         //size_t offset = 1; // (size_t)((range.globalDims[0]/jniContext->deviceIdc)*dev);
          status = clSetKernelArg(jniContext->kernel, kernelArgPos, sizeof(passid), &(passid));
          if (status != CL_SUCCESS) {
             PRINT_CL_ERR(status, "clSetKernelArg() (passid)");
@@ -1212,38 +1232,67 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_runKernelJNI(JNIEnv *je
             // there is one pass and this is it
             // enqueue depends on write enqueues 
             // we don't block but and we populate the executeEvents
-            status = clEnqueueNDRangeKernel(jniContext->commandQueues[dev], jniContext->kernel, 1, &offset, &globalWidthAsSizeT,
-                  useNullForLocalWidth ? NULL : &localWidthAsSizeT,
-                  writeEventCount, writeEventCount?jniContext->writeEvents:NULL, &jniContext->executeEvents[dev]);
+            status = clEnqueueNDRangeKernel(
+                  jniContext->commandQueues[dev],
+                  jniContext->kernel,
+                  range.dims,
+                  range.offsets, range.globalDims,
+                  useNullForLocalWidth ? NULL : range.localDims,
+                  writeEventCount,
+                  writeEventCount?jniContext->writeEvents:NULL,
+                  &jniContext->executeEvents[dev]);
          }else if (passid == 0){
             //fprintf(stderr, "setting passid to %d of %d first not last\n", passid, passes);
             // this is the first of multiple passes
             // enqueue depends on write enqueues 
             // we block but do not populate executeEvents (only the last pass does this)
-            status = clEnqueueNDRangeKernel(jniContext->commandQueues[dev], jniContext->kernel, 1, &offset, &globalWidthAsSizeT,
-                  useNullForLocalWidth ? NULL : &localWidthAsSizeT,
-                  writeEventCount, writeEventCount?jniContext->writeEvents:NULL, &jniContext->executeEvents[dev]);
+            status = clEnqueueNDRangeKernel(
+                  jniContext->commandQueues[dev],
+                  jniContext->kernel,
+                  range.dims,
+                  range.offsets,
+                  range.globalDims,
+                  useNullForLocalWidth ? NULL : range.localDims,
+                  writeEventCount,
+                  writeEventCount?jniContext->writeEvents:NULL,
+                  &jniContext->executeEvents[dev]);
 
          }else if (passid < passes-1){
             // we are in some middle pass (neither first or last) 
             // we don't depend on write enqueues
             // we block and do not supply executeEvents (only the last pass does this)
             //fprintf(stderr, "setting passid to %d of %d not first not last\n", passid, passes);
-            status = clEnqueueNDRangeKernel(jniContext->commandQueues[dev], jniContext->kernel, 1, &offset, &globalWidthAsSizeT,
-                  useNullForLocalWidth ? NULL : &localWidthAsSizeT, 0, NULL, &jniContext->executeEvents[dev]);
+            status = clEnqueueNDRangeKernel(
+                  jniContext->commandQueues[dev], 
+                  jniContext->kernel,
+                  range.dims,
+                  range.offsets,
+                  range.globalDims,
+                  useNullForLocalWidth ? NULL : range.localDims,
+                  0,    // wait for this event count
+                  NULL, // list of events to wait for
+                  &jniContext->executeEvents[dev]);
          }else{
             // we are the last pass of >1
             // we don't depend on write enqueues
             // we block and supply executeEvents
             //fprintf(stderr, "setting passid to %d of %d  last\n", passid, passes);
-            status = clEnqueueNDRangeKernel(jniContext->commandQueues[dev], jniContext->kernel, 1, &offset, &globalWidthAsSizeT,
-                  useNullForLocalWidth ? NULL : &localWidthAsSizeT, 0, NULL, &jniContext->executeEvents[dev]);
+            status = clEnqueueNDRangeKernel(
+                  jniContext->commandQueues[dev], 
+                  jniContext->kernel,
+                  range.dims,
+                  range.offsets, 
+                  range.globalDims,
+                  useNullForLocalWidth ? NULL : range.localDims,
+                  0,    // wait for this event count
+                  NULL, // list of events to wait for
+                  &jniContext->executeEvents[dev]);
          }
 
 
          if (status != CL_SUCCESS) {
             PRINT_CL_ERR(status, "clEnqueueNDRangeKernel()");
-            fprintf(stderr, "after clEnqueueNDRangeKernel, globalWidth=%d localWidth=%d usingNull=%d\n", (int)globalWidthAsSizeT, (int)localWidthAsSizeT, useNullForLocalWidth);
+            fprintf(stderr, "after clEnqueueNDRangeKernel, globalWidth=%d localWidth=%d usingNull=%d\n", (int)range.globalDims[0], (int)range.localDims[0], useNullForLocalWidth);
             jniContext->unpinAll();
             return status;
          }
