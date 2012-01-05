@@ -218,7 +218,7 @@ public class Main{
             lifeKernel.convolve(filter); // Work is performed here
 
             viewer.repaint(); // Request a repaint of the viewer (causes paintComponent(Graphics) to be called later not synchronous
-           //Thread.sleep(1000);
+            //Thread.sleep(1000);
          }
       }
       System.out.println((System.nanoTime() - start) / 1000000);
