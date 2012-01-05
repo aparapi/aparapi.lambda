@@ -90,7 +90,7 @@ public class Main{
        */
       public NBodyKernel(int _bodies) {
          bodies = _bodies;
-         range = Range.create(bodies, 256);
+         range = Range.create(bodies);
          xyz = new float[bodies * 3];
          vxyz = new float[bodies * 3];
          float maxDist = 20f;
@@ -110,6 +110,7 @@ public class Main{
                xyz[body + 0] -= maxDist * 1.5;
             }
          }
+         setExplicit(true);
       }
 
       /** 
@@ -261,6 +262,9 @@ public class Main{
             glu.gluLookAt(xeye, yeye, zeye * zoomFactor, xat, yat, zat, 0f, 1f, 0f);
             if (running) {
                kernel.execute(kernel.range);
+               if (kernel.isExplicit()) {
+                  kernel.get(kernel.xyz);
+               }
             }
             kernel.render(gl);
 
@@ -320,7 +324,7 @@ public class Main{
       frame.pack();
       frame.setVisible(true);
 
-      FPSAnimator animator = new FPSAnimator(canvas, 200);
+      FPSAnimator animator = new FPSAnimator(canvas, 100);
       animator.start();
 
    }
