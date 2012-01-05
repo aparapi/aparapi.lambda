@@ -155,9 +155,17 @@ public class Main{
          System.arraycopy(_filter.weights, 0, filter, 0, _filter.weights.length);
          offset = _filter.offset;
          put(filter);
-         execute(Range.create2D(width, height, 16, 16));
+         execute(Range.create2D(width, height));
          get(outputData);
       }
+   }
+   public static final int PAD=1024;
+   
+   public static int padValue(int value){
+      return(PAD - (value % PAD));
+   }
+   public static int padTo(int value){
+      return(value +  padValue(value));
    }
 
    public static void main(String[] _args) throws IOException, InterruptedException {
@@ -170,21 +178,18 @@ public class Main{
 
       int imageWidth = testCard.getWidth();
 
-      int padWidth = 64 - (imageWidth % 64);
+    
+      final int width = padTo(imageWidth);// now multiple of 64
 
-      int padHeight = 64 - (imageHeight % 64);
-
-      final int width = imageWidth + padWidth; // now multiple of 64
-
-      final int height = imageHeight + padHeight; // now multiple of 64
+      final int height = padTo(imageHeight); // now multiple of 64
 
       System.out.println("image width,height=" + width + "," + height);
 
       final BufferedImage inputImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 
-      inputImage.getGraphics().drawImage(testCard, padWidth / 2, padHeight / 2, null);
+      inputImage.getGraphics().drawImage(testCard, padValue(imageWidth) / 2,  padValue(imageHeight) / 2, null);
       final BufferedImage outputImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-      outputImage.getGraphics().drawImage(testCard, padWidth / 2, padHeight / 2, null);
+      outputImage.getGraphics().drawImage(testCard,  padValue(imageWidth) / 2, padValue(imageHeight) / 2, null);
       final ConvolutionKernel lifeKernel = new ConvolutionKernel(width, height, inputImage, outputImage);
 
       // Create a component for viewing the offsecreen image
