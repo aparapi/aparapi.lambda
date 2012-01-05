@@ -217,14 +217,14 @@ class Range{
       static jfieldID localHeightFieldID;
       static jfieldID localDepthFieldID;
       static jfieldID dimsFieldID;
-      static jfieldID localFieldID; 
+      static jfieldID localIsDerivedFieldID; 
       jobject range;
       JNIEnv *jenv;
       cl_int dims;
       size_t *offsets;
       size_t *globalDims;
       size_t *localDims;
-      jboolean hasLocal;
+      jboolean localIsDerived;
       Range(JNIEnv *jenv, jobject range, jboolean useNullForLocalWidth):
          jenv(jenv),
          range(range),
@@ -241,10 +241,10 @@ class Range{
                localHeightFieldID = jenv->GetFieldID(rangeClazz, "localHeight", "I"); ASSERT_FIELD(localHeight);
                localDepthFieldID = jenv->GetFieldID(rangeClazz, "localDepth", "I"); ASSERT_FIELD(localDepth);
                dimsFieldID = jenv->GetFieldID(rangeClazz, "dims", "I"); ASSERT_FIELD(dims);
-               localFieldID = jenv->GetFieldID(rangeClazz, "local", "Z"); ASSERT_FIELD(local);
+               localIsDerivedFieldID = jenv->GetFieldID(rangeClazz, "localIsDerived", "Z"); ASSERT_FIELD(localIsDerived);
             }
             dims = jenv->GetIntField(range, dimsFieldID);
-            hasLocal = jenv->GetBooleanField(range, localFieldID);
+            localIsDerived = jenv->GetBooleanField(range, localIsDerivedFieldID);
             if (dims >0){
                fprintf(stderr, "native range dims == %d\n", dims);
                offsets = new size_t[dims];
@@ -306,7 +306,7 @@ jfieldID  Range::localWidthFieldID=0;
 jfieldID  Range::localHeightFieldID=0;
 jfieldID  Range::localDepthFieldID=0;
 jfieldID  Range::dimsFieldID=0;
-jfieldID  Range::localFieldID=0; 
+jfieldID  Range::localIsDerivedFieldID=0; 
 
 class ProfileInfo{
    public:
