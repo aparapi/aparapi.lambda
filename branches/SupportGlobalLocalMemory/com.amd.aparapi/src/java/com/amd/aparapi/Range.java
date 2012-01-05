@@ -121,7 +121,7 @@ public class Range implements Cloneable{
          if (count % 2 == 0) {
             lw++;
          } else if (count % 2 == 1) {
-            if (withoutLocal.dims > 1 && lh < withoutLocal.globalHeight) {
+            if (withoutLocal.dims > 1 && lh <= withoutLocal.globalHeight) {
                lh++;
             }
 
@@ -132,7 +132,7 @@ public class Range implements Cloneable{
             withoutLocal.localHeight = lh;
 
          }
-      } while (lw * lh < MAX_GROUP_SIZE);
+      } while (lw * lh <= MAX_GROUP_SIZE);
 
       return (withoutLocal);
    }
@@ -170,12 +170,12 @@ public class Range implements Cloneable{
          if (count % 3 == 0) {
             lw++;
          } else if (count % 3 == 1) {
-            if (withoutLocal.dims > 1 && lh < withoutLocal.globalHeight) {
+            if (withoutLocal.dims > 1 && lh <= withoutLocal.globalHeight) {
                lh++;
             }
 
          } else if (count % 3 == 2) {
-            if (withoutLocal.dims > 2 && lw < withoutLocal.globalDepth) {
+            if (withoutLocal.dims > 2 && lw <= withoutLocal.globalDepth) {
                ld++;
             }
          }
@@ -185,7 +185,7 @@ public class Range implements Cloneable{
             withoutLocal.localHeight = lh;
             withoutLocal.localDepth = ld;
          }
-      } while (lw * lh * ld < MAX_GROUP_SIZE);
+      } while (lw * lh * ld <= MAX_GROUP_SIZE);
 
       return (withoutLocal);
 
