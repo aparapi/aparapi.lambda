@@ -38,44 +38,27 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 
 package com.amd.aparapi.sample.grid;
 
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 
 import com.amd.aparapi.Kernel;
 import com.amd.aparapi.Range;
 
-/**
- * An example Aparapi application which displays a view of the Mandelbrot set and lets the user zoom in to a particular point. 
- * 
- * When the user clicks on the view, this example application will zoom in to the clicked point and zoom out there after.
- * On GPU, additional computing units will offer a better viewing experience. On the other hand on CPU, this example 
- * application might suffer with sub-optimal frame refresh rate as compared to GPU. 
- *  
- * @author gfrost
- *
- */
-
 public class Main{
 
-   /**
-    * An Aparapi Kernel implementation for creating a scaled view of the mandelbrot set.
-    *  
-    * @author gfrost
-    *
-    */
-
    public static class EqualGroupKernel extends Kernel{
-
-      /** RGB buffer used to store the Mandelbrot image. This buffer holds (width * height) RGB values. */
       final private int rgb[];
 
       int group;
@@ -89,7 +72,6 @@ public class Main{
       }
 
       @Override public void run() {
-
          int gid = (getGlobalWidth() * getGlobalY()) + getGlobalX();
          numGroups[0] = getNumGroups();
          if (getGroupId() == group) {
@@ -97,7 +79,6 @@ public class Main{
          } else {
             rgb[gid] = 0x0;
          }
-
       }
 
       public void setGroup(int _group) {
@@ -108,70 +89,117 @@ public class Main{
          return (numGroups[0]);
       }
 
+      public int incGroup() {
+         group++;
+         return (group);
+      }
+   }
+
+   public static class LocalXAndYZeroKernel extends Kernel{
+      final private int rgb[];
+
+      public LocalXAndYZeroKernel(int[] _rgb) {
+         rgb = _rgb;
+      }
+
+      @Override public void run() {
+         int gid = (getGlobalWidth() * getGlobalY()) + getGlobalX();
+
+         if (getLocalX() == 0 && getLocalY() == 0) {
+            rgb[gid] = 0xffffff;
+         } else {
+            rgb[gid] = 0x0;
+         }
+      }
+
+   }
+
+   public static class LocalXOrYZeroKernel extends Kernel{
+      final private int rgb[];
+
+      public LocalXOrYZeroKernel(int[] _rgb) {
+         rgb = _rgb;
+      }
+
+      @Override public void run() {
+         int gid = (getGlobalWidth() * getGlobalY()) + getGlobalX();
+
+         if (getLocalX() == 0 || getLocalY() == 0) {
+
+            rgb[gid] = 0xffffff;
+         } else {
+            rgb[gid] = 0x0;
+         }
+      }
+
    }
 
    @SuppressWarnings("serial") public static void main(String[] _args) {
 
       JFrame frame = new JFrame("Grid");
 
-      final Range range = Range.create2D(256, 256, 4, 4);
+      final Range range = Range.create2D(512, 512);
 
       final BufferedImage image = new BufferedImage(range.getGlobalWidth(), range.getGlobalHeight(), BufferedImage.TYPE_INT_RGB);
-
-      JComponent viewer = new JComponent(){
+      final int[] imageRgb = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
+      final EqualGroupKernel equalGroupKernel = new EqualGroupKernel(imageRgb);
+      final LocalXAndYZeroKernel localXAndYZeroKernel = new LocalXAndYZeroKernel(imageRgb);
+      final LocalXOrYZeroKernel localXOrYZeroKernel = new LocalXOrYZeroKernel(imageRgb);
+      final JComponent viewer = new JComponent(){
          @Override public void paintComponent(Graphics g) {
             g.drawImage(image, 0, 0, range.getGlobalWidth(), range.getGlobalHeight(), this);
          }
+
+         @Override public Dimension getPreferredSize() {
+            return (new Dimension(range.getGlobalWidth(), range.getGlobalHeight()));
+         }
       };
 
-      viewer.setPreferredSize(new Dimension(range.getGlobalWidth(), range.getGlobalHeight()));
+      JPanel controls = new JPanel();
 
-      final Object doorBell = new Object();
-
-      // Mouse listener which reads the user clicked zoom-in point on the Mandelbrot view 
-      viewer.addMouseListener(new MouseAdapter(){
-         @Override public void mouseClicked(MouseEvent e) {
-            synchronized (doorBell) {
-               doorBell.notify();
-            }
+      JButton nextGroupButton = new JButton("Next Group");
+      nextGroupButton.addActionListener(new ActionListener(){
+         @Override public void actionPerformed(ActionEvent e) {
+            equalGroupKernel.incGroup();
+            equalGroupKernel.execute(range);
+            System.out.println(" group " + equalGroupKernel.incGroup() + " of " + equalGroupKernel.getGroupCount());
+            viewer.repaint();
          }
       });
+      controls.add(nextGroupButton);
 
-      // Swing housework to create the frame
-      frame.getContentPane().add(viewer);
-      frame.pack();
-      frame.setLocationRelativeTo(null);
-      frame.setVisible(true);
+      JButton localXAndYZeroButton = new JButton("Local X and Y ==0 ");
+      localXAndYZeroButton.addActionListener(new ActionListener(){
+         @Override public void actionPerformed(ActionEvent e) {
+            localXAndYZeroKernel.execute(range);
+            viewer.repaint();
+         }
+      });
+      controls.add(localXAndYZeroButton);
 
-      final int[] imageRgb = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
-
-      final EqualGroupKernel kernel = new EqualGroupKernel(imageRgb);
-
-      int group = 0;
+      JButton localXOrYZeroButton = new JButton("Local X or Y ==0 ");
+      localXOrYZeroButton.addActionListener(new ActionListener(){
+         @Override public void actionPerformed(ActionEvent e) {
+            localXOrYZeroKernel.execute(range);
+            viewer.repaint();
+         }
+      });
+      controls.add(localXOrYZeroButton);
 
       // Window listener to dispose Kernel resources on user exit.
       frame.addWindowListener(new WindowAdapter(){
          public void windowClosing(WindowEvent _windowEvent) {
-            kernel.dispose();
+            equalGroupKernel.dispose();
+            localXAndYZeroKernel.dispose();
+            localXOrYZeroKernel.dispose();
             System.exit(0);
          }
       });
-
-      while (true) {
-
-         synchronized (doorBell) {
-            try {
-               doorBell.wait();
-            } catch (InterruptedException ie) {
-               ie.getStackTrace();
-            }
-         }
-
-         kernel.setGroup(++group);
-         kernel.execute(range);
-         System.out.println(" group " + group + " of " + kernel.getGroupCount());
-         viewer.repaint();
-      }
+      frame.getContentPane().add(viewer, BorderLayout.CENTER);
+      frame.getContentPane().add(controls, BorderLayout.SOUTH);
+      frame.pack();
+      frame.setLocationRelativeTo(null);
+      frame.setVisible(true);
 
    }
 
