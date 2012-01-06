@@ -88,9 +88,16 @@ public class Main2D{
 
       /** Palette used for each iteration value 0..maxIterations. */
       final private int pallette[];
+      
+      /** Palette used for each iteration value 0..maxIterations. */
+      final private int groupPallette[];
 
       /** Maximum iterations we will check for. */
       final private int maxIterations;
+      
+      /** Maximum iterations we will check for. */
+      final private int maxGroups;
+
 
       /** Mutable values of scale, offsetx and offsety so that we can modify the zoom level and position of a view. */
       private float scale = .0f;
@@ -107,42 +114,58 @@ public class Main2D{
        * @param _rgb Mandelbrot image RGB buffer
        * @param _pallette Mandelbrot image palette
        */
-      public MandelKernel(int _width, int _height, int[] _rgb, int[] _pallette) {
-         width = _width;
-         height = _height;
+      public MandelKernel(Range _range, int[] _rgb, int _maxIterations) {
+         width = _range.getGlobalWidth();
+         height = _range.getGlobalHeight();
          rgb = _rgb;
-         pallette = _pallette;
-         maxIterations = pallette.length - 1;
-         this.setExecutionMode(EXECUTION_MODE.SEQ);
+         maxIterations = _maxIterations;
+         pallette = new int[maxIterations+1];
+         //Initialize palette values
+         for (int i = 0; i < maxIterations; i++) {
+            float h = i / (float) maxIterations;
+            float b = 1.0f - h * h;
+            pallette[i] = Color.HSBtoRGB(h, 1f, b);
+         }
+         maxGroups=_range.getNumGroups();
+         groupPallette = new int[maxGroups+1];
+
+      
 
       }
 
       @Override public void run() {
-
-         /** Determine which RGB value we are going to process (0..RGB.length). */
          int gid = (getGlobalWidth() * getGlobalY()) + getGlobalX();
+         if (getLocalX() == 0 || getLocalY() == 0) {
+            if (getLocalZ()==0){
+               rgb[gid] = groupPallette[this.getGroupId()];
+            }else{
+               rgb[gid] = 0x0;
+            }
+            
+         } else {
 
-         /** Translate the gid into an x an y value. */
-         float x = (((getGlobalX() * scale) - ((scale / 2) * width)) / width) + offsetx;
+            /** Translate the gid into an x an y value. */
+            float x = (((getGlobalX() * scale) - ((scale / 2) * width)) / width) + offsetx;
 
-         float y = (((getGlobalY() * scale) - ((scale / 2) * height)) / height) + offsety;
+            float y = (((getGlobalY() * scale) - ((scale / 2) * height)) / height) + offsety;
 
-         int count = 0;
+            int count = 0;
 
-         float zx = x;
-         float zy = y;
-         float new_zx = 0f;
+            float zx = x;
+            float zy = y;
+            float new_zx = 0f;
 
-         // Iterate until the algorithm converges or until maxIterations are reached.
-         while (count < maxIterations && zx * zx + zy * zy < 8) {
-            new_zx = zx * zx - zy * zy + x;
-            zy = 2 * zx * zy + y;
-            zx = new_zx;
-            count++;
+            // Iterate until the algorithm converges or until maxIterations are reached.
+            while (count < maxIterations && zx * zx + zy * zy < 8) {
+               new_zx = zx * zx - zy * zy + x;
+               zy = 2 * zx * zy + y;
+               zx = new_zx;
+               count++;
+            }
+
+            // Pull the value out of the palette for this iteration count.
+            rgb[gid] = pallette[count];
          }
-
-         // Pull the value out of the palette for this iteration count.
-         rgb[gid] = pallette[count];
       }
 
       public void setScaleAndOffset(float _scale, float _offsetx, float _offsety) {
@@ -167,20 +190,12 @@ public class Main2D{
       final int height = 768;
 
       /** Mandelbrot image height. */
-      final Range range = Range.create3D(width, height, 1);
+      final Range range = Range.create2D(width, height, 16,16);//,2, 4,4,2);
 
       /** Maximum iterations for Mandelbrot. */
       final int maxIterations = 256;
 
-      /** Palette which maps iteration values to RGB values. */
-      final int pallette[] = new int[maxIterations + 1];
-
-      //Initialize palette values
-      for (int i = 0; i < maxIterations; i++) {
-         float h = i / (float) maxIterations;
-         float b = 1.0f - h * h;
-         pallette[i] = Color.HSBtoRGB(h, 1f, b);
-      }
+     
 
       /** Image for Mandelbrot view. */
       final BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
@@ -219,7 +234,7 @@ public class Main2D{
       final int[] rgb = ((DataBufferInt) offscreen.getRaster().getDataBuffer()).getData();
       final int[] imageRgb = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
       // Create a Kernel passing the size, RGB buffer and the palette.
-      final MandelKernel kernel = new MandelKernel(width, height, rgb, pallette);
+      final MandelKernel kernel = new MandelKernel(range, rgb, maxIterations+1);
 
       float defaultScale = 3f;
 
