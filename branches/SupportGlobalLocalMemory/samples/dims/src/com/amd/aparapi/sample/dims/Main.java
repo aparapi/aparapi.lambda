@@ -93,7 +93,7 @@ public class Main{
          global_pallette = createPallette(width * height);
          width_pallette = createPallette(width);
          height_pallette = createPallette(height);
-         group_pallette = createPallette(_range.getNumGroups());
+         group_pallette = createPallette(_range.getGroupsWidth() * _range.getGroupsHeight());
 
       }
 
