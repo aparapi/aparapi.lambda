@@ -13,25 +13,11 @@ public class Range{
 
    @KernelRunner.UsedByJNICode private int localDepth = 1;
 
-   @KernelRunner.UsedByJNICode private int groupsWidth = 1;
-
-   @KernelRunner.UsedByJNICode private int groupsHeight = 1;
-
-   @KernelRunner.UsedByJNICode private int groupsDepth = 1;
-
    @KernelRunner.UsedByJNICode private boolean valid;
 
    @KernelRunner.UsedByJNICode private int dims;
 
    @KernelRunner.UsedByJNICode private boolean localIsDerived = false;
-
-   private Range() {
-   }
-
-   Range(int _dims) {
-      this();
-      dims = _dims;
-   }
 
    public int getGlobalWidth() {
       return globalWidth;
@@ -69,10 +55,10 @@ public class Range{
          MAX_OPENCL_GROUP_SIZE);
 
    public static Range create(int _globalWidth, int _localWidth) {
-      Range range = new Range(1);
+      Range range = new Range();
+      range.dims = 1;
       range.globalWidth = _globalWidth;
       range.localWidth = _localWidth;
-      range.groupsWidth = _globalWidth / _localWidth;
       return (range);
    }
 
@@ -84,18 +70,17 @@ public class Range{
       while (withoutLocal.globalWidth % withoutLocal.localWidth != 0) {
          withoutLocal.localWidth--;
       }
-      withoutLocal.groupsWidth = withoutLocal.globalWidth / withoutLocal.localWidth;
       return (withoutLocal);
    }
 
    public static Range create2D(int _globalWidth, int _globalHeight, int _localWidth, int _localHeight) {
-      Range range = new Range(2);
+
+      Range range = new Range();
+      range.dims = 2;
       range.globalWidth = _globalWidth;
       range.localWidth = _localWidth;
       range.globalHeight = _globalHeight;
       range.localHeight = _localHeight;
-      range.groupsWidth = _globalWidth / _localWidth;
-      range.groupsHeight = _globalHeight / _localHeight;
       return (range);
    }
 
@@ -131,23 +116,19 @@ public class Range{
 
          }
       } while (lw * lh <= MAX_GROUP_SIZE);
-      withoutLocal.groupsWidth = withoutLocal.globalWidth / withoutLocal.localWidth;
-      withoutLocal.groupsHeight = withoutLocal.globalHeight / withoutLocal.localHeight;
       return (withoutLocal);
    }
 
    public static Range create3D(int _globalWidth, int _globalHeight, int _globalDepth, int _localWidth, int _localHeight,
          int _localDepth) {
-      Range range = new Range(3);
+      Range range = new Range();
+      range.dims = 3;
       range.globalWidth = _globalWidth;
       range.localWidth = _localWidth;
       range.globalHeight = _globalHeight;
       range.localHeight = _localHeight;
       range.globalDepth = _globalDepth;
       range.localDepth = _localDepth;
-      range.groupsWidth = _globalWidth / _localWidth;
-      range.groupsHeight = _globalHeight / _localHeight;
-      range.groupsDepth = _globalDepth / _localDepth;
       return (range);
    }
 
@@ -188,9 +169,6 @@ public class Range{
             withoutLocal.localDepth = ld;
          }
       } while (lw * lh * ld <= MAX_GROUP_SIZE);
-      withoutLocal.groupsWidth = withoutLocal.globalWidth / withoutLocal.localWidth;
-      withoutLocal.groupsHeight = withoutLocal.globalHeight / withoutLocal.localHeight;
-      withoutLocal.groupsDepth = withoutLocal.globalDepth / withoutLocal.localDepth;
       return (withoutLocal);
 
    }
@@ -222,15 +200,15 @@ public class Range{
    }
 
    public int getGroupsWidth() {
-      return (groupsWidth);
+      return (globalWidth / localWidth);
    }
 
    public int getGroupsHeight() {
-      return (groupsHeight);
+      return (globalHeight / localHeight);
    }
 
    public int getGroupsDepth() {
-      return (groupsDepth);
+      return (globalDepth / localDepth);
    }
 
 }
