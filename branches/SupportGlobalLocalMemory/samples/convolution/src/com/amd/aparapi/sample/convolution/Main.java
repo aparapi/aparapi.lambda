@@ -94,7 +94,7 @@ public class Main{
 
    public static class ConvolutionKernel extends Kernel{
 
-      private final float[] filter = new float[10];
+      private final float[] filter = new float[9];
 
       private final int[] inputData;
 
@@ -118,12 +118,12 @@ public class Main{
 
       public void run() {
 
-         int x = getGlobalX();
-         int y = getGlobalY();
-         int lx = getLocalX();
-         int ly = getLocalY();
-         int w = getGlobalWidth();
-         int h = getGlobalHeight();
+         int x = getGlobalId(0);
+         int y = getGlobalId(1);
+         int lx = getLocalId(0);
+         int ly = getLocalId(1);
+         int w = getGlobalSize(0);
+         int h = getGlobalSize(1);
          // System.out.println(x+","+y+" "+lx+","+ly+" "+w+","+h);
          if (x > 1 && x < (w - 1) && y > 1 && y < (h - 1)) {
 
@@ -132,15 +132,16 @@ public class Main{
             for (int rgbShift = 0; rgbShift < 24; rgbShift += 8) { // 0,8,16
                int channelAccum = 0;
                float accum = 0;
-               int count = 0;
-               for (int dx = -1; dx < 2; dx++) { // west to east
-                  for (int dy = -1; dy < 2; dy++) { // north to south
-                     int rgb = (inputData[((y + dy) * w) + (x + dx)]);
-                     int channelValue = ((rgb >> rgbShift) & 0xff);
-                     accum += filter[count];
-                     channelAccum += channelValue * filter[count++];
 
-                  }
+               for (int count = 0; count < 9; count++) {
+                  int dx = (count % 3) - 1; // 0,1,2 -> -1,0,1
+                  int dy = (count / 3) - 1; // 0,1,2 -> -1,0,1
+
+                  int rgb = (inputData[((y + dy) * w) + (x + dx)]);
+                  int channelValue = ((rgb >> rgbShift) & 0xff);
+                  accum += filter[count];
+                  channelAccum += channelValue * filter[count++];
+
                }
                channelAccum /= accum;
                channelAccum += offset;
@@ -155,7 +156,7 @@ public class Main{
          System.arraycopy(_filter.weights, 0, filter, 0, _filter.weights.length);
          offset = _filter.offset;
          put(filter);
-         execute(Range.create2D(width, height));
+         execute(Range.create2D(width, height, 8, 8));
          get(outputData);
       }
    }
