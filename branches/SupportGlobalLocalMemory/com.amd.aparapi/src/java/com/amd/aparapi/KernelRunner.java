@@ -676,43 +676,41 @@ class KernelRunner{
 
       if (kernel.getExecutionMode().equals(EXECUTION_MODE.SEQ)) {
 
-         kernel.localBarrier = new CyclicBarrier(1);
+         Kernel kernelClone = (Kernel) kernel.clone();
+         kernelClone.range = _range;
+         kernelClone.localBarrier = new CyclicBarrier(1);
+         for (kernelClone.passId = 0; kernelClone.passId < _passes; kernelClone.passId++) {
 
-         kernel.setRange(_range);
-         Kernel worker = (Kernel) kernel.clone();
-
-         for (int passid = 0; passid < _passes; passid++) {
-            worker.setPassId(passid);
             if (_range.getDims() == 1) {
                for (int id = 0; id < _range.getGlobalWidth(); id++) {
-                  worker.setGroupId(0);
+                  kernelClone.groupId[0] = 0;
 
-                  worker.setGlobalX(id);
-                  worker.setLocalId(id);
-                  worker.run();
+                  kernelClone.globalId[0] = id;
+                  kernelClone.localId[0] = id;
+                  kernelClone.run();
                }
             } else if (_range.getDims() == 2) {
                for (int x = 0; x < _range.getGlobalWidth(); x++) {
-                  worker.setGroupId(x);
-                  worker.setGlobalX(x);
+                  kernelClone.groupId[0] = x;
+                  kernelClone.globalId[0] = x;
                   for (int y = 0; y < _range.getGlobalHeight(); y++) {
-                     worker.setGlobalY(y);
+                     kernelClone.globalId[1] = y;
 
-                     worker.run();
+                     kernelClone.run();
                   }
                }
             } else if (_range.getDims() == 3) {
                for (int x = 0; x < _range.getGlobalWidth(); x++) {
-                  worker.setGroupId(x);
-                  worker.setGlobalX(x);
+                  kernelClone.groupId[0] = x;
+                  kernelClone.globalId[0] = x;
                   for (int y = 0; y < _range.getGlobalHeight(); y++) {
-                     worker.setGlobalY(y);
+                     kernelClone.globalId[1] = y;
                      for (int z = 0; z < _range.getGlobalDepth(); z++) {
-                        worker.setGlobalZ(z);
+                        kernelClone.globalId[2] = z;
 
-                        worker.run();
+                        kernelClone.run();
                      }
-                     worker.run();
+                     kernelClone.run();
                   }
                }
             } else {
@@ -722,11 +720,8 @@ class KernelRunner{
 
       } else {
 
-         final Range range = (Range) _range.clone();
-
-         System.out.println("cloned range=" + range);
-         final int threads = range.getGroupSize();
-         final int groups = range.getNumGroups();
+         final int threads = _range.getLocalWidth() * _range.getLocalHeight() * _range.getLocalDepth();
+         final int globalGroups = _range.getGroupsWidth() * _range.getGroupsHeight() * _range.getGroupsDepth();
          final Thread threadArray[] = new Thread[threads];
          // This is the barrier that we provide for the kernel threads to rendezvous with the current thread so it needs to be threadCount+1 wide
          final CyclicBarrier joinBarrier = new CyclicBarrier(threads + 1);
@@ -737,33 +732,28 @@ class KernelRunner{
 
          for (int id = 0; id < threads; id++) {
             final int threadId = id;
-            final Kernel worker = (Kernel) kernel.clone();
-            worker.setGlobalX(0);
-            worker.setGlobalY(0);
-            worker.setGlobalZ(0);
+            final Kernel kernelClone = (Kernel) kernel.clone();
 
-            worker.setLocalX(0);
-            worker.setLocalY(0);
-            worker.setLocalZ(0);
-            worker.setRange(range);
-            worker.localBarrier = localBarrier;
+            kernelClone.range = _range;
+            kernelClone.localBarrier = localBarrier;
             threadArray[threadId] = new Thread(new Runnable(){
                @Override public void run() {
-                  for (int groupId = 0; groupId < groups; groupId++) {
-                     worker.setGroupId(groupId);
+                  for (int globalGroupId = 0; globalGroupId < globalGroups; globalGroupId++) {
 
-                     if (range.getDims() == 1) {
-                        int globalThreadId = threadId + groupId * threads;
+                     if (_range.getDims() == 1) {
+                        int globalThreadId = threadId + globalGroupId * threads;
 
-                        int localWidth = range.getLocalWidth();
+                        int localWidth = _range.getLocalWidth();
 
                         // localX is same across all dimensions. 
                         int localX = threadId % localWidth;
-                        worker.setLocalX(localX);
+                        kernelClone.localId[0] = localX;
 
                         int globalX = globalThreadId;
-                        worker.setGlobalX(globalX);
-                     } else if (range.getDims() == 2) {
+                        kernelClone.globalId[0] = globalX;
+
+                        kernelClone.groupId[0] = globalGroupId;
+                     } else if (_range.getDims() == 2) {
 
                         /**
                          * Consider a 12x4 grid of 4*2 local groups
@@ -786,11 +776,17 @@ class KernelRunner{
                          *    00 01 02 03 | 00 01 02 03 | 00 01 02 03
                          *    04 05 06 07 | 04 05 06 07 | 04 05 06 07  
                          *    
-                         *    00 00 00 00 | 01 01 01 01 | 02 02 02 02  groupId : 0..6 
+                         *    00 00 00 00 | 01 01 01 01 | 02 02 02 02  groupId[0] : 0..6 
                          *    00 00 00 00 | 01 01 01 01 | 02 02 02 02   
                          *    ------------+-------------+------------
-                         *    03 03 03 03 | 04 04 04 04 | 05 05 05 05 
-                         *    03 03 03 03 | 04 04 04 04 | 05 05 05 05
+                         *    00 00 00 00 | 01 01 01 01 | 02 02 02 02  
+                         *    00 00 00 00 | 01 01 01 01 | 02 02 02 02
+                         *    
+                         *    00 00 00 00 | 00 00 00 00 | 00 00 00 00  groupId[1] : 0..6 
+                         *    00 00 00 00 | 00 00 00 00 | 00 00 00 00   
+                         *    ------------+-------------+------------
+                         *    01 01 01 01 | 01 01 01 01 | 01 01 01 01 
+                         *    01 01 01 01 | 01 01 01 01 | 01 01 01 01
                          *         
                          *    00 01 02 03 | 08 09 10 11 | 16 17 18 19  globalThreadIds == threadId + groupId * threads;
                          *    04 05 06 07 | 12 13 14 15 | 20 21 22 23
@@ -826,44 +822,47 @@ class KernelRunner{
                          * Assume we are trying to locate the id's for #33 
                          *
                          */
-                        int globalThreadId = threadId + groupId * threads;
-                        worker.setGlobalThreadId(globalThreadId);
-                        worker.setThreadId(threadId);
+                        int globalThreadId = threadId + globalGroupId * threads;
+                        kernelClone.globalThreadId = globalThreadId;
+                        kernelClone.setThreadId(threadId);
 
-                        int localWidth = range.getLocalWidth();
-                        int globalWidth = range.getGlobalWidth();
+                        int localWidth = _range.getLocalWidth();
+                        int globalWidth = _range.getGlobalWidth();
 
                         int localX = threadId % localWidth; // localX = threadId % localWidth =  (for 33 = 1 % 4 = 1)
-                        worker.setLocalX(localX);
+                        kernelClone.localId[0] = localX;
 
                         int localY = threadId / localWidth; // localY = threadId / localWidth = (for 33 = 1 / 4 == 0)
-                        worker.setLocalY(localY);
+                        kernelClone.localId[1] = localY;
 
-                        int groupsPerLineWidth = globalWidth / localWidth; // = 12/4 = 3
+                        // int groupsPerLineWidth = globalWidth / localWidth; // = 12/4 = 3
 
-                        int groupInset = groupId % groupsPerLineWidth; // 4%3 = 1
+                        int groupInset = globalGroupId % _range.getGroupsWidth(); // 4%3 = 1
                         int globalX = groupInset * localWidth + localX; // 1*4+1=5
-                        worker.setGlobalX(globalX);
+                        kernelClone.globalId[0] = globalX;
                         // For global Y we need to work out how many groups bridge the width
 
                         // Then divide groupId by the groupsPerLineWidth
-                        int groupLines = groupId / groupsPerLineWidth; // 4/3 =1
+                        int groupLines = globalGroupId / _range.getGroupsWidth(); // 4/3 =1
                         // Multiply the 
-                        int completeLines = groupLines * range.getLocalHeight(); // 1 * 2
+                        int completeLines = groupLines * _range.getLocalHeight(); // 1 * 2
                         int globalY = completeLines + localY; //2+0 = 2
-                        worker.setGlobalY(globalY);
+                        kernelClone.globalId[1] = globalY;
 
-                     } else if (range.getDims() == 3) {
-                        int globalThreadId = threadId + groupId * threads;
+                        kernelClone.groupId[0] = globalGroupId % _range.getGroupsWidth();
+                        kernelClone.groupId[1] = globalGroupId / _range.getGroupsWidth();
 
-                        int localWidth = range.getLocalWidth();
+                     } else if (_range.getDims() == 3) {
+                        int globalThreadId = threadId + globalGroupId * threads;
+
+                        int localWidth = _range.getLocalWidth();
 
                         // localX is same across all dimensions. 
                         int localX = threadId % localWidth;
-                        worker.setLocalX(localX);
+                        kernelClone.localId[0] = localX;
 
                      }
-                     worker.run();
+                     kernelClone.run();
 
                   }
                   await(joinBarrier); // We rendezvous with waiting thread here

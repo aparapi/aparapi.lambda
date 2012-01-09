@@ -1,6 +1,6 @@
 package com.amd.aparapi;
 
-public class Range implements Cloneable{
+public class Range{
    @KernelRunner.UsedByJNICode private int globalWidth = 1;
 
    @KernelRunner.UsedByJNICode private int localWidth = 1;
@@ -12,6 +12,12 @@ public class Range implements Cloneable{
    @KernelRunner.UsedByJNICode private int globalDepth = 1;
 
    @KernelRunner.UsedByJNICode private int localDepth = 1;
+
+   @KernelRunner.UsedByJNICode private int groupsWidth = 1;
+
+   @KernelRunner.UsedByJNICode private int groupsHeight = 1;
+
+   @KernelRunner.UsedByJNICode private int groupsDepth = 1;
 
    @KernelRunner.UsedByJNICode private boolean valid;
 
@@ -43,10 +49,6 @@ public class Range implements Cloneable{
       return localHeight;
    }
 
-   public void setValid(boolean _valid) {
-      valid = _valid;
-   }
-
    public boolean isValid() {
       return (valid);
    }
@@ -57,14 +59,6 @@ public class Range implements Cloneable{
 
    public int getLocalDepth() {
       return localDepth;
-   }
-
-   public int getGroupSize() {
-      return (localWidth * localHeight * localDepth);
-   }
-
-   public int getNumGroups() {
-      return ((globalWidth * globalHeight * globalDepth) / getGroupSize());
    }
 
    private static final int THREADS_PER_CORE = 16;
@@ -78,6 +72,7 @@ public class Range implements Cloneable{
       Range range = new Range(1);
       range.globalWidth = _globalWidth;
       range.localWidth = _localWidth;
+      range.groupsWidth = _globalWidth / _localWidth;
       return (range);
    }
 
@@ -89,6 +84,7 @@ public class Range implements Cloneable{
       while (withoutLocal.globalWidth % withoutLocal.localWidth != 0) {
          withoutLocal.localWidth--;
       }
+      withoutLocal.groupsWidth = withoutLocal.globalWidth / withoutLocal.localWidth;
       return (withoutLocal);
    }
 
@@ -98,6 +94,8 @@ public class Range implements Cloneable{
       range.localWidth = _localWidth;
       range.globalHeight = _globalHeight;
       range.localHeight = _localHeight;
+      range.groupsWidth = _globalWidth / _localWidth;
+      range.groupsHeight = _globalHeight / _localHeight;
       return (range);
    }
 
@@ -133,7 +131,8 @@ public class Range implements Cloneable{
 
          }
       } while (lw * lh <= MAX_GROUP_SIZE);
-
+      withoutLocal.groupsWidth = withoutLocal.globalWidth / withoutLocal.localWidth;
+      withoutLocal.groupsHeight = withoutLocal.globalHeight / withoutLocal.localHeight;
       return (withoutLocal);
    }
 
@@ -146,6 +145,9 @@ public class Range implements Cloneable{
       range.localHeight = _localHeight;
       range.globalDepth = _globalDepth;
       range.localDepth = _localDepth;
+      range.groupsWidth = _globalWidth / _localWidth;
+      range.groupsHeight = _globalHeight / _localHeight;
+      range.groupsDepth = _globalDepth / _localDepth;
       return (range);
    }
 
@@ -186,25 +188,15 @@ public class Range implements Cloneable{
             withoutLocal.localDepth = ld;
          }
       } while (lw * lh * ld <= MAX_GROUP_SIZE);
-
+      withoutLocal.groupsWidth = withoutLocal.globalWidth / withoutLocal.localWidth;
+      withoutLocal.groupsHeight = withoutLocal.globalHeight / withoutLocal.localHeight;
+      withoutLocal.groupsDepth = withoutLocal.globalDepth / withoutLocal.localDepth;
       return (withoutLocal);
 
    }
 
    public int getDims() {
       return (dims);
-   }
-
-   @Override protected Object clone() {
-      try {
-         Range worker = (Range) super.clone();
-
-         return worker;
-      } catch (CloneNotSupportedException e) {
-         // TODO Auto-generated catch block
-         e.printStackTrace();
-         return (null);
-      }
    }
 
    public String toString() {
@@ -229,14 +221,16 @@ public class Range implements Cloneable{
       return (sb.toString());
    }
 
-   public void setLocalWidth(int _localWidth) {
-      localWidth = _localWidth;
-
+   public int getGroupsWidth() {
+      return (groupsWidth);
    }
 
-   public void setLocalHeight(int _localHeight) {
-      localHeight = _localHeight;
+   public int getGroupsHeight() {
+      return (groupsHeight);
+   }
 
+   public int getGroupsDepth() {
+      return (groupsDepth);
    }
 
 }

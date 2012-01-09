@@ -141,6 +141,7 @@ public abstract class Kernel implements Cloneable{
    }
 
    @Retention(RetentionPolicy.RUNTIME) @interface OpenCLDelegate {
+
    }
 
    private static Logger logger = Logger.getLogger(Config.getLoggerName());
@@ -292,51 +293,29 @@ public abstract class Kernel implements Cloneable{
 
    private EXECUTION_MODE executionMode = EXECUTION_MODE.getDefaultExecutionMode();
 
-   private int globalId_0;
+   int[] globalId = new int[] {
+         0,
+         0,
+         0
+   };
 
-   private int globalId_1;
+   int[] localId = new int[] {
+         0,
+         0,
+         0
+   };
 
-   private int globalId_2;
+   int[] groupId = new int[] {
+         0,
+         0,
+         0
+   };
 
-   private int localId_0;
+   Range range;
 
-   private int localId_1;
-
-   private int localId_2;
-
-   private int groupId;
-
-   // private int groupId_1;
-
-   //private int groupId_2;
-
-   private Range range;
-
-   public void setRange(Range _range) {
-      range = _range;
-   }
-
-   private int passId;
+   int passId;
 
    volatile CyclicBarrier localBarrier;
-
-   void setGlobalId(int _globalId) {
-      globalId_0 = _globalId;
-
-   }
-
-   void setGlobalX(int _globalX) {
-      globalId_0 = _globalX;
-
-   }
-
-   void setGlobalY(int _globalY) {
-      globalId_1 = _globalY;
-   }
-
-   void setGlobalZ(int _globalZ) {
-      globalId_2 = _globalZ;
-   }
 
    /**
     * Determine the globalId of an executing kernel.
@@ -375,39 +354,23 @@ public abstract class Kernel implements Cloneable{
     */
 
    @OpenCLDelegate protected final int getGlobalId() {
-      return (globalId_0);
+      return (getGlobalId(0));
+   }
+
+   @OpenCLDelegate protected final int getGlobalId(int _dim) {
+      return (globalId[_dim]);
    }
 
    @OpenCLDelegate protected final int getGlobalX() {
-      return (globalId_0);
+      return (getGlobalId(0));
    }
 
    @OpenCLDelegate protected final int getGlobalY() {
-      return (globalId_1);
+      return (getGlobalId(1));
    }
 
    @OpenCLDelegate protected final int getGlobalZ() {
-      return (globalId_2);
-   }
-
-   void setLocalX(int _localX) {
-      localId_0 = _localX;
-
-   }
-
-   void setLocalY(int _localY) {
-      localId_1 = _localY;
-
-   }
-
-   void setLocalZ(int _localZ) {
-      localId_2 = _localZ;
-
-   }
-
-   void setPassId(int _passId) {
-      passId = _passId;
-
+      return (getGlobalId(2));
    }
 
    /**
@@ -442,23 +405,23 @@ public abstract class Kernel implements Cloneable{
     * @return The groupId for this Kernel being executed
     */
    @OpenCLDelegate protected final int getGroupId() {
-      return (groupId);
+      return (getGroupId(0));
    }
 
-   // @OpenCLDelegate protected final int getGroupX() {
-   //    return (groupId_0);
-   // }
+   @OpenCLDelegate protected final int getGroupId(int _dim) {
+      return (groupId[_dim]);
+   }
 
-   // @OpenCLDelegate protected final int getGroupY() {
-   //    return (groupId_1);
-   //  }
+   @OpenCLDelegate protected final int getGroupX() {
+      return (getGroupId(0));
+   }
 
-   // @OpenCLDelegate protected final int getGroupZ() {
-   //    return (groupId_2);
-   //  }
-   void setGroupId(int _groupId) {
-      groupId = _groupId;
+   @OpenCLDelegate protected final int getGroupY() {
+      return (getGroupId(1));
+   }
 
+   @OpenCLDelegate protected final int getGroupZ() {
+      return (getGroupId(2));
    }
 
    /**
@@ -478,10 +441,6 @@ public abstract class Kernel implements Cloneable{
     */
    @OpenCLDelegate protected final int getPassId() {
       return (passId);
-   }
-
-   void setLocalId(int _localId) {
-      localId_0 = _localId;
    }
 
    /**
@@ -515,19 +474,23 @@ public abstract class Kernel implements Cloneable{
     * @return The local id for this Kernel being executed
     */
    @OpenCLDelegate protected final int getLocalId() {
-      return (localId_0);
+      return (getLocalId(0));
+   }
+
+   @OpenCLDelegate protected final int getLocalId(int _dim) {
+      return (localId[_dim]);
    }
 
    @OpenCLDelegate protected final int getLocalX() {
-      return (localId_0);
+      return (getLocalId(0));
    }
 
    @OpenCLDelegate protected final int getLocalY() {
-      return (localId_1);
+      return (getLocalId(1));
    }
 
    @OpenCLDelegate protected final int getLocalZ() {
-      return (localId_2);
+      return (getLocalId(2));
    }
 
    /**
@@ -577,6 +540,10 @@ public abstract class Kernel implements Cloneable{
       return (range.getGlobalWidth());
    }
 
+   @OpenCLDelegate protected final int getGlobalSize(int index) {
+      return (index == 0 ? range.getGlobalWidth() : (index == 1 ? range.getGlobalHeight() : range.getGlobalDepth()));
+   }
+
    @OpenCLDelegate protected final int getGlobalWidth() {
       return (range.getGlobalWidth());
    }
@@ -604,7 +571,23 @@ public abstract class Kernel implements Cloneable{
     * @return The number of groups that kernels will be dispatched into.
     */
    @OpenCLDelegate protected final int getNumGroups() {
-      return (range.getNumGroups());
+      return (range.getGroupsWidth());
+   }
+
+   @OpenCLDelegate protected final int getNumGroups(int index) {
+      return (index == 0 ? range.getGroupsWidth() : (index == 1 ? range.getGroupsHeight() : range.getGroupsDepth()));
+   }
+
+   @OpenCLDelegate protected final int getNumGroupsWidth() {
+      return (range.getGroupsWidth());
+   }
+
+   @OpenCLDelegate protected final int getNumGroupsHeight() {
+      return (range.getGroupsHeight());
+   }
+
+   @OpenCLDelegate protected final int getNumGroupsDepth() {
+      return (range.getGroupsDepth());
    }
 
    /**
@@ -624,7 +607,21 @@ public abstract class Kernel implements Cloneable{
    @Override protected Object clone() {
       try {
          Kernel worker = (Kernel) super.clone();
-
+         worker.groupId = new int[] {
+               0,
+               0,
+               0
+         };
+         worker.localId = new int[] {
+               0,
+               0,
+               0
+         };
+         worker.globalId = new int[] {
+               0,
+               0,
+               0
+         };
          return worker;
       } catch (CloneNotSupportedException e) {
          // TODO Auto-generated catch block
@@ -1466,18 +1463,13 @@ public abstract class Kernel implements Cloneable{
     * Java version is identical to localBarrier()
     * 
     * @annotion Experimental
+    * @deprecated
     */
 
-   @OpenCLDelegate @Annotations.Experimental protected final void globalBarrier() {
-      try {
-         localBarrier.await();
-      } catch (InterruptedException e) {
-         // TODO Auto-generated catch block
-         e.printStackTrace();
-      } catch (BrokenBarrierException e) {
-         // TODO Auto-generated catch block
-         e.printStackTrace();
-      }
+   @OpenCLDelegate @Annotations.Experimental @Deprecated() protected final void globalBarrier() throws DeprecatedException {
+      throw new DeprecatedException(
+            "Kernel.globalBarrier() has been deprecated. It was based an incorrect understanding of OpenCL functionality.");
+
    }
 
    private KernelRunner kernelRunner = null;
@@ -1953,11 +1945,6 @@ public abstract class Kernel implements Cloneable{
    }
 
    int globalThreadId;
-
-   public void setGlobalThreadId(int _globalThreadId) {
-      globalThreadId = _globalThreadId;
-
-   }
 
    public int getGlobalThreadId() {
       return (globalThreadId);

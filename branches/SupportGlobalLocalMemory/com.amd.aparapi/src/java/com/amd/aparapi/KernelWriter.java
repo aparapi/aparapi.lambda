@@ -93,31 +93,37 @@ abstract class KernelWriter extends BlockWriter{
    {
 
       javaToCLIdentifierMap.put("getGlobalId()I", "get_global_id(0)");
+      javaToCLIdentifierMap.put("getGlobalId(I)I", "get_global_id"); // no parenthesis if we are conveying args
       javaToCLIdentifierMap.put("getGlobalX()I", "get_global_id(0)");
       javaToCLIdentifierMap.put("getGlobalY()I", "get_global_id(1)");
       javaToCLIdentifierMap.put("getGlobalZ()I", "get_global_id(2)");
 
       javaToCLIdentifierMap.put("getGlobalSize()I", "get_global_size(0)");
+      javaToCLIdentifierMap.put("getGlobalSize(I)I", "get_global_size"); // no parenthesis if we are conveying args
       javaToCLIdentifierMap.put("getGlobalWidth()I", "get_global_size(0)");
       javaToCLIdentifierMap.put("getGlobalHeight()I", "get_global_size(1)");
       javaToCLIdentifierMap.put("getGlobalDepth()I", "get_global_size(2)");
 
       javaToCLIdentifierMap.put("getLocalId()I", "get_local_id(0)");
+      javaToCLIdentifierMap.put("getLocalId(I)I", "get_local_id"); // no parenthesis if we are conveying args
       javaToCLIdentifierMap.put("getLocalX()I", "get_local_id(0)");
       javaToCLIdentifierMap.put("getLocalY()I", "get_local_id(1)");
       javaToCLIdentifierMap.put("getLocalZ()I", "get_local_id(2)");
 
       javaToCLIdentifierMap.put("getLocalSize()I", "get_local_size(0)");
+      javaToCLIdentifierMap.put("getLocalSize(I)I", "get_local_size"); // no parenthesis if we are conveying args
       javaToCLIdentifierMap.put("getLocalWidth()I", "get_local_size(0)");
       javaToCLIdentifierMap.put("getLocalHeight()I", "get_local_size(1)");
       javaToCLIdentifierMap.put("getLocalDepth()I", "get_local_size(2)");
 
       javaToCLIdentifierMap.put("getNumGroups()I", "get_num_groups(0)");
+      javaToCLIdentifierMap.put("getNumGroups(I)I", "get_num_groups"); // no parenthesis if we are conveying args
       javaToCLIdentifierMap.put("getNumGroupsX()I", "get_num_groups(0)");
       javaToCLIdentifierMap.put("getNumGroupsY()I", "get_num_groups(1)");
       javaToCLIdentifierMap.put("getNumGroupsZ()I", "get_num_groups(2)");
 
       javaToCLIdentifierMap.put("getGroupId()I", "get_group_id(0)");
+      javaToCLIdentifierMap.put("getGroupId(I)I", "get_group_id"); // no parenthesis if we are conveying args
       javaToCLIdentifierMap.put("getGroupX()I", "get_group_id(0)");
       javaToCLIdentifierMap.put("getGroupY()I", "get_group_id(1)");
       javaToCLIdentifierMap.put("getGroupZ()I", "get_group_id(2)");
@@ -186,7 +192,19 @@ abstract class KernelWriter extends BlockWriter{
       if (barrierAndGetterMappings != null) {
          // this is one of the OpenCL barrier or size getter methods
          // write the mapping and exit
-         write(barrierAndGetterMappings);
+         if (argc > 0) {
+            write(barrierAndGetterMappings);
+            write("(");
+            for (int arg = 0; arg < argc; arg++) {
+               if ((arg != 0)) {
+                  write(", ");
+               }
+               writeInstruction(_methodCall.getArg(arg));
+            }
+            write(")");
+         } else {
+            write(barrierAndGetterMappings);
+         }
       } else {
 
          String intrinsicMapping = Kernel.getMappedMethodName(_methodEntry);
