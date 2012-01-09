@@ -74,7 +74,7 @@ public class Main{
       @Override public void run() {
          int gid = (getGlobalSize() * getGlobalId(1)) + getGlobalId(0);
          numGroups[0] = getNumGroups();
-         if (getGroupId(0) == group) {
+         if ((getGroupId(1) * getNumGroups(0)) + getGroupId(0) == group) {
             rgb[gid] = 0xffffff;
          } else {
             rgb[gid] = 0x0;
