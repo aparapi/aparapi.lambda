@@ -138,7 +138,7 @@ public class Main{
 
       JFrame frame = new JFrame("Grid");
 
-      final Range range = Range.create2D(512, 512);
+      final Range range = Range.create2D(512, 512, 16, 16);
 
       final BufferedImage image = new BufferedImage(range.getGlobalWidth(), range.getGlobalHeight(), BufferedImage.TYPE_INT_RGB);
       final int[] imageRgb = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
