@@ -211,4 +211,8 @@ public class Range{
       return (globalDepth / localDepth);
    }
 
+   public int getWorkGroupSize() {
+      return localWidth * localHeight * localDepth;
+   }
+
 }

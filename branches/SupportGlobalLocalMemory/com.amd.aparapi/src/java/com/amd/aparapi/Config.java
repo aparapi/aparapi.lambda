@@ -97,14 +97,6 @@ class Config{
     */
    static final boolean enableShowGeneratedOpenCL = Boolean.getBoolean(propPkgName + ".enableShowGeneratedOpenCL");
 
-   /**
-    * Allows the user to request that we pass NULL for localdims. 
-    * 
-    *  Usage -Dcom.amd.aparapi.enableUseNullForLocalSize={true|false}
-    *  
-    */
-   static boolean enableUseNullForLocalSize = Boolean.getBoolean(propPkgName + ".enableUseNullForLocalSize");
-
    // Pragma/OpenCL codegen related flags
    static final boolean enableAtomic32 = Boolean.getBoolean(propPkgName + ".enableAtomic32");
 

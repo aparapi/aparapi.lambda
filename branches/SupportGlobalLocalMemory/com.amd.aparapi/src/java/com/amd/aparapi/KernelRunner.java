@@ -527,20 +527,23 @@ class KernelRunner{
     * @param maxJTPLocalSize
     * @return
     */
-   @Annotations.DocMe private native static synchronized long initJNI(Kernel _kernel, int _flags, int numProcessors,
-         int maxJTPLocalSize);
+   @Annotations.DocMe private native static synchronized long initJNI(Kernel _kernel, int _flags);
 
    private native long buildProgramJNI(long _jniContextHandle, String _source);
 
    private native int setArgsJNI(long _jniContextHandle, KernelArg[] _args, int argc);
 
-   private native int runKernelJNI(long _jniContextHandle, Range _range, boolean _needSync, boolean useNullForLocalSize, int _passes);
+   private native int runKernelJNI(long _jniContextHandle, Range _range, boolean _needSync, int _passes);
 
    private native int disposeJNI(long _jniContextHandle);
 
-   private native int updateRangeJNI(long _jniContextHandle, Range _range, int localBytesPerLocalId);
-
    private native String getExtensionsJNI(long _jniContextHandle);
+
+   private native int getMaxWorkGroupSizeJNI(long _jniContextHandle);
+
+   private native int getMaxComputeUnitsJNI(long _jniContextHandle);
+
+   private native int getMaxWorkItemDimensionsJNI(long _jniContextHandle);
 
    private Set<String> capabilitiesSet;
 
@@ -632,32 +635,6 @@ class KernelRunner{
          throw new IllegalStateException("Capabilities queried before they were initialized");
       }
       return capabilitiesSet.contains(CL_KHR_GL_SHARING);
-   }
-
-   private static int maxJTPLocalSize = Config.JTPLocalSizeMultiplier * Runtime.getRuntime().availableProcessors();
-
-   static int getMaxJTPLocalSize() {
-      return maxJTPLocalSize;
-   }
-
-   /**
-    * We need to match OpenCL's algorithm for localsize.
-    * 
-    * @param _globalSize
-    *          The globalsize requested by the user (via <code>Kernel.execute(globalSize)</code>)
-    * @return The value we use for JTP execution for localSize
-    */
-   private static int getJTPLocalSizeForGlobalSize(int _globalSize) {
-      // iterate down until we find a localSize that divides _globalSize equally
-      for (int localSize = getMaxJTPLocalSize(); localSize > 0; localSize--) {
-         if (_globalSize % localSize == 0) {
-            if (logger.isLoggable(Level.FINE)) {
-               logger.fine("executeJava: picking localSize=" + localSize + " for globalSize=" + _globalSize);
-            }
-            return localSize;
-         }
-      }
-      return 0;
    }
 
    /**
@@ -1152,12 +1129,8 @@ class KernelRunner{
       }
    }
 
-   // this routine now also finds out how many perLocalItem bytes are specified for this kernel
-   private int localBytesPerLocalId = 0;
-
    private boolean updateKernelArrayRefs() throws AparapiException {
       boolean needsSync = false;
-      localBytesPerLocalId = 0;
 
       for (int i = 0; i < argc; i++) {
          KernelArg arg = args[i];
@@ -1206,32 +1179,28 @@ class KernelRunner{
    // private int numAvailableProcessors = Runtime.getRuntime().availableProcessors();
 
    private Kernel executeOpenCL(final String _entrypointName, final Range _range, final int _passes) throws AparapiException {
+      if (_range.getDims() > getMaxWorkItemDimensionsJNI(jniContextHandle)) {
+         throw new RangeException("Range dim size " + _range.getDims() + " > device "
+               + getMaxWorkItemDimensionsJNI(jniContextHandle));
+      }
+      if (_range.getWorkGroupSize() > getMaxWorkGroupSizeJNI(jniContextHandle)) {
+         throw new RangeException("Range workgroup size " + _range.getWorkGroupSize() + " > device "
+               + getMaxWorkGroupSizeJNI(jniContextHandle));
+      }
+
+      System.out.println("maxComputeUnits=" + this.getMaxComputeUnitsJNI(jniContextHandle));
+      System.out.println("maxWorkGroupSize=" + this.getMaxWorkGroupSizeJNI(jniContextHandle));
+      System.out.println("maxWorkItemDimensions=" + this.getMaxWorkItemDimensionsJNI(jniContextHandle));
 
       // Read the array refs after kernel may have changed them
       // We need to do this as input to computing the localSize
       assert args != null : "args should not be null";
       boolean needSync = updateKernelArrayRefs();
-
-      // note: the above will also recompute the value localBytesPerLocalId
-
-      // updateRangeJNI(jniContextHandle, _range, localBytesPerLocalId);
-      // if (!_range.isValid()) {
-      // should fall back to java?
-      //  logger.warning("updateRangeJNI failed, reverting java");
-      // kernel.setFallbackExecutionMode();
-      // return execute(_entrypointName, _range, _passes);
-      // }
-
-      // Call back to kernel for last minute changes
-      //kernel.setRange(_range);
-
       if (needSync && logger.isLoggable(Level.FINE)) {
          logger.fine("Need to resync arrays on " + kernel.getClass().getName());
       }
-
       // native side will reallocate array buffers if necessary
-      if (runKernelJNI(jniContextHandle, _range, needSync, Config.enableUseNullForLocalSize, _passes) != 0) {
-         //System.out.println("CL exec seems to have failed");
+      if (runKernelJNI(jniContextHandle, _range, needSync, _passes) != 0) {
          logger.warning("### CL exec seems to have failed. Trying to revert to Java ###");
          kernel.setFallbackExecutionMode();
          return execute(_entrypointName, _range, _passes);
@@ -1298,7 +1267,7 @@ class KernelRunner{
                jniFlags |= (kernel.getExecutionMode().equals(EXECUTION_MODE.GPU) ? JNI_FLAG_USE_GPU : 0);
                // Init the device to check capabilities before emitting the
                // code that requires the capabilities.
-               jniContextHandle = initJNI(kernel, jniFlags, Runtime.getRuntime().availableProcessors(), getMaxJTPLocalSize());
+               jniContextHandle = initJNI(kernel, jniFlags);
                if (jniContextHandle == 0) {
                   return warnFallBackAndExecute(_entrypointName, _range, _passes, "initJNI failed to return a valid handle");
                }
@@ -1356,7 +1325,6 @@ class KernelRunner{
 
                // Send the string to OpenCL to compile it
                if (buildProgramJNI(jniContextHandle, openCLStringBuilder.toString()) == 0) {
-
                   return warnFallBackAndExecute(_entrypointName, _range, _passes, "OpenCL compile failed");
                }
 
