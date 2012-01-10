@@ -225,7 +225,7 @@ class Range{
       size_t *globalDims;
       size_t *localDims;
       jboolean localIsDerived;
-      Range(JNIEnv *jenv, jobject range, jboolean useNullForLocalWidth):
+      Range(JNIEnv *jenv, jobject range):
          jenv(jenv),
          range(range),
          dims(0),
@@ -249,36 +249,22 @@ class Range{
                fprintf(stderr, "native range dims == %d\n", dims);
                offsets = new size_t[dims];
                globalDims = new size_t[dims];
-               if (!useNullForLocalWidth){
-                  localDims = new size_t[dims];
-               }
+               localDims = new size_t[dims];
                offsets[0]= 0;
-               if (!useNullForLocalWidth){
-                  localDims[0]= jenv->GetIntField(range, localWidthFieldID);
-                  fprintf(stderr, "native range localWidth == %d\n", localDims[0]);
-               }else{
-                  fprintf(stderr, "native range localWidth == NULL\n");
-               }
+               localDims[0]= jenv->GetIntField(range, localWidthFieldID);
+               fprintf(stderr, "native range localWidth == %d\n", localDims[0]);
                globalDims[0]= jenv->GetIntField(range, globalWidthFieldID);
                fprintf(stderr, "native range globalWidth == %d\n", globalDims[0]);
                if (dims >1){
                   offsets[1]= 0;
-                  if (!useNullForLocalWidth){
-                     localDims[1]= jenv->GetIntField(range, localHeightFieldID);
-                     fprintf(stderr, "native range localHeight == %d\n", localDims[1]);
-                  }else{
-                     fprintf(stderr, "native range localHeight == NULL\n");
-                  }
+                  localDims[1]= jenv->GetIntField(range, localHeightFieldID);
+                  fprintf(stderr, "native range localHeight == %d\n", localDims[1]);
                   globalDims[1]= jenv->GetIntField(range, globalHeightFieldID);
                   fprintf(stderr, "native range globalHeight == %d\n", globalDims[1]);
                   if (dims >2){
                      offsets[2]= 0;
-                     if (!useNullForLocalWidth){
-                        localDims[2]= jenv->GetIntField(range, localDepthFieldID);
-                        fprintf(stderr, "native range localDepth == %d\n", localDims[2]);
-                     }else{
-                        fprintf(stderr, "native range localDepth == NULL\n");
-                     }
+                     localDims[2]= jenv->GetIntField(range, localDepthFieldID);
+                     fprintf(stderr, "native range localDepth == %d\n", localDims[2]);
                      globalDims[2]= jenv->GetIntField(range, globalDepthFieldID);
                      fprintf(stderr, "native range globalDepth == %d\n", globalDims[2]);
                   }
@@ -352,7 +338,7 @@ class KernelArg{
       jint type;         // a bit mask determining the type of this arg
       jboolean isStatic; // A flag indicating if the value is static
       jint sizeInBytes;  // bytes in the array or directBuf
-      jobject javaArg;   // global reference to the corresponding java KernelArg 
+      jobject javaArg;   // global reference to the corresponding java KernelArg object
       union{
          cl_char c;
          cl_double d;
@@ -515,8 +501,6 @@ class JNIContext{
    public:
       JNIEnv *jenv;
       jobject kernelObject;
-      jint numProcessors;
-      jint maxJTPLocalWidth;
       jclass kernelClass;
       cl_uint deviceIdc;
       cl_device_id* deviceIds;
@@ -547,13 +531,11 @@ class JNIContext{
          return((JNIContext*)jniContextHandle);
       }
 
-      JNIContext(JNIEnv *_jenv, jobject _kernelObject, jint _flags, jint _numProcessors, jint _maxJTPLocalWidth): 
+      JNIContext(JNIEnv *_jenv, jobject _kernelObject, jint _flags): 
          jenv(_jenv),
          kernelObject(jenv->NewGlobalRef(_kernelObject)),
          kernelClass((jclass)jenv->NewGlobalRef(jenv->GetObjectClass(_kernelObject))), 
          flags(_flags),
-         numProcessors(_numProcessors),
-         maxJTPLocalWidth(_maxJTPLocalWidth),
          platform(NULL),
          profileBaseTime(0),
          deviceType(((flags&com_amd_aparapi_KernelRunner_JNI_FLAG_USE_GPU)==com_amd_aparapi_KernelRunner_JNI_FLAG_USE_GPU)?CL_DEVICE_TYPE_GPU:CL_DEVICE_TYPE_CPU),
@@ -620,7 +602,6 @@ class JNIContext{
                            GET_DEV_INFO(deviceIds[0], CL_DEVICE_GLOBAL_MEM_SIZE, globalMemSize, "%d");
                            GET_DEV_INFO(deviceIds[0], CL_DEVICE_LOCAL_MEM_SIZE, localMemSize, "%d");
                            if (isVerbose()){
-
                               fprintf(stderr, "device[%p]: Type: ", deviceIds[0]);
                               if (deviceType & CL_DEVICE_TYPE_DEFAULT) {
                                  //  deviceType &= ~CL_DEVICE_TYPE_DEFAULT;
@@ -905,29 +886,27 @@ cl_int profile(ProfileInfo *profileInfo, cl_event *event){
 }
 
 
-
-
-jint updateKernel(JNIEnv *jenv, jobject jobj, JNIContext* jniContext) {
+//Step through all non-primitive (array of primitive or array object references) and determine if the field has changed
+//The field may have been re-assigned by the Java code to NULL or another instance. 
+//If we detect a change then we discard the previous cl_mem buffer, the caller will detect that the buffers are null and will create new cl_mem buffers. 
+jint updateNonPrimitiveReferences(JNIEnv *jenv, jobject jobj, JNIContext* jniContext) {
    cl_int status = CL_SUCCESS;
    if (jniContext != NULL){
-      // we need to step through the array of KernelArg's to create the info required to create the cl_mem buffers.
       for (jint i=0; i<jniContext->argc; i++){ 
          KernelArg *arg=jniContext->args[i];
-         arg->syncType();
+         arg->syncType(); // make sure that the JNI arg reflects the latest type info from the instance 
 
          if (jniContext->isVerbose()){
             fprintf(stderr, "got type for %s: %08x\n", arg->name, arg->type);
          }
          if (!arg->isPrimitive()) {
-            // Following used for all primitive arrays, object arrays  and nio Buffers
+            // Following used for all primitive arrays, object arrays and nio Buffers
             jarray newRef = (jarray)jenv->GetObjectField(arg->javaArg, KernelArg::javaArrayFieldID);
             if (jniContext->isVerbose()){
-
                fprintf(stderr, "testing for Resync javaArray %s: old=%p, new=%p\n", arg->name, arg->value.ref.javaArray, newRef);         
             }
 
-            jboolean isSame = jenv->IsSameObject( newRef, arg->value.ref.javaArray);
-            if (isSame == JNI_FALSE) {
+            if (!jenv->IsSameObject(newRef, arg->value.ref.javaArray)) {
                if (jniContext->isVerbose()){
                   fprintf(stderr, "Resync javaArray for %s: %p  %p\n", arg->name, newRef, arg->value.ref.javaArray);         
                }
@@ -968,24 +947,21 @@ jint updateKernel(JNIEnv *jenv, jobject jobj, JNIContext* jniContext) {
                arg->syncSizeInBytes();
 
                if (jniContext->isVerbose()){
-                  fprintf(stderr, "updateKernel, args[%d].sizeInBytes=%d\n", i, arg->sizeInBytes);
+                  fprintf(stderr, "updateNonPrimitiveReferences, args[%d].sizeInBytes=%d\n", i, arg->sizeInBytes);
                }
-            } // !is_same
+            } // object has changed
          }
       } // for each arg
    } // if jniContext != NULL
-
    return(status);
 }
 
 
 
 JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_runKernelJNI(JNIEnv *jenv,
-      jobject jobj, jlong jniContextHandle, jobject _range, jboolean needSync,
-      jboolean useNullForLocalWidth, jint passes) {
+      jobject jobj, jlong jniContextHandle, jobject _range, jboolean needSync, jint passes) {
 
-   fprintf(stderr, "use null for localwidth = %d\n", useNullForLocalWidth);
-   Range range(jenv, _range, useNullForLocalWidth);
+   Range range(jenv, _range);
 
    cl_int status = CL_SUCCESS;
    JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);
@@ -995,9 +971,9 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_runKernelJNI(JNIEnv *je
 
    // Need to capture array refs
    if (jniContext->firstRun || needSync) {
-      updateKernel(jenv, jobj, jniContext );
+      updateNonPrimitiveReferences(jenv, jobj, jniContext );
       if (jniContext->isVerbose()){
-         fprintf(stderr, "back from updateKernel\n");
+         fprintf(stderr, "back from updateNonPrimitiveReferences\n");
       }
    }
 
@@ -1308,7 +1284,7 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_runKernelJNI(JNIEnv *je
 
          if (status != CL_SUCCESS) {
             PRINT_CL_ERR(status, "clEnqueueNDRangeKernel()");
-            fprintf(stderr, "after clEnqueueNDRangeKernel, globalWidth=%d localWidth=%d usingNull=%d\n", (int)range.globalDims[0], useNullForLocalWidth?-1:(int)range.localDims[0], useNullForLocalWidth);
+            fprintf(stderr, "after clEnqueueNDRangeKernel, globalWidth=%d localWidth=%d\n", (int)range.globalDims[0], range.localDims[0] );
             jniContext->unpinAll();
             return status;
          }
@@ -1456,10 +1432,9 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_runKernelJNI(JNIEnv *je
 
 // we return the JNIContext from here 
 JNIEXPORT jlong JNICALL Java_com_amd_aparapi_KernelRunner_initJNI(JNIEnv *jenv, jclass clazz, jobject kernelObject, 
-      jint flags, jint numProcessors,
-      jint maxJTPLocalWidth) {
+      jint flags) {
    cl_int status = CL_SUCCESS;
-   JNIContext* jniContext = new JNIContext(jenv, kernelObject, flags, numProcessors, maxJTPLocalWidth);
+   JNIContext* jniContext = new JNIContext(jenv, kernelObject, flags);
    if (jniContext->isValid()){
       return((jlong)jniContext);
    }else{
@@ -1672,48 +1647,7 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_setArgsJNI(JNIEnv *jenv
    return(status);
 }
 
-JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_updateRangeJNI(JNIEnv *jenv, jobject jobj, jlong jniContextHandle, jobject _range, jint localBytesPerLocalId) {
-   Range range(jenv, _range, false);
-   size_t kernelMaxWorkGroupSize = 0;
-   size_t kernelWorkGroupSizeMultiple = 0;
-   cl_int status = CL_SUCCESS;
-   JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);
-   if (jniContext != NULL){
-      clGetKernelWorkGroupInfo(jniContext->kernel, jniContext->deviceIds[0], CL_KERNEL_WORK_GROUP_SIZE, sizeof(kernelMaxWorkGroupSize), &kernelMaxWorkGroupSize, NULL);
-      ASSERT_CL("clGetKernelWorkGroupInfo()");
-      // starting value depends on device type
-      // not sure why the CPU has a different starting size, but it does
-      int startLocalWidth = (jniContext->deviceType == CL_DEVICE_TYPE_GPU ? kernelMaxWorkGroupSize : range.globalDims[0]/(jniContext->numProcessors*4));
 
-      if (startLocalWidth == 0) startLocalWidth = 1;
-      if (startLocalWidth > kernelMaxWorkGroupSize) startLocalWidth = kernelMaxWorkGroupSize;
-      if (startLocalWidth > range.globalDims[0]) startLocalWidth = range.globalDims[0];
-      // if the kernel uses any local memory, determine our max local memory size so we can possibly limit localsize
-      cl_ulong devLocalMemSize;
-      if (localBytesPerLocalId > 0) {
-         status = clGetDeviceInfo(jniContext->deviceIds[0], CL_DEVICE_LOCAL_MEM_SIZE, sizeof(cl_ulong), &devLocalMemSize, NULL);
-         cl_uint localWidthLimitFromLocalMem = devLocalMemSize/localBytesPerLocalId;
-         if (startLocalWidth > localWidthLimitFromLocalMem) startLocalWidth = localWidthLimitFromLocalMem;
-         if (jniContext->isVerbose()){
-            fprintf(stderr, "localBytesPerLocalId=%d, device localMemMax=%d, localWidthLimitFromLocalMem=%d\n",
-                  localBytesPerLocalId, (cl_uint) devLocalMemSize, localWidthLimitFromLocalMem);
-         }
-
-      }
-
-      // then iterate down until we find a localWidth that divides globalWidth equally
-      for (int localWidth = startLocalWidth; localWidth>0; localWidth--) {
-         if (range.globalDims[0] % localWidth == 0) {
-            if (jniContext->isVerbose()){
-               fprintf(stderr, "for globalWidth=%d, stepping localWidth from %d, returning localWidth=%d\n", range.globalDims[0], startLocalWidth, localWidth);
-            }
-            return localWidth;
-         }
-      }
-   }
-   // should never get this far
-   return 0;
-}
 
 JNIEXPORT jstring JNICALL Java_com_amd_aparapi_KernelRunner_getExtensionsJNI(JNIEnv *jenv, jobject jobj, jlong jniContextHandle) {
    jstring jextensions = NULL;
@@ -1779,6 +1713,36 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_getJNI(JNIEnv *jenv, jo
       }
    }
    return 0;
+}
+
+JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_getMaxComputeUnitsJNI(JNIEnv *jenv, jobject jobj, jlong jniContextHandle) {
+   cl_int status = CL_SUCCESS;
+   JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);
+   if (jniContext != NULL){
+      return(jniContext->maxComputeUnits);
+   }else{
+      return(0);
+   }
+}
+
+JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_getMaxWorkItemDimensionsJNI(JNIEnv *jenv, jobject jobj, jlong jniContextHandle) {
+   cl_int status = CL_SUCCESS;
+   JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);
+   if (jniContext != NULL){
+      return(jniContext->maxWorkItemDimensions);
+   }else{
+      return(0);
+   }
+}
+
+JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_getMaxWorkGroupSizeJNI(JNIEnv *jenv, jobject jobj, jlong jniContextHandle) {
+   cl_int status = CL_SUCCESS;
+   JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);
+   if (jniContext != NULL){
+      return(jniContext->maxWorkGroupSize);
+   }else{
+      return(0);
+   }
 }
 
 
