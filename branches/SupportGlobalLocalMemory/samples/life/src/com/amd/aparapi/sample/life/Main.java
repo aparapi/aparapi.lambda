@@ -105,7 +105,8 @@ public class Main{
          imageData = ((DataBufferInt) _image.getRaster().getDataBuffer()).getData();
          width = _width;
          height = _height;
-         range = Range.create(width, height);
+         range = Range.create(width * height, 256);
+         System.out.println("range = " + range);
          fromBase = height * width;
          toBase = 0;
          setExplicit(true); // This gives us a performance boost
