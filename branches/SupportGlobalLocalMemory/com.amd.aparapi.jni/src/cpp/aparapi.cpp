@@ -133,12 +133,6 @@ MicrosecondTimer timer;
 
 #define ASSERT_FIELD(id) CHECK_NO_RETURN(id##FieldID == 0, "No such field as " #id)
 
-#define GET_DEV_INFO(deviceId, param, val, format){\
-   status = clGetDeviceInfo(deviceId, param, sizeof(val), &(val), NULL);\
-   ASSERT_CL_NO_RETURN( "clGetDeviceInfo().");\
-   /*fprintf(stderr, #param " " format " \n", val);*/ \
-}
-
 
 
 static const char *CLErrString(cl_int status) {
@@ -246,27 +240,27 @@ class Range{
             dims = jenv->GetIntField(range, dimsFieldID);
             localIsDerived = jenv->GetBooleanField(range, localIsDerivedFieldID);
             if (dims >0){
-               fprintf(stderr, "native range dims == %d\n", dims);
+               //fprintf(stderr, "native range dims == %d\n", dims);
                offsets = new size_t[dims];
                globalDims = new size_t[dims];
                localDims = new size_t[dims];
                offsets[0]= 0;
                localDims[0]= jenv->GetIntField(range, localSize_0_FieldID);
-               fprintf(stderr, "native range localSize_0 == %d\n", localDims[0]);
+               //fprintf(stderr, "native range localSize_0 == %d\n", localDims[0]);
                globalDims[0]= jenv->GetIntField(range, globalSize_0_FieldID);
-               fprintf(stderr, "native range globalSize_0 == %d\n", globalDims[0]);
+               //fprintf(stderr, "native range globalSize_0 == %d\n", globalDims[0]);
                if (dims >1){
                   offsets[1]= 0;
                   localDims[1]= jenv->GetIntField(range, localSize_1_FieldID);
-                  fprintf(stderr, "native range localSize_1 == %d\n", localDims[1]);
+                  //fprintf(stderr, "native range localSize_1 == %d\n", localDims[1]);
                   globalDims[1]= jenv->GetIntField(range, globalSize_1_FieldID);
-                  fprintf(stderr, "native range globalSize_1 == %d\n", globalDims[1]);
+                  //fprintf(stderr, "native range globalSize_1 == %d\n", globalDims[1]);
                   if (dims >2){
                      offsets[2]= 0;
                      localDims[2]= jenv->GetIntField(range, localSize_2_FieldID);
-                     fprintf(stderr, "native range localSize_2 == %d\n", localDims[2]);
+                     //fprintf(stderr, "native range localSize_2 == %d\n", localDims[2]);
                      globalDims[2]= jenv->GetIntField(range, globalSize_2_FieldID);
-                     fprintf(stderr, "native range globalSize_2 == %d\n", globalDims[2]);
+                     //fprintf(stderr, "native range globalSize_2 == %d\n", globalDims[2]);
                   }
                }
 
@@ -523,6 +517,7 @@ class JNIContext{
       // these map to camelCase form of CL_DEVICE_XXX_XXX  For example CL_DEVICE_MAX_COMPUTE_UNITS == maxComputeUnits
       cl_uint maxComputeUnits;
       cl_uint maxWorkItemDimensions;
+      size_t *maxWorkItemSizes;
       size_t maxWorkGroupSize;
       cl_ulong globalMemSize;
       cl_ulong localMemSize;
@@ -593,14 +588,31 @@ class JNIContext{
 
                         deviceIds = new cl_device_id[deviceIdc];
                         status = clGetDeviceIDs(platform, deviceType, deviceIdc, deviceIds, NULL);
+                        ASSERT_CL_NO_RETURN("clGetDeviceIDs()"); 
                         if (status == CL_SUCCESS){
-                           ASSERT_CL_NO_RETURN("clGetDeviceIDs()"); 
 
-                           GET_DEV_INFO(deviceIds[0], CL_DEVICE_MAX_COMPUTE_UNITS, maxComputeUnits, "%d");
-                           GET_DEV_INFO(deviceIds[0], CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS, maxWorkItemDimensions, "%d");
-                           GET_DEV_INFO(deviceIds[0], CL_DEVICE_MAX_WORK_GROUP_SIZE, maxWorkGroupSize, "%d");
-                           GET_DEV_INFO(deviceIds[0], CL_DEVICE_GLOBAL_MEM_SIZE, globalMemSize, "%d");
-                           GET_DEV_INFO(deviceIds[0], CL_DEVICE_LOCAL_MEM_SIZE, localMemSize, "%d");
+                           status = clGetDeviceInfo(deviceIds[0], CL_DEVICE_MAX_COMPUTE_UNITS,  sizeof(maxComputeUnits), &maxComputeUnits, NULL);
+                           ASSERT_CL_NO_RETURN( "clGetDeviceInfo(CL_DEVICE_MAX_COMPUTE_UNITS).");
+
+                           status = clGetDeviceInfo(deviceIds[0], CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS,  sizeof(maxWorkItemDimensions), &maxWorkItemDimensions, NULL);
+                           ASSERT_CL_NO_RETURN( "clGetDeviceInfo(CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS).");
+
+                           maxWorkItemSizes = (size_t *)malloc(sizeof(size_t)*maxWorkItemDimensions);
+                           status = clGetDeviceInfo(deviceIds[0], CL_DEVICE_MAX_WORK_ITEM_SIZES,  sizeof(size_t)*maxWorkItemDimensions, maxWorkItemSizes, NULL);
+
+                           ASSERT_CL_NO_RETURN( "clGetDeviceInfo(CL_DEVICE_MAX_WORK_ITEM_SIZES).");
+
+                           status = clGetDeviceInfo(deviceIds[0], CL_DEVICE_MAX_WORK_GROUP_SIZE,  sizeof(maxWorkGroupSize), &maxWorkGroupSize, NULL);
+                           ASSERT_CL_NO_RETURN( "clGetDeviceInfo(CL_DEVICE_MAX_WORK_GROUP_SIZE).");
+
+                           status = clGetDeviceInfo(deviceIds[0], CL_DEVICE_GLOBAL_MEM_SIZE,  sizeof(globalMemSize), &globalMemSize, NULL);
+                           ASSERT_CL_NO_RETURN( "clGetDeviceInfo(CL_DEVICE_GLOBAL_MEM_SIZE).");
+
+                           status = clGetDeviceInfo(deviceIds[0], CL_DEVICE_LOCAL_MEM_SIZE,  sizeof(localMemSize), &localMemSize, NULL);
+
+                           ASSERT_CL_NO_RETURN( "clGetDeviceInfo(CL_DEVICE_LOCAL_MEM_SIZE).");
+
+
                            if (isVerbose()){
                               fprintf(stderr, "device[%p]: Type: ", deviceIds[0]);
                               if (deviceType & CL_DEVICE_TYPE_DEFAULT) {
@@ -1740,6 +1752,16 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_getMaxWorkGroupSizeJNI(
    JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);
    if (jniContext != NULL){
       return(jniContext->maxWorkGroupSize);
+   }else{
+      return(0);
+   }
+}
+
+JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_getMaxWorkItemSizeJNI(JNIEnv *jenv, jobject jobj, jlong jniContextHandle, jint _index) {
+   cl_int status = CL_SUCCESS;
+   JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);
+   if (jniContext != NULL && _index >=0 && _index <= jniContext->maxWorkItemDimensions){
+      return(jniContext->maxWorkItemSizes[_index]);
    }else{
       return(0);
    }

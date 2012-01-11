@@ -541,6 +541,8 @@ class KernelRunner{
 
    private native int getMaxWorkGroupSizeJNI(long _jniContextHandle);
 
+   private native int getMaxWorkItemSizeJNI(long _jniContextHandle, int _index);
+
    private native int getMaxComputeUnitsJNI(long _jniContextHandle);
 
    private native int getMaxWorkItemDimensionsJNI(long _jniContextHandle);
@@ -1152,10 +1154,37 @@ class KernelRunner{
          throw new RangeException("Range workgroup size " + _range.getWorkGroupSize() + " > device "
                + getMaxWorkGroupSizeJNI(jniContextHandle));
       }
-
-      System.out.println("maxComputeUnits=" + this.getMaxComputeUnitsJNI(jniContextHandle));
-      System.out.println("maxWorkGroupSize=" + this.getMaxWorkGroupSizeJNI(jniContextHandle));
-      System.out.println("maxWorkItemDimensions=" + this.getMaxWorkItemDimensionsJNI(jniContextHandle));
+/*
+      if (_range.getGlobalSize(0) > getMaxWorkItemSizeJNI(jniContextHandle, 0)) {
+         throw new RangeException("Range globalsize 0 " + _range.getGlobalSize(0) + " > device "
+               + getMaxWorkItemSizeJNI(jniContextHandle, 0));
+      }
+      if (_range.getDims() > 1) {
+         if (_range.getGlobalSize(1) > getMaxWorkItemSizeJNI(jniContextHandle, 1)) {
+            throw new RangeException("Range globalsize 1 " + _range.getGlobalSize(1) + " > device "
+                  + getMaxWorkItemSizeJNI(jniContextHandle, 1));
+         }
+         if (_range.getDims() > 2) {
+            if (_range.getGlobalSize(2) > getMaxWorkItemSizeJNI(jniContextHandle, 2)) {
+               throw new RangeException("Range globalsize 2 " + _range.getGlobalSize(2) + " > device "
+                     + getMaxWorkItemSizeJNI(jniContextHandle, 2));
+            }
+         }
+      }
+*/
+      
+      if (logger.isLoggable(Level.FINE)) {
+         logger.fine("maxComputeUnits=" + this.getMaxComputeUnitsJNI(jniContextHandle));
+         logger.fine("maxWorkGroupSize=" + this.getMaxWorkGroupSizeJNI(jniContextHandle));
+         logger.fine("maxWorkItemDimensions=" + this.getMaxWorkItemDimensionsJNI(jniContextHandle));
+         logger.fine("maxWorkItemSize(0)=" + getMaxWorkItemSizeJNI(jniContextHandle, 0));
+      if (_range.getDims() > 1) {
+         logger.fine("maxWorkItemSize(1)=" + getMaxWorkItemSizeJNI(jniContextHandle, 1));
+         if (_range.getDims() > 2) {
+            logger.fine("maxWorkItemSize(2)=" + getMaxWorkItemSizeJNI(jniContextHandle, 2));
+         }
+      }
+      }
 
       // Read the array refs after kernel may have changed them
       // We need to do this as input to computing the localSize
