@@ -80,8 +80,6 @@ public class Main2D{
       /** RGB buffer used to store the Mandelbrot image. This buffer holds (width * height) RGB values. */
       final private int rgb[];
 
-    
-
       /** Palette used for each iteration value 0..maxIterations. */
       final private int pallette[];
 
@@ -104,7 +102,7 @@ public class Main2D{
        * @param _pallette Mandelbrot image palette
        */
       public MandelKernel(int[] _rgb, int[] _pallette) {
-       
+
          rgb = _rgb;
          pallette = _pallette;
          maxIterations = pallette.length - 1;
@@ -114,7 +112,7 @@ public class Main2D{
       @Override public void run() {
 
          /** Determine which RGB value we are going to process (0..RGB.length). */
-         int gid = getGlobalId(1)*getGlobalSize(0)+getGlobalId(0);
+         int gid = getGlobalId(1) * getGlobalSize(0) + getGlobalId(0);
 
          /** Translate the gid into an x an y value. */
          float x = (((getGlobalId(0) * scale) - ((scale / 2) * getGlobalSize(0))) / getGlobalSize(0)) + offsetx;
@@ -154,14 +152,8 @@ public class Main2D{
 
       JFrame frame = new JFrame("MandelBrot");
 
-      /** Width of Mandelbrot view. */
-      final int width = 768;
-
-      /** Height of Mandelbrot view. */
-      final int height = 768;
-
       /** Mandelbrot image height. */
-      final Range range = Range.create2D(width, height);
+      final Range range = Range.create2D(768, 768, 16, 16);
 
       /** Maximum iterations for Mandelbrot. */
       final int maxIterations = 256;
@@ -177,18 +169,18 @@ public class Main2D{
       }
 
       /** Image for Mandelbrot view. */
-      final BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-      final BufferedImage offscreen = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+      final BufferedImage image = new BufferedImage(range.getGlobalWidth(), range.getGlobalHeight(), BufferedImage.TYPE_INT_RGB);
+      final BufferedImage offscreen = new BufferedImage(range.getGlobalWidth(), range.getGlobalHeight(), BufferedImage.TYPE_INT_RGB);
       // Draw Mandelbrot image
       JComponent viewer = new JComponent(){
          @Override public void paintComponent(Graphics g) {
 
-            g.drawImage(image, 0, 0, width, height, this);
+            g.drawImage(image, 0, 0, range.getGlobalWidth(), range.getGlobalHeight(), this);
          }
       };
 
       // Set the size of JComponent which displays Mandelbrot image
-      viewer.setPreferredSize(new Dimension(width, height));
+      viewer.setPreferredSize(new Dimension(range.getGlobalWidth(), range.getGlobalHeight()));
 
       final Object doorBell = new Object();
 
@@ -251,8 +243,8 @@ public class Main2D{
          float x = -1f;
          float y = 0f;
          float scale = defaultScale;
-         float tox = (float) (to.x - width / 2) / width * scale;
-         float toy = (float) (to.y - height / 2) / height * scale;
+         float tox = (float) (to.x - range.getGlobalWidth() / 2) / range.getGlobalWidth() * scale;
+         float toy = (float) (to.y - range.getGlobalHeight() / 2) / range.getGlobalHeight() * scale;
 
          // This is how many frames we will display as we zoom in and out.
          int frames = 128;
