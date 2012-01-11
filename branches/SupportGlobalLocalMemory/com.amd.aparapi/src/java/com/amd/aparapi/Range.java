@@ -19,32 +19,16 @@ public class Range{
 
    @KernelRunner.UsedByJNICode private boolean localIsDerived = false;
 
-   public int getGlobalWidth() {
-      return globalWidth;
-   }
-
-   public int getLocalWidth() {
-      return localWidth;
-   }
-
-   public int getGlobalHeight() {
-      return globalHeight;
-   }
-
-   public int getLocalHeight() {
-      return localHeight;
+   public int getLocalSize(int _dim) {
+      return (_dim == 0 ? localWidth : (_dim == 1 ? localHeight : localDepth));
    }
 
    public boolean isValid() {
       return (valid);
    }
 
-   public int getGlobalDepth() {
-      return globalDepth;
-   }
-
-   public int getLocalDepth() {
-      return localDepth;
+   public int getGlobalSize(int _dim) {
+      return (_dim == 0 ? globalWidth : (_dim == 1 ? globalHeight : globalDepth));
    }
 
    private static final int THREADS_PER_CORE = 16;
@@ -199,16 +183,8 @@ public class Range{
       return (sb.toString());
    }
 
-   public int getGroupsWidth() {
-      return (globalWidth / localWidth);
-   }
-
-   public int getGroupsHeight() {
-      return (globalHeight / localHeight);
-   }
-
-   public int getGroupsDepth() {
-      return (globalDepth / localDepth);
+   public int getGroups(int _dim) {
+      return (_dim == 0 ? (globalWidth / localWidth) : (_dim == 1 ? (globalHeight / localHeight) : (globalDepth / localDepth)));
    }
 
    public int getWorkGroupSize() {

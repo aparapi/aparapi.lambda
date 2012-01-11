@@ -87,24 +87,23 @@ public class Main{
       public DimsKernel(BufferedImage _image, Range _range) {
          System.out.println(_range);
          image = ((DataBufferInt) _image.getRaster().getDataBuffer()).getData();
-         int width = _range.getGlobalWidth();
-         int height = _range.getGlobalHeight();
+         int width = _range.getGlobalSize(0);
+         int height = _range.getGlobalSize(1);
 
          global_pallette = createPallette(width * height);
          width_pallette = createPallette(width);
          height_pallette = createPallette(height);
-         group_pallette = createPallette(_range.getGroupsWidth() * _range.getGroupsHeight());
+         group_pallette = createPallette(_range.getGroups(0) * _range.getGroups(1));
 
       }
 
       public void run() {
 
-         int x = getGlobalX();
-         int y = getGlobalY();
-         int w = getGlobalWidth();
-         int h = getGlobalHeight();
+         int x = getGlobalId(0);
+         int y = getGlobalId(1);
+         int w = getGlobalSize(0);
+         int h = getGlobalSize(1);
          image[y * w + x] = width_pallette[getGroupId()];
-         // image[y*w+x] = height_pallette[x];
 
       }
 

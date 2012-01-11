@@ -445,12 +445,12 @@ public class Test12x4_4x2{
       Kernel kernel = new Kernel(){
 
          @Override public void run() {
-            int x = getGlobalX();
-            int y = getGlobalY();
-            int lx = getLocalX();
-            int ly = getLocalY();
-            int w = getGlobalWidth();
-            int h = getGlobalHeight();
+            int x = getGlobalId(0);
+            int y = getGlobalId(1);
+            int lx = getLocalId(0);
+            int ly = getLocalId(1);
+            int w = getGlobalSize(0);
+            int h = getGlobalSize(1);
             int globalThreadId = getGlobalId(1) * getGlobalSize(0) + getGlobalId(0);
             int threadId = getLocalId(1) * getLocalSize(0) + getLocalId(0);
             synchronized (test) {

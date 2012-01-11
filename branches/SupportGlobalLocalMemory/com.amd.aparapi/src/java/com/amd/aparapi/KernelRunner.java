@@ -659,7 +659,7 @@ class KernelRunner{
          for (kernelClone.passId = 0; kernelClone.passId < _passes; kernelClone.passId++) {
 
             if (_range.getDims() == 1) {
-               for (int id = 0; id < _range.getGlobalWidth(); id++) {
+               for (int id = 0; id < _range.getGlobalSize(0); id++) {
                   kernelClone.groupId[0] = 0;
 
                   kernelClone.globalId[0] = id;
@@ -667,22 +667,22 @@ class KernelRunner{
                   kernelClone.run();
                }
             } else if (_range.getDims() == 2) {
-               for (int x = 0; x < _range.getGlobalWidth(); x++) {
+               for (int x = 0; x < _range.getGlobalSize(0); x++) {
                   kernelClone.groupId[0] = x;
                   kernelClone.globalId[0] = x;
-                  for (int y = 0; y < _range.getGlobalHeight(); y++) {
+                  for (int y = 0; y < _range.getGlobalSize(1); y++) {
                      kernelClone.globalId[1] = y;
 
                      kernelClone.run();
                   }
                }
             } else if (_range.getDims() == 3) {
-               for (int x = 0; x < _range.getGlobalWidth(); x++) {
+               for (int x = 0; x < _range.getGlobalSize(0); x++) {
                   kernelClone.groupId[0] = x;
                   kernelClone.globalId[0] = x;
-                  for (int y = 0; y < _range.getGlobalHeight(); y++) {
+                  for (int y = 0; y < _range.getGlobalSize(1); y++) {
                      kernelClone.globalId[1] = y;
-                     for (int z = 0; z < _range.getGlobalDepth(); z++) {
+                     for (int z = 0; z < _range.getGlobalSize(2); z++) {
                         kernelClone.globalId[2] = z;
 
                         kernelClone.run();
@@ -697,8 +697,8 @@ class KernelRunner{
 
       } else {
 
-         final int threads = _range.getLocalWidth() * _range.getLocalHeight() * _range.getLocalDepth();
-         final int globalGroups = _range.getGroupsWidth() * _range.getGroupsHeight() * _range.getGroupsDepth();
+         final int threads = _range.getLocalSize(0) * _range.getLocalSize(1) * _range.getLocalSize(2);
+         final int globalGroups = _range.getGroups(0) * _range.getGroups(1) * _range.getGroups(2);
          final Thread threadArray[] = new Thread[threads];
          // This is the barrier that we provide for the kernel threads to rendezvous with the current thread so it needs to be threadCount+1 wide
          final CyclicBarrier joinBarrier = new CyclicBarrier(threads + 1);
@@ -718,7 +718,7 @@ class KernelRunner{
                   for (int globalGroupId = 0; globalGroupId < globalGroups; globalGroupId++) {
 
                      if (_range.getDims() == 1) {
-                        kernelClone.localId[0] = threadId % _range.getLocalWidth();
+                        kernelClone.localId[0] = threadId % _range.getLocalSize(0);
                         kernelClone.globalId[0] = threadId + globalGroupId * threads;
                         kernelClone.groupId[0] = globalGroupId;
                      } else if (_range.getDims() == 2) {
@@ -791,16 +791,16 @@ class KernelRunner{
                          *
                          */
 
-                        kernelClone.localId[0] = threadId % _range.getLocalWidth(); // threadId % localWidth =  (for 33 = 1 % 4 = 1)
-                        kernelClone.localId[1] = threadId / _range.getLocalWidth(); // threadId / localWidth = (for 33 = 1 / 4 == 0)
+                        kernelClone.localId[0] = threadId % _range.getLocalSize(0); // threadId % localWidth =  (for 33 = 1 % 4 = 1)
+                        kernelClone.localId[1] = threadId / _range.getLocalSize(0); // threadId / localWidth = (for 33 = 1 / 4 == 0)
 
-                        int groupInset = globalGroupId % _range.getGroupsWidth(); // 4%3 = 1
-                        kernelClone.globalId[0] = groupInset * _range.getLocalWidth() + kernelClone.localId[0]; // 1*4+1=5
+                        int groupInset = globalGroupId % _range.getGroups(0); // 4%3 = 1
+                        kernelClone.globalId[0] = groupInset * _range.getLocalSize(0) + kernelClone.localId[0]; // 1*4+1=5
 
-                        int completeLines = (globalGroupId / _range.getGroupsWidth()) * _range.getLocalHeight();// (4/3) * 2
+                        int completeLines = (globalGroupId / _range.getGroups(0)) * _range.getLocalSize(1);// (4/3) * 2
                         kernelClone.globalId[1] = completeLines + kernelClone.localId[1]; // 2+0 = 2
-                        kernelClone.groupId[0] = globalGroupId % _range.getGroupsWidth();
-                        kernelClone.groupId[1] = globalGroupId / _range.getGroupsWidth();
+                        kernelClone.groupId[0] = globalGroupId % _range.getGroups(0);
+                        kernelClone.groupId[1] = globalGroupId / _range.getGroups(0);
                      } else if (_range.getDims() == 3) {
 
                      }

@@ -361,18 +361,19 @@ public abstract class Kernel implements Cloneable{
       return (globalId[_dim]);
    }
 
-   @OpenCLDelegate protected final int getGlobalX() {
-      return (getGlobalId(0));
-   }
+   /*
+      @OpenCLDelegate protected final int getGlobalX() {
+         return (getGlobalId(0));
+      }
 
-   @OpenCLDelegate protected final int getGlobalY() {
-      return (getGlobalId(1));
-   }
+      @OpenCLDelegate protected final int getGlobalY() {
+         return (getGlobalId(1));
+      }
 
-   @OpenCLDelegate protected final int getGlobalZ() {
-      return (getGlobalId(2));
-   }
-
+      @OpenCLDelegate protected final int getGlobalZ() {
+         return (getGlobalId(2));
+      }
+   */
    /**
     * Determine the groupId of an executing kernel.
     * <p>
@@ -412,18 +413,19 @@ public abstract class Kernel implements Cloneable{
       return (groupId[_dim]);
    }
 
-   @OpenCLDelegate protected final int getGroupX() {
-      return (getGroupId(0));
-   }
+   /*
+      @OpenCLDelegate protected final int getGroupX() {
+         return (getGroupId(0));
+      }
 
-   @OpenCLDelegate protected final int getGroupY() {
-      return (getGroupId(1));
-   }
+      @OpenCLDelegate protected final int getGroupY() {
+         return (getGroupId(1));
+      }
 
-   @OpenCLDelegate protected final int getGroupZ() {
-      return (getGroupId(2));
-   }
-
+      @OpenCLDelegate protected final int getGroupZ() {
+         return (getGroupId(2));
+      }
+   */
    /**
     * Determine the passId of an executing kernel.
     * <p>
@@ -481,18 +483,19 @@ public abstract class Kernel implements Cloneable{
       return (localId[_dim]);
    }
 
-   @OpenCLDelegate protected final int getLocalX() {
-      return (getLocalId(0));
-   }
+   /*
+      @OpenCLDelegate protected final int getLocalX() {
+         return (getLocalId(0));
+      }
 
-   @OpenCLDelegate protected final int getLocalY() {
-      return (getLocalId(1));
-   }
+      @OpenCLDelegate protected final int getLocalY() {
+         return (getLocalId(1));
+      }
 
-   @OpenCLDelegate protected final int getLocalZ() {
-      return (getLocalId(2));
-   }
-
+      @OpenCLDelegate protected final int getLocalZ() {
+         return (getLocalId(2));
+      }
+   */
    /**
     * Determine the size of the group that an executing kernel is a member of.
     * <p>
@@ -511,25 +514,26 @@ public abstract class Kernel implements Cloneable{
     * @return The size of the currently executing group.
     */
    @OpenCLDelegate protected final int getLocalSize() {
-      return (range.getLocalWidth());
+      return (range.getLocalSize(0));
    }
 
    @OpenCLDelegate protected final int getLocalSize(int _dim) {
-      return (_dim == 0 ? range.getLocalWidth() : (_dim == 1 ? range.getLocalHeight() : range.getLocalDepth()));
+      return (range.getLocalSize(_dim));
    }
 
-   @OpenCLDelegate protected final int getLocalWidth() {
-      return (range.getLocalWidth());
-   }
+   /*
+      @OpenCLDelegate protected final int getLocalWidth() {
+         return (range.getLocalSize(0));
+      }
 
-   @OpenCLDelegate protected final int getLocalHeight() {
-      return (range.getLocalHeight());
-   }
+      @OpenCLDelegate protected final int getLocalHeight() {
+         return (range.getLocalSize(1));
+      }
 
-   @OpenCLDelegate protected final int getLocalDepth() {
-      return (range.getLocalDepth());
-   }
-
+      @OpenCLDelegate protected final int getLocalDepth() {
+         return (range.getLocalSize(2));
+      }
+   */
    /**
     * Determine the value that was passed to <code>Kernel.execute(int globalSize)</code> method.
     * 
@@ -541,25 +545,26 @@ public abstract class Kernel implements Cloneable{
     * @return The value passed to <code>Kernel.execute(int globalSize)</code> causing the current execution.
     */
    @OpenCLDelegate protected final int getGlobalSize() {
-      return (range.getGlobalWidth());
+      return (range.getGlobalSize(0));
    }
 
-   @OpenCLDelegate protected final int getGlobalSize(int index) {
-      return (index == 0 ? range.getGlobalWidth() : (index == 1 ? range.getGlobalHeight() : range.getGlobalDepth()));
+   @OpenCLDelegate protected final int getGlobalSize(int _dim) {
+      return (range.getGlobalSize(_dim));
    }
 
-   @OpenCLDelegate protected final int getGlobalWidth() {
-      return (range.getGlobalWidth());
-   }
+   /*
+      @OpenCLDelegate protected final int getGlobalWidth() {
+         return (range.getGlobalSize(0));
+      }
 
-   @OpenCLDelegate protected final int getGlobalHeight() {
-      return (range.getGlobalHeight());
-   }
+      @OpenCLDelegate protected final int getGlobalHeight() {
+         return (range.getGlobalSize(1));
+      }
 
-   @OpenCLDelegate protected final int getGlobalDepth() {
-      return (range.getGlobalDepth());
-   }
-
+      @OpenCLDelegate protected final int getGlobalDepth() {
+         return (range.getGlobalSize(2));
+      }
+   */
    /**
     * Determine the number of groups that will be used to execute a kernel
     * <p>
@@ -575,25 +580,26 @@ public abstract class Kernel implements Cloneable{
     * @return The number of groups that kernels will be dispatched into.
     */
    @OpenCLDelegate protected final int getNumGroups() {
-      return (range.getGroupsWidth());
+      return (range.getGroups(0));
    }
 
-   @OpenCLDelegate protected final int getNumGroups(int index) {
-      return (index == 0 ? range.getGroupsWidth() : (index == 1 ? range.getGroupsHeight() : range.getGroupsDepth()));
+   @OpenCLDelegate protected final int getNumGroups(int _dim) {
+      return (range.getGroups(_dim));
    }
 
-   @OpenCLDelegate protected final int getNumGroupsWidth() {
-      return (range.getGroupsWidth());
-   }
+   /*
+      @OpenCLDelegate protected final int getNumGroupsWidth() {
+         return (range.getGroups(0));
+      }
 
-   @OpenCLDelegate protected final int getNumGroupsHeight() {
-      return (range.getGroupsHeight());
-   }
+      @OpenCLDelegate protected final int getNumGroupsHeight() {
+         return (range.getGroups(1));
+      }
 
-   @OpenCLDelegate protected final int getNumGroupsDepth() {
-      return (range.getGroupsDepth());
-   }
-
+      @OpenCLDelegate protected final int getNumGroupsDepth() {
+         return (range.getGroups(2));
+      }
+   */
    /**
     * The entry point of a kernel. 
     *  

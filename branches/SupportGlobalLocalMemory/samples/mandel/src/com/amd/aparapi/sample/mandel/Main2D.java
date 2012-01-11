@@ -169,18 +169,18 @@ public class Main2D{
       }
 
       /** Image for Mandelbrot view. */
-      final BufferedImage image = new BufferedImage(range.getGlobalWidth(), range.getGlobalHeight(), BufferedImage.TYPE_INT_RGB);
-      final BufferedImage offscreen = new BufferedImage(range.getGlobalWidth(), range.getGlobalHeight(), BufferedImage.TYPE_INT_RGB);
+      final BufferedImage image = new BufferedImage(range.getGlobalSize(0), range.getGlobalSize(1), BufferedImage.TYPE_INT_RGB);
+      final BufferedImage offscreen = new BufferedImage(range.getGlobalSize(0), range.getGlobalSize(1), BufferedImage.TYPE_INT_RGB);
       // Draw Mandelbrot image
       JComponent viewer = new JComponent(){
          @Override public void paintComponent(Graphics g) {
 
-            g.drawImage(image, 0, 0, range.getGlobalWidth(), range.getGlobalHeight(), this);
+            g.drawImage(image, 0, 0, range.getGlobalSize(0), range.getGlobalSize(1), this);
          }
       };
 
       // Set the size of JComponent which displays Mandelbrot image
-      viewer.setPreferredSize(new Dimension(range.getGlobalWidth(), range.getGlobalHeight()));
+      viewer.setPreferredSize(new Dimension(range.getGlobalSize(0), range.getGlobalSize(1)));
 
       final Object doorBell = new Object();
 
@@ -243,8 +243,8 @@ public class Main2D{
          float x = -1f;
          float y = 0f;
          float scale = defaultScale;
-         float tox = (float) (to.x - range.getGlobalWidth() / 2) / range.getGlobalWidth() * scale;
-         float toy = (float) (to.y - range.getGlobalHeight() / 2) / range.getGlobalHeight() * scale;
+         float tox = (float) (to.x - range.getGlobalSize(0) / 2) / range.getGlobalSize(0) * scale;
+         float toy = (float) (to.y - range.getGlobalSize(1) / 2) / range.getGlobalSize(1) * scale;
 
          // This is how many frames we will display as we zoom in and out.
          int frames = 128;

@@ -103,9 +103,9 @@ public class Main{
       }
 
       @Override public void run() {
-         int gid = (getGlobalWidth() * getGlobalY()) + getGlobalX();
+         int gid = (getGlobalSize(0) * getGlobalId(1)) + getGlobalId(0);
 
-         if (getLocalX() == 0 && getLocalY() == 0) {
+         if (getLocalId(0) == 0 && getLocalId(1) == 0) {
             rgb[gid] = 0xffffff;
          } else {
             rgb[gid] = 0x0;
@@ -122,9 +122,9 @@ public class Main{
       }
 
       @Override public void run() {
-         int gid = (getGlobalWidth() * getGlobalY()) + getGlobalX();
+         int gid = (getGlobalSize(0) * getGlobalId(1)) + getGlobalId(0);
 
-         if (getLocalX() == 0 || getLocalY() == 0) {
+         if (getLocalId(0) == 0 || getLocalId(1) == 0) {
 
             rgb[gid] = 0xffffff;
          } else {
@@ -140,18 +140,18 @@ public class Main{
 
       final Range range = Range.create2D(512, 512, 16, 16);
 
-      final BufferedImage image = new BufferedImage(range.getGlobalWidth(), range.getGlobalHeight(), BufferedImage.TYPE_INT_RGB);
+      final BufferedImage image = new BufferedImage(range.getGlobalSize(0), range.getGlobalSize(0), BufferedImage.TYPE_INT_RGB);
       final int[] imageRgb = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
       final EqualGroupKernel equalGroupKernel = new EqualGroupKernel(imageRgb);
       final LocalXAndYZeroKernel localXAndYZeroKernel = new LocalXAndYZeroKernel(imageRgb);
       final LocalXOrYZeroKernel localXOrYZeroKernel = new LocalXOrYZeroKernel(imageRgb);
       final JComponent viewer = new JComponent(){
          @Override public void paintComponent(Graphics g) {
-            g.drawImage(image, 0, 0, range.getGlobalWidth(), range.getGlobalHeight(), this);
+            g.drawImage(image, 0, 0, range.getGlobalSize(0), range.getGlobalSize(1), this);
          }
 
          @Override public Dimension getPreferredSize() {
-            return (new Dimension(range.getGlobalWidth(), range.getGlobalHeight()));
+            return (new Dimension(range.getGlobalSize(0), range.getGlobalSize(1)));
          }
       };
 
