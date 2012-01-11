@@ -580,11 +580,11 @@ public abstract class Kernel implements Cloneable{
     * @return The number of groups that kernels will be dispatched into.
     */
    @OpenCLDelegate protected final int getNumGroups() {
-      return (range.getGroups(0));
+      return (range.getNumGroups(0));
    }
 
    @OpenCLDelegate protected final int getNumGroups(int _dim) {
-      return (range.getGroups(_dim));
+      return (range.getNumGroups(_dim));
    }
 
    /*

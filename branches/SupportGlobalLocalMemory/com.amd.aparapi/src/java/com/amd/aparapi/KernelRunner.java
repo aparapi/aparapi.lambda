@@ -698,7 +698,7 @@ class KernelRunner{
       } else {
 
          final int threads = _range.getLocalSize(0) * _range.getLocalSize(1) * _range.getLocalSize(2);
-         final int globalGroups = _range.getGroups(0) * _range.getGroups(1) * _range.getGroups(2);
+         final int globalGroups = _range.getNumGroups(0) * _range.getNumGroups(1) * _range.getNumGroups(2);
          final Thread threadArray[] = new Thread[threads];
          // This is the barrier that we provide for the kernel threads to rendezvous with the current thread so it needs to be threadCount+1 wide
          final CyclicBarrier joinBarrier = new CyclicBarrier(threads + 1);
@@ -794,13 +794,13 @@ class KernelRunner{
                         kernelClone.localId[0] = threadId % _range.getLocalSize(0); // threadId % localWidth =  (for 33 = 1 % 4 = 1)
                         kernelClone.localId[1] = threadId / _range.getLocalSize(0); // threadId / localWidth = (for 33 = 1 / 4 == 0)
 
-                        int groupInset = globalGroupId % _range.getGroups(0); // 4%3 = 1
+                        int groupInset = globalGroupId % _range.getNumGroups(0); // 4%3 = 1
                         kernelClone.globalId[0] = groupInset * _range.getLocalSize(0) + kernelClone.localId[0]; // 1*4+1=5
 
-                        int completeLines = (globalGroupId / _range.getGroups(0)) * _range.getLocalSize(1);// (4/3) * 2
+                        int completeLines = (globalGroupId / _range.getNumGroups(0)) * _range.getLocalSize(1);// (4/3) * 2
                         kernelClone.globalId[1] = completeLines + kernelClone.localId[1]; // 2+0 = 2
-                        kernelClone.groupId[0] = globalGroupId % _range.getGroups(0);
-                        kernelClone.groupId[1] = globalGroupId / _range.getGroups(0);
+                        kernelClone.groupId[0] = globalGroupId % _range.getNumGroups(0);
+                        kernelClone.groupId[1] = globalGroupId / _range.getNumGroups(0);
                      } else if (_range.getDims() == 3) {
 
                      }
