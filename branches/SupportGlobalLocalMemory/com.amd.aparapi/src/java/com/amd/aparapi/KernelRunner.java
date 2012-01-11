@@ -718,17 +718,8 @@ class KernelRunner{
                   for (int globalGroupId = 0; globalGroupId < globalGroups; globalGroupId++) {
 
                      if (_range.getDims() == 1) {
-                        int globalThreadId = threadId + globalGroupId * threads;
-
-                        int localWidth = _range.getLocalWidth();
-
-                        // localX is same across all dimensions. 
-                        int localX = threadId % localWidth;
-                        kernelClone.localId[0] = localX;
-
-                        int globalX = globalThreadId;
-                        kernelClone.globalId[0] = globalX;
-
+                        kernelClone.localId[0] = threadId % _range.getLocalWidth();
+                        kernelClone.globalId[0] = threadId + globalGroupId * threads;
                         kernelClone.groupId[0] = globalGroupId;
                      } else if (_range.getDims() == 2) {
 
@@ -799,44 +790,18 @@ class KernelRunner{
                          * Assume we are trying to locate the id's for #33 
                          *
                          */
-                        int globalThreadId = threadId + globalGroupId * threads;
-                        kernelClone.globalThreadId = globalThreadId;
-                        kernelClone.setThreadId(threadId);
 
-                        int localWidth = _range.getLocalWidth();
-                        int globalWidth = _range.getGlobalWidth();
-
-                        int localX = threadId % localWidth; // localX = threadId % localWidth =  (for 33 = 1 % 4 = 1)
-                        kernelClone.localId[0] = localX;
-
-                        int localY = threadId / localWidth; // localY = threadId / localWidth = (for 33 = 1 / 4 == 0)
-                        kernelClone.localId[1] = localY;
-
-                        // int groupsPerLineWidth = globalWidth / localWidth; // = 12/4 = 3
+                        kernelClone.localId[0] = threadId % _range.getLocalWidth(); // threadId % localWidth =  (for 33 = 1 % 4 = 1)
+                        kernelClone.localId[1] = threadId / _range.getLocalWidth(); // threadId / localWidth = (for 33 = 1 / 4 == 0)
 
                         int groupInset = globalGroupId % _range.getGroupsWidth(); // 4%3 = 1
-                        int globalX = groupInset * localWidth + localX; // 1*4+1=5
-                        kernelClone.globalId[0] = globalX;
-                        // For global Y we need to work out how many groups bridge the width
+                        kernelClone.globalId[0] = groupInset * _range.getLocalWidth() + kernelClone.localId[0]; // 1*4+1=5
 
-                        // Then divide groupId by the groupsPerLineWidth
-                        int groupLines = globalGroupId / _range.getGroupsWidth(); // 4/3 =1
-                        // Multiply the 
-                        int completeLines = groupLines * _range.getLocalHeight(); // 1 * 2
-                        int globalY = completeLines + localY; //2+0 = 2
-                        kernelClone.globalId[1] = globalY;
-
+                        int completeLines = (globalGroupId / _range.getGroupsWidth()) * _range.getLocalHeight();// (4/3) * 2
+                        kernelClone.globalId[1] = completeLines + kernelClone.localId[1]; // 2+0 = 2
                         kernelClone.groupId[0] = globalGroupId % _range.getGroupsWidth();
                         kernelClone.groupId[1] = globalGroupId / _range.getGroupsWidth();
-
                      } else if (_range.getDims() == 3) {
-                        int globalThreadId = threadId + globalGroupId * threads;
-
-                        int localWidth = _range.getLocalWidth();
-
-                        // localX is same across all dimensions. 
-                        int localX = threadId % localWidth;
-                        kernelClone.localId[0] = localX;
 
                      }
                      kernelClone.run();
@@ -1301,21 +1266,13 @@ class KernelRunner{
                   return warnFallBackAndExecute(_entrypointName, _range, _passes, "32 bit Atomics required but not supported");
                }
 
-               final StringBuilder openCLStringBuilder = new StringBuilder();
-               KernelWriter openCLWriter = new KernelWriter(){
-                  @Override public void write(String _string) {
-                     openCLStringBuilder.append(_string);
-                  }
-               };
-
-               // Emit the OpenCL source into a string
+               String openCL = null;
                try {
-                  openCLWriter.write(entryPoint);
-
+                  openCL = KernelWriter.writeToString(entryPoint);
                } catch (CodeGenException codeGenException) {
                   return warnFallBackAndExecute(_entrypointName, _range, _passes, codeGenException);
                }
-               String openCL = openCLStringBuilder.toString();
+
                if (Config.enableShowGeneratedOpenCL) {
                   System.out.println(openCL);
                }
@@ -1324,7 +1281,7 @@ class KernelRunner{
                }
 
                // Send the string to OpenCL to compile it
-               if (buildProgramJNI(jniContextHandle, openCLStringBuilder.toString()) == 0) {
+               if (buildProgramJNI(jniContextHandle, openCL) == 0) {
                   return warnFallBackAndExecute(_entrypointName, _range, _passes, "OpenCL compile failed");
                }
 

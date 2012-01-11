@@ -514,6 +514,10 @@ public abstract class Kernel implements Cloneable{
       return (range.getLocalWidth());
    }
 
+   @OpenCLDelegate protected final int getLocalSize(int _dim) {
+      return (_dim == 0 ? range.getLocalWidth() : (_dim == 1 ? range.getLocalHeight() : range.getLocalDepth()));
+   }
+
    @OpenCLDelegate protected final int getLocalWidth() {
       return (range.getLocalWidth());
    }
@@ -1944,21 +1948,8 @@ public abstract class Kernel implements Cloneable{
       return (this);
    }
 
-   int globalThreadId;
+   // int globalThreadId;
 
-   public int getGlobalThreadId() {
-      return (globalThreadId);
-   }
-
-   int threadId;
-
-   public void setThreadId(int _threadId) {
-      threadId = _threadId;
-
-   }
-
-   public int getThreadId() {
-      return (threadId);
-   }
+   // int threadId;
 
 }

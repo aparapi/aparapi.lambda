@@ -451,8 +451,8 @@ public class Test12x4_4x2{
             int ly = getLocalY();
             int w = getGlobalWidth();
             int h = getGlobalHeight();
-            int globalThreadId = getGlobalThreadId();
-            int threadId = getThreadId();
+            int globalThreadId = getGlobalId(1) * getGlobalSize(0) + getGlobalId(0);
+            int threadId = getLocalId(1) * getLocalSize(0) + getLocalId(0);
             synchronized (test) {
                boolean show = false;
                if (globalThreadId != test[globalThreadId][0]) {
