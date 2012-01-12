@@ -92,7 +92,7 @@ public class Dim2DTest{
 
    public static void main(String[] _args) {
 
-      final Range range = Range.create2D(16, 16, 4, 4);
+      final Range range = Range.create2D(16, 32, 2, 4);
       Kernel2D gpu = new Kernel2D(range, Kernel.EXECUTION_MODE.GPU);
       gpu.execute(range);
       Kernel2D jtp = new Kernel2D(range, Kernel.EXECUTION_MODE.JTP);

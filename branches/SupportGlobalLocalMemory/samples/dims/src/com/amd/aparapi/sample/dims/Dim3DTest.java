@@ -101,7 +101,7 @@ public class Dim3DTest{
 
    public static void main(String[] _args) {
 
-      final Range range = Range.create3D(8, 8, 8, 2, 2, 2);
+      final Range range = Range.create3D(8, 16, 32, 2, 4, 4);
       Kernel3D gpu = new Kernel3D(range, Kernel.EXECUTION_MODE.GPU);
       gpu.execute(range);
       Kernel3D jtp = new Kernel3D(range, Kernel.EXECUTION_MODE.JTP);
