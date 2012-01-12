@@ -805,22 +805,24 @@ class KernelRunner{
                         kernelClone.groupId[1] = globalGroupId / _range.getNumGroups(0);
                      } else if (_range.getDims() == 3) {
 
-                        //Same as 2D
+                        //Same as 2D actually turns out that localId[0] is identical for all three dims so could be hoisted out of conditional code
                         kernelClone.localId[0] = threadId % _range.getLocalSize(0);
-                        kernelClone.localId[1] = threadId / _range.getLocalSize(0);
+                        kernelClone.localId[1] = (threadId / _range.getLocalSize(0)) % _range.getLocalSize(2);
 
-                        // the thread id's span WxHxD so threadId/(WxH) yields the depth. 
+                        // the thread id's span WxHxD so threadId/(WxH) should yield the local depth  
                         kernelClone.localId[2] = threadId / (_range.getLocalSize(0) * _range.getLocalSize(1));
 
-                        int groupInset = (globalGroupId / _range.getLocalSize(2)) % _range.getNumGroups(0);
+                        kernelClone.globalId[0] = (globalGroupId % _range.getNumGroups(0)) * _range.getLocalSize(0)
+                              + kernelClone.localId[0];
 
-                        kernelClone.globalId[0] = groupInset * _range.getLocalSize(0) + kernelClone.localId[0];
+                        kernelClone.globalId[1] = ((globalGroupId / _range.getNumGroups(0)) * _range.getLocalSize(1))
+                              % _range.getGlobalSize(1) + kernelClone.localId[1];
 
-                        int completeLines = (globalGroupId / _range.getNumGroups(0)) * _range.getLocalSize(1);
-                        kernelClone.globalId[1] = completeLines + kernelClone.localId[1];
+                        kernelClone.globalId[2] = (globalGroupId / (_range.getNumGroups(0) * _range.getNumGroups(1)))
+                              * _range.getLocalSize(2) + kernelClone.localId[2];
 
                         kernelClone.groupId[0] = globalGroupId % _range.getNumGroups(0);
-                        kernelClone.groupId[1] = globalGroupId / _range.getNumGroups(0);
+                        kernelClone.groupId[1] = (globalGroupId / _range.getNumGroups(0)) % _range.getNumGroups(1);
                         kernelClone.groupId[2] = globalGroupId / (_range.getNumGroups(0) * _range.getNumGroups(1));
                      }
                      kernelClone.run();

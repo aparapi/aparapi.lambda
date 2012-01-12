@@ -1954,8 +1954,4 @@ public abstract class Kernel implements Cloneable{
       return (this);
    }
 
-   // int globalThreadId;
-
-   // int threadId;
-
 }
