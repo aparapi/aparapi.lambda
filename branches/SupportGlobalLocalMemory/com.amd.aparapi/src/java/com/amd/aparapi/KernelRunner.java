@@ -654,46 +654,46 @@ class KernelRunner{
       }
 
       if (kernel.getExecutionMode().equals(EXECUTION_MODE.SEQ)) {
+         if (_range.getLocalSize(0) * _range.getLocalSize(1) * _range.getLocalSize(2) > 1) {
+            throw new IllegalStateException("Can't run range with group size >1 sequentially. Barriers would deadlock!");
+         }
 
          Kernel kernelClone = (Kernel) kernel.clone();
          kernelClone.range = _range;
+         kernelClone.groupId[0] = 0;
+         kernelClone.groupId[1] = 0;
+         kernelClone.groupId[2] = 0;
+         kernelClone.localId[0] = 0;
+         kernelClone.localId[1] = 0;
+         kernelClone.localId[2] = 0;
          kernelClone.localBarrier = new CyclicBarrier(1);
          for (kernelClone.passId = 0; kernelClone.passId < _passes; kernelClone.passId++) {
 
             if (_range.getDims() == 1) {
                for (int id = 0; id < _range.getGlobalSize(0); id++) {
-                  kernelClone.groupId[0] = 0;
-
                   kernelClone.globalId[0] = id;
-                  kernelClone.localId[0] = id;
                   kernelClone.run();
                }
             } else if (_range.getDims() == 2) {
                for (int x = 0; x < _range.getGlobalSize(0); x++) {
-                  kernelClone.groupId[0] = x;
                   kernelClone.globalId[0] = x;
                   for (int y = 0; y < _range.getGlobalSize(1); y++) {
                      kernelClone.globalId[1] = y;
-
                      kernelClone.run();
                   }
                }
             } else if (_range.getDims() == 3) {
                for (int x = 0; x < _range.getGlobalSize(0); x++) {
-                  kernelClone.groupId[0] = x;
                   kernelClone.globalId[0] = x;
                   for (int y = 0; y < _range.getGlobalSize(1); y++) {
                      kernelClone.globalId[1] = y;
                      for (int z = 0; z < _range.getGlobalSize(2); z++) {
                         kernelClone.globalId[2] = z;
-
                         kernelClone.run();
                      }
                      kernelClone.run();
                   }
                }
-            } else {
-               System.out.println("No seq support for 2d/3d ranges yet ");
             }
          }
 
