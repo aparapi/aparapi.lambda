@@ -213,14 +213,12 @@ class Range{
       static jfieldID dimsFieldID;
       static jfieldID localIsDerivedFieldID; 
       jobject range;
-      JNIEnv *jenv;
       cl_int dims;
       size_t *offsets;
       size_t *globalDims;
       size_t *localDims;
       jboolean localIsDerived;
       Range(JNIEnv *jenv, jobject range):
-         jenv(jenv),
          range(range),
          dims(0),
          offsets(NULL),
@@ -325,7 +323,6 @@ class KernelArg{
    public:
       static jfieldID javaArrayFieldID; 
       static jfieldID bytesPerLocalWidthFieldID;
-      JNIEnv *jenv;
       jobject argObj;
       char *name;        // used for debugging printfs
       jfieldID fieldID;  // The field that this arg represents in the kernel (java), used only for primitive updates
@@ -343,7 +340,6 @@ class KernelArg{
       } value;
 
       KernelArg(JNIEnv *jenv, jobject argObj):
-         jenv(jenv), 
          argObj(argObj){
             javaArg = jenv->NewGlobalRef(argObj);   // save a global ref to the java Arg Object
             if (argClazz == 0){
@@ -462,16 +458,16 @@ class KernelArg{
       int mustWriteBuffer(){
          return ((isImplicit()&&isRead()&&!isConstant())||(isExplicit()&&isExplicitWrite()));
       }
-      void syncType(){
+      void syncType(JNIEnv* jenv){
          type = jenv->GetIntField(javaArg, typeFieldID);
       }
-      void syncSizeInBytes(){
+      void syncSizeInBytes(JNIEnv* jenv){
          sizeInBytes = jenv->GetIntField(javaArg, sizeInBytesFieldID);
       }
-      void syncJavaArrayLength(){
+      void syncJavaArrayLength(JNIEnv* jenv){
          value.ref.javaArrayLength = jenv->GetIntField(javaArg, numElementsFieldID);
       }
-      void clearExplicitBufferBit(){
+      void clearExplicitBufferBit(JNIEnv* jenv){
          type &= ~com_amd_aparapi_KernelRunner_ARG_EXPLICIT_WRITE;
          jenv->SetIntField(javaArg, typeFieldID,type );
       }
@@ -493,7 +489,6 @@ class JNIContext{
       cl_platform_id* platforms;
       cl_uint platformc;
    public:
-      JNIEnv *jenv;
       jobject kernelObject;
       jclass kernelClass;
       cl_uint deviceIdc;
@@ -526,8 +521,7 @@ class JNIContext{
          return((JNIContext*)jniContextHandle);
       }
 
-      JNIContext(JNIEnv *_jenv, jobject _kernelObject, jint _flags): 
-         jenv(_jenv),
+      JNIContext(JNIEnv *jenv, jobject _kernelObject, jint _flags): 
          kernelObject(jenv->NewGlobalRef(_kernelObject)),
          kernelClass((jclass)jenv->NewGlobalRef(jenv->GetObjectClass(_kernelObject))), 
          flags(_flags),
@@ -682,6 +676,9 @@ jboolean isVerbose(){
 }
 
 ~JNIContext(){
+}
+
+void dispose(JNIEnv *jenv){
    cl_int status = CL_SUCCESS;
    jenv->DeleteGlobalRef(kernelObject);
    jenv->DeleteGlobalRef(kernelClass);
@@ -754,7 +751,7 @@ jboolean isVerbose(){
 /*
    Release JNI critical pinned arrays before returning to java code
    */
-void unpinAll() {
+void unpinAll(JNIEnv* jenv) {
    for (int i=0; i< argc; i++){
       KernelArg *arg = args[i];
       if (arg->isBackedByArray()) {
@@ -773,7 +770,8 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_disposeJNI(JNIEnv *jenv
    cl_int status = CL_SUCCESS;
    JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);
    if (jniContext != NULL){
-      delete jniContext;//free(jniContext);
+      jniContext->dispose(jenv);
+      delete jniContext;
       jniContext = NULL;
    }
    return(status);
@@ -906,7 +904,7 @@ jint updateNonPrimitiveReferences(JNIEnv *jenv, jobject jobj, JNIContext* jniCon
    if (jniContext != NULL){
       for (jint i=0; i<jniContext->argc; i++){ 
          KernelArg *arg=jniContext->args[i];
-         arg->syncType(); // make sure that the JNI arg reflects the latest type info from the instance 
+         arg->syncType(jenv); // make sure that the JNI arg reflects the latest type info from the instance 
 
          if (jniContext->isVerbose()){
             fprintf(stderr, "got type for %s: %08x\n", arg->name, arg->type);
@@ -956,7 +954,7 @@ jint updateNonPrimitiveReferences(JNIEnv *jenv, jobject jobj, JNIContext* jniCon
                arg->value.ref.isArray = !arg->isAparapiBufIsDirect();
 
                // Save the sizeInBytes which was set on the java side
-               arg->syncSizeInBytes();
+               arg->syncSizeInBytes(jenv);
 
                if (jniContext->isVerbose()){
                   fprintf(stderr, "updateNonPrimitiveReferences, args[%d].sizeInBytes=%d\n", i, arg->sizeInBytes);
@@ -999,7 +997,7 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_runKernelJNI(JNIEnv *je
    for (int i=0; i< jniContext->argc; i++){
       KernelArg *arg = jniContext->args[i];
       // TODO: see if we can get rid of this read 
-      arg->syncType();
+      arg->syncType(jenv);
       if (jniContext->isVerbose()){
          fprintf(stderr, "got type for arg %d, %s, type=%08x\n", i, arg->name, arg->type);
       }
@@ -1062,20 +1060,20 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_runKernelJNI(JNIEnv *je
 
             if (status != CL_SUCCESS) {
                PRINT_CL_ERR(status, "clCreateBuffer");
-               jniContext->unpinAll();
+               jniContext->unpinAll(jenv);
                return status;
             }
 
             status = clSetKernelArg(jniContext->kernel, kernelArgPos++, sizeof(cl_mem), (void *)&(arg->value.ref.mem));                  
             if (status != CL_SUCCESS) {
                PRINT_CL_ERR(status, "clSetKernelArg (array)");
-               jniContext->unpinAll();
+               jniContext->unpinAll(jenv);
                return status;
             }
 
             // Add the array length if needed
             if (arg->usesArrayLength()){
-               arg->syncJavaArrayLength();
+               arg->syncJavaArrayLength(jenv);
 
                status = clSetKernelArg(jniContext->kernel, kernelArgPos++, sizeof(jint), &(arg->value.ref.javaArrayLength));
 
@@ -1084,7 +1082,7 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_runKernelJNI(JNIEnv *je
                }
                if (status != CL_SUCCESS) {
                   PRINT_CL_ERR(status, "clSetKernelArg (array length)");
-                  jniContext->unpinAll();
+                  jniContext->unpinAll(jenv);
                   return status;
                }
             }
@@ -1117,14 +1115,14 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_runKernelJNI(JNIEnv *je
                   arg->sizeInBytes, arg->value.ref.addr, 0, NULL, &(jniContext->writeEvents[writeEventCount++]));
             if (status != CL_SUCCESS) {
                PRINT_CL_ERR(status, "clEnqueueWriteBuffer");
-               jniContext->unpinAll();
+               jniContext->unpinAll(jenv);
                return status;
             }
             if (arg->isExplicit() && arg->isExplicitWrite()){
 #ifdef VERBOSE_EXPLICIT
                fprintf(stderr, "clearing explicit buffer bit %d %s\n", i, arg->name);
 #endif
-               arg->clearExplicitBufferBit();
+               arg->clearExplicitBufferBit(jenv);
             }
          }
       } else if (arg->isLocal()){
@@ -1140,7 +1138,7 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_runKernelJNI(JNIEnv *je
             status = clSetKernelArg(jniContext->kernel, kernelArgPos++, adjustedLocalBufSize, NULL);
             if (status != CL_SUCCESS) {
                PRINT_CL_ERR(status, "clSetKernelArg() (local)");
-               jniContext->unpinAll();
+               jniContext->unpinAll(jenv);
                return status;
             }
          } else {
@@ -1204,7 +1202,7 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_runKernelJNI(JNIEnv *je
          status = clSetKernelArg(jniContext->kernel, kernelArgPos++, arg->sizeInBytes, &(arg->value));
          if (status != CL_SUCCESS) {
             PRINT_CL_ERR(status, "clSetKernelArg() (value)");
-            jniContext->unpinAll();
+            jniContext->unpinAll(jenv);
             return status;
          }
       }
@@ -1226,7 +1224,7 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_runKernelJNI(JNIEnv *je
          status = clSetKernelArg(jniContext->kernel, kernelArgPos, sizeof(passid), &(passid));
          if (status != CL_SUCCESS) {
             PRINT_CL_ERR(status, "clSetKernelArg() (passid)");
-            jniContext->unpinAll();
+            jniContext->unpinAll(jenv);
             return status;
          }
 
@@ -1297,7 +1295,7 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_runKernelJNI(JNIEnv *je
          if (status != CL_SUCCESS) {
             PRINT_CL_ERR(status, "clEnqueueNDRangeKernel()");
             fprintf(stderr, "after clEnqueueNDRangeKernel, globalSize_0=%d localSize_0=%d\n", (int)range.globalDims[0], range.localDims[0] );
-            jniContext->unpinAll();
+            jniContext->unpinAll(jenv);
             return status;
          }
       }
@@ -1306,7 +1304,7 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_runKernelJNI(JNIEnv *je
          status = clWaitForEvents(jniContext->deviceIdc,  jniContext->executeEvents);
          if (status != CL_SUCCESS) {
             PRINT_CL_ERR(status, "clWaitForEvents() execute events mid pass");
-            jniContext->unpinAll();
+            jniContext->unpinAll(jenv);
             return status;
          }
 
@@ -1314,7 +1312,7 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_runKernelJNI(JNIEnv *je
             status = clReleaseEvent(jniContext->executeEvents[dev]);
             if (status != CL_SUCCESS) {
                PRINT_CL_ERR(status, "clReleaseEvent() read event");
-               jniContext->unpinAll();
+               jniContext->unpinAll(jenv);
                return status;
             }
          }
@@ -1338,7 +1336,7 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_runKernelJNI(JNIEnv *je
                arg->sizeInBytes,arg->value.ref.addr , jniContext->deviceIdc, jniContext->executeEvents, &(jniContext->readEvents[readEventCount++]));
          if (status != CL_SUCCESS) {
             PRINT_CL_ERR(status, "clEnqueueReadBuffer()");
-            jniContext->unpinAll();
+            jniContext->unpinAll(jenv);
             return status;
          }
       }
@@ -1352,7 +1350,7 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_runKernelJNI(JNIEnv *je
       status = clWaitForEvents(readEventCount, jniContext->readEvents);
       if (status != CL_SUCCESS) {
          PRINT_CL_ERR(status, "clWaitForEvents() read events");
-         jniContext->unpinAll();
+         jniContext->unpinAll(jenv);
          return status;
       }
 
@@ -1360,14 +1358,14 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_runKernelJNI(JNIEnv *je
          if (jniContext->isProfilingEnabled()) {
             status = profile(&jniContext->args[jniContext->readEventArgs[i]]->value.ref.read, &jniContext->readEvents[i]);
             if (status != CL_SUCCESS) {
-               jniContext->unpinAll();
+               jniContext->unpinAll(jenv);
                return status;
             }
          }
          status = clReleaseEvent(jniContext->readEvents[i]);
          if (status != CL_SUCCESS) {
             PRINT_CL_ERR(status, "clReleaseEvent() read event");
-            jniContext->unpinAll();
+            jniContext->unpinAll(jenv);
             return status;
          }
       }
@@ -1376,7 +1374,7 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_runKernelJNI(JNIEnv *je
       status = clWaitForEvents(jniContext->deviceIdc, jniContext->executeEvents);
       if (status != CL_SUCCESS) {
          PRINT_CL_ERR(status, "clWaitForEvents() execute event");
-         jniContext->unpinAll();
+         jniContext->unpinAll(jenv);
          return status;
       }
    }
@@ -1384,7 +1382,7 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_runKernelJNI(JNIEnv *je
    if (jniContext->isProfilingEnabled()) {
       status = profile(&jniContext->exec, &jniContext->executeEvents[0]);
       if (status != CL_SUCCESS) {
-         jniContext->unpinAll();
+         jniContext->unpinAll(jenv);
          return status;
       }
    }
@@ -1394,13 +1392,13 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_runKernelJNI(JNIEnv *je
    status = clGetEventInfo(jniContext->executeEvents[0], CL_EVENT_COMMAND_EXECUTION_STATUS, sizeof(cl_int), &executeStatus, NULL);
    if (status != CL_SUCCESS) {
       PRINT_CL_ERR(status, "clGetEventInfo() execute event");
-      jniContext->unpinAll();
+      jniContext->unpinAll(jenv);
       return status;
    }
    if (executeStatus != CL_SUCCESS) {
       // it should definitely not be negative, but since we did a wait above, it had better be CL_COMPLETE==CL_SUCCESS
       PRINT_CL_ERR(executeStatus, "Execution status of execute event");
-      jniContext->unpinAll();
+      jniContext->unpinAll(jenv);
       return executeStatus;
    }
 
@@ -1409,7 +1407,7 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_runKernelJNI(JNIEnv *je
       status = clReleaseEvent(jniContext->executeEvents[dev]);
       if (status != CL_SUCCESS) {
          PRINT_CL_ERR(status, "clReleaseEvent() execute event");
-         jniContext->unpinAll();
+         jniContext->unpinAll(jenv);
          return status;
       }
    }
@@ -1421,12 +1419,12 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_runKernelJNI(JNIEnv *je
       status = clReleaseEvent(jniContext->writeEvents[i]);
       if (status != CL_SUCCESS) {
          PRINT_CL_ERR(status, "clReleaseEvent() write event");
-         jniContext->unpinAll();
+         jniContext->unpinAll(jenv);
          return status;
       }
    }
 
-   jniContext->unpinAll();
+   jniContext->unpinAll(jenv);
 
    if (jniContext->isProfilingEnabled()) {
       writeProfileInfo(jniContext);
@@ -1634,7 +1632,7 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_setArgsJNI(JNIEnv *jenv
          }
 
          //If an error occurred, return early so we report the first problem, not the last
-         if (jniContext->jenv->ExceptionCheck() == JNI_TRUE) {
+         if (jenv->ExceptionCheck() == JNI_TRUE) {
             jniContext->argc = -1;
             delete[] jniContext->args;
             jniContext->args = NULL;
@@ -1766,5 +1764,3 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_getMaxWorkItemSizeJNI(J
       return(0);
    }
 }
-
-
