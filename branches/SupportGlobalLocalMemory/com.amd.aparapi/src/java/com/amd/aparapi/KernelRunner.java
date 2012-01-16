@@ -806,8 +806,10 @@ class KernelRunner{
                      } else if (_range.getDims() == 3) {
 
                         //Same as 2D actually turns out that localId[0] is identical for all three dims so could be hoisted out of conditional code
+
                         kernelClone.localId[0] = threadId % _range.getLocalSize(0);
-                        kernelClone.localId[1] = (threadId / _range.getLocalSize(0)) % _range.getLocalSize(2);
+
+                        kernelClone.localId[1] = (threadId / _range.getLocalSize(0)) % _range.getLocalSize(1);
 
                         // the thread id's span WxHxD so threadId/(WxH) should yield the local depth  
                         kernelClone.localId[2] = threadId / (_range.getLocalSize(0) * _range.getLocalSize(1));
@@ -832,6 +834,7 @@ class KernelRunner{
 
                }
             });
+            threadArray[threadId].setName("aparapi-" + threadId + "/" + threads);
             threadArray[threadId].start();
 
          }
