@@ -60,9 +60,12 @@ public class Main{
    }
 
    private static final ConvolutionFilter NONE = new ConvolutionFilter(0f, 0f, 0f, 0f, 1f, 0f, 0f, 0f, 0f, 0);
+
    private static final ConvolutionFilter EDGE1 = new ConvolutionFilter(1f, -2f, 1f, -2f, 4f, -2f, 1f, -2f, 1f, 0);
+
    private static final ConvolutionFilter EDGE2 = new ConvolutionFilter(-1f, 0f, -1f, 0f, 7f, 0f, -1f, 0f, -1f, 0);
-   private static final ConvolutionFilter EDGE = new ConvolutionFilter(-2f, 0f, 0f, 0f, 0f, 0f,0f, 0f, 2f, 0);
+
+   private static final ConvolutionFilter EDGE = new ConvolutionFilter(-2f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 2f, 0);
 
    private static final ConvolutionFilter BLUR = new ConvolutionFilter(1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 0);
 
@@ -75,6 +78,7 @@ public class Main{
    private static final ConvolutionFilter EMBOSS_4 = new ConvolutionFilter(0f, 1f, 2f, -1f, 1f, 1f, -2f, -1f, 0f, 0);
 
    private static final Range range = Range.create2D(width, height, 8, 8);
+
    public static class ConvolutionKernel extends Kernel{
 
       private final float[] filter = new float[9];
@@ -163,7 +167,7 @@ public class Main{
    private final DirectMediaPlayer mediaPlayer;
 
    private ImagePane imagePane;
-   
+
    boolean selected;
 
    public Main(String media, String[] args) throws InterruptedException, InvocationTargetException {
@@ -189,10 +193,10 @@ public class Main{
             onOff.addActionListener(new ActionListener(){
 
                @Override public void actionPerformed(ActionEvent e) {
-                 selected = ((JToggleButton)e.getSource()).isSelected();
-                  
+                  selected = ((JToggleButton) e.getSource()).isSelected();
+
                }
-               
+
             });
             frame.pack();
             frame.setResizable(false);
@@ -245,21 +249,20 @@ public class Main{
       @Override public void paint(Graphics g) {
          Graphics2D g2 = (Graphics2D) g;
          g2.drawImage(image, null, 0, 0);
-         if (selected){
-         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB);
-         g2.setColor(Color.red);
-         g2.setComposite(AlphaComposite.SrcOver.derive(0.3f));
-         g2.fillRoundRect(100, 100, 100, 80, 32, 32);
-         g2.setComposite(AlphaComposite.SrcOver);
-         g2.setColor(Color.white);
-         g2.setFont(font);
-         g2.drawString("vlcj direct media player", 130, 150);
+         if (selected) {
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB);
+            g2.setColor(Color.red);
+            g2.setComposite(AlphaComposite.SrcOver.derive(0.3f));
+            g2.fillRoundRect(100, 100, 100, 80, 32, 32);
+            g2.setComposite(AlphaComposite.SrcOver);
+            g2.setColor(Color.white);
+            g2.setFont(font);
+            g2.drawString("vlcj direct media player", 130, 150);
          }
       }
    }
 
-  
    private final class TestRenderCallback extends RenderCallbackAdapter{
 
       public TestRenderCallback() {
@@ -269,12 +272,12 @@ public class Main{
       @Override public void onDisplay(int[] data) {
 
          kernel.data = data;
-         if (selected){
-         long start = System.currentTimeMillis();
-         kernel.apply(EDGE); //EMBOSS_3, EMBOSS_4);
-         System.out.println(kernel.getExecutionMode() + " " + (System.currentTimeMillis() - start));
+         if (selected) {
+            long start = System.currentTimeMillis();
+            kernel.apply(EDGE); //EMBOSS_3, EMBOSS_4);
+            System.out.println(kernel.getExecutionMode() + " " + (System.currentTimeMillis() - start));
          }
-       
+
          image.setRGB(0, 0, width, height, data, 0, width);
          imagePane.repaint();
       }

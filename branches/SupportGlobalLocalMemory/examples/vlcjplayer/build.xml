@@ -15,7 +15,15 @@
       <pathelement path="${ant.project.name}.jar"/>
    </path>
 
-   <target name="getjars">
+   <condition property="needjars">
+      <or>
+         <not><available file="vlcj/jna.jar"/> </not>
+         <not><available file="vlcj/platform.jar"/> </not>
+         <not><available file="vlcj/vlcj-1.2.2.jar"/> </not>
+      </or>
+   </condition>
+
+   <target name="getjars" if="needjars">
       <delete dir="vlcj"/>
       <get dest="vlcj">
          <url url="http://java.net/projects/jna/sources/svn/content/tags/3.3.0/jnalib/dist/jna.jar"/> 
@@ -25,7 +33,7 @@
    </target>
 
 
-   <target name="build" depends="clean">
+   <target name="build" depends="clean, getjars">
       <mkdir dir="classes"/>
       <javac srcdir="src" destdir="classes" debug="on" includeantruntime="false">
          <classpath refid="compiler.class.path"/>
@@ -54,6 +62,11 @@
    <target name="run-gpu">
       <java classname="com.amd.aparapi.examples.vlcj.Main" fork="true">
          <classpath refid="runtime.class.path"/>
+         <arg line="http://www.youtube.com/watch?v=DX1iplQQJTo"/>
+         <arg line="http://www.youtube.com/watch?v=3qAp2-VoM2I"/>
+
+         <arg line="http://www.youtube.com/watch?v=Gw7C72JTY9I"/>
+         <sysproperty key="jna.library.path" path="C:\Program Files\VideoLAN\VLC"/>
          <sysproperty key="java.library.path" path="..\..\com.amd.aparapi.jni"/>
          <sysproperty key="com.amd.aparapi.executionMode" value="GPU"/>
       </java>
