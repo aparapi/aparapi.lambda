@@ -38,6 +38,11 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 
 package com.amd.aparapi.sample.dims;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.amd.aparapi.Kernel;
 import com.amd.aparapi.Range;
 
@@ -51,7 +56,7 @@ import com.amd.aparapi.Range;
  */
 public class Dim3DTest{
 
-   public static class Kernel3D extends Kernel{
+   public static abstract class Kernel3D extends Kernel{
       final static int GLOBAL = 0;
 
       final static int LOCAL_0 = 1;
@@ -74,13 +79,16 @@ public class Dim3DTest{
 
       final static int SIZE = 10;
 
-      private final int data[];
+      final int data[]; // private failed here incorrectly
 
       public Kernel3D(Range _range, EXECUTION_MODE _mode) {
          setExecutionMode(_mode);
          data = new int[_range.getGlobalSize(0) * _range.getGlobalSize(1) * _range.getGlobalSize(2) * SIZE];
 
       }
+
+      public void track(int gid) {
+      };
 
       public void run() {
          int gid = ((getGlobalSize(0) * getGlobalSize(1) * getGlobalId(2)) + (getGlobalSize(0) * getGlobalId(1)) + getGlobalId(0)); // (w*h*z)+(h*y)+x 
@@ -95,17 +103,62 @@ public class Dim3DTest{
          data[(gid * SIZE) + GLOBAL_0] = getGlobalId(0);
          data[(gid * SIZE) + GLOBAL_1] = getGlobalId(1);
          data[(gid * SIZE) + GLOBAL_2] = getGlobalId(2);
+         track(gid);
+      }
+
+   }
+
+   public static class JTPKernel3D extends Kernel3D{
+      static Map<Integer, List<Long>> track = new HashMap<Integer, List<Long>>();
+
+      public void track(int gid) {
+         synchronized (track) {
+
+            List listOfTimeStamps = track.get(gid);
+
+            if (listOfTimeStamps == null) {
+               listOfTimeStamps = new ArrayList<Long>();
+               track.put(gid, listOfTimeStamps);
+            }
+            listOfTimeStamps.add(System.currentTimeMillis());
+         }
+      };
+
+      JTPKernel3D(Range _range) {
+         super(_range, EXECUTION_MODE.JTP);
+
+      }
+   }
+
+   public static class GPUKernel3D extends Kernel3D{
+
+      GPUKernel3D(Range _range) {
+         super(_range, EXECUTION_MODE.GPU);
+
       }
 
    }
 
    public static void main(String[] _args) {
 
-      final Range range = Range.create3D(8, 16, 32, 2, 4, 4);
-      Kernel3D gpu = new Kernel3D(range, Kernel.EXECUTION_MODE.GPU);
+      final Range range = Range.create3D(8, 16, 32, 2, 4, 2);
+      Kernel3D gpu = new GPUKernel3D(range);
       gpu.execute(range);
-      Kernel3D jtp = new Kernel3D(range, Kernel.EXECUTION_MODE.JTP);
+      Kernel3D jtp = new JTPKernel3D(range);
       jtp.execute(range);
+
+      Map<Integer, List<Long>> track = JTPKernel3D.track;
+
+      for (int gid = 0; gid < range.getGlobalSize(0) * range.getGlobalSize(1) * range.getGlobalSize(2); gid++) {
+         if (track.get(gid) == null) {
+            System.out.println(gid + "under subscribed!");
+         } else {
+            if (track.get(gid).size() > 1) {
+               System.out.println(gid + "over subscribed!" + track.get(gid).size());
+            }
+         }
+      }
+
       for (int i = 0; i < range.getGlobalSize(0) * range.getGlobalSize(1) * range.getGlobalSize(2) * Kernel3D.SIZE; i += Kernel3D.SIZE) {
          boolean same = true //
                && gpu.data[i + Kernel3D.GLOBAL] == jtp.data[i + Kernel3D.GLOBAL] //
