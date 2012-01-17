@@ -322,7 +322,6 @@ class KernelArg{
       static jfieldID numElementsFieldID; 
    public:
       static jfieldID javaArrayFieldID; 
-      static jfieldID bytesPerLocalWidthFieldID;
       jobject argObj;
       char *name;        // used for debugging printfs
       jfieldID fieldID;  // The field that this arg represents in the kernel (java), used only for primitive updates
@@ -348,7 +347,6 @@ class KernelArg{
                typeFieldID = jenv->GetFieldID(c, "type", "I"); ASSERT_FIELD(type);
                isStaticFieldID = jenv->GetFieldID(c, "isStatic", "Z"); ASSERT_FIELD(isStatic);
                javaArrayFieldID = jenv->GetFieldID(c, "javaArray", "Ljava/lang/Object;"); ASSERT_FIELD(javaArray);
-               bytesPerLocalWidthFieldID = jenv->GetFieldID(c, "bytesPerLocalWidth", "I"); ASSERT_FIELD(bytesPerLocalWidth);
                sizeInBytesFieldID = jenv->GetFieldID(c, "sizeInBytes", "I"); ASSERT_FIELD(sizeInBytes);
                numElementsFieldID = jenv->GetFieldID(c, "numElements", "I"); ASSERT_FIELD(numElements);
             }
@@ -446,9 +444,6 @@ class KernelArg{
       int isAparapiBufHasArray(){
          return (type&com_amd_aparapi_KernelRunner_ARG_APARAPI_BUF_HAS_ARRAY);
       }
-      int isAparapiBufIsDirect(){
-         return (type&com_amd_aparapi_KernelRunner_ARG_APARAPI_BUF_IS_DIRECT);
-      }
       int isBackedByArray(){
          return ( (isArray() && isGlobal()) || ((isGlobal() || isConstant()) && isAparapiBufHasArray()));
       }
@@ -477,7 +472,6 @@ jfieldID KernelArg::nameFieldID=0;
 jfieldID KernelArg::typeFieldID=0; 
 jfieldID KernelArg::isStaticFieldID=0; 
 jfieldID KernelArg::javaArrayFieldID=0; 
-jfieldID KernelArg::bytesPerLocalWidthFieldID=0;
 jfieldID KernelArg::sizeInBytesFieldID=0;
 jfieldID KernelArg::numElementsFieldID=0; 
 
@@ -951,7 +945,7 @@ jint updateNonPrimitiveReferences(JNIEnv *jenv, jobject jobj, JNIContext* jniCon
                } else {
                   arg->value.ref.javaArray = NULL;
                }
-               arg->value.ref.isArray = !arg->isAparapiBufIsDirect();
+               arg->value.ref.isArray = true;
 
                // Save the sizeInBytes which was set on the java side
                arg->syncSizeInBytes(jenv);
@@ -1009,9 +1003,6 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_runKernelJNI(JNIEnv *je
          void * prevAddr =  arg->value.ref.addr;
          if (arg->value.ref.isArray) {
             arg->pin(jenv);
-         } else if (arg->isAparapiBufIsDirect()) {
-            // different call used for directbuffers
-            arg->value.ref.addr = jenv->GetDirectBufferAddress(arg->value.ref.javaArray);
          }
 
          if (jniContext->isVerbose()){
@@ -1126,16 +1117,13 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_runKernelJNI(JNIEnv *je
             }
          }
       } else if (arg->isLocal()){
-         fprintf(stderr, "found local array!\n");
          if (jniContext->firstRun){
-            // must multiply perlocalByteSize by localSize_0 to get real opencl buffer size
-            int bytesPerLocalWidth = jenv->GetIntField(arg->javaArg, KernelArg::bytesPerLocalWidthFieldID);
-            int adjustedLocalBufSize = bytesPerLocalWidth * range.localDims[0];
+            int bytes = arg->sizeInBytes;
 
             if (jniContext->isVerbose()){
-               fprintf(stderr, "ISLOCAL, clSetKernelArg(jniContext->kernel, %d, %d, NULL);\n", i, adjustedLocalBufSize);
+               fprintf(stderr, "ISLOCAL, clSetKernelArg(jniContext->kernel, %d, %d, NULL);\n", i, bytes);
             }
-            status = clSetKernelArg(jniContext->kernel, kernelArgPos++, adjustedLocalBufSize, NULL);
+            status = clSetKernelArg(jniContext->kernel, kernelArgPos++, bytes, NULL);
             if (status != CL_SUCCESS) {
                PRINT_CL_ERR(status, "clSetKernelArg() (local)");
                jniContext->unpinAll(jenv);
@@ -1629,6 +1617,11 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_setArgsJNI(JNIEnv *jenv
          }
          if (jniContext->isVerbose()){
             fprintf(stderr, "in setArgs arg %d %s type %08x\n", i, arg->name, arg->type);
+            if (arg->isLocal()){
+                 fprintf(stderr, "in setArgs arg %d %s is local\n", i, arg->name);
+            }else{
+                 fprintf(stderr, "in setArgs arg %d %s is *not* local\n", i, arg->name);
+            }
          }
 
          //If an error occurred, return early so we report the first problem, not the last
