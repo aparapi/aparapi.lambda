@@ -305,7 +305,7 @@ class KernelRunner{
     * 
     * @author gfrost
     */
-   @UsedByJNICode public static final int ARG_APARAPI_BUF_IS_DIRECT = 1 << 20;
+  // @UsedByJNICode public static final int ARG_APARAPI_BUF_IS_DIRECT = 1 << 20;
 
    /**
     * This 'bit' indicates that a particular <code>KernelArg</code> represents a <code>char</code> type (array or primitive).
@@ -447,7 +447,7 @@ class KernelRunner{
        * 
        * At present only set for AparapiLocalBuffer objs, JNI multiplies this by localSize
        */
-      @Annotations.Unused @UsedByJNICode public int bytesPerLocalWidth;
+    //  @Annotations.Unused @UsedByJNICode public int bytesPerLocalWidth;
 
       /**
        * Only set for array objs, not used on JNI
@@ -1349,6 +1349,8 @@ class KernelRunner{
                      Class<?> type = field.getType();
                      if (type.isArray()) {
                         if (args[i].name.endsWith("_$local$")) {
+                           args[i].type |= ARG_LOCAL;
+                        }else{
                            args[i].type |= ARG_GLOBAL;
                         }
                         args[i].array = null; // will get updated in updateKernelArrayRefs
@@ -1361,7 +1363,7 @@ class KernelRunner{
                         args[i].type |= entryPoint.getArrayFieldAssignments().contains(field.getName()) ? (ARG_WRITE | ARG_READ)
                               : 0;
                         args[i].type |= entryPoint.getArrayFieldAccesses().contains(field.getName()) ? ARG_READ : 0;
-                        args[i].type |= ARG_GLOBAL;
+                       // args[i].type |= ARG_GLOBAL;
                         args[i].type |= type.isAssignableFrom(float[].class) ? ARG_FLOAT : 0;
 
                         args[i].type |= type.isAssignableFrom(int[].class) ? ARG_INT : 0;
