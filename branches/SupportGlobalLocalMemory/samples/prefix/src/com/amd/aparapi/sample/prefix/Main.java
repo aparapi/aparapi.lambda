@@ -38,107 +38,38 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 
 package com.amd.aparapi.sample.prefix;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferInt;
 import java.io.IOException;
-
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.WindowConstants;
 
 import com.amd.aparapi.Kernel;
 import com.amd.aparapi.Range;
 
-/**
- * An example Aparapi application which demonstrates image manipulation via convolution filter
- * 
- * Converted to use int buffer and some performance tweaks by Gary Frost
- * http://processing.org/learning/pixels/
- * 
- * @author Gary Frost
- */
 public class Main{
+   /// http://www.toves.org/books/distalg/#3.1
+   public static class PrefixScanKernel extends Kernel{
 
-   public static class DimsKernel extends Kernel{
+      private final int[] data;
 
-      private final int[] image;
+      private final int data_$local$[];
 
-      final int global_pallette[];
-
-      final int width_pallette[];
-
-      final int height_pallette[];
-
-      final int group_pallette[];
-
-      public int[] createPallette(int _range) {
-         int pallette[] = new int[_range + 1];
-         for (int i = 0; i < _range; i++) {
-            float h = i / (float) _range;
-            float b = 1.0f - h * h;
-            pallette[i] = Color.HSBtoRGB(h, 1f, b);
-         }
-         return (pallette);
-      }
-
-      public DimsKernel(BufferedImage _image, Range _range) {
+      public PrefixScanKernel(Range _range, int[] _data) {
          System.out.println(_range);
-         image = ((DataBufferInt) _image.getRaster().getDataBuffer()).getData();
-         int width = _range.getGlobalSize(0);
-         int height = _range.getGlobalSize(1);
-
-         global_pallette = createPallette(width * height);
-         width_pallette = createPallette(width);
-         height_pallette = createPallette(height);
-         group_pallette = createPallette(_range.getNumGroups(0) * _range.getNumGroups(1));
-
+         data = _data;
+         data_$local$ = new int[_range.getLocalSize(0)];
       }
 
       public void run() {
-
-         int x = getGlobalId(0);
-         int y = getGlobalId(1);
-         int w = getGlobalSize(0);
-         int h = getGlobalSize(1);
-         image[y * w + x] = width_pallette[getGroupId()];
+         // for each globalId(0) we pull the data into local memory
+         data_$local$[getLocalId(0)] = data[getGlobalId(0)];
+         localBarrier();
 
       }
 
    }
 
    public static void main(String[] _args) throws IOException {
-
-      JFrame frame = new JFrame("Dims");
-
-      final int width = 256;
-
-      final int height = 256;
-
-      final BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-      final Range range = Range.create2D(width, height, 4, 4);
-      final DimsKernel lifeKernel = new DimsKernel(image, range);
-
-      @SuppressWarnings("serial") JComponent viewer = new JComponent(){
-         @Override public void paintComponent(Graphics g) {
-
-            g.drawImage(image, 0, 0, width, height, 0, 0, width, height, this);
-         }
-      };
-
-      // Set the default size and add to the frames content pane
-      viewer.setPreferredSize(new Dimension(width, height));
-      frame.getContentPane().add(viewer);
-
-      // Swing housekeeping
-      frame.pack();
-      frame.setVisible(true);
-      frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+      final Range range = Range.create(1024, 256);
+      final int[] data = new int[range.getGlobalSize(0)];
+      final PrefixScanKernel lifeKernel = new PrefixScanKernel(range, data);
       lifeKernel.execute(range);
-
-      viewer.repaint(); // Request a repaint of the viewer (causes paintComponent(Graphics) to be called later not synchronous
-
    }
 }
