@@ -114,7 +114,7 @@ public class Local{
                xyz[body + 0] -= maxDist * 1.5;
             }
          }
-       setExplicit(true);
+         setExplicit(true);
       }
 
       /** 
@@ -123,8 +123,6 @@ public class Local{
       @Override public void run() {
          int body = getGlobalId();
          int globalId = body * 3;
-
-       
 
          float accx = 0.f;
          float accy = 0.f;
@@ -139,7 +137,7 @@ public class Local{
             int lidx = getLocalId(0) * 3;
             xyz_$local$[lidx + 0] = xyz[gidx + 0];
             xyz_$local$[lidx + 1] = xyz[gidx + 1];
-            xyz_$local$[lidx + 2] = xyz[gidx+ 2];
+            xyz_$local$[lidx + 2] = xyz[gidx + 2];
             // Synchronize to make sure data is available for processing
             localBarrier();
 
