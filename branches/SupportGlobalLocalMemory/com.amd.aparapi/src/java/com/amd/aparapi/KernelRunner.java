@@ -305,7 +305,7 @@ class KernelRunner{
     * 
     * @author gfrost
     */
-  // @UsedByJNICode public static final int ARG_APARAPI_BUF_IS_DIRECT = 1 << 20;
+   // @UsedByJNICode public static final int ARG_APARAPI_BUF_IS_DIRECT = 1 << 20;
 
    /**
     * This 'bit' indicates that a particular <code>KernelArg</code> represents a <code>char</code> type (array or primitive).
@@ -447,7 +447,7 @@ class KernelRunner{
        * 
        * At present only set for AparapiLocalBuffer objs, JNI multiplies this by localSize
        */
-    //  @Annotations.Unused @UsedByJNICode public int bytesPerLocalWidth;
+      //  @Annotations.Unused @UsedByJNICode public int bytesPerLocalWidth;
 
       /**
        * Only set for array objs, not used on JNI
@@ -654,6 +654,15 @@ class KernelRunner{
       }
 
       if (kernel.getExecutionMode().equals(EXECUTION_MODE.SEQ)) {
+
+         /**
+          * SEQ mode is useful for testing trivial logic, but kernels which use SEQ mode cannot be used if the
+          * product of localSize(0..3) is >1.  So we can use multi-dim ranges but only if the local size is 1 in all dimensions. 
+          * 
+          * As a result of this barrier is only ever 1 work item wide and probably should be turned into a no-op. 
+          * 
+          * So we need to check if the range is valid here. If not we have no choice but to punt.
+          */
          if (_range.getLocalSize(0) * _range.getLocalSize(1) * _range.getLocalSize(2) > 1) {
             throw new IllegalStateException("Can't run range with group size >1 sequentially. Barriers would deadlock!");
          }
@@ -702,19 +711,69 @@ class KernelRunner{
          final int threads = _range.getLocalSize(0) * _range.getLocalSize(1) * _range.getLocalSize(2);
          final int globalGroups = _range.getNumGroups(0) * _range.getNumGroups(1) * _range.getNumGroups(2);
          final Thread threadArray[] = new Thread[threads];
-         // This is the barrier that we provide for the kernel threads to rendezvous with the current thread so it needs to be threadCount+1 wide
+         /**
+          * This joinBarrier is the barrier that we provide for the kernel threads to rendezvous with the current dispatch thread.
+          * So this barrier is threadCount+1 wide (the +1 is for the dispatch thread)
+          */
          final CyclicBarrier joinBarrier = new CyclicBarrier(threads + 1);
-         // This is only ever used by the kernels.  If the kernel does not use the barrier the threads can get out of sync, we promised nothing. 
-         // As with OpenCL in kernel code all threads within a group must wait at the barrier or none.  It is a user error (deadlock!) if the barrier is in a conditional that 
-         // is only executed by some of the threads within a group.
+
+         /**
+          * This localBarrier is only ever used by the kernels.  If the kernel does not use the barrier the threads 
+          * can get out of sync, we promised nothing in JTP mode.
+          *
+          * As with OpenCL all threads within a group must wait at the barrier or none.  It is a user error (possible deadlock!)
+          * if the barrier is in a conditional that is only executed by some of the threads within a group.
+          * 
+          * Kernel developer must understand this.
+          * 
+          * This barrier is threadCount wide.  We never hit the barrier from the dispatch thread.
+          */
          final CyclicBarrier localBarrier = new CyclicBarrier(threads);
+
+         /**
+           * Note that we emulate OpenCL by creating one thread per localId (across the group).
+           * 
+           * So threadCount == range.getLocalSize(0)*range.getLocalSize(1)*range.getLocalSize(2);
+           * 
+           * For a 1D range of 12 groups of 4 we create 4 threads. One per localId(0).
+           * 
+           * We also clone the kernel 4 times. One per thread.
+           * 
+           * We create local barrier which has a width of 4
+           *         
+           *    Thread-0 handles localId(0) (global 0,4,8)
+           *    Thread-1 handles localId(1) (global 1,5,7)
+           *    Thread-2 handles localId(2) (global 2,6,10)
+           *    Thread-3 handles localId(3) (global 3,7,11)
+           *    
+           * This allows all threads to synchronize using the local barrier.
+           * 
+           * Initially the use of local buffers seems broken as the buffers appears to be per Kernel.
+           * Thankfully Kernel.clone() performs a shallow clone of all buffers (local and global)
+           * So each of the cloned kernels actually still reference the same underlying local/global buffers. 
+           * 
+           * If the kernel uses local buffers but does not use barriers then it is possible for different groups
+           * to see mutations from each other (unlike OpenCL), however if the kernel does not us barriers then it 
+           * cannot assume any coherence in OpenCL mode either (the failure mode will be different but still wrong) 
+           * 
+           * So even JTP mode use of local buffers will need to use barriers. Not for the same reason as OpenCL but to keep groups in lockstep.
+           * 
+           **/
 
          for (int id = 0; id < threads; id++) {
             final int threadId = id;
-            final Kernel kernelClone = (Kernel) kernel.clone();
 
+            /**
+             *  We clone one kernel for each thread.
+             *  
+             *  They will all share references to the same range, localBarrier and global/local buffers because the clone is shallow.
+             *  We need clones so that each thread can assign 'state' (localId/globalId/groupId) without worrying 
+             *  about other threads.   
+             */
+            final Kernel kernelClone = (Kernel) kernel.clone();
             kernelClone.range = _range;
             kernelClone.localBarrier = localBarrier;
+
             threadArray[threadId] = new Thread(new Runnable(){
                @Override public void run() {
                   for (int globalGroupId = 0; globalGroupId < globalGroups; globalGroupId++) {
@@ -830,15 +889,14 @@ class KernelRunner{
                      kernelClone.run();
 
                   }
-                  await(joinBarrier); // We rendezvous with waiting thread here
-
+                  await(joinBarrier); // This thread will rendezvous with dispatch thread here. This is effectively a join.                  
                }
             });
             threadArray[threadId].setName("aparapi-" + threadId + "/" + threads);
             threadArray[threadId].start();
 
          }
-         await(joinBarrier); // only when all threads have completed do we get passed here.
+         await(joinBarrier); // This dispatch thread waits for all worker threads here. 
 
       } // execution mode == JTP
       return 0;
@@ -1350,7 +1408,7 @@ class KernelRunner{
                      if (type.isArray()) {
                         if (args[i].name.endsWith("_$local$")) {
                            args[i].type |= ARG_LOCAL;
-                        }else{
+                        } else {
                            args[i].type |= ARG_GLOBAL;
                         }
                         args[i].array = null; // will get updated in updateKernelArrayRefs
@@ -1363,7 +1421,7 @@ class KernelRunner{
                         args[i].type |= entryPoint.getArrayFieldAssignments().contains(field.getName()) ? (ARG_WRITE | ARG_READ)
                               : 0;
                         args[i].type |= entryPoint.getArrayFieldAccesses().contains(field.getName()) ? ARG_READ : 0;
-                       // args[i].type |= ARG_GLOBAL;
+                        // args[i].type |= ARG_GLOBAL;
                         args[i].type |= type.isAssignableFrom(float[].class) ? ARG_FLOAT : 0;
 
                         args[i].type |= type.isAssignableFrom(int[].class) ? ARG_INT : 0;
