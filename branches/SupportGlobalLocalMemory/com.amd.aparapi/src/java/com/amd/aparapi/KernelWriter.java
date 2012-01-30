@@ -45,7 +45,9 @@ import java.util.Map;
 
 import com.amd.aparapi.ClassModel.ClassModelField;
 import com.amd.aparapi.ClassModel.AttributePool.LocalVariableTableEntry;
+import com.amd.aparapi.ClassModel.AttributePool.RuntimeAnnotationsEntry;
 import com.amd.aparapi.ClassModel.AttributePool.LocalVariableTableEntry.LocalVariableInfo;
+import com.amd.aparapi.ClassModel.AttributePool.RuntimeAnnotationsEntry.AnnotationInfo;
 import com.amd.aparapi.ClassModel.ConstantPool.FieldEntry;
 import com.amd.aparapi.ClassModel.ConstantPool.MethodEntry;
 import com.amd.aparapi.InstructionSet.AccessArrayElement;
@@ -264,13 +266,18 @@ abstract class KernelWriter extends BlockWriter{
       newLine();
    }
 
+   public final static String __local = "__local";
+
+   public final static String __global = "__global";
+
+ 
+
+   public final static String LOCAL_ANNOTATION_NAME = "L" + Kernel.Local.class.getName().replace(".", "/") + ";";
+
    @Override void write(Entrypoint _entryPoint) throws CodeGenException {
       List<String> thisStruct = new ArrayList<String>();
       List<String> argLines = new ArrayList<String>();
       List<String> assigns = new ArrayList<String>();
-
-      // hack
-      // for (java.lang.reflect.Field f:_entryPoint.getTheClass().getDeclaredFields()){
 
       entryPoint = _entryPoint;
 
@@ -283,14 +290,19 @@ abstract class KernelWriter extends BlockWriter{
          String signature = field.getDescriptor();
 
          boolean isPointer = false;
-         // RuntimeAnnotationsEntry visibleAnnotations = field.fieldAttributePool.getRuntimeVisibleAnnotationsEntry();
 
-         String type = field.getName().endsWith("_$local$") ? "__local" : "__global";
-         //         if (visibleAnnotations != null) {
-         // for (AnnotationInfo ai : visibleAnnotations) {
-         // String typeDescriptor = ai.getTypeDescriptor();
-         // }
-         //       }
+         // check the suffix 
+         String type = field.getName().endsWith(Kernel.LOCAL_SUFFIX) ? __local : __global;
+         RuntimeAnnotationsEntry visibleAnnotations = field.fieldAttributePool.getRuntimeVisibleAnnotationsEntry();
+
+         if (visibleAnnotations != null) {
+            for (AnnotationInfo ai : visibleAnnotations) {
+               String typeDescriptor = ai.getTypeDescriptor();
+               if (typeDescriptor.equals(LOCAL_ANNOTATION_NAME)) {
+                  type = __local;
+               }
+            }
+         }
 
          if (signature.startsWith("[")) {
             argLine.append(type + " ");

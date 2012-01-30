@@ -143,6 +143,10 @@ public abstract class Kernel implements Cloneable{
    @Retention(RetentionPolicy.RUNTIME) @interface OpenCLDelegate {
 
    }
+   public @Retention(RetentionPolicy.RUNTIME) @interface Local {
+
+   }
+   final static String LOCAL_SUFFIX = "_$local$";
 
    private static Logger logger = Logger.getLogger(Config.getLoggerName());
 

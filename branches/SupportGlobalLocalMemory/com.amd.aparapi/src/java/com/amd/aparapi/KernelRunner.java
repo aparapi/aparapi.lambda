@@ -52,6 +52,7 @@ import java.util.logging.Logger;
 
 import com.amd.aparapi.InstructionSet.TypeSpec;
 import com.amd.aparapi.Kernel.EXECUTION_MODE;
+import com.amd.aparapi.Kernel.Local;
 
 /**
  * The class is responsible for executing <code>Kernel</code> implementations. <br/>
@@ -1406,7 +1407,8 @@ class KernelRunner{
                      args[i].isStatic = (field.getModifiers() & Modifier.STATIC) == Modifier.STATIC;
                      Class<?> type = field.getType();
                      if (type.isArray()) {
-                        if (args[i].name.endsWith("_$local$")) {
+                    
+                        if (field.getAnnotation(com.amd.aparapi.Kernel.Local.class) != null || args[i].name.endsWith(Kernel.LOCAL_SUFFIX)) {
                            args[i].type |= ARG_LOCAL;
                         } else {
                            args[i].type |= ARG_GLOBAL;
