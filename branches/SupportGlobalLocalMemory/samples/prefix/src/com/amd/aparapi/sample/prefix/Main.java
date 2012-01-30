@@ -44,32 +44,76 @@ import com.amd.aparapi.Kernel;
 import com.amd.aparapi.Range;
 
 public class Main{
+   
+
    /// http://www.toves.org/books/distalg/#3.1
    public static class PrefixScanKernel extends Kernel{
 
-      private final int[] data;
+      private final int[] inData;
 
-      private final int data_$local$[];
+      @Local private final int data[];
 
-      public PrefixScanKernel(Range _range, int[] _data) {
-         System.out.println(_range);
-         data = _data;
-         data_$local$ = new int[_range.getLocalSize(0)];
+      private final Range range;
+
+      private final int iterations;
+
+      public PrefixScanKernel(Range _range, int[] _inData) {
+         range = _range;
+         System.out.println(range);
+         inData = _inData;
+         data = new int[range.getLocalSize(0)];
+         iterations = Integer.numberOfTrailingZeros(range.getLocalSize(0));
+         System.out.println(iterations);
       }
 
       public void run() {
-         // for each globalId(0) we pull the data into local memory
-         data_$local$[getLocalId(0)] = data[getGlobalId(0)];
-         localBarrier();
+         // if (getGlobalId(0) == 0) {
+         // We pull globalId(0)*getLocalSize(0) - (globalId(0)+1)*getLocalSize(0) into local memory
+         int rangeStart = getLocalId(0) * getLocalSize(0);
+         int rangeEnd = rangeStart + getLocalSize(0);
+         for (int i = rangeStart; i < rangeEnd; i++) {
+            data[i - rangeStart] = inData[i];
+         }
+         // localBarrier();// do we need this?
+         for (int i = 2; i < getLocalSize() / 2; i += i) {
+            for (int step = i; step < getLocalSize(0); step += i) {
+               data[step - 1] = data[step - 1] + data[step - 1 - step / 2];
 
+            }
+           // for (int v = 0; v < getLocalSize(0); v++) {
+           //    System.out.printf(" %d", data_$local$[v]);
+           // }
+           // System.out.printf("\n");
+
+         }
+         //   localBarrier();// do we need this?
+         for (int i = rangeStart; i < rangeEnd; i++) {
+            inData[i] = data[i - rangeStart];
+         }
+         // }
+      }
+
+      public void scan() {
+         execute(range);
       }
 
    }
 
    public static void main(String[] _args) throws IOException {
-      final Range range = Range.create(1024, 256);
-      final int[] data = new int[range.getGlobalSize(0)];
-      final PrefixScanKernel lifeKernel = new PrefixScanKernel(range, data);
-      lifeKernel.execute(range);
+      final Range range = Range.create(1024, 16);
+      final int[] inData = new int[range.getGlobalSize(0) * range.getLocalSize(0)];
+      for (int i = 0; i < inData.length; i++) {
+         inData[i] = (int) (Math.random() * 5);
+      }
+      final PrefixScanKernel lifeKernel = new PrefixScanKernel(range, inData);
+      for (int i = 0; i < range.getLocalSize(0); i++) {
+         System.out.printf(" %d", inData[i]);
+      }
+      System.out.printf("\n");
+      lifeKernel.scan();
+      for (int i = 0; i < range.getLocalSize(0); i++) {
+         System.out.printf(" %d", inData[i]);
+      }
+      System.out.printf("\n");
    }
 }
