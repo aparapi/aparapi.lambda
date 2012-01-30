@@ -270,8 +270,6 @@ abstract class KernelWriter extends BlockWriter{
 
    public final static String __global = "__global";
 
- 
-
    public final static String LOCAL_ANNOTATION_NAME = "L" + Kernel.Local.class.getName().replace(".", "/") + ";";
 
    @Override void write(Entrypoint _entryPoint) throws CodeGenException {

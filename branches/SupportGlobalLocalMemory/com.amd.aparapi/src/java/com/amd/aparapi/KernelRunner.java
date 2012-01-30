@@ -1407,8 +1407,9 @@ class KernelRunner{
                      args[i].isStatic = (field.getModifiers() & Modifier.STATIC) == Modifier.STATIC;
                      Class<?> type = field.getType();
                      if (type.isArray()) {
-                    
-                        if (field.getAnnotation(com.amd.aparapi.Kernel.Local.class) != null || args[i].name.endsWith(Kernel.LOCAL_SUFFIX)) {
+
+                        if (field.getAnnotation(com.amd.aparapi.Kernel.Local.class) != null
+                              || args[i].name.endsWith(Kernel.LOCAL_SUFFIX)) {
                            args[i].type |= ARG_LOCAL;
                         } else {
                            args[i].type |= ARG_GLOBAL;
