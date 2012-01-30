@@ -44,7 +44,6 @@ import com.amd.aparapi.Kernel;
 import com.amd.aparapi.Range;
 
 public class Main{
-   
 
    /// http://www.toves.org/books/distalg/#3.1
    public static class PrefixScanKernel extends Kernel{
@@ -80,10 +79,10 @@ public class Main{
                data[step - 1] = data[step - 1] + data[step - 1 - step / 2];
 
             }
-           // for (int v = 0; v < getLocalSize(0); v++) {
-           //    System.out.printf(" %d", data_$local$[v]);
-           // }
-           // System.out.printf("\n");
+            // for (int v = 0; v < getLocalSize(0); v++) {
+            //    System.out.printf(" %d", data_$local$[v]);
+            // }
+            // System.out.printf("\n");
 
          }
          //   localBarrier();// do we need this?
