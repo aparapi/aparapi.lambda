@@ -84,7 +84,7 @@ public class Local{
 
       private final float[] vxyz; // velocity component of x,y and z of bodies 
 
-      private final float[] xyz_$local$; // local memory
+      @Local private final float[] localStuff; // local memory
 
       /**
        * Constructor initializes xyz and vxyz arrays.
@@ -93,7 +93,7 @@ public class Local{
       public NBodyKernel(Range _range) {
          range = _range;
          bodies = range.getGlobalSize(0);
-         xyz_$local$ = new float[range.getLocalSize(0) * 3];
+         localStuff = new float[range.getLocalSize(0) * 3];
 
          xyz = new float[bodies * 3];
          vxyz = new float[bodies * 3];
@@ -135,16 +135,16 @@ public class Local{
             // load one tile into local memory
             int gidx = (tile * getLocalSize(0) + getLocalId()) * 3;
             int lidx = getLocalId(0) * 3;
-            xyz_$local$[lidx + 0] = xyz[gidx + 0];
-            xyz_$local$[lidx + 1] = xyz[gidx + 1];
-            xyz_$local$[lidx + 2] = xyz[gidx + 2];
+            localStuff[lidx + 0] = xyz[gidx + 0];
+            localStuff[lidx + 1] = xyz[gidx + 1];
+            localStuff[lidx + 2] = xyz[gidx + 2];
             // Synchronize to make sure data is available for processing
             localBarrier();
 
             for (int i = 0; i < getLocalSize() * 3; i += 3) {
-               float dx = xyz_$local$[i + 0] - myPosx;
-               float dy = xyz_$local$[i + 1] - myPosy;
-               float dz = xyz_$local$[i + 2] - myPosz;
+               float dx = localStuff[i + 0] - myPosx;
+               float dy = localStuff[i + 1] - myPosy;
+               float dz = localStuff[i + 2] - myPosz;
                float invDist = rsqrt((dx * dx) + (dy * dy) + (dz * dz) + espSqr);
                float s = mass * invDist * invDist * invDist;
                accx = accx + s * dx;
