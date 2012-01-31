@@ -1552,7 +1552,7 @@ public abstract class Kernel implements Cloneable{
    public synchronized Kernel execute(Range _range) {
       return (execute(_range, 1));
    }
-   
+
    /**
     * Start execution of <code>_range</code> kernels.
     * <p>

@@ -52,7 +52,6 @@ import java.util.logging.Logger;
 
 import com.amd.aparapi.InstructionSet.TypeSpec;
 import com.amd.aparapi.Kernel.EXECUTION_MODE;
-import com.amd.aparapi.Kernel.Local;
 
 /**
  * The class is responsible for executing <code>Kernel</code> implementations. <br/>

@@ -242,12 +242,12 @@ public class Range{
                }
                if (size > max) {
                   max = size;
-                  spread = Math.max(Math.max(w,h), d)-Math.min(Math.min(w,h), d); // can this be optimized?
+                  spread = Math.max(Math.max(w, h), d) - Math.min(Math.min(w, h), d); // can this be optimized?
                   withoutLocal.localSize_0 = w;
                   withoutLocal.localSize_1 = h;
                   withoutLocal.localSize_2 = d;
                } else if (size == max) {
-                  int localSpread = Math.max(Math.max(w,h), d)-Math.min(Math.min(w,h), d); // can this be optimized?
+                  int localSpread = Math.max(Math.max(w, h), d) - Math.min(Math.min(w, h), d); // can this be optimized?
                   if (localSpread < spread) {
                      spread = localSpread;
                      withoutLocal.localSize_0 = w;
