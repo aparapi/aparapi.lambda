@@ -78,7 +78,7 @@ public class Main{
 
       private final int bodies;
 
-      private final Range range;
+     // private final Range range;
 
       private final float[] xyz; // positions xy and z of bodies
 
@@ -90,7 +90,7 @@ public class Main{
        */
       public NBodyKernel(int _bodies) {
          bodies = _bodies;
-         range = Range.create(bodies);
+        // range = Range.create(bodies);
          xyz = new float[bodies * 3];
          vxyz = new float[bodies * 3];
          float maxDist = 20f;
@@ -261,7 +261,7 @@ public class Main{
 
             glu.gluLookAt(xeye, yeye, zeye * zoomFactor, xat, yat, zat, 0f, 1f, 0f);
             if (running) {
-               kernel.execute(kernel.range);
+               kernel.execute(kernel.bodies);
                if (kernel.isExplicit()) {
                   kernel.get(kernel.xyz);
                }

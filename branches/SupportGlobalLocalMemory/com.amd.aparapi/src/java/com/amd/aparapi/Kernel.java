@@ -89,16 +89,17 @@ import com.amd.aparapi.ClassModel.ConstantPool.MethodReferenceEntry;
  *     }
  * </pre></blockquote>
  * <p>
- * To execute this kernel, first create a new instance of it and then call <code>execute(int globalSize)</code>. 
+ * To execute this kernel, first create a new instance of it and then call <code>execute(Range _range)</code>. 
  * <p>
  * <blockquote><pre>
  *     int[] values = new int[1024];
  *     // fill values array
+ *     Range range = Range.create(1024);
  *     SquareKernel kernel = new SquareKernel(values);
- *     kernel.execute(values.length);
+ *     kernel.execute(range);
  * </pre></blockquote>
  * <p>
- * When <code>execute()</code> returns, all the executions of Kernel.run() have completed and the results are available in the <code>squares</code> array.
+ * When <code>execute(Range)</code> returns, all the executions of <code>Kernel.run()</code> have completed and the results are available in the <code>squares</code> array.
  * <p>
  * <blockquote><pre>
  *     int[] squares = kernel.getSquares();
@@ -110,16 +111,19 @@ import com.amd.aparapi.ClassModel.ConstantPool.MethodReferenceEntry;
  * A different approach to creating kernels that avoids extending Kernel is to write an anonymous inner class:
  * <p>
  * <blockquote><pre>
+ *   
  *     final int[] values = new int[1024];
- *     // fill values array
+ *     // fill the values array 
  *     final int[] squares = new int[values.length];
+ *     final Range range = Range.create(values.length);
+ *   
  *     Kernel kernel = new Kernel(){
  *         public void run() {
  *             int gid = getGlobalID();
  *             squares[gid] = values[gid]*values[gid];
  *         }
  *     };
- *     kernel.execute(values.length);
+ *     kernel.execute(range);
  *     for (int i=0; i< values.length; i++){
  *        System.out.printf("%4d %4d %8d\n", i, values[i], squares[i]);
  *     }
@@ -1536,23 +1540,38 @@ public abstract class Kernel implements Cloneable{
    }
 
    /**
-    * Start execution of <code>globalSize</code> kernels.
+    * Start execution of <code>_range</code> kernels.
     * <p>
     * When <code>kernel.execute(globalSize)</code> is invoked, Aparapi will schedule the execution of <code>globalSize</code> kernels. If the execution mode is GPU then 
     * the kernels will execute as OpenCL code on the GPU device. Otherwise, if the mode is JTP, the kernels will execute as a pool of Java threads on the CPU. 
     * <p>
-    * @param range2d The number of Kernels that we would like to initiate.
+    * @param range The number of Kernels that we would like to initiate.
     * @returnThe Kernel instance (this) so we can chain calls to put(arr).execute(range).get(arr)
     * 
     */
-   public synchronized Kernel execute(Range range) {
-      return (execute(range, 1));
+   public synchronized Kernel execute(Range _range) {
+      return (execute(_range, 1));
+   }
+   
+   /**
+    * Start execution of <code>_range</code> kernels.
+    * <p>
+    * When <code>kernel.execute(_range)</code> is invoked, Aparapi will schedule the execution of <code>_range</code> kernels. If the execution mode is GPU then 
+    * the kernels will execute as OpenCL code on the GPU device. Otherwise, if the mode is JTP, the kernels will execute as a pool of Java threads on the CPU. 
+    * <p>
+    * Since adding the new <code>Range class</code> this method offers backward compatibility and merely defers to <code> return (execute(Range.create(_range), 1));</code>.
+    * @param _range The number of Kernels that we would like to initiate.
+    * @returnThe Kernel instance (this) so we can chain calls to put(arr).execute(range).get(arr)
+    * 
+    */
+   public synchronized Kernel execute(int _range) {
+      return (execute(Range.create(_range), 1));
    }
 
    /**
-    * Start execution of <code>_passes</code> iterations of <code>globalSize</code> kernels.
+    * Start execution of <code>_passes</code> iterations of <code>_range</code> kernels.
     * <p>
-    * When <code>kernel.execute(globalSize, passes)</code> is invoked, Aparapi will schedule the execution of <code>globalSize</code> kernels. If the execution mode is GPU then 
+    * When <code>kernel.execute(_range, _passes)</code> is invoked, Aparapi will schedule the execution of <code>_reange</code> kernels. If the execution mode is GPU then 
     * the kernels will execute as OpenCL code on the GPU device. Otherwise, if the mode is JTP, the kernels will execute as a pool of Java threads on the CPU. 
     * <p>
     * @param _globalSize The number of Kernels that we would like to initiate.
@@ -1562,6 +1581,21 @@ public abstract class Kernel implements Cloneable{
     */
    public synchronized Kernel execute(Range _range, int _passes) {
       return (execute("run", _range, _passes));
+   }
+
+   /**
+    * Start execution of <code>_passes</code> iterations over the <code>_range</code> of kernels.
+    * <p>
+    * When <code>kernel.execute(_range)</code> is invoked, Aparapi will schedule the execution of <code>_range</code> kernels. If the execution mode is GPU then 
+    * the kernels will execute as OpenCL code on the GPU device. Otherwise, if the mode is JTP, the kernels will execute as a pool of Java threads on the CPU. 
+    * <p>
+    * Since adding the new <code>Range class</code> this method offers backward compatibility and merely defers to <code> return (execute(Range.create(_range), 1));</code>.
+    * @param _range The number of Kernels that we would like to initiate.
+    * @returnThe Kernel instance (this) so we can chain calls to put(arr).execute(range).get(arr)
+    * 
+    */
+   public synchronized Kernel execute(int _range, int _passes) {
+      return (execute(Range.create(_range), _passes));
    }
 
    /**

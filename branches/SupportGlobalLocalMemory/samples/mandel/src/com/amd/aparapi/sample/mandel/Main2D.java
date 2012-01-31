@@ -153,7 +153,7 @@ public class Main2D{
       JFrame frame = new JFrame("MandelBrot");
 
       /** Mandelbrot image height. */
-      final Range range = Range.create2D(768, 768, 16, 16);
+      final Range range = Range.create2D(768, 768);
 
       /** Maximum iterations for Mandelbrot. */
       final int maxIterations = 256;
