@@ -140,8 +140,8 @@ public class Dim3DTest{
    }
 
    public static void main(String[] _args) {
-Range r = Range.create3D(8,16,32);
-System.out.println(r);
+      Range r = Range.create3D(8, 16, 32);
+      System.out.println(r);
       final Range range = Range.create3D(8, 16, 32, 2, 4, 2);
       Kernel3D gpu = new GPUKernel3D(range);
       gpu.execute(range);
