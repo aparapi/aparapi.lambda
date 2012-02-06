@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+
+<project name="codegen" default="junit" basedir=".">
+
+   <property name="junit.jar" value="./junit-4.10.jar"/>
+
+   <path id="classpath">
+      <pathelement path="..\..\com.amd.aparapi\aparapi.jar"/>
+      <pathelement path="${junit.jar}"/>
+      <pathelement path="classes"/>
+   </path>
+
+   <target name="check-junit">
+      <condition property="need.to.upload.junit">
+         <not><available file="${junit.jar}"/> </not>
+      </condition>
+   </target>
+
+   <target name="check" if="need.to.upload.junit">
+      <get dest=".">
+         <url url="http://repo1.maven.org/maven2/junit/junit/4.10/junit-4.10.jar"/>
+      </get>
+      <fail message="Error:">
+         <condition>
+            <not><available file="${junit.jar}"/> </not>
+         </condition>
+         <![CDATA[
+         Failed to upload junit from maven repository. 
+         ]]>
+      </fail>
+   </target>
+
+   <target name="clean">
+      <delete dir="classes"/>
+      <delete dir="junit"/>
+      <delete dir="src/genjava/com"/>
+   </target>
+
+   <target name="junit" depends="clean, check-junit, check">
+      <mkdir dir="classes"/>
+      <javac srcdir="src/java" destdir="classes" debug="on"  includeAntRuntime="false" classpathref="classpath" />
+
+      <java classname="com.amd.aparapi.CreateJUnitTests" classpathref="classpath">
+         <sysproperty key="root" value="${basedir}"/>
+      </java>
+
+      <javac srcdir="src/genjava" destdir="classes" debug="on"  includeAntRuntime="false"  classpathref="classpath"/>
+
+      <mkdir dir="junit"/>
+      <mkdir dir="junit/data"/>
+      <junit printsummary="false" fork="false" haltonfailure="false" failureproperty="tests.failed" showoutput="false">
+         <formatter type="xml" />
+         <classpath refid="classpath"/>
+         <batchtest todir="junit/data">
+            <fileset dir="src/genjava"/> 
+         </batchtest>
+      </junit>
+
+      <junitreport todir="junit/data">
+         <fileset dir="junit/data"/>
+         <report format="frames" todir="junit/html" />
+      </junitreport>
+   </target>
+
+</project>
