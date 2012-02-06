@@ -154,6 +154,7 @@ public class Main2D{
 
       /** Mandelbrot image height. */
       final Range range = Range.create2D(768, 768);
+      System.out.println("range= " + range);
 
       /** Maximum iterations for Mandelbrot. */
       final int maxIterations = 256;
