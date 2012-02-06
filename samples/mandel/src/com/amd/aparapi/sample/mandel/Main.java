@@ -53,6 +53,7 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 
 import com.amd.aparapi.Kernel;
+import com.amd.aparapi.Range;
 
 /**
  * An example Aparapi application which displays a view of the Mandelbrot set and lets the user zoom in to a particular point. 
@@ -164,6 +165,9 @@ public class Main{
       /** Height of Mandelbrot view. */
       final int height = 768;
 
+      /** Mandelbrot image height. */
+      final Range range = Range.create(width * height);
+
       /** Maximum iterations for Mandelbrot. */
       final int maxIterations = 256;
 
@@ -220,7 +224,7 @@ public class Main{
 
       // Set the default scale and offset, execute the kernel and force a repaint of the viewer.
       kernel.setScaleAndOffset(defaultScale, -1f, 0f);
-      kernel.execute(width * height);
+      kernel.execute(range);
       System.arraycopy(rgb, 0, imageRgb, 0, rgb.length);
       viewer.repaint();
 
@@ -266,7 +270,7 @@ public class Main{
 
                // Set the scale and offset, execute the kernel and force a repaint of the viewer.
                kernel.setScaleAndOffset(scale, x, y);
-               kernel.execute(width * height);
+               kernel.execute(range);
                System.arraycopy(rgb, 0, imageRgb, 0, rgb.length);
                viewer.repaint();
             }

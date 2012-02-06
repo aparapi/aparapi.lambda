@@ -39,6 +39,7 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 package com.amd.aparapi.sample.squares;
 
 import com.amd.aparapi.Kernel;
+import com.amd.aparapi.Range;
 
 /**
  * An example Aparapi application which computes and displays squares of a set of 512 input values.
@@ -77,7 +78,8 @@ public class Main{
       };
 
       // Execute Kernel.
-      kernel.execute(512);
+
+      kernel.execute(Range.create(512));
 
       // Report target execution mode: GPU or JTP (Java Thread Pool).
       System.out.println("Execution mode=" + kernel.getExecutionMode());

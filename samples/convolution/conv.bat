@@ -4,4 +4,3 @@ java ^
  -classpath ../../com.amd.aparapi/aparapi.jar;convolution.jar ^
  com.amd.aparapi.sample.convolution.Main
 
-
