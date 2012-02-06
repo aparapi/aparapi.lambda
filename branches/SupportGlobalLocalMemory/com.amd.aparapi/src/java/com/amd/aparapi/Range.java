@@ -108,23 +108,31 @@ public class Range{
       return (range);
    }
 
-   private static int[] getFactors(int value) {
+   /**
+    * Determine the set of factors for a given value.
+    * @param _value The value we wish to factorize. 
+    * @return and array of factors of _value
+    */
+
+   private static int[] getFactors(int _value) {
       int factors[] = new int[MAX_GROUP_SIZE];
-      int idx = 0;
-      for (int i = 1; i <= MAX_GROUP_SIZE; i++) {
-         if (value % i == 0) {
-            factors[idx++] = i;
+      int factorIdx = 0;
+      for (int possibleFactor = 1; possibleFactor <= MAX_GROUP_SIZE; possibleFactor++) {
+         if (_value % possibleFactor == 0) {
+            factors[factorIdx++] = possibleFactor;
          }
       }
-      return (Arrays.copyOf(factors, idx));
+      return (Arrays.copyOf(factors, factorIdx));
    }
 
    /** 
-    * Create a one dimensional range 0.._globalWidth with an undefined group size.
+    * Create a one dimensional range <code>0.._globalWidth</code> with an undefined group size.
     * <br/>
     * Note that for this range to be valid :- </br> <strong><code>_globalWidth > 0 </code></strong>
     * <br/>
     * The groupsize will be chosen such that _localWidth > 0 && _localWidth < MAX_GROUP_SIZE && _globalWidth % _localWidth==0 is true
+    * 
+    * We extract the factors of _globalWidth and choose the highest value.
     * 
     * @param _globalWidth the overall range we wish to process
     * @return A new Range with the requested dimensions
@@ -146,7 +154,7 @@ public class Range{
     * <br/>
     * Note that for this range to be valid  _globalWidth > 0 &&  _globalHeight >0 && _localWidth>0 && _localHeight>0 && _localWidth*_localHeight < MAX_GROUP_SIZE && _globalWidth%_localWidth==0 && _globalHeight%_localHeight==0.
     * 
-    * @param _globalWidth the overall range we wish to process
+    *  @param _globalWidth the overall range we wish to process
     * @return
     */
    public static Range create2D(int _globalWidth, int _globalHeight, int _localWidth, int _localHeight) {
@@ -162,6 +170,21 @@ public class Range{
       return (range);
    }
 
+   /** 
+    * Create a two dimensional range <code>0.._globalWidth * 0.._globalHeight</code> choosing suitable values for <code>localWidth</code> and <code>localHeight</code>.
+    * <p>
+    * Note that for this range to be valid  <code>_globalWidth > 0 &&  _globalHeight >0 && _localWidth>0 && _localHeight>0 && _localWidth*_localHeight < MAX_GROUP_SIZE && _globalWidth%_localWidth==0 && _globalHeight%_localHeight==0</code>.
+    * 
+    * <p>
+    * To determine suitable values for <code>_localWidth</code> and <code>_localHeight</code> we extract the factors for <code>_globalWidth</code> and <code>_globalHeight</code> and then 
+    * find the largest product ( <code><= MAX_GROUP_SIZE</code>) with the lowest perimeter.
+    * 
+    * <p>
+    * For example for <code>MAX_GROUP_SIZE</code> of 16 we favor 4x4 over 1x16.
+    * 
+    * @param _globalWidth the overall range we wish to process
+    * @return
+    */
    public static Range create2D(int _globalWidth, int _globalHeight) {
       Range withoutLocal = create2D(_globalWidth, _globalHeight, 1, 1);
       withoutLocal.localIsDerived = true;
@@ -171,7 +194,7 @@ public class Range{
       withoutLocal.localSize_0 = 1;
       withoutLocal.localSize_1 = 1;
       int max = 1;
-      int spread = 0;
+      int perimeter = 0;
       for (int w : widthFactors) {
          for (int h : heightFactors) {
             int size = w * h;
@@ -181,13 +204,13 @@ public class Range{
 
             if (size > max) {
                max = size;
-               spread = Math.abs(w - h);
+               perimeter = w + h;
                withoutLocal.localSize_0 = w;
                withoutLocal.localSize_1 = h;
             } else if (size == max) {
-               int localSpread = Math.abs(w - h);
-               if (localSpread < spread) {
-                  spread = localSpread;
+               int localPerimeter = w + h;
+               if (localPerimeter < perimeter) {// is this the shortest perimeter so far
+                  perimeter = localPerimeter;
                   withoutLocal.localSize_0 = w;
                   withoutLocal.localSize_1 = h;
                }
@@ -203,6 +226,20 @@ public class Range{
       return (withoutLocal);
    }
 
+   /** 
+    * Create a two dimensional range <code>0.._globalWidth * 0.._globalHeight *0../_globalDepth</code> 
+    * in groups defined by  <code>localWidth</code> * <code>localHeight</code> * <code>localDepth</code>.
+    * <p>
+    * Note that for this range to be valid  <code>_globalWidth > 0 &&  _globalHeight >0 _globalDepth >0 && _localWidth>0 && _localHeight>0 && _localDepth>0 && _localWidth*_localHeight*_localDepth < MAX_GROUP_SIZE && _globalWidth%_localWidth==0 && _globalHeight%_localHeight==0 && _globalDepth%_localDepth==0</code>.
+    * 
+    * @param _globalWidth the width of the 3D grid we wish to process
+    * @param _globalHieght the height of the 3D grid we wish to process
+    * @param _globalDepth the depth of the 3D grid we wish to process
+    * @param _localWidth the width of the 3D group we wish to process
+    * @param _localHieght the height of the 3D group we wish to process
+    * @param _localDepth the depth of the 3D group we wish to process
+    * @return
+    */
    public static Range create3D(int _globalWidth, int _globalHeight, int _globalDepth, int _localWidth, int _localHeight,
          int _localDepth) {
       Range range = new Range();
@@ -221,6 +258,24 @@ public class Range{
       return (range);
    }
 
+   /** 
+    * Create a two dimensional range <code>0.._globalWidth * 0.._globalHeight *0../_globalDepth</code> 
+    * choosing suitable values for <code>localWidth</code>, <code>localHeight</code> and <code>localDepth</code>.
+    * <p>
+     * Note that for this range to be valid  <code>_globalWidth > 0 &&  _globalHeight >0 _globalDepth >0 && _localWidth>0 && _localHeight>0 && _localDepth>0 && _localWidth*_localHeight*_localDepth < MAX_GROUP_SIZE && _globalWidth%_localWidth==0 && _globalHeight%_localHeight==0 && _globalDepth%_localDepth==0</code>.
+    * 
+    * <p>
+    * To determine suitable values for <code>_localWidth</code>,<code>_localHeight</code> and <code>_lodalDepth</code> we extract the factors for <code>_globalWidth</code>,<code>_globalHeight</code> and <code>_globalDepth</code> and then 
+    * find the largest product ( <code><= MAX_GROUP_SIZE</code>) with the lowest perimeter.
+    * 
+    * <p>
+    * For example for <code>MAX_GROUP_SIZE</code> of 64 we favor 4x4x4 over 1x16x16.
+    * 
+    * @param _globalWidth the width of the 3D grid we wish to process
+    * @param _globalHieght the height of the 3D grid we wish to process
+    * @param _globalDepth the depth of the 3D grid we wish to process
+    * @return
+    */
    public static Range create3D(int _globalWidth, int _globalHeight, int _globalDepth) {
       Range withoutLocal = create3D(_globalWidth, _globalHeight, _globalDepth, 1, 1, 1);
       withoutLocal.localIsDerived = true;
@@ -232,7 +287,7 @@ public class Range{
       withoutLocal.localSize_1 = 1;
       withoutLocal.localSize_2 = 1;
       int max = 1;
-      int spread = 0;
+      int perimeter = 0;
       for (int w : widthFactors) {
          for (int h : heightFactors) {
             for (int d : depthFactors) {
@@ -242,14 +297,14 @@ public class Range{
                }
                if (size > max) {
                   max = size;
-                  spread = Math.max(Math.max(w, h), d) - Math.min(Math.min(w, h), d); // can this be optimized?
+                  perimeter = w + h + d;
                   withoutLocal.localSize_0 = w;
                   withoutLocal.localSize_1 = h;
                   withoutLocal.localSize_2 = d;
                } else if (size == max) {
-                  int localSpread = Math.max(Math.max(w, h), d) - Math.min(Math.min(w, h), d); // can this be optimized?
-                  if (localSpread < spread) {
-                     spread = localSpread;
+                  int localPerimeter = w + h + d;
+                  if (localPerimeter < perimeter) { // is this the shortest perimeter so far
+                     perimeter = localPerimeter;
                      withoutLocal.localSize_0 = w;
                      withoutLocal.localSize_1 = h;
                      withoutLocal.localSize_2 = d;
@@ -269,10 +324,18 @@ public class Range{
 
    }
 
+   /**
+    * Get the number of dims for this Range.  
+    * 
+    * @return 0, 1 or 2 for one dimensional, two dimensional and three dimensional range respectively.
+    */
    public int getDims() {
       return (dims);
    }
 
+   /**
+    * Override {@link #toString()}
+    */
    public String toString() {
       StringBuilder sb = new StringBuilder();
 
@@ -295,13 +358,32 @@ public class Range{
       return (sb.toString());
    }
 
+   /**
+    * Get the number of groups for the given dimension. 
+    * 
+    * <p>
+    * This will essentially return globalXXXX/localXXXX for the given dimension (width, height, depth)
+    * @param _dim The dim we are interested in 0, 1 or 2
+    * @return the number of groups for the given dimension. 
+    */
+
    public int getNumGroups(int _dim) {
       return (_dim == 0 ? (globalSize_0 / localSize_0) : (_dim == 1 ? (globalSize_1 / localSize_1) : (globalSize_2 / localSize_2)));
    }
 
+   /**
+    * 
+    * @return The product of all valid localSize dimensions
+    */
    public int getWorkGroupSize() {
       return localSize_0 * localSize_1 * localSize_2;
    }
+
+   /**
+    * Determine whether this Range is usable. 
+    * 
+    * @return true if this Range is usable/valid. 
+    */
 
    public boolean isValid() {
       return (valid);
