@@ -94,7 +94,7 @@ import com.amd.aparapi.ClassModel.ConstantPool.MethodReferenceEntry;
  * <blockquote><pre>
  *     int[] values = new int[1024];
  *     // fill values array
- *     Range range = Range.create(1024);
+ *     Range range = Range.create(values.length); // create a range 0..1024
  *     SquareKernel kernel = new SquareKernel(values);
  *     kernel.execute(range);
  * </pre></blockquote>
@@ -148,10 +148,40 @@ public abstract class Kernel implements Cloneable{
 
    }
 
+   /**
+    *  We can use this Annotation to 'tag' intended local buffers. 
+    *  
+    *  So we can either annotate the buffer
+    *  <pre><code>
+    *  &#64Local int[] buffer = new int[1024];
+    *  </code></pre>
+    *   Or use a special suffix 
+    *  <pre><code>
+    *  int[] buffer_$local$ = new int[1024];
+    *  </code></pre>
+    *  
+    *  @see LOCAL_SUFFIX
+    * 
+    * 
+    */
    public @Retention(RetentionPolicy.RUNTIME) @interface Local {
 
    }
 
+   /**
+    *  We can use this suffix to 'tag' intended local buffers. 
+    *  
+    *  
+    *  So either name the buffer 
+    *  <pre><code>
+    *  int[] buffer_$local$ = new int[1024];
+    *  </code></pre>
+    *  Or use the Annotation form 
+    *  <pre><code>
+    *  &#64Local int[] buffer = new int[1024];
+    *  </code></pre>
+    */
+   
    final static String LOCAL_SUFFIX = "_$local$";
 
    private static Logger logger = Logger.getLogger(Config.getLoggerName());
