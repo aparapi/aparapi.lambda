@@ -67,6 +67,16 @@ import com.jogamp.opengl.util.FPSAnimator;
 import com.jogamp.opengl.util.texture.Texture;
 import com.jogamp.opengl.util.texture.TextureIO;
 
+/**
+ * An NBody clone which uses local memory to cache NBody positions for execution.
+ * 
+ * http://www.browndeertechnology.com/docs/BDT_OpenCL_Tutorial_NBody-rev3.html
+ * 
+ * @see com.amd.aparapi.examples.nbody.Main
+ * 
+ * @author gfrost
+ *
+ */
 public class Local{
 
    public static class NBodyKernel extends Kernel{
@@ -75,8 +85,6 @@ public class Local{
       protected final float espSqr = 1.0f;
 
       protected final float mass = 5f;
-
-      private final int bodies;
 
       private final Range range;
 
@@ -92,22 +100,21 @@ public class Local{
        */
       public NBodyKernel(Range _range) {
          range = _range;
-         bodies = range.getGlobalSize(0);
          localStuff = new float[range.getLocalSize(0) * 3];
 
-         xyz = new float[bodies * 3];
-         vxyz = new float[bodies * 3];
+         xyz = new float[range.getGlobalSize(0) * 3];
+         vxyz = new float[range.getGlobalSize(0) * 3];
          float maxDist = 20f;
-         for (int body = 0; body < bodies * 3; body += 3) {
-            // If I could remmember some basic algebra I guess I could avoid this loop ;) 
-            // just ensures that the x,y,z is within maxdist radius of origin
+         for (int body = 0; body < range.getGlobalSize(0) * 3; body += 3) {
+            // If I could remember some basic algebra I guess I could avoid this loop ;) 
+            // just ensures that the x,y,z is within maxDist radius of origin
             do {
                xyz[body + 0] = (float) (Math.random() * 2 * maxDist) - maxDist; //x
                xyz[body + 1] = (float) (Math.random() * 2 * maxDist) - maxDist; //y
                xyz[body + 2] = (float) (Math.random() * 2 * maxDist) - maxDist; //z
             } while (xyz[body + 0] * xyz[body + 0] + xyz[body + 1] * xyz[body + 1] + xyz[body + 2] * xyz[body + 2] > maxDist
                   * maxDist);
-            // divide into two 'sphere of bodies' by adjusting x 
+            // divide into two 'spheres of bodies' by adjusting x 
             if (body % 2 == 0) {
                xyz[body + 0] += maxDist * 1.5;
             } else {
@@ -121,8 +128,8 @@ public class Local{
        * Here is the kernel entrypoint. Here is where we calculate the position of each body
        */
       @Override public void run() {
-         int body = getGlobalId();
-         int globalId = body * 3;
+
+         int globalId = getGlobalId(0) * 3;
 
          float accx = 0.f;
          float accy = 0.f;
@@ -173,7 +180,7 @@ public class Local{
       protected void render(GL2 gl) {
          gl.glBegin(GL2.GL_QUADS);
 
-         for (int i = 0; i < bodies * 3; i += 3) {
+         for (int i = 0; i < range.getGlobalSize(0) * 3; i += 3) {
             gl.glTexCoord2f(0, 1);
             gl.glVertex3f(xyz[i + 0], xyz[i + 1] + 1, xyz[i + 2]);
             gl.glTexCoord2f(0, 0);
@@ -216,7 +223,7 @@ public class Local{
       controlPanel.add(new JLabel(kernel.getExecutionMode().toString()));
 
       controlPanel.add(new JLabel("   Particles"));
-      controlPanel.add(new JTextField("" + kernel.bodies, 5));
+      controlPanel.add(new JTextField("" + kernel.range.getGlobalSize(0), 5));
 
       controlPanel.add(new JLabel("FPS"));
       final JTextField framesPerSecondTextField = new JTextField("0", 5);
@@ -290,7 +297,8 @@ public class Local{
             if (time > 1000) { // We update the frames/sec every second
                if (running) {
                   float framesPerSecond = (frames * 1000.0f) / time;
-                  int updatesPerMicroSecond = (int) ((framesPerSecond * kernel.bodies * kernel.bodies) / 1000000);
+                  int updatesPerMicroSecond = (int) ((framesPerSecond * kernel.range.getGlobalSize(0) * kernel.range
+                        .getGlobalSize(0)) / 1000000);
                   framesPerSecondTextField.setText(String.format("%5.2f", framesPerSecond));
                   positionUpdatesPerMicroSecondTextField.setText(String.format("%4d", updatesPerMicroSecond));
                }

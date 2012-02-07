@@ -62,10 +62,23 @@ import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 
 import com.amd.aparapi.Kernel;
+import com.amd.aparapi.Range;
 import com.jogamp.opengl.util.FPSAnimator;
 import com.jogamp.opengl.util.texture.Texture;
 import com.jogamp.opengl.util.texture.TextureIO;
 
+/**
+ * NBody implementing demonstrating Aparapi kernels. 
+ * 
+ * For a description of the NBody problem. 
+ * @see http://en.wikipedia.org/wiki/N-body_problem
+ * 
+ * We use JOGL to render the bodies. 
+ * @see http://jogamp.org/jogl/www/
+ * 
+ * @author gfrost
+ *
+ */
 public class Main{
 
    public static class NBodyKernel extends Kernel{
@@ -75,9 +88,7 @@ public class Main{
 
       protected final float mass = 5f;
 
-      private final int bodies;
-
-      // private final Range range;
+      private final Range range;
 
       private final float[] xyz; // positions xy and z of bodies
 
@@ -87,13 +98,13 @@ public class Main{
        * Constructor initializes xyz and vxyz arrays.
        * @param _bodies
        */
-      public NBodyKernel(int _bodies) {
-         bodies = _bodies;
+      public NBodyKernel(Range _range) {
+         range = _range;
          // range = Range.create(bodies);
-         xyz = new float[bodies * 3];
-         vxyz = new float[bodies * 3];
+         xyz = new float[range.getGlobalSize(0) * 3];
+         vxyz = new float[range.getGlobalSize(0) * 3];
          float maxDist = 20f;
-         for (int body = 0; body < bodies * 3; body += 3) {
+         for (int body = 0; body < range.getGlobalSize(0) * 3; body += 3) {
             // If I could remmember some basic algebra I guess I could avoid this loop ;) 
             // just ensures that the x,y,z is within maxdist radius of origin
             do {
@@ -117,7 +128,7 @@ public class Main{
        */
       @Override public void run() {
          int body = getGlobalId();
-         int count = bodies * 3;
+         int count = getGlobalSize(0) * 3;
          int globalId = body * 3;
 
          float accx = 0.f;
@@ -157,7 +168,7 @@ public class Main{
       protected void render(GL2 gl) {
          gl.glBegin(GL2.GL_QUADS);
 
-         for (int i = 0; i < bodies * 3; i += 3) {
+         for (int i = 0; i < range.getGlobalSize(0) * 3; i += 3) {
             gl.glTexCoord2f(0, 1);
             gl.glVertex3f(xyz[i + 0], xyz[i + 1] + 1, xyz[i + 2]);
             gl.glTexCoord2f(0, 0);
@@ -180,7 +191,7 @@ public class Main{
 
    public static void main(String _args[]) {
 
-      final NBodyKernel kernel = new NBodyKernel(Integer.getInteger("bodies", 8192));
+      final NBodyKernel kernel = new NBodyKernel(Range.create(Integer.getInteger("bodies", 8192)));
 
       JFrame frame = new JFrame("NBody");
 
@@ -200,7 +211,7 @@ public class Main{
       controlPanel.add(new JLabel(kernel.getExecutionMode().toString()));
 
       controlPanel.add(new JLabel("   Particles"));
-      controlPanel.add(new JTextField("" + kernel.bodies, 5));
+      controlPanel.add(new JTextField("" + kernel.range.getGlobalSize(0), 5));
 
       controlPanel.add(new JLabel("FPS"));
       final JTextField framesPerSecondTextField = new JTextField("0", 5);
@@ -260,7 +271,7 @@ public class Main{
 
             glu.gluLookAt(xeye, yeye, zeye * zoomFactor, xat, yat, zat, 0f, 1f, 0f);
             if (running) {
-               kernel.execute(kernel.bodies);
+               kernel.execute(kernel.range);
                if (kernel.isExplicit()) {
                   kernel.get(kernel.xyz);
                }
@@ -274,7 +285,8 @@ public class Main{
             if (time > 1000) { // We update the frames/sec every second
                if (running) {
                   float framesPerSecond = (frames * 1000.0f) / time;
-                  int updatesPerMicroSecond = (int) ((framesPerSecond * kernel.bodies * kernel.bodies) / 1000000);
+                  int updatesPerMicroSecond = (int) ((framesPerSecond * kernel.range.getGlobalSize(0) * kernel.range
+                        .getGlobalSize(0)) / 1000000);
                   framesPerSecondTextField.setText(String.format("%5.2f", framesPerSecond));
                   positionUpdatesPerMicroSecondTextField.setText(String.format("%4d", updatesPerMicroSecond));
                }
