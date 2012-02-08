@@ -181,7 +181,7 @@ public abstract class Kernel implements Cloneable{
     *  &#64Local int[] buffer = new int[1024];
     *  </code></pre>
     */
-   
+
    final static String LOCAL_SUFFIX = "_$local$";
 
    private static Logger logger = Logger.getLogger(Config.getLoggerName());
