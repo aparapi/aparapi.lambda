@@ -105,15 +105,18 @@ public class Main{
          vxyz = new float[range.getGlobalSize(0) * 3];
          float maxDist = 20f;
          for (int body = 0; body < range.getGlobalSize(0) * 3; body += 3) {
-            // If I could remmember some basic algebra I guess I could avoid this loop ;) 
-            // just ensures that the x,y,z is within maxdist radius of origin
-            do {
-               xyz[body + 0] = (float) (Math.random() * 2 * maxDist) - maxDist; //x
-               xyz[body + 1] = (float) (Math.random() * 2 * maxDist) - maxDist; //y
-               xyz[body + 2] = (float) (Math.random() * 2 * maxDist) - maxDist; //z
-            } while (xyz[body + 0] * xyz[body + 0] + xyz[body + 1] * xyz[body + 1] + xyz[body + 2] * xyz[body + 2] > maxDist
-                  * maxDist);
-            // divide into two 'sphere of bodies' by adjusting x 
+
+            float theta = (float) (Math.random() * Math.PI * 2);
+            float phi = (float) (Math.random() * Math.PI * 2);
+            float radius = (float) (Math.random() * maxDist);
+
+            // get the 3D dimensional coordinates
+            xyz[body + 0] = (float) (radius * Math.cos(theta) * Math.sin(phi));
+            xyz[body + 1] = (float) (radius * Math.sin(theta) * Math.sin(phi));
+            xyz[body + 2] = (float) (radius * Math.cos(phi));
+
+            // divide into two 'spheres of bodies' by adjusting x 
+
             if (body % 2 == 0) {
                xyz[body + 0] += maxDist * 1.5;
             } else {
