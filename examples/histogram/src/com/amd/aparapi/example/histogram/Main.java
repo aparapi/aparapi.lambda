@@ -1,4 +1,4 @@
-package com.amd.aparapi.histogram.parser;
+package com.amd.aparapi.example.histogram;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -47,16 +47,17 @@ public class Main{
          System.out.println("time " + (kernel1.getExecutionTime() - kernel1.getConversionTime()));
       }
       if (false) {
-         final int len=bytes.length;
-         final int chunks=32;
-         final int chunkSize = len/chunks;
-         final Range range = Range.create(chunks); 
+         final int len = bytes.length;
+         final int chunks = 32;
+         final int chunkSize = len / chunks;
+         final Range range = Range.create(chunks);
          final int histogramSize = histogram.length;
-       
+
          System.out.println("Range  =" + range);
 
          Kernel kernel = new Kernel(){
-            @Local int[] localHistogram = new int[chunks*histogramSize]; // must be less than 16k apparently
+            @Local int[] localHistogram = new int[chunks * histogramSize]; // must be less than 16k apparently
+
             @Override public void run() {
                int chunk = getGlobalId(0);
                int start = chunk * chunkSize;
@@ -71,15 +72,15 @@ public class Main{
 
                // we need to merge localHistogram[chunk1*histogramSize+0], localHistogram[chunk2*histogramSize+0 ... into histogram[0]  
                // each workitem handles histogram/chunks merges
-              /* int merges = histogramSize/chunks;
-               for (int index=0; index<merges; index++){
-                  int offset = chunk*merges+index;
-                  int total=0;
-                  for (int i=0; i<chunks; i++){
-                     total+=localHistogram[i*histogramSize+offset];  
-                  }
-                  histogram[offset]=total;
-               }*/
+               /* int merges = histogramSize/chunks;
+                for (int index=0; index<merges; index++){
+                   int offset = chunk*merges+index;
+                   int total=0;
+                   for (int i=0; i<chunks; i++){
+                      total+=localHistogram[i*histogramSize+offset];  
+                   }
+                   histogram[offset]=total;
+                }*/
             }
 
          };
@@ -90,14 +91,15 @@ public class Main{
       if (true) {
          final int chunkSize = 32;
          final int histogramSize = 256;
-         Range range = Range.create(bytes.length / chunkSize, histogramSize );
+         Range range = Range.create(bytes.length / chunkSize, histogramSize);
          System.out.println("Range  =" + range);
-        
+
          Kernel kernel = new Kernel(){
             @Local int[] localHistogram = new int[chunkSize * histogramSize];
+
             @Override public void run() {
                int chunk = getGlobalId(0);
-               int chunkId = chunk%chunkSize;
+               int chunkId = chunk % chunkSize;
                int start = chunk * chunkSize;
                int end = start + chunkSize;
 
@@ -108,15 +110,15 @@ public class Main{
                   localHistogram[localHistogramOffset + value]++;
                }
                this.localBarrier(); // all chunks sync here so each groupId has contributed chunkSize updates to their own local histo
-               int merges = histogramSize/chunkSize;
-               for (int index=0; index<merges; index++){
-                  int offset = chunk*merges+index;
-                  int total=0;
-                  for (int i=0; i<chunkSize; i++){
-                     total+=localHistogram[i*histogramSize+offset];  
+               int merges = histogramSize / chunkSize;
+               for (int index = 0; index < merges; index++) {
+                  int offset = chunk * merges + index;
+                  int total = 0;
+                  for (int i = 0; i < chunkSize; i++) {
+                     total += localHistogram[i * histogramSize + offset];
                   }
                   this.atomicAdd(histogram, offset, total);
-                 
+
                }
             }
 
