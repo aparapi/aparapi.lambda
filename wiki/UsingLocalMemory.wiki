@@ -1,8 +1,10 @@
 #summary How to make use of local memory in a Kernel
 
-By default all primitive arrays accessed by an Aparapi Kernel is considered global. If we look at the generated code {{{-Dcom.amd.aparapi.enableShowGeneratedOpenCL=true}} we will see that primitive arrays (such as {{{int buf[]}}}) are mapped to {{{__global}}} pointers (such as {{{__global int *buf}}}).
+=How to make use of new local memory feature=
 
-Although this makes Aparapi easy to use (especially to Java developers not used to being exposed to tiered memory hierarchies), it does limit the ability of the 'power developer' wishing to extract more performance from Aparapi on the GPU.
+By default all primitive arrays accessed by an Aparapi Kernel is considered global. If we look at the generated code {{{using -Dcom.amd.aparapi.enableShowGeneratedOpenCL=true}}} we will see that primitive arrays (such as {{{int buf[]}}}) are mapped to {{{__global}}} pointers (such as {{{__global int *buf}}}) in OpenCL.
+
+Although this makes Aparapi easy to use (especially to Java developers who are unfamiliar to tiered memory hierarchies), it does limit the ability of the 'power developer' wanting to extract more performance from Aparapi on the GPU.
 
 This [http://www.amd.com/us/products/technologies/stream-technology/opencl/pages/opencl-intro.aspx?cmpid=cp_article_2_2010 page] from AMD's website shows the different types of memory that OpenCL programmers can exploit.
 
@@ -13,7 +15,7 @@ Global memory buffers in Aparpi (primitive Java arrays) are stored in host memor
 Local memory is 'closer' to the compute devices and are not copied from the host memory, just allocated for use on the device. The use of local memory on OpenCL can lead to much more performant code as the cost of fetching from local memory is much lower. 
 
 Local memory is shared by all work item's (kernel instances) executing in the same group.  This is why the use of local memory was deferred until we had a satisfactory mechanism for specifying a required group size. 
-
+==How to define a primitive array as "local"== 
 We have two ways define a local buffer. Either we can decorate the variable name with a {{{_$local$}}} suffix (yes it is a valid identifier n Java).
 
 {{{
