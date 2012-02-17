@@ -1,4 +1,4 @@
-package com.amd.aparapi.example.parser;
+package com.amd.aparapi.histogram.parser;
 
 import java.io.FileInputStream;
 import java.io.IOException;
