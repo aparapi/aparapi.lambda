@@ -10,9 +10,9 @@ This [http://www.amd.com/us/products/technologies/stream-technology/opencl/pages
 
 http://www.amd.com/PublishingImages/Public/Graphic_Illustrations/375WJPEG/47039A_OpenCLMemoryModel_375W.jpg 
 
-Global memory buffers in Aparpi (primitive Java arrays) are stored in host memory and are copied to Global memory (the RAM of the GPU card).  
+Global memory buffers in Aparapi (primitive Java arrays) are stored in host memory and are copied to Global memory (the RAM of the GPU card).  
 
-Local memory is 'closer' to the compute devices and are not copied from the host memory, just allocated for use on the device. The use of local memory on OpenCL can lead to much more performant code as the cost of fetching from local memory is much lower. 
+Local memory is 'closer' to the compute devices and not copied from the host memory, it is just allocated for use on the device. The use of local memory on OpenCL can lead to much more performant code as the cost of fetching from local memory is much lower.
 
 Local memory is shared by all work item's (kernel instances) executing in the same group.  This is why the use of local memory was deferred until we had a satisfactory mechanism for specifying a required group size. 
 ==How to define a primitive array as "local"== 
