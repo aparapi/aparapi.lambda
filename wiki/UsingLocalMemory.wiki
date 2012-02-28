@@ -15,6 +15,9 @@ Global memory buffers in Aparapi (primitive Java arrays) are stored in host memo
 Local memory is 'closer' to the compute devices and not copied from the host memory, it is just allocated for use on the device. The use of local memory on OpenCL can lead to much more performant code as the cost of fetching from local memory is much lower.
 
 Local memory is shared by all work item's (kernel instances) executing in the same group.  This is why the use of local memory was deferred until we had a satisfactory mechanism for specifying a required group size. 
+
+Aparapi only supports {{{local}}} arrays, not scalers.
+ 
 ==How to define a primitive array as "local"== 
 We have two ways define a local buffer. Either we can decorate the variable name with a {{{_$local$}}} suffix (yes it is a valid identifier n Java).
 
