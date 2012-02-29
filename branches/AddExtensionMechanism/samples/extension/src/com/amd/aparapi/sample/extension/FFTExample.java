@@ -8,17 +8,13 @@ import com.amd.aparapi.Range;
 
 public class FFTExample{
 
-   @Extension("{"//
-         + ""// 
-         + ""//
-         + "}")//
    public static class FFTImplementation extends AparapiExtensionImplementation{
       @OpenCL("{"//
             + ""//
             + "}")//
       public void forward(//
-            @Buffer(BufferType.GLOBAL) @Access(AccessType.READWRITE) float[] _data,//
-            @Buffer(BufferType.GLOBAL) @Access(AccessType.READWRITE) float[] _imaginary) {
+            @Global @ReadWrite float[] _data,//
+            @Global @ReadWrite float[] _imaginary) {
          System.out.println("in forward " + getGlobalId(0));
          // java implementation 
       }
@@ -27,8 +23,8 @@ public class FFTExample{
             + ""//
             + "}")//
       public void reverse(//
-            @Buffer(BufferType.GLOBAL) @Access(AccessType.READWRITE) float[] _data,//
-            @Buffer(BufferType.GLOBAL) @Access(AccessType.READWRITE) float[] _imaginary) {
+            @Global @ReadWrite float[] _data,//
+            @Global @ReadWrite float[] _imaginary) {
          System.out.println("in reverse " + getGlobalId(0));
          // java implementation 
       }

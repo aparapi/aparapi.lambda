@@ -13,8 +13,8 @@ public class SquareExample{
             + "_out[getGlobalId(0)]= _in[getGlobalId(0)]*_in[getGlobalId(0)];"//
             + "")//
       public void square(//
-            @Buffer(BufferType.GLOBAL) @Access(AccessType.READONLY) float[] _in,//
-            @Buffer(BufferType.GLOBAL) @Access(AccessType.WRITEONLY) float[] _out) {
+            @Global @ReadOnly float[] _in,//
+            @Global @WriteOnly float[] _out) {
          _out[getGlobalId(0)] = _in[getGlobalId(0)] * _in[getGlobalId(0)];
       }
 
