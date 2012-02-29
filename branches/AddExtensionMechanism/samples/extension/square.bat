@@ -4,6 +4,6 @@ java ^
  -Dcom.amd.aparapi.enableProfiling=false ^
  -Dcom.amd.aparapi.enableShowGeneratedOpenCL=true ^
  -classpath ../../com.amd.aparapi/dist/aparapi.jar;extension.jar ^
- com.amd.aparapi.sample.extension.Main
+ com.amd.aparapi.sample.extension.SquareExample
 
 
