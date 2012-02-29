@@ -327,10 +327,9 @@ public abstract class Kernel implements Cloneable{
 
             }
          } catch (UnsatisfiedLinkError e) {
-            logger
-                  .warning("Check your environment. Failed to load aparapi native library "
-                        + libName
-                        + " or possibly failed to locate opencl native library (opencl.dll/opencl.so). Ensure that both are in your PATH (windows) or in LD_LIBRARY_PATH (linux).");
+            logger.warning("Check your environment. Failed to load aparapi native library "
+                  + libName
+                  + " or possibly failed to locate opencl native library (opencl.dll/opencl.so). Ensure that both are in your PATH (windows) or in LD_LIBRARY_PATH (linux).");
 
             openCLAvailable = false;
          }
