@@ -9,24 +9,7 @@ import java.util.Arrays;
 
 public class Aparapi{
 
-   public enum AccessType {
-      READONLY,
-      READWRITE,
-      WRITEONLY
-   }
-
-   public enum BufferType {
-      LOCAL,
-      GLOBAL,
-      CONSTANT
-   }
-
    public @Retention(RetentionPolicy.RUNTIME) @interface OpenCL {
-      String value() default "";
-
-   }
-
-   public @Retention(RetentionPolicy.RUNTIME) @interface Extension {
       String value() default "";
 
    }
@@ -46,13 +29,14 @@ public class Aparapi{
 
    }
 
-   public @Retention(RetentionPolicy.RUNTIME) @interface Access {
-      AccessType value() default AccessType.READWRITE;
+   public @Retention(RetentionPolicy.RUNTIME) @interface Global {
+   }
+
+   public @Retention(RetentionPolicy.RUNTIME) @interface Local {
 
    }
 
-   public @Retention(RetentionPolicy.RUNTIME) @interface Buffer {
-      BufferType value() default BufferType.GLOBAL;
+   public @Retention(RetentionPolicy.RUNTIME) @interface Constant {
 
    }
 
@@ -75,8 +59,8 @@ public class Aparapi{
             if (method.getName().equals(m.getName())) {
                // strip the zeroth arg
                Object[] delegatedArgs = Arrays.copyOfRange(args, 1, args.length);
-               implementation.setRange((Range)args[0]);
-               for (implementation.globalId[0]=0; implementation.globalId[0]<implementation.range.getGlobalSize(0); implementation.globalId[0]++){
+               implementation.setRange((Range) args[0]);
+               for (implementation.globalId[0] = 0; implementation.globalId[0] < implementation.range.getGlobalSize(0); implementation.globalId[0]++) {
                   m.invoke(implementation, delegatedArgs);
                }
             }
@@ -108,7 +92,6 @@ public class Aparapi{
             // TODO Auto-generated catch block
             e.printStackTrace();
          }
-        
 
       }
 
