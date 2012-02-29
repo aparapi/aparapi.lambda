@@ -9,6 +9,7 @@ import com.amd.aparapi.Range;
 public class FFTExample{
 
    public static class FFTImplementation extends AparapiExtensionImplementation{
+
       @OpenCL("{"//
             + ""//
             + "}")//

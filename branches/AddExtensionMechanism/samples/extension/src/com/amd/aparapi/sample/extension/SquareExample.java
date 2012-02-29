@@ -21,7 +21,7 @@ public class SquareExample{
    }
 
    @Wraps(SquareImplementation.class) interface Square extends AparapiExtension{
-      public void square(Range _range, float[] _data, float[] _imaginary);
+      public void square(Range _range, float[] _in, float[] _out);
    }
 
    public static void main(String[] args) {
