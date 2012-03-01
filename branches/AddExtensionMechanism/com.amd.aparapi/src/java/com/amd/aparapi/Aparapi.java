@@ -6,6 +6,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Arrays;
+import java.util.List;
 
 public class Aparapi{
 
@@ -97,4 +98,7 @@ public class Aparapi{
 
       return instance;
    }
+
+   native public int tryMeJNI();
+
 }
