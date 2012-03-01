@@ -274,6 +274,11 @@
       <delete file="aparapi.o" />
       <delete file="aparapi.lib" />
       <delete file="aparapi.exp" />
+      <delete file="jni.dll" />
+      <delete file="jni.obj" />
+      <delete file="jni.o" />
+      <delete file="jni.lib" />
+      <delete file="jni.exp" />
    </target>
 
    <target name="javah">
@@ -299,6 +304,7 @@
          <arg value="-o" />
          <arg value="${basedir}/dist/libaparapi_${x86_or_x86_64}.so" />
          <arg value="src/cpp/aparapi.cpp" />
+         <arg value="src/cpp/jni.cpp" />
          <arg value="-L${amd.app.sdk.dir}/lib/${x86_or_x86_64}" />
          <arg value="-lOpenCL" />
       </exec>
@@ -318,6 +324,7 @@
          <arg value="-o" />
          <arg value="${basedir}/dist/libaparapi_${x86_or_x86_64}.dylib" />
          <arg value="src/cpp/aparapi.cpp" />
+         <arg value="src/cpp/jni.cpp" />
          <arg value="-framework" />
          <arg value="OpenCL" />
       </exec>
@@ -365,6 +372,7 @@
          <arg value="-o" />
          <arg value="${basedir}\dist\aparapi_${x86_or_x86_64}.dll" />
          <arg value="src\cpp\aparapi.cpp" />
+         <arg value="src\cpp\jni.cpp" />
          <arg value="-L${amd.app.sdk.dir}\lib\${x86_or_x86_64}" />
          <arg value="-lOpenCL" />
       </exec>
