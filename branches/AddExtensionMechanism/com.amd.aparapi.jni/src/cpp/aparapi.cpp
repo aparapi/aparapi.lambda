@@ -734,8 +734,8 @@ void unpinAll(JNIEnv* jenv) {
 
 
 
-
-JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_disposeJNI(JNIEnv *jenv, jobject jobj, jlong jniContextHandle) {
+APARAPI_JAVA(jint, KernelRunner, disposeJNI)
+   (JNIEnv *jenv, jobject jobj, jlong jniContextHandle) {
    cl_int status = CL_SUCCESS;
    JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);
    if (jniContext != NULL){
@@ -927,8 +927,8 @@ jint updateNonPrimitiveReferences(JNIEnv *jenv, jobject jobj, JNIContext* jniCon
 
 
 
-JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_runKernelJNI(JNIEnv *jenv,
-      jobject jobj, jlong jniContextHandle, jobject _range, jboolean needSync, jint passes) {
+APARAPI_JAVA(jint, KernelRunner, runKernelJNI)
+   (JNIEnv *jenv, jobject jobj, jlong jniContextHandle, jobject _range, jboolean needSync, jint passes) {
 
    Range range(jenv, _range);
 
@@ -1452,8 +1452,8 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_runKernelJNI(JNIEnv *je
 
 
 // we return the JNIContext from here 
-JNIEXPORT jlong JNICALL Java_com_amd_aparapi_KernelRunner_initJNI(JNIEnv *jenv, jclass clazz, jobject kernelObject, 
-      jint flags) {
+APARAPI_JAVA(jlong, KernelRunner, initJNI)
+   (JNIEnv *jenv, jclass clazz, jobject kernelObject, jint flags) {
    cl_int status = CL_SUCCESS;
    JNIContext* jniContext = new JNIContext(jenv, kernelObject, flags);
 
@@ -1466,7 +1466,8 @@ JNIEXPORT jlong JNICALL Java_com_amd_aparapi_KernelRunner_initJNI(JNIEnv *jenv, 
 }
 
 
-JNIEXPORT jlong JNICALL Java_com_amd_aparapi_KernelRunner_buildProgramJNI(JNIEnv *jenv, jobject jobj, jlong jniContextHandle, jstring source) {
+APARAPI_JAVA(jlong, KernelRunner, buildProgramJNI)
+   (JNIEnv *jenv, jobject jobj, jlong jniContextHandle, jstring source) {
    JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);
    if (jniContext == NULL){
       return 0;
@@ -1569,7 +1570,8 @@ JNIEXPORT jlong JNICALL Java_com_amd_aparapi_KernelRunner_buildProgramJNI(JNIEnv
 
 
 // this is called once when the arg list is first determined for this kernel
-JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_setArgsJNI(JNIEnv *jenv, jobject jobj, jlong jniContextHandle, jobjectArray argArray, jint argc) {
+APARAPI_JAVA(jint, KernelRunner, setArgsJNI)
+   (JNIEnv *jenv, jobject jobj, jlong jniContextHandle, jobjectArray argArray, jint argc) {
    JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);
    cl_int status = CL_SUCCESS;
    if (jniContext != NULL){      
@@ -1679,7 +1681,8 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_setArgsJNI(JNIEnv *jenv
 
 
 
-JNIEXPORT jstring JNICALL Java_com_amd_aparapi_KernelRunner_getExtensionsJNI(JNIEnv *jenv, jobject jobj, jlong jniContextHandle) {
+APARAPI_JAVA(jstring, KernelRunner, getExtensionsJNI)
+    (JNIEnv *jenv, jobject jobj, jlong jniContextHandle) {
    jstring jextensions = NULL;
    JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);
    if (jniContext != NULL){
@@ -1719,7 +1722,8 @@ KernelArg* getArgForBuffer(JNIEnv* jenv, JNIContext* jniContext, jobject buffer)
 }
 
 // Called as a result of Kernel.get(someArray)
-JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_getJNI(JNIEnv *jenv, jobject jobj, jlong jniContextHandle, jobject buffer) {
+APARAPI_JAVA(jint, KernelRunner, getJNI)
+   (JNIEnv *jenv, jobject jobj, jlong jniContextHandle, jobject buffer) {
    cl_int status = CL_SUCCESS;
    JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);
    if (jniContext != NULL){
@@ -1777,7 +1781,8 @@ jobject createProfileInfo(JNIEnv *jenv, ProfileInfo &profileInfo){
    return(profileInstance);
 }
 
-JNIEXPORT jobject JNICALL Java_com_amd_aparapi_KernelRunner_getProfileInfoJNI(JNIEnv *jenv, jobject jobj, jlong jniContextHandle) {
+APARAPI_JAVA(jobject, KernelRunner, getProfileInfoJNI)
+   (JNIEnv *jenv, jobject jobj, jlong jniContextHandle) {
    cl_int status = CL_SUCCESS;
    JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);
    jobject returnList = NULL;
@@ -1815,7 +1820,8 @@ JNIEXPORT jobject JNICALL Java_com_amd_aparapi_KernelRunner_getProfileInfoJNI(JN
 }
 
 
-JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_getMaxComputeUnitsJNI(JNIEnv *jenv, jobject jobj, jlong jniContextHandle) {
+APARAPI_JAVA(jint, KernelRunner, getMaxComputeUnitsJNI)
+   (JNIEnv *jenv, jobject jobj, jlong jniContextHandle) {
    cl_int status = CL_SUCCESS;
    JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);
    if (jniContext != NULL){
@@ -1825,7 +1831,8 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_getMaxComputeUnitsJNI(J
    }
 }
 
-JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_getMaxWorkItemDimensionsJNI(JNIEnv *jenv, jobject jobj, jlong jniContextHandle) {
+APARAPI_JAVA(jint, KernelRunner, getMaxWorkItemDimensionsJNI)
+   (JNIEnv *jenv, jobject jobj, jlong jniContextHandle) {
    cl_int status = CL_SUCCESS;
    JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);
    if (jniContext != NULL){
@@ -1835,7 +1842,8 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_getMaxWorkItemDimension
    }
 }
 
-JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_getMaxWorkGroupSizeJNI(JNIEnv *jenv, jobject jobj, jlong jniContextHandle) {
+APARAPI_JAVA(jint, KernelRunner, getMaxWorkGroupSizeJNI)
+   (JNIEnv *jenv, jobject jobj, jlong jniContextHandle) {
    cl_int status = CL_SUCCESS;
    JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);
    if (jniContext != NULL){
@@ -1845,7 +1853,8 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_getMaxWorkGroupSizeJNI(
    }
 }
 
-JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_getMaxWorkItemSizeJNI(JNIEnv *jenv, jobject jobj, jlong jniContextHandle, jint _index) {
+APARAPI_JAVA(jint, KernelRunner, getMaxWorkItemSizeJNI)
+   (JNIEnv *jenv, jobject jobj, jlong jniContextHandle, jint _index) {
    cl_int status = CL_SUCCESS;
    JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);
    if (jniContext != NULL && _index >=0 && _index <= jniContext->maxWorkItemDimensions){
