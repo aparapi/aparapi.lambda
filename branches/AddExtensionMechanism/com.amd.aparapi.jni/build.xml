@@ -280,6 +280,7 @@
       <mkdir dir="include" />
       <javah classpath="..\com.amd.aparapi\dist\aparapi.jar" destdir="include" force="true">
          <class name="com.amd.aparapi.KernelRunner" />
+         <class name="com.amd.aparapi.JNI" />
       </javah>
    </target>
 
@@ -337,6 +338,7 @@
          <arg value="/Iinclude" />
          <arg value="/I${amd.app.sdk.dir}\include" />
          <arg value="src\cpp\aparapi.cpp" />
+         <arg value="src\cpp\jni.cpp" />
          <arg value="/LD" />
          <arg value="/link" />
          <arg value="/libpath:${msvc.dir}\vc\lib\${optional.amd64.subdir}" />
