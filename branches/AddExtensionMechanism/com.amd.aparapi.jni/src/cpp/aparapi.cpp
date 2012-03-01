@@ -37,6 +37,7 @@
    */
 
 #include "aparapi.h"
+#include "jniHelper.h"
 
 class MicrosecondTimer{
 
@@ -1764,63 +1765,9 @@ JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_getJNI(JNIEnv *jenv, jo
    return 0;
 }
 
-jobject createInstance(JNIEnv *jenv, char* className, char *signature, ... ){
-   jclass theClass = jenv->FindClass(className);
-   if (theClass == NULL ||  jenv->ExceptionCheck()) {
-      jenv->ExceptionDescribe();
-      jenv->ExceptionClear();
-      fprintf(stderr, "bummer! getting '%s'\n", className);
-      return(NULL);
-   }
-
-   jmethodID constructor= jenv->GetMethodID(theClass,"<init>",signature);
-   if (constructor == NULL || jenv->ExceptionCheck()) {
-      jenv->ExceptionDescribe(); 
-      jenv->ExceptionClear();
-      fprintf(stderr, "bummer getting constructor from '%s' with signature! '%s' \n", className, signature);
-      return(NULL);
-   }
-   va_list argp;
-   va_start(argp, signature);
-   jobject instance = jenv->NewObjectV(theClass, constructor, argp);
-   if (instance == NULL || jenv->ExceptionCheck()) {
-      jenv->ExceptionDescribe(); 
-      jenv->ExceptionClear();
-      fprintf(stderr, "bummer invoking constructor from '%s' with signature! '%s' \n", className, signature);
-   }
-   va_end(argp);
-   return(instance);
-} 
-
-void callVoid(JNIEnv *jenv, jobject instance, char *methodName, char *methodSignature, ...){
-   jclass theClass = jenv->GetObjectClass(instance);
-   if (theClass == NULL ||  jenv->ExceptionCheck()) {
-      jenv->ExceptionDescribe(); 
-      jenv->ExceptionClear();
-      fprintf(stderr, "bummer! getting class from instance\n");
-      return;
-   }
-   jmethodID methodId= jenv->GetMethodID(theClass,methodName,methodSignature);
-   if (methodId == NULL || jenv->ExceptionCheck()) {
-      jenv->ExceptionDescribe(); 
-      jenv->ExceptionClear();
-      fprintf(stderr, "bummer getting method '%s %s' from instance \n", methodName, methodSignature);
-      return;
-   }
-   va_list argp;
-   va_start(argp, methodSignature);
-   jenv->CallVoidMethodV(instance, methodId, argp);
-   if (jenv->ExceptionCheck()) {
-      jenv->ExceptionDescribe(); /* write to console */
-      jenv->ExceptionClear();
-      fprintf(stderr, "bummer  calling '%s %s'\n", methodName, methodSignature);
-   }
-   va_end(argp);
-   return;
-}
 
 jobject createProfileInfo(JNIEnv *jenv, ProfileInfo &profileInfo){
-   jobject profileInstance = createInstance(jenv, "com/amd/aparapi/ProfileInfo", "(Ljava/lang/String;IJJJJ)V", 
+   jobject profileInstance = JNIHelper::createInstance(jenv, "com/amd/aparapi/ProfileInfo", "(Ljava/lang/String;IJJJJ)V", 
          ((jstring)(profileInfo.name==NULL?NULL:jenv->NewStringUTF(profileInfo.name))),
          ((jint)profileInfo.type), 
          ((jlong)profileInfo.start),
@@ -1835,7 +1782,7 @@ JNIEXPORT jobject JNICALL Java_com_amd_aparapi_KernelRunner_getProfileInfoJNI(JN
    JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);
    jobject returnList = NULL;
    if (jniContext != NULL){
-      returnList = createInstance(jenv, "java/util/ArrayList", "()V");
+      returnList = JNIHelper::createInstance(jenv, "java/util/ArrayList", "()V");
       if (jniContext->isProfilingEnabled()){
 
          for (jint i=0; i<jniContext->argc; i++){ 
@@ -1843,14 +1790,14 @@ JNIEXPORT jobject JNICALL Java_com_amd_aparapi_KernelRunner_getProfileInfoJNI(JN
             if (arg->isArray()){
                if (arg->isMutableByKernel() && arg->value.ref.write.valid){
                   jobject writeProfileInfo = createProfileInfo(jenv,  arg->value.ref.write);
-                  callVoid(jenv, returnList, "add", "(Ljava/lang/Object;)Z", writeProfileInfo);
+                  JNIHelper::callVoid(jenv, returnList, "add", "(Ljava/lang/Object;)Z", writeProfileInfo);
                }
             }
          }
 
          for (jint pass=0; pass<jniContext->passes; pass++){
             jobject executeProfileInfo = createProfileInfo(jenv, jniContext->exec[pass]);
-            callVoid(jenv, returnList, "add", "(Ljava/lang/Object;)Z", executeProfileInfo);
+            JNIHelper::callVoid(jenv, returnList, "add", "(Ljava/lang/Object;)Z", executeProfileInfo);
          }
 
          for (jint i=0; i<jniContext->argc; i++){ 
@@ -1858,7 +1805,7 @@ JNIEXPORT jobject JNICALL Java_com_amd_aparapi_KernelRunner_getProfileInfoJNI(JN
             if (arg->isArray()){
                if (arg->isReadByKernel() && arg->value.ref.read.valid){
                   jobject readProfileInfo = createProfileInfo(jenv,  arg->value.ref.read);
-                  callVoid(jenv, returnList, "add", "(Ljava/lang/Object;)Z", readProfileInfo);
+                  JNIHelper::callVoid(jenv, returnList, "add", "(Ljava/lang/Object;)Z", readProfileInfo);
                }
             }
          }
