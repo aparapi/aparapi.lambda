@@ -2,6 +2,12 @@ package com.amd.aparapi.sample.extension;
 
 import com.amd.aparapi.AparapiExtensionImplementation;
 import com.amd.aparapi.Aparapi;
+import com.amd.aparapi.CompilationUnit;
+import com.amd.aparapi.Context;
+import com.amd.aparapi.Device;
+import com.amd.aparapi.JNI;
+import com.amd.aparapi.KernelEntrypoint;
+import com.amd.aparapi.Platform;
 import com.amd.aparapi.Aparapi.*;
 import com.amd.aparapi.AparapiExtension;
 import com.amd.aparapi.Range;
@@ -38,11 +44,35 @@ public class FFTExample{
    }
 
    public static void main(String[] args) {
-      float[] real = new float[1024];
-      float[] imag = new float[1024];
-      Range range = Range.create(real.length / 2);
-      Aparapi.create(FFT.class).forward(range, real, imag);
+      JNI jni = new JNI();
+      Device device = null;
+      for (Platform p : jni.getPlatforms()) {
+         //System.out.println(p);
+         for (Device d : p.getDevices()) {
+            //System.out.println(d);
+            if (d.getType() == Device.TYPE.GPU) {
+               device = d;
+            }
+         }
+      }
+      System.out.println(device);
+      Context context = jni.createContext(device);
 
+      String source = "" + "__kernel void square(" + "        __global float* input," + "        __global float* output,"
+            + "        const unsigned int count){" + "    const size_t id = get_global_id(0);" + "    if( id < count ){"
+            + "        output[id] = input[id]*input[id];" + "    }" + "}";
+      ;
+
+      CompilationUnit cu = jni.createCompilationUnit(context, source);
+
+      KernelEntrypoint ke = jni.createKernelEntrypoint(cu, "run");
+
+      if (context != null) {
+         float[] real = new float[1024];
+         float[] imag = new float[1024];
+         Range range = Range.create(real.length / 2);
+         Aparapi.create(FFT.class).forward(range, real, imag);
+      }
    }
 
 }
