@@ -279,6 +279,11 @@
       <delete file="jni.o" />
       <delete file="jni.lib" />
       <delete file="jni.exp" />
+      <delete file="jniHelper.dll" />
+      <delete file="jniHelper.obj" />
+      <delete file="jniHelper.o" />
+      <delete file="jniHelper.lib" />
+      <delete file="jniHelper.exp" />
    </target>
 
    <target name="javah">
@@ -305,6 +310,7 @@
          <arg value="${basedir}/dist/libaparapi_${x86_or_x86_64}.so" />
          <arg value="src/cpp/aparapi.cpp" />
          <arg value="src/cpp/jni.cpp" />
+         <arg value="src/cpp/jniHelper.cpp" />
          <arg value="-L${amd.app.sdk.dir}/lib/${x86_or_x86_64}" />
          <arg value="-lOpenCL" />
       </exec>
@@ -325,6 +331,7 @@
          <arg value="${basedir}/dist/libaparapi_${x86_or_x86_64}.dylib" />
          <arg value="src/cpp/aparapi.cpp" />
          <arg value="src/cpp/jni.cpp" />
+         <arg value="src/cpp/jniHelper.cpp" />
          <arg value="-framework" />
          <arg value="OpenCL" />
       </exec>
@@ -346,6 +353,7 @@
          <arg value="/I${amd.app.sdk.dir}\include" />
          <arg value="src\cpp\aparapi.cpp" />
          <arg value="src\cpp\jni.cpp" />
+         <arg value="src/cpp/jniHelper.cpp" />
          <arg value="/LD" />
          <arg value="/link" />
          <arg value="/libpath:${msvc.dir}\vc\lib\${optional.amd64.subdir}" />
@@ -373,6 +381,7 @@
          <arg value="${basedir}\dist\aparapi_${x86_or_x86_64}.dll" />
          <arg value="src\cpp\aparapi.cpp" />
          <arg value="src\cpp\jni.cpp" />
+         <arg value="src/cpp/jniHelper.cpp" />
          <arg value="-L${amd.app.sdk.dir}\lib\${x86_or_x86_64}" />
          <arg value="-lOpenCL" />
       </exec>
