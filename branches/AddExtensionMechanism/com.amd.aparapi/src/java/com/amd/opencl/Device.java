@@ -1,7 +1,7 @@
 package com.amd.opencl;
 
 public class Device{
-   public enum TYPE {
+   static public enum TYPE {
       UNKNOWN,
       GPU,
       CPU
