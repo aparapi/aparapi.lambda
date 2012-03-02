@@ -1,10 +1,10 @@
 package com.amd.aparapi.sample.extension;
 
-import com.amd.aparapi.AparapiExtensionImplementation;
 import com.amd.aparapi.Aparapi;
-import com.amd.aparapi.Aparapi.*;
+import com.amd.aparapi.AparapiExtensionImplementation;
 import com.amd.aparapi.AparapiExtension;
 import com.amd.aparapi.Range;
+import com.amd.aparapi.Aparapi.*;
 
 public class SquareExample{
 

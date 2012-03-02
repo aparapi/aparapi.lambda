@@ -1,4 +1,4 @@
-package com.amd.aparapi;
+package com.amd.opencl;
 
 import java.util.ArrayList;
 import java.util.List;

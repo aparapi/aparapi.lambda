@@ -52,6 +52,7 @@
 #include <jni.h>
 
 
+#define JNI_JAVA(type, className, methodName) JNIEXPORT type JNICALL Java_com_amd_opencl_##className##_##methodName
 #define APARAPI_JAVA(type, className, methodName) JNIEXPORT type JNICALL Java_com_amd_aparapi_##className##_##methodName
 
 class JNIHelper{

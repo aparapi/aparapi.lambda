@@ -1,4 +1,4 @@
-package com.amd.aparapi;
+package com.amd.opencl;
 
 public class Context{
    private long contextId;

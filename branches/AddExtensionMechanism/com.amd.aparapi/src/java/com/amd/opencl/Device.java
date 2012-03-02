@@ -1,4 +1,4 @@
-package com.amd.aparapi;
+package com.amd.opencl;
 
 public class Device{
    public enum TYPE {

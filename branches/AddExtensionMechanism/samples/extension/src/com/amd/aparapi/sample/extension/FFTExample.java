@@ -1,16 +1,16 @@
 package com.amd.aparapi.sample.extension;
 
-import com.amd.aparapi.AparapiExtensionImplementation;
 import com.amd.aparapi.Aparapi;
-import com.amd.aparapi.CompilationUnit;
-import com.amd.aparapi.Context;
-import com.amd.aparapi.Device;
-import com.amd.aparapi.JNI;
-import com.amd.aparapi.KernelEntrypoint;
-import com.amd.aparapi.Platform;
-import com.amd.aparapi.Aparapi.*;
+import com.amd.aparapi.AparapiExtensionImplementation;
 import com.amd.aparapi.AparapiExtension;
 import com.amd.aparapi.Range;
+import com.amd.aparapi.Aparapi.*;
+import com.amd.opencl.CompilationUnit;
+import com.amd.opencl.Context;
+import com.amd.opencl.Device;
+import com.amd.opencl.JNI;
+import com.amd.opencl.KernelEntrypoint;
+import com.amd.opencl.Platform;
 
 public class FFTExample{
 

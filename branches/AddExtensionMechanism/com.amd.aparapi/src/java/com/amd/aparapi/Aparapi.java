@@ -8,6 +8,7 @@ import java.lang.reflect.Proxy;
 import java.util.Arrays;
 import java.util.List;
 
+
 public class Aparapi{
 
    public @Retention(RetentionPolicy.RUNTIME) @interface OpenCL {

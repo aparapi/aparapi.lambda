@@ -1,4 +1,4 @@
-package com.amd.aparapi;
+package com.amd.opencl;
 
 public class JNIFactory{
    static final JNI jni = new JNI();

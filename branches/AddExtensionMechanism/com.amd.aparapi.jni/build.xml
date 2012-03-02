@@ -290,7 +290,7 @@
       <mkdir dir="include" />
       <javah classpath="..\com.amd.aparapi\dist\aparapi.jar" destdir="include" force="true">
          <class name="com.amd.aparapi.KernelRunner" />
-         <class name="com.amd.aparapi.JNI" />
+         <class name="com.amd.opencl.JNI" />
       </javah>
    </target>
 

@@ -1,4 +1,5 @@
-package com.amd.aparapi;
+package com.amd.opencl;
+
 
 public class CompilationUnit{
    private long programId;

@@ -1,6 +1,7 @@
-package com.amd.aparapi;
+package com.amd.opencl;
 
 import java.util.List;
+
 
 public class JNI implements OpenCL{
    {
