@@ -1,52 +1,36 @@
 package com.amd.aparapi.sample.extension;
 
-import com.amd.opencl.CompilationUnit;
-import com.amd.opencl.Context;
+import com.amd.aparapi.Range;
 import com.amd.opencl.Device;
-import com.amd.opencl.KernelEntrypoint;
-import com.amd.opencl.Platform;
+import com.amd.opencl.OpenCLBinding;
 
 public class SquareExample{
-   public static void main(String[] args) {
-    
-      Device device = null;
-      for (Platform p : Platform.getPlatforms()) {
-         //System.out.println(p);
-         for (Device d : p.getDevices()) {
-            //System.out.println(d);
-            if (d.getType() == Device.TYPE.GPU) {
-               device = d;
-            }
-         }
-      }
-      System.out.println(device);
-      Context context = device.createContext();
 
-      String source = "" //
+ 
+   interface Squarer extends OpenCLBinding<Squarer>{
+      @OpenCL(""//
             + "__kernel void square("//
-            + "        __global float* input,"//
-            + "        __global float* output){"//
+            + "        __global float* in,"//
+            + "        __global float* out){"//
             + "    const size_t id = get_global_id(0);"//
-            + "    output[id] = input[id]*input[id];"//
-            + "}";
-      ;
-
-      CompilationUnit compilationUnit = context.createCompilationUnit(source);
-
-      KernelEntrypoint kernelEntrypoint = compilationUnit.createKernelEntrypoint("run");
+            + "    out[id] = in[id]*in[id];"//
+            + "}")//
+      public Squarer square(Range _range, @GlobalReadOnly("in") float[] in, @GlobalWriteOnly("out") float[] out);
+   }
+   
+   public static void main(String[] args) {
+      
       int size = 1024;
-      float[] input = new float[size];
-      for (int i=0;i<size; i++){
-         input[i]=i;
+      float[] in = new float[size];
+      for (int i = 0; i < size; i++) {
+         in[i] = i;
       }
-      float[] output = new float[size];
-      
-//kernelEntrypoint.args(input,output);
-//kernelEntypoint.put(input);
-//kernelEntrypint.run(Range.create(size));
-//kernelEntypoint.get(output);
-      
-     
+      float[] out = new float[size];
+
+      Device device = Device.getFirstGPUDevice();
+      Squarer squarer = device.create(Squarer.class);
+      squarer.put(in).square(Range.create(size), in, out).get(out);
+
    }
 
 }
