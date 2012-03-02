@@ -1,5 +1,17 @@
 package com.amd.opencl;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.util.Arrays;
+
+import com.amd.aparapi.Aparapi;
+import com.amd.aparapi.AparapiExtension;
+import com.amd.aparapi.AparapiExtensionImplementation;
+import com.amd.aparapi.Range;
+import com.amd.aparapi.Aparapi.AparapiExtensionInvocationHandler;
+import com.amd.aparapi.Aparapi.Wraps;
+
 public class Device{
    static public enum TYPE {
       UNKNOWN,
@@ -122,7 +134,56 @@ public class Device{
    }
 
    public Context createContext() {
-     return(JNIFactory.getJNI().createContext(this));
+      return (JNIFactory.getJNI().createContext(this));
+   }
+
+   public static class OpenCLInvocationHandler implements InvocationHandler{
+
+      @Override
+      public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+
+         return null;
+      }
+
+   }
+
+   public <T> T create(Class<T> _interface) {
+      T instance = null;
+
+      OpenCLInvocationHandler invocationHandler = new OpenCLInvocationHandler();
+
+      instance = (T) Proxy.newProxyInstance(Device.class.getClassLoader(), new Class[] {
+         _interface
+      }, invocationHandler);
+
+      String source = "";
+
+      Context context = createContext();
+      CompilationUnit compilationUnit = context.createCompilationUnit(source);
+
+      KernelEntrypoint kernelEntrypoint = compilationUnit.createKernelEntrypoint("run");
+
+      return instance;
+
+   }
+
+   public static Device getFirstGPUDevice() {
+      Device device = null;
+      for (Platform p : Platform.getPlatforms()) {
+         //System.out.println(p);
+         for (Device d : p.getDevices()) {
+            //System.out.println(d);
+            if (d.getType() == Device.TYPE.GPU) {
+               device = d;
+               break;
+            }
+         }
+         if (device != null) {
+            break;
+         }
+      }
+      return (device);
+
    }
 
 }
