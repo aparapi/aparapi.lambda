@@ -49,7 +49,7 @@ APARAPI_JAVA(jobject, JNI, createCompilationUnit)(JNIEnv *jenv, jobject jobj, jo
    cl_device_type deviceType;
    cl_int status = CL_SUCCESS;
    clGetDeviceInfo(deviceId, CL_DEVICE_TYPE,  sizeof(deviceType), &deviceType, NULL);
-   fprintf(stderr, "device[%d] CL_DEVICE_TYPE = %x\n", deviceId, deviceType);
+   //fprintf(stderr, "device[%d] CL_DEVICE_TYPE = %x\n", deviceId, deviceType);
 
    const char *sourceChars = jenv->GetStringUTFChars(source, NULL);
    size_t sourceSize[] = { strlen(sourceChars) };
@@ -89,7 +89,7 @@ APARAPI_JAVA(jobject, JNI, createContext)(JNIEnv *jenv, jobject jobj, jobject de
    cl_device_type deviceType;
    cl_int status = CL_SUCCESS;
    clGetDeviceInfo(deviceId, CL_DEVICE_TYPE,  sizeof(deviceType), &deviceType, NULL);
-   fprintf(stderr, "device[%d] CL_DEVICE_TYPE = %x\n", deviceId, deviceType);
+   //fprintf(stderr, "device[%d] CL_DEVICE_TYPE = %x\n", deviceId, deviceType);
 
    jobject contextInstance = NULL;
 
@@ -113,7 +113,7 @@ APARAPI_JAVA(jobject, JNI, createKernelEntrypoint)(JNIEnv *jenv, jobject jobj, j
    cl_device_type deviceType;
    cl_int status = CL_SUCCESS;
    clGetDeviceInfo(deviceId, CL_DEVICE_TYPE,  sizeof(deviceType), &deviceType, NULL);
-   fprintf(stderr, "device[%d] CL_DEVICE_TYPE = %x\n", deviceId, deviceType);
+   //fprintf(stderr, "device[%d] CL_DEVICE_TYPE = %x\n", deviceId, deviceType);
   const char *nameChars = jenv->GetStringUTFChars(name, NULL);
 
    cl_kernel kernel = clCreateKernel(program, "run", &status);
@@ -134,7 +134,7 @@ APARAPI_JAVA(jobject, JNI, getPlatforms)(JNIEnv *jenv, jobject jobj) {
    cl_uint platformc;
 
    status = clGetPlatformIDs(0, NULL, &platformc);
-   fprintf(stderr, "There are %d platforms\n", platformc);
+   //fprintf(stderr, "There are %d platforms\n", platformc);
    cl_platform_id* platformIds = new cl_platform_id[platformc];
    status = clGetPlatformIDs(platformc, platformIds, NULL);
 
@@ -145,8 +145,8 @@ APARAPI_JAVA(jobject, JNI, getPlatforms)(JNIEnv *jenv, jobject jobj) {
          if (!strncmp(platformVersionName, "OpenCL 1.1", 10)) { 
             char platformVendorName[512];  
             status = clGetPlatformInfo(platformIds[platformIdx], CL_PLATFORM_VENDOR, sizeof(platformVendorName), platformVendorName, NULL);
-            fprintf(stderr, "platform vendor    %d %s\n", platformIdx, platformVendorName); 
-            fprintf(stderr, "platform version %d %s\n", platformIdx, platformVersionName); 
+            //fprintf(stderr, "platform vendor    %d %s\n", platformIdx, platformVendorName); 
+            //fprintf(stderr, "platform version %d %s\n", platformIdx, platformVersionName); 
             jobject platformInstance = JNIHelper::createInstance(jenv, "com/amd/aparapi/Platform", "(JLjava/lang/String;Ljava/lang/String;)V", 
                   (jlong)platformIds[platformIdx],
                   jenv->NewStringUTF(platformVersionName), 
@@ -165,27 +165,27 @@ APARAPI_JAVA(jobject, JNI, getPlatforms)(JNIEnv *jenv, jobject jobj) {
                      cl_device_type deviceType;
                      status = clGetDeviceInfo(deviceIds[deviceIdx], CL_DEVICE_TYPE,  sizeof(deviceType), &deviceType, NULL);
                      jobject deviceTypeEnumInstance = JNIHelper::getStaticFieldObjectValue(jenv, "com/amd/aparapi/Device$TYPE", "UNKNOWN", "Lcom/amd/aparapi/Device$TYPE;");
-                     fprintf(stderr, "device[%d] CL_DEVICE_TYPE = ", deviceIdx);
+                     //fprintf(stderr, "device[%d] CL_DEVICE_TYPE = ", deviceIdx);
                      if (deviceType & CL_DEVICE_TYPE_DEFAULT) {
                         deviceType &= ~CL_DEVICE_TYPE_DEFAULT;
-                        fprintf(stderr, "Default ");
+                      //  fprintf(stderr, "Default ");
                      }
                      if (deviceType & CL_DEVICE_TYPE_CPU) {
                         deviceType &= ~CL_DEVICE_TYPE_CPU;
-                        fprintf(stderr, "CPU ");
+                        //fprintf(stderr, "CPU ");
                         deviceTypeEnumInstance = JNIHelper::getStaticFieldObjectValue(jenv, "com/amd/aparapi/Device$TYPE", "CPU", "Lcom/amd/aparapi/Device$TYPE;");
                      }
                      if (deviceType & CL_DEVICE_TYPE_GPU) {
                         deviceType &= ~CL_DEVICE_TYPE_GPU;
-                        fprintf(stderr, "GPU ");
+                        //fprintf(stderr, "GPU ");
                         deviceTypeEnumInstance = JNIHelper::getStaticFieldObjectValue(jenv, "com/amd/aparapi/Device$TYPE", "GPU", "Lcom/amd/aparapi/Device$TYPE;");
                      }
                      if (deviceType & CL_DEVICE_TYPE_ACCELERATOR) {
                         deviceType &= ~CL_DEVICE_TYPE_ACCELERATOR;
-                        fprintf(stderr, "Accelerator ");
+                        //fprintf(stderr, "Accelerator ");
                      }
-                     fprintf(stderr, "(0x%llx) ", deviceType);
-                     fprintf(stderr, "\n");
+                     //fprintf(stderr, "(0x%llx) ", deviceType);
+                     //fprintf(stderr, "\n");
 
 
                      jobject deviceInstance = JNIHelper::createInstance(jenv, "com/amd/aparapi/Device", "(Lcom/amd/aparapi/Platform;JLcom/amd/aparapi/Device$TYPE;)V",

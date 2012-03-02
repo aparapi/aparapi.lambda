@@ -58,9 +58,16 @@ public class FFTExample{
       System.out.println(device);
       Context context = jni.createContext(device);
 
-      String source = "" + "__kernel void square(" + "        __global float* input," + "        __global float* output,"
-            + "        const unsigned int count){" + "    const size_t id = get_global_id(0);" + "    if( id < count ){"
-            + "        output[id] = input[id]*input[id];" + "    }" + "}";
+      String source = "" //
+            + "__kernel void square("//
+            + "        __global float* input,"//
+            + "        __global float* output,"//
+            + "        const unsigned int count){"//
+            + "    const size_t id = get_global_id(0);"//
+            + "    if( id < count ){"//
+            + "        output[id] = input[id]*input[id];"//
+            + "    }"//
+            + "}";
       ;
 
       CompilationUnit cu = jni.createCompilationUnit(context, source);
