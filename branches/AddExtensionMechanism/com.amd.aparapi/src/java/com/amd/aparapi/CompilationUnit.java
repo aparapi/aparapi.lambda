@@ -26,4 +26,8 @@ public class CompilationUnit{
    long getProgramId() {
       return (programId);
    }
+
+   public KernelEntrypoint createKernelEntrypoint(String _kernelName) {
+     return(JNIFactory.getJNI().createKernelEntrypoint(this, _kernelName));
+   }
 }

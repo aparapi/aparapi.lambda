@@ -44,9 +44,9 @@ public class FFTExample{
    }
 
    public static void main(String[] args) {
-      JNI jni = new JNI();
+    
       Device device = null;
-      for (Platform p : jni.getPlatforms()) {
+      for (Platform p : Platform.getPlatforms()) {
          //System.out.println(p);
          for (Device d : p.getDevices()) {
             //System.out.println(d);
@@ -56,24 +56,32 @@ public class FFTExample{
          }
       }
       System.out.println(device);
-      Context context = jni.createContext(device);
+      Context context = device.createContext();
 
       String source = "" //
             + "__kernel void square("//
             + "        __global float* input,"//
-            + "        __global float* output,"//
-            + "        const unsigned int count){"//
+            + "        __global float* output){"//
             + "    const size_t id = get_global_id(0);"//
-            + "    if( id < count ){"//
-            + "        output[id] = input[id]*input[id];"//
-            + "    }"//
+            + "    output[id] = input[id]*input[id];"//
             + "}";
       ;
 
-      CompilationUnit cu = jni.createCompilationUnit(context, source);
+      CompilationUnit compilationUnit = context.createCompilationUnit(source);
 
-      KernelEntrypoint ke = jni.createKernelEntrypoint(cu, "run");
-
+      KernelEntrypoint kernelEntrypoint = compilationUnit.createKernelEntrypoint("run");
+      int size = 1024;
+      float[] input = new float[size];
+      for (int i=0;i<size; i++){
+         input[i]=i;
+      }
+      float[] output = new float[size];
+      
+//kernelEntrypoint.args(input,output);
+//kernelEntypoint.put(input);
+//kernelEntrypint.run(Range.create(size));
+//kernelEntypoint.get(output);
+      
       if (context != null) {
          float[] real = new float[1024];
          float[] imag = new float[1024];

@@ -34,4 +34,8 @@ public class Platform{
       return (platformId);
    }
 
+   public static List<Platform> getPlatforms() {
+      return(JNIFactory.getJNI().getPlatforms());
+   }
+
 }

@@ -121,4 +121,8 @@ public class Device{
       return (platform);
    }
 
+   public Context createContext() {
+     return(JNIFactory.getJNI().createContext(this));
+   }
+
 }

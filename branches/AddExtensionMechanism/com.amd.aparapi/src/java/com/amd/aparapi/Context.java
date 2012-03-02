@@ -23,4 +23,8 @@ public class Context{
       return ("Context " + contextId + "\n  device:" + device);
    }
 
+   public CompilationUnit createCompilationUnit(String _source) {
+     return(JNIFactory.getJNI().createCompilationUnit(this, _source));
+   }
+
 }
