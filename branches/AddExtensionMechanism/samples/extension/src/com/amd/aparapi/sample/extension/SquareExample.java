@@ -1,41 +1,52 @@
 package com.amd.aparapi.sample.extension;
 
-import com.amd.aparapi.Aparapi;
-import com.amd.aparapi.AparapiExtensionImplementation;
-import com.amd.aparapi.AparapiExtension;
-import com.amd.aparapi.Range;
-import com.amd.aparapi.Aparapi.*;
+import com.amd.opencl.CompilationUnit;
+import com.amd.opencl.Context;
+import com.amd.opencl.Device;
+import com.amd.opencl.KernelEntrypoint;
+import com.amd.opencl.Platform;
 
 public class SquareExample{
-
-   public static class SquareImplementation extends AparapiExtensionImplementation{
-      @OpenCL(""//
-            + "_out[getGlobalId(0)]= _in[getGlobalId(0)]*_in[getGlobalId(0)];"//
-            + "")//
-      public void square(//
-            @Global @ReadOnly float[] _in,//
-            @Global @WriteOnly float[] _out) {
-         _out[getGlobalId(0)] = _in[getGlobalId(0)] * _in[getGlobalId(0)];
-      }
-
-   }
-
-   @Wraps(SquareImplementation.class) interface Square extends AparapiExtension{
-      public void square(Range _range, float[] _in, float[] _out);
-   }
-
    public static void main(String[] args) {
-      float[] in = new float[32];
-      float[] out = new float[in.length];
-      for (int i = 0; i < in.length; i++) {
-         in[i] = i;
+    
+      Device device = null;
+      for (Platform p : Platform.getPlatforms()) {
+         //System.out.println(p);
+         for (Device d : p.getDevices()) {
+            //System.out.println(d);
+            if (d.getType() == Device.TYPE.GPU) {
+               device = d;
+            }
+         }
       }
-      Range range = Range.create(in.length);
-      Aparapi.create(Square.class).square(range, in, out);
-      for (float f : out) {
-         System.out.println(f);
-      }
+      System.out.println(device);
+      Context context = device.createContext();
 
+      String source = "" //
+            + "__kernel void square("//
+            + "        __global float* input,"//
+            + "        __global float* output){"//
+            + "    const size_t id = get_global_id(0);"//
+            + "    output[id] = input[id]*input[id];"//
+            + "}";
+      ;
+
+      CompilationUnit compilationUnit = context.createCompilationUnit(source);
+
+      KernelEntrypoint kernelEntrypoint = compilationUnit.createKernelEntrypoint("run");
+      int size = 1024;
+      float[] input = new float[size];
+      for (int i=0;i<size; i++){
+         input[i]=i;
+      }
+      float[] output = new float[size];
+      
+//kernelEntrypoint.args(input,output);
+//kernelEntypoint.put(input);
+//kernelEntrypint.run(Range.create(size));
+//kernelEntypoint.get(output);
+      
+     
    }
 
 }
