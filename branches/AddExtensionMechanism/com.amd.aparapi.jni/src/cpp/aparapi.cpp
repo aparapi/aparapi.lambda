@@ -318,7 +318,11 @@ class KernelArg{
             isStatic = jenv->GetBooleanField(argObj, isStaticFieldID);
             jstring nameString  = (jstring)jenv->GetObjectField(argObj, nameFieldID);
             const char *nameChars = jenv->GetStringUTFChars(nameString, NULL);
+#ifdef _WIN32
+            name=_strdup(nameChars);
+#else
             name=strdup(nameChars);
+#endif
             jenv->ReleaseStringUTFChars(nameString, nameChars);
          }
 
@@ -655,7 +659,7 @@ void dispose(JNIEnv *jenv){
       context = (cl_context)0;
    }
    if (commandQueues){
-      for (int dev=0; dev<deviceIdc; dev++){
+      for (unsigned dev=0; dev<deviceIdc; dev++){
          status = clReleaseCommandQueue((cl_command_queue)commandQueues[dev]);
          ASSERT_CL_NO_RETURN("clReleaseCommandQueue()");
          commandQueues[dev] = (cl_command_queue)0;
@@ -748,14 +752,14 @@ APARAPI_JAVA(jint, KernelRunner, disposeJNI)
 
 void idump(char *str, void *ptr, int size){
    int * iptr = (int *)ptr;
-   for (int i=0; i<size/sizeof(int); i++){
+   for (unsigned i=0; i<size/sizeof(int); i++){
       fprintf(stderr, "%s%4d %d\n", str, i, iptr[i]);
    }
 }
 
 void fdump(char *str, void *ptr, int size){
    float * fptr = (float *)ptr;
-   for (int i=0; i<size/sizeof(float); i++){
+   for (unsigned i=0; i<size/sizeof(float); i++){
       fprintf(stderr, "%s%4d %6.2f\n", str, i, fptr[i]);
    }
 }
@@ -1218,7 +1222,7 @@ APARAPI_JAVA(jint, KernelRunner, runKernelJNI)
    jniContext->exec = new ProfileInfo[passes];
 
    for (int passid=0; passid<passes; passid++){
-      for (int dev =0; dev < jniContext->deviceIdc; dev++){ // this will always be 1 until we reserect multi-dim support
+      for (unsigned dev =0; dev < jniContext->deviceIdc; dev++){ // this will always be 1 until we reserect multi-dim support
          //size_t offset = 1; // (size_t)((range.globalDims[0]/jniContext->deviceIdc)*dev);
          status = clSetKernelArg(jniContext->kernel, kernelArgPos, sizeof(passid), &(passid));
          if (status != CL_SUCCESS) {
@@ -1296,7 +1300,7 @@ APARAPI_JAVA(jint, KernelRunner, runKernelJNI)
                return status;
             }
 
-            for (int dev = 0; dev < jniContext->deviceIdc; dev++){
+            for (unsigned dev = 0; dev < jniContext->deviceIdc; dev++){
                status = clReleaseEvent(jniContext->executeEvents[dev]);
                if (status != CL_SUCCESS) {
                   PRINT_CL_ERR(status, "clReleaseEvent() read event");
@@ -1413,7 +1417,7 @@ APARAPI_JAVA(jint, KernelRunner, runKernelJNI)
       return executeStatus;
    }
 
-   for (int dev=0; dev<jniContext->deviceIdc; dev++){
+   for (unsigned int dev=0; dev<jniContext->deviceIdc; dev++){
 
       status = clReleaseEvent(jniContext->executeEvents[dev]);
       if (status != CL_SUCCESS) {
@@ -1485,7 +1489,6 @@ APARAPI_JAVA(jlong, KernelRunner, buildProgramJNI)
    status = clBuildProgram(jniContext->program, jniContext->deviceIdc, jniContext->deviceIds, NULL, NULL, NULL);
 
    if(status == CL_BUILD_PROGRAM_FAILURE) {
-      cl_int logStatus;
       size_t buildLogSize = 0;
       status = clGetProgramBuildInfo(jniContext->program, jniContext->deviceIds[0], 
             CL_PROGRAM_BUILD_LOG, buildLogSize, NULL, &buildLogSize);
@@ -1514,7 +1517,7 @@ APARAPI_JAVA(jlong, KernelRunner, buildProgramJNI)
    }
 
    jniContext->commandQueues= new cl_command_queue[jniContext->deviceIdc];
-   for (int dev=0; dev < jniContext->deviceIdc; dev++){
+   for (unsigned  dev=0; dev < jniContext->deviceIdc; dev++){
       jniContext->commandQueues[dev]=clCreateCommandQueue(jniContext->context, (cl_device_id)jniContext->deviceIds[dev],
             queue_props,
             &status);
@@ -1857,7 +1860,7 @@ APARAPI_JAVA(jint, KernelRunner, getMaxWorkItemSizeJNI)
    (JNIEnv *jenv, jobject jobj, jlong jniContextHandle, jint _index) {
    cl_int status = CL_SUCCESS;
    JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);
-   if (jniContext != NULL && _index >=0 && _index <= jniContext->maxWorkItemDimensions){
+   if (jniContext != NULL && _index >=0 && _index <= (int)(jniContext->maxWorkItemDimensions)){
       return(jniContext->maxWorkItemSizes[_index]);
    }else{
       return(0);

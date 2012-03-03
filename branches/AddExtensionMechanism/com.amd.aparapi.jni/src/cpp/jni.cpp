@@ -40,7 +40,8 @@
 #include "jniHelper.h"
 #include "com_amd_opencl_JNI.h"
 
-JNI_JAVA(jobject, JNI, createCompilationUnit)(JNIEnv *jenv, jobject jobj, jobject contextInstance, jstring source) {
+JNI_JAVA(jobject, JNI, createCompilationUnit)
+   (JNIEnv *jenv, jobject jobj, jobject contextInstance, jstring source) {
    cl_context context = (cl_context) JNIHelper::callLong(jenv, contextInstance, "getContextId", "()J"); 
    jobject deviceInstance = JNIHelper::callObject(jenv, contextInstance, "getDevice", "()Lcom/amd/opencl/Device;");
    cl_device_id deviceId = (cl_device_id) JNIHelper::callLong(jenv, deviceInstance, "getDeviceId", "()J"); 
@@ -61,7 +62,6 @@ JNI_JAVA(jobject, JNI, createCompilationUnit)(JNIEnv *jenv, jobject jobj, jobjec
    jobject compilationUnitInstance = NULL;
    jstring log = NULL;
    if(status == CL_BUILD_PROGRAM_FAILURE) {
-      cl_int logStatus;
       size_t buildLogSize = 0;
       status = clGetProgramBuildInfo(program, deviceId, CL_PROGRAM_BUILD_LOG, buildLogSize, NULL, &buildLogSize);
       char * buildLog = new char[buildLogSize];
@@ -82,7 +82,8 @@ JNI_JAVA(jobject, JNI, createCompilationUnit)(JNIEnv *jenv, jobject jobj, jobjec
    }
    return(compilationUnitInstance);
 }
-JNI_JAVA(jobject, JNI, createContext)(JNIEnv *jenv, jobject jobj, jobject deviceInstance) {
+JNI_JAVA(jobject, JNI, createContext)
+   (JNIEnv *jenv, jobject jobj, jobject deviceInstance) {
    jobject platformInstance = JNIHelper::callObject(jenv, deviceInstance, "getPlatform", "()Lcom/amd/opencl/Platform;");
    cl_platform_id platformId = (cl_platform_id) JNIHelper::callLong(jenv, platformInstance, "getPlatformId", "()J"); 
    cl_device_id deviceId = (cl_device_id) JNIHelper::callLong(jenv, deviceInstance, "getDeviceId", "()J"); 
@@ -102,7 +103,8 @@ JNI_JAVA(jobject, JNI, createContext)(JNIEnv *jenv, jobject jobj, jobject device
    return(contextInstance);
 }
 
-JNI_JAVA(jobject, JNI, createKernelEntrypoint)(JNIEnv *jenv, jobject jobj, jobject compilationUnitInstance, jstring name) {
+JNI_JAVA(jobject, JNI, createKernelEntrypoint)
+   (JNIEnv *jenv, jobject jobj, jobject compilationUnitInstance, jstring name) {
    jobject contextInstance = JNIHelper::callObject(jenv, compilationUnitInstance, "getContext", "()Lcom/amd/opencl/Context;");
    cl_context context = (cl_context) JNIHelper::callLong(jenv, contextInstance, "getContextId", "()J"); 
    cl_program program = (cl_program) JNIHelper::callLong(jenv, compilationUnitInstance, "getProgramId", "()J"); 
@@ -128,7 +130,8 @@ JNI_JAVA(jobject, JNI, createKernelEntrypoint)(JNIEnv *jenv, jobject jobj, jobje
 
 }
 
-JNI_JAVA(jobject, JNI, getPlatforms)(JNIEnv *jenv, jobject jobj) {
+JNI_JAVA(jobject, JNI, getPlatforms)
+   (JNIEnv *jenv, jobject jobj) {
    jobject platformListInstance = JNIHelper::createInstance(jenv, "java/util/ArrayList", "()V");
    cl_int status = CL_SUCCESS;
    cl_uint platformc;
