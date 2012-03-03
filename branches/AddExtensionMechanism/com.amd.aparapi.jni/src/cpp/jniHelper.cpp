@@ -36,7 +36,7 @@
    and Security’s website at http://www.bis.doc.gov/. 
    */
 
-#include "aparapi.h"
+#include "common.h"
 #define JNI_SOURCE
 #include "jniHelper.h"
 

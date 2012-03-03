@@ -36,9 +36,13 @@
    and Security’s website at http://www.bis.doc.gov/. 
    */
 
-#include "aparapi.h"
+#include "common.h"
 #include "jniHelper.h"
+
 #include "com_amd_opencl_JNI.h"
+
+
+#define JNI_JAVA(type, className, methodName) JNIEXPORT type JNICALL Java_com_amd_opencl_##className##_##methodName
 
 JNI_JAVA(jobject, JNI, createCompilationUnit)
    (JNIEnv *jenv, jobject jobj, jobject contextInstance, jstring source) {

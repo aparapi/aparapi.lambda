@@ -81,6 +81,7 @@
     <ClInclude Include="include\com_amd_aparapi_JNI.h" />
     <ClInclude Include="include\com_amd_aparapi_KernelRunner.h" />
     <ClInclude Include="src\cpp\aparapi.h" />
+    <ClInclude Include="src\cpp\common.h" />
     <ClInclude Include="src\cpp\jniHelper.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

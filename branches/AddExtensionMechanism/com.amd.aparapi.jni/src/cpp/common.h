@@ -36,20 +36,30 @@
    and Security’s website at http://www.bis.doc.gov/. 
    */
 
-#ifndef JNIHELPER_H
-#define JNIHELPER_H
+#ifndef COMMON_H
+#define COMMON_H
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+#ifndef __APPLE__
+#include <malloc.h>
+#endif
+
+#include <sys/types.h>
+#ifndef _WIN32
+#include <unistd.h>
+#endif
+
+#ifndef __APPLE__
+#include <CL/cl.h>
+#else
+#include <cl.h>
+#endif
 
 #include <jni.h>
 
-class JNIHelper{
-   public:
-      static void callVoid(JNIEnv *jenv, jobject instance, char *methodName, char *methodSignature, ...);
-      static jobject callObject(JNIEnv *jenv, jobject instance, char *methodName, char *methodSignature, ...);
-      static jlong callLong(JNIEnv *jenv, jobject instance, char *methodName, char *methodSignature, ...);
-      static jobject JNIHelper::createInstance(JNIEnv *jenv, char *className, char *signature, ... );
-      static jobject getStaticFieldObjectValue(JNIEnv *jenv, char *className, char *methodName, char *signature);
-      static void setInstanceFieldInt(JNIEnv* jenv, jobject instance, char *fieldName, jint value);
-};
 
-#endif // JNIHELPER_H
-
+#endif // COMMON_H

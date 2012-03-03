@@ -353,7 +353,7 @@
          <arg value="/I${amd.app.sdk.dir}\include" />
          <arg value="src\cpp\aparapi.cpp" />
          <arg value="src\cpp\jni.cpp" />
-         <arg value="src/cpp/jniHelper.cpp" />
+         <arg value="src\cpp\jniHelper.cpp" />
          <arg value="/LD" />
          <arg value="/link" />
          <arg value="/libpath:${msvc.dir}\vc\lib\${optional.amd64.subdir}" />

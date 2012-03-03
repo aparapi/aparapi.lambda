@@ -35,9 +35,30 @@
    information about the EAR or your obligations under those regulations, please refer to the U.S. Bureau of Industry
    and Security’s website at http://www.bis.doc.gov/. 
    */
-
-#include "aparapi.h"
+#include "common.h"
 #include "jniHelper.h"
+#define APARAPI_SOURCE
+#include "aparapi.h"
+#include "com_amd_aparapi_KernelRunner.h"
+#define APARAPI_JAVA(type, className, methodName) JNIEXPORT type JNICALL Java_com_amd_aparapi_##className##_##methodName
+
+#define JNIExceptionChecker(){\
+   fprintf(stderr, "line %d\n", __LINE__);\
+   if ((jenv)->ExceptionOccurred()) {\
+      (jenv)->ExceptionDescribe(); /* write to console */\
+      (jenv)->ExceptionClear();\
+   }\
+}
+
+
+#if defined (_WIN32)
+#include "windows.h"
+#define alignedMalloc(size, alignment)\
+   _aligned_malloc(size, alignment)
+#else
+#define alignedMalloc(size, alignment)\
+   memalign(alignment, size)
+#endif
 
 class MicrosecondTimer{
 
@@ -70,7 +91,7 @@ class MicrosecondTimer{
 MicrosecondTimer timer;
 
 
-#include "com_amd_aparapi_KernelRunner.h"
+
 
 #define CHECK_NO_RETURN(condition, msg) if(condition){\
    fprintf(stderr, "!!!!!!! %s failed !!!!!!!\n", msg);\

@@ -39,44 +39,4 @@
 #ifndef APARAPI_H
 #define APARAPI_H
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-
-#ifndef __APPLE__
-#include <malloc.h>
-#endif
-
-#include <sys/types.h>
-#ifndef _WIN32
-#include <unistd.h>
-#endif
-
-#ifndef __APPLE__
-#include <CL/cl.h>
-#else
-#include <cl.h>
-#endif
-
-#include <jni.h>
-
-#define JNIExceptionChecker(){\
-   fprintf(stderr, "line %d\n", __LINE__);\
-   if ((jenv)->ExceptionOccurred()) {\
-      (jenv)->ExceptionDescribe(); /* write to console */\
-      (jenv)->ExceptionClear();\
-   }\
-}
-
-
-#if defined (_WIN32)
-#include "windows.h"
-#define alignedMalloc(size, alignment)\
-   _aligned_malloc(size, alignment)
-#else
-#define alignedMalloc(size, alignment)\
-   memalign(alignment, size)
-#endif
-
-#endif
+#endif // APARAPI_H
