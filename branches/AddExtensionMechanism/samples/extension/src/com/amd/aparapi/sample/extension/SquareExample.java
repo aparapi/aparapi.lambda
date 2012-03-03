@@ -7,21 +7,24 @@ import com.amd.opencl.OpenCLBinding;
 public class SquareExample{
 
    interface Squarer extends OpenCLBinding<Squarer>{
-      @OpenCL(//
-            "const size_t id = get_global_id(0);"//
-            + "out[id] = in[id]*in[id];"//
-            )
+      @OpenCL("\n"//
+            + "#define JUNK\n"//
+            + "\n")//
+      @Kernel("{\n"//
+            + "  const size_t id = get_global_id(0);\n"//
+            + "  out[id] = in[id]*in[id];\n"//
+            + "}\n")//
       public Squarer square(//
             Range _range,//
             @GlobalReadOnly("in") @Put float[] in,//
             @GlobalWriteOnly("out") @Get float[] out);
    }
-   
+
    interface Doubler extends OpenCLBinding<Doubler>{
-      @OpenCL(//
-            "const size_t id = get_global_id(0);"//
-            + "arr[id] *=2"//
-            )
+      @Kernel("{\n"//
+            + "  const size_t id = get_global_id(0);\n"//
+            + "  arr[id] *=2;\n"//
+            + "}\n")//
       public Doubler doublit(//
             Range _range,//
             @GlobalReadOnly("arr") float[] arr);
@@ -35,21 +38,19 @@ public class SquareExample{
          in[i] = i;
       }
       float[] out = new float[size];
-      Range range= Range.create(size);
-      
+      Range range = Range.create(size);
+
       Squarer squarer = Device.firstGPU(Squarer.class);
       squarer.square(range, in, out);
-      
+
       Doubler doubler = Device.firstGPU(Doubler.class);
       doubler//
-        .put(out)//
-        .doublit(range, out)//
-        .doublit(range, out)//
-        .doublit(range, out)//
-        .doublit(range, out)//
-        .get(out);
-      
-        
+            .put(out)//
+            .doublit(range, out)//
+            .doublit(range, out)//
+            .doublit(range, out)//
+            .doublit(range, out)//
+            .get(out);
 
    }
 

@@ -12,8 +12,13 @@ public interface OpenCLBinding<T> {
    public @Retention(RetentionPolicy.RUNTIME)
    @interface Get {
    }
+   
    public @Retention(RetentionPolicy.RUNTIME)
    @interface OpenCL {
+      String value();
+   }
+   public @Retention(RetentionPolicy.RUNTIME)
+   @interface Kernel {
       String value();
    }
    
