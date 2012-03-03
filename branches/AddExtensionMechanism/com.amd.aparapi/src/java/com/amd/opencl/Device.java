@@ -167,7 +167,7 @@ public class Device{
 
    }
 
-   public static Device getFirstGPUDevice() {
+   public static <T> T firstGPU(Class<T> _interface) {
       Device device = null;
       for (Platform p : Platform.getPlatforms()) {
          //System.out.println(p);
@@ -182,7 +182,7 @@ public class Device{
             break;
          }
       }
-      return (device);
+      return (device.create(_interface));
 
    }
 
