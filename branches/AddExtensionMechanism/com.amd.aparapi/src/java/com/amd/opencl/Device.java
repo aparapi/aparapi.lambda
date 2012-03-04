@@ -5,15 +5,11 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import com.amd.aparapi.Aparapi;
-import com.amd.aparapi.AparapiExtension;
-import com.amd.aparapi.AparapiExtensionImplementation;
 import com.amd.aparapi.Range;
-import com.amd.aparapi.Aparapi.AparapiExtensionInvocationHandler;
-import com.amd.aparapi.Aparapi.Wraps;
 
 public class Device{
    static public enum TYPE {
@@ -137,118 +133,73 @@ public class Device{
    }
 
    public Context createContext() {
-      return (JNIFactory.getJNI().createContext(this));
+      return (OpenCLJNI.getJNI().createContext(this));
    }
 
-   public static class OpenCLInvocationHandler<T extends OpenCLBinding<T>> implements InvocationHandler{
+   public static class OpenCLInvocationHandler<T extends OpenCL<T>> implements InvocationHandler{
+      private Map<String, KernelEntrypoint> map;
+
+      public OpenCLInvocationHandler(Map<String, KernelEntrypoint> _map) {
+         map = _map;
+      }
 
       @Override public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-      //   System.out.println("in " + method.getName());
-         for (Method m : proxy.getClass().getDeclaredMethods()) {
-           // System.out.println("  found " + m.getName());
+         KernelEntrypoint kernel = map.get(method.getName());
+         if (kernel != null) {
+            // we have a kernel entrypoint bound. 
+            System.out.println("would invoke opencl for "+kernel.getName());
+            kernel.invoke(args);
+         }else{
+            // put or get from OpenCL interface. 
+           // System.out.println("in " + method.getName());
+           // for (Method m : proxy.getClass().getDeclaredMethods()) {
+              // System.out.println("  found " + m.getName());
 
-            // for (Annotation a:method.getAnnotations()){
-            //   System.out.println("   annotation "+a);
-            //   System.out.println("   annotation type "+a.annotationType());
-            // }
-            // if (method.getName().equals(m.getName())) {
-            // strip the zeroth arg
-            //   Object[] delegatedArgs = Arrays.copyOfRange(args, 1, args.length);
-            //   implementation.setRange((Range) args[0]);
-            //   for (implementation.globalId[0] = 0; implementation.globalId[0] < implementation.range.getGlobalSize(0); implementation.globalId[0]++) {
-            //     m.invoke(implementation, delegatedArgs);
-            //  }
-            //}
+               // for (Annotation a:method.getAnnotations()){
+               //   System.out.println("   annotation "+a);
+               //   System.out.println("   annotation type "+a.annotationType());
+               // }
+               // if (method.getName().equals(m.getName())) {
+               // strip the zeroth arg
+               //   Object[] delegatedArgs = Arrays.copyOfRange(args, 1, args.length);
+               //   implementation.setRange((Range) args[0]);
+               //   for (implementation.globalId[0] = 0; implementation.globalId[0] < implementation.range.getGlobalSize(0); implementation.globalId[0]++) {
+               //     m.invoke(implementation, delegatedArgs);
+               //  }
+               //}
+           // }
          }
          return proxy;
       }
 
    }
 
-   public static class Arg{
-      public static int INT_BIT = 1 << 0;
-
-      public static int FLOAT_BIT = 1 << 1;
-
-      public static int DOUBLE_BIT = 1 << 2;
-
-      public static int SHORT_BIT = 1 << 3;
-
-      public static int ARRAY_BIT = 1 << 4;
-
-      public static int GLOBAL_BIT = 1 << 5;
-
-      public static int LOCAL_BIT = 1 << 6;
-
-      public static int CONST_BIT = 1 << 7;
-
-      public static int PRIMITIVE_BIT = 1 << 8;
-
-      public static int LONG_BIT = 1 << 8;
-
-      private String name;
-
-      private int bits;
-
-      public Arg(String _name, int _bits) {
-         name = _name;
-         bits = _bits;
-      }
-
-      public String toString() {
-         StringBuilder argBuilder = new StringBuilder();
-         if ((bits & GLOBAL_BIT) == GLOBAL_BIT) {
-            argBuilder.append("__global ");
-         } else if ((bits & LOCAL_BIT) == LOCAL_BIT) {
-            argBuilder.append("__local ");
-         } else if ((bits & CONST_BIT) == CONST_BIT) {
-            argBuilder.append("__constant ");
-         }
-         if ((bits & FLOAT_BIT) == FLOAT_BIT) {
-            argBuilder.append("float ");
-         } else if ((bits & INT_BIT) == INT_BIT) {
-            argBuilder.append("int ");
-         } else if ((bits & SHORT_BIT) == SHORT_BIT) {
-            argBuilder.append("short ");
-         } else if ((bits & DOUBLE_BIT) == DOUBLE_BIT) {
-            argBuilder.append("double ");
-         } else if ((bits & LONG_BIT) == LONG_BIT) {
-            argBuilder.append("long ");
-         }
-
-         if ((bits & ARRAY_BIT) == ARRAY_BIT) {
-            argBuilder.append("*");
-         }
-         argBuilder.append(name);
-         return (argBuilder.toString());
-      }
-
-   }
-
-   public <T extends OpenCLBinding<T>> T create(Class<T> _interface) {
+  
+   public <T extends OpenCL<T>> T create(Class<T> _interface) {
 
       StringBuilder sourceBuilder = new StringBuilder();
+      Map<String, List<KernelEntrypoint.Arg>> kernels = new HashMap<String, List<KernelEntrypoint.Arg>>();
       for (Method m : _interface.getDeclaredMethods()) {
 
          for (Annotation a : m.getAnnotations()) {
             //  System.out.println("   annotation "+a);
-            System.out.println("   annotation type " + a.annotationType());
-            if (a instanceof OpenCLBinding.OpenCL) {
-               OpenCLBinding.OpenCL openCL = (OpenCLBinding.OpenCL) a;
+           // System.out.println("   annotation type " + a.annotationType());
+            if (a instanceof OpenCL.Source) {
+               OpenCL.Source openCL = (OpenCL.Source) a;
                sourceBuilder.append(openCL.value()).append("\n");
             }
-            if (a instanceof OpenCLBinding.Kernel) {
+            if (a instanceof OpenCL.Kernel) {
                sourceBuilder.append("__kernel void " + m.getName() + "(");
                Annotation[][] parameterAnnotations = m.getParameterAnnotations();
                Class<?>[] parameterTypes = m.getParameterTypes();
-               List<Arg> args = new ArrayList<Arg>();
+               List<KernelEntrypoint.Arg> args = new ArrayList<KernelEntrypoint.Arg>();
                boolean first = true;
                for (int arg = 0; arg < parameterTypes.length; arg++) {
                   if (parameterTypes[arg].isAssignableFrom(Range.class)) {
 
                   } else {
 
-                     int argBits = 0;
+                     long bits = 0;
                      if (first) {
                         first = false;
                      } else {
@@ -257,62 +208,64 @@ public class Device{
                      sourceBuilder.append("\n   ");
                      String name = null;
                      for (Annotation pa : parameterAnnotations[arg]) {
-                        if (pa instanceof OpenCLBinding.GlobalReadOnly) {
-                           name = ((OpenCLBinding.GlobalReadOnly) pa).value();
-                           argBits |= Arg.GLOBAL_BIT;
-                        } else if (pa instanceof OpenCLBinding.GlobalWriteOnly) {
-                           name = ((OpenCLBinding.GlobalWriteOnly) pa).value();
-                           argBits |= Arg.GLOBAL_BIT;
-                        } else if (pa instanceof OpenCLBinding.GlobalReadWrite) {
-                           name = ((OpenCLBinding.GlobalReadWrite) pa).value();
-                           argBits |= Arg.GLOBAL_BIT;
-                        } else if (pa instanceof OpenCLBinding.Local) {
-                           name = ((OpenCLBinding.Local) pa).value();
-                           argBits |= Arg.LOCAL_BIT;
-                        } else if (pa instanceof OpenCLBinding.Constant) {
-                           name = ((OpenCLBinding.Constant) pa).value();
-                           argBits |= Arg.CONST_BIT;
+                        if (pa instanceof OpenCL.GlobalReadOnly) {
+                           name = ((OpenCL.GlobalReadOnly) pa).value();
+                           bits |= OpenCLJNI.GLOBAL_BIT |OpenCLJNI.READONLY_BIT ;
+                        } else if (pa instanceof OpenCL.GlobalWriteOnly) {
+                           name = ((OpenCL.GlobalWriteOnly) pa).value();
+                           bits |= OpenCLJNI.GLOBAL_BIT|OpenCLJNI.WRITEONLY_BIT ;
+                        } else if (pa instanceof OpenCL.GlobalReadWrite) {
+                           name = ((OpenCL.GlobalReadWrite) pa).value();
+                           bits |= OpenCLJNI.GLOBAL_BIT|OpenCLJNI.READWRITE_BIT ;
+                        } else if (pa instanceof OpenCL.Local) {
+                           name = ((OpenCL.Local) pa).value();
+                           bits |= OpenCLJNI.LOCAL_BIT;
+                        } else if (pa instanceof OpenCL.Constant) {
+                           name = ((OpenCL.Constant) pa).value();
+                           bits |= OpenCLJNI.CONST_BIT|OpenCLJNI.READONLY_BIT ;
                         }
 
                      }
                      if (parameterTypes[arg].isAssignableFrom(float[].class)) {
-                        argBits |= Arg.FLOAT_BIT | Arg.ARRAY_BIT;
+                        bits |= OpenCLJNI.FLOAT_BIT | OpenCLJNI.ARRAY_BIT;
                      } else if (parameterTypes[arg].isAssignableFrom(int[].class)) {
-                        argBits |= Arg.INT_BIT | Arg.ARRAY_BIT;
+                        bits |= OpenCLJNI.INT_BIT | OpenCLJNI.ARRAY_BIT;
                      } else if (parameterTypes[arg].isAssignableFrom(double[].class)) {
-                        argBits |= Arg.DOUBLE_BIT | Arg.ARRAY_BIT;
+                        bits |= OpenCLJNI.DOUBLE_BIT | OpenCLJNI.ARRAY_BIT;
                      } else if (parameterTypes[arg].isAssignableFrom(short[].class)) {
-                        argBits |= Arg.SHORT_BIT | Arg.ARRAY_BIT;
+                        bits |= OpenCLJNI.SHORT_BIT | OpenCLJNI.ARRAY_BIT;
                      } else if (parameterTypes[arg].isAssignableFrom(long[].class)) {
-                        argBits |= Arg.LONG_BIT | Arg.ARRAY_BIT;
+                        bits |= OpenCLJNI.LONG_BIT | OpenCLJNI.ARRAY_BIT;
                      } else if (parameterTypes[arg].isAssignableFrom(float.class)) {
-                        argBits |= Arg.FLOAT_BIT | Arg.PRIMITIVE_BIT;
+                        bits |= OpenCLJNI.FLOAT_BIT | OpenCLJNI.PRIMITIVE_BIT;
                      } else if (parameterTypes[arg].isAssignableFrom(int.class)) {
-                        argBits |= Arg.INT_BIT | Arg.PRIMITIVE_BIT;
+                        bits |= OpenCLJNI.INT_BIT | OpenCLJNI.PRIMITIVE_BIT;
                      } else if (parameterTypes[arg].isAssignableFrom(double.class)) {
-                        argBits |= Arg.DOUBLE_BIT | Arg.PRIMITIVE_BIT;
+                        bits |= OpenCLJNI.DOUBLE_BIT | OpenCLJNI.PRIMITIVE_BIT;
                      } else if (parameterTypes[arg].isAssignableFrom(short.class)) {
-                        argBits |= Arg.SHORT_BIT | Arg.PRIMITIVE_BIT;
+                        bits |= OpenCLJNI.SHORT_BIT | OpenCLJNI.PRIMITIVE_BIT;
                      } else if (parameterTypes[arg].isAssignableFrom(long.class)) {
-                        argBits |= Arg.LONG_BIT | Arg.PRIMITIVE_BIT;
+                        bits |= OpenCLJNI.LONG_BIT | OpenCLJNI.PRIMITIVE_BIT;
                      }
-                     Arg kernelArg = new Arg(name, argBits);
+                     if (name == null){
+                        throw new IllegalStateException("no name!");
+                     }
+                     KernelEntrypoint.Arg kernelArg = new KernelEntrypoint.Arg(name, bits);
                      args.add(kernelArg);
+
                      sourceBuilder.append(kernelArg);
                   }
                }
                sourceBuilder.append(")");
-               OpenCLBinding.Kernel kernel = (OpenCLBinding.Kernel) a;
+               OpenCL.Kernel kernel = (OpenCL.Kernel) a;
                sourceBuilder.append(kernel.value());
+               kernels.put(m.getName(), args);
             }
          }
       }
-      OpenCLInvocationHandler<T> invocationHandler = new OpenCLInvocationHandler<T>();
+    
 
-      T instance = (T) Proxy.newProxyInstance(Device.class.getClassLoader(), new Class[] {
-            _interface,
-            OpenCLBinding.class
-      }, invocationHandler);
+    
 
       String source = sourceBuilder.toString();
       System.out.println("opencl{\n" + source + "\n}opencl");
@@ -320,13 +273,21 @@ public class Device{
       Context context = createContext();
       CompilationUnit compilationUnit = context.createCompilationUnit(source);
 
-      KernelEntrypoint kernelEntrypoint = compilationUnit.createKernelEntrypoint("run");
-
+      Map<String, KernelEntrypoint> map = new HashMap<String, KernelEntrypoint>();
+      for (String name : kernels.keySet()) {     
+         map.put(name, compilationUnit.createKernelEntrypoint(name,  kernels.get(name)));
+      }
+      
+      OpenCLInvocationHandler<T> invocationHandler = new OpenCLInvocationHandler<T>(map);
+      T instance = (T) Proxy.newProxyInstance(Device.class.getClassLoader(), new Class[] {
+         _interface,
+         OpenCL.class
+   }, invocationHandler);
       return instance;
 
    }
 
-   public static <T extends OpenCLBinding<T>> T firstGPU(Class<T> _interface) {
+   public static <T extends OpenCL<T>> T firstGPU(Class<T> _interface) {
       Device device = null;
       for (Platform p : Platform.getPlatforms()) {
          //System.out.println(p);

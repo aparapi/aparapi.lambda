@@ -147,7 +147,7 @@ void JNIHelper::setInstanceFieldInt(JNIEnv* jenv, jobject instance, char *fieldN
    }
 }
 
-jobject JNIHelper::getStaticFieldObjectValue(JNIEnv *jenv, char *className, char *fieldName, char *signature){
+jobject JNIHelper::getStaticFieldObject(JNIEnv *jenv, char *className, char *fieldName, char *signature){
    jclass theClass = jenv->FindClass(className);
    if (theClass == NULL ||  jenv->ExceptionCheck()) {
       jenv->ExceptionDescribe();
@@ -201,3 +201,75 @@ jobject JNIHelper::createInstance(JNIEnv *jenv, char* className, char *signature
    return(instance);
 } 
 
+jint JNIHelper::getInstanceFieldInt(JNIEnv *jenv, jobject instance, char *fieldName){
+   jclass theClass = jenv->GetObjectClass(instance);
+   if (theClass == NULL ||  jenv->ExceptionCheck()) {
+      jenv->ExceptionDescribe(); 
+      jenv->ExceptionClear();
+      fprintf(stderr, "bummer! getting class from instance\n");
+      return 0;
+   }
+   jfieldID fieldId= jenv->GetFieldID(theClass,fieldName,"I");
+   if (fieldId == NULL || jenv->ExceptionCheck()) {
+      jenv->ExceptionDescribe(); 
+      jenv->ExceptionClear();
+      fprintf(stderr, "bummer getting int field '%s' \n", fieldName);
+      return 0;
+   }
+   jint value= jenv->GetIntField(instance, fieldId);
+   if (jenv->ExceptionCheck()) {
+      jenv->ExceptionDescribe(); 
+      jenv->ExceptionClear();
+      fprintf(stderr, "bummer getting int field value '%s' \n", fieldName);
+      return 0;
+   }
+   return(value);
+}
+jlong JNIHelper::getInstanceFieldLong(JNIEnv *jenv, jobject instance, char *fieldName){
+   jclass theClass = jenv->GetObjectClass(instance);
+   if (theClass == NULL ||  jenv->ExceptionCheck()) {
+      jenv->ExceptionDescribe(); 
+      jenv->ExceptionClear();
+      fprintf(stderr, "bummer! getting class from instance\n");
+      return 0;
+   }
+   jfieldID fieldId= jenv->GetFieldID(theClass,fieldName,"J");
+   if (fieldId == NULL || jenv->ExceptionCheck()) {
+      jenv->ExceptionDescribe(); 
+      jenv->ExceptionClear();
+      fprintf(stderr, "bummer getting long field '%s' \n", fieldName);
+      return 0;
+   }
+   jlong value= jenv->GetLongField(instance, fieldId);
+   if (jenv->ExceptionCheck()) {
+      jenv->ExceptionDescribe(); 
+      jenv->ExceptionClear();
+      fprintf(stderr, "bummer getting long field value  '%s' \n", fieldName);
+      return 0;
+   }
+   return(value);
+}
+jobject JNIHelper::getInstanceFieldObject(JNIEnv *jenv, jobject instance, char *fieldName, char *signature){
+   jclass theClass = jenv->GetObjectClass(instance);
+   if (theClass == NULL ||  jenv->ExceptionCheck()) {
+      jenv->ExceptionDescribe(); 
+      jenv->ExceptionClear();
+      fprintf(stderr, "bummer! getting class from instance\n");
+      return NULL;
+   }
+   jfieldID fieldId= jenv->GetFieldID(theClass,fieldName, signature);
+   if (fieldId == NULL || jenv->ExceptionCheck()) {
+      jenv->ExceptionDescribe(); 
+      jenv->ExceptionClear();
+      fprintf(stderr, "bummer getting object field '%s' \n", fieldName);
+      return NULL;
+   }
+   jobject value= jenv->GetObjectField(instance, fieldId);
+   if (jenv->ExceptionCheck()) {
+      jenv->ExceptionDescribe(); 
+      jenv->ExceptionClear();
+      fprintf(stderr, "bummer getting object field  '%s' \n", fieldName);
+      return NULL;
+   }
+   return(value);
+}

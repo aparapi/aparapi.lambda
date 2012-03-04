@@ -274,11 +274,11 @@
       <delete file="aparapi.o" />
       <delete file="aparapi.lib" />
       <delete file="aparapi.exp" />
-      <delete file="jni.dll" />
-      <delete file="jni.obj" />
-      <delete file="jni.o" />
-      <delete file="jni.lib" />
-      <delete file="jni.exp" />
+      <delete file="opencljni.dll" />
+      <delete file="opencljni.obj" />
+      <delete file="opencljni.o" />
+      <delete file="opencljni.lib" />
+      <delete file="opencljni.exp" />
       <delete file="jniHelper.dll" />
       <delete file="jniHelper.obj" />
       <delete file="jniHelper.o" />
@@ -290,7 +290,7 @@
       <mkdir dir="include" />
       <javah classpath="..\com.amd.aparapi\dist\aparapi.jar" destdir="include" force="true">
          <class name="com.amd.aparapi.KernelRunner" />
-         <class name="com.amd.opencl.JNI" />
+         <class name="com.amd.opencl.OpenCLJNI" />
       </javah>
    </target>
 
@@ -309,7 +309,7 @@
          <arg value="-o" />
          <arg value="${basedir}/dist/libaparapi_${x86_or_x86_64}.so" />
          <arg value="src/cpp/aparapi.cpp" />
-         <arg value="src/cpp/jni.cpp" />
+         <arg value="src/cpp/opencljni.cpp" />
          <arg value="src/cpp/jniHelper.cpp" />
          <arg value="-L${amd.app.sdk.dir}/lib/${x86_or_x86_64}" />
          <arg value="-lOpenCL" />
@@ -330,7 +330,7 @@
          <arg value="-o" />
          <arg value="${basedir}/dist/libaparapi_${x86_or_x86_64}.dylib" />
          <arg value="src/cpp/aparapi.cpp" />
-         <arg value="src/cpp/jni.cpp" />
+         <arg value="src/cpp/opencljni.cpp" />
          <arg value="src/cpp/jniHelper.cpp" />
          <arg value="-framework" />
          <arg value="OpenCL" />
@@ -352,7 +352,7 @@
          <arg value="/Iinclude" />
          <arg value="/I${amd.app.sdk.dir}\include" />
          <arg value="src\cpp\aparapi.cpp" />
-         <arg value="src\cpp\jni.cpp" />
+         <arg value="src\cpp\opencljni.cpp" />
          <arg value="src\cpp\jniHelper.cpp" />
          <arg value="/LD" />
          <arg value="/link" />
@@ -380,7 +380,7 @@
          <arg value="-o" />
          <arg value="${basedir}\dist\aparapi_${x86_or_x86_64}.dll" />
          <arg value="src\cpp\aparapi.cpp" />
-         <arg value="src\cpp\jni.cpp" />
+         <arg value="src\cpp\opencljni.cpp" />
          <arg value="src/cpp/jniHelper.cpp" />
          <arg value="-L${amd.app.sdk.dir}\lib\${x86_or_x86_64}" />
          <arg value="-lOpenCL" />

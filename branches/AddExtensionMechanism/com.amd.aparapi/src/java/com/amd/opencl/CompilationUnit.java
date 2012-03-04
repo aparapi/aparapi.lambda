@@ -1,5 +1,7 @@
 package com.amd.opencl;
 
+import java.util.List;
+
 
 public class CompilationUnit{
    private long programId;
@@ -28,7 +30,7 @@ public class CompilationUnit{
       return (programId);
    }
 
-   public KernelEntrypoint createKernelEntrypoint(String _kernelName) {
-     return(JNIFactory.getJNI().createKernelEntrypoint(this, _kernelName));
+   public KernelEntrypoint createKernelEntrypoint(String _kernelName, List<KernelEntrypoint.Arg> args) {
+     return(OpenCLJNI.getJNI().createKernelEntrypoint(this, _kernelName, args));
    }
 }

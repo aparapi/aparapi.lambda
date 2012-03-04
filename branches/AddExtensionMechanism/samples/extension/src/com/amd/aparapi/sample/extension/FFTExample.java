@@ -8,7 +8,6 @@ import com.amd.aparapi.Aparapi.*;
 import com.amd.opencl.CompilationUnit;
 import com.amd.opencl.Context;
 import com.amd.opencl.Device;
-import com.amd.opencl.JNI;
 import com.amd.opencl.KernelEntrypoint;
 import com.amd.opencl.Platform;
 
@@ -69,7 +68,7 @@ public class FFTExample{
 
       CompilationUnit compilationUnit = context.createCompilationUnit(source);
 
-      KernelEntrypoint kernelEntrypoint = compilationUnit.createKernelEntrypoint("run");
+    
       int size = 1024;
       float[] input = new float[size];
       for (int i=0;i<size; i++){

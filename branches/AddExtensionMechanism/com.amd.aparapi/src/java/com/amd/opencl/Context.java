@@ -24,7 +24,7 @@ public class Context{
    }
 
    public CompilationUnit createCompilationUnit(String _source) {
-     return(JNIFactory.getJNI().createCompilationUnit(this, _source));
+     return(OpenCLJNI.getJNI().createCompilationUnit(this, _source));
    }
 
 }

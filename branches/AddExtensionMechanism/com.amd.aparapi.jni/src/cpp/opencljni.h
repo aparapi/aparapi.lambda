@@ -36,23 +36,7 @@
    and Security’s website at http://www.bis.doc.gov/. 
    */
 
-#ifndef JNIHELPER_H
-#define JNIHELPER_H
+#ifndef OPENCLJNI_H
+#define OPENCLJNI_H
 
-#include <jni.h>
-
-class JNIHelper{
-   public:
-      static void callVoid(JNIEnv *jenv, jobject instance, char *methodName, char *methodSignature, ...);
-      static jobject callObject(JNIEnv *jenv, jobject instance, char *methodName, char *methodSignature, ...);
-      static jlong callLong(JNIEnv *jenv, jobject instance, char *methodName, char *methodSignature, ...);
-      static jobject JNIHelper::createInstance(JNIEnv *jenv, char *className, char *signature, ... );
-      static jobject getStaticFieldObject(JNIEnv *jenv, char *className, char *fieldName, char *signature);
-      static jobject getInstanceFieldObject(JNIEnv *jenv, jobject instance, char *fieldName, char *signature);
-      static jlong getInstanceFieldLong(JNIEnv *jenv, jobject instance, char *fieldName);
-      static jint getInstanceFieldInt(JNIEnv *jenv, jobject instance, char *fieldName);
-      static void setInstanceFieldInt(JNIEnv* jenv, jobject instance, char *fieldName, jint value);
-};
-
-#endif // JNIHELPER_H
-
+#endif // OPENCLJNI_H

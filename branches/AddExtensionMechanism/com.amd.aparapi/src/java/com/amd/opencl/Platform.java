@@ -30,12 +30,9 @@ public class Platform{
       return (devices);
    }
 
-   public long getPlatformId() {
-      return (platformId);
-   }
 
    public static List<Platform> getPlatforms() {
-      return(JNIFactory.getJNI().getPlatforms());
+      return(OpenCLJNI.getJNI().getPlatforms());
    }
 
 }
