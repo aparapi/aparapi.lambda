@@ -17,17 +17,7 @@ public class SquareExample{
             @GlobalWriteOnly("out") float[] out);
    }
 
-   interface Doubler extends OpenCL<Doubler>{
-      @Kernel("{\n"//
-            + "  const size_t id = get_global_id(0);\n"//
-            + "  arr[id] *=2;\n"//
-            + "}\n")//
-      public Doubler doublit(//
-            Range _range,//
-            @GlobalReadWrite("arr") float[] arr,
-            @Constant("index") int[] index );
-   }
-
+  
    public static void main(String[] args) {
 
       int size = 1024;
@@ -41,16 +31,12 @@ public class SquareExample{
 
       Squarer squarer = Device.firstGPU(Squarer.class);
       squarer.square(range, in, out);
+      
+      for (int i=0; i<size; i++){
+         System.out.println(in[i]+" "+out[i]);
+      }
 
-      Doubler doubler = Device.firstGPU(Doubler.class);
-      doubler//
-            .put(out)//
-            .doublit(range, out, v)//
-            .doublit(range, out, v)//
-            .doublit(range, out, v)//
-            .doublit(range, out, v)//
-            .get(out);
-
+    
    }
 
 }
