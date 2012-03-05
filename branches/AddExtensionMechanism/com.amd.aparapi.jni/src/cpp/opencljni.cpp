@@ -54,39 +54,16 @@ JNI_JAVA(jobject, OpenCLJNI, createCompilationUnit)
       cl_device_id deviceId = (cl_device_id) JNIHelper::getInstanceFieldLong(jenv, deviceInstance, "deviceId"); 
       jobject platformInstance = JNIHelper::getInstanceFieldObject(jenv, deviceInstance, "platform", "Lcom/amd/opencl/Platform;");
       cl_platform_id platformId = (cl_platform_id) JNIHelper::getInstanceFieldLong(jenv, platformInstance, "platformId"); 
-      cl_device_type deviceType;
+
+      jstring log=NULL;
       cl_int status = CL_SUCCESS;
-      clGetDeviceInfo(deviceId, CL_DEVICE_TYPE,  sizeof(deviceType), &deviceType, NULL);
-      //fprintf(stderr, "device[%d] CL_DEVICE_TYPE = %x\n", deviceId, deviceType);
-
-      const char *sourceChars = jenv->GetStringUTFChars(source, NULL);
-      size_t sourceSize[] = { strlen(sourceChars) };
-      cl_program program = clCreateProgramWithSource(context, 1, &sourceChars, sourceSize, &status); 
-      jenv->ReleaseStringUTFChars(source, sourceChars);
-
-      status = clBuildProgram(program, 1, &deviceId, NULL, NULL, NULL);
-
-      jobject compilationUnitInstance = NULL;
-      jstring log = NULL;
-      if(status == CL_BUILD_PROGRAM_FAILURE) {
-         size_t buildLogSize = 0;
-         status = clGetProgramBuildInfo(program, deviceId, CL_PROGRAM_BUILD_LOG, buildLogSize, NULL, &buildLogSize);
-         char * buildLog = new char[buildLogSize];
-         memset(buildLog, 0, buildLogSize);
-         status = clGetProgramBuildInfo (program, deviceId, CL_PROGRAM_BUILD_LOG, buildLogSize, buildLog, NULL);
-
-         fprintf(stderr, "clBuildProgram failed");
-         fprintf(stderr, "\n************************************************\n");
-         fprintf(stderr, "%s", buildLog);
-         fprintf(stderr, "\n************************************************\n\n\n");
-         log =  jenv->NewStringUTF(buildLog); 
-         delete buildLog;
-      }else{
+      cl_program program = CLHelper::compile(jenv, context, 1, &deviceId, source, &log, &status);
+      cl_command_queue queue = NULL;
+      if(status == CL_SUCCESS) {
          cl_command_queue_properties queue_props = CL_QUEUE_PROFILING_ENABLE;
-         cl_command_queue queue = clCreateCommandQueue(context, deviceId, queue_props, &status);
-
-         compilationUnitInstance = JNIHelper::createInstance(jenv, "com/amd/opencl/CompilationUnit", "(JJLcom/amd/opencl/Context;Ljava/lang/String;Ljava/lang/String;)V", (jlong)program, (jlong)queue, contextInstance, source, log);
+         queue = clCreateCommandQueue(context, deviceId, queue_props, &status);
       }
+      jobject compilationUnitInstance = JNIHelper::createInstance(jenv, "com/amd/opencl/CompilationUnit", "(JJLcom/amd/opencl/Context;Ljava/lang/String;Ljava/lang/String;)V", (jlong)program, (jlong)queue, contextInstance, source, log);
       return(compilationUnitInstance);
    }
 JNI_JAVA(jobject, OpenCLJNI, createContext)
@@ -99,11 +76,11 @@ JNI_JAVA(jobject, OpenCLJNI, createContext)
       clGetDeviceInfo(deviceId, CL_DEVICE_TYPE,  sizeof(deviceType), &deviceType, NULL);
       //fprintf(stderr, "device[%d] CL_DEVICE_TYPE = %x\n", deviceId, deviceType);
 
-      jobject contextInstance = NULL;
 
       cl_context_properties cps[3] = { CL_CONTEXT_PLATFORM, (cl_context_properties)platformId, 0 };
       cl_context_properties* cprops = (NULL == platformId) ? NULL : cps;
       cl_context context = clCreateContextFromType( cprops, deviceType, NULL, NULL, &status);
+      jobject contextInstance = NULL;
       if (status == CL_SUCCESS){
          contextInstance = JNIHelper::createInstance(jenv, "com/amd/opencl/Context", "(JLcom/amd/opencl/Device;)V", (jlong)context, deviceInstance);
       }

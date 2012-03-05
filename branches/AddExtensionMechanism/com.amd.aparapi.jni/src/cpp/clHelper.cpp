@@ -108,4 +108,46 @@ const char *CLHelper::errString(cl_int status){
    return unknown;
 }
 
+void CLHelper::getBuildErr(JNIEnv *jenv, cl_device_id deviceId,  cl_program program, jstring *log){
+   size_t buildLogSize = 0;
+   clGetProgramBuildInfo(program, deviceId, CL_PROGRAM_BUILD_LOG, buildLogSize, NULL, &buildLogSize);
+   char * buildLog = new char[buildLogSize];
+   memset(buildLog, 0, buildLogSize);
+   clGetProgramBuildInfo (program, deviceId, CL_PROGRAM_BUILD_LOG, buildLogSize, buildLog, NULL);
+   fprintf(stderr, "clBuildProgram failed");
+   fprintf(stderr, "\n************************************************\n");
+   fprintf(stderr, "%s", buildLog);
+   fprintf(stderr, "\n************************************************\n\n\n");
+   if (log != NULL){
+      *log =  jenv->NewStringUTF(buildLog); 
+   }
+   delete []buildLog;
+}
+
+cl_program CLHelper::compile(JNIEnv *jenv, cl_context context, size_t deviceCount, cl_device_id* deviceIds, jstring source, jstring* log, cl_int* status){
+   const char *sourceChars = jenv->GetStringUTFChars(source, NULL);
+   size_t sourceSize[] = { strlen(sourceChars) };
+   cl_program program = clCreateProgramWithSource(context, 1, &sourceChars, sourceSize, status); 
+   jenv->ReleaseStringUTFChars(source, sourceChars);
+   *status = clBuildProgram(program, deviceCount, deviceIds, NULL, NULL, NULL);
+   if(*status == CL_BUILD_PROGRAM_FAILURE) {
+      getBuildErr(jenv, *deviceIds, program, log);
+   }
+   return(program);
+}
+
+jstring CLHelper::getExtensions(JNIEnv *jenv, cl_device_id deviceId, cl_int *status){
+   jstring jextensions = NULL;
+   size_t retvalsize = 0;
+   *status = clGetDeviceInfo(deviceId, CL_DEVICE_EXTENSIONS, 0, NULL, &retvalsize);
+   if (*status == CL_SUCCESS){
+      char* extensions = new char[retvalsize];
+      *status = clGetDeviceInfo(deviceId, CL_DEVICE_EXTENSIONS, retvalsize, extensions, NULL);
+      if (*status == CL_SUCCESS){
+         jextensions = jenv->NewStringUTF(extensions);
+      }
+      delete [] extensions;
+   }
+   return jextensions;
+}
 

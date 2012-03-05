@@ -1352,33 +1352,10 @@ APARAPI_JAVA(jlong, KernelRunner, buildProgramJNI)
    }
 
    cl_int status = CL_SUCCESS;
-   const char *sourceChars = jenv->GetStringUTFChars(source, NULL);
-   CHECK(sourceChars == NULL, "jenv->GetStringUTFChars() returned null" );
-
-   size_t sourceSize[] = { strlen(sourceChars) };
-   jniContext->program = clCreateProgramWithSource( jniContext->context, 1, &sourceChars, sourceSize, &status); 
-   jenv->ReleaseStringUTFChars(source, sourceChars);
-   ASSERT_CL("clCreateProgramWithSource()");
-
-   status = clBuildProgram(jniContext->program, jniContext->deviceIdc, jniContext->deviceIds, NULL, NULL, NULL);
+   
+   jniContext->program = CLHelper::compile(jenv, jniContext->context,  jniContext->deviceIdc, jniContext->deviceIds, source, NULL, &status);
 
    if(status == CL_BUILD_PROGRAM_FAILURE) {
-      size_t buildLogSize = 0;
-      status = clGetProgramBuildInfo(jniContext->program, jniContext->deviceIds[0], 
-            CL_PROGRAM_BUILD_LOG, buildLogSize, NULL, &buildLogSize);
-      ASSERT_CL("clGetProgramBuildInfo()");
-      char * buildLog = new char[buildLogSize];
-      CHECK(buildLog == NULL, "Failed to allocate host memory. (buildLog)");
-      memset(buildLog, 0, buildLogSize);
-      status = clGetProgramBuildInfo (jniContext->program, jniContext->deviceIds[0], 
-            CL_PROGRAM_BUILD_LOG, buildLogSize, buildLog, NULL);
-      ASSERT_CL("clGetProgramBuildInfo()");
-
-      fprintf(stderr, "clBuildProgram failed");
-      fprintf(stderr, "\n************************************************\n");
-      fprintf(stderr, "%s", buildLog);
-      fprintf(stderr, "\n************************************************\n\n\n");
-      delete []buildLog;
       return(0);
    }
 
@@ -1563,14 +1540,8 @@ APARAPI_JAVA(jstring, KernelRunner, getExtensionsJNI)
    jstring jextensions = NULL;
    JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);
    if (jniContext != NULL){
-      size_t retvalsize = 0;
       cl_int status = CL_SUCCESS;
-      status = clGetDeviceInfo(jniContext->deviceIds[0], CL_DEVICE_EXTENSIONS, 0, NULL, &retvalsize);
-      ASSERT_CL("clGetDeviceInfo()");
-      char* extensions = new char[retvalsize];
-      clGetDeviceInfo(jniContext->deviceIds[0], CL_DEVICE_EXTENSIONS, retvalsize, extensions, NULL);
-      jextensions = jenv->NewStringUTF(extensions);
-      delete [] extensions;
+      jextensions = CLHelper::getExtensions(jenv, jniContext->deviceIds[0], &status);
    }
    return jextensions;
 }
