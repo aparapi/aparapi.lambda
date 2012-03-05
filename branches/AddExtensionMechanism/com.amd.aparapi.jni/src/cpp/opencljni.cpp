@@ -44,6 +44,72 @@
 
 #include "com_amd_opencl_OpenCLJNI.h"
 
+static const char *CLErrString(cl_int status) {
+   static struct { cl_int code; const char *msg; } error_table[] = {
+      { CL_SUCCESS, "success" },
+      { CL_DEVICE_NOT_FOUND, "device not found", },
+      { CL_DEVICE_NOT_AVAILABLE, "device not available", },
+      { CL_COMPILER_NOT_AVAILABLE, "compiler not available", },
+      { CL_MEM_OBJECT_ALLOCATION_FAILURE, "mem object allocation failure", },
+      { CL_OUT_OF_RESOURCES, "out of resources", },
+      { CL_OUT_OF_HOST_MEMORY, "out of host memory", },
+      { CL_PROFILING_INFO_NOT_AVAILABLE, "profiling not available", },
+      { CL_MEM_COPY_OVERLAP, "memcopy overlaps", },
+      { CL_IMAGE_FORMAT_MISMATCH, "image format mismatch", },
+      { CL_IMAGE_FORMAT_NOT_SUPPORTED, "image format not supported", },
+      { CL_BUILD_PROGRAM_FAILURE, "build program failed", },
+      { CL_MAP_FAILURE, "map failed", },
+      { CL_INVALID_VALUE, "invalid value", },
+      { CL_INVALID_DEVICE_TYPE, "invalid device type", },
+      { CL_INVALID_PLATFORM, "invlaid platform",},
+      { CL_INVALID_DEVICE, "invalid device",},
+      { CL_INVALID_CONTEXT, "invalid context",},
+      { CL_INVALID_QUEUE_PROPERTIES, "invalid queue properties",},
+      { CL_INVALID_COMMAND_QUEUE, "invalid command queue",},
+      { CL_INVALID_HOST_PTR, "invalid host ptr",},
+      { CL_INVALID_MEM_OBJECT, "invalid mem object",},
+      { CL_INVALID_IMAGE_FORMAT_DESCRIPTOR, "invalid image format descriptor ",},
+      { CL_INVALID_IMAGE_SIZE, "invalid image size",},
+      { CL_INVALID_SAMPLER, "invalid sampler",},
+      { CL_INVALID_BINARY, "invalid binary",},
+      { CL_INVALID_BUILD_OPTIONS, "invalid build options",},
+      { CL_INVALID_PROGRAM, "invalid program ",},
+      { CL_INVALID_PROGRAM_EXECUTABLE, "invalid program executable",},
+      { CL_INVALID_KERNEL_NAME, "invalid kernel name",},
+      { CL_INVALID_KERNEL_DEFINITION, "invalid definition",},
+      { CL_INVALID_KERNEL, "invalid kernel",},
+      { CL_INVALID_ARG_INDEX, "invalid arg index",},
+      { CL_INVALID_ARG_VALUE, "invalid arg value",},
+      { CL_INVALID_ARG_SIZE, "invalid arg size",},
+      { CL_INVALID_KERNEL_ARGS, "invalid kernel args",},
+      { CL_INVALID_WORK_DIMENSION , "invalid work dimension",},
+      { CL_INVALID_WORK_GROUP_SIZE, "invalid work group size",},
+      { CL_INVALID_WORK_ITEM_SIZE, "invalid work item size",},
+      { CL_INVALID_GLOBAL_OFFSET, "invalid global offset",},
+      { CL_INVALID_EVENT_WAIT_LIST, "invalid event wait list",},
+      { CL_INVALID_EVENT, "invalid event",},
+      { CL_INVALID_OPERATION, "invalid operation",},
+      { CL_INVALID_GL_OBJECT, "invalid gl object",},
+      { CL_INVALID_BUFFER_SIZE, "invalid buffer size",},
+      { CL_INVALID_MIP_LEVEL, "invalid mip level",},
+      { CL_INVALID_GLOBAL_WORK_SIZE, "invalid global work size",},
+      { 0, NULL },
+   };
+   static char unknown[25];
+   int ii;
+
+   for (ii = 0; error_table[ii].msg != NULL; ii++) {
+      if (error_table[ii].code == status) {
+         return error_table[ii].msg;
+      }
+   }
+#ifdef _WIN32
+   _snprintf(unknown, sizeof unknown, "unknown error %d", status);
+#else
+   snprintf(unknown, sizeof(unknown), "unknown error %d", status);
+#endif
+   return unknown;
+}
 
 #define JNI_JAVA(type, className, methodName) JNIEXPORT type JNICALL Java_com_amd_opencl_##className##_##methodName
 
@@ -173,29 +239,110 @@ void describeArg(JNIEnv *jenv, jint argIndex, jobject argDef, jobject arg){
 
    fprintf(stderr, "\n");
 }
-cl_mem processPreExecArg(JNIEnv *jenv, cl_context context, cl_kernel kernel, cl_command_queue commandQueue, cl_event *events, jint *eventc, jint argIndex, jobject argDef, jobject arg){
-   cl_mem mem=NULL;
+
+jobject createMem(JNIEnv *jenv, cl_context context,  jlong bits, jobject value){
+   jarray array = (jarray)value;
+   jsize arrayLen = jenv->GetArrayLength(array);
+   jsize sizeInBytes = 0;
+   if (bits & (com_amd_opencl_OpenCLJNI_FLOAT_BIT|com_amd_opencl_OpenCLJNI_INT_BIT)){
+      sizeInBytes = arrayLen *4;
+   }else if (bits & (com_amd_opencl_OpenCLJNI_DOUBLE_BIT|com_amd_opencl_OpenCLJNI_LONG_BIT)){
+      sizeInBytes = arrayLen *8;
+   }else if (bits & (com_amd_opencl_OpenCLJNI_SHORT_BIT)){
+      sizeInBytes = arrayLen *2;
+   }
+
+   fprintf(stderr, "size of new Mem arg is %d\n", sizeInBytes);
+
+   cl_uint mask =  CL_MEM_USE_HOST_PTR;
+   if ((bits & com_amd_opencl_OpenCLJNI_READONLY_BIT)==com_amd_opencl_OpenCLJNI_READONLY_BIT){
+      mask|= CL_MEM_READ_ONLY;
+   } else if ((bits & com_amd_opencl_OpenCLJNI_READWRITE_BIT)==com_amd_opencl_OpenCLJNI_READWRITE_BIT){
+      mask|= CL_MEM_READ_WRITE;
+   }
+   cl_int status = CL_SUCCESS;
+   jboolean isCopy;
+   void *ptr  =  jenv->GetPrimitiveArrayCritical((jarray)array,&isCopy); 
+   cl_mem mem=clCreateBuffer(context, mask,  sizeInBytes, ptr, &status);
+   if (status != CL_SUCCESS){
+      fprintf(stderr, "buffer creation failed!\n");
+   }
+
+   jobject memInstance = JNIHelper::createInstance(jenv, "Lcom/amd/opencl/Mem;", "()V");
+
+   fprintf(stderr, "created a new mem object!\n");
+
+   JNIHelper::setInstanceFieldLong(jenv, memInstance, "memId", (jlong)mem);
+   JNIHelper::setInstanceFieldLong(jenv, memInstance, "ptrId", (jlong)ptr);
+   JNIHelper::setInstanceFieldBoolean(jenv, memInstance, "isCopy", isCopy);
+   JNIHelper::setInstanceFieldObject(jenv, memInstance, "instance", "Ljava/lang/Object;", value);
+   JNIHelper::setInstanceFieldInt(jenv, memInstance, "sizeInBytes", sizeInBytes);
+   JNIHelper::setInstanceFieldLong(jenv, memInstance, "mask", (jlong)mask);
+   JNIHelper::setInstanceFieldLong(jenv, memInstance, "bits", bits);
+   fprintf(stderr, "initiated mem object!\n");
+   return(memInstance);
+}
+
+void putArgs(JNIEnv *jenv, cl_context context, cl_kernel kernel, cl_command_queue commandQueue, cl_event *events, jint *eventc, jint argIndex, jobject argDef, jobject arg){
    fprintf(stderr, "pre ");
    describeArg(jenv, argIndex, argDef, arg);
    jlong bits = JNIHelper::getInstanceFieldLong(jenv, argDef, "bits");
-   if (bits & (com_amd_opencl_OpenCLJNI_READONLY_BIT|com_amd_opencl_OpenCLJNI_READWRITE_BIT|com_amd_opencl_OpenCLJNI_ARRAY_BIT)){
-      cl_uint mask = 0;
-      if ((bits & com_amd_opencl_OpenCLJNI_READONLY_BIT)==com_amd_opencl_OpenCLJNI_READONLY_BIT){
-         mask|= CL_MEM_READ_ONLY;
-      } else if ((bits & com_amd_opencl_OpenCLJNI_READWRITE_BIT)==com_amd_opencl_OpenCLJNI_READWRITE_BIT){
-         mask|= CL_MEM_READ_WRITE;
+   if (bits & com_amd_opencl_OpenCLJNI_ARRAY_BIT){ // global check?
+      jobject memInstance = JNIHelper::getInstanceFieldObject(jenv, argDef, "memVal", "Lcom/amd/opencl/Mem;");
+      if (memInstance == NULL){
+         // first call?
+         memInstance = createMem(jenv, context, bits, arg);
+         JNIHelper::setInstanceFieldObject(jenv, argDef, "memVal", "Lcom/amd/opencl/Mem;", memInstance);
+
+      }else{
+         // check of bits == memInstance.bits
       }
-      size_t sizeOfArray  = 0;
-      void * pointerToArray = NULL;
+      cl_mem mem = (cl_mem)JNIHelper::getInstanceFieldLong(jenv, memInstance, "memId");
       cl_int status = CL_SUCCESS;
-      mem=clCreateBuffer(context, CL_MEM_READ_WRITE,  sizeOfArray, pointerToArray, &status);
+      if (bits & (com_amd_opencl_OpenCLJNI_READONLY_BIT|com_amd_opencl_OpenCLJNI_READWRITE_BIT)){ // kernel reads this so enqueue a write
+         void *ptr= (void *)JNIHelper::getInstanceFieldLong(jenv, memInstance, "ptrId");
+         size_t sizeInBytes= (size_t)JNIHelper::getInstanceFieldInt(jenv, memInstance, "sizeInBytes");
+         status = clEnqueueWriteBuffer(commandQueue, mem, CL_FALSE, 0, sizeInBytes, ptr, *eventc, (*eventc)==0?NULL:events, &events[*eventc]);
+         if (status != CL_SUCCESS) {
+            fprintf(stderr, "error enqueuing write %s!\n",  CLErrString(status));
+         }else{
+            fprintf(stderr, "enqueued write eventc = %d!\n", *eventc);
+         }
+         (*eventc)++;
+      }
+      status = clSetKernelArg(kernel, argIndex, sizeof(cl_mem), (void *)&(mem));          
+         if (status != CL_SUCCESS) {
+            fprintf(stderr, "error setting arg %d %s!\n",  argIndex, CLErrString(status));
+         }else{
+            fprintf(stderr, "set arg  = %d!\n", argIndex);
+         }
    }
-      return(mem);
 }
 
-void processPostExecArg(JNIEnv *jenv, cl_context context, cl_kernel kernel, cl_command_queue commandQueue, cl_event *events, jint *eventc, jint argIndex, jobject argDef, jobject arg, cl_mem mem){
+
+void getArgs(JNIEnv *jenv, cl_context context, cl_command_queue commandQueue, cl_event *events, jint *eventc, jint argIndex, jobject argDef, jobject arg){
    fprintf(stderr, "post ");
    describeArg(jenv, argIndex, argDef, arg);
+   jlong bits = JNIHelper::getInstanceFieldLong(jenv, argDef, "bits");
+   if ((bits & com_amd_opencl_OpenCLJNI_ARRAY_BIT)  && (bits & (com_amd_opencl_OpenCLJNI_WRITEONLY_BIT|com_amd_opencl_OpenCLJNI_READWRITE_BIT))){
+      jobject memInstance = JNIHelper::getInstanceFieldObject(jenv, argDef, "memVal", "Lcom/amd/opencl/Mem;");
+      if (memInstance == NULL){
+         fprintf(stderr, "mem instance not set\n");
+      }else{
+         fprintf(stderr, "retrieved mem instance\n");
+      }
+      cl_mem mem = (cl_mem)JNIHelper::getInstanceFieldLong(jenv, memInstance, "memId");
+      void *ptr= (void *)JNIHelper::getInstanceFieldLong(jenv, memInstance, "ptrId");
+      size_t sizeInBytes= (size_t)JNIHelper::getInstanceFieldInt(jenv, memInstance, "sizeInBytes");
+      fprintf(stderr, "about to enqueu read eventc = %d!\n", *eventc);
+      cl_int status = clEnqueueReadBuffer(commandQueue, mem, CL_FALSE, 0, sizeInBytes, ptr ,*eventc, (*eventc)==0?NULL:events, &events[*eventc]);
+      if (status != CL_SUCCESS) {
+         fprintf(stderr, "error enqueuing read %s!\n",  CLErrString(status));
+      }else{
+         fprintf(stderr, "enqueued read eventc = %d!\n", *eventc);
+      }
+      (*eventc)++;
+   }
 }
 
 JNI_JAVA(void, OpenCLJNI, invoke)
@@ -208,7 +355,7 @@ JNI_JAVA(void, OpenCLJNI, invoke)
       cl_context context =(cl_context)JNIHelper::getInstanceFieldLong(jenv, contextInstance, "contextId");
       cl_command_queue commandQueue = (cl_command_queue) JNIHelper::getInstanceFieldLong(jenv, compilationUnitInstance, "queueId");
 
-      jobjectArray argDefsArray = reinterpret_cast<jobjectArray> (JNIHelper::getInstanceFieldObject(jenv, kernelEntrypointInstance, "args", "[Lcom/amd/opencl/KernelEntrypoint$Arg;"));
+      jobjectArray argDefsArray = reinterpret_cast<jobjectArray> (JNIHelper::getInstanceFieldObject(jenv, kernelEntrypointInstance, "args", "[Lcom/amd/opencl/Arg;"));
 
       // walk through the args creating buffers when needed 
       // we use the bitfields to determine which is which
@@ -217,7 +364,7 @@ JNI_JAVA(void, OpenCLJNI, invoke)
       fprintf(stderr, "argc = %d\n", argc);
       jint reads=0;
       jint writes=0;
-       for (jsize argIndex=0; argIndex<argc; argIndex++){
+      for (jsize argIndex=0; argIndex<argc; argIndex++){
          jobject argDef = jenv->GetObjectArrayElement(argDefsArray, argIndex);
          jlong bits = JNIHelper::getInstanceFieldLong(jenv, argDef, "bits");
          if ((bits & com_amd_opencl_OpenCLJNI_READONLY_BIT) ==com_amd_opencl_OpenCLJNI_READONLY_BIT){
@@ -230,7 +377,7 @@ JNI_JAVA(void, OpenCLJNI, invoke)
          if ((bits & com_amd_opencl_OpenCLJNI_WRITEONLY_BIT) ==com_amd_opencl_OpenCLJNI_WRITEONLY_BIT){
             writes++;
          }
-         
+
       }
       fprintf(stderr, "reads=%d writes=%d\n", reads, writes);
       cl_event * events= new cl_event[reads+writes+1];
@@ -240,7 +387,7 @@ JNI_JAVA(void, OpenCLJNI, invoke)
       for (jsize argIndex=0; argIndex<argc; argIndex++){
          jobject argDef = jenv->GetObjectArrayElement(argDefsArray, argIndex);
          jobject arg = jenv->GetObjectArrayElement(argArray, argIndex+1);
-         processPreExecArg(jenv, context, kernel, commandQueue, events, &eventc, argIndex, argDef, arg);
+         putArgs(jenv, context, kernel, commandQueue, events, &eventc, argIndex, argDef, arg);
       }
 
       jobject rangeInstance = jenv->GetObjectArrayElement(argArray, 0);
@@ -283,18 +430,20 @@ JNI_JAVA(void, OpenCLJNI, invoke)
             events, // address of events to wait for
             &events[eventc]);
       if (status != CL_SUCCESS) {
-           fprintf(stderr, "error executing  !\n");
+         fprintf(stderr, "error enqueuing execute %s !\n", CLErrString(status));
+      }else{
+         fprintf(stderr, "success enqueuing execute eventc= %d !\n", eventc);
       }
       eventc++;
 
       for (jsize argIndex=0; argIndex<argc; argIndex++){
          jobject argDef = jenv->GetObjectArrayElement(argDefsArray, argIndex);
          jobject arg = jenv->GetObjectArrayElement(argArray, argIndex+1);
-         processPostExecArg(jenv, context, kernel, commandQueue, events, &eventc, argIndex, argDef, arg, NULL/*mem*/);
+         getArgs(jenv, context, commandQueue, events, &eventc, argIndex, argDef, arg);
       }
       status = clWaitForEvents(eventc, events);
       if (status != CL_SUCCESS) {
-           fprintf(stderr, "error waiting for events !\n");
+         fprintf(stderr, "error waiting for events !\n");
       }
    }
 

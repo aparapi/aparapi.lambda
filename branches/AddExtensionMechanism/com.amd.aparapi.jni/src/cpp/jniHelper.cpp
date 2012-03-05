@@ -139,10 +139,81 @@ void JNIHelper::setInstanceFieldInt(JNIEnv* jenv, jobject instance, char *fieldN
       return;
    }
    jenv->SetIntField(instance, fieldId, value);
-   if (value == NULL || jenv->ExceptionCheck()) {
+   if (jenv->ExceptionCheck()) {
       jenv->ExceptionDescribe(); 
       jenv->ExceptionClear();
       fprintf(stderr, "bummer setting int field  '%s' \n", fieldName);
+      return;
+   }
+}
+
+void JNIHelper::setInstanceFieldLong(JNIEnv* jenv, jobject instance, char *fieldName, jlong value){
+   jclass theClass = jenv->GetObjectClass(instance);
+   if (theClass == NULL ||  jenv->ExceptionCheck()) {
+      jenv->ExceptionDescribe(); 
+      jenv->ExceptionClear();
+      fprintf(stderr, "bummer! getting class from instance\n");
+      return;
+   }
+   jfieldID fieldId= jenv->GetFieldID(theClass,fieldName,"J");
+   if (fieldId == NULL || jenv->ExceptionCheck()) {
+      jenv->ExceptionDescribe(); 
+      jenv->ExceptionClear();
+      fprintf(stderr, "bummer getting long field '%s' \n", fieldName);
+      return;
+   }
+   jenv->SetLongField(instance, fieldId, value);
+   if (jenv->ExceptionCheck()) {
+      jenv->ExceptionDescribe(); 
+      jenv->ExceptionClear();
+      fprintf(stderr, "bummer setting long field  '%s' \n", fieldName);
+      return;
+   }
+}
+void JNIHelper::setInstanceFieldBoolean(JNIEnv* jenv, jobject instance, char *fieldName, jboolean value){
+   jclass theClass = jenv->GetObjectClass(instance);
+   if (theClass == NULL ||  jenv->ExceptionCheck()) {
+      jenv->ExceptionDescribe(); 
+      jenv->ExceptionClear();
+      fprintf(stderr, "bummer! getting class from instance\n");
+      return;
+   }
+   jfieldID fieldId= jenv->GetFieldID(theClass,fieldName,"Z");
+   if (fieldId == NULL || jenv->ExceptionCheck()) {
+      jenv->ExceptionDescribe(); 
+      jenv->ExceptionClear();
+      fprintf(stderr, "bummer getting boolean field id '%s' \n", fieldName);
+      return;
+   }
+   jenv->SetBooleanField(instance, fieldId, value);
+   if (jenv->ExceptionCheck()) {
+      jenv->ExceptionDescribe(); 
+      jenv->ExceptionClear();
+      fprintf(stderr, "bummer setting boolean field  '%s' \n", fieldName);
+      return;
+   }
+}
+
+void JNIHelper::setInstanceFieldObject(JNIEnv* jenv, jobject instance, char *fieldName, char *signature, jobject value){
+   jclass theClass = jenv->GetObjectClass(instance);
+   if (theClass == NULL ||  jenv->ExceptionCheck()) {
+      jenv->ExceptionDescribe(); 
+      jenv->ExceptionClear();
+      fprintf(stderr, "bummer! getting class from instance\n");
+      return;
+   }
+   jfieldID fieldId= jenv->GetFieldID(theClass,fieldName, signature);
+   if (fieldId == NULL || jenv->ExceptionCheck()) {
+      jenv->ExceptionDescribe(); 
+      jenv->ExceptionClear();
+      fprintf(stderr, "bummer getting %s object '%s' \n", signature, fieldName);
+      return;
+   }
+   jenv->SetObjectField(instance, fieldId, value);
+   if (jenv->ExceptionCheck()) {
+      jenv->ExceptionDescribe(); 
+      jenv->ExceptionClear();
+      fprintf(stderr, "bummer setting %s  object  '%s' \n", signature, fieldName);
       return;
    }
 }
@@ -269,6 +340,30 @@ jobject JNIHelper::getInstanceFieldObject(JNIEnv *jenv, jobject instance, char *
       jenv->ExceptionDescribe(); 
       jenv->ExceptionClear();
       fprintf(stderr, "bummer getting object field  '%s' \n", fieldName);
+      return NULL;
+   }
+   return(value);
+}
+jboolean JNIHelper::getInstanceFieldBoolean(JNIEnv *jenv, jobject instance, char *fieldName){
+   jclass theClass = jenv->GetObjectClass(instance);
+   if (theClass == NULL ||  jenv->ExceptionCheck()) {
+      jenv->ExceptionDescribe(); 
+      jenv->ExceptionClear();
+      fprintf(stderr, "bummer! getting class from instance\n");
+      return NULL;
+   }
+   jfieldID fieldId= jenv->GetFieldID(theClass,fieldName, "Z");
+   if (fieldId == NULL || jenv->ExceptionCheck()) {
+      jenv->ExceptionDescribe(); 
+      jenv->ExceptionClear();
+      fprintf(stderr, "bummer getting boolean field '%s' \n", fieldName);
+      return NULL;
+   }
+   jboolean value= jenv->GetBooleanField(instance, fieldId);
+   if (jenv->ExceptionCheck()) {
+      jenv->ExceptionDescribe(); 
+      jenv->ExceptionClear();
+      fprintf(stderr, "bummer getting boolean field  '%s' \n", fieldName);
       return NULL;
    }
    return(value);
