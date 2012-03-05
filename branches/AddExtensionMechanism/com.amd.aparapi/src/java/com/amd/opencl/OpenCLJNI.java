@@ -42,7 +42,7 @@ public class OpenCLJNI{
 
    native public CompilationUnit createCompilationUnit(Context context, String source);
 
-   native public KernelEntrypoint createKernelEntrypoint(CompilationUnit cu, String kernelName, List<KernelEntrypoint.Arg> args );
+   native public KernelEntrypoint createKernelEntrypoint(CompilationUnit cu, String kernelName, List<Arg> args );
 
 
    native public void invoke(KernelEntrypoint kernelEntrypoint, Object[] args);

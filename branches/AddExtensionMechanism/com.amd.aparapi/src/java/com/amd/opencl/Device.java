@@ -178,7 +178,7 @@ public class Device{
    public <T extends OpenCL<T>> T create(Class<T> _interface) {
 
       StringBuilder sourceBuilder = new StringBuilder();
-      Map<String, List<KernelEntrypoint.Arg>> kernels = new HashMap<String, List<KernelEntrypoint.Arg>>();
+      Map<String, List<Arg>> kernels = new HashMap<String, List<Arg>>();
       for (Method m : _interface.getDeclaredMethods()) {
 
          for (Annotation a : m.getAnnotations()) {
@@ -192,7 +192,7 @@ public class Device{
                sourceBuilder.append("__kernel void " + m.getName() + "(");
                Annotation[][] parameterAnnotations = m.getParameterAnnotations();
                Class<?>[] parameterTypes = m.getParameterTypes();
-               List<KernelEntrypoint.Arg> args = new ArrayList<KernelEntrypoint.Arg>();
+               List<Arg> args = new ArrayList<Arg>();
                boolean first = true;
                for (int arg = 0; arg < parameterTypes.length; arg++) {
                   if (parameterTypes[arg].isAssignableFrom(Range.class)) {
@@ -250,7 +250,7 @@ public class Device{
                      if (name == null){
                         throw new IllegalStateException("no name!");
                      }
-                     KernelEntrypoint.Arg kernelArg = new KernelEntrypoint.Arg(name, bits);
+                     Arg kernelArg = new Arg(name, bits);
                      args.add(kernelArg);
 
                      sourceBuilder.append(kernelArg);

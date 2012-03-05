@@ -30,7 +30,7 @@ public class CompilationUnit{
       return (programId);
    }
 
-   public KernelEntrypoint createKernelEntrypoint(String _kernelName, List<KernelEntrypoint.Arg> args) {
+   public KernelEntrypoint createKernelEntrypoint(String _kernelName, List<Arg> args) {
      return(OpenCLJNI.getJNI().createKernelEntrypoint(this, _kernelName, args));
    }
 }
