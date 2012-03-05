@@ -62,5 +62,39 @@ class JNIHelper{
       static void setInstanceFieldObject(JNIEnv* jenv, jobject instance, char *fieldName, char *signature, jobject value);
 };
 
+#define JNIExceptionChecker(){\
+   fprintf(stderr, "line %d\n", __LINE__);\
+   if ((jenv)->ExceptionOccurred()) {\
+      (jenv)->ExceptionDescribe(); /* write to console */\
+      (jenv)->ExceptionClear();\
+   }\
+}
+
+#define CHECK_NO_RETURN(condition, msg) if(condition){\
+   fprintf(stderr, "!!!!!!! %s failed !!!!!!!\n", msg);\
+}
+
+#define CHECK_RETURN(condition, msg, val) if(condition){\
+   fprintf(stderr, "!!!!!!! %s failed !!!!!!!\n", msg);\
+   return val;\
+}
+
+#define CHECK(condition, msg) CHECK_RETURN(condition, msg, 0)
+
+#define ASSERT_CL_NO_RETURN(msg) if (status != CL_SUCCESS){\
+   fprintf(stderr, "!!!!!!! %s failed: %s\n", msg, CLHelper::errString(status));\
+}
+
+#define ASSERT_CL_RETURN(msg, val) if (status != CL_SUCCESS){\
+   ASSERT_CL_NO_RETURN(msg)\
+   return val;\
+}
+
+#define ASSERT_CL(msg) ASSERT_CL_RETURN(msg, 0)
+
+#define PRINT_CL_ERR(status, msg) fprintf(stderr, "!!!!!!! %s failed %s\n", msg, CLHelper::errString(status));
+
+#define ASSERT_FIELD(id) CHECK_NO_RETURN(id##FieldID == 0, "No such field as " #id)
+
 #endif // JNIHELPER_H
 

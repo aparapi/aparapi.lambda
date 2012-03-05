@@ -61,5 +61,13 @@
 
 #include <jni.h>
 
+#if defined (_WIN32)
+#include "windows.h"
+#define alignedMalloc(size, alignment)\
+   _aligned_malloc(size, alignment)
+#else
+#define alignedMalloc(size, alignment)\
+   memalign(alignment, size)
+#endif
 
 #endif // COMMON_H

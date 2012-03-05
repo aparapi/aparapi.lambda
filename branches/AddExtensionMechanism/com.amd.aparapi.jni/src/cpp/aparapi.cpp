@@ -43,49 +43,6 @@
 #include "com_amd_aparapi_KernelRunner.h"
 #define APARAPI_JAVA(type, className, methodName) JNIEXPORT type JNICALL Java_com_amd_aparapi_##className##_##methodName
 
-#define JNIExceptionChecker(){\
-   fprintf(stderr, "line %d\n", __LINE__);\
-   if ((jenv)->ExceptionOccurred()) {\
-      (jenv)->ExceptionDescribe(); /* write to console */\
-      (jenv)->ExceptionClear();\
-   }\
-}
-
-
-#if defined (_WIN32)
-#include "windows.h"
-#define alignedMalloc(size, alignment)\
-   _aligned_malloc(size, alignment)
-#else
-#define alignedMalloc(size, alignment)\
-   memalign(alignment, size)
-#endif
-
-
-#define CHECK_NO_RETURN(condition, msg) if(condition){\
-   fprintf(stderr, "!!!!!!! %s failed !!!!!!!\n", msg);\
-}
-
-#define CHECK(condition, msg) if(condition){\
-   fprintf(stderr, "!!!!!!! %s failed !!!!!!!\n", msg);\
-   return 0;\
-}
-
-#define ASSERT_CL_NO_RETURN(msg) if (status != CL_SUCCESS){\
-   fprintf(stderr, "!!!!!!! %s failed: %s\n", msg, CLHelper::errString(status));\
-}
-
-#define ASSERT_CL(msg) if (status != CL_SUCCESS){\
-   ASSERT_CL_NO_RETURN(msg)\
-   return 0;\
-}
-
-#define PRINT_CL_ERR(status, msg) fprintf(stderr, "!!!!!!! %s failed %s\n", msg, CLHelper::errString(status));
-
-#define ASSERT_FIELD(id) CHECK_NO_RETURN(id##FieldID == 0, "No such field as " #id)
-
-
-
 class Range{
    public:
       static jclass rangeClazz;
