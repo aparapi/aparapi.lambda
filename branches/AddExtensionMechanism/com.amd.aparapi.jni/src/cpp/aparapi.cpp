@@ -37,6 +37,7 @@
    */
 #include "common.h"
 #include "jniHelper.h"
+#include "clHelper.h"
 #define APARAPI_SOURCE
 #include "aparapi.h"
 #include "com_amd_aparapi_KernelRunner.h"
@@ -60,38 +61,6 @@
    memalign(alignment, size)
 #endif
 
-class MicrosecondTimer{
-
-#if defined (_WIN32)
-   private:
-      __int64 freq;
-      __int64 startValue;
-   public:
-      void start(){
-         QueryPerformanceFrequency((LARGE_INTEGER*)&freq);
-         QueryPerformanceCounter((LARGE_INTEGER*)&startValue);
-      }
-      void end(char *msg){
-         __int64 endValue;
-         QueryPerformanceCounter((LARGE_INTEGER*)&endValue);
-         int us = (int)((endValue-startValue)* 1000000.0 / freq);
-         fprintf(stderr, "%s=%d\n", msg, us);
-      }
-
-#else
-   public:
-      void start(){
-      }
-      void end(char *msg){
-      }
-
-#endif
-};
-
-MicrosecondTimer timer;
-
-
-
 
 #define CHECK_NO_RETURN(condition, msg) if(condition){\
    fprintf(stderr, "!!!!!!! %s failed !!!!!!!\n", msg);\
@@ -102,9 +71,8 @@ MicrosecondTimer timer;
    return 0;\
 }
 
-
 #define ASSERT_CL_NO_RETURN(msg) if (status != CL_SUCCESS){\
-   fprintf(stderr, "!!!!!!! %s failed: %s\n", msg, CLErrString(status));\
+   fprintf(stderr, "!!!!!!! %s failed: %s\n", msg, CLHelper::errString(status));\
 }
 
 #define ASSERT_CL(msg) if (status != CL_SUCCESS){\
@@ -112,78 +80,12 @@ MicrosecondTimer timer;
    return 0;\
 }
 
-#define PRINT_CL_ERR(status, msg) fprintf(stderr, "!!!!!!! %s failed %s\n", msg, CLErrString(status));
+#define PRINT_CL_ERR(status, msg) fprintf(stderr, "!!!!!!! %s failed %s\n", msg, CLHelper::errString(status));
 
 #define ASSERT_FIELD(id) CHECK_NO_RETURN(id##FieldID == 0, "No such field as " #id)
 
 
 
-static const char *CLErrString(cl_int status) {
-   static struct { cl_int code; const char *msg; } error_table[] = {
-      { CL_SUCCESS, "success" },
-      { CL_DEVICE_NOT_FOUND, "device not found", },
-      { CL_DEVICE_NOT_AVAILABLE, "device not available", },
-      { CL_COMPILER_NOT_AVAILABLE, "compiler not available", },
-      { CL_MEM_OBJECT_ALLOCATION_FAILURE, "mem object allocation failure", },
-      { CL_OUT_OF_RESOURCES, "out of resources", },
-      { CL_OUT_OF_HOST_MEMORY, "out of host memory", },
-      { CL_PROFILING_INFO_NOT_AVAILABLE, "profiling not available", },
-      { CL_MEM_COPY_OVERLAP, "memcopy overlaps", },
-      { CL_IMAGE_FORMAT_MISMATCH, "image format mismatch", },
-      { CL_IMAGE_FORMAT_NOT_SUPPORTED, "image format not supported", },
-      { CL_BUILD_PROGRAM_FAILURE, "build program failed", },
-      { CL_MAP_FAILURE, "map failed", },
-      { CL_INVALID_VALUE, "invalid value", },
-      { CL_INVALID_DEVICE_TYPE, "invalid device type", },
-      { CL_INVALID_PLATFORM, "invlaid platform",},
-      { CL_INVALID_DEVICE, "invalid device",},
-      { CL_INVALID_CONTEXT, "invalid context",},
-      { CL_INVALID_QUEUE_PROPERTIES, "invalid queue properties",},
-      { CL_INVALID_COMMAND_QUEUE, "invalid command queue",},
-      { CL_INVALID_HOST_PTR, "invalid host ptr",},
-      { CL_INVALID_MEM_OBJECT, "invalid mem object",},
-      { CL_INVALID_IMAGE_FORMAT_DESCRIPTOR, "invalid image format descriptor ",},
-      { CL_INVALID_IMAGE_SIZE, "invalid image size",},
-      { CL_INVALID_SAMPLER, "invalid sampler",},
-      { CL_INVALID_BINARY, "invalid binary",},
-      { CL_INVALID_BUILD_OPTIONS, "invalid build options",},
-      { CL_INVALID_PROGRAM, "invalid program ",},
-      { CL_INVALID_PROGRAM_EXECUTABLE, "invalid program executable",},
-      { CL_INVALID_KERNEL_NAME, "invalid kernel name",},
-      { CL_INVALID_KERNEL_DEFINITION, "invalid definition",},
-      { CL_INVALID_KERNEL, "invalid kernel",},
-      { CL_INVALID_ARG_INDEX, "invalid arg index",},
-      { CL_INVALID_ARG_VALUE, "invalid arg value",},
-      { CL_INVALID_ARG_SIZE, "invalid arg size",},
-      { CL_INVALID_KERNEL_ARGS, "invalid kernel args",},
-      { CL_INVALID_WORK_DIMENSION , "invalid work dimension",},
-      { CL_INVALID_WORK_GROUP_SIZE, "invalid work group size",},
-      { CL_INVALID_WORK_ITEM_SIZE, "invalid work item size",},
-      { CL_INVALID_GLOBAL_OFFSET, "invalid global offset",},
-      { CL_INVALID_EVENT_WAIT_LIST, "invalid event wait list",},
-      { CL_INVALID_EVENT, "invalid event",},
-      { CL_INVALID_OPERATION, "invalid operation",},
-      { CL_INVALID_GL_OBJECT, "invalid gl object",},
-      { CL_INVALID_BUFFER_SIZE, "invalid buffer size",},
-      { CL_INVALID_MIP_LEVEL, "invalid mip level",},
-      { CL_INVALID_GLOBAL_WORK_SIZE, "invalid global work size",},
-      { 0, NULL },
-   };
-   static char unknown[25];
-   int ii;
-
-   for (ii = 0; error_table[ii].msg != NULL; ii++) {
-      if (error_table[ii].code == status) {
-         return error_table[ii].msg;
-      }
-   }
-#ifdef _WIN32
-   _snprintf(unknown, sizeof unknown, "unknown error %d", status);
-#else
-   snprintf(unknown, sizeof(unknown), "unknown error %d", status);
-#endif
-   return unknown;
-}
 class Range{
    public:
       static jclass rangeClazz;
@@ -988,9 +890,6 @@ APARAPI_JAVA(jint, KernelRunner, runKernelJNI)
 		 }
       }
 
-   if (jniContext->isVerbose()){
-      timer.start();
-   }
 
    // Need to capture array refs
    if (jniContext->firstRun || needSync) {
@@ -1467,9 +1366,6 @@ APARAPI_JAVA(jint, KernelRunner, runKernelJNI)
    }
 
    jniContext->firstRun = false;
-   if (jniContext->isVerbose()){
-      timer.end("elapsed");
-   }
 
    //fprintf(stderr, "About to return %d from exec\n", status);
    return(status);
