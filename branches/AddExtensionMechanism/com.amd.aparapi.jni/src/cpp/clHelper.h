@@ -39,6 +39,25 @@
 #ifndef CLHELPER_H
 #define CLHELPER_H
 
+class Program{
+   private:
+   cl_context context;
+   cl_device_id deviceId;
+   cl_command_queue commandQueue;
+   cl_program program;
+   public:
+   Program(cl_context context, cl_device_id deviceId, cl_command_queue commandQueue, cl_program program);
+};
+
+class Buf{
+   private:
+   cl_mem mem;
+   void *ptr;
+   size_t size;
+   cl_uint mask;
+   cl_uint bits;
+};
+
 
 class CLHelper{
    public:
