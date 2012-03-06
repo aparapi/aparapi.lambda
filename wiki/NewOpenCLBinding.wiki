@@ -32,3 +32,37 @@ Now you can call the implementation directly with a Range.
 }}}    
 
 I think that we will have the easiest OpenCL binding out there...
+
+Of course sometimes we want to pull OpenCL from a file rather than use Annotations. 
+
+So we could allow. 
+{{{
+   OpenCL.Resource("squarer.cl");
+   interface Squarer extends OpenCL<Squarer>{
+          public Squarer square(//
+            Range _range,//
+            @GlobalReadOnly("in") float[] in,//
+            @GlobalWriteOnly("out") float[] out);
+   }
+}}}
+
+Or if the text is on-hand at compile time in a single constant string
+
+{{{
+   OpenCL.Source("... opencl text here");
+   interface Squarer extends OpenCL<Squarer>{
+          public Squarer square(//
+            Range _range,//
+            @GlobalReadOnly("in") float[] in,//
+            @GlobalWriteOnly("out") float[] out);
+   }
+}}}
+
+Finally to allow for creation of dynamicl OpenCL (good for FFT's of various Radii). 
+{{{
+  String openclSource = ...;
+  Squarer squarer = Device.firstGPU(Squarer.class, openclSource);
+}}}
+
+
+
