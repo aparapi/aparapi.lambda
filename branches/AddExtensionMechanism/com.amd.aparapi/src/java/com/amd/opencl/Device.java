@@ -132,46 +132,45 @@ public class Device{
       return (platform);
    }
 
-
    public static class OpenCLInvocationHandler<T extends OpenCL<T>> implements InvocationHandler{
-      private Map<String, KernelEntrypoint> map;
+      private Map<String, Kernel> map;
 
-      public OpenCLInvocationHandler(Map<String, KernelEntrypoint> _map) {
+      public OpenCLInvocationHandler(Map<String, Kernel> _map) {
          map = _map;
       }
 
-      @Override public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-         KernelEntrypoint kernel = map.get(method.getName());
+      @Override
+      public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+         Kernel kernel = map.get(method.getName());
          if (kernel != null) {
             // we have a kernel entrypoint bound. 
-            System.out.println("would invoke opencl for "+kernel.getName());
+            System.out.println("would invoke opencl for " + kernel.getName());
             kernel.invoke(args);
-         }else{
+         } else {
             // put or get from OpenCL interface. 
-           // System.out.println("in " + method.getName());
-           // for (Method m : proxy.getClass().getDeclaredMethods()) {
-              // System.out.println("  found " + m.getName());
+            // System.out.println("in " + method.getName());
+            // for (Method m : proxy.getClass().getDeclaredMethods()) {
+            // System.out.println("  found " + m.getName());
 
-               // for (Annotation a:method.getAnnotations()){
-               //   System.out.println("   annotation "+a);
-               //   System.out.println("   annotation type "+a.annotationType());
-               // }
-               // if (method.getName().equals(m.getName())) {
-               // strip the zeroth arg
-               //   Object[] delegatedArgs = Arrays.copyOfRange(args, 1, args.length);
-               //   implementation.setRange((Range) args[0]);
-               //   for (implementation.globalId[0] = 0; implementation.globalId[0] < implementation.range.getGlobalSize(0); implementation.globalId[0]++) {
-               //     m.invoke(implementation, delegatedArgs);
-               //  }
-               //}
-           // }
+            // for (Annotation a:method.getAnnotations()){
+            //   System.out.println("   annotation "+a);
+            //   System.out.println("   annotation type "+a.annotationType());
+            // }
+            // if (method.getName().equals(m.getName())) {
+            // strip the zeroth arg
+            //   Object[] delegatedArgs = Arrays.copyOfRange(args, 1, args.length);
+            //   implementation.setRange((Range) args[0]);
+            //   for (implementation.globalId[0] = 0; implementation.globalId[0] < implementation.range.getGlobalSize(0); implementation.globalId[0]++) {
+            //     m.invoke(implementation, delegatedArgs);
+            //  }
+            //}
+            // }
          }
          return proxy;
       }
 
    }
 
-  
    public <T extends OpenCL<T>> T create(Class<T> _interface) {
 
       StringBuilder sourceBuilder = new StringBuilder();
@@ -180,7 +179,7 @@ public class Device{
 
          for (Annotation a : m.getAnnotations()) {
             //  System.out.println("   annotation "+a);
-           // System.out.println("   annotation type " + a.annotationType());
+            // System.out.println("   annotation type " + a.annotationType());
             if (a instanceof OpenCL.Source) {
                OpenCL.Source openCL = (OpenCL.Source) a;
                sourceBuilder.append(openCL.value()).append("\n");
@@ -207,19 +206,19 @@ public class Device{
                      for (Annotation pa : parameterAnnotations[arg]) {
                         if (pa instanceof OpenCL.GlobalReadOnly) {
                            name = ((OpenCL.GlobalReadOnly) pa).value();
-                           bits |= OpenCLJNI.GLOBAL_BIT |OpenCLJNI.READONLY_BIT ;
+                           bits |= OpenCLJNI.GLOBAL_BIT | OpenCLJNI.READONLY_BIT;
                         } else if (pa instanceof OpenCL.GlobalWriteOnly) {
                            name = ((OpenCL.GlobalWriteOnly) pa).value();
-                           bits |= OpenCLJNI.GLOBAL_BIT|OpenCLJNI.WRITEONLY_BIT ;
+                           bits |= OpenCLJNI.GLOBAL_BIT | OpenCLJNI.WRITEONLY_BIT;
                         } else if (pa instanceof OpenCL.GlobalReadWrite) {
                            name = ((OpenCL.GlobalReadWrite) pa).value();
-                           bits |= OpenCLJNI.GLOBAL_BIT|OpenCLJNI.READWRITE_BIT ;
+                           bits |= OpenCLJNI.GLOBAL_BIT | OpenCLJNI.READWRITE_BIT;
                         } else if (pa instanceof OpenCL.Local) {
                            name = ((OpenCL.Local) pa).value();
                            bits |= OpenCLJNI.LOCAL_BIT;
                         } else if (pa instanceof OpenCL.Constant) {
                            name = ((OpenCL.Constant) pa).value();
-                           bits |= OpenCLJNI.CONST_BIT|OpenCLJNI.READONLY_BIT ;
+                           bits |= OpenCLJNI.CONST_BIT | OpenCLJNI.READONLY_BIT;
                         }
 
                      }
@@ -244,7 +243,7 @@ public class Device{
                      } else if (parameterTypes[arg].isAssignableFrom(long.class)) {
                         bits |= OpenCLJNI.LONG_BIT | OpenCLJNI.PRIMITIVE_BIT;
                      }
-                     if (name == null){
+                     if (name == null) {
                         throw new IllegalStateException("no name!");
                      }
                      Arg kernelArg = new Arg(name, bits);
@@ -260,31 +259,25 @@ public class Device{
             }
          }
       }
-    
-
-    
 
       String source = sourceBuilder.toString();
       System.out.println("opencl{\n" + source + "\n}opencl");
 
+      Program compilationUnit = createProgram(source);
 
-      
-      CompilationUnit compilationUnit = createCompilationUnit(source);
-
-      Map<String, KernelEntrypoint> map = new HashMap<String, KernelEntrypoint>();
-      for (String name : kernels.keySet()) {     
-         map.put(name, compilationUnit.createKernelEntrypoint(name,  kernels.get(name)));
+      Map<String, Kernel> map = new HashMap<String, Kernel>();
+      for (String name : kernels.keySet()) {
+         map.put(name, compilationUnit.createKernel(name, kernels.get(name)));
       }
-      
+
       OpenCLInvocationHandler<T> invocationHandler = new OpenCLInvocationHandler<T>(map);
       T instance = (T) Proxy.newProxyInstance(Device.class.getClassLoader(), new Class[] {
-         _interface,
-         OpenCL.class
-   }, invocationHandler);
+            _interface,
+            OpenCL.class
+      }, invocationHandler);
       return instance;
 
    }
-  
 
    public static <T extends OpenCL<T>> T firstGPU(Class<T> _interface) {
       Device device = null;
@@ -305,8 +298,8 @@ public class Device{
 
    }
 
-   public CompilationUnit createCompilationUnit(String source) {
-      return(OpenCLJNI.getJNI().createCompilationUnit(this, source));
+   public Program createProgram(String source) {
+      return (OpenCLJNI.getJNI().createProgram(this, source));
    }
 
 }

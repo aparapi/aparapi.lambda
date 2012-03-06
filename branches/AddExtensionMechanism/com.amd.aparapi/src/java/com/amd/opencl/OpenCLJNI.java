@@ -6,10 +6,13 @@ public class OpenCLJNI{
    static {
       Runtime.getRuntime().loadLibrary("aparapi_x86");
    }
+
    static final OpenCLJNI jni = new OpenCLJNI();
-   static OpenCLJNI getJNI(){
-      return(jni);
+
+   static OpenCLJNI getJNI() {
+      return (jni);
    }
+
    public final static long INT_BIT = 1 << 0;
 
    public final static long FLOAT_BIT = 1 << 1;
@@ -38,11 +41,10 @@ public class OpenCLJNI{
 
    native public List<Platform> getPlatforms();
 
+   native public Program createProgram(Device context, String openCLSource);
 
-   native public CompilationUnit createCompilationUnit(Device context, String openCLSource);
+   native public Kernel createKernel(Program program, String kernelName, List<Arg> args);
 
-   native public KernelEntrypoint createKernelEntrypoint(CompilationUnit cu, String kernelName, List<Arg> args );
-
-   native public void invoke(KernelEntrypoint kernelEntrypoint, Object[] args);
+   native public void invoke(Kernel kernel, Object[] args);
 
 }

@@ -5,13 +5,19 @@ package com.amd.opencl;
 
 public class Arg{
    public Mem memVal;
+
    public int intVal;
+
    public float floatVal;
+
    public double doubVal;
+
    public short shortVal;
+
    public boolean booleanVal;
+
    public boolean longVal;
-   
+
    private String name;
 
    public long bits;
@@ -48,9 +54,9 @@ public class Arg{
       argBuilder.append(name);
       if ((bits & OpenCLJNI.READONLY_BIT) == OpenCLJNI.READONLY_BIT) {
          argBuilder.append(" /* readonly */");
-      }else  if ((bits & OpenCLJNI.WRITEONLY_BIT) == OpenCLJNI.WRITEONLY_BIT) {
+      } else if ((bits & OpenCLJNI.WRITEONLY_BIT) == OpenCLJNI.WRITEONLY_BIT) {
          argBuilder.append(" /* writeonly */");
-      }else if ((bits & OpenCLJNI.READWRITE_BIT) == OpenCLJNI.READWRITE_BIT) {
+      } else if ((bits & OpenCLJNI.READWRITE_BIT) == OpenCLJNI.READWRITE_BIT) {
          argBuilder.append(" /* readwrite */");
       }
       return (argBuilder.toString());

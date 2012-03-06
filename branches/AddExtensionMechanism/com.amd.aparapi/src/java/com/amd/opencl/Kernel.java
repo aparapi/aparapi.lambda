@@ -2,25 +2,20 @@ package com.amd.opencl;
 
 import java.util.List;
 
-public class KernelEntrypoint{
+public class Kernel{
    private Arg[] args;
 
    private long kernelId;
 
-   private CompilationUnit compilationUnit;
+   private Program program;
 
    private String name;
 
-   KernelEntrypoint(long _kernelId, CompilationUnit _compilationUnit, String _name, List<Arg> _args) {
+   Kernel(long _kernelId, Program _program, String _name, List<Arg> _args) {
       kernelId = _kernelId;
-      compilationUnit = _compilationUnit;
+      program = _program;
       name = _name;
       args = _args.toArray(new Arg[0]);
-   }
-
-   public CompilationUnit getCompilationUnit() {
-      return (compilationUnit);
-
    }
 
    public String getName() {
