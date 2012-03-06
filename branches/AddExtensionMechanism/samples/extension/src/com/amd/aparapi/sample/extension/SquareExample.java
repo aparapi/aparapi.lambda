@@ -5,19 +5,25 @@ import com.amd.opencl.Device;
 import com.amd.opencl.OpenCL;
 
 public class SquareExample{
-
+   @OpenCL.Resource("squarer.cl")
+   @OpenCL.Source("__kernel void (\n" //
+         + "          __global float *in,\n"//
+         + "          __global float *out){\n"//
+         + "   const size_t id = get_global_id(0);\n"//
+         + "   out[id] = in[id]*in[id];\n"//
+         + "}\n")
    interface Squarer extends OpenCL<Squarer>{
       @Kernel("{\n"//
             + "  const size_t id = get_global_id(0);\n"//
             + "  out[id] = in[id]*in[id];\n"//
-            + "}\n")//
+            + "}\n")
+      //
       public Squarer square(//
             Range _range,//
             @GlobalReadOnly("in") float[] in,//
             @GlobalWriteOnly("out") float[] out);
    }
 
-  
    public static void main(String[] args) {
 
       int size = 1024;
@@ -31,12 +37,11 @@ public class SquareExample{
 
       Squarer squarer = Device.firstGPU(Squarer.class);
       squarer.square(range, in, out);
-      
-      for (int i=0; i<size; i++){
-         System.out.println(in[i]+" "+out[i]);
+
+      for (int i = 0; i < size; i++) {
+         System.out.println(in[i] + " " + out[i]);
       }
 
-    
    }
 
 }
