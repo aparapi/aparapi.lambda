@@ -6,7 +6,6 @@ import com.amd.aparapi.AparapiExtension;
 import com.amd.aparapi.Range;
 import com.amd.aparapi.Aparapi.*;
 import com.amd.opencl.CompilationUnit;
-import com.amd.opencl.Context;
 import com.amd.opencl.Device;
 import com.amd.opencl.KernelEntrypoint;
 import com.amd.opencl.Platform;
@@ -55,7 +54,6 @@ public class FFTExample{
          }
       }
       System.out.println(device);
-      Context context = device.createContext();
 
       String source = "" //
             + "__kernel void square("//
@@ -66,7 +64,7 @@ public class FFTExample{
             + "}";
       ;
 
-      CompilationUnit compilationUnit = context.createCompilationUnit(source);
+      CompilationUnit compilationUnit = device.createCompilationUnit(source);
 
     
       int size = 1024;
@@ -81,7 +79,7 @@ public class FFTExample{
 //kernelEntrypint.run(Range.create(size));
 //kernelEntypoint.get(output);
       
-      if (context != null) {
+      if (compilationUnit != null) {
          float[] real = new float[1024];
          float[] imag = new float[1024];
          Range range = Range.create(real.length / 2);
