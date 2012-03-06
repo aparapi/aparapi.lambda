@@ -48,31 +48,13 @@
 #define JNI_JAVA(type, className, methodName) JNIEXPORT type JNICALL Java_com_amd_opencl_##className##_##methodName
 
 JNI_JAVA(jobject, OpenCLJNI, createCompilationUnit)
-   (JNIEnv *jenv, jobject jobj, jobject contextInstance, jstring source) {
-      cl_context context = (cl_context) JNIHelper::getInstanceFieldLong(jenv, contextInstance, "contextId"); 
-      jobject deviceInstance = JNIHelper::getInstanceFieldObject(jenv, contextInstance, "device", "Lcom/amd/opencl/Device;");
-      cl_device_id deviceId = (cl_device_id) JNIHelper::getInstanceFieldLong(jenv, deviceInstance, "deviceId"); 
-      jobject platformInstance = JNIHelper::getInstanceFieldObject(jenv, deviceInstance, "platform", "Lcom/amd/opencl/Platform;");
-      cl_platform_id platformId = (cl_platform_id) JNIHelper::getInstanceFieldLong(jenv, platformInstance, "platformId"); 
+   (JNIEnv *jenv, jobject jobj, jobject deviceInstance, jstring source) {
 
-      jstring log=NULL;
-      cl_int status = CL_SUCCESS;
-      cl_program program = CLHelper::compile(jenv, context, 1, &deviceId, source, &log, &status);
-      cl_command_queue queue = NULL;
-      if(status == CL_SUCCESS) {
-         cl_command_queue_properties queue_props = CL_QUEUE_PROFILING_ENABLE;
-         queue = clCreateCommandQueue(context, deviceId, queue_props, &status);
-      }
-      jobject compilationUnitInstance = JNIHelper::createInstance(jenv, "com/amd/opencl/CompilationUnit", "(JJLcom/amd/opencl/Context;Ljava/lang/String;Ljava/lang/String;)V", (jlong)program, (jlong)queue, contextInstance, source, log);
-      return(compilationUnitInstance);
-   }
-JNI_JAVA(jobject, OpenCLJNI, createContext)
-   (JNIEnv *jenv, jobject jobj, jobject deviceInstance) {
       jobject platformInstance = JNIHelper::getInstanceFieldObject(jenv, deviceInstance, "platform", "Lcom/amd/opencl/Platform;");
       cl_platform_id platformId = (cl_platform_id) JNIHelper::getInstanceFieldLong(jenv, platformInstance, "platformId"); 
       cl_device_id deviceId = (cl_device_id) JNIHelper::getInstanceFieldLong(jenv, deviceInstance, "deviceId"); 
-      cl_device_type deviceType;
       cl_int status = CL_SUCCESS;
+      cl_device_type deviceType;
       clGetDeviceInfo(deviceId, CL_DEVICE_TYPE,  sizeof(deviceType), &deviceType, NULL);
       //fprintf(stderr, "device[%d] CL_DEVICE_TYPE = %x\n", deviceId, deviceType);
 
@@ -80,28 +62,30 @@ JNI_JAVA(jobject, OpenCLJNI, createContext)
       cl_context_properties cps[3] = { CL_CONTEXT_PLATFORM, (cl_context_properties)platformId, 0 };
       cl_context_properties* cprops = (NULL == platformId) ? NULL : cps;
       cl_context context = clCreateContextFromType( cprops, deviceType, NULL, NULL, &status);
-      jobject contextInstance = NULL;
-      if (status == CL_SUCCESS){
-         contextInstance = JNIHelper::createInstance(jenv, "com/amd/opencl/Context", "(JLcom/amd/opencl/Device;)V", (jlong)context, deviceInstance);
+
+
+      jstring log=NULL;
+      cl_program program = CLHelper::compile(jenv, context, 1, &deviceId, source, &log, &status);
+      cl_command_queue queue = NULL;
+      if(status == CL_SUCCESS) {
+         cl_command_queue_properties queue_props = CL_QUEUE_PROFILING_ENABLE;
+         queue = clCreateCommandQueue(context, deviceId, queue_props, &status);
       }
-      return(contextInstance);
+      jobject compilationUnitInstance = JNIHelper::createInstance(jenv, "com/amd/opencl/CompilationUnit", "(JJJLcom/amd/opencl/Device;Ljava/lang/String;Ljava/lang/String;)V", (jlong)program, (jlong)queue, (jlong)context, deviceInstance, source, log);
+      return(compilationUnitInstance);
    }
 
 JNI_JAVA(jobject, OpenCLJNI, createKernelEntrypoint)
    (JNIEnv *jenv, jobject jobj, jobject compilationUnitInstance, jstring name, jobject args) {
-      jobject contextInstance = JNIHelper::getInstanceFieldObject(jenv, compilationUnitInstance, "context", "Lcom/amd/opencl/Context;");
-      cl_context context = (cl_context) JNIHelper::getInstanceFieldLong(jenv, contextInstance, "contextId"); 
+      cl_context context = (cl_context) JNIHelper::getInstanceFieldLong(jenv, compilationUnitInstance, "contextId"); 
       cl_program program = (cl_program) JNIHelper::getInstanceFieldLong(jenv, compilationUnitInstance, "programId"); 
-      jobject deviceInstance = JNIHelper::getInstanceFieldObject(jenv, contextInstance, "device", "Lcom/amd/opencl/Device;");
+      jobject deviceInstance = JNIHelper::getInstanceFieldObject(jenv, compilationUnitInstance, "device", "Lcom/amd/opencl/Device;");
       jobject platformInstance = JNIHelper::getInstanceFieldObject(jenv, deviceInstance, "platform", "Lcom/amd/opencl/Platform;");
       cl_platform_id platformId = (cl_platform_id) JNIHelper::getInstanceFieldLong(jenv, platformInstance, "platformId"); 
       cl_device_id deviceId = (cl_device_id) JNIHelper::getInstanceFieldLong(jenv, deviceInstance, "deviceId"); 
-      cl_device_type deviceType;
       cl_int status = CL_SUCCESS;
-      clGetDeviceInfo(deviceId, CL_DEVICE_TYPE,  sizeof(deviceType), &deviceType, NULL);
-      //fprintf(stderr, "device[%d] CL_DEVICE_TYPE = %x\n", deviceId, deviceType);
-      const char *nameChars = jenv->GetStringUTFChars(name, NULL);
 
+      const char *nameChars = jenv->GetStringUTFChars(name, NULL);
       cl_kernel kernel = clCreateKernel(program, nameChars, &status);
       jenv->ReleaseStringUTFChars(name, nameChars);
 
@@ -262,8 +246,7 @@ JNI_JAVA(void, OpenCLJNI, invoke)
 
       cl_kernel kernel =(cl_kernel) JNIHelper::getInstanceFieldLong(jenv, kernelEntrypointInstance, "kernelId");
       jobject compilationUnitInstance =JNIHelper::getInstanceFieldObject(jenv, kernelEntrypointInstance, "compilationUnit", "Lcom/amd/opencl/CompilationUnit;");
-      jobject contextInstance =JNIHelper::getInstanceFieldObject(jenv, compilationUnitInstance, "context", "Lcom/amd/opencl/Context;");
-      cl_context context =(cl_context)JNIHelper::getInstanceFieldLong(jenv, contextInstance, "contextId");
+      cl_context context =(cl_context)JNIHelper::getInstanceFieldLong(jenv, compilationUnitInstance, "contextId");
       cl_command_queue commandQueue = (cl_command_queue) JNIHelper::getInstanceFieldLong(jenv, compilationUnitInstance, "queueId");
 
       jobjectArray argDefsArray = reinterpret_cast<jobjectArray> (JNIHelper::getInstanceFieldObject(jenv, kernelEntrypointInstance, "args", "[Lcom/amd/opencl/Arg;"));
