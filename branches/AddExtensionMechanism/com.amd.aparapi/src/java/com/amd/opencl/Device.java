@@ -132,9 +132,6 @@ public class Device{
       return (platform);
    }
 
-   public Context createContext() {
-      return (OpenCLJNI.getJNI().createContext(this));
-   }
 
    public static class OpenCLInvocationHandler<T extends OpenCL<T>> implements InvocationHandler{
       private Map<String, KernelEntrypoint> map;
@@ -270,8 +267,9 @@ public class Device{
       String source = sourceBuilder.toString();
       System.out.println("opencl{\n" + source + "\n}opencl");
 
-      Context context = createContext();
-      CompilationUnit compilationUnit = context.createCompilationUnit(source);
+
+      
+      CompilationUnit compilationUnit = createCompilationUnit(source);
 
       Map<String, KernelEntrypoint> map = new HashMap<String, KernelEntrypoint>();
       for (String name : kernels.keySet()) {     
@@ -286,6 +284,7 @@ public class Device{
       return instance;
 
    }
+  
 
    public static <T extends OpenCL<T>> T firstGPU(Class<T> _interface) {
       Device device = null;
@@ -304,6 +303,10 @@ public class Device{
       }
       return (device.create(_interface));
 
+   }
+
+   public CompilationUnit createCompilationUnit(String source) {
+      return(OpenCLJNI.getJNI().createCompilationUnit(this, source));
    }
 
 }

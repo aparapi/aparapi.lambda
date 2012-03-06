@@ -38,12 +38,10 @@ public class OpenCLJNI{
 
    native public List<Platform> getPlatforms();
 
-   native public Context createContext(Device device);
 
-   native public CompilationUnit createCompilationUnit(Context context, String source);
+   native public CompilationUnit createCompilationUnit(Device context, String openCLSource);
 
    native public KernelEntrypoint createKernelEntrypoint(CompilationUnit cu, String kernelName, List<Arg> args );
-
 
    native public void invoke(KernelEntrypoint kernelEntrypoint, Object[] args);
 
