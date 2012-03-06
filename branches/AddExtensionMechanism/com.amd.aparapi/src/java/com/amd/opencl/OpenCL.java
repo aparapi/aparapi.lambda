@@ -1,48 +1,56 @@
 package com.amd.opencl;
 
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 
 public interface OpenCL<T> {
- 
-   public @Retention(RetentionPolicy.RUNTIME)
+  
+   public @Target(ElementType.PARAMETER) @Retention(RetentionPolicy.RUNTIME)
    @interface Put {
    }
-   public @Retention(RetentionPolicy.RUNTIME)
+   public @Target(ElementType.PARAMETER) @Retention(RetentionPolicy.RUNTIME)
    @interface Get {
    }
    
-   public @Retention(RetentionPolicy.RUNTIME)
+   public  @Target(ElementType.TYPE) @Retention(RetentionPolicy.RUNTIME)
    @interface Source {
       String value();
+    
    }
-   public @Retention(RetentionPolicy.RUNTIME)
+   public  @Target(ElementType.TYPE) @Retention(RetentionPolicy.RUNTIME)
+   @interface Resource {
+      String value() ;
+   } 
+   
+   public  @Target(ElementType.METHOD) @Retention(RetentionPolicy.RUNTIME)
    @interface Kernel {
       String value();
    }
    
-   public @Retention(RetentionPolicy.RUNTIME)
+   public @Target(ElementType.PARAMETER) @Retention(RetentionPolicy.RUNTIME)
    @interface GlobalReadWrite {
       String value();
    }
 
-   public @Retention(RetentionPolicy.RUNTIME)
+   public @Target(ElementType.PARAMETER) @Retention(RetentionPolicy.RUNTIME)
    @interface GlobalReadOnly {
       String value();
    }
 
-   public @Retention(RetentionPolicy.RUNTIME)
+   public @Target(ElementType.PARAMETER) @Retention(RetentionPolicy.RUNTIME)
    @interface GlobalWriteOnly {
       String value();
    }
 
-   public @Retention(RetentionPolicy.RUNTIME)
+   public @Target(ElementType.PARAMETER) @Retention(RetentionPolicy.RUNTIME)
    @interface Local {
       String value();
    }
 
-   public @Retention(RetentionPolicy.RUNTIME)
+   public @Target(ElementType.PARAMETER) @Retention(RetentionPolicy.RUNTIME)
    @interface Constant {
       String value();
    }
