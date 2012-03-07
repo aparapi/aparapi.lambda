@@ -154,10 +154,15 @@ jobject createMem(JNIEnv *jenv, cl_context context,  jlong bits, jobject value){
       mask|= CL_MEM_READ_ONLY;
    } else if ((bits & com_amd_opencl_OpenCLJNI_READWRITE_BIT)==com_amd_opencl_OpenCLJNI_READWRITE_BIT){
       mask|= CL_MEM_READ_WRITE;
+   } else if ((bits & com_amd_opencl_OpenCLJNI_WRITEONLY_BIT)==com_amd_opencl_OpenCLJNI_WRITEONLY_BIT){
+      mask|= CL_MEM_WRITE_ONLY;
    }
    cl_int status = CL_SUCCESS;
    jboolean isCopy;
    void *ptr  =  jenv->GetPrimitiveArrayCritical((jarray)array,&isCopy); 
+   if (isCopy){
+      bits |=  com_amd_opencl_OpenCLJNI_COPY_BIT;
+   }
    cl_mem mem=clCreateBuffer(context, mask,  sizeInBytes, ptr, &status);
    if (status != CL_SUCCESS){
       fprintf(stderr, "buffer creation failed!\n");
@@ -167,13 +172,17 @@ jobject createMem(JNIEnv *jenv, cl_context context,  jlong bits, jobject value){
 
    fprintf(stderr, "created a new mem object!\n");
 
-   JNIHelper::setInstanceFieldLong(jenv, memInstance, "memId", (jlong)mem);
-   JNIHelper::setInstanceFieldLong(jenv, memInstance, "ptrId", (jlong)ptr);
-   JNIHelper::setInstanceFieldBoolean(jenv, memInstance, "isCopy", isCopy);
+   JNIHelper::setInstanceFieldLong(jenv, memInstance, "address", (jlong)ptr);
    JNIHelper::setInstanceFieldObject(jenv, memInstance, "instance", "Ljava/lang/Object;", value);
    JNIHelper::setInstanceFieldInt(jenv, memInstance, "sizeInBytes", sizeInBytes);
-   JNIHelper::setInstanceFieldLong(jenv, memInstance, "mask", (jlong)mask);
    JNIHelper::setInstanceFieldLong(jenv, memInstance, "bits", bits);
+   if ((bits & com_amd_opencl_OpenCLJNI_READONLY_BIT)==com_amd_opencl_OpenCLJNI_READONLY_BIT){
+      JNIHelper::setInstanceFieldLong(jenv, memInstance, "readOnlyMemId", (jlong)mem);
+   } else if ((bits & com_amd_opencl_OpenCLJNI_READWRITE_BIT)==com_amd_opencl_OpenCLJNI_READWRITE_BIT){
+      JNIHelper::setInstanceFieldLong(jenv, memInstance, "readWriteMemId", (jlong)mem);
+   } else if ((bits & com_amd_opencl_OpenCLJNI_WRITEONLY_BIT)==com_amd_opencl_OpenCLJNI_WRITEONLY_BIT){
+      JNIHelper::setInstanceFieldLong(jenv, memInstance, "writeOnlyMemId", (jlong)mem);
+   }
    fprintf(stderr, "initiated mem object!\n");
    return(memInstance);
 }
@@ -188,15 +197,25 @@ void putArgs(JNIEnv *jenv, cl_context context, cl_kernel kernel, cl_command_queu
          // first call?
          memInstance = createMem(jenv, context, bits, arg);
          JNIHelper::setInstanceFieldObject(jenv, argDef, "memVal", "Lcom/amd/opencl/Mem;", memInstance);
-
       }else{
          // check of bits == memInstance.bits
       }
-      cl_mem mem = (cl_mem)JNIHelper::getInstanceFieldLong(jenv, memInstance, "memId");
+      cl_mem mem = 0;
+
+        if ((bits & com_amd_opencl_OpenCLJNI_READONLY_BIT)==com_amd_opencl_OpenCLJNI_READONLY_BIT){
+      mem = (cl_mem)JNIHelper::getInstanceFieldLong(jenv, memInstance, "readOnlyMemId");
+   } else if ((bits & com_amd_opencl_OpenCLJNI_READWRITE_BIT)==com_amd_opencl_OpenCLJNI_READWRITE_BIT){
+      mem = (cl_mem)JNIHelper::getInstanceFieldLong(jenv, memInstance, "readWriteMemId");
+   } else if ((bits & com_amd_opencl_OpenCLJNI_WRITEONLY_BIT)==com_amd_opencl_OpenCLJNI_WRITEONLY_BIT){
+      mem = (cl_mem)JNIHelper::getInstanceFieldLong(jenv, memInstance, "writeOnlyMemId");
+   }
       cl_int status = CL_SUCCESS;
       if (bits & (com_amd_opencl_OpenCLJNI_READONLY_BIT|com_amd_opencl_OpenCLJNI_READWRITE_BIT)){ // kernel reads this so enqueue a write
-         void *ptr= (void *)JNIHelper::getInstanceFieldLong(jenv, memInstance, "ptrId");
+         void *ptr= (void *)JNIHelper::getInstanceFieldLong(jenv, memInstance, "address");
          size_t sizeInBytes= (size_t)JNIHelper::getInstanceFieldInt(jenv, memInstance, "sizeInBytes");
+         jlong memBits = JNIHelper::getInstanceFieldLong(jenv, memInstance, "bits");
+         memBits |=com_amd_opencl_OpenCLJNI_ENQUEUED_BIT;
+         JNIHelper::setInstanceFieldLong(jenv, memInstance, "bits", memBits);
          status = clEnqueueWriteBuffer(commandQueue, mem, CL_FALSE, 0, sizeInBytes, ptr, *eventc, (*eventc)==0?NULL:events, &events[*eventc]);
          if (status != CL_SUCCESS) {
             fprintf(stderr, "error enqueuing write %s!\n",  CLHelper::errString(status));
@@ -226,8 +245,15 @@ void getArgs(JNIEnv *jenv, cl_context context, cl_command_queue commandQueue, cl
       }else{
          fprintf(stderr, "retrieved mem instance\n");
       }
-      cl_mem mem = (cl_mem)JNIHelper::getInstanceFieldLong(jenv, memInstance, "memId");
-      void *ptr= (void *)JNIHelper::getInstanceFieldLong(jenv, memInstance, "ptrId");
+
+      cl_mem mem =0;
+      if ((bits & com_amd_opencl_OpenCLJNI_WRITEONLY_BIT) == com_amd_opencl_OpenCLJNI_WRITEONLY_BIT){
+         mem = (cl_mem)JNIHelper::getInstanceFieldLong(jenv, memInstance, "writeOnlyMemId");
+      }else if ((bits & com_amd_opencl_OpenCLJNI_READWRITE_BIT) == com_amd_opencl_OpenCLJNI_READWRITE_BIT){
+         mem = (cl_mem)JNIHelper::getInstanceFieldLong(jenv, memInstance, "readWriteMemId");
+      }
+
+      void *ptr= (void *)JNIHelper::getInstanceFieldLong(jenv, memInstance, "address");
       size_t sizeInBytes= (size_t)JNIHelper::getInstanceFieldInt(jenv, memInstance, "sizeInBytes");
       fprintf(stderr, "about to enqueu read eventc = %d!\n", *eventc);
       cl_int status = clEnqueueReadBuffer(commandQueue, mem, CL_FALSE, 0, sizeInBytes, ptr ,*eventc, (*eventc)==0?NULL:events, &events[*eventc]);
