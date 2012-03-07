@@ -34,21 +34,32 @@ public class Program{
       return (OpenCLJNI.getJNI().createKernel(this, _kernelName, args));
    }
 
-   private Map<Long, Mem> memIdToMem = new HashMap<Long, Mem>();
+   private Map<Object, Mem> instanceToMem = new HashMap<Object, Mem>();
 
-   private Map<Long, Mem> ptrIdToMem = new HashMap<Long, Mem>();
+   private Map<Long, Mem> addressToMem = new HashMap<Long, Mem>();
 
-   public Mem getMemByMemId(long memId) {
-      return (memIdToMem.get(memId));
+
+   public synchronized Mem getMem(Object _instance, long _address) {
+      Mem mem = instanceToMem.get(_instance);
+      if (mem == null){
+         mem = addressToMem.get(_instance);
+         if (mem != null){
+            System.out.println("object has been moved, we need to remap the buffer");
+            OpenCLJNI.getJNI().remap(this, mem, _address);
+         }
+      }
+      return(mem);
    }
-
-   public Mem getMemByPtrId(long ptrId) {
-      return (ptrIdToMem.get(ptrId));
+   
+   public synchronized void add(Mem _mem) {
+    
+      instanceToMem.put(_mem.instance, _mem);
+      addressToMem.put(_mem.address, _mem);
    }
-
-   public void add(Mem _mem) {
-      memIdToMem.put(_mem.memId, _mem);
-      ptrIdToMem.put(_mem.memId, _mem);
+   
+   public synchronized void remaped(Mem _mem, long _oldAddress){
+      addressToMem.remove(_oldAddress);
+      addressToMem.put(_mem.address, _mem);
    }
 
 }

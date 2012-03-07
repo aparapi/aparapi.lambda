@@ -2,16 +2,16 @@ package com.amd.opencl;
 
 public class Mem{
    long bits;
-
-   long mask;
-
+   
    int sizeInBytes;
+   
+   long readOnlyMemId;
+   long writeOnlyMemId;
+   long readWriteMemId;
 
-   long memId;
-
-   long ptrId;
-
-   boolean isCopy;
+   long address;
 
    Object instance;
+   
+   Program program;
 }

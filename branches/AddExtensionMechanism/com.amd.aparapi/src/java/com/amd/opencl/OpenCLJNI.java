@@ -38,6 +38,12 @@ public class OpenCLJNI{
    public final static long WRITEONLY_BIT = 1 << 11;
 
    public final static long READWRITE_BIT = 1 << 12;
+   
+   public final static long DIRTY_BIT = 1 << 13;
+   
+   public final static long COPY_BIT = 1 << 14; 
+   
+   public final static long ENQUEUED_BIT = 1 << 14;
 
    native public List<Platform> getPlatforms();
 
@@ -46,5 +52,7 @@ public class OpenCLJNI{
    native public Kernel createKernel(Program program, String kernelName, List<Arg> args);
 
    native public void invoke(Kernel kernel, Object[] args);
+
+   native public void remap(Program program, Mem mem, long address);
 
 }
