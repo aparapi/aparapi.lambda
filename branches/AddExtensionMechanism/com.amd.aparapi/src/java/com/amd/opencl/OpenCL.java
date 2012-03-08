@@ -35,7 +35,11 @@ public interface OpenCL<T> {
    @interface Kernel {
       String value();
    }
-
+   public @Target(ElementType.PARAMETER)
+   @Retention(RetentionPolicy.RUNTIME)
+   @interface Arg {
+      String value();
+   }
    public @Target(ElementType.PARAMETER)
    @Retention(RetentionPolicy.RUNTIME)
    @interface GlobalReadWrite {

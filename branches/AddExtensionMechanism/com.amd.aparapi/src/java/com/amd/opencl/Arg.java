@@ -35,7 +35,12 @@ public class Arg{
          argBuilder.append("__local ");
       } else if ((bits & OpenCLJNI.CONST_BIT) == OpenCLJNI.CONST_BIT) {
          argBuilder.append("__constant ");
+      } else if ((bits & OpenCLJNI.ARG_BIT) == OpenCLJNI.ARG_BIT) {
+         // 
+      } else {
+         argBuilder.append("WHATISTHIS?");
       }
+      
       if ((bits & OpenCLJNI.FLOAT_BIT) == OpenCLJNI.FLOAT_BIT) {
          argBuilder.append("float ");
       } else if ((bits & OpenCLJNI.INT_BIT) == OpenCLJNI.INT_BIT) {

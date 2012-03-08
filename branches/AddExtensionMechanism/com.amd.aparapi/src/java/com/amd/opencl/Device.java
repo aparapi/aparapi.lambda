@@ -135,7 +135,10 @@ public class Device{
    public static class OpenCLInvocationHandler<T extends OpenCL<T>> implements InvocationHandler{
       private Map<String, Kernel> map;
 
-      public OpenCLInvocationHandler(Map<String, Kernel> _map) {
+      private Program program;
+
+      public OpenCLInvocationHandler(Program _program, Map<String, Kernel> _map) {
+         program = _program;
          map = _map;
       }
 
@@ -143,28 +146,36 @@ public class Device{
       public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
          Kernel kernel = map.get(method.getName());
          if (kernel != null) {
-            // we have a kernel entrypoint bound. 
-            System.out.println("would invoke opencl for " + kernel.getName());
+            // we have a kernel entrypoint bound
             kernel.invoke(args);
-         } else {
-            // put or get from OpenCL interface. 
-            // System.out.println("in " + method.getName());
-            // for (Method m : proxy.getClass().getDeclaredMethods()) {
-            // System.out.println("  found " + m.getName());
+         } else if (method.getName().equals("put") || method.getName().equals("get")) {
+            for (Object arg : args) {
+               Class<?> argClass = arg.getClass();
+               if (argClass.isArray()) {
+                  if (argClass.getComponentType().isPrimitive()) {
+                     Mem mem = program.getMem(arg, 0L);
+                     if (mem == null) {
+                        throw new IllegalStateException("can't put/get an array that has never been passed to a kernel " + argClass);
 
-            // for (Annotation a:method.getAnnotations()){
-            //   System.out.println("   annotation "+a);
-            //   System.out.println("   annotation type "+a.annotationType());
-            // }
-            // if (method.getName().equals(m.getName())) {
-            // strip the zeroth arg
-            //   Object[] delegatedArgs = Arrays.copyOfRange(args, 1, args.length);
-            //   implementation.setRange((Range) args[0]);
-            //   for (implementation.globalId[0] = 0; implementation.globalId[0] < implementation.range.getGlobalSize(0); implementation.globalId[0]++) {
-            //     m.invoke(implementation, delegatedArgs);
-            //  }
-            //}
-            // }
+                     }
+                     if (method.getName().equals("put")) {
+                        mem.bits |= OpenCLJNI.DIRTY_BIT;
+                     } else {
+                        OpenCLJNI.getJNI().getMem(program, mem);
+                     }
+
+                  } else {
+                     throw new IllegalStateException("Only array args (of primitives) expected for put/get, cant deal with "
+                           + argClass);
+
+                  }
+               } else {
+                  throw new IllegalStateException("Only array args expected for put/get, cant deal with " + argClass);
+               }
+            }
+         } else {
+            throw new IllegalStateException("How did we get here with method " + method.getName());
+
          }
          return proxy;
       }
@@ -219,29 +230,38 @@ public class Device{
                         } else if (pa instanceof OpenCL.Constant) {
                            name = ((OpenCL.Constant) pa).value();
                            bits |= OpenCLJNI.CONST_BIT | OpenCLJNI.READONLY_BIT;
+                        } else if (pa instanceof OpenCL.Arg) {
+                           name = ((OpenCL.Arg) pa).value();
+                           bits |= OpenCLJNI.ARG_BIT;
                         }
 
                      }
-                     if (parameterTypes[arg].isAssignableFrom(float[].class)) {
-                        bits |= OpenCLJNI.FLOAT_BIT | OpenCLJNI.ARRAY_BIT;
-                     } else if (parameterTypes[arg].isAssignableFrom(int[].class)) {
-                        bits |= OpenCLJNI.INT_BIT | OpenCLJNI.ARRAY_BIT;
-                     } else if (parameterTypes[arg].isAssignableFrom(double[].class)) {
-                        bits |= OpenCLJNI.DOUBLE_BIT | OpenCLJNI.ARRAY_BIT;
-                     } else if (parameterTypes[arg].isAssignableFrom(short[].class)) {
-                        bits |= OpenCLJNI.SHORT_BIT | OpenCLJNI.ARRAY_BIT;
-                     } else if (parameterTypes[arg].isAssignableFrom(long[].class)) {
-                        bits |= OpenCLJNI.LONG_BIT | OpenCLJNI.ARRAY_BIT;
-                     } else if (parameterTypes[arg].isAssignableFrom(float.class)) {
-                        bits |= OpenCLJNI.FLOAT_BIT | OpenCLJNI.PRIMITIVE_BIT;
-                     } else if (parameterTypes[arg].isAssignableFrom(int.class)) {
-                        bits |= OpenCLJNI.INT_BIT | OpenCLJNI.PRIMITIVE_BIT;
-                     } else if (parameterTypes[arg].isAssignableFrom(double.class)) {
-                        bits |= OpenCLJNI.DOUBLE_BIT | OpenCLJNI.PRIMITIVE_BIT;
-                     } else if (parameterTypes[arg].isAssignableFrom(short.class)) {
-                        bits |= OpenCLJNI.SHORT_BIT | OpenCLJNI.PRIMITIVE_BIT;
-                     } else if (parameterTypes[arg].isAssignableFrom(long.class)) {
-                        bits |= OpenCLJNI.LONG_BIT | OpenCLJNI.PRIMITIVE_BIT;
+                     if (parameterTypes[arg].isArray()) {
+                        if (parameterTypes[arg].isAssignableFrom(float[].class)) {
+                           bits |= OpenCLJNI.FLOAT_BIT | OpenCLJNI.ARRAY_BIT;
+                        } else if (parameterTypes[arg].isAssignableFrom(int[].class)) {
+                           bits |= OpenCLJNI.INT_BIT | OpenCLJNI.ARRAY_BIT;
+                        } else if (parameterTypes[arg].isAssignableFrom(double[].class)) {
+                           bits |= OpenCLJNI.DOUBLE_BIT | OpenCLJNI.ARRAY_BIT;
+                        } else if (parameterTypes[arg].isAssignableFrom(short[].class)) {
+                           bits |= OpenCLJNI.SHORT_BIT | OpenCLJNI.ARRAY_BIT;
+                        } else if (parameterTypes[arg].isAssignableFrom(long[].class)) {
+                           bits |= OpenCLJNI.LONG_BIT | OpenCLJNI.ARRAY_BIT;
+                        }
+                     } else if (parameterTypes[arg].isPrimitive()) {
+                        if (parameterTypes[arg].isAssignableFrom(float.class)) {
+                           bits |= OpenCLJNI.FLOAT_BIT | OpenCLJNI.PRIMITIVE_BIT;
+                        } else if (parameterTypes[arg].isAssignableFrom(int.class)) {
+                           bits |= OpenCLJNI.INT_BIT | OpenCLJNI.PRIMITIVE_BIT;
+                        } else if (parameterTypes[arg].isAssignableFrom(double.class)) {
+                           bits |= OpenCLJNI.DOUBLE_BIT | OpenCLJNI.PRIMITIVE_BIT;
+                        } else if (parameterTypes[arg].isAssignableFrom(short.class)) {
+                           bits |= OpenCLJNI.SHORT_BIT | OpenCLJNI.PRIMITIVE_BIT;
+                        } else if (parameterTypes[arg].isAssignableFrom(long.class)) {
+                           bits |= OpenCLJNI.LONG_BIT | OpenCLJNI.PRIMITIVE_BIT;
+                        }
+                     } else {
+System.out.println("OUch!");
                      }
                      if (name == null) {
                         throw new IllegalStateException("no name!");
@@ -263,14 +283,18 @@ public class Device{
       String source = sourceBuilder.toString();
       System.out.println("opencl{\n" + source + "\n}opencl");
 
-      Program compilationUnit = createProgram(source);
+      Program program = createProgram(source);
 
       Map<String, Kernel> map = new HashMap<String, Kernel>();
       for (String name : kernels.keySet()) {
-         map.put(name, compilationUnit.createKernel(name, kernels.get(name)));
+         Kernel kernel = program.createKernel(name, kernels.get(name));
+         if (kernel == null) {
+            throw new IllegalStateException("kernel is null");
+         }
+         map.put(name, kernel);
       }
 
-      OpenCLInvocationHandler<T> invocationHandler = new OpenCLInvocationHandler<T>(map);
+      OpenCLInvocationHandler<T> invocationHandler = new OpenCLInvocationHandler<T>(program, map);
       T instance = (T) Proxy.newProxyInstance(Device.class.getClassLoader(), new Class[] {
             _interface,
             OpenCL.class

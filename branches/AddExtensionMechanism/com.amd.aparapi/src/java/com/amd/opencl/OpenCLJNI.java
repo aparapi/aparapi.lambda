@@ -3,6 +3,8 @@ package com.amd.opencl;
 import java.util.List;
 
 public class OpenCLJNI{
+  
+
    static {
       Runtime.getRuntime().loadLibrary("aparapi_x86");
    }
@@ -44,6 +46,8 @@ public class OpenCLJNI{
    public final static long COPY_BIT = 1 << 14; 
    
    public final static long ENQUEUED_BIT = 1 << 15;
+   
+   public final static long ARG_BIT = 1 << 16;
 
    native public List<Platform> getPlatforms();
 
@@ -54,5 +58,7 @@ public class OpenCLJNI{
    native public void invoke(Kernel kernel, Object[] args);
 
    native public void remap(Program program, Mem mem, long address);
+
+   native public void getMem(Program program, Mem mem);
 
 }
