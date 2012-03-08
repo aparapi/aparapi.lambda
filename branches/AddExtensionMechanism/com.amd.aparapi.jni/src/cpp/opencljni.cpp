@@ -70,6 +70,9 @@ JNI_JAVA(jobject, OpenCLJNI, createProgram)
       if(status == CL_SUCCESS) {
          cl_command_queue_properties queue_props = CL_QUEUE_PROFILING_ENABLE;
          queue = clCreateCommandQueue(context, deviceId, queue_props, &status);
+      }else{
+         fprintf(stderr, "queue creation seems to have failed\n");
+
       }
       jobject programInstance = JNIHelper::createInstance(jenv, "com/amd/opencl/Program", "(JJJLcom/amd/opencl/Device;Ljava/lang/String;Ljava/lang/String;)V", (jlong)program, (jlong)queue, (jlong)context, deviceInstance, source, log);
       return(programInstance);
@@ -79,20 +82,22 @@ JNI_JAVA(jobject, OpenCLJNI, createKernel)
    (JNIEnv *jenv, jobject jobj, jobject programInstance, jstring name, jobject args) {
       cl_context context = (cl_context) JNIHelper::getInstanceFieldLong(jenv, programInstance, "contextId"); 
       cl_program program = (cl_program) JNIHelper::getInstanceFieldLong(jenv, programInstance, "programId"); 
-      jobject deviceInstance = JNIHelper::getInstanceFieldObject(jenv, programInstance, "device", "Lcom/amd/opencl/Device;");
-      jobject platformInstance = JNIHelper::getInstanceFieldObject(jenv, deviceInstance, "platform", "Lcom/amd/opencl/Platform;");
-      cl_platform_id platformId = (cl_platform_id) JNIHelper::getInstanceFieldLong(jenv, platformInstance, "platformId"); 
-      cl_device_id deviceId = (cl_device_id) JNIHelper::getInstanceFieldLong(jenv, deviceInstance, "deviceId"); 
       cl_int status = CL_SUCCESS;
-
       const char *nameChars = jenv->GetStringUTFChars(name, NULL);
+      fprintf(stderr, "tring to extract kernel '%s'\n", nameChars);
       cl_kernel kernel = clCreateKernel(program, nameChars, &status);
       jenv->ReleaseStringUTFChars(name, nameChars);
+
+      if (kernel == NULL){
+         fprintf(stderr, "kernel is null!\n");
+      }
 
       jobject kernelInstance = NULL;
 
       if (status == CL_SUCCESS){
          kernelInstance = JNIHelper::createInstance(jenv, "com/amd/opencl/Kernel", "(JLcom/amd/opencl/Program;Ljava/lang/String;Ljava/util/List;)V", (jlong)kernel, programInstance, name, args);
+      }else{
+         fprintf(stderr, "kernel creation seems to have failed\n");
       }
       return(kernelInstance);
 
@@ -188,7 +193,8 @@ jobject createMem(JNIEnv *jenv, cl_context context,  jlong bits, jobject value){
 }
 
 void putArgs(JNIEnv *jenv, cl_context context, cl_kernel kernel, cl_command_queue commandQueue, cl_event *events, jint *eventc, jint argIndex, jobject argDef, jobject arg){
-   fprintf(stderr, "pre ");
+   fprintf(stderr, "putArgs ");
+      cl_int status = CL_SUCCESS;
    describeArg(jenv, argIndex, argDef, arg);
    jlong bits = JNIHelper::getInstanceFieldLong(jenv, argDef, "bits");
    if (bits & com_amd_opencl_OpenCLJNI_ARRAY_BIT){ // global check?
@@ -230,6 +236,34 @@ void putArgs(JNIEnv *jenv, cl_context context, cl_kernel kernel, cl_command_queu
          }else{
             fprintf(stderr, "set arg  = %d!\n", argIndex);
          }
+   }else if (bits & com_amd_opencl_OpenCLJNI_PRIMITIVE_BIT){
+      if (bits & com_amd_opencl_OpenCLJNI_INT_BIT){
+         cl_int value = JNIHelper::getInstanceFieldInt(jenv, arg, "value");
+         status = clSetKernelArg(kernel, argIndex, sizeof(value), (void *)&(value));          
+         if (status != CL_SUCCESS) {
+            fprintf(stderr, "error setting int arg %d %d %s!\n",  argIndex, value, CLHelper::errString(status));
+         }else{
+            fprintf(stderr, "set arg  = %d to %d!\n", argIndex, value);
+         }
+      }else if (bits & com_amd_opencl_OpenCLJNI_FLOAT_BIT){
+         cl_float value = JNIHelper::getInstanceFieldFloat(jenv, arg, "value");
+         status = clSetKernelArg(kernel, argIndex, sizeof(value), (void *)&(value));          
+         if (status != CL_SUCCESS) {
+            fprintf(stderr, "error setting int arg %d %f %s!\n",  argIndex, value, CLHelper::errString(status));
+         }else{
+            fprintf(stderr, "set arg  = %d to %f!\n", argIndex, value);
+         }
+
+      }else if (bits & com_amd_opencl_OpenCLJNI_DOUBLE_BIT){
+         cl_double value = JNIHelper::getInstanceFieldDouble(jenv, arg, "value");
+         status = clSetKernelArg(kernel, argIndex, sizeof(value), (void *)&(value));          
+         if (status != CL_SUCCESS) {
+            fprintf(stderr, "error setting double arg %d %lf %s!\n",  argIndex, value, CLHelper::errString(status));
+         }else{
+            fprintf(stderr, "set arg  = %d to %lf!\n", argIndex, value);
+         }
+
+      }
    }
 }
 

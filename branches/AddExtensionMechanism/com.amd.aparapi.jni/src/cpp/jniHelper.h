@@ -52,6 +52,9 @@ class JNIHelper{
       static jobject getStaticFieldObject(JNIEnv *jenv, char *className, char *fieldName, char *signature);
 
       static jint getInstanceFieldInt(JNIEnv *jenv, jobject instance, char *fieldName);
+      static jfloat getInstanceFieldFloat(JNIEnv *jenv, jobject instance, char *fieldName);
+      static jdouble getInstanceFieldDouble(JNIEnv *jenv, jobject instance, char *fieldName);
+      static jshort getInstanceFieldShort(JNIEnv *jenv, jobject instance, char *fieldName);
       static jlong getInstanceFieldLong(JNIEnv *jenv, jobject instance, char *fieldName);
       static jboolean getInstanceFieldBoolean(JNIEnv *jenv, jobject instance, char *fieldName);
       static jobject getInstanceFieldObject(JNIEnv *jenv, jobject instance, char *fieldName, char *signature);
