@@ -193,9 +193,11 @@ jobject createMem(JNIEnv *jenv, cl_context context,  jlong bits, jobject value){
 }
 
 void putArgs(JNIEnv *jenv, cl_context context, cl_kernel kernel, cl_command_queue commandQueue, cl_event *events, jint *eventc, jint argIndex, jobject argDef, jobject arg){
-   fprintf(stderr, "putArgs ");
+   if(0){
+      fprintf(stderr, "putArgs ");
+      describeArg(jenv, argIndex, argDef, arg);
+   }
       cl_int status = CL_SUCCESS;
-   describeArg(jenv, argIndex, argDef, arg);
    jlong bits = JNIHelper::getInstanceFieldLong(jenv, argDef, "bits");
    if (bits & com_amd_opencl_OpenCLJNI_ARRAY_BIT){ // global check?
       jobject memInstance = JNIHelper::getInstanceFieldObject(jenv, argDef, "memVal", "Lcom/amd/opencl/Mem;");
@@ -205,6 +207,17 @@ void putArgs(JNIEnv *jenv, cl_context context, cl_kernel kernel, cl_command_queu
          JNIHelper::setInstanceFieldObject(jenv, argDef, "memVal", "Lcom/amd/opencl/Mem;", memInstance);
       }else{
          // check of bits == memInstance.bits
+         // we need to pin it
+         jboolean isCopy;
+         void *ptr  =  jenv->GetPrimitiveArrayCritical((jarray)arg,&isCopy); 
+         void *oldPtr = (void*)JNIHelper::getInstanceFieldLong(jenv, memInstance, "address");
+         if (ptr !=oldPtr){
+            fprintf(stderr, "ptr moved!\n");
+         }
+         if (isCopy){
+            bits |=  com_amd_opencl_OpenCLJNI_COPY_BIT;
+         }
+         JNIHelper::setInstanceFieldLong(jenv, argDef, "bits", bits);
       }
       cl_mem mem = 0;
 
@@ -226,7 +239,7 @@ void putArgs(JNIEnv *jenv, cl_context context, cl_kernel kernel, cl_command_queu
          if (status != CL_SUCCESS) {
             fprintf(stderr, "error enqueuing write %s!\n",  CLHelper::errString(status));
          }else{
-            fprintf(stderr, "enqueued write eventc = %d!\n", *eventc);
+            if(0)fprintf(stderr, "enqueued write eventc = %d!\n", *eventc);
          }
          (*eventc)++;
       }
@@ -234,7 +247,7 @@ void putArgs(JNIEnv *jenv, cl_context context, cl_kernel kernel, cl_command_queu
          if (status != CL_SUCCESS) {
             fprintf(stderr, "error setting arg %d %s!\n",  argIndex, CLHelper::errString(status));
          }else{
-            fprintf(stderr, "set arg  = %d!\n", argIndex);
+            if(0)fprintf(stderr, "set arg  = %d!\n", argIndex);
          }
    }else if (bits & com_amd_opencl_OpenCLJNI_PRIMITIVE_BIT){
       if (bits & com_amd_opencl_OpenCLJNI_INT_BIT){
@@ -243,7 +256,7 @@ void putArgs(JNIEnv *jenv, cl_context context, cl_kernel kernel, cl_command_queu
          if (status != CL_SUCCESS) {
             fprintf(stderr, "error setting int arg %d %d %s!\n",  argIndex, value, CLHelper::errString(status));
          }else{
-            fprintf(stderr, "set arg  = %d to %d!\n", argIndex, value);
+            if(0)fprintf(stderr, "set arg  = %d to %d!\n", argIndex, value);
          }
       }else if (bits & com_amd_opencl_OpenCLJNI_FLOAT_BIT){
          cl_float value = JNIHelper::getInstanceFieldFloat(jenv, arg, "value");
@@ -251,7 +264,7 @@ void putArgs(JNIEnv *jenv, cl_context context, cl_kernel kernel, cl_command_queu
          if (status != CL_SUCCESS) {
             fprintf(stderr, "error setting int arg %d %f %s!\n",  argIndex, value, CLHelper::errString(status));
          }else{
-            fprintf(stderr, "set arg  = %d to %f!\n", argIndex, value);
+            if(0)fprintf(stderr, "set arg  = %d to %f!\n", argIndex, value);
          }
 
       }else if (bits & com_amd_opencl_OpenCLJNI_DOUBLE_BIT){
@@ -260,7 +273,7 @@ void putArgs(JNIEnv *jenv, cl_context context, cl_kernel kernel, cl_command_queu
          if (status != CL_SUCCESS) {
             fprintf(stderr, "error setting double arg %d %lf %s!\n",  argIndex, value, CLHelper::errString(status));
          }else{
-            fprintf(stderr, "set arg  = %d to %lf!\n", argIndex, value);
+            if(0)fprintf(stderr, "set arg  = %d to %lf!\n", argIndex, value);
          }
 
       }
@@ -269,15 +282,17 @@ void putArgs(JNIEnv *jenv, cl_context context, cl_kernel kernel, cl_command_queu
 
 
 void getArgs(JNIEnv *jenv, cl_context context, cl_command_queue commandQueue, cl_event *events, jint *eventc, jint argIndex, jobject argDef, jobject arg){
+   if (0){
    fprintf(stderr, "post ");
    describeArg(jenv, argIndex, argDef, arg);
+   }
    jlong bits = JNIHelper::getInstanceFieldLong(jenv, argDef, "bits");
    if ((bits & com_amd_opencl_OpenCLJNI_ARRAY_BIT)  && (bits & (com_amd_opencl_OpenCLJNI_WRITEONLY_BIT|com_amd_opencl_OpenCLJNI_READWRITE_BIT))){
       jobject memInstance = JNIHelper::getInstanceFieldObject(jenv, argDef, "memVal", "Lcom/amd/opencl/Mem;");
       if (memInstance == NULL){
          fprintf(stderr, "mem instance not set\n");
       }else{
-         fprintf(stderr, "retrieved mem instance\n");
+         if(0)fprintf(stderr, "retrieved mem instance\n");
       }
 
       cl_mem mem =0;
@@ -289,14 +304,27 @@ void getArgs(JNIEnv *jenv, cl_context context, cl_command_queue commandQueue, cl
 
       void *ptr= (void *)JNIHelper::getInstanceFieldLong(jenv, memInstance, "address");
       size_t sizeInBytes= (size_t)JNIHelper::getInstanceFieldInt(jenv, memInstance, "sizeInBytes");
+      if (0){
       fprintf(stderr, "about to enqueu read eventc = %d!\n", *eventc);
+      }
       cl_int status = clEnqueueReadBuffer(commandQueue, mem, CL_FALSE, 0, sizeInBytes, ptr ,*eventc, (*eventc)==0?NULL:events, &events[*eventc]);
       if (status != CL_SUCCESS) {
          fprintf(stderr, "error enqueuing read %s!\n",  CLHelper::errString(status));
       }else{
+         if (0){
          fprintf(stderr, "enqueued read eventc = %d!\n", *eventc);
+         }
       }
       (*eventc)++;
+
+      jobject arrayInstance = JNIHelper::getInstanceFieldObject(jenv, memInstance, "instance", "Ljava/lang/Object;");
+
+      // we need to unpin 
+      if ((bits & com_amd_opencl_OpenCLJNI_WRITEONLY_BIT) == com_amd_opencl_OpenCLJNI_WRITEONLY_BIT){
+         jenv->ReleasePrimitiveArrayCritical((jarray)arrayInstance, ptr,JNI_ABORT);
+      }else{
+         jenv->ReleasePrimitiveArrayCritical((jarray)arrayInstance, ptr, 0);
+      }
    }
 }
 
@@ -315,7 +343,7 @@ JNI_JAVA(void, OpenCLJNI, invoke)
       // we use the bitfields to determine which is which
       // note that argArray[0] is the range then 1,2,3 etc matches argDefsArray[0,1,2]
       jsize argc = jenv->GetArrayLength(argDefsArray);
-      fprintf(stderr, "argc = %d\n", argc);
+      if (0) fprintf(stderr, "argc = %d\n", argc);
       jint reads=0;
       jint writes=0;
       for (jsize argIndex=0; argIndex<argc; argIndex++){
@@ -333,7 +361,7 @@ JNI_JAVA(void, OpenCLJNI, invoke)
          }
 
       }
-      fprintf(stderr, "reads=%d writes=%d\n", reads, writes);
+      if (0) fprintf(stderr, "reads=%d writes=%d\n", reads, writes);
       cl_event * events= new cl_event[reads+writes+1];
 
       jint eventc =0;
@@ -356,8 +384,8 @@ JNI_JAVA(void, OpenCLJNI, invoke)
          offsets[0]= 0;
          localDims[0]=JNIHelper::getInstanceFieldInt(jenv, rangeInstance, "localSize_0"); 
          globalDims[0]=JNIHelper::getInstanceFieldInt(jenv, rangeInstance, "globalSize_0"); 
-         fprintf(stderr, "native range localSize_0 == %d\n", localDims[0]);
-         fprintf(stderr, "native range globalSize_0 == %d\n", globalDims[0]);
+         if (0) fprintf(stderr, "native range localSize_0 == %d\n", localDims[0]);
+         if (0) fprintf(stderr, "native range globalSize_0 == %d\n", globalDims[0]);
          if (dims >1){
             offsets[1]= 0;
             localDims[1]=JNIHelper::getInstanceFieldInt(jenv, rangeInstance, "localSize_1"); 
@@ -372,7 +400,7 @@ JNI_JAVA(void, OpenCLJNI, invoke)
       }
       cl_int status = CL_SUCCESS;
 
-      fprintf(stderr, "Exec\n");
+     if (0)  fprintf(stderr, "Exec\n");
       status = clEnqueueNDRangeKernel(
             commandQueue,
             kernel,
@@ -386,7 +414,7 @@ JNI_JAVA(void, OpenCLJNI, invoke)
       if (status != CL_SUCCESS) {
          fprintf(stderr, "error enqueuing execute %s !\n", CLHelper::errString(status));
       }else{
-         fprintf(stderr, "success enqueuing execute eventc= %d !\n", eventc);
+         if (0) fprintf(stderr, "success enqueuing execute eventc= %d !\n", eventc);
       }
       eventc++;
 
