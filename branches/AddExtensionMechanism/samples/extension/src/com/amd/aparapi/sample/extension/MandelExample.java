@@ -48,13 +48,10 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
-import java.util.List;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 
-import com.amd.aparapi.Kernel;
-import com.amd.aparapi.ProfileInfo;
 import com.amd.aparapi.Range;
 import com.amd.opencl.Device;
 import com.amd.opencl.OpenCL;
