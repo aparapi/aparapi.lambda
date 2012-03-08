@@ -43,7 +43,7 @@ public class OpenCLJNI{
    
    public final static long COPY_BIT = 1 << 14; 
    
-   public final static long ENQUEUED_BIT = 1 << 14;
+   public final static long ENQUEUED_BIT = 1 << 15;
 
    native public List<Platform> getPlatforms();
 
