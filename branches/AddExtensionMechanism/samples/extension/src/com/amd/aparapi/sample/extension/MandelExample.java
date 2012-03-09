@@ -66,8 +66,9 @@ import com.amd.opencl.OpenCL;
  * @author gfrost
  *
  */
-
+@OpenCL.Resource("com/amd/aparapi/sample/extension/mandel.cl")
 interface MandelBrot extends OpenCL<MandelBrot>{
+   /*
    @Kernel(""//
          + "         {\n"//
          + "         int gid = get_global_id(0);\n"//
@@ -84,7 +85,7 @@ interface MandelBrot extends OpenCL<MandelBrot>{
          + "         }\n"//
          + "         rgb[gid]  = pallette[count];\n"//
          + "         return;\n"//
-         + "         }\n")
+         + "         }\n") */
    void createMandleBrot(Range range,//
          @Arg("maxIterations") int maxIterations, //
          @Arg("width") int width, //

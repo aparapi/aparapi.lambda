@@ -8,7 +8,10 @@
             <pathelement path="../../com.amd.aparapi/dist/aparapi.jar"/>
          </classpath>
       </javac>
+      <copy todir="classes/com\amd\aparapi\sample\extension" file="src\com\amd\aparapi\sample\extension\mandel.cl"/>
+      <copy todir="classes/com\amd\aparapi\sample\extension" file="src\com\amd\aparapi\sample\extension\squarer.cl"/>
       <jar jarfile="${ant.project.name}.jar" basedir="classes"/>
+
    </target>
 
    <target name="clean">
