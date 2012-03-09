@@ -66,38 +66,19 @@ import com.amd.opencl.OpenCL;
  * @author gfrost
  *
  */
+
 @OpenCL.Resource("com/amd/aparapi/sample/extension/mandel.cl")
 interface MandelBrot extends OpenCL<MandelBrot>{
-   /*
-   @Kernel(""//
-         + "         {\n"//
-         + "         int gid = get_global_id(0);\n"//
-         + "         float x = ((((float)(gid % width) * scale) - ((scale / 2.0f) * (float)width)) / (float)width) + offsetx;\n"//
-         + "         float y = ((((float)(gid / height) * scale) - ((scale / 2.0f) * (float)height)) / (float)height) + offsety;\n"//
-         + "         int count = 0;\n"//
-         + "         float zx = x;\n"//
-         + "         float zy = y;\n"//
-         + "         float new_zx = 0.0f;\n"//
-         + "         for (; count<maxIterations && ((zx * zx) + (zy * zy))<8.0f; count++){\n"//
-         + "            new_zx = ((zx * zx) - (zy * zy)) + x;\n"//
-         + "            zy = ((2.0f * zx) * zy) + y;\n"///
-         + "            zx = new_zx;\n"//
-         + "         }\n"//
-         + "         rgb[gid]  = pallette[count];\n"//
-         + "         return;\n"//
-         + "         }\n") */
-   void createMandleBrot(Range range,//
-         @Arg("maxIterations") int maxIterations, //
-         @Arg("width") int width, //
-         @Arg("height") int height, //
+   void createMandleBrot(//
+         Range range,//
          @Arg("scale") float scale, //
          @Arg("offsetx") float offsetx, //
          @Arg("offsety") float offsety, //
          @GlobalReadWrite("rgb") int[] rgb,//
          @GlobalReadOnly("pallette") int[] pallette//
    );
-
 }
+
 
 public class MandelExample{
 
@@ -116,7 +97,7 @@ public class MandelExample{
       final int height = 768;
 
       /** Mandelbrot image height. */
-      final Range range = Range.create(width * height);
+      final Range range = Range.create2D(width,height);
 
       /** Image for Mandelbrot view. */
       final BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
@@ -182,7 +163,7 @@ public class MandelExample{
       scale = defaultScale;
       offsetx = -1f;
       offsety = 0f;
-      mandelBrot.createMandleBrot(range, maxIterations, width, height, scale, offsetx, offsety, rgb, pallette);
+      mandelBrot.createMandleBrot(range, scale, offsetx, offsety, rgb, pallette);
 
       System.arraycopy(rgb, 0, imageRgb, 0, rgb.length);
       viewer.repaint();
@@ -224,7 +205,7 @@ public class MandelExample{
                offsetx = x;
                offsety = y;
 
-               mandelBrot.createMandleBrot(range, maxIterations, width, height, scale, offsetx, offsety, rgb, pallette);
+               mandelBrot.createMandleBrot(range, scale, offsetx, offsety, rgb, pallette);
 
                System.arraycopy(rgb, 0, imageRgb, 0, rgb.length);
                viewer.repaint();
