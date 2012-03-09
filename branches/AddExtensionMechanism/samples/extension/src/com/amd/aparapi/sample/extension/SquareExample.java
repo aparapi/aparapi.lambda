@@ -19,24 +19,26 @@ public class SquareExample{
             @GlobalWriteOnly("out") float[] out);
    }
    
-   @OpenCL.Resource("squarer.cl")
-   interface SquarerWithResource extends OpenCL<Squarer>{
+   @OpenCL.Resource("com/amd/aparapi/sample/extension/squarer.cl")
+   interface SquarerWithResource extends OpenCL<SquarerWithResource>{
    
-      public Squarer square(//
+      public SquarerWithResource square(//
             Range _range,//
             @GlobalReadOnly("in") float[] in,//
             @GlobalWriteOnly("out") float[] out);
    }
  
-   @OpenCL.Source("__kernel void (\n" //
-         + "          __global float *in,\n"//
-         + "          __global float *out){\n"//
+   @OpenCL.Source("\n"//
+         + "__kernel void square (\n" //
+         + "   __global float *in,\n"//
+         + "   __global float *out\n"
+         + "){\n"//
          + "   const size_t id = get_global_id(0);\n"//
          + "   out[id] = in[id]*in[id];\n"//
          + "}\n")
-   interface SquarerWithSource extends OpenCL<Squarer>{
+   interface SquarerWithSource extends OpenCL<SquarerWithSource>{
    
-      public Squarer square(//
+      public SquarerWithSource square(//
             Range _range,//
             @GlobalReadOnly("in") float[] in,//
             @GlobalWriteOnly("out") float[] out);
@@ -54,7 +56,7 @@ public class SquareExample{
       float[] out = new float[size];
       Range range = Range.create(size);
 
-      Squarer squarer = Device.firstGPU(Squarer.class);
+      SquarerWithResource squarer = Device.firstGPU(SquarerWithResource.class);
       squarer.square(range, in, out);
 
       for (int i = 0; i < size; i++) {
