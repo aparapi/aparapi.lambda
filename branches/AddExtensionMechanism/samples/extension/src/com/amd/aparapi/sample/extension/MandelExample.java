@@ -48,6 +48,8 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -55,6 +57,7 @@ import javax.swing.JFrame;
 import com.amd.aparapi.Range;
 import com.amd.opencl.Device;
 import com.amd.opencl.OpenCL;
+import com.amd.opencl.OpenCLAdaptor;
 
 /**
  * An example Aparapi application which displays a view of the Mandelbrot set and lets the user zoom in to a particular point. 
@@ -69,16 +72,104 @@ import com.amd.opencl.OpenCL;
 
 @OpenCL.Resource("com/amd/aparapi/sample/extension/mandel.cl")
 interface MandelBrot extends OpenCL<MandelBrot>{
-   void createMandleBrot(//
+   MandelBrot createMandleBrot(//
          Range range,//
          @Arg("scale") float scale, //
          @Arg("offsetx") float offsetx, //
          @Arg("offsety") float offsety, //
-         @GlobalReadWrite("rgb") int[] rgb,//
+         @GlobalWriteOnly("rgb") int[] rgb,//
          @GlobalReadOnly("pallette") int[] pallette//
    );
 }
 
+class JavaMandelBrot extends OpenCLAdaptor<MandelBrot> implements MandelBrot{
+
+   @Override
+   public MandelBrot createMandleBrot(Range range, float scale, float offsetx, float offsety, int[] rgb, int[] pallette) {
+      final int MAX_ITERATIONS = 64;
+
+      int width = range.getGlobalSize(0);
+      int height = range.getGlobalSize(1);
+      for (int gridy = 0; gridy < height; gridy++) {
+         for (int gridx = 0; gridx < width; gridx++) {
+            float x = ((((float) (gridx) * scale) - ((scale / 2.0f) * (float) width)) / (float) width) + offsetx;
+            float y = ((((float) (gridy) * scale) - ((scale / 2.0f) * (float) height)) / (float) height) + offsety;
+            int count = 0;
+            float zx = x;
+            float zy = y;
+            float new_zx = 0.0f;
+            for (; count < MAX_ITERATIONS && ((zx * zx) + (zy * zy)) < 8.0f; count++) {
+               new_zx = ((zx * zx) - (zy * zy)) + x;
+               zy = ((2.0f * zx) * zy) + y;
+               zx = new_zx;
+            }
+            rgb[gridx + gridy * width] = pallette[count];
+
+         }
+      }
+      return (this);
+   }
+
+}
+
+class JavaMandelBrotMultiThread extends OpenCLAdaptor<MandelBrot> implements MandelBrot{
+
+   @Override
+   public MandelBrot createMandleBrot(final Range range, final float scale, final float offsetx, final float offsety,
+         final int[] rgb, final int[] pallette) {
+      final int MAX_ITERATIONS = 64;
+
+      final int width = range.getGlobalSize(0);
+      final int height = range.getGlobalSize(1);
+      final int threadCount = 8;
+      Thread[] threads = new Thread[threadCount];
+      final CyclicBarrier barrier = new CyclicBarrier(threadCount+1);
+      for (int thread = 0; thread < threadCount; thread++) {
+         final int threadId = thread;
+         final int groupHeight = height / threadCount;
+         (threads[threadId] = new Thread(new Runnable(){
+            public void run() {
+               for (int gridy = threadId * groupHeight; gridy < (threadId + 1) * groupHeight; gridy++) {
+                  for (int gridx = 0; gridx < width; gridx++) {
+                     float x = ((((float) (gridx) * scale) - ((scale / 2.0f) * (float) width)) / (float) width) + offsetx;
+                     float y = ((((float) (gridy) * scale) - ((scale / 2.0f) * (float) height)) / (float) height) + offsety;
+                     int count = 0;
+                     float zx = x;
+                     float zy = y;
+                     float new_zx = 0.0f;
+                     for (; count < MAX_ITERATIONS && ((zx * zx) + (zy * zy)) < 8.0f; count++) {
+                        new_zx = ((zx * zx) - (zy * zy)) + x;
+                        zy = ((2.0f * zx) * zy) + y;
+                        zx = new_zx;
+                     }
+                     rgb[gridx + gridy * width] = pallette[count];
+                  }
+               }
+            try {
+               barrier.await();
+            } catch (InterruptedException e) {
+               // TODO Auto-generated catch block
+               e.printStackTrace();
+            } catch (BrokenBarrierException e) {
+               // TODO Auto-generated catch block
+               e.printStackTrace();
+            }   
+            }
+         })).start();
+      }
+      try {
+         barrier.await();
+      } catch (InterruptedException e) {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      } catch (BrokenBarrierException e) {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }   
+      return (this);
+   }
+
+}
 
 public class MandelExample{
 
@@ -97,7 +188,7 @@ public class MandelExample{
       final int height = 768;
 
       /** Mandelbrot image height. */
-      final Range range = Range.create2D(width,height);
+      final Range range = Range.create2D(width, height);
 
       /** Image for Mandelbrot view. */
       final BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
@@ -157,8 +248,9 @@ public class MandelExample{
          pallette[i] = Color.HSBtoRGB(h, 1f, b);
       }
 
-      MandelBrot mandelBrot = Device.firstGPU(MandelBrot.class);
-
+      MandelBrot mandelBrot = // Device.firstGPU(MandelBrot.class);
+      // new JavaMandelBrot();
+      new JavaMandelBrotMultiThread();
       float defaultScale = 3f;
       scale = defaultScale;
       offsetx = -1f;
