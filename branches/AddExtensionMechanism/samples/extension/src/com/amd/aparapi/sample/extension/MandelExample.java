@@ -248,9 +248,9 @@ public class MandelExample{
          pallette[i] = Color.HSBtoRGB(h, 1f, b);
       }
 
-      MandelBrot mandelBrot = // Device.firstGPU(MandelBrot.class);
-      // new JavaMandelBrot();
-      new JavaMandelBrotMultiThread();
+      MandelBrot mandelBrot = Device.best(MandelBrot.class);
+          // new JavaMandelBrot();
+         //new JavaMandelBrotMultiThread();
       float defaultScale = 3f;
       scale = defaultScale;
       offsetx = -1f;
