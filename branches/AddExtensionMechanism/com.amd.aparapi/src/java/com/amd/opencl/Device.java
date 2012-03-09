@@ -298,9 +298,8 @@ public class Device{
 
                List<Arg> args = getArgs(m);
 
-             
                kernels.put(m.getName(), args);
-            } 
+            }
          }
       } else {
          for (Method m : _interface.getDeclaredMethods()) {
@@ -326,7 +325,7 @@ public class Device{
                   OpenCL.Kernel kernel = (OpenCL.Kernel) a;
                   sourceBuilder.append(kernel.value());
                   kernels.put(m.getName(), args);
-               } 
+               }
             }
          }
       }
@@ -354,13 +353,50 @@ public class Device{
 
    }
 
-   public static <T extends OpenCL<T>> T firstGPU(Class<T> _interface) {
+   interface DeviceFilter{
+      boolean match(Device _device);
+   }
+   interface DeviceComparitor{
+      Device best(Device _deviceLhs, Device _deviceRhs);
+   }
+   
+   public static DeviceComparitor Best = new DeviceComparitor(){
+      @Override
+      public Device best(Device _deviceLhs, Device _deviceRhs) {
+         if (_deviceLhs.getType() != _deviceRhs.getType()){
+            if (_deviceLhs.getType() == TYPE.GPU){
+               return(_deviceLhs);
+            }else{
+               return(_deviceRhs);
+            }
+         }
+         if (_deviceLhs.maxComputeUnits>_deviceRhs.maxComputeUnits){
+            return(_deviceLhs);
+         }else{
+            return(_deviceRhs);
+         }
+         
+      }
+   };
+   public static DeviceFilter FirstGPU = new DeviceFilter(){
+      @Override
+      public boolean match(Device _device) {
+         return (_device.getType() == Device.TYPE.GPU);
+      }
+   };
+   
+   public static DeviceFilter FirstCPU = new DeviceFilter(){
+      @Override
+      public boolean match(Device _device) {
+         return (_device.getType() == Device.TYPE.CPU);
+      }
+   };
+
+   public static <T extends OpenCL<T>> T first(Class<T> _interface, DeviceFilter _deviceFilter) {
       Device device = null;
       for (Platform p : Platform.getPlatforms()) {
-         //System.out.println(p);
          for (Device d : p.getDevices()) {
-            //System.out.println(d);
-            if (d.getType() == Device.TYPE.GPU) {
+            if (_deviceFilter.match(d)) {
                device = d;
                break;
             }
@@ -370,9 +406,33 @@ public class Device{
          }
       }
       return (device.create(_interface));
-
    }
-
+   
+   
+   public static <T extends OpenCL<T>> T best(Class<T> _interface, DeviceComparitor _deviceComparitor) {
+      Device device = null;
+      for (Platform p : Platform.getPlatforms()) {
+         for (Device d : p.getDevices()) {
+            if (device == null) {
+               device = d;
+            }else{
+               device = _deviceComparitor.best(device, d);
+            }
+         }
+      }
+      return (device.create(_interface));
+   }
+   
+   public static <T extends OpenCL<T>> T firstGPU(Class<T> _interface){
+      return(first(_interface, FirstGPU));
+   }
+   
+   public static <T extends OpenCL<T>> T firstCPU(Class<T> _interface){
+      return(first(_interface, FirstCPU));
+   }
+   public static <T extends OpenCL<T>> T best(Class<T> _interface){
+      return(best(_interface, Best));
+   }
    public Program createProgram(String source) {
       return (OpenCLJNI.getJNI().createProgram(this, source));
    }
