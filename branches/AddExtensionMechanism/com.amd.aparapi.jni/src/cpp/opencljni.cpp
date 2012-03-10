@@ -351,6 +351,14 @@ void *pin(JNIEnv *jenv, jarray array, jlong *bits){
    return(ptr);
 }
 
+void unpin(JNIEnv *jenv, jarray array, void *ptr, jlong *bits){
+   if (isset(*bits, WRITEONLY)){
+      jenv->ReleasePrimitiveArrayCritical(array, ptr,JNI_ABORT);
+   }else{
+      jenv->ReleasePrimitiveArrayCritical(array, ptr, 0);
+   }
+}
+
 
 jobject createMem(JNIEnv *jenv, cl_context context,  jlong bits, jarray array){
    jsize sizeInBytes = getArraySizeInBytes(jenv, array, bits);
@@ -473,39 +481,38 @@ void getArgs(JNIEnv *jenv, cl_context context, cl_command_queue commandQueue, cl
       describeArg(jenv, argIndex, argDef, arg);
    }
    jlong bits = Arg::getBits(jenv, argDef);
-   if (isset(bits, ARRAY)  && (isset(bits, WRITEONLY)|isset(bits, READWRITE))){
+   if (isset(bits, ARRAY)){
       jobject memInstance = Arg::getMemInstance(jenv, argDef);
       if (memInstance == NULL){
          fprintf(stderr, "mem instance not set\n");
       }else{
          if(0)fprintf(stderr, "retrieved mem instance\n");
       }
-
-      cl_mem mem = Mem::getMem(jenv, memInstance, bits);
-
       void *ptr= Mem::getAddress(jenv, memInstance);
-      size_t sizeInBytes= Mem::getSizeInBytes(jenv, memInstance);
-      if (0){
-         fprintf(stderr, "about to enqueu read eventc = %d!\n", *eventc);
-      }
-      cl_int status = clEnqueueReadBuffer(commandQueue, mem, CL_FALSE, 0, sizeInBytes, ptr ,*eventc, (*eventc)==0?NULL:events, &events[*eventc]);
-      if (status != CL_SUCCESS) {
-         fprintf(stderr, "error enqueuing read %s!\n",  CLHelper::errString(status));
-      }else{
+      if (isset(bits, WRITEONLY)|isset(bits, READWRITE)){
+
+         cl_mem mem = Mem::getMem(jenv, memInstance, bits);
+
+         size_t sizeInBytes= Mem::getSizeInBytes(jenv, memInstance);
          if (0){
-            fprintf(stderr, "enqueued read eventc = %d!\n", *eventc);
+            fprintf(stderr, "about to enqueu read eventc = %d!\n", *eventc);
          }
+         cl_int status = clEnqueueReadBuffer(commandQueue, mem, CL_FALSE, 0, sizeInBytes, ptr ,*eventc, (*eventc)==0?NULL:events, &events[*eventc]);
+         if (status != CL_SUCCESS) {
+            fprintf(stderr, "error enqueuing read %s!\n",  CLHelper::errString(status));
+         }else{
+            if (0){
+               fprintf(stderr, "enqueued read eventc = %d!\n", *eventc);
+            }
+         }
+         (*eventc)++;
       }
-      (*eventc)++;
 
       jobject arrayInstance = Mem::getInstance(jenv, memInstance);
 
-      // we need to unpin 
-      if (isset(bits, WRITEONLY)){
-         jenv->ReleasePrimitiveArrayCritical((jarray)arrayInstance, ptr,JNI_ABORT);
-      }else{
-         jenv->ReleasePrimitiveArrayCritical((jarray)arrayInstance, ptr, 0);
-      }
+      unpin(jenv, (jarray)arrayInstance, ptr, &bits);
+
+
       reset(bits, ENQUEUED);
       reset(bits, COPY);
       Mem::setBits(jenv, memInstance, bits);
