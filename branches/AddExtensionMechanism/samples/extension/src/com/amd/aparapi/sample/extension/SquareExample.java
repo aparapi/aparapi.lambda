@@ -15,8 +15,8 @@ public class SquareExample{
       //
       public Squarer square(//
             Range _range,//
-            @GlobalReadOnly("in") float[] in,//
-            @GlobalWriteOnly("out") float[] out);
+            @GlobalReadWrite("in") float[] in,//
+            @GlobalReadWrite("out") float[] out);
    }
    
    @OpenCL.Resource("com/amd/aparapi/sample/extension/squarer.cl")

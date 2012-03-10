@@ -77,16 +77,82 @@ interface MandelBrot extends OpenCL<MandelBrot>{
          @Arg("scale") float scale, //
          @Arg("offsetx") float offsetx, //
          @Arg("offsety") float offsety, //
-         @GlobalWriteOnly("rgb") int[] rgb,//
-         @GlobalReadOnly("pallette") int[] pallette//
+         @GlobalWriteOnly("rgb") int[] rgb
+        
    );
 }
 
 class JavaMandelBrot extends OpenCLAdaptor<MandelBrot> implements MandelBrot{
-
+   final int MAX_ITERATIONS = 64;
+   final int pallette[] = new int[]{
+         -65536,
+         -59392,
+         -53248,
+         -112640,
+         -106752,
+         -166144,
+         -160256,
+         -219904,
+         -279552,
+         -339200,
+         -399104,
+         -985344,
+         -2624000,
+         -4197376,
+         -5770496,
+         -7343872,
+         -8851712,
+         -10425088,
+         -11932928,
+         -13375232,
+         -14817792,
+         -16260096,
+         -16719602,
+         -16720349,
+         -16721097,
+         -16721846,
+         -16722595,
+         -16723345,
+         -16724351,
+         -16725102,
+         -16726110,
+         -16727119,
+         -16728129,
+         -16733509,
+         -16738889,
+         -16744269,
+         -16749138,
+         -16754006,
+         -16758619,
+         -16762976,
+         -16767077,
+         -16771178,
+         -16774767,
+         -16514932,
+         -15662970,
+         -14942079,
+         -14221189,
+         -13631371,
+         -13107088,
+         -12648342,
+         -12320669,
+         -11992995,
+         -11796393,
+         -11665328,
+         -11993019,
+         -12386248,
+         -12845011,
+         -13303773,
+         -13762534,
+         -14286830,
+         -14745588,
+         -15269881,
+         -15728637,
+         -16252927
+      };
    @Override
-   public MandelBrot createMandleBrot(Range range, float scale, float offsetx, float offsety, int[] rgb, int[] pallette) {
-      final int MAX_ITERATIONS = 64;
+   public MandelBrot createMandleBrot(Range range, float scale, float offsetx, float offsety, int[] rgb) {
+     
 
       int width = range.getGlobalSize(0);
       int height = range.getGlobalSize(1);
@@ -113,11 +179,76 @@ class JavaMandelBrot extends OpenCLAdaptor<MandelBrot> implements MandelBrot{
 }
 
 class JavaMandelBrotMultiThread extends OpenCLAdaptor<MandelBrot> implements MandelBrot{
-
+   final int MAX_ITERATIONS = 64;
+   final int pallette[] = new int[]{
+         -65536,
+         -59392,
+         -53248,
+         -112640,
+         -106752,
+         -166144,
+         -160256,
+         -219904,
+         -279552,
+         -339200,
+         -399104,
+         -985344,
+         -2624000,
+         -4197376,
+         -5770496,
+         -7343872,
+         -8851712,
+         -10425088,
+         -11932928,
+         -13375232,
+         -14817792,
+         -16260096,
+         -16719602,
+         -16720349,
+         -16721097,
+         -16721846,
+         -16722595,
+         -16723345,
+         -16724351,
+         -16725102,
+         -16726110,
+         -16727119,
+         -16728129,
+         -16733509,
+         -16738889,
+         -16744269,
+         -16749138,
+         -16754006,
+         -16758619,
+         -16762976,
+         -16767077,
+         -16771178,
+         -16774767,
+         -16514932,
+         -15662970,
+         -14942079,
+         -14221189,
+         -13631371,
+         -13107088,
+         -12648342,
+         -12320669,
+         -11992995,
+         -11796393,
+         -11665328,
+         -11993019,
+         -12386248,
+         -12845011,
+         -13303773,
+         -13762534,
+         -14286830,
+         -14745588,
+         -15269881,
+         -15728637,
+         -16252927
+      };
    @Override
    public MandelBrot createMandleBrot(final Range range, final float scale, final float offsetx, final float offsety,
-         final int[] rgb, final int[] pallette) {
-      final int MAX_ITERATIONS = 64;
+         final int[] rgb) {
 
       final int width = range.getGlobalSize(0);
       final int height = range.getGlobalSize(1);
@@ -233,7 +364,7 @@ public class MandelExample{
       final int maxIterations = 64;
 
       /** Palette which maps iteration values to RGB values. */
-      final int pallette[] = new int[maxIterations + 1];
+    
 
       /** Mutable values of scale, offsetx and offsety so that we can modify the zoom level and position of a view. */
       float scale = .0f;
@@ -242,12 +373,15 @@ public class MandelExample{
 
       float offsety = .0f;
 
-      for (int i = 0; i < maxIterations; i++) {
-         float h = i / (float) maxIterations;
-         float b = 1.0f - h * h;
-         pallette[i] = Color.HSBtoRGB(h, 1f, b);
-      }
-
+     // System.out.print("__constant int pallette[]={");
+     // for (int i = 0; i < maxIterations; i++) {
+      //   float h = i / (float) maxIterations;
+       //  float b = 1.0f - h * h;
+        // pallette[i] = Color.HSBtoRGB(h, 1f, b);
+        // System.out.print((i!=0?",\n":"\n")+"   "+pallette[i]);
+       
+     // }
+      System.out.println("\n}");
       MandelBrot mandelBrot = Device.best(MandelBrot.class);
           // new JavaMandelBrot();
          //new JavaMandelBrotMultiThread();
@@ -255,7 +389,7 @@ public class MandelExample{
       scale = defaultScale;
       offsetx = -1f;
       offsety = 0f;
-      mandelBrot.createMandleBrot(range, scale, offsetx, offsety, rgb, pallette);
+      mandelBrot.createMandleBrot(range, scale, offsetx, offsety, rgb);
 
       System.arraycopy(rgb, 0, imageRgb, 0, rgb.length);
       viewer.repaint();
@@ -297,7 +431,7 @@ public class MandelExample{
                offsetx = x;
                offsety = y;
 
-               mandelBrot.createMandleBrot(range, scale, offsetx, offsety, rgb, pallette);
+               mandelBrot.createMandleBrot(range, scale, offsetx, offsety, rgb);
 
                System.arraycopy(rgb, 0, imageRgb, 0, rgb.length);
                viewer.repaint();
