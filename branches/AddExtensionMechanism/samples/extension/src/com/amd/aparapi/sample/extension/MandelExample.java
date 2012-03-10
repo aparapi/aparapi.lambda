@@ -70,7 +70,7 @@ import com.amd.opencl.OpenCLAdaptor;
  *
  */
 
-@OpenCL.Resource("com/amd/aparapi/sample/extension/mandel.cl")
+@OpenCL.Resource("com/amd/aparapi/sample/extension/mandel2.cl")
 interface MandelBrot extends OpenCL<MandelBrot>{
    MandelBrot createMandleBrot(//
          Range range,//
