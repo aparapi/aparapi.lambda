@@ -38,10 +38,16 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 
 package com.amd.aparapi.sample.extension;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
@@ -51,8 +57,13 @@ import java.awt.image.DataBufferInt;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 
+import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 import com.amd.aparapi.Range;
 import com.amd.opencl.Device;
@@ -148,7 +159,8 @@ class JavaMandelBrot extends OpenCLAdaptor<MandelBrot> implements MandelBrot{
          -14745588,
          -15269881,
          -15728637,
-         -16252927
+         -16252927,
+         0
       };
    @Override
    public MandelBrot createMandleBrot(Range range, float scale, float offsetx, float offsety, int[] rgb) {
@@ -244,7 +256,8 @@ class JavaMandelBrotMultiThread extends OpenCLAdaptor<MandelBrot> implements Man
          -14745588,
          -15269881,
          -15728637,
-         -16252927
+         -16252927,
+         0
       };
    @Override
    public MandelBrot createMandleBrot(final Range range, final float scale, final float offsetx, final float offsety,
@@ -306,65 +319,97 @@ public class MandelExample{
 
    /** User selected zoom-in point on the Mandelbrot view. */
    public static volatile Point to = null;
-
+   public static MandelBrot mandelBrot =null;
+   public static MandelBrot gpuMandelBrot =null;
+   public static MandelBrot javaMandelBrot =null;
+   public static MandelBrot javaMandelBrotMultiThread =null;
+   // new JavaMandelBrot();
+  //new JavaMandelBrotMultiThread();
    @SuppressWarnings("serial")
    public static void main(String[] _args) {
 
       JFrame frame = new JFrame("MandelBrot");
 
       /** Width of Mandelbrot view. */
-      final int width = 768;
+      final int width = 1024;
 
       /** Height of Mandelbrot view. */
-      final int height = 768;
+      final int height = 1024;
 
       /** Mandelbrot image height. */
       final Range range = Range.create2D(width, height);
 
       /** Image for Mandelbrot view. */
       final BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-      final BufferedImage offscreen = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-      // Draw Mandelbrot image
+  
+      final Object framePaintedDoorBell = new Object();
       JComponent viewer = new JComponent(){
          @Override
          public void paintComponent(Graphics g) {
 
             g.drawImage(image, 0, 0, width, height, this);
+            synchronized (framePaintedDoorBell) {
+               framePaintedDoorBell.notify();
+            }
          }
       };
 
       // Set the size of JComponent which displays Mandelbrot image
       viewer.setPreferredSize(new Dimension(width, height));
 
-      final Object doorBell = new Object();
-
+      final Object userClickDoorBell = new Object();
+    
       // Mouse listener which reads the user clicked zoom-in point on the Mandelbrot view 
       viewer.addMouseListener(new MouseAdapter(){
          @Override
          public void mouseClicked(MouseEvent e) {
             to = e.getPoint();
-            synchronized (doorBell) {
-               doorBell.notify();
+            synchronized (userClickDoorBell) {
+               userClickDoorBell.notify();
             }
          }
       });
+    
+      JPanel controlPanel = new JPanel(new FlowLayout());
+   
+      final String[] choices = new String[]{"GPU OpenCL", "Java Sequential", "Java Threads"};
 
-      // Swing housework to create the frame
+      final JComboBox startButton = new JComboBox(choices);
+
+      startButton.addItemListener(new ItemListener(){
+         @Override public void itemStateChanged(ItemEvent e) {
+            String item  = (String)startButton.getSelectedItem();
+            
+            if (item.equals(choices[0])){
+               mandelBrot = gpuMandelBrot;
+            } else if (item.equals(choices[1])){
+               mandelBrot = javaMandelBrot;
+            } else if (item.equals(choices[2])){
+               mandelBrot = javaMandelBrotMultiThread;
+            }
+         }
+
+        
+      });
+      controlPanel.add(startButton);
+     
+
+      controlPanel.add(new JLabel("FPS"));
+      final JTextField framesPerSecondTextField = new JTextField("0", 5);
+
+      controlPanel.add(framesPerSecondTextField);
+    
+        // Swing housework to create the frame
       frame.getContentPane().add(viewer);
+      frame.getContentPane().add(controlPanel, BorderLayout.SOUTH);
       frame.pack();
       frame.setLocationRelativeTo(null);
       frame.setVisible(true);
 
       // Extract the underlying RGB buffer from the image.
       // Pass this to the kernel so it operates directly on the RGB buffer of the image
-      final int[] rgb = ((DataBufferInt) offscreen.getRaster().getDataBuffer()).getData();
+ 
       final int[] imageRgb = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
-
-      /** Maximum iterations for Mandelbrot. */
-      final int maxIterations = 64;
-
-      /** Palette which maps iteration values to RGB values. */
-    
 
       /** Mutable values of scale, offsetx and offsety so that we can modify the zoom level and position of a view. */
       float scale = .0f;
@@ -372,26 +417,16 @@ public class MandelExample{
       float offsetx = .0f;
 
       float offsety = .0f;
-
-     // System.out.print("__constant int pallette[]={");
-     // for (int i = 0; i < maxIterations; i++) {
-      //   float h = i / (float) maxIterations;
-       //  float b = 1.0f - h * h;
-        // pallette[i] = Color.HSBtoRGB(h, 1f, b);
-        // System.out.print((i!=0?",\n":"\n")+"   "+pallette[i]);
-       
-     // }
-      System.out.println("\n}");
-      MandelBrot mandelBrot = Device.best(MandelBrot.class);
-          // new JavaMandelBrot();
-         //new JavaMandelBrotMultiThread();
+      gpuMandelBrot = Device.best(MandelBrot.class);
+      javaMandelBrot=   new JavaMandelBrot();
+      javaMandelBrotMultiThread = new JavaMandelBrotMultiThread();
+      mandelBrot = javaMandelBrotMultiThread;
       float defaultScale = 3f;
       scale = defaultScale;
       offsetx = -1f;
       offsety = 0f;
-      mandelBrot.createMandleBrot(range, scale, offsetx, offsety, rgb);
-
-      System.arraycopy(rgb, 0, imageRgb, 0, rgb.length);
+      
+      mandelBrot.createMandleBrot(range, scale, offsetx, offsety, imageRgb);
       viewer.repaint();
 
       // Window listener to dispose Kernel resources on user exit.
@@ -402,13 +437,13 @@ public class MandelExample{
          }
       });
 
-      // Wait until the user selects a zoom-in point on the Mandelbrot view.
+      
       while (true) {
          // Wait for the user to click somewhere
          while (to == null) {
-            synchronized (doorBell) {
+            synchronized (userClickDoorBell) {
                try {
-                  doorBell.wait();
+                  userClickDoorBell.wait();
                } catch (InterruptedException ie) {
                   ie.getStackTrace();
                }
@@ -423,6 +458,7 @@ public class MandelExample{
          // This is how many frames we will display as we zoom in and out.
          int frames = 128;
          long startMillis = System.currentTimeMillis();
+         int frameCount =0;
          for (int sign = -1; sign < 2; sign += 2) {
             for (int i = 0; i < frames - 4; i++) {
                scale = scale + sign * defaultScale / frames;
@@ -430,16 +466,27 @@ public class MandelExample{
                y = y - sign * (toy / frames);
                offsetx = x;
                offsety = y;
-
-               mandelBrot.createMandleBrot(range, scale, offsetx, offsety, rgb);
-
-               System.arraycopy(rgb, 0, imageRgb, 0, rgb.length);
+               mandelBrot.createMandleBrot(range, scale, offsetx, offsety, imageRgb);
                viewer.repaint();
+               synchronized (framePaintedDoorBell) {
+                  try {
+                     framePaintedDoorBell.wait();
+                  } catch (InterruptedException ie) {
+                     ie.getStackTrace();
+                  }
+               }
+               frameCount++;
+               long endMillis = System.currentTimeMillis();
+               long elapsedMillis = endMillis - startMillis;
+               if (elapsedMillis>1000){
+                  framesPerSecondTextField.setText("" + frameCount * 1000 / elapsedMillis);
+                  frameCount = 0;
+                  startMillis=endMillis;
+               }
             }
          }
 
-         long elapsedMillis = System.currentTimeMillis() - startMillis;
-         System.out.println("FPS = " + frames * 1000 / elapsedMillis);
+       
 
          // Reset zoom-in point.
          to = null;
