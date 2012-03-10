@@ -47,15 +47,159 @@
 
 #define JNI_JAVA(type, className, methodName) JNIEXPORT type JNICALL Java_com_amd_opencl_##className##_##methodName
 #define isset(bits, token) (((bits) & com_amd_opencl_OpenCLJNI_##token##_BIT) ==com_amd_opencl_OpenCLJNI_##token##_BIT) 
-#define set(bits, token) bits |= com_amd_opencl_OpenCLJNI_##token##_BIT 
-#define reset(bits, token) bits &= ~com_amd_opencl_OpenCLJNI_##token##_BIT 
+#define set(bits, token) (bits) |= com_amd_opencl_OpenCLJNI_##token##_BIT 
+#define reset(bits, token) (bits) &= ~com_amd_opencl_OpenCLJNI_##token##_BIT 
+
+class Device{
+   public:
+      static jobject getPlatformInstance(JNIEnv *jenv, jobject deviceInstance){
+         return(JNIHelper::getInstanceFieldObject(jenv, deviceInstance, "platform", "Lcom/amd/opencl/Platform;"));
+      } 
+      static cl_device_id getDeviceId(JNIEnv *jenv, jobject deviceInstance){
+         return((cl_device_id)JNIHelper::getInstanceFieldLong(jenv, deviceInstance, "deviceId"));
+      }
+};
+class Platform{
+   public:
+      static cl_platform_id getPlatformId(JNIEnv *jenv, jobject platformInstance){
+         return((cl_platform_id)JNIHelper::getInstanceFieldLong(jenv, platformInstance, "platformId"));
+      }
+};
+class Program{
+   public:
+      static jobject create(JNIEnv *jenv, cl_program program, cl_command_queue queue, cl_context context, jobject deviceInstance, jstring source, jstring log){
+         return(JNIHelper::createInstance(jenv, "com/amd/opencl/Program", "(JJJLcom/amd/opencl/Device;Ljava/lang/String;Ljava/lang/String;)V", (jlong)program, (jlong)queue, (jlong)context, deviceInstance, source, log));
+      }
+      static cl_context getContext(JNIEnv *jenv, jobject programInstance){
+         return((cl_context) JNIHelper::getInstanceFieldLong(jenv, programInstance, "contextId")); 
+      }
+      static cl_program getProgram(JNIEnv *jenv, jobject programInstance){
+         return((cl_program) JNIHelper::getInstanceFieldLong(jenv, programInstance, "programId")); 
+      }
+      static cl_command_queue getCommandQueue(JNIEnv *jenv, jobject programInstance){
+         return((cl_command_queue)JNIHelper::getInstanceFieldLong(jenv, programInstance, "queueId"));
+      }
+};
+class Kernel{
+   public:
+      static jobject create(JNIEnv *jenv, cl_kernel kernel, jobject programInstance, jstring name, jobject args){
+         return(JNIHelper::createInstance(jenv, "com/amd/opencl/Kernel", "(JLcom/amd/opencl/Program;Ljava/lang/String;Ljava/util/List;)V", (jlong)kernel, programInstance, name, args));
+      }
+
+      static cl_kernel getKernel(JNIEnv *jenv, jobject kernelInstance){
+         return((cl_kernel) JNIHelper::getInstanceFieldLong(jenv, kernelInstance, "kernelId"));
+      }
+
+      static jobject getProgramInstance(JNIEnv *jenv, jobject kernelInstance){
+         return(JNIHelper::getInstanceFieldObject(jenv, kernelInstance, "program", "Lcom/amd/opencl/Program;"));
+      }
+
+      static jobjectArray getArgsArray(JNIEnv *jenv, jobject kernelInstance){
+         return(reinterpret_cast<jobjectArray> (JNIHelper::getInstanceFieldObject(jenv, kernelInstance, "args", "[Lcom/amd/opencl/Arg;")));
+      }
+};
+
+class Mem{
+   public:
+      static jobject create(JNIEnv *jenv){
+         return(JNIHelper::createInstance(jenv, "Lcom/amd/opencl/Mem;", "()V"));
+      }
+      static jlong getBits(JNIEnv *jenv, jobject memInstance){
+         return(JNIHelper::getInstanceFieldLong(jenv, memInstance, "bits"));
+      }
+      static void setBits(JNIEnv *jenv, jobject memInstance, jlong bits){
+         JNIHelper::setInstanceFieldLong(jenv, memInstance, "bits", bits);
+      }
+      static void *getAddress(JNIEnv *jenv, jobject memInstance){
+         return((void*)JNIHelper::getInstanceFieldLong(jenv, memInstance, "address"));
+      }
+      static void setAddress(JNIEnv *jenv, jobject memInstance, void *address){
+         JNIHelper::setInstanceFieldLong(jenv, memInstance, "address", (jlong)address);
+      }
+      static void setInstance(JNIEnv *jenv, jobject memInstance, jobject instance){
+         JNIHelper::setInstanceFieldObject(jenv, memInstance, "instance", "Ljava/lang/Object;", instance);
+      }
+      static void setSizeInBytes(JNIEnv *jenv, jobject memInstance, jint sizeInBytes){
+         JNIHelper::setInstanceFieldInt(jenv, memInstance, "sizeInBytes", sizeInBytes);
+      }
+      static size_t getSizeInBytes(JNIEnv *jenv, jobject memInstance){
+         return((size_t)JNIHelper::getInstanceFieldInt(jenv, memInstance, "sizeInBytes"));
+      }
+      static jobject getInstance(JNIEnv *jenv, jobject memInstance){
+         return(JNIHelper::getInstanceFieldObject(jenv, memInstance, "instance", "Ljava/lang/Object;"));
+      }
+
+      static cl_mem getMem(JNIEnv *jenv, jobject memInstance, jlong bits){
+         cl_mem mem = 0;
+
+         if (isset(bits, READONLY)){
+            mem = (cl_mem)JNIHelper::getInstanceFieldLong(jenv, memInstance, "readOnlyMemId");
+         } else if (isset(bits, READWRITE)){
+            mem = (cl_mem)JNIHelper::getInstanceFieldLong(jenv, memInstance, "readWriteMemId");
+         } else if (isset(bits, WRITEONLY)){
+            mem = (cl_mem)JNIHelper::getInstanceFieldLong(jenv, memInstance, "writeOnlyMemId");
+         }
+         return(mem);
+      }
+
+      static void setMem(JNIEnv *jenv, jobject memInstance, jlong bits, cl_mem mem){
+         if (isset(bits, READONLY)){
+            JNIHelper::setInstanceFieldLong(jenv, memInstance, "readOnlyMemId", (jlong)mem);
+         } else if (isset(bits, READWRITE)){
+            JNIHelper::setInstanceFieldLong(jenv, memInstance, "readWriteMemId", (jlong)mem);
+         } else if (isset(bits, WRITEONLY)){
+            JNIHelper::setInstanceFieldLong(jenv, memInstance, "writeOnlyMemId", (jlong)mem);
+         }
+      }
+
+};
+
+class Arg{
+   public:
+      static jlong getBits(JNIEnv *jenv, jobject argInstance){
+         return(JNIHelper::getInstanceFieldLong(jenv, argInstance, "bits"));
+      }
+      static void setBits(JNIEnv *jenv, jobject argInstance, jlong bits){
+         JNIHelper::setInstanceFieldLong(jenv, argInstance, "bits", bits);
+      }
+      static jobject getMemInstance(JNIEnv *jenv, jobject argInstance){
+         return(JNIHelper::getInstanceFieldObject(jenv, argInstance, "memVal", "Lcom/amd/opencl/Mem;"));
+      }
+      static void setMemInstance(JNIEnv *jenv, jobject argInstance, jobject memInstance){
+         JNIHelper::setInstanceFieldObject(jenv, argInstance, "memVal", "Lcom/amd/opencl/Mem;",memInstance);
+      }
+};
+class Range{
+   public:
+      static jint getDims(JNIEnv *jenv, jobject rangeInstance){
+         return(JNIHelper::getInstanceFieldInt(jenv, rangeInstance, "dims"));
+      }
+
+      static void fill(JNIEnv *jenv, jobject rangeInstance, jint dims, size_t* offsets, size_t* globalDims, size_t* localDims){
+         if (dims >0){
+            offsets[0]= 0;
+            localDims[0]=JNIHelper::getInstanceFieldInt(jenv, rangeInstance, "localSize_0"); 
+            globalDims[0]=JNIHelper::getInstanceFieldInt(jenv, rangeInstance, "globalSize_0"); 
+            if (dims >1){
+               offsets[1]= 0;
+               localDims[1]=JNIHelper::getInstanceFieldInt(jenv, rangeInstance, "localSize_1"); 
+               globalDims[1]=JNIHelper::getInstanceFieldInt(jenv, rangeInstance, "globalSize_1"); 
+               if (dims >2){
+                  offsets[2]= 0;
+                  localDims[2]=JNIHelper::getInstanceFieldInt(jenv, rangeInstance, "localSize_2"); 
+                  globalDims[2]=JNIHelper::getInstanceFieldInt(jenv, rangeInstance, "globalSize_2"); 
+               }
+            }
+         }
+      }
+};
 
 JNI_JAVA(jobject, OpenCLJNI, createProgram)
    (JNIEnv *jenv, jobject jobj, jobject deviceInstance, jstring source) {
 
-      jobject platformInstance = JNIHelper::getInstanceFieldObject(jenv, deviceInstance, "platform", "Lcom/amd/opencl/Platform;");
-      cl_platform_id platformId = (cl_platform_id) JNIHelper::getInstanceFieldLong(jenv, platformInstance, "platformId"); 
-      cl_device_id deviceId = (cl_device_id) JNIHelper::getInstanceFieldLong(jenv, deviceInstance, "deviceId"); 
+      jobject platformInstance = Device::getPlatformInstance(jenv, deviceInstance);
+      cl_platform_id platformId = Platform::getPlatformId(jenv, platformInstance);
+      cl_device_id deviceId = Device::getDeviceId(jenv, deviceInstance);
       cl_int status = CL_SUCCESS;
       cl_device_type deviceType;
       clGetDeviceInfo(deviceId, CL_DEVICE_TYPE,  sizeof(deviceType), &deviceType, NULL);
@@ -77,14 +221,15 @@ JNI_JAVA(jobject, OpenCLJNI, createProgram)
          fprintf(stderr, "queue creation seems to have failed\n");
 
       }
-      jobject programInstance = JNIHelper::createInstance(jenv, "com/amd/opencl/Program", "(JJJLcom/amd/opencl/Device;Ljava/lang/String;Ljava/lang/String;)V", (jlong)program, (jlong)queue, (jlong)context, deviceInstance, source, log);
+      jobject programInstance = Program::create(jenv, program, queue, context, deviceInstance, source, log);
+
       return(programInstance);
    }
 
 JNI_JAVA(jobject, OpenCLJNI, createKernel)
    (JNIEnv *jenv, jobject jobj, jobject programInstance, jstring name, jobject args) {
-      cl_context context = (cl_context) JNIHelper::getInstanceFieldLong(jenv, programInstance, "contextId"); 
-      cl_program program = (cl_program) JNIHelper::getInstanceFieldLong(jenv, programInstance, "programId"); 
+      cl_context context = Program::getContext(jenv, programInstance);
+      cl_program program = Program::getProgram(jenv, programInstance); 
       cl_int status = CL_SUCCESS;
       const char *nameChars = jenv->GetStringUTFChars(name, NULL);
       fprintf(stderr, "tring to extract kernel '%s'\n", nameChars);
@@ -96,9 +241,8 @@ JNI_JAVA(jobject, OpenCLJNI, createKernel)
       }
 
       jobject kernelInstance = NULL;
-
       if (status == CL_SUCCESS){
-         kernelInstance = JNIHelper::createInstance(jenv, "com/amd/opencl/Kernel", "(JLcom/amd/opencl/Program;Ljava/lang/String;Ljava/util/List;)V", (jlong)kernel, programInstance, name, args);
+         kernelInstance = Kernel::create(jenv, kernel, programInstance, name, args);
       }else{
          fprintf(stderr, "kernel creation seems to have failed\n");
       }
@@ -160,7 +304,7 @@ void describeBits(JNIEnv *jenv, jlong bits){
 }
 
 void describeArg(JNIEnv *jenv, jint argIndex, jobject argDef, jobject arg){
-   jlong bits = JNIHelper::getInstanceFieldLong(jenv, argDef, "bits");
+   jlong bits = Arg::getBits(jenv, argDef);
    fprintf(stderr, " %d ", argIndex);
    describeBits(jenv, bits);
    fprintf(stderr, "\n");
@@ -178,32 +322,7 @@ cl_uint bitsToOpenCLMask(jlong bits ){
    return(mask);
 }
 
-cl_mem getMem(JNIEnv *jenv, jobject memInstance, jlong bits){
-   cl_mem mem = 0;
-
-   if (isset(bits, READONLY)){
-      mem = (cl_mem)JNIHelper::getInstanceFieldLong(jenv, memInstance, "readOnlyMemId");
-   } else if (isset(bits, READWRITE)){
-      mem = (cl_mem)JNIHelper::getInstanceFieldLong(jenv, memInstance, "readWriteMemId");
-   } else if (isset(bits, WRITEONLY)){
-      mem = (cl_mem)JNIHelper::getInstanceFieldLong(jenv, memInstance, "writeOnlyMemId");
-   }
-   return(mem);
-}
-
-void setMem(JNIEnv *jenv, jobject memInstance, jlong bits, cl_mem mem){
-   if (isset(bits, READONLY)){
-      JNIHelper::setInstanceFieldLong(jenv, memInstance, "readOnlyMemId", (jlong)mem);
-   } else if (isset(bits, READWRITE)){
-      JNIHelper::setInstanceFieldLong(jenv, memInstance, "readWriteMemId", (jlong)mem);
-   } else if (isset(bits, WRITEONLY)){
-      JNIHelper::setInstanceFieldLong(jenv, memInstance, "writeOnlyMemId", (jlong)mem);
-   }
-
-}
-
-jobject createMem(JNIEnv *jenv, cl_context context,  jlong bits, jobject value){
-   jarray array = (jarray)value;
+jsize getArraySizeInBytes(JNIEnv *jenv, jarray array, jlong bits){
    jsize arrayLen = jenv->GetArrayLength(array);
    jsize sizeInBytes = 0;
    if (isset(bits, FLOAT) || isset(bits, INT)){
@@ -214,45 +333,54 @@ jobject createMem(JNIEnv *jenv, cl_context context,  jlong bits, jobject value){
       sizeInBytes = arrayLen *2;
    }
    fprintf(stderr, "size of new Mem arg is %d\n", sizeInBytes);
+   return(sizeInBytes);
+}
 
-   cl_uint mask = bitsToOpenCLMask(bits);
+void *pin(JNIEnv *jenv, jarray array, jlong *bits){
+   jboolean isCopy;
+   void *ptr = jenv->GetPrimitiveArrayCritical(array,&isCopy); 
+   if (bits != NULL){
+      if(0){describeBits(jenv, *bits);fprintf(stderr, " before  \n");}
+      if (isCopy){
+         set(*bits, COPY);
+      }else{
+         reset(*bits, COPY);
+      }
+      if(0){describeBits(jenv, *bits);fprintf(stderr, " after \n");}
+   }
+   return(ptr);
+}
+
+
+jobject createMem(JNIEnv *jenv, cl_context context,  jlong bits, jarray array){
+   jsize sizeInBytes = getArraySizeInBytes(jenv, array, bits);
 
    cl_int status = CL_SUCCESS;
-   jboolean isCopy;
-   void *ptr  =  jenv->GetPrimitiveArrayCritical((jarray)array,&isCopy); 
-   if(0){describeBits(jenv, bits);fprintf(stderr, " create before  \n");}
-   if (isCopy){
-      set(bits, COPY);
-   }else{
-      reset(bits, COPY);
-   }
-   if(0){describeBits(jenv, bits);fprintf(stderr, " create after \n");}
-   cl_mem mem=clCreateBuffer(context, mask,  sizeInBytes, ptr, &status);
+   void *ptr = pin(jenv, array, &bits); 
+   cl_mem mem=clCreateBuffer(context, bitsToOpenCLMask(bits),  sizeInBytes, ptr, &status);
    if (status != CL_SUCCESS){
       fprintf(stderr, "buffer creation failed!\n");
    }
 
-   jobject memInstance = JNIHelper::createInstance(jenv, "Lcom/amd/opencl/Mem;", "()V");
-
+   jobject memInstance = Mem::create(jenv);
    fprintf(stderr, "created a new mem object!\n");
-
-   JNIHelper::setInstanceFieldLong(jenv, memInstance, "address", (jlong)ptr);
-   JNIHelper::setInstanceFieldObject(jenv, memInstance, "instance", "Ljava/lang/Object;", value);
-   JNIHelper::setInstanceFieldInt(jenv, memInstance, "sizeInBytes", sizeInBytes);
-   JNIHelper::setInstanceFieldLong(jenv, memInstance, "bits", bits);
-   setMem(jenv, memInstance, bits, mem);
+   Mem::setAddress(jenv, memInstance, ptr);
+   Mem::setInstance(jenv, memInstance, array);
+   Mem::setSizeInBytes(jenv, memInstance, sizeInBytes);
+   Mem::setBits(jenv, memInstance, bits);
+   Mem::setMem(jenv, memInstance, bits, mem);
    fprintf(stderr, "initiated mem object!\n");
    return(memInstance);
 }
 
 #define setPrimitiveArgField(jenv, kernel, argIndex, instance, clType, type, format)\
    clType value = JNIHelper::getInstanceField##type##(jenv, instance, "value");\
-   status = clSetKernelArg(kernel, argIndex, sizeof(value), (void *)&(value));          \
-   if (status != CL_SUCCESS) {\
-      fprintf(stderr, "error setting arg %d " format " %s!\n",  argIndex, value, CLHelper::errString(status));\
-   }else{\
-      if(0)fprintf(stderr, "set arg  %d to " format "\n", argIndex, value);\
-   }
+status = clSetKernelArg(kernel, argIndex, sizeof(value), (void *)&(value));          \
+if (status != CL_SUCCESS) {\
+   fprintf(stderr, "error setting arg %d " format " %s!\n",  argIndex, value, CLHelper::errString(status));\
+}else{\
+   if(0)fprintf(stderr, "set arg  %d to " format "\n", argIndex, value);\
+}
 
 
 void putArgs(JNIEnv *jenv, cl_context context, cl_kernel kernel, cl_command_queue commandQueue, cl_event *events, jint *eventc, jint argIndex, jobject argDef, jobject arg){
@@ -261,44 +389,36 @@ void putArgs(JNIEnv *jenv, cl_context context, cl_kernel kernel, cl_command_queu
       describeArg(jenv, argIndex, argDef, arg);
    }
    cl_int status = CL_SUCCESS;
-   jlong bits = JNIHelper::getInstanceFieldLong(jenv, argDef, "bits");
-   if (bits & com_amd_opencl_OpenCLJNI_ARRAY_BIT){ // global check?
-      jobject memInstance = JNIHelper::getInstanceFieldObject(jenv, argDef, "memVal", "Lcom/amd/opencl/Mem;");
+   jlong bits = Arg::getBits(jenv, argDef);
+   if (isset(bits, ARRAY)){ // global check?
+      jobject memInstance = Arg::getMemInstance(jenv, argDef);
       if (memInstance == NULL){
          // first call?
-         memInstance = createMem(jenv, context, bits, arg);
-         JNIHelper::setInstanceFieldObject(jenv, argDef, "memVal", "Lcom/amd/opencl/Mem;", memInstance);
+         memInstance = createMem(jenv, context, bits, (jarray)arg);
+         Arg::setMemInstance(jenv, argDef, memInstance);
       }else{
          // check of bits == memInstance.bits
          // we need to pin it
          jboolean isCopy;
-         void *ptr  =  jenv->GetPrimitiveArrayCritical((jarray)arg,&isCopy); 
-         void *oldPtr = (void*)JNIHelper::getInstanceFieldLong(jenv, memInstance, "address");
+         void *ptr  =  pin(jenv, (jarray)arg,&bits); 
+         void *oldPtr = Mem::getAddress(jenv, memInstance);
          if (ptr !=oldPtr){
             fprintf(stderr, "ptr moved from %lx to %lx\n", oldPtr, ptr);
-            cl_mem mem = getMem(jenv, memInstance, bits);
+            cl_mem mem = Mem::getMem(jenv, memInstance, bits);
             status = clReleaseMemObject(mem); 
-            memInstance = createMem(jenv, context, bits, arg);
-            JNIHelper::setInstanceFieldObject(jenv, argDef, "memVal", "Lcom/amd/opencl/Mem;", memInstance);
-         }else{
-            if(0){describeBits(jenv, bits);fprintf(stderr, " before \n");}
-            if (isCopy){
-               set(bits, COPY);
-            }else{
-               reset(bits, COPY);
-            }
-            if(0){describeBits(jenv, bits);fprintf(stderr, " after \n");}
-            JNIHelper::setInstanceFieldLong(jenv, argDef, "bits", bits);
+            memInstance = createMem(jenv, context, bits, (jarray)arg);
+            Arg::setMemInstance(jenv, argDef, memInstance);
          }
+         Arg::setBits(jenv, argDef, bits);
       }
-      cl_mem mem = getMem(jenv, memInstance, bits);
+      cl_mem mem = Mem::getMem(jenv, memInstance, bits);
       cl_int status = CL_SUCCESS;
-      if (bits & (com_amd_opencl_OpenCLJNI_READONLY_BIT|com_amd_opencl_OpenCLJNI_READWRITE_BIT)){ // kernel reads this so enqueue a write
-         void *ptr= (void *)JNIHelper::getInstanceFieldLong(jenv, memInstance, "address");
-         size_t sizeInBytes= (size_t)JNIHelper::getInstanceFieldInt(jenv, memInstance, "sizeInBytes");
-         jlong memBits = JNIHelper::getInstanceFieldLong(jenv, memInstance, "bits");
+      if (isset(bits, READONLY)|isset(bits, READWRITE)){ // kernel reads this so enqueue a write
+         void *ptr= Mem::getAddress(jenv, memInstance);
+         size_t sizeInBytes= Mem::getSizeInBytes(jenv, memInstance);
+         jlong memBits = Mem::getBits(jenv, memInstance);
          set(memBits, ENQUEUED);
-         JNIHelper::setInstanceFieldLong(jenv, memInstance, "bits", memBits);
+         Mem::setBits(jenv, memInstance, memBits);
          status = clEnqueueWriteBuffer(commandQueue, mem, CL_FALSE, 0, sizeInBytes, ptr, *eventc, (*eventc)==0?NULL:events, &events[*eventc]);
          if (status != CL_SUCCESS) {
             fprintf(stderr, "error enqueuing write %s!\n",  CLHelper::errString(status));
@@ -352,19 +472,19 @@ void getArgs(JNIEnv *jenv, cl_context context, cl_command_queue commandQueue, cl
       fprintf(stderr, "post ");
       describeArg(jenv, argIndex, argDef, arg);
    }
-   jlong bits = JNIHelper::getInstanceFieldLong(jenv, argDef, "bits");
+   jlong bits = Arg::getBits(jenv, argDef);
    if (isset(bits, ARRAY)  && (isset(bits, WRITEONLY)|isset(bits, READWRITE))){
-      jobject memInstance = JNIHelper::getInstanceFieldObject(jenv, argDef, "memVal", "Lcom/amd/opencl/Mem;");
+      jobject memInstance = Arg::getMemInstance(jenv, argDef);
       if (memInstance == NULL){
          fprintf(stderr, "mem instance not set\n");
       }else{
          if(0)fprintf(stderr, "retrieved mem instance\n");
       }
 
-      cl_mem mem = getMem(jenv, memInstance, bits);
+      cl_mem mem = Mem::getMem(jenv, memInstance, bits);
 
-      void *ptr= (void *)JNIHelper::getInstanceFieldLong(jenv, memInstance, "address");
-      size_t sizeInBytes= (size_t)JNIHelper::getInstanceFieldInt(jenv, memInstance, "sizeInBytes");
+      void *ptr= Mem::getAddress(jenv, memInstance);
+      size_t sizeInBytes= Mem::getSizeInBytes(jenv, memInstance);
       if (0){
          fprintf(stderr, "about to enqueu read eventc = %d!\n", *eventc);
       }
@@ -378,7 +498,7 @@ void getArgs(JNIEnv *jenv, cl_context context, cl_command_queue commandQueue, cl
       }
       (*eventc)++;
 
-      jobject arrayInstance = JNIHelper::getInstanceFieldObject(jenv, memInstance, "instance", "Ljava/lang/Object;");
+      jobject arrayInstance = Mem::getInstance(jenv, memInstance);
 
       // we need to unpin 
       if (isset(bits, WRITEONLY)){
@@ -388,7 +508,7 @@ void getArgs(JNIEnv *jenv, cl_context context, cl_command_queue commandQueue, cl
       }
       reset(bits, ENQUEUED);
       reset(bits, COPY);
-   JNIHelper::setInstanceFieldLong(jenv, memInstance, "bits", bits);
+      Mem::setBits(jenv, memInstance, bits);
    }
 }
 
@@ -396,12 +516,13 @@ JNI_JAVA(void, OpenCLJNI, invoke)
    (JNIEnv *jenv, jobject jobj, jobject kernelInstance, jobjectArray argArray) {
 
 
-      cl_kernel kernel =(cl_kernel) JNIHelper::getInstanceFieldLong(jenv, kernelInstance, "kernelId");
-      jobject programInstance =JNIHelper::getInstanceFieldObject(jenv, kernelInstance, "program", "Lcom/amd/opencl/Program;");
-      cl_context context =(cl_context)JNIHelper::getInstanceFieldLong(jenv, programInstance, "contextId");
-      cl_command_queue commandQueue = (cl_command_queue) JNIHelper::getInstanceFieldLong(jenv, programInstance, "queueId");
+      cl_kernel kernel = Kernel::getKernel(jenv, kernelInstance);
+      jobject programInstance = Kernel::getProgramInstance(jenv, kernelInstance);
+      jobjectArray argDefsArray = Kernel::getArgsArray(jenv, kernelInstance);
 
-      jobjectArray argDefsArray = reinterpret_cast<jobjectArray> (JNIHelper::getInstanceFieldObject(jenv, kernelInstance, "args", "[Lcom/amd/opencl/Arg;"));
+      cl_context context =Program::getContext(jenv, programInstance);
+      cl_command_queue commandQueue = Program::getCommandQueue(jenv, programInstance);
+
 
       // walk through the args creating buffers when needed 
       // we use the bitfields to determine which is which
@@ -412,19 +533,19 @@ JNI_JAVA(void, OpenCLJNI, invoke)
       jint writes=0;
       for (jsize argIndex=0; argIndex<argc; argIndex++){
          jobject argDef = jenv->GetObjectArrayElement(argDefsArray, argIndex);
-         jlong bits = JNIHelper::getInstanceFieldLong(jenv, argDef, "bits");
-         if ((bits & com_amd_opencl_OpenCLJNI_READONLY_BIT) ==com_amd_opencl_OpenCLJNI_READONLY_BIT){
+         jlong bits = Arg::getBits(jenv, argDef);
+         if (isset(bits, READONLY)){
             reads++;
          }
-         if ((bits & com_amd_opencl_OpenCLJNI_READWRITE_BIT) ==com_amd_opencl_OpenCLJNI_READWRITE_BIT){
+         if (isset(bits, READWRITE)){
             reads++;
             writes++;
          }
-         if ((bits & com_amd_opencl_OpenCLJNI_WRITEONLY_BIT) ==com_amd_opencl_OpenCLJNI_WRITEONLY_BIT){
+         if (isset(bits, WRITEONLY)){
             writes++;
          }
-
       }
+
       if (0) fprintf(stderr, "reads=%d writes=%d\n", reads, writes);
       cl_event * events= new cl_event[reads+writes+1];
 
@@ -437,31 +558,13 @@ JNI_JAVA(void, OpenCLJNI, invoke)
       }
 
       jobject rangeInstance = jenv->GetObjectArrayElement(argArray, 0);
-      jint dims = JNIHelper::getInstanceFieldInt(jenv, rangeInstance, "dims");
+      jint dims = Range::getDims(jenv, rangeInstance);
 
       size_t *offsets = new size_t[dims];
       size_t *globalDims = new size_t[dims];
       size_t *localDims = new size_t[dims];
+      Range::fill(jenv, rangeInstance, dims, offsets, globalDims, localDims);
 
-      if (dims >0){
-         //fprintf(stderr, "native range dims == %d\n", dims);
-         offsets[0]= 0;
-         localDims[0]=JNIHelper::getInstanceFieldInt(jenv, rangeInstance, "localSize_0"); 
-         globalDims[0]=JNIHelper::getInstanceFieldInt(jenv, rangeInstance, "globalSize_0"); 
-         if (0) fprintf(stderr, "native range localSize_0 == %d\n", localDims[0]);
-         if (0) fprintf(stderr, "native range globalSize_0 == %d\n", globalDims[0]);
-         if (dims >1){
-            offsets[1]= 0;
-            localDims[1]=JNIHelper::getInstanceFieldInt(jenv, rangeInstance, "localSize_1"); 
-            globalDims[1]=JNIHelper::getInstanceFieldInt(jenv, rangeInstance, "globalSize_1"); 
-            if (dims >2){
-               offsets[2]= 0;
-               localDims[2]=JNIHelper::getInstanceFieldInt(jenv, rangeInstance, "localSize_2"); 
-               globalDims[2]=JNIHelper::getInstanceFieldInt(jenv, rangeInstance, "globalSize_2"); 
-            }
-         }
-
-      }
       cl_int status = CL_SUCCESS;
 
       if(0) fprintf(stderr, "Exec %d\n", eventc);

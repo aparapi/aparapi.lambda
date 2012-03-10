@@ -38,7 +38,7 @@
 
 #ifndef CLHELPER_H
 #define CLHELPER_H
-
+/*
 class Program{
    private:
    cl_context context;
@@ -57,6 +57,7 @@ class Buf{
    cl_uint mask;
    cl_uint bits;
 };
+*/
 
 
 class CLHelper{
