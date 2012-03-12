@@ -50,6 +50,61 @@
 #define set(bits, token) (bits) |= com_amd_opencl_OpenCLJNI_##token##_BIT 
 #define reset(bits, token) (bits) &= ~com_amd_opencl_OpenCLJNI_##token##_BIT 
 
+class Bits{
+   public:
+      static void describeBits(JNIEnv *jenv, jlong bits){
+         fprintf(stderr, " %lx ", bits);
+         if (isset(bits, READONLY)){
+            fprintf(stderr, "readonly ");
+         }
+         if (isset(bits, WRITEONLY)){
+            fprintf(stderr, "writeonly ");
+         }
+         if (isset(bits, READWRITE)){
+            fprintf(stderr, "readwrite ");
+         }
+         if (isset(bits, ARRAY)){
+            fprintf(stderr, "array ");
+         }
+         if (isset(bits, PRIMITIVE)){
+            fprintf(stderr, "primitive ");
+         }
+         if (isset(bits, FLOAT)){
+            fprintf(stderr, "float ");
+         }
+         if (isset(bits, SHORT)){
+            fprintf(stderr, "short ");
+         }
+         if (isset(bits, LONG)){
+            fprintf(stderr, "long ");
+         }
+         if (isset(bits, DOUBLE)){
+            fprintf(stderr, "double ");
+         }
+         if (isset(bits, INT)){
+            fprintf(stderr, "int ");
+         }
+         if (isset(bits, MEM_COPY)){
+            fprintf(stderr, "copy ");
+         }
+         if (isset(bits, GLOBAL)){
+            fprintf(stderr, "global ");
+         }
+         if (isset(bits, LOCAL)){
+            fprintf(stderr, "local ");
+         }
+         if (isset(bits, MEM_DIRTY)){
+            fprintf(stderr, "dirty ");
+         }
+         if (isset(bits, MEM_ENQUEUED)){
+            fprintf(stderr, "enqueued ");
+         }
+         if (isset(bits, ARG)){
+            fprintf(stderr, "arg ");
+         }
+      }
+};
+
 class Device{
    public:
       static jobject getPlatformInstance(JNIEnv *jenv, jobject deviceInstance){
@@ -104,6 +159,75 @@ class Mem{
       static jobject create(JNIEnv *jenv){
          return(JNIHelper::createInstance(jenv, "Lcom/amd/opencl/Mem;", "()V"));
       }
+      static cl_uint bitsToOpenCLMask(jlong argBits ){
+         cl_uint mask =  CL_MEM_USE_HOST_PTR;
+         if (isset(argBits, READONLY)){
+            mask|= CL_MEM_READ_ONLY;
+         }else if (isset(argBits, READWRITE)){
+            mask|= CL_MEM_READ_WRITE;
+         } else if (isset(argBits, WRITEONLY)){
+            mask|= CL_MEM_WRITE_ONLY;
+         }
+         return(mask);
+      }
+
+      static jsize getArraySizeInBytes(JNIEnv *jenv, jarray array, jlong argBits){
+         jsize arrayLen = jenv->GetArrayLength(array);
+         jsize sizeInBytes = 0;
+         if (isset(argBits, FLOAT) || isset(argBits, INT)){
+            sizeInBytes = arrayLen *4;
+         }else if (isset(argBits, DOUBLE) || isset(argBits, LONG)){
+            sizeInBytes = arrayLen *8;
+         }else if (isset(argBits, SHORT)){
+            sizeInBytes = arrayLen *2;
+         }
+         fprintf(stderr, "size of new Mem arg is %d\n", sizeInBytes);
+         return(sizeInBytes);
+      }
+      static void *pin(JNIEnv *jenv, jarray array, jlong *memBits){
+         jboolean isCopy;
+         void *ptr = jenv->GetPrimitiveArrayCritical(array,&isCopy); 
+         if (memBits != NULL){
+            if(0){Bits::describeBits(jenv, *memBits);fprintf(stderr, " before  \n");}
+            if (isCopy){
+               set(*memBits, MEM_COPY);
+            }else{
+               reset(*memBits, MEM_COPY);
+            }
+            if(0){Bits::describeBits(jenv, *memBits);fprintf(stderr, " after \n");}
+         }
+         return(ptr);
+      }
+
+      static void unpin(JNIEnv *jenv, jarray array, void *ptr, jlong *memBits){
+         if (isset(*memBits, WRITEONLY)){
+            jenv->ReleasePrimitiveArrayCritical(array, ptr,JNI_ABORT);
+         }else{
+            jenv->ReleasePrimitiveArrayCritical(array, ptr, 0);
+         }
+      }
+
+
+      static jobject create(JNIEnv *jenv, cl_context context,  jlong argBits, jarray array){
+         jsize sizeInBytes = getArraySizeInBytes(jenv, array, argBits);
+
+         cl_int status = CL_SUCCESS;
+         void *ptr = Mem::pin(jenv, array, &argBits); 
+         cl_mem mem=clCreateBuffer(context, bitsToOpenCLMask(argBits),  sizeInBytes, ptr, &status);
+         if (status != CL_SUCCESS){
+            fprintf(stderr, "buffer creation failed!\n");
+         }
+
+         jobject memInstance = Mem::create(jenv);
+         fprintf(stderr, "created a new mem object!\n");
+         Mem::setAddress(jenv, memInstance, ptr);
+         Mem::setInstance(jenv, memInstance, array);
+         Mem::setSizeInBytes(jenv, memInstance, sizeInBytes);
+         Mem::setBits(jenv, memInstance, argBits);
+         Mem::setMem(jenv, memInstance, argBits, mem);
+         fprintf(stderr, "initiated mem object!\n");
+         return(memInstance);
+      }
       static jlong getBits(JNIEnv *jenv, jobject memInstance){
          return(JNIHelper::getInstanceFieldLong(jenv, memInstance, "bits"));
       }
@@ -129,27 +253,33 @@ class Mem{
          return(JNIHelper::getInstanceFieldObject(jenv, memInstance, "instance", "Ljava/lang/Object;"));
       }
 
-      static cl_mem getMem(JNIEnv *jenv, jobject memInstance, jlong bits){
+      static cl_mem getMem(JNIEnv *jenv, jobject memInstance, jlong argBits){
          cl_mem mem = 0;
 
-         if (isset(bits, READONLY)){
+         if (isset(argBits, READONLY)){
             mem = (cl_mem)JNIHelper::getInstanceFieldLong(jenv, memInstance, "readOnlyMemId");
-         } else if (isset(bits, READWRITE)){
+         } else if (isset(argBits, READWRITE)){
             mem = (cl_mem)JNIHelper::getInstanceFieldLong(jenv, memInstance, "readWriteMemId");
-         } else if (isset(bits, WRITEONLY)){
+         } else if (isset(argBits, WRITEONLY)){
             mem = (cl_mem)JNIHelper::getInstanceFieldLong(jenv, memInstance, "writeOnlyMemId");
          }
          return(mem);
       }
 
-      static void setMem(JNIEnv *jenv, jobject memInstance, jlong bits, cl_mem mem){
-         if (isset(bits, READONLY)){
+      static void setMem(JNIEnv *jenv, jobject memInstance, jlong argBits, cl_mem mem){
+         if (isset(argBits, READONLY)){
             JNIHelper::setInstanceFieldLong(jenv, memInstance, "readOnlyMemId", (jlong)mem);
-         } else if (isset(bits, READWRITE)){
+         } else if (isset(argBits, READWRITE)){
             JNIHelper::setInstanceFieldLong(jenv, memInstance, "readWriteMemId", (jlong)mem);
-         } else if (isset(bits, WRITEONLY)){
+         } else if (isset(argBits, WRITEONLY)){
             JNIHelper::setInstanceFieldLong(jenv, memInstance, "writeOnlyMemId", (jlong)mem);
          }
+      }
+
+      static void describe(JNIEnv *jenv, jobject memInstance){
+         jlong memBits = Mem::getBits(jenv, memInstance);
+         Bits::describeBits(jenv, memBits);
+         fprintf(stderr, "\n");
       }
 
 };
@@ -167,6 +297,12 @@ class Arg{
       }
       static void setMemInstance(JNIEnv *jenv, jobject argInstance, jobject memInstance){
          JNIHelper::setInstanceFieldObject(jenv, argInstance, "memVal", "Lcom/amd/opencl/Mem;",memInstance);
+      }
+      static void describe(JNIEnv *jenv, jobject argDef, jint argIndex){
+         jlong argBits = Arg::getBits(jenv, argDef);
+         fprintf(stderr, " %d ", argIndex);
+         Bits::describeBits(jenv, argBits);
+         fprintf(stderr, "\n");
       }
 };
 class Range{
@@ -251,181 +387,42 @@ JNI_JAVA(jobject, OpenCLJNI, createKernel)
    }
 
 
-void describeBits(JNIEnv *jenv, jlong bits){
-   fprintf(stderr, " %lx ", bits);
-   if (isset(bits, READONLY)){
-      fprintf(stderr, "readonly ");
-   }
-   if (isset(bits, WRITEONLY)){
-      fprintf(stderr, "writeonly ");
-   }
-   if (isset(bits, READWRITE)){
-      fprintf(stderr, "readwrite ");
-   }
-   if (isset(bits, ARRAY)){
-      fprintf(stderr, "array ");
-   }
-   if (isset(bits, PRIMITIVE)){
-      fprintf(stderr, "primitive ");
-   }
-   if (isset(bits, FLOAT)){
-      fprintf(stderr, "float ");
-   }
-   if (isset(bits, SHORT)){
-      fprintf(stderr, "short ");
-   }
-   if (isset(bits, LONG)){
-      fprintf(stderr, "long ");
-   }
-   if (isset(bits, DOUBLE)){
-      fprintf(stderr, "double ");
-   }
-   if (isset(bits, INT)){
-      fprintf(stderr, "int ");
-   }
-   if (isset(bits, COPY)){
-      fprintf(stderr, "copy ");
-   }
-   if (isset(bits, GLOBAL)){
-      fprintf(stderr, "global ");
-   }
-   if (isset(bits, LOCAL)){
-      fprintf(stderr, "local ");
-   }
-   if (isset(bits, DIRTY)){
-      fprintf(stderr, "dirty ");
-   }
-   if (isset(bits, ENQUEUED)){
-      fprintf(stderr, "enqueued ");
-   }
-   if (isset(bits, ARG)){
-      fprintf(stderr, "arg ");
-   }
-}
-
-void describeArg(JNIEnv *jenv, jint argIndex, jobject argDef, jobject arg){
-   jlong bits = Arg::getBits(jenv, argDef);
-   fprintf(stderr, " %d ", argIndex);
-   describeBits(jenv, bits);
-   fprintf(stderr, "\n");
-}
-
-cl_uint bitsToOpenCLMask(jlong bits ){
-   cl_uint mask =  CL_MEM_USE_HOST_PTR;
-   if (isset(bits, READONLY)){
-      mask|= CL_MEM_READ_ONLY;
-   }else if (isset(bits, READWRITE)){
-      mask|= CL_MEM_READ_WRITE;
-   } else if (isset(bits, WRITEONLY)){
-      mask|= CL_MEM_WRITE_ONLY;
-   }
-   return(mask);
-}
-
-jsize getArraySizeInBytes(JNIEnv *jenv, jarray array, jlong bits){
-   jsize arrayLen = jenv->GetArrayLength(array);
-   jsize sizeInBytes = 0;
-   if (isset(bits, FLOAT) || isset(bits, INT)){
-      sizeInBytes = arrayLen *4;
-   }else if (isset(bits, DOUBLE) || isset(bits, LONG)){
-      sizeInBytes = arrayLen *8;
-   }else if (isset(bits, SHORT)){
-      sizeInBytes = arrayLen *2;
-   }
-   fprintf(stderr, "size of new Mem arg is %d\n", sizeInBytes);
-   return(sizeInBytes);
-}
-
-void *pin(JNIEnv *jenv, jarray array, jlong *bits){
-   jboolean isCopy;
-   void *ptr = jenv->GetPrimitiveArrayCritical(array,&isCopy); 
-   if (bits != NULL){
-      if(0){describeBits(jenv, *bits);fprintf(stderr, " before  \n");}
-      if (isCopy){
-         set(*bits, COPY);
-      }else{
-         reset(*bits, COPY);
-      }
-      if(0){describeBits(jenv, *bits);fprintf(stderr, " after \n");}
-   }
-   return(ptr);
-}
-
-void unpin(JNIEnv *jenv, jarray array, void *ptr, jlong *bits){
-   if (isset(*bits, WRITEONLY)){
-      jenv->ReleasePrimitiveArrayCritical(array, ptr,JNI_ABORT);
-   }else{
-      jenv->ReleasePrimitiveArrayCritical(array, ptr, 0);
-   }
-}
-
-
-jobject createMem(JNIEnv *jenv, cl_context context,  jlong bits, jarray array){
-   jsize sizeInBytes = getArraySizeInBytes(jenv, array, bits);
-
-   cl_int status = CL_SUCCESS;
-   void *ptr = pin(jenv, array, &bits); 
-   cl_mem mem=clCreateBuffer(context, bitsToOpenCLMask(bits),  sizeInBytes, ptr, &status);
-   if (status != CL_SUCCESS){
-      fprintf(stderr, "buffer creation failed!\n");
-   }
-
-   jobject memInstance = Mem::create(jenv);
-   fprintf(stderr, "created a new mem object!\n");
-   Mem::setAddress(jenv, memInstance, ptr);
-   Mem::setInstance(jenv, memInstance, array);
-   Mem::setSizeInBytes(jenv, memInstance, sizeInBytes);
-   Mem::setBits(jenv, memInstance, bits);
-   Mem::setMem(jenv, memInstance, bits, mem);
-   fprintf(stderr, "initiated mem object!\n");
-   return(memInstance);
-}
-
-#define setPrimitiveArgField(jenv, kernel, argIndex, instance, clType, type, format)\
-   clType value = JNIHelper::getInstanceField##type##(jenv, instance, "value");\
-status = clSetKernelArg(kernel, argIndex, sizeof(value), (void *)&(value));          \
-if (status != CL_SUCCESS) {\
-   fprintf(stderr, "error setting arg %d " format " %s!\n",  argIndex, value, CLHelper::errString(status));\
-}else{\
-   if(0)fprintf(stderr, "set arg  %d to " format "\n", argIndex, value);\
-}
-
 
 void putArgs(JNIEnv *jenv, cl_context context, cl_kernel kernel, cl_command_queue commandQueue, cl_event *events, jint *eventc, jint argIndex, jobject argDef, jobject arg){
    if(0){
       fprintf(stderr, "putArgs ");
-      describeArg(jenv, argIndex, argDef, arg);
+      Arg::describe(jenv, argDef, argIndex);
    }
    cl_int status = CL_SUCCESS;
-   jlong bits = Arg::getBits(jenv, argDef);
-   if (isset(bits, ARRAY)){ // global check?
+   jlong argBits = Arg::getBits(jenv, argDef);
+   if (isset(argBits, ARRAY)){ // global check?
       jobject memInstance = Arg::getMemInstance(jenv, argDef);
       if (memInstance == NULL){
          // first call?
-         memInstance = createMem(jenv, context, bits, (jarray)arg);
+         memInstance = Mem::create(jenv, context, argBits, (jarray)arg);
          Arg::setMemInstance(jenv, argDef, memInstance);
       }else{
-         // check of bits == memInstance.bits
+         // check of argBits == memInstance.argBits
          // we need to pin it
          jboolean isCopy;
-         void *ptr  =  pin(jenv, (jarray)arg,&bits); 
+         void *ptr  =  Mem::pin(jenv, (jarray)arg,&argBits); 
          void *oldPtr = Mem::getAddress(jenv, memInstance);
          if (ptr !=oldPtr){
             fprintf(stderr, "ptr moved from %lx to %lx\n", oldPtr, ptr);
-            cl_mem mem = Mem::getMem(jenv, memInstance, bits);
+            cl_mem mem = Mem::getMem(jenv, memInstance, argBits);
             status = clReleaseMemObject(mem); 
-            memInstance = createMem(jenv, context, bits, (jarray)arg);
+            memInstance = Mem::create(jenv, context, argBits, (jarray)arg);
             Arg::setMemInstance(jenv, argDef, memInstance);
          }
-         Arg::setBits(jenv, argDef, bits);
+         Arg::setBits(jenv, argDef, argBits);
       }
-      cl_mem mem = Mem::getMem(jenv, memInstance, bits);
+      cl_mem mem = Mem::getMem(jenv, memInstance, argBits);
       cl_int status = CL_SUCCESS;
-      if (isset(bits, READONLY)|isset(bits, READWRITE)){ // kernel reads this so enqueue a write
+      if (isset(argBits, READONLY)|isset(argBits, READWRITE)){ // kernel reads this so enqueue a write
          void *ptr= Mem::getAddress(jenv, memInstance);
          size_t sizeInBytes= Mem::getSizeInBytes(jenv, memInstance);
          jlong memBits = Mem::getBits(jenv, memInstance);
-         set(memBits, ENQUEUED);
+         set(memBits, MEM_ENQUEUED);
          Mem::setBits(jenv, memInstance, memBits);
          status = clEnqueueWriteBuffer(commandQueue, mem, CL_FALSE, 0, sizeInBytes, ptr, *eventc, (*eventc)==0?NULL:events, &events[*eventc]);
          if (status != CL_SUCCESS) {
@@ -441,8 +438,8 @@ void putArgs(JNIEnv *jenv, cl_context context, cl_kernel kernel, cl_command_queu
       }else{
          if(0)fprintf(stderr, "set arg  = %d!\n", argIndex);
       }
-   }else if (isset(bits, PRIMITIVE)){
-      if (isset(bits, INT)){
+   }else if (isset(argBits, PRIMITIVE)){
+      if (isset(argBits, INT)){
          cl_int value = JNIHelper::getInstanceFieldInt(jenv, arg, "value");
          status = clSetKernelArg(kernel, argIndex, sizeof(value), (void *)&(value));          
          if (status != CL_SUCCESS) {
@@ -450,7 +447,7 @@ void putArgs(JNIEnv *jenv, cl_context context, cl_kernel kernel, cl_command_queu
          }else{
             if(0)fprintf(stderr, "set arg  = %d to %d!\n", argIndex, value);
          }
-      }else if (isset(bits, FLOAT)){
+      }else if (isset(argBits, FLOAT)){
          cl_float value = JNIHelper::getInstanceFieldFloat(jenv, arg, "value");
          status = clSetKernelArg(kernel, argIndex, sizeof(value), (void *)&(value));          
          if (status != CL_SUCCESS) {
@@ -459,7 +456,7 @@ void putArgs(JNIEnv *jenv, cl_context context, cl_kernel kernel, cl_command_queu
             if(0)fprintf(stderr, "set arg  = %d to %f!\n", argIndex, value);
          }
 
-      }else if (isset(bits, DOUBLE)){
+      }else if (isset(argBits, DOUBLE)){
          cl_double value = JNIHelper::getInstanceFieldDouble(jenv, arg, "value");
          status = clSetKernelArg(kernel, argIndex, sizeof(value), (void *)&(value));          
          if (status != CL_SUCCESS) {
@@ -478,10 +475,10 @@ void putArgs(JNIEnv *jenv, cl_context context, cl_kernel kernel, cl_command_queu
 void getArgs(JNIEnv *jenv, cl_context context, cl_command_queue commandQueue, cl_event *events, jint *eventc, jint argIndex, jobject argDef, jobject arg){
    if (0){
       fprintf(stderr, "post ");
-      describeArg(jenv, argIndex, argDef, arg);
+      Arg::describe(jenv, argDef, argIndex);
    }
-   jlong bits = Arg::getBits(jenv, argDef);
-   if (isset(bits, ARRAY)){
+   jlong argBits = Arg::getBits(jenv, argDef);
+   if (isset(argBits, ARRAY)){
       jobject memInstance = Arg::getMemInstance(jenv, argDef);
       if (memInstance == NULL){
          fprintf(stderr, "mem instance not set\n");
@@ -489,9 +486,9 @@ void getArgs(JNIEnv *jenv, cl_context context, cl_command_queue commandQueue, cl
          if(0)fprintf(stderr, "retrieved mem instance\n");
       }
       void *ptr= Mem::getAddress(jenv, memInstance);
-      if (isset(bits, WRITEONLY)|isset(bits, READWRITE)){
+      if (isset(argBits, WRITEONLY)|isset(argBits, READWRITE)){
 
-         cl_mem mem = Mem::getMem(jenv, memInstance, bits);
+         cl_mem mem = Mem::getMem(jenv, memInstance, argBits);
 
          size_t sizeInBytes= Mem::getSizeInBytes(jenv, memInstance);
          if (0){
@@ -510,12 +507,12 @@ void getArgs(JNIEnv *jenv, cl_context context, cl_command_queue commandQueue, cl
 
       jobject arrayInstance = Mem::getInstance(jenv, memInstance);
 
-      unpin(jenv, (jarray)arrayInstance, ptr, &bits);
+      Mem::unpin(jenv, (jarray)arrayInstance, ptr, &argBits);
 
 
-      reset(bits, ENQUEUED);
-      reset(bits, COPY);
-      Mem::setBits(jenv, memInstance, bits);
+      reset(argBits, MEM_ENQUEUED); //<----- BAD
+      reset(argBits, MEM_COPY); //<----
+      Mem::setBits(jenv, memInstance, argBits); // WHAT? GRF
    }
 }
 
@@ -540,15 +537,15 @@ JNI_JAVA(void, OpenCLJNI, invoke)
       jint writes=0;
       for (jsize argIndex=0; argIndex<argc; argIndex++){
          jobject argDef = jenv->GetObjectArrayElement(argDefsArray, argIndex);
-         jlong bits = Arg::getBits(jenv, argDef);
-         if (isset(bits, READONLY)){
+         jlong argBits = Arg::getBits(jenv, argDef);
+         if (isset(argBits, READONLY)){
             reads++;
          }
-         if (isset(bits, READWRITE)){
+         if (isset(argBits, READWRITE)){
             reads++;
             writes++;
          }
-         if (isset(bits, WRITEONLY)){
+         if (isset(argBits, WRITEONLY)){
             writes++;
          }
       }
