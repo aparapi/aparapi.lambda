@@ -39,13 +39,10 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 package com.amd.aparapi.sample.extension;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
@@ -57,7 +54,6 @@ import java.awt.image.DataBufferInt;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 
-import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -331,10 +327,10 @@ public class MandelExample{
       JFrame frame = new JFrame("MandelBrot");
 
       /** Width of Mandelbrot view. */
-      final int width = 1024;
+      final int width = 768;
 
       /** Height of Mandelbrot view. */
-      final int height = 1024;
+      final int height = 768;
 
       /** Mandelbrot image height. */
       final Range range = Range.create2D(width, height);
@@ -372,7 +368,7 @@ public class MandelExample{
     
       JPanel controlPanel = new JPanel(new FlowLayout());
    
-      final String[] choices = new String[]{"GPU OpenCL", "Java Sequential", "Java Threads"};
+      final String[] choices = new String[]{ "Java Sequential", "Java Threads", "GPU OpenCL"};
 
       final JComboBox startButton = new JComboBox(choices);
 
@@ -380,11 +376,11 @@ public class MandelExample{
          @Override public void itemStateChanged(ItemEvent e) {
             String item  = (String)startButton.getSelectedItem();
             
-            if (item.equals(choices[0])){
+            if (item.equals(choices[2])){
                mandelBrot = gpuMandelBrot;
-            } else if (item.equals(choices[1])){
+            } else if (item.equals(choices[0])){
                mandelBrot = javaMandelBrot;
-            } else if (item.equals(choices[2])){
+            } else if (item.equals(choices[1])){
                mandelBrot = javaMandelBrotMultiThread;
             }
          }
@@ -420,7 +416,7 @@ public class MandelExample{
       gpuMandelBrot = Device.best(MandelBrot.class);
       javaMandelBrot=   new JavaMandelBrot();
       javaMandelBrotMultiThread = new JavaMandelBrotMultiThread();
-      mandelBrot = javaMandelBrotMultiThread;
+      mandelBrot = javaMandelBrot;
       float defaultScale = 3f;
       scale = defaultScale;
       offsetx = -1f;

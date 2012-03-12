@@ -24,8 +24,8 @@ public class SquareExample{
    
       public SquarerWithResource square(//
             Range _range,//
-            @GlobalReadOnly("in") float[] in,//
-            @GlobalWriteOnly("out") float[] out);
+            @GlobalReadWrite("in") float[] in,//
+            @GlobalReadWrite("out") float[] out);
    }
  
    @OpenCL.Source("\n"//
