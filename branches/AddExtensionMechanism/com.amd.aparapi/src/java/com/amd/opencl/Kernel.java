@@ -16,6 +16,9 @@ public class Kernel{
       program = _program;
       name = _name;
       args = _args.toArray(new Arg[0]);
+      for (Arg arg:args){
+         arg.kernel=this;
+      }
    }
 
    public String getName() {

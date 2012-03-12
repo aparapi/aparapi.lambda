@@ -41,11 +41,11 @@ public class OpenCLJNI{
 
    public final static long READWRITE_BIT = 1 << 12;
    
-   public final static long DIRTY_BIT = 1 << 13;
+   public final static long MEM_DIRTY_BIT = 1 << 13;
    
-   public final static long COPY_BIT = 1 << 14; 
+   public final static long MEM_COPY_BIT = 1 << 14; 
    
-   public final static long ENQUEUED_BIT = 1 << 15;
+   public final static long MEM_ENQUEUED_BIT = 1 << 15;
    
    public final static long ARG_BIT = 1 << 16;
 

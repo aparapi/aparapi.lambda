@@ -5,27 +5,19 @@ package com.amd.opencl;
 
 public class Arg{
    public Mem memVal;
-
-   public int intVal;
-
-   public float floatVal;
-
-   public double doubVal;
-
-   public short shortVal;
-
-   public boolean booleanVal;
-
-   public boolean longVal;
-
+   
    private String name;
 
    public long bits;
+   
+   public Kernel kernel;
 
    public Arg(String _name, long _bits) {
+    
       name = _name;
       bits = _bits;
    }
+   
 
    public String toString() {
       StringBuilder argBuilder = new StringBuilder();

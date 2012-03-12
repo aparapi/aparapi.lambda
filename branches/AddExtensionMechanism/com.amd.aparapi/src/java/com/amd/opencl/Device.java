@@ -164,7 +164,7 @@ public class Device{
 
                      }
                      if (method.getName().equals("put")) {
-                        mem.bits |= OpenCLJNI.DIRTY_BIT;
+                        mem.bits |= OpenCLJNI.MEM_DIRTY_BIT;
                      } else {
                         OpenCLJNI.getJNI().getMem(program, mem);
                      }
@@ -263,7 +263,7 @@ public class Device{
    public <T extends OpenCL<T>> T create(Class<T> _interface) {
 
       StringBuilder sourceBuilder = new StringBuilder();
-      Map<String, List<Arg>> kernels = new HashMap<String, List<Arg>>();
+      Map<String, List<Arg>> kernelNameToArgsMap = new HashMap<String, List<Arg>>();
       boolean interfaceIsAnnotated = false;
       for (Annotation a : _interface.getAnnotations()) {
          if (a instanceof OpenCL.Source) {
@@ -298,7 +298,7 @@ public class Device{
 
                List<Arg> args = getArgs(m);
 
-               kernels.put(m.getName(), args);
+               kernelNameToArgsMap.put(m.getName(), args);
             }
          }
       } else {
@@ -324,7 +324,7 @@ public class Device{
                   sourceBuilder.append(")");
                   OpenCL.Kernel kernel = (OpenCL.Kernel) a;
                   sourceBuilder.append(kernel.value());
-                  kernels.put(m.getName(), args);
+                  kernelNameToArgsMap.put(m.getName(), args);
                }
             }
          }
@@ -336,8 +336,8 @@ public class Device{
       Program program = createProgram(source);
 
       Map<String, Kernel> map = new HashMap<String, Kernel>();
-      for (String name : kernels.keySet()) {
-         Kernel kernel = program.createKernel(name, kernels.get(name));
+      for (String name : kernelNameToArgsMap.keySet()) {
+         Kernel kernel = program.createKernel(name, kernelNameToArgsMap.get(name));
          if (kernel == null) {
             throw new IllegalStateException("kernel is null");
          }
