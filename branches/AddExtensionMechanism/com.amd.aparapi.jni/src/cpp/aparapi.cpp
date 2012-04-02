@@ -130,7 +130,7 @@ jfieldID  Range::localIsDerivedFieldID=0;
 
 class ProfileInfo{
    public:
-      boolean valid;
+      jboolean valid;
       jint type; //0 write, 1 execute, 2 read
       char *name;
       cl_ulong queued;
