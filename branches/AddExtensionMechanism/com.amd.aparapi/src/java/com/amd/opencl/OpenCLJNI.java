@@ -3,10 +3,34 @@ package com.amd.opencl;
 import java.util.List;
 
 public class OpenCLJNI{
-  
 
    static {
-      Runtime.getRuntime().loadLibrary("aparapi_x86");
+      String arch = System.getProperty("os.arch");
+
+      String libName = null;
+      try {
+
+         if (arch.equals("amd64") || arch.equals("x86_64")) {
+            libName = "aparapi_x86_64";
+         } else if (arch.equals("x86") || arch.equals("i386")) {
+            libName = "aparapi_x86";
+         }
+         if (libName != null) {
+            System.out.println("loading " + libName);
+            Runtime.getRuntime().loadLibrary(libName);
+         } else {
+            System.out.println("Expected property os.arch to contain amd64 or x86 but found " + arch
+                  + " don't know which library to load.");
+         }
+      } catch (UnsatisfiedLinkError e) {
+         System.out
+               .println("Check your environment. Failed to load aparapi native library "
+                     + libName
+                     + " or possibly failed to locate opencl native library (opencl.dll/opencl.so). Ensure that both are in your PATH (windows) or in LD_LIBRARY_PATH (linux).");
+
+      }
+
+      Runtime.getRuntime().loadLibrary("aparapi_x86_64");
    }
 
    static final OpenCLJNI jni = new OpenCLJNI();
@@ -40,13 +64,13 @@ public class OpenCLJNI{
    public final static long WRITEONLY_BIT = 1 << 11;
 
    public final static long READWRITE_BIT = 1 << 12;
-   
+
    public final static long MEM_DIRTY_BIT = 1 << 13;
-   
-   public final static long MEM_COPY_BIT = 1 << 14; 
-   
+
+   public final static long MEM_COPY_BIT = 1 << 14;
+
    public final static long MEM_ENQUEUED_BIT = 1 << 15;
-   
+
    public final static long ARG_BIT = 1 << 16;
 
    native public List<Platform> getPlatforms();
