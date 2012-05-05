@@ -44,19 +44,20 @@ public class Main{
       }
 
    }
-   private static final ConvolutionFilter EDGE = new ConvolutionFilter(0f, -1f, 0f, -1f, 4.1f, -1f, 0f, -1f, 0f, 1f);
+
+   private static final ConvolutionFilter EDGE = new ConvolutionFilter(0f, -1f, 0f, -1f, 4f, -1f, 0f, -1f, 0f, 1f);
 
    private static final ConvolutionFilter NONE = new ConvolutionFilter(0f, 0f, 0f, 0f, 1f, 0f, 0f, 0f, 0f, 1f);
 
    private static final ConvolutionFilter BLUR = new ConvolutionFilter(.11f, .11f, .11f, .11f, .11f, .11f, .11f, .11f, .11f, 1f);
 
-   private static final ConvolutionFilter EMBOSS = new ConvolutionFilter(-4f, -2f, 0f, -2f, 0f, 2f, 0f, 2f, 4f, 2f);
+   private static final ConvolutionFilter EMBOSS = new ConvolutionFilter(-2f, -1f, 0f, -1f, 0f, 1f, 0f, 1f, 2f, 1f);
 
    public static class ConvolutionKernel extends Kernel{
 
       private final float[] filter = new float[9];
-      
-      private float weight =1f;
+
+      private float weight = 1f;
 
       private final byte[] inputData;
 
@@ -76,35 +77,22 @@ public class Main{
          outputData = new byte[3 * width * height];
          System.out.println(range);
          put(filter).put(inputData).put(outputData);
-        // this.setExecutionMode(Kernel.EXECUTION_MODE.CPU);
+          this.setExecutionMode(Kernel.EXECUTION_MODE.GPU);
          //  setExplicit(true); // This gives us a performance boost
       }
-      
-      int byteToInt(byte b){     
-         if (b < 0) {
-            return(255+(int)b);
-         }else{
-            return((int)b);
-         }
-      }
-      byte intToByte(int i){
-         if (i > 127){
-            return ((byte) (i-256));
-         }else{
-            return ( (byte) i);
-         }
-      }
+
+     
 
       public void processPixel(int x, int y, int w, int h) {
          float accum = 0;
-         for (int count = 0; count < 9; count++) {
-            int dx = 3 * ((count % 3) - 1); // 0,1,2 -> -3,0,3
-            int dy = (count / 3) - 1; // 0,1,2 -> -1,0,1
-            int rgb = byteToInt((inputData[((y + dy) * w) + (x + dx)]));        
-            accum += (rgb & 0xff) * filter[count];
+         int count = 0;
+         for (int dx = -3; dx < 6; dx += 3) {
+            for (int dy = -1; dy < 2; dy += 1) {
+               int rgb = 0xff & inputData[((y + dy) * w) + (x + dx)];
+               accum += rgb * filter[count++];
+            }
          }
-         int value =  (int)max(0, min(accum, 255));
-         outputData[y * w + x] = intToByte((int)(value*weight));
+         outputData[y * w + x] = (byte) (((int) max(0, min(accum * weight, 255))) & 0xff);
       }
 
       public void run() {
@@ -120,7 +108,6 @@ public class Main{
       public void apply(ConvolutionFilter _filter, BufferedImage _image) {
 
          byte[] imageBytes = ((DataBufferByte) _image.getRaster().getDataBuffer()).getData();
-        // System.out.println("image = " + imageBytes.length + " " + (width * height * 3));
          System.arraycopy(imageBytes, 0, inputData, 0, imageBytes.length);
          System.arraycopy(_filter.weights, 0, filter, 0, _filter.weights.length);
          weight = _filter.weight;
@@ -128,12 +115,12 @@ public class Main{
          if (false) {
 
             for (int x = 3; x < width * 3 - 3; x++) {
-               for (int y = 1; y < height-1; y++) {
+               for (int y = 1; y < height - 1; y++) {
                   processPixel(x, y, width * 3, height);
                }
             }
          } else {
-            put(filter).put(inputData).put(outputData);
+            put(filter).put(inputData);
             execute(range);
             get(outputData);
          }
@@ -166,9 +153,9 @@ public class Main{
                            JJMediaReader.JJReaderStream rs = reader.readFrame();
                            if (rs != null) {
                               vs.getOutputFrame(image);
-                              kernel.apply(EMBOSS, image);
+                              kernel.apply(EDGE, image);
 
-                              // System.out.println(kernel.getExecutionTime());
+                              //System.out.println(kernel.getExecutionTime());
                               label.repaint();
                            } else {
                               System.out.println("end of file, restart");
