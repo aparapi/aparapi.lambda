@@ -138,6 +138,7 @@ public class Main{
             frame.getContentPane().add(label, BorderLayout.CENTER);
             try {
                String name = "c:\\users\\gfrost\\Desktop\\afds\\MV5BMjEyMjMzODc0MV5BMTFeQW1wNF5BbWU3MDE3NzA0Nzc@.mp4";
+              // name = "in.flv";
                final JJMediaReader reader = new JJMediaReader(name);
                final JJReaderVideo vs = reader.openFirstVideoStream();
                final BufferedImage image = vs.createImage();
