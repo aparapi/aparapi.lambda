@@ -45,7 +45,7 @@ public class Main{
 
    }
 
-   private static final ConvolutionFilter EDGE = new ConvolutionFilter(0f, -1f, 0f, -1f, 4f, -1f, 0f, -1f, 0f, 1f);
+   private static final ConvolutionFilter EDGE = new ConvolutionFilter(0f, -10f, 0f, -10f, 40f, -10f, 0f, -10f, 0f, 1f);
 
    private static final ConvolutionFilter NONE = new ConvolutionFilter(0f, 0f, 0f, 0f, 1f, 0f, 0f, 0f, 0f, 1f);
 
@@ -100,18 +100,19 @@ public class Main{
          int y = getGlobalId(1);
          int w = getGlobalSize(0);
          int h = getGlobalSize(1);
-         if (x > 3 && x < (w - 3) && y > 1 && y < (h - 1)) {
+         if (x > 3 && x < (w/2 - 3) && y > 1 && y < (h - 1)) {
             processPixel(x, y, w, h);
+         }else{
+            outputData[y * w + x] = inputData[(y * w) + x];
          }
       }
 
       public void apply(ConvolutionFilter _filter, BufferedImage _image) {
-
+       
          byte[] imageBytes = ((DataBufferByte) _image.getRaster().getDataBuffer()).getData();
          System.arraycopy(imageBytes, 0, inputData, 0, imageBytes.length);
          System.arraycopy(_filter.weights, 0, filter, 0, _filter.weights.length);
          weight = _filter.weight;
-         long start = System.currentTimeMillis();
          if (false) {
 
             for (int x = 3; x < width * 3 - 3; x++) {
@@ -125,7 +126,7 @@ public class Main{
             get(outputData);
          }
          System.arraycopy(outputData, 0, imageBytes, 0, imageBytes.length);
-         System.out.println("elapsed  =" + (System.currentTimeMillis() - start));
+        
       }
    }
 
@@ -138,6 +139,7 @@ public class Main{
             frame.getContentPane().add(label, BorderLayout.CENTER);
             try {
                String name = "c:\\users\\gfrost\\Desktop\\afds\\MV5BMjEyMjMzODc0MV5BMTFeQW1wNF5BbWU3MDE3NzA0Nzc@.mp4";
+               name = "C:\\Users\\gfrost\\Downloads\\leo_1080p.mov";
               // name = "in.flv";
                final JJMediaReader reader = new JJMediaReader(name);
                final JJReaderVideo vs = reader.openFirstVideoStream();
@@ -154,7 +156,9 @@ public class Main{
                            JJMediaReader.JJReaderStream rs = reader.readFrame();
                            if (rs != null) {
                               vs.getOutputFrame(image);
-                              kernel.apply(EDGE, image);
+                              long start = System.currentTimeMillis();
+                              kernel.apply(EMBOSS, image);
+                              System.out.println("elapsed  =" + (System.currentTimeMillis() - start));
 
                               //System.out.println(kernel.getExecutionTime());
                               label.repaint();
