@@ -26,9 +26,9 @@ public class Main{
    final static class ConvolutionFilter{
       private float[] weights;
 
-      private int offset;
+      private float weight;
 
-      ConvolutionFilter(float _nw, float _n, float ne, float _w, float _o, float _e, float _sw, float _s, float _se, int _offset) {
+      ConvolutionFilter(float _nw, float _n, float ne, float _w, float _o, float _e, float _sw, float _s, float _se, float _weight) {
          weights = new float[] {
                _nw,
                _w,
@@ -40,20 +40,23 @@ public class Main{
                _s,
                _se
          };
-         offset = _offset;
+         weight = _weight;
       }
 
    }
+   private static final ConvolutionFilter EDGE = new ConvolutionFilter(0f, -1f, 0f, -1f, 4.1f, -1f, 0f, -1f, 0f, 1f);
 
-   private static final ConvolutionFilter NONE = new ConvolutionFilter(0f, 0f, 0f, 0f, 1f, 0f, 0f, 0f, 0f, 0);
+   private static final ConvolutionFilter NONE = new ConvolutionFilter(0f, 0f, 0f, 0f, 1f, 0f, 0f, 0f, 0f, 1f);
 
-   private static final ConvolutionFilter BLUR = new ConvolutionFilter(.11f, .11f, .11f, .11f, .11f, .11f, .11f, .11f, .11f, 0);
+   private static final ConvolutionFilter BLUR = new ConvolutionFilter(.11f, .11f, .11f, .11f, .11f, .11f, .11f, .11f, .11f, 1f);
 
-   private static final ConvolutionFilter EMBOSS = new ConvolutionFilter(-4f, -2f, 0f, -2f, 0f, 2f, 0f, 2f, 5f, 0);
+   private static final ConvolutionFilter EMBOSS = new ConvolutionFilter(-4f, -2f, 0f, -2f, 0f, 2f, 0f, 2f, 4f, 2f);
 
    public static class ConvolutionKernel extends Kernel{
 
       private final float[] filter = new float[9];
+      
+      private float weight =1f;
 
       private final byte[] inputData;
 
@@ -101,7 +104,7 @@ public class Main{
             accum += (rgb & 0xff) * filter[count];
          }
          int value =  (int)max(0, min(accum, 255));
-         outputData[y * w + x] = intToByte(value);
+         outputData[y * w + x] = intToByte((int)(value*weight));
       }
 
       public void run() {
@@ -120,7 +123,7 @@ public class Main{
         // System.out.println("image = " + imageBytes.length + " " + (width * height * 3));
          System.arraycopy(imageBytes, 0, inputData, 0, imageBytes.length);
          System.arraycopy(_filter.weights, 0, filter, 0, _filter.weights.length);
-
+         weight = _filter.weight;
          long start = System.currentTimeMillis();
          if (false) {
 
