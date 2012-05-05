@@ -100,7 +100,7 @@ public class Main{
          int y = getGlobalId(1);
          int w = getGlobalSize(0);
          int h = getGlobalSize(1);
-         if (x > 3 && x < (w/2 - 3) && y > 1 && y < (h - 1)) {
+         if (x > 3 && x < (w - 3) && y > 1 && y < (h - 1)) {
             processPixel(x, y, w, h);
          }else{
             outputData[y * w + x] = inputData[(y * w) + x];
@@ -140,6 +140,7 @@ public class Main{
             try {
                String name = "c:\\users\\gfrost\\Desktop\\afds\\MV5BMjEyMjMzODc0MV5BMTFeQW1wNF5BbWU3MDE3NzA0Nzc@.mp4";
                name = "C:\\Users\\gfrost\\Downloads\\leo_1080p.mov";
+               name = "C:\\Users\\gfrost\\Downloads\\HK2207_720p.mp4";
               // name = "in.flv";
                final JJMediaReader reader = new JJMediaReader(name);
                final JJReaderVideo vs = reader.openFirstVideoStream();
@@ -157,7 +158,7 @@ public class Main{
                            if (rs != null) {
                               vs.getOutputFrame(image);
                               long start = System.currentTimeMillis();
-                              kernel.apply(EMBOSS, image);
+                              kernel.apply(EDGE, image);
                               System.out.println("elapsed  =" + (System.currentTimeMillis() - start));
 
                               //System.out.println(kernel.getExecutionTime());
