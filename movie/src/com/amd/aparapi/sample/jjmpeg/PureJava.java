@@ -40,6 +40,7 @@ public class PureJava{
             try {
                String name = "c:\\users\\gfrost\\Desktop\\afds\\MV5BMjEyMjMzODc0MV5BMTFeQW1wNF5BbWU3MDE3NzA0Nzc@.mp4";
                name = "C:\\Users\\gfrost\\Downloads\\leo_1080p.mov";
+               name = "C:\\Users\\gfrost\\Downloads\\HK2207_720p.mp4";
                final JJMediaReader reader = new JJMediaReader(name);
                final JJReaderVideo vs = reader.openFirstVideoStream();
                final BufferedImage image = vs.createImage();
