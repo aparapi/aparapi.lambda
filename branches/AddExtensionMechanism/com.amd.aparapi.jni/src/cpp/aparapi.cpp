@@ -405,10 +405,12 @@ class JNIContext{
                      // platformVersionName = "OpenCL 1.1 AMD-APP-SDK-v2.5 (684.213)"|"OpenCL 1.1 CUDA 4.0.1"
 #ifndef __APPLE__
                      // Here we check if the platformVersionName starts with "OpenCL 1.1" (10 chars!) 
-                     if (!strncmp(platformVersionName, "OpenCL 1.1", 10)) { //}
+                     if (   !strncmp(platformVersionName, "OpenCL 1.1", 10)
+                         || !strncmp(platformVersionName, "OpenCL 1.2", 10)) { //}
 #else 
                      // Here we check if the platformVersionName starts with "OpenCL 1.1" or "OpenCL 1.0" (10 chars!) 
-                     if (!strncmp(platformVersionName, "OpenCL 1.1", 10) || !strncmp(platformVersionName, "OpenCL 1.0", 10)) { // }
+                     if (   !strncmp(platformVersionName, "OpenCL 1.1", 10)
+                         || !strncmp(platformVersionName, "OpenCL 1.0", 10)) { // }
 #endif
                      // Get the # of devices
                      status = clGetDeviceIDs(platforms[i], deviceType, 0, NULL, &deviceIdc);
