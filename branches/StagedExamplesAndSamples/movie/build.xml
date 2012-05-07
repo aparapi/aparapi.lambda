@@ -1,11 +1,13 @@
 <?xml version="1.0"?>
 
 <project name="movie" default="build" basedir=".">
+   <property name="aparapi" value="C:\Users\gfrost\javalabs\projects\aparapi\trunk\aparapi.googlecode.com\trunk"/>
+
    <target name="build" depends="clean">
       <mkdir dir="classes"/>
       <javac srcdir="src" destdir="classes" debug="on" includeantruntime="false" >
          <classpath>
-            <pathelement path="C:\Users\gfrost\aparapi\trunk\com.amd.aparapi\dist\aparapi.jar"/>
+            <pathelement path="${aparapi}\com.amd.aparapi\dist\aparapi.jar"/>
             <pathelement path="jjmpeg\jjmpeg-0.0\dist\jjmpeg.jar/"/>
          </classpath>
       </javac>
@@ -16,18 +18,39 @@
       <delete dir="classes"/>
       <delete file="${ant.project.name}.jar"/>
    </target>
-   <target name="run">
+
+   <target name="run-64">
       <java classname="com.amd.aparapi.sample.jjmpeg.Main" fork="yes" >
-         <sysproperty key="java.library.path" path="jjmpeg\jjmpeg-0.0\native\mswin-amd64;C:\Users\gfrost\aparapi\trunk\com.amd.aparapi.jni\dist"/>
+         <sysproperty key="java.library.path" path="jjmpeg\jjmpeg-0.0\native\mswin-amd64;${aparapi}\com.amd.aparapi.jni\dist"/>
          <classpath>
             <pathelement path="${ant.project.name}.jar"/>
-            <pathelement path="C:\Users\gfrost\aparapi\trunk\com.amd.aparapi\dist\aparapi.jar"/>
+            <pathelement path="${aparapi}\com.amd.aparapi\dist\aparapi.jar"/>
             <pathelement path="jjmpeg\jjmpeg-0.0\dist\jjmpeg.jar/"/>
          </classpath>
       </java>
    </target>
 
-   <target name="get-stuff">
+    <target name="run-32">
+      <java classname="com.amd.aparapi.sample.jjmpeg.Main" fork="yes" >
+         <sysproperty key="java.library.path" path="jjmpeg\jjmpeg-0.0\native\mswin-i386;${aparapi}\com.amd.aparapi.jni\dist"/>
+         <classpath>
+            <pathelement path="${ant.project.name}.jar"/>
+            <pathelement path="${aparapi}\com.amd.aparapi\dist\aparapi.jar"/>
+            <pathelement path="jjmpeg\jjmpeg-0.0\dist\jjmpeg.jar/"/>
+         </classpath>
+      </java>
+   </target>
+   <target name="run-java-32">
+      <java classname="com.amd.aparapi.sample.jjmpeg.PureJava" fork="yes" >
+         <sysproperty key="java.library.path" path="jjmpeg\jjmpeg-0.0\native\mswin-i386"/>
+         <classpath>
+            <pathelement path="${ant.project.name}.jar"/>
+            <pathelement path="jjmpeg\jjmpeg-0.0\dist\jjmpeg.jar/"/>
+         </classpath>
+      </java>
+   </target>
+
+   <target name="get-stuff-win64">
       <mkdir dir="ffmpeg"/>
       <get dest="ffmpeg">
          <url url="http://ffmpeg.zeranoe.com/builds/win64/shared/ffmpeg-git-9c2651a-win64-shared.7z"/> 
@@ -35,6 +58,22 @@
       <exec dir="ffmpeg" executable="C:\Program Files\7-Zip\7z.exe">
          <arg value="x"/>
          <arg value="ffmpeg-git-9c2651a-win64-shared.7z"/>
+      </exec>
+      <mkdir dir="jjmpeg"/>
+      <get dest="jjmpeg">
+         <url url="http://jjmpeg.googlecode.com/files/jjmpeg-0.0-bin.tar.bz2"/> 
+      </get>
+      <untar src="jjmpeg/jjmpeg-0.0-bin.tar.bz2" compression="bzip2" dest="jjmpeg"/>
+
+   </target>
+   <target name="get-stuff-win32">
+      <mkdir dir="ffmpeg"/>
+      <get dest="ffmpeg">
+         <url url="http://ffmpeg.zeranoe.com/builds/win32/shared/ffmpeg-git-9c2651a-win32-shared.7z"/> 
+      </get>
+      <exec dir="ffmpeg" executable="C:\Program Files\7-Zip\7z.exe">
+         <arg value="x"/>
+         <arg value="ffmpeg-git-9c2651a-win32-shared.7z"/>
       </exec>
       <mkdir dir="jjmpeg"/>
       <get dest="jjmpeg">
