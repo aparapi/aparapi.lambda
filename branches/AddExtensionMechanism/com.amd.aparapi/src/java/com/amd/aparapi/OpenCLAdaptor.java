@@ -1,4 +1,4 @@
-package com.amd.opencl;
+package com.amd.aparapi;
 
 
 public class OpenCLAdaptor<T> implements OpenCL<T> {

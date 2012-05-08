@@ -1,6 +1,7 @@
-package com.amd.opencl;
+package com.amd.aparapi;
 
 import java.util.List;
+
 
 public class OpenCLJNI{
 
@@ -35,7 +36,7 @@ public class OpenCLJNI{
 
    static final OpenCLJNI jni = new OpenCLJNI();
 
-   static OpenCLJNI getJNI() {
+   public static OpenCLJNI getJNI() {
       return (jni);
    }
 
@@ -77,12 +78,12 @@ public class OpenCLJNI{
 
    native public Program createProgram(Device context, String openCLSource);
 
-   native public Kernel createKernel(Program program, String kernelName, List<Arg> args);
+   native public OpenCLKernel createKernel(Program program, String kernelName, List<Arg> args);
 
-   native public void invoke(Kernel kernel, Object[] args);
+   native public void invoke(OpenCLKernel openCLKernel, Object[] args);
 
-   native public void remap(Program program, Mem mem, long address);
+   native public void remap(Program program, OpenCLMem mem, long address);
 
-   native public void getMem(Program program, Mem mem);
+   native public void getMem(Program program, OpenCLMem mem);
 
 }

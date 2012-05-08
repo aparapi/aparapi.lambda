@@ -61,10 +61,10 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import com.amd.aparapi.Device;
+import com.amd.aparapi.OpenCL;
+import com.amd.aparapi.OpenCLAdaptor;
 import com.amd.aparapi.Range;
-import com.amd.opencl.Device;
-import com.amd.opencl.OpenCL;
-import com.amd.opencl.OpenCLAdaptor;
 
 /**
  * An example Aparapi application which displays a view of the Mandelbrot set and lets the user zoom in to a particular point. 

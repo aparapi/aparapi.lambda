@@ -1,8 +1,8 @@
 package com.amd.aparapi.sample.extension;
 
+import com.amd.aparapi.Device;
+import com.amd.aparapi.OpenCL;
 import com.amd.aparapi.Range;
-import com.amd.opencl.Device;
-import com.amd.opencl.OpenCL;
 
 public class SquareExample{
   

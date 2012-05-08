@@ -1,4 +1,4 @@
-package com.amd.opencl;
+package com.amd.aparapi;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.amd.aparapi.Range;
+
 
 public class Device{
    static public enum TYPE {
@@ -138,18 +138,18 @@ public class Device{
    }
 
    public static class OpenCLInvocationHandler<T extends OpenCL<T>> implements InvocationHandler{
-      private Map<String, Kernel> map;
+      private Map<String, OpenCLKernel> map;
 
       private Program program;
 
-      public OpenCLInvocationHandler(Program _program, Map<String, Kernel> _map) {
+      public OpenCLInvocationHandler(Program _program, Map<String, OpenCLKernel> _map) {
          program = _program;
          map = _map;
       }
 
       @Override
       public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-         Kernel kernel = map.get(method.getName());
+         OpenCLKernel kernel = map.get(method.getName());
          if (kernel != null) {
             // we have a kernel entrypoint bound
             kernel.invoke(args);
@@ -158,7 +158,7 @@ public class Device{
                Class<?> argClass = arg.getClass();
                if (argClass.isArray()) {
                   if (argClass.getComponentType().isPrimitive()) {
-                     Mem mem = program.getMem(arg, 0L);
+                     OpenCLMem mem = program.getMem(arg, 0L);
                      if (mem == null) {
                         throw new IllegalStateException("can't put/get an array that has never been passed to a kernel " + argClass);
 
@@ -335,9 +335,9 @@ public class Device{
 
       Program program = createProgram(source);
 
-      Map<String, Kernel> map = new HashMap<String, Kernel>();
+      Map<String, OpenCLKernel> map = new HashMap<String, OpenCLKernel>();
       for (String name : kernelNameToArgsMap.keySet()) {
-         Kernel kernel = program.createKernel(name, kernelNameToArgsMap.get(name));
+    	  OpenCLKernel kernel = program.createKernel(name, kernelNameToArgsMap.get(name));
          if (kernel == null) {
             throw new IllegalStateException("kernel is null");
          }

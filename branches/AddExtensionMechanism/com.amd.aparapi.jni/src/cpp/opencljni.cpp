@@ -43,12 +43,12 @@
 #define OPENCLJNI_SOURCE
 #include "opencljni.h"
 
-#include "com_amd_opencl_OpenCLJNI.h"
+#include "com_amd_aparapi_OpenCLJNI.h"
 
-#define JNI_JAVA(type, className, methodName) JNIEXPORT type JNICALL Java_com_amd_opencl_##className##_##methodName
-#define isset(bits, token) (((bits) & com_amd_opencl_OpenCLJNI_##token##_BIT) ==com_amd_opencl_OpenCLJNI_##token##_BIT) 
-#define set(bits, token) (bits) |= com_amd_opencl_OpenCLJNI_##token##_BIT 
-#define reset(bits, token) (bits) &= ~com_amd_opencl_OpenCLJNI_##token##_BIT 
+#define JNI_JAVA(type, className, methodName) JNIEXPORT type JNICALL Java_com_amd_aparapi_##className##_##methodName
+#define isset(bits, token) (((bits) & com_amd_aparapi_OpenCLJNI_##token##_BIT) ==com_amd_aparapi_OpenCLJNI_##token##_BIT) 
+#define set(bits, token) (bits) |= com_amd_aparapi_OpenCLJNI_##token##_BIT 
+#define reset(bits, token) (bits) &= ~com_amd_aparapi_OpenCLJNI_##token##_BIT 
 
 class Bits{
    public:
@@ -108,7 +108,7 @@ class Bits{
 class Device{
    public:
       static jobject getPlatformInstance(JNIEnv *jenv, jobject deviceInstance){
-         return(JNIHelper::getInstanceFieldObject(jenv, deviceInstance, "platform", "Lcom/amd/opencl/Platform;"));
+         return(JNIHelper::getInstanceFieldObject(jenv, deviceInstance, "platform", "Lcom/amd/aparapi/Platform;"));
       } 
       static cl_device_id getDeviceId(JNIEnv *jenv, jobject deviceInstance){
          return((cl_device_id)JNIHelper::getInstanceFieldLong(jenv, deviceInstance, "deviceId"));
@@ -123,7 +123,7 @@ class Platform{
 class Program{
    public:
       static jobject create(JNIEnv *jenv, cl_program program, cl_command_queue queue, cl_context context, jobject deviceInstance, jstring source, jstring log){
-         return(JNIHelper::createInstance(jenv, "com/amd/opencl/Program", "(JJJLcom/amd/opencl/Device;Ljava/lang/String;Ljava/lang/String;)V", (jlong)program, (jlong)queue, (jlong)context, deviceInstance, source, log));
+         return(JNIHelper::createInstance(jenv, "com/amd/aparapi/Program", "(JJJLcom/amd/aparapi/Device;Ljava/lang/String;Ljava/lang/String;)V", (jlong)program, (jlong)queue, (jlong)context, deviceInstance, source, log));
       }
       static cl_context getContext(JNIEnv *jenv, jobject programInstance){
          return((cl_context) JNIHelper::getInstanceFieldLong(jenv, programInstance, "contextId")); 
@@ -135,10 +135,10 @@ class Program{
          return((cl_command_queue)JNIHelper::getInstanceFieldLong(jenv, programInstance, "queueId"));
       }
 };
-class Kernel{
+class OpenCLKernel{
    public:
       static jobject create(JNIEnv *jenv, cl_kernel kernel, jobject programInstance, jstring name, jobject args){
-         return(JNIHelper::createInstance(jenv, "com/amd/opencl/Kernel", "(JLcom/amd/opencl/Program;Ljava/lang/String;Ljava/util/List;)V", (jlong)kernel, programInstance, name, args));
+         return(JNIHelper::createInstance(jenv, "com/amd/aparapi/OpenCLKernel", "(JLcom/amd/aparapi/Program;Ljava/lang/String;Ljava/util/List;)V", (jlong)kernel, programInstance, name, args));
       }
 
       static cl_kernel getKernel(JNIEnv *jenv, jobject kernelInstance){
@@ -146,18 +146,18 @@ class Kernel{
       }
 
       static jobject getProgramInstance(JNIEnv *jenv, jobject kernelInstance){
-         return(JNIHelper::getInstanceFieldObject(jenv, kernelInstance, "program", "Lcom/amd/opencl/Program;"));
+         return(JNIHelper::getInstanceFieldObject(jenv, kernelInstance, "program", "Lcom/amd/aparapi/Program;"));
       }
 
       static jobjectArray getArgsArray(JNIEnv *jenv, jobject kernelInstance){
-         return(reinterpret_cast<jobjectArray> (JNIHelper::getInstanceFieldObject(jenv, kernelInstance, "args", "[Lcom/amd/opencl/Arg;")));
+         return(reinterpret_cast<jobjectArray> (JNIHelper::getInstanceFieldObject(jenv, kernelInstance, "args", "[Lcom/amd/aparapi/Arg;")));
       }
 };
 
 class Mem{
    public:
       static jobject create(JNIEnv *jenv){
-         return(JNIHelper::createInstance(jenv, "Lcom/amd/opencl/Mem;", "()V"));
+         return(JNIHelper::createInstance(jenv, "Lcom/amd/aparapi/OpenCLMem;", "()V"));
       }
       static cl_uint bitsToOpenCLMask(jlong argBits ){
          cl_uint mask =  CL_MEM_USE_HOST_PTR;
@@ -293,10 +293,10 @@ class Arg{
          JNIHelper::setInstanceFieldLong(jenv, argInstance, "bits", bits);
       }
       static jobject getMemInstance(JNIEnv *jenv, jobject argInstance){
-         return(JNIHelper::getInstanceFieldObject(jenv, argInstance, "memVal", "Lcom/amd/opencl/Mem;"));
+         return(JNIHelper::getInstanceFieldObject(jenv, argInstance, "memVal", "Lcom/amd/aparapi/OpenCLMem;"));
       }
       static void setMemInstance(JNIEnv *jenv, jobject argInstance, jobject memInstance){
-         JNIHelper::setInstanceFieldObject(jenv, argInstance, "memVal", "Lcom/amd/opencl/Mem;",memInstance);
+         JNIHelper::setInstanceFieldObject(jenv, argInstance, "memVal", "Lcom/amd/aparapi/OpenCLMem;",memInstance);
       }
       static void describe(JNIEnv *jenv, jobject argDef, jint argIndex){
          jlong argBits = Arg::getBits(jenv, argDef);
@@ -378,7 +378,7 @@ JNI_JAVA(jobject, OpenCLJNI, createKernel)
 
       jobject kernelInstance = NULL;
       if (status == CL_SUCCESS){
-         kernelInstance = Kernel::create(jenv, kernel, programInstance, name, args);
+         kernelInstance = OpenCLKernel::create(jenv, kernel, programInstance, name, args);
       }else{
          fprintf(stderr, "kernel creation seems to have failed\n");
       }
@@ -520,9 +520,9 @@ JNI_JAVA(void, OpenCLJNI, invoke)
    (JNIEnv *jenv, jobject jobj, jobject kernelInstance, jobjectArray argArray) {
 
 
-      cl_kernel kernel = Kernel::getKernel(jenv, kernelInstance);
-      jobject programInstance = Kernel::getProgramInstance(jenv, kernelInstance);
-      jobjectArray argDefsArray = Kernel::getArgsArray(jenv, kernelInstance);
+      cl_kernel kernel = OpenCLKernel::getKernel(jenv, kernelInstance);
+      jobject programInstance = OpenCLKernel::getProgramInstance(jenv, kernelInstance);
+      jobjectArray argDefsArray = OpenCLKernel::getArgsArray(jenv, kernelInstance);
 
       cl_context context =Program::getContext(jenv, programInstance);
       cl_command_queue commandQueue = Program::getCommandQueue(jenv, programInstance);
@@ -621,7 +621,7 @@ JNI_JAVA(jobject, OpenCLJNI, getPlatforms)
                status = clGetPlatformInfo(platformIds[platformIdx], CL_PLATFORM_VENDOR, sizeof(platformVendorName), platformVendorName, NULL);
                //fprintf(stderr, "platform vendor    %d %s\n", platformIdx, platformVendorName); 
                //fprintf(stderr, "platform version %d %s\n", platformIdx, platformVersionName); 
-               jobject platformInstance = JNIHelper::createInstance(jenv, "com/amd/opencl/Platform", "(JLjava/lang/String;Ljava/lang/String;)V", 
+               jobject platformInstance = JNIHelper::createInstance(jenv, "com/amd/aparapi/Platform", "(JLjava/lang/String;Ljava/lang/String;)V", 
                      (jlong)platformIds[platformIdx],
                      jenv->NewStringUTF(platformVersionName), 
                      jenv->NewStringUTF(platformVendorName));
@@ -638,7 +638,7 @@ JNI_JAVA(jobject, OpenCLJNI, getPlatforms)
 
                         cl_device_type deviceType;
                         status = clGetDeviceInfo(deviceIds[deviceIdx], CL_DEVICE_TYPE,  sizeof(deviceType), &deviceType, NULL);
-                        jobject deviceTypeEnumInstance = JNIHelper::getStaticFieldObject(jenv, "com/amd/opencl/Device$TYPE", "UNKNOWN", "Lcom/amd/opencl/Device$TYPE;");
+                        jobject deviceTypeEnumInstance = JNIHelper::getStaticFieldObject(jenv, "com/amd/aparapi/Device$TYPE", "UNKNOWN", "Lcom/amd/aparapi/Device$TYPE;");
                         //fprintf(stderr, "device[%d] CL_DEVICE_TYPE = ", deviceIdx);
                         if (deviceType & CL_DEVICE_TYPE_DEFAULT) {
                            deviceType &= ~CL_DEVICE_TYPE_DEFAULT;
@@ -647,12 +647,12 @@ JNI_JAVA(jobject, OpenCLJNI, getPlatforms)
                         if (deviceType & CL_DEVICE_TYPE_CPU) {
                            deviceType &= ~CL_DEVICE_TYPE_CPU;
                            //fprintf(stderr, "CPU ");
-                           deviceTypeEnumInstance = JNIHelper::getStaticFieldObject(jenv, "com/amd/opencl/Device$TYPE", "CPU", "Lcom/amd/opencl/Device$TYPE;");
+                           deviceTypeEnumInstance = JNIHelper::getStaticFieldObject(jenv, "com/amd/aparapi/Device$TYPE", "CPU", "Lcom/amd/aparapi/Device$TYPE;");
                         }
                         if (deviceType & CL_DEVICE_TYPE_GPU) {
                            deviceType &= ~CL_DEVICE_TYPE_GPU;
                            //fprintf(stderr, "GPU ");
-                           deviceTypeEnumInstance = JNIHelper::getStaticFieldObject(jenv, "com/amd/opencl/Device$TYPE", "GPU", "Lcom/amd/opencl/Device$TYPE;");
+                           deviceTypeEnumInstance = JNIHelper::getStaticFieldObject(jenv, "com/amd/aparapi/Device$TYPE", "GPU", "Lcom/amd/aparapi/Device$TYPE;");
                         }
                         if (deviceType & CL_DEVICE_TYPE_ACCELERATOR) {
                            deviceType &= ~CL_DEVICE_TYPE_ACCELERATOR;
@@ -662,11 +662,11 @@ JNI_JAVA(jobject, OpenCLJNI, getPlatforms)
                         //fprintf(stderr, "\n");
 
 
-                        jobject deviceInstance = JNIHelper::createInstance(jenv, "com/amd/opencl/Device", "(Lcom/amd/opencl/Platform;JLcom/amd/opencl/Device$TYPE;)V",
+                        jobject deviceInstance = JNIHelper::createInstance(jenv, "com/amd/aparapi/Device", "(Lcom/amd/aparapi/Platform;JLcom/amd/aparapi/Device$TYPE;)V",
                               platformInstance, 
                               (jlong)deviceIds[deviceIdx],
                               deviceTypeEnumInstance);
-                        JNIHelper::callVoid(jenv, platformInstance, "add", "(Lcom/amd/opencl/Device;)V", deviceInstance);
+                        JNIHelper::callVoid(jenv, platformInstance, "add", "(Lcom/amd/aparapi/Device;)V", deviceInstance);
 
 
                         cl_uint maxComputeUnits;

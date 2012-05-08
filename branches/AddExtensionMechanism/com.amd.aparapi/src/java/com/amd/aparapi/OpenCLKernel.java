@@ -1,8 +1,9 @@
-package com.amd.opencl;
+package com.amd.aparapi;
 
 import java.util.List;
 
-public class Kernel{
+
+public class OpenCLKernel{
    private Arg[] args;
 
    private long kernelId;
@@ -11,7 +12,7 @@ public class Kernel{
 
    private String name;
 
-   Kernel(long _kernelId, Program _program, String _name, List<Arg> _args) {
+   OpenCLKernel(long _kernelId, Program _program, String _name, List<Arg> _args) {
       kernelId = _kernelId;
       program = _program;
       name = _name;

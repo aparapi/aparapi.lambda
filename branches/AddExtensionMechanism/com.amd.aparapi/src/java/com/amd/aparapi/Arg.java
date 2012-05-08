@@ -1,16 +1,17 @@
 /**
  * 
  */
-package com.amd.opencl;
+package com.amd.aparapi;
+
 
 public class Arg{
-   public Mem memVal;
+   public OpenCLMem memVal;
    
    private String name;
 
    public long bits;
    
-   public Kernel kernel;
+   public OpenCLKernel kernel;
 
    public Arg(String _name, long _bits) {
     

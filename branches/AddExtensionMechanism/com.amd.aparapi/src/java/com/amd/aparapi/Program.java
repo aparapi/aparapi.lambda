@@ -1,8 +1,9 @@
-package com.amd.opencl;
+package com.amd.aparapi;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 
 public class Program{
    private long programId;
@@ -30,17 +31,17 @@ public class Program{
       return device;
    }
 
-   public Kernel createKernel(String _kernelName, List<Arg> args) {
+   public OpenCLKernel createKernel(String _kernelName, List<Arg> args) {
       return (OpenCLJNI.getJNI().createKernel(this, _kernelName, args));
    }
 
-   private Map<Object, Mem> instanceToMem = new HashMap<Object, Mem>();
+   private Map<Object, OpenCLMem> instanceToMem = new HashMap<Object, OpenCLMem>();
 
-   private Map<Long, Mem> addressToMem = new HashMap<Long, Mem>();
+   private Map<Long, OpenCLMem> addressToMem = new HashMap<Long, OpenCLMem>();
 
 
-   public synchronized Mem getMem(Object _instance, long _address) {
-      Mem mem = instanceToMem.get(_instance);
+   public synchronized OpenCLMem getMem(Object _instance, long _address) {
+      OpenCLMem mem = instanceToMem.get(_instance);
       if (mem == null){
          mem = addressToMem.get(_instance);
          if (mem != null){
@@ -51,13 +52,13 @@ public class Program{
       return(mem);
    }
    
-   public synchronized void add(Mem _mem) {
+   public synchronized void add(OpenCLMem _mem) {
     
       instanceToMem.put(_mem.instance, _mem);
       addressToMem.put(_mem.address, _mem);
    }
    
-   public synchronized void remaped(Mem _mem, long _oldAddress){
+   public synchronized void remaped(OpenCLMem _mem, long _oldAddress){
       addressToMem.remove(_oldAddress);
       addressToMem.put(_mem.address, _mem);
    }

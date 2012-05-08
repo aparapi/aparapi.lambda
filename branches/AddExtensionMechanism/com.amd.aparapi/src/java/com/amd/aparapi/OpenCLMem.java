@@ -1,6 +1,6 @@
-package com.amd.opencl;
+package com.amd.aparapi;
 
-public class Mem{
+public class OpenCLMem{
    long bits;
    
    int sizeInBytes;
