@@ -41,7 +41,7 @@
 #define APARAPI_SOURCE
 #include "aparapi.h"
 #include "com_amd_aparapi_KernelRunner.h"
-#define APARAPI_JAVA(type, className, methodName) JNIEXPORT type JNICALL Java_com_amd_aparapi_##className##_##methodName
+#define JNI_JAVA(type, className, methodName) JNIEXPORT type JNICALL Java_com_amd_aparapi_##className##_##methodName
 
 class Range{
    public:
@@ -621,7 +621,7 @@ void unpinAll(JNIEnv* jenv) {
 
 
 
-APARAPI_JAVA(jint, KernelRunner, disposeJNI)
+JNI_JAVA(jint, KernelRunner, disposeJNI)
    (JNIEnv *jenv, jobject jobj, jlong jniContextHandle) {
    cl_int status = CL_SUCCESS;
    JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);
@@ -814,7 +814,7 @@ jint updateNonPrimitiveReferences(JNIEnv *jenv, jobject jobj, JNIContext* jniCon
 
 
 
-APARAPI_JAVA(jint, KernelRunner, runKernelJNI)
+JNI_JAVA(jint, KernelRunner, runKernelJNI)
    (JNIEnv *jenv, jobject jobj, jlong jniContextHandle, jobject _range, jboolean needSync, jint passes) {
 
    Range range(jenv, _range);
@@ -1336,7 +1336,7 @@ APARAPI_JAVA(jint, KernelRunner, runKernelJNI)
 
 
 // we return the JNIContext from here 
-APARAPI_JAVA(jlong, KernelRunner, initJNI)
+JNI_JAVA(jlong, KernelRunner, initJNI)
    (JNIEnv *jenv, jclass clazz, jobject kernelObject, jint flags) {
    cl_int status = CL_SUCCESS;
    JNIContext* jniContext = new JNIContext(jenv, kernelObject, flags);
@@ -1350,7 +1350,7 @@ APARAPI_JAVA(jlong, KernelRunner, initJNI)
 }
 
 
-APARAPI_JAVA(jlong, KernelRunner, buildProgramJNI)
+JNI_JAVA(jlong, KernelRunner, buildProgramJNI)
    (JNIEnv *jenv, jobject jobj, jlong jniContextHandle, jstring source) {
    JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);
    if (jniContext == NULL){
@@ -1430,7 +1430,7 @@ APARAPI_JAVA(jlong, KernelRunner, buildProgramJNI)
 
 
 // this is called once when the arg list is first determined for this kernel
-APARAPI_JAVA(jint, KernelRunner, setArgsJNI)
+JNI_JAVA(jint, KernelRunner, setArgsJNI)
    (JNIEnv *jenv, jobject jobj, jlong jniContextHandle, jobjectArray argArray, jint argc) {
    JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);
    cl_int status = CL_SUCCESS;
@@ -1541,7 +1541,7 @@ APARAPI_JAVA(jint, KernelRunner, setArgsJNI)
 
 
 
-APARAPI_JAVA(jstring, KernelRunner, getExtensionsJNI)
+JNI_JAVA(jstring, KernelRunner, getExtensionsJNI)
     (JNIEnv *jenv, jobject jobj, jlong jniContextHandle) {
    jstring jextensions = NULL;
    JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);
@@ -1576,7 +1576,7 @@ KernelArg* getArgForBuffer(JNIEnv* jenv, JNIContext* jniContext, jobject buffer)
 }
 
 // Called as a result of Kernel.get(someArray)
-APARAPI_JAVA(jint, KernelRunner, getJNI)
+JNI_JAVA(jint, KernelRunner, getJNI)
    (JNIEnv *jenv, jobject jobj, jlong jniContextHandle, jobject buffer) {
    cl_int status = CL_SUCCESS;
    JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);
@@ -1635,7 +1635,7 @@ jobject createProfileInfo(JNIEnv *jenv, ProfileInfo &profileInfo){
    return(profileInstance);
 }
 
-APARAPI_JAVA(jobject, KernelRunner, getProfileInfoJNI)
+JNI_JAVA(jobject, KernelRunner, getProfileInfoJNI)
    (JNIEnv *jenv, jobject jobj, jlong jniContextHandle) {
    cl_int status = CL_SUCCESS;
    JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);
@@ -1674,7 +1674,7 @@ APARAPI_JAVA(jobject, KernelRunner, getProfileInfoJNI)
 }
 
 
-APARAPI_JAVA(jint, KernelRunner, getMaxComputeUnitsJNI)
+JNI_JAVA(jint, KernelRunner, getMaxComputeUnitsJNI)
    (JNIEnv *jenv, jobject jobj, jlong jniContextHandle) {
    cl_int status = CL_SUCCESS;
    JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);
@@ -1685,7 +1685,7 @@ APARAPI_JAVA(jint, KernelRunner, getMaxComputeUnitsJNI)
    }
 }
 
-APARAPI_JAVA(jint, KernelRunner, getMaxWorkItemDimensionsJNI)
+JNI_JAVA(jint, KernelRunner, getMaxWorkItemDimensionsJNI)
    (JNIEnv *jenv, jobject jobj, jlong jniContextHandle) {
    cl_int status = CL_SUCCESS;
    JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);
@@ -1696,7 +1696,7 @@ APARAPI_JAVA(jint, KernelRunner, getMaxWorkItemDimensionsJNI)
    }
 }
 
-APARAPI_JAVA(jint, KernelRunner, getMaxWorkGroupSizeJNI)
+JNI_JAVA(jint, KernelRunner, getMaxWorkGroupSizeJNI)
    (JNIEnv *jenv, jobject jobj, jlong jniContextHandle) {
    cl_int status = CL_SUCCESS;
    JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);
@@ -1707,7 +1707,7 @@ APARAPI_JAVA(jint, KernelRunner, getMaxWorkGroupSizeJNI)
    }
 }
 
-APARAPI_JAVA(jint, KernelRunner, getMaxWorkItemSizeJNI)
+JNI_JAVA(jint, KernelRunner, getMaxWorkItemSizeJNI)
    (JNIEnv *jenv, jobject jobj, jlong jniContextHandle, jint _index) {
    cl_int status = CL_SUCCESS;
    JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);

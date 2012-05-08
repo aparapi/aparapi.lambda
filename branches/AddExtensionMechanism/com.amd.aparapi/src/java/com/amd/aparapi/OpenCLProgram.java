@@ -4,20 +4,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Program{
+public class OpenCLProgram{
    private long programId;
 
    private long queueId;
 
    private long contextId;
 
-   private Device device;
+   private OpenCLDevice device;
 
    private String source;
 
    private String log;
 
-   Program(long _programId, long _queueId, long _contextId, Device _device, String _source, String _log) {
+   OpenCLProgram(long _programId, long _queueId, long _contextId, OpenCLDevice _device, String _source, String _log) {
       programId = _programId;
       queueId = _queueId;
       contextId = _contextId;
@@ -26,11 +26,11 @@ public class Program{
       log = _log;
    }
 
-   public Device getDevice() {
+   public OpenCLDevice getDevice() {
       return device;
    }
 
-   public OpenCLKernel createKernel(String _kernelName, List<Arg> args) {
+   public OpenCLKernel createKernel(String _kernelName, List<OpenCLArg> args) {
       return (OpenCLJNI.getJNI().createKernel(this, _kernelName, args));
    }
 

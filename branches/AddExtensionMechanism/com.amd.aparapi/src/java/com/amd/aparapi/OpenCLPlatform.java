@@ -3,16 +3,16 @@ package com.amd.aparapi;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Platform{
+public class OpenCLPlatform{
    private long platformId;
 
    private String version;
 
    private String vendor;
 
-   private List<Device> devices = new ArrayList<Device>();
+   private List<OpenCLDevice> devices = new ArrayList<OpenCLDevice>();
 
-   Platform(long _platformId, String _version, String _vendor) {
+   OpenCLPlatform(long _platformId, String _version, String _vendor) {
       platformId = _platformId;
       version = _version;
       vendor = _vendor;
@@ -22,15 +22,15 @@ public class Platform{
       return ("PlatformId " + platformId + "\nName:" + vendor + "\nVersion:" + version);
    }
 
-   public void add(Device device) {
+   public void add(OpenCLDevice device) {
       devices.add(device);
    }
 
-   public List<Device> getDevices() {
+   public List<OpenCLDevice> getDevices() {
       return (devices);
    }
 
-   public static List<Platform> getPlatforms() {
+   public static List<OpenCLPlatform> getPlatforms() {
       return (OpenCLJNI.getJNI().getPlatforms());
    }
 

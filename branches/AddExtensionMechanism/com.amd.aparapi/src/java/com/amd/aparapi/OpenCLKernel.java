@@ -3,20 +3,20 @@ package com.amd.aparapi;
 import java.util.List;
 
 public class OpenCLKernel{
-   private Arg[] args;
+   private OpenCLArg[] args;
 
    private long kernelId;
 
-   private Program program;
+   private OpenCLProgram program;
 
    private String name;
 
-   OpenCLKernel(long _kernelId, Program _program, String _name, List<Arg> _args) {
+   OpenCLKernel(long _kernelId, OpenCLProgram _program, String _name, List<OpenCLArg> _args) {
       kernelId = _kernelId;
       program = _program;
       name = _name;
-      args = _args.toArray(new Arg[0]);
-      for (Arg arg : args) {
+      args = _args.toArray(new OpenCLArg[0]);
+      for (OpenCLArg arg : args) {
          arg.kernel = this;
       }
    }

@@ -3,7 +3,7 @@
  */
 package com.amd.aparapi;
 
-public class Arg{
+public class OpenCLArg{
    public OpenCLMem memVal;
 
    private String name;
@@ -12,7 +12,7 @@ public class Arg{
 
    public OpenCLKernel kernel;
 
-   public Arg(String _name, long _bits) {
+   public OpenCLArg(String _name, long _bits) {
 
       name = _name;
       bits = _bits;

@@ -61,9 +61,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import com.amd.aparapi.Device;
 import com.amd.aparapi.OpenCL;
 import com.amd.aparapi.OpenCLAdaptor;
+import com.amd.aparapi.OpenCLDevice;
 import com.amd.aparapi.Range;
 
 /**
@@ -417,7 +417,7 @@ public class MandelExample{
       float offsetx = .0f;
 
       float offsety = .0f;
-      gpuMandelBrot = Device.best(MandelBrot.class);
+      gpuMandelBrot = OpenCLDevice.best(MandelBrot.class);
       javaMandelBrot = new JavaMandelBrot();
       javaMandelBrotMultiThread = new JavaMandelBrotMultiThread();
       mandelBrot = javaMandelBrot;

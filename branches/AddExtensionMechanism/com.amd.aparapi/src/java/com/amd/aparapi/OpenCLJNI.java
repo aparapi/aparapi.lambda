@@ -73,16 +73,16 @@ public class OpenCLJNI{
 
    public final static long ARG_BIT = 1 << 16;
 
-   native public List<Platform> getPlatforms();
+   native public List<OpenCLPlatform> getPlatforms();
 
-   native public Program createProgram(Device context, String openCLSource);
+   native public OpenCLProgram createProgram(OpenCLDevice context, String openCLSource);
 
-   native public OpenCLKernel createKernel(Program program, String kernelName, List<Arg> args);
+   native public OpenCLKernel createKernel(OpenCLProgram program, String kernelName, List<OpenCLArg> args);
 
    native public void invoke(OpenCLKernel openCLKernel, Object[] args);
 
-   native public void remap(Program program, OpenCLMem mem, long address);
+   native public void remap(OpenCLProgram program, OpenCLMem mem, long address);
 
-   native public void getMem(Program program, OpenCLMem mem);
+   native public void getMem(OpenCLProgram program, OpenCLMem mem);
 
 }

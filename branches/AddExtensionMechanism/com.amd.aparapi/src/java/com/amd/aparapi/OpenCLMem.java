@@ -15,5 +15,5 @@ public class OpenCLMem{
 
    Object instance;
 
-   Program program;
+   OpenCLProgram program;
 }

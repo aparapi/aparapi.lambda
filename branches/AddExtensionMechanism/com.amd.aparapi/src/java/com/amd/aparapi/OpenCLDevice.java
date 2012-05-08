@@ -13,14 +13,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Device{
+public class OpenCLDevice{
    static public enum TYPE {
       UNKNOWN,
       GPU,
       CPU
    };
 
-   private Platform platform;
+   private OpenCLPlatform platform;
 
    private long deviceId;
 
@@ -42,7 +42,7 @@ public class Device{
          0
    };
 
-   Device(Platform _platform, long _deviceId, TYPE _type) {
+   OpenCLDevice(OpenCLPlatform _platform, long _deviceId, TYPE _type) {
       platform = _platform;
       deviceId = _deviceId;
       type = _type;
@@ -130,16 +130,16 @@ public class Device{
       return (deviceId);
    }
 
-   public Platform getPlatform() {
+   public OpenCLPlatform getPlatform() {
       return (platform);
    }
 
    public static class OpenCLInvocationHandler<T extends OpenCL<T>> implements InvocationHandler{
       private Map<String, OpenCLKernel> map;
 
-      private Program program;
+      private OpenCLProgram program;
 
-      public OpenCLInvocationHandler(Program _program, Map<String, OpenCLKernel> _map) {
+      public OpenCLInvocationHandler(OpenCLProgram _program, Map<String, OpenCLKernel> _map) {
          program = _program;
          map = _map;
       }
@@ -183,8 +183,8 @@ public class Device{
 
    }
 
-   public List<Arg> getArgs(Method m) {
-      List<Arg> args = new ArrayList<Arg>();
+   public List<OpenCLArg> getArgs(Method m) {
+      List<OpenCLArg> args = new ArrayList<OpenCLArg>();
       Annotation[][] parameterAnnotations = m.getParameterAnnotations();
       Class<?>[] parameterTypes = m.getParameterTypes();
 
@@ -247,7 +247,7 @@ public class Device{
             if (name == null) {
                throw new IllegalStateException("no name!");
             }
-            Arg kernelArg = new Arg(name, bits);
+            OpenCLArg kernelArg = new OpenCLArg(name, bits);
             args.add(kernelArg);
 
          }
@@ -259,7 +259,7 @@ public class Device{
    public <T extends OpenCL<T>> T create(Class<T> _interface) {
 
       StringBuilder sourceBuilder = new StringBuilder();
-      Map<String, List<Arg>> kernelNameToArgsMap = new HashMap<String, List<Arg>>();
+      Map<String, List<OpenCLArg>> kernelNameToArgsMap = new HashMap<String, List<OpenCLArg>>();
       boolean interfaceIsAnnotated = false;
       for (Annotation a : _interface.getAnnotations()) {
          if (a instanceof OpenCL.Source) {
@@ -292,7 +292,7 @@ public class Device{
          for (Method m : _interface.getDeclaredMethods()) {
             if ((!m.getName().equals("put") && !m.getName().equals("get"))) {
 
-               List<Arg> args = getArgs(m);
+               List<OpenCLArg> args = getArgs(m);
 
                kernelNameToArgsMap.put(m.getName(), args);
             }
@@ -305,10 +305,10 @@ public class Device{
                // System.out.println("   annotation type " + a.annotationType());
                if (a instanceof OpenCL.Kernel && (!m.getName().equals("put") && !m.getName().equals("get"))) {
                   sourceBuilder.append("__kernel void " + m.getName() + "(");
-                  List<Arg> args = getArgs(m);
+                  List<OpenCLArg> args = getArgs(m);
 
                   boolean first = true;
-                  for (Arg arg : args) {
+                  for (OpenCLArg arg : args) {
                      if (first) {
                         first = false;
                      } else {
@@ -329,7 +329,7 @@ public class Device{
       String source = sourceBuilder.toString();
       System.out.println("opencl{\n" + source + "\n}opencl");
 
-      Program program = createProgram(source);
+      OpenCLProgram program = createProgram(source);
 
       Map<String, OpenCLKernel> map = new HashMap<String, OpenCLKernel>();
       for (String name : kernelNameToArgsMap.keySet()) {
@@ -341,7 +341,7 @@ public class Device{
       }
 
       OpenCLInvocationHandler<T> invocationHandler = new OpenCLInvocationHandler<T>(program, map);
-      T instance = (T) Proxy.newProxyInstance(Device.class.getClassLoader(), new Class[] {
+      T instance = (T) Proxy.newProxyInstance(OpenCLDevice.class.getClassLoader(), new Class[] {
             _interface,
             OpenCL.class
       }, invocationHandler);
@@ -350,15 +350,15 @@ public class Device{
    }
 
    interface DeviceFilter{
-      boolean match(Device _device);
+      boolean match(OpenCLDevice _device);
    }
 
    interface DeviceComparitor{
-      Device best(Device _deviceLhs, Device _deviceRhs);
+      OpenCLDevice best(OpenCLDevice _deviceLhs, OpenCLDevice _deviceRhs);
    }
 
    public static DeviceComparitor Best = new DeviceComparitor(){
-      @Override public Device best(Device _deviceLhs, Device _deviceRhs) {
+      @Override public OpenCLDevice best(OpenCLDevice _deviceLhs, OpenCLDevice _deviceRhs) {
          if (_deviceLhs.getType() != _deviceRhs.getType()) {
             if (_deviceLhs.getType() == TYPE.GPU) {
                return (_deviceLhs);
@@ -376,21 +376,21 @@ public class Device{
    };
 
    public static DeviceFilter FirstGPU = new DeviceFilter(){
-      @Override public boolean match(Device _device) {
-         return (_device.getType() == Device.TYPE.GPU);
+      @Override public boolean match(OpenCLDevice _device) {
+         return (_device.getType() == OpenCLDevice.TYPE.GPU);
       }
    };
 
    public static DeviceFilter FirstCPU = new DeviceFilter(){
-      @Override public boolean match(Device _device) {
-         return (_device.getType() == Device.TYPE.CPU);
+      @Override public boolean match(OpenCLDevice _device) {
+         return (_device.getType() == OpenCLDevice.TYPE.CPU);
       }
    };
 
    public static <T extends OpenCL<T>> T first(Class<T> _interface, DeviceFilter _deviceFilter) {
-      Device device = null;
-      for (Platform p : Platform.getPlatforms()) {
-         for (Device d : p.getDevices()) {
+      OpenCLDevice device = null;
+      for (OpenCLPlatform p : OpenCLPlatform.getPlatforms()) {
+         for (OpenCLDevice d : p.getDevices()) {
             if (_deviceFilter.match(d)) {
                device = d;
                break;
@@ -404,9 +404,9 @@ public class Device{
    }
 
    public static <T extends OpenCL<T>> T best(Class<T> _interface, DeviceComparitor _deviceComparitor) {
-      Device device = null;
-      for (Platform p : Platform.getPlatforms()) {
-         for (Device d : p.getDevices()) {
+      OpenCLDevice device = null;
+      for (OpenCLPlatform p : OpenCLPlatform.getPlatforms()) {
+         for (OpenCLDevice d : p.getDevices()) {
             if (device == null) {
                device = d;
             } else {
@@ -429,7 +429,7 @@ public class Device{
       return (best(_interface, Best));
    }
 
-   public Program createProgram(String source) {
+   public OpenCLProgram createProgram(String source) {
       return (OpenCLJNI.getJNI().createProgram(this, source));
    }
 
