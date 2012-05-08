@@ -33,7 +33,7 @@
    direct product is subject to national security controls as identified on the Commerce Control List (currently 
    found in Supplement 1 to Part 774 of EAR).  For the most current Country Group listings, or for additional 
    information about the EAR or your obligations under those regulations, please refer to the U.S. Bureau of Industry
-   and Security’s website at http://www.bis.doc.gov/. 
+   and Security?s website at http://www.bis.doc.gov/. 
    */
 #include "common.h"
 #include "jniHelper.h"
@@ -390,7 +390,7 @@ class JNIContext{
                platforms = new cl_platform_id[platformc];
                status = clGetPlatformIDs(platformc, platforms, NULL);
                if (status == CL_SUCCESS){
-                  // iterate through platforms looking for an OpenCL 1.1 platform supporting required device (GPU|CPU)
+                  // iterate through platforms looking for an OpenCL 1.[12] platform supporting required device (GPU|CPU)
                   // note that we exit the loop when we find a match so we find the first match
                   for (unsigned i = 0; platform == NULL && i < platformc; ++i) {
                      char platformVendorName[512];  
@@ -410,7 +410,8 @@ class JNIContext{
 #else 
                      // Here we check if the platformVersionName starts with "OpenCL 1.1" or "OpenCL 1.0" (10 chars!) 
                      if (   !strncmp(platformVersionName, "OpenCL 1.1", 10)
-                         || !strncmp(platformVersionName, "OpenCL 1.0", 10)) { // }
+                         || !strncmp(platformVersionName, "OpenCL 1.0", 10)
+                         || !strncmp(platformVersionName, "OpenCL 1.2", 10)) { // }
 #endif
                      // Get the # of devices
                      status = clGetDeviceIDs(platforms[i], deviceType, 0, NULL, &deviceIdc);
@@ -1164,7 +1165,10 @@ APARAPI_JAVA(jint, KernelRunner, runKernelJNI)
 
          if (status != CL_SUCCESS) {
             PRINT_CL_ERR(status, "clEnqueueNDRangeKernel()");
-            fprintf(stderr, "after clEnqueueNDRangeKernel, globalSize_0=%d localSize_0=%d\n", (int)range.globalDims[0], range.localDims[0] );
+            for(int i = 0; i<range.dims;i++) {
+                fprintf(stderr, "after clEnqueueNDRangeKernel, globalSize[%d] = %d, localSize[%d] = %d\n",
+                       i, (int)range.globalDims[i], i, (int)range.localDims[i]);
+            }
             jniContext->unpinAll(jenv);
             return status;
          }

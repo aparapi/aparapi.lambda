@@ -615,7 +615,8 @@ JNI_JAVA(jobject, OpenCLJNI, getPlatforms)
          for (unsigned platformIdx = 0; platformIdx < platformc; ++platformIdx) {
             char platformVersionName[512];
             status = clGetPlatformInfo(platformIds[platformIdx], CL_PLATFORM_VERSION, sizeof(platformVersionName), platformVersionName, NULL);
-            if (!strncmp(platformVersionName, "OpenCL 1.1", 10)) { 
+            if (   !strncmp(platformVersionName, "OpenCL 1.1", 10)
+                || !strncmp(platformVersionName, "OpenCL 1.2", 10)) { 
                char platformVendorName[512];  
                status = clGetPlatformInfo(platformIds[platformIdx], CL_PLATFORM_VENDOR, sizeof(platformVendorName), platformVendorName, NULL);
                //fprintf(stderr, "platform vendor    %d %s\n", platformIdx, platformVendorName); 
