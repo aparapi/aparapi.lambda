@@ -62,7 +62,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import com.amd.aparapi.OpenCL;
-import com.amd.aparapi.OpenCLAdaptor;
+import com.amd.aparapi.OpenCLAdapter;
 import com.amd.aparapi.OpenCLDevice;
 import com.amd.aparapi.Range;
 
@@ -88,7 +88,7 @@ import com.amd.aparapi.Range;
    );
 }
 
-class JavaMandelBrot extends OpenCLAdaptor<MandelBrot> implements MandelBrot{
+class JavaMandelBrot extends OpenCLAdapter<MandelBrot> implements MandelBrot{
    final int MAX_ITERATIONS = 64;
 
    final int pallette[] = new int[] {
@@ -185,7 +185,7 @@ class JavaMandelBrot extends OpenCLAdaptor<MandelBrot> implements MandelBrot{
 
 }
 
-class JavaMandelBrotMultiThread extends OpenCLAdaptor<MandelBrot> implements MandelBrot{
+class JavaMandelBrotMultiThread extends OpenCLAdapter<MandelBrot> implements MandelBrot{
    final int MAX_ITERATIONS = 64;
 
    final int pallette[] = new int[] {

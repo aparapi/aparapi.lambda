@@ -1,6 +1,6 @@
 package com.amd.aparapi;
 
-public class OpenCLAdaptor<T> implements OpenCL<T>{
+public class OpenCLAdapter<T> implements OpenCL<T>{
 
    public T put(float[] array) {
       return ((T) this);
