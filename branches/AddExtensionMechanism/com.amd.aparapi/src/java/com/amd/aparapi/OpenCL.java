@@ -7,66 +7,46 @@ import java.lang.annotation.Target;
 
 public interface OpenCL<T> {
 
-   public @Target(ElementType.PARAMETER)
-   @Retention(RetentionPolicy.RUNTIME)
-   @interface Put {
+   public @Target(ElementType.PARAMETER) @Retention(RetentionPolicy.RUNTIME) @interface Put {
    }
 
-   public @Target(ElementType.PARAMETER)
-   @Retention(RetentionPolicy.RUNTIME)
-   @interface Get {
+   public @Target(ElementType.PARAMETER) @Retention(RetentionPolicy.RUNTIME) @interface Get {
    }
 
-   public @Target(ElementType.TYPE)
-   @Retention(RetentionPolicy.RUNTIME)
-   @interface Source {
+   public @Target(ElementType.TYPE) @Retention(RetentionPolicy.RUNTIME) @interface Source {
       String value();
 
    }
 
-   public @Target(ElementType.TYPE)
-   @Retention(RetentionPolicy.RUNTIME)
-   @interface Resource {
+   public @Target(ElementType.TYPE) @Retention(RetentionPolicy.RUNTIME) @interface Resource {
       String value();
    }
 
-   public @Target(ElementType.METHOD)
-   @Retention(RetentionPolicy.RUNTIME)
-   @interface Kernel {
-      String value();
-   }
-   public @Target(ElementType.PARAMETER)
-   @Retention(RetentionPolicy.RUNTIME)
-   @interface Arg {
-      String value();
-   }
-   public @Target(ElementType.PARAMETER)
-   @Retention(RetentionPolicy.RUNTIME)
-   @interface GlobalReadWrite {
+   public @Target(ElementType.METHOD) @Retention(RetentionPolicy.RUNTIME) @interface Kernel {
       String value();
    }
 
-   public @Target(ElementType.PARAMETER)
-   @Retention(RetentionPolicy.RUNTIME)
-   @interface GlobalReadOnly {
+   public @Target(ElementType.PARAMETER) @Retention(RetentionPolicy.RUNTIME) @interface Arg {
       String value();
    }
 
-   public @Target(ElementType.PARAMETER)
-   @Retention(RetentionPolicy.RUNTIME)
-   @interface GlobalWriteOnly {
+   public @Target(ElementType.PARAMETER) @Retention(RetentionPolicy.RUNTIME) @interface GlobalReadWrite {
       String value();
    }
 
-   public @Target(ElementType.PARAMETER)
-   @Retention(RetentionPolicy.RUNTIME)
-   @interface Local {
+   public @Target(ElementType.PARAMETER) @Retention(RetentionPolicy.RUNTIME) @interface GlobalReadOnly {
       String value();
    }
 
-   public @Target(ElementType.PARAMETER)
-   @Retention(RetentionPolicy.RUNTIME)
-   @interface Constant {
+   public @Target(ElementType.PARAMETER) @Retention(RetentionPolicy.RUNTIME) @interface GlobalWriteOnly {
+      String value();
+   }
+
+   public @Target(ElementType.PARAMETER) @Retention(RetentionPolicy.RUNTIME) @interface Local {
+      String value();
+   }
+
+   public @Target(ElementType.PARAMETER) @Retention(RetentionPolicy.RUNTIME) @interface Constant {
       String value();
    }
 

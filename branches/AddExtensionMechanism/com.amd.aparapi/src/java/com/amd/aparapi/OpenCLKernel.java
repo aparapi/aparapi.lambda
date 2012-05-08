@@ -2,7 +2,6 @@ package com.amd.aparapi;
 
 import java.util.List;
 
-
 public class OpenCLKernel{
    private Arg[] args;
 
@@ -17,8 +16,8 @@ public class OpenCLKernel{
       program = _program;
       name = _name;
       args = _args.toArray(new Arg[0]);
-      for (Arg arg:args){
-         arg.kernel=this;
+      for (Arg arg : args) {
+         arg.kernel = this;
       }
    }
 

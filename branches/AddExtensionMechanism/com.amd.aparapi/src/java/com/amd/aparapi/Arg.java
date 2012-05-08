@@ -3,22 +3,20 @@
  */
 package com.amd.aparapi;
 
-
 public class Arg{
    public OpenCLMem memVal;
-   
+
    private String name;
 
    public long bits;
-   
+
    public OpenCLKernel kernel;
 
    public Arg(String _name, long _bits) {
-    
+
       name = _name;
       bits = _bits;
    }
-   
 
    public String toString() {
       StringBuilder argBuilder = new StringBuilder();
@@ -33,7 +31,7 @@ public class Arg{
       } else {
          argBuilder.append("WHATISTHIS?");
       }
-      
+
       if ((bits & OpenCLJNI.FLOAT_BIT) == OpenCLJNI.FLOAT_BIT) {
          argBuilder.append("float ");
       } else if ((bits & OpenCLJNI.INT_BIT) == OpenCLJNI.INT_BIT) {

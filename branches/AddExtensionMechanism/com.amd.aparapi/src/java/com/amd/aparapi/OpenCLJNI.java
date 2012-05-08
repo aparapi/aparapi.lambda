@@ -2,7 +2,6 @@ package com.amd.aparapi;
 
 import java.util.List;
 
-
 public class OpenCLJNI{
 
    static {

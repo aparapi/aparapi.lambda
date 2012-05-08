@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
 public class Program{
    private long programId;
 
@@ -39,26 +38,25 @@ public class Program{
 
    private Map<Long, OpenCLMem> addressToMem = new HashMap<Long, OpenCLMem>();
 
-
    public synchronized OpenCLMem getMem(Object _instance, long _address) {
       OpenCLMem mem = instanceToMem.get(_instance);
-      if (mem == null){
+      if (mem == null) {
          mem = addressToMem.get(_instance);
-         if (mem != null){
+         if (mem != null) {
             System.out.println("object has been moved, we need to remap the buffer");
             OpenCLJNI.getJNI().remap(this, mem, _address);
          }
       }
-      return(mem);
+      return (mem);
    }
-   
+
    public synchronized void add(OpenCLMem _mem) {
-    
+
       instanceToMem.put(_mem.instance, _mem);
       addressToMem.put(_mem.address, _mem);
    }
-   
-   public synchronized void remaped(OpenCLMem _mem, long _oldAddress){
+
+   public synchronized void remaped(OpenCLMem _mem, long _oldAddress) {
       addressToMem.remove(_oldAddress);
       addressToMem.put(_mem.address, _mem);
    }
