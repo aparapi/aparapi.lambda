@@ -34,10 +34,13 @@
          <fileset dir="examples" includes="*/build.xml"/>
          <fileset dir="test" includes="*/build.xml"/>
       </subant>
-      <delete dir="examples\nbody\jogamp"/> <!-- we handle the jogamp delete here, save downloading each build -->
-      <delete file="test\codegen\.libs\junit-4.10.jar"/> <!-- we handle the junit delete here, save downloading each build -->
       <ant dir="com.amd.aparapi.jni" target="clean"/> 
       <ant dir="com.amd.aparapi" target="clean"/> 
+   </target>
+
+   <target name="squeaky" depends="clean">
+      <delete dir="examples\nbody\jogamp"/> <!-- we handle the jogamp delete here, save downloading each build -->
+      <delete file="test\codegen\.libs\junit-4.10.jar"/> <!-- we handle the junit delete here, save downloading each build -->
    </target>
 
    <target name="build" depends="clean">
