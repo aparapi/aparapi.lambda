@@ -13,7 +13,7 @@ The general pattern would be that we ask Aparapi to give us a Device, probably v
 Something like:- 
 
 {{{
-  Device device = getFirstGPU();
+  Device device = Device.best();
 }}}
 
 We would also offer other useful factory methods {{{getBestGPU(), getFirstCPU() getJavaMultiThread(), getJavaSequential()}}} as well as a method to get all device so that the developer can filter themselves.
@@ -30,12 +30,16 @@ Note that as well as real OpenCL devices we also expose 'pseudo' devices such as
   }
 }}}
 
-A Device can be queried (isGPU(), isOpenCL(), isGroup(), isJava(), getOpenCLPlatform(), getMaxMemory(), getLocalSizes()).
+A Device can be queried (isGPU(), isOpenCL(), isGroup(), isJava(), getOpenCLPlatform(), getMaxMemory(), getLocalSizes()) and may need to be cast to specific types. 
 
 This would allow us to configure buffers. 
 
 {{{
-char input[] = new char[device.getMaxMemory()/4);
+Device device = Device.best();
+if (device instanceof OpenCLDevice){
+   OpenCLDevice openCLDevice  = (OpenCLDevice)device; 
+   char input[] = new char[openCLDevice.getMaxMemory()/4);
+}
 }}}
 
 We can also use the Device as a factory for creating Ranges.
@@ -69,7 +73,7 @@ And we then use
 
 {{{
 Device device = Device.firstGPU();
-final char input[] = new char[device.getMaxMemory()/4);
+final char input[] = new char[((OpenCLDevice)device).getMaxMemory()/4);
 Kernel kernel = new Kernel(){
     @Override public void run(){
       // uses input[];
