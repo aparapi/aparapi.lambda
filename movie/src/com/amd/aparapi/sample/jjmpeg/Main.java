@@ -3,6 +3,8 @@ package com.amd.aparapi.sample.jjmpeg;
 import java.awt.BorderLayout;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -76,12 +78,9 @@ public class Main{
          inputData = new byte[3 * width * height];
          outputData = new byte[3 * width * height];
          System.out.println(range);
-         put(filter).put(inputData).put(outputData);
-          this.setExecutionMode(Kernel.EXECUTION_MODE.GPU);
-         //  setExplicit(true); // This gives us a performance boost
+         this.setExecutionMode(Kernel.EXECUTION_MODE.GPU);
+         setExplicit(true); // This gives us a performance boost
       }
-
-     
 
       public void processPixel(int x, int y, int w, int h) {
          float accum = 0;
@@ -102,23 +101,66 @@ public class Main{
          int h = getGlobalSize(1);
          if (x > 3 && x < (w - 3) && y > 1 && y < (h - 1)) {
             processPixel(x, y, w, h);
-         }else{
+         } else {
             outputData[y * w + x] = inputData[(y * w) + x];
          }
       }
 
       public void apply(ConvolutionFilter _filter, BufferedImage _image) {
-       
+
          byte[] imageBytes = ((DataBufferByte) _image.getRaster().getDataBuffer()).getData();
          System.arraycopy(imageBytes, 0, inputData, 0, imageBytes.length);
          System.arraycopy(_filter.weights, 0, filter, 0, _filter.weights.length);
          weight = _filter.weight;
-         if (false) {
 
-            for (int x = 3; x < width * 3 - 3; x++) {
-               for (int y = 1; y < height - 1; y++) {
-                  processPixel(x, y, width * 3, height);
+         if (false) {
+            for (int x = 0; x < width * 3; x++) {
+               for (int y = 0; y < height; y++) {
+                  if (x > 3 && x < (width * 3 - 3) && y > 1 && y < (height - 1)) {
+                     processPixel(x, y, width * 3, height);
+                  }
                }
+            }
+
+         } else if (false) {
+            int threadCount = Runtime.getRuntime().availableProcessors();
+
+            //  Thread[] threads = new Thread[threadCount];
+            final CyclicBarrier barrier = new CyclicBarrier(threadCount + 1);
+            for (int thread = 0; thread < threadCount; thread++) {
+               final int threadId = thread;
+               final int groupHeight = height / threadCount;
+               //  System.out.println("groupHeight = "+groupHeight+ "height="+height);
+               new Thread(new Runnable(){
+                  public void run() {
+                     for (int x = 0; x < width * 3; x++) {
+                        for (int y = groupHeight * threadId; y < groupHeight * (threadId + 1); y++) {
+                           if (x > 3 && x < (width * 3 - 3) && y > 1 && y < (height - 1)) {
+                              processPixel(x, y, width * 3, height);
+                           }
+                        }
+                     }
+                     try {
+                        barrier.await();
+                     } catch (InterruptedException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                     } catch (BrokenBarrierException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                     }
+                  }
+               }).start();
+
+            }
+            try {
+               barrier.await();
+            } catch (InterruptedException e) {
+               // TODO Auto-generated catch block
+               e.printStackTrace();
+            } catch (BrokenBarrierException e) {
+               // TODO Auto-generated catch block
+               e.printStackTrace();
             }
          } else {
             put(filter).put(inputData);
@@ -126,7 +168,7 @@ public class Main{
             get(outputData);
          }
          System.arraycopy(outputData, 0, imageBytes, 0, imageBytes.length);
-        
+
       }
    }
 
@@ -141,8 +183,8 @@ public class Main{
                String name = "c:\\users\\gfrost\\Desktop\\afds\\MV5BMjEyMjMzODc0MV5BMTFeQW1wNF5BbWU3MDE3NzA0Nzc@.mp4";
                name = "C:\\Users\\gfrost\\Downloads\\leo_1080p.mov";
                name = "C:\\Users\\gfrost\\Downloads\\HK2207_720p.mp4";
-               name= "C:\\Users\\gfrost\\Downloads\\Froblins.H.264-SD.mov";
-               name = "C:\\Users\\gfrost\\Downloads\\leo_1080p.mov";
+               //   name= "C:\\Users\\gfrost\\Downloads\\Froblins.H.264-SD.mov";
+               // name = "C:\\Users\\gfrost\\Downloads\\leo_1080p.mov";
                final JJMediaReader reader = new JJMediaReader(name);
                final JJReaderVideo vs = reader.openFirstVideoStream();
                final BufferedImage image = vs.createImage();
