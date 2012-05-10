@@ -1,10 +1,8 @@
 package com.amd.aparapi.sample.jjmpeg;
 
 import java.awt.BorderLayout;
-import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.awt.image.ConvolveOp;
-import java.awt.image.DataBufferByte;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -16,21 +14,15 @@ import javax.swing.SwingUtilities;
 import au.notzed.jjmpeg.io.JJMediaReader;
 import au.notzed.jjmpeg.io.JJMediaReader.JJReaderVideo;
 
-import com.amd.aparapi.Kernel;
-import com.amd.aparapi.Range;
-
 /**
  * Code based on Demo of JJVideoScanner class
  *
  * @author notzed
  */
 public class PureJava{
-   
 
-   
    public static void main(final String[] args) {
-      
-     
+
       SwingUtilities.invokeLater(new Runnable(){
          public void run() {
             JFrame frame = new JFrame("Video Frames");
@@ -49,8 +41,18 @@ public class PureJava{
                frame.pack();
                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                frame.setVisible(true);
-               java.awt.image.Kernel conv = new  java.awt.image.Kernel(3, 3, new float[]{0f, -10f, 0f, -10f, 40f, -10f, 0f, -10f, 0f});
-               
+               java.awt.image.Kernel conv = new java.awt.image.Kernel(3, 3, new float[] {
+                     0f,
+                     -10f,
+                     0f,
+                     -10f,
+                     40f,
+                     -10f,
+                     0f,
+                     -10f,
+                     0f
+               });
+
                final ConvolveOp convOp = new ConvolveOp(conv, ConvolveOp.EDGE_NO_OP, null);
                new Thread(new Runnable(){
                   public void run() {
