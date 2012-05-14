@@ -45,7 +45,7 @@ Right-click > Export...
     Library handling: [use default]
    Finish.
   Ok on “...repacks referenced libraries”
-  Yes on “Confirm replace” [You won’t see this dialog on the first export but will on subsequent exports]
+  Yes on “Confirm replace” [You won’t see this dialog on the first export but will on subsequent exports]                 
   Ok [ignore warning dialog]
 </pre>
 After refreshing Project, you should see a runner.jar file at the top level.</li>
