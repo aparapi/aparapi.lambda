@@ -3,6 +3,7 @@
 = Profiling Kernels with AMD profiler in Eclipse (Indigo)=
 
 Wayne Johnson
+
 12 May 2012
 
 ==Disclaimer: This has been tested with Eclipse (Indigo SR1) only on W7SR1.==
@@ -60,7 +61,7 @@ Run > External Tools > External Tool Configurations...
    -Djava.library.path="lib\aparapi-2012-02-15"
    -jar "${project_loc}\runner.jar"
 </pre>
-Note: The ''java.library.path'' indicates the relative location of the folder containing the native libraries used by Aparapi. If this is not set correctly, steps 8 and 9 below will run in JTP execution
+Note: The ''java.library.path'' indicates the relative location of the folder containing the native libraries used by Aparapi. If this is not set correctly, steps 9 and 10 below will run in JTP execution
 mode and the only error message you will see on the Eclipse console is that the profile was not generated. This is because nothing executed on the GPU.</li>
 
 <li>Create an external tool configuration to generate the cltrace and summary profiles.
