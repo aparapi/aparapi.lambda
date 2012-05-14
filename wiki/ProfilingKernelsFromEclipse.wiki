@@ -89,4 +89,4 @@ Run > External Tools > AMD cltrace - Project
 </li>
 <ol>
 
-A project file for testing the above instructions can be found [http:/ProfilingKernelsFormEclipseProject.zip HERE]
+A project file for testing the above instructions can be found [http://code.google.com/p/aparapi/wiki/ProfilingKernelsFormEclipseProject.zip HERE]
