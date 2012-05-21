@@ -156,27 +156,27 @@ public class Detector{
       timer.print("imagegrabber");
 
       timer.start();
-     
-         for (int i = 0; i < width; i++) {
-            int col = 0;
-            int col2 = 0;
-            for (int j = 0; j < height; j++) {
-               int c = imagePixels[i + j * width];
-               int red = (c & 0x00ff0000) >> 16;
-               int green = (c & 0x0000ff00) >> 8;
-               int blue = c & 0x000000ff;
-               int value = (30 * red + 59 * green + 11 * blue) / 100;
-               img[i + j * width] = value;
-               grayImage[i + j * width] = (i > 0 ? grayImage[i - 1 + j * width] : 0) + col + value;
-               squares[i + j * width] = (i > 0 ? squares[i - 1 + j * width] : 0) + col2 + value * value;
-               col += value;
-               col2 += value * value;
-            }
+
+      for (int i = 0; i < width; i++) {
+         int col = 0;
+         int col2 = 0;
+         for (int j = 0; j < height; j++) {
+            int c = imagePixels[i + j * width];
+            int red = (c & 0x00ff0000) >> 16;
+            int green = (c & 0x0000ff00) >> 8;
+            int blue = c & 0x000000ff;
+            int value = (30 * red + 59 * green + 11 * blue) / 100;
+            img[i + j * width] = value;
+            grayImage[i + j * width] = (i > 0 ? grayImage[i - 1 + j * width] : 0) + col + value;
+            squares[i + j * width] = (i > 0 ? squares[i - 1 + j * width] : 0) + col2 + value * value;
+            col += value;
+            col2 += value * value;
          }
-     
+      }
+
       timer.print("greyscaler");
       int[] canny = null;
-      if (doCannyPruning){
+      if (doCannyPruning) {
          canny = getIntegralCanny(img, width, height);
       }
       for (float scale = baseScale; scale < maxScale; scale *= scale_inc) {
@@ -196,7 +196,7 @@ public class Detector{
                for (Stage s : stages) {
                   if (!s.pass(grayImage, squares, width, height, i, j, scale)) {
                      pass = false;
-                     System.out.println("Failed at Stage "+k);
+                     System.out.println("Failed at Stage " + k);
                      break;
                   }
                   k++;

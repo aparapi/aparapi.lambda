@@ -23,7 +23,7 @@ public class Stage{
 
    }
 
-   public boolean pass(int[] grayImage, int[] squares, int width, int height,int i, int j, float scale) {
+   public boolean pass(int[] grayImage, int[] squares, int width, int height, int i, int j, float scale) {
 
       float sum = 0;
       for (Tree t : trees) {
