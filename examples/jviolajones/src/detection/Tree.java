@@ -22,7 +22,7 @@ public class Tree{
 
    }
 
-   public float getVal(int[] grayImage, int[] squares, int width, int height,int i, int j, float scale) {
+   public float getVal(int[] grayImage, int[] squares, int width, int height, int i, int j, float scale) {
 
       Feature cur_node = features.get(0);
       while (true) {
@@ -33,18 +33,18 @@ public class Tree{
 
                return cur_node.left_val;
             } else {
-              // System.out.println("REDIRECTION !");
+               // System.out.println("REDIRECTION !");
                //System.exit(0);
                cur_node = features.get(cur_node.left_node);
             }
          } else {
             if (cur_node.has_right_val) {
 
-             //  System.out.println("RIGHT");
+               //  System.out.println("RIGHT");
 
                return cur_node.right_val;
             } else {
-             //  System.out.println("REDIRECTION !");
+               //  System.out.println("REDIRECTION !");
                //System.exit(0);
                cur_node = features.get(cur_node.right_node);
             }

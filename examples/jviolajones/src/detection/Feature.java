@@ -42,7 +42,7 @@ public class Feature{
 
    }
 
-   public int getLeftOrRight(int[] grayImage, int[] squares, int width, int height,  int i, int j, float scale) {
+   public int getLeftOrRight(int[] grayImage, int[] squares, int width, int height, int i, int j, float scale) {
 
       int w = (int) (scale * size.x);
       int h = (int) (scale * size.y);
@@ -57,7 +57,7 @@ public class Feature{
       vnorm = (vnorm > 1) ? Math.sqrt(vnorm) : 1;
 
       int rect_sum = 0;
-      for (Rect r:rects){
+      for (Rect r : rects) {
          int rx1 = i + (int) (scale * r.x1);
          int rx2 = i + (int) (scale * (r.x1 + r.y1));
          int ry1 = j + (int) (scale * r.x2);
