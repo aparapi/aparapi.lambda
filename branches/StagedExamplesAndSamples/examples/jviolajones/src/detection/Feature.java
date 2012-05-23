@@ -20,6 +20,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Feature{
+   static int ids;
+
+   static List<Feature> instances = new ArrayList<Feature>();
+
+   static final int INTS = 5;
+
+   static final int FLOATS = 3;
+
+   static int[] r1r2r3LnRn;
+
+   static float[] LvRvThres;
+
+   int id;
 
    List<Rect> rects;
 
@@ -41,11 +54,14 @@ public class Feature{
 
    boolean has_right_val;
 
-   public Feature(float threshold, float left_val, int left_node, boolean has_left_val, float right_val, int right_node,
-         boolean has_right_val, Point size) {
+   Tree tree;
 
+   public Feature(Tree tree, float threshold, float left_val, int left_node, boolean has_left_val, float right_val, int right_node,
+         boolean has_right_val, Point size) {
+      this.id = ids++;
       nb_rects = 0;
       rects = new ArrayList<Rect>();
+      this.tree = tree;
       this.threshold = threshold;
       this.left_val = left_val;
       this.left_node = left_node;
@@ -54,6 +70,7 @@ public class Feature{
       this.right_node = right_node;
       this.has_right_val = has_right_val;
       this.size = size;
+      this.instances.add(this);
 
    }
 
@@ -94,5 +111,21 @@ public class Feature{
 
       rects.add(r);
 
+   }
+
+   public static void flatten() {
+      r1r2r3LnRn = new int[ids * INTS];
+      LvRvThres = new float[ids * FLOATS];
+      for (int i = 0; i < ids; i++) {
+         Feature f = instances.get(i);
+         LvRvThres[i * FLOATS + 0] = f.left_val;
+         LvRvThres[i * FLOATS + 1] = f.right_val;
+         LvRvThres[i * FLOATS + 2] = f.threshold;
+         r1r2r3LnRn[i * INTS + 0] = (f.rects.size() > 0) ? f.rects.get(0).id : -1;
+         r1r2r3LnRn[i * INTS + 1] = (f.rects.size() > 1) ? f.rects.get(1).id : -1;
+         r1r2r3LnRn[i * INTS + 2] = (f.rects.size() > 2) ? f.rects.get(2).id : -1;
+         r1r2r3LnRn[i * INTS + 3] = (f.has_left_val) ? -1 : f.tree.features.get(f.left_node).id;
+         r1r2r3LnRn[i * INTS + 4] = (f.has_right_val) ? -1 : f.tree.features.get(f.right_node).id;
+      }
    }
 }

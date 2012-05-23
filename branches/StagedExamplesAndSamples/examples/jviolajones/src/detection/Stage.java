@@ -15,21 +15,42 @@ Many thanks to Simon for his excellent project and for permission to use it
 as the basis of an Aparapi example.
 **/
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 public class Stage{
+   static int ids;
+
+   static List<Stage> instances = new ArrayList<Stage>();
+
+   int id;
+
+   static final int INTS = 2;
+
+   static int startEnd[];
+
    List<Tree> trees;
 
    float threshold;
 
    public Stage(float threshold) {
-
+      this.id = ids++;
       this.threshold = threshold;
       trees = new LinkedList<Tree>();
-
+      instances.add(this);
       //features = new LinkedList<Feature>();
 
+   }
+
+   public static void flatten() {
+      startEnd = new int[ids * INTS];
+
+      for (int i = 0; i < ids; i++) {
+         Stage t = instances.get(i);
+         startEnd[i * INTS + 0] = t.trees.get(0).id;
+         startEnd[i * INTS + 1] = t.trees.get(t.trees.size() - 1).id;
+      }
    }
 
    public void addTree(Tree t) {
