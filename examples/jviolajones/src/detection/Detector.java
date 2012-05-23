@@ -26,6 +26,9 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
 import javax.xml.parsers.DocumentBuilder;
@@ -366,29 +369,128 @@ public class Detector{
 
       boolean simple = true;
       if (simple) {
-         for (float scale = baseScale; scale < maxScale; scale *= scale_inc) {
-            int loops = 0;
-            timer.start();
-            int step = (int) (scale * size.x * increment);
-            int size = (int) (scale * this.size.x);
-            for (int i = 0; i < width - size; i += step) {
-               for (int j = 0; j < height - size; j += step) {
-                  boolean pass = true;
-                  for (Stage s : stages) {
-                     if (!s.pass(grayImage, squares, width, height, i, j, scale)) {
-                        pass = false;
-                        //  System.out.println("Failed at Stage " + k);
-                        break;
+         StopWatch faceDetectTimer = new StopWatch("face detection");
+         faceDetectTimer.start();
+         boolean multiThread = true;
+
+         if (multiThread) {
+            ExecutorService threadPool = Executors.newFixedThreadPool(16);
+            boolean inner = false;
+            if (inner) {
+               for (float scale = baseScale; scale < maxScale; scale *= scale_inc) {
+
+                  //  int loops = 0;
+                  //  timer.start();
+                  int step = (int) (scale * size.x * increment);
+                  int size = (int) (scale * this.size.x);
+                  for (int i = 0; i < width - size; i += step) {
+                     for (int j = 0; j < height - size; j += step) {
+                        final int i_final = i;
+                        final int j_final = j;
+                        final float scale_final = scale;
+                        final int size_final = size;
+                        Runnable r = new Runnable(){
+                           public void run() {
+
+                              boolean pass = true;
+                              for (Stage s : stages) {
+                                 if (!s.pass(grayImage, squares, width, height, i_final, j_final, scale_final)) {
+                                    pass = false;
+                                    //  System.out.println("Failed at Stage " + k);
+                                    break;
+                                 }
+                              }
+                              if (pass) {
+                                 System.out.println("found!");
+                                 synchronized (ret) {
+                                    ret.add(new Rectangle(i_final, j_final, size_final, size_final));
+                                 }
+                              }
+                           }
+                        };
+                        threadPool.execute(r);
                      }
                   }
-                  if (pass) {
-                     System.out.println("found!");
-                     ret.add(new Rectangle(i, j, size, size));
+                  //  timer.print("scale " + scale + " " + loops + " ");
+               }
+            } else {
+               for (float scale = baseScale; scale < maxScale; scale *= scale_inc) {
+
+                  //  int loops = 0;
+                  //  timer.start();
+                  final int step = (int) (scale * size.x * increment);
+                  final int size = (int) (scale * this.size.x);
+                  final float scale_final = scale;
+
+                  for (int i = 0; i < width - size; i += step) {
+                     final int i_final = i;
+                     Runnable r = new Runnable(){
+                        public void run() {
+                           for (int j = 0; j < height - size; j += step) {
+
+                              int j_final = j;
+
+                              final int size_final = size;
+
+                              boolean pass = true;
+                              for (Stage s : stages) {
+                                 if (!s.pass(grayImage, squares, width, height, i_final, j_final, scale_final)) {
+                                    pass = false;
+                                    //  System.out.println("Failed at Stage " + k);
+                                    break;
+                                 }
+                              }
+                              if (pass) {
+                                 System.out.println("found!");
+                                 synchronized (ret) {
+                                    ret.add(new Rectangle(i_final, j_final, size_final, size_final));
+                                 }
+                              }
+                           }
+
+                        }
+                     };
+                     threadPool.execute(r);
                   }
+                  //  timer.print("scale " + scale + " " + loops + " ");
+
                }
             }
-            timer.print("scale " + scale + " " + loops + " ");
+            threadPool.shutdown();
+            try {
+               threadPool.awaitTermination(60, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+               // TODO Auto-generated catch block
+               e.printStackTrace();
+            }
+         } else {
+
+            for (float scale = baseScale; scale < maxScale; scale *= scale_inc) {
+               int loops = 0;
+               timer.start();
+               int step = (int) (scale * size.x * increment);
+               int size = (int) (scale * this.size.x);
+               for (int i = 0; i < width - size; i += step) {
+                  for (int j = 0; j < height - size; j += step) {
+
+                     boolean pass = true;
+                     for (Stage s : stages) {
+                        if (!s.pass(grayImage, squares, width, height, i, j, scale)) {
+                           pass = false;
+                           //  System.out.println("Failed at Stage " + k);
+                           break;
+                        }
+                     }
+                     if (pass) {
+                        System.out.println("found!");
+                        ret.add(new Rectangle(i, j, size, size));
+                     }
+                  }
+               }
+               timer.print("scale " + scale + " " + loops + " ");
+            }
          }
+         faceDetectTimer.stop();
       } else {
 
          for (float scale = baseScale; scale < maxScale; scale *= scale_inc) {
