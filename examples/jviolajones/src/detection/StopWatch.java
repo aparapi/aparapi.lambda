@@ -1,4 +1,5 @@
 package detection;
+
 /**
 This project is based on the open source jviolajones project created by Simon
 Houllier and is used with his permission. Simon's jviolajones project offers 

@@ -23,18 +23,35 @@ public class Tree{
 
    final static int RIGHT = 1;
 
-   List<Feature> features;
+   static int ids;
+
+   static List<Tree> instances = new ArrayList<Tree>();
+
+   int id;
+
+   static final int INTS = 2;
+
+   static int startEnd[];
+
+   List<Feature> features = new ArrayList<Feature>();
 
    public Tree() {
-
-      features = new ArrayList<Feature>();
-
+      this.id = ids++;
+      instances.add(this);
    }
 
    public void addFeature(Feature f) {
-
       features.add(f);
+   }
 
+   public static void flatten() {
+      startEnd = new int[ids * INTS];
+
+      for (int i = 0; i < ids; i++) {
+         Tree t = instances.get(i);
+         startEnd[i * INTS + 0] = t.features.get(0).id;
+         startEnd[i * INTS + 1] = t.features.get(t.features.size() - 1).id;
+      }
    }
 
    public float getVal(int[] grayImage, int[] squares, int width, int height, int i, int j, float scale) {
