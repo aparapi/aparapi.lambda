@@ -157,7 +157,7 @@ public class DetectorNoJDOM{
          //  System.out.println("create stage "+thres);
 
          for (org.w3c.dom.Element tree : getNodes(stage, org.w3c.dom.Element.class, "trees/_")) {
-            Tree t = new Tree();
+            Tree t = new Tree(st);
             for (org.w3c.dom.Element feature : getNodes(tree, org.w3c.dom.Element.class, "_")) {
                float thres2 = Float.parseFloat(getNode(feature, org.w3c.dom.Text.class, "threshold/text()").getNodeValue());
                //  System.out.println(thres2);
@@ -231,7 +231,7 @@ public class DetectorNoJDOM{
          System.out.println("create stage " + thres);
          while (it2.hasNext()) {
             Element tree = ((Element) it2.next());
-            Tree t = new Tree();
+            Tree t = new Tree(st);
             Iterator it4 = tree.getChildren("_").iterator();
             while (it4.hasNext()) {
                Element feature = (Element) it4.next();

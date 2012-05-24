@@ -90,7 +90,7 @@ public class Detector{
          System.out.println("create stage " + thres);
          while (it2.hasNext()) {
             Element tree = ((Element) it2.next());
-            Tree t = new Tree();
+            Tree t = new Tree(st);
             Iterator it4 = tree.getChildren("_").iterator();
             while (it4.hasNext()) {
                Element feature = (Element) it4.next();
@@ -338,20 +338,28 @@ public class Detector{
                      boolean pass = true;
                      for (Stage s : stages) {
 
+                        //    boolean pass1=true;
+                        //  boolean pass2=true;
+                        // System.out.println("-----flat-start----");
                         if (false && !pass(s.id, grayImage, squares, width, height, i, j, scale)) {
                            pass = false;
                            //  System.out.println("Failed at Stage " + k);
                            break;
                         }
-
+                        //  System.out.println("-----normal-start----");
                         if (true && !s.pass(grayImage, squares, width, height, i, j, scale)) {
                            pass = false;
                            //  System.out.println("Failed at Stage " + k);
                            break;
                         }
+                        // System.out.println("-----end----");
+                        // if (pass1 != pass2){
+                        //  System.out.println("broken!");
+                        // }
+                        //  pass = !(pass1 | pass2);
                      }
                      if (pass) {
-                        System.out.println("found!");
+                        System.out.println("pass!");
                         ret.add(new Rectangle(i, j, size, size));
                      }
                   }
@@ -417,25 +425,30 @@ public class Detector{
       double moy = total_x * inv_area;
       double vnorm = total_x2 * inv_area - moy * moy;
       vnorm = (vnorm > 1) ? Math.sqrt(vnorm) : 1;
-
+      // System.out.println(vnorm);
       int rect_sum = 0;
       for (int r = 0; r < 3; r++) {
          int rectId = Feature.r1r2r3LnRn[featureId * Feature.INTS + r];
          if (rectId != -1) {
-            System.out.println("rect " + r + " id " + rectId);
-            int rx1 = i + (int) (scale * Rect.x1y1x2y2[rectId * Rect.INTS + 0]);
-            int rx2 = i + (int) (scale * (Rect.x1y1x2y2[rectId * Rect.INTS + 0] + Rect.x1y1x2y2[rectId * Rect.INTS + 1]));
-            int ry1 = j + (int) (scale * Rect.x1y1x2y2[rectId * Rect.INTS + 2]);
-            int ry2 = j + (int) (scale * (Rect.x1y1x2y2[rectId * Rect.INTS + 2] + Rect.x1y1x2y2[rectId * Rect.INTS + 3]));
+            // System.out.println("rect " + r + " id " + rectId);
+            int x1 = Rect.x1y1x2y2[rectId * Rect.INTS + 0];
+            int y1 = Rect.x1y1x2y2[rectId * Rect.INTS + 1];
+            int x2 = Rect.x1y1x2y2[rectId * Rect.INTS + 2];
+            int y2 = Rect.x1y1x2y2[rectId * Rect.INTS + 3];
+            float weight = Rect.w[rectId * Rect.FLOATS + 0];
+            int rx1 = i + (int) (scale * x1);
+            int rx2 = i + (int) (scale * (x1 + y1));
+            int ry1 = j + (int) (scale * x2);
+            int ry2 = j + (int) (scale * (x2 + y2));
             //System.out.println((rx2-rx1)*(ry2-ry1)+" "+r.weight);
             rect_sum += (int) ((grayImage[rx2 + (ry2) * width] - grayImage[rx1 + (ry2) * width] - grayImage[rx2 + (ry1) * width] + grayImage[rx1
-                  + (ry1) * width]) * Rect.w[rectId * Rect.FLOATS + 0]);
+                  + (ry1) * width]) * weight);
          }
       }
-      //System.out.println(rect_sum);
+      // System.out.println(rect_sum);
       double rect_sum2 = rect_sum * inv_area;
 
-      //System.out.println(rect_sum2+" "+threshold*vnorm);  
+      // System.out.println(rect_sum2+" "+ Feature.LvRvThres[featureId * Feature.FLOATS + 2]*vnorm);  
 
       return (rect_sum2 < Feature.LvRvThres[featureId * Feature.FLOATS + 2] * vnorm) ? Tree.LEFT : Tree.RIGHT;
 
@@ -446,31 +459,31 @@ public class Detector{
       float sum = 0;
       for (int treeId = Stage.startEnd[stageId * Stage.INTS + 0]; treeId <= Stage.startEnd[stageId * Stage.INTS + 1]; treeId++) {
 
-         System.out.println("stage id " + stageId + "  tree id" + treeId);
+         //  System.out.println("stage id " + stageId + "  tree id" + treeId);
          int featureId = Tree.startEnd[treeId * Tree.INTS + 0];
          float thresh = 0f;
          boolean done = false;
          while (!done) {
-            System.out.println("pass");
+            //  System.out.println("feature id "+featureId);
             int where = getLeftOrRight(featureId, grayImage, squares, width, height, i, j, scale);
             if (where == LEFT) {
                int leftNodeId = Feature.r1r2r3LnRn[featureId * Feature.INTS + 3];
                if (leftNodeId == -1) {
-                  System.out.println("left-val");
+                  //  System.out.println("left-val");
                   thresh = Feature.LvRvThres[featureId * Feature.FLOATS + 0];
                   done = true;
                } else {
-                  System.out.println("left");
+                  // System.out.println("left");
                   featureId = leftNodeId;
                }
             } else {
                int rightNodeId = Feature.r1r2r3LnRn[featureId * Feature.INTS + 4];
                if (rightNodeId == -1) {
-                  System.out.println("right-val");
+                  // System.out.println("right-val");
                   thresh = Feature.LvRvThres[featureId * Feature.FLOATS + 1];
                   done = true;
                } else {
-                  System.out.println("right");
+                  //  System.out.println("right");
                   featureId = rightNodeId;
                }
             }
