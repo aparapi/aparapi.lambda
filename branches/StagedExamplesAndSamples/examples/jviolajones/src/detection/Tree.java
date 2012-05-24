@@ -19,17 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Tree{
-   final static int LEFT = 0;
-
-   final static int RIGHT = 1;
-
-   final static List<Tree> tree_instances = new ArrayList<Tree>();
-
-   final static int TREE_INTS = 2;
-
-   static int tree_ids;
-
-   static int tree_startEnd[];
 
    int id;
 
@@ -38,9 +27,9 @@ public class Tree{
    List<Feature> features = new ArrayList<Feature>();
 
    public Tree(Stage stage) {
-      this.id = tree_ids++;
+      this.id = Detector.tree_ids++;
       this.stage = stage;
-      tree_instances.add(this);
+      Detector.tree_instances.add(this);
    }
 
    public void addFeature(Feature f) {
@@ -48,12 +37,12 @@ public class Tree{
    }
 
    public static void flatten() {
-      tree_startEnd = new int[tree_ids * TREE_INTS];
+      Detector.tree_startEnd = new int[Detector.tree_ids * Detector.TREE_INTS];
 
-      for (int i = 0; i < tree_ids; i++) {
-         Tree t = tree_instances.get(i);
-         tree_startEnd[i * TREE_INTS + 0] = t.features.get(0).id;
-         tree_startEnd[i * TREE_INTS + 1] = t.features.get(t.features.size() - 1).id;
+      for (int i = 0; i < Detector.tree_ids; i++) {
+         Tree t = Detector.tree_instances.get(i);
+         Detector.tree_startEnd[i * Detector.TREE_INTS + 0] = t.features.get(0).id;
+         Detector.tree_startEnd[i * Detector.TREE_INTS + 1] = t.features.get(t.features.size() - 1).id;
       }
    }
 

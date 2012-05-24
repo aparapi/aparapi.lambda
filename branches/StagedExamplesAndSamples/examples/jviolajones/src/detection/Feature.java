@@ -21,18 +21,6 @@ import java.util.List;
 
 public class Feature{
 
-   final static List<Feature> feature_instances = new ArrayList<Feature>();
-
-   final static int FEATURE_INTS = 5;
-
-   final static int FEATURE_FLOATS = 3;
-
-   static int[] feature_r1r2r3LnRn;
-
-   static float[] feature_LvRvThres;
-
-   static int feature_ids;
-
    int id;
 
    List<Rect> rects;
@@ -59,7 +47,7 @@ public class Feature{
 
    public Feature(Tree tree, float threshold, float left_val, int left_node, boolean has_left_val, float right_val, int right_node,
          boolean has_right_val, Point size) {
-      this.id = feature_ids++;
+      this.id = Detector.feature_ids++;
       nb_rects = 0;
       rects = new ArrayList<Rect>();
       this.tree = tree;
@@ -71,29 +59,27 @@ public class Feature{
       this.right_node = right_node;
       this.has_right_val = has_right_val;
       this.size = size;
-      feature_instances.add(this);
+      Detector.feature_instances.add(this);
 
    }
 
    public void add(Rect r) {
-
       rects.add(r);
-
    }
 
    public static void flatten() {
-      feature_r1r2r3LnRn = new int[feature_ids * FEATURE_INTS];
-      feature_LvRvThres = new float[feature_ids * FEATURE_FLOATS];
-      for (int i = 0; i < feature_ids; i++) {
-         Feature f = feature_instances.get(i);
-         feature_LvRvThres[i * FEATURE_FLOATS + 0] = f.left_val;
-         feature_LvRvThres[i * FEATURE_FLOATS + 1] = f.right_val;
-         feature_LvRvThres[i * FEATURE_FLOATS + 2] = f.threshold;
-         feature_r1r2r3LnRn[i * FEATURE_INTS + 0] = (f.rects.size() > 0) ? f.rects.get(0).id : -1;
-         feature_r1r2r3LnRn[i * FEATURE_INTS + 1] = (f.rects.size() > 1) ? f.rects.get(1).id : -1;
-         feature_r1r2r3LnRn[i * FEATURE_INTS + 2] = (f.rects.size() > 2) ? f.rects.get(2).id : -1;
-         feature_r1r2r3LnRn[i * FEATURE_INTS + 3] = (f.has_left_val) ? -1 : f.tree.features.get(f.left_node).id;
-         feature_r1r2r3LnRn[i * FEATURE_INTS + 4] = (f.has_right_val) ? -1 : f.tree.features.get(f.right_node).id;
+      Detector.feature_r1r2r3LnRn = new int[Detector.feature_ids * Detector.FEATURE_INTS];
+      Detector.feature_LvRvThres = new float[Detector.feature_ids * Detector.FEATURE_FLOATS];
+      for (int i = 0; i < Detector.feature_ids; i++) {
+         Feature f = Detector.feature_instances.get(i);
+         Detector.feature_LvRvThres[i * Detector.FEATURE_FLOATS + 0] = f.left_val;
+         Detector.feature_LvRvThres[i * Detector.FEATURE_FLOATS + 1] = f.right_val;
+         Detector.feature_LvRvThres[i * Detector.FEATURE_FLOATS + 2] = f.threshold;
+         Detector.feature_r1r2r3LnRn[i * Detector.FEATURE_INTS + 0] = (f.rects.size() > 0) ? f.rects.get(0).id : -1;
+         Detector.feature_r1r2r3LnRn[i * Detector.FEATURE_INTS + 1] = (f.rects.size() > 1) ? f.rects.get(1).id : -1;
+         Detector.feature_r1r2r3LnRn[i * Detector.FEATURE_INTS + 2] = (f.rects.size() > 2) ? f.rects.get(2).id : -1;
+         Detector.feature_r1r2r3LnRn[i * Detector.FEATURE_INTS + 3] = (f.has_left_val) ? -1 : f.tree.features.get(f.left_node).id;
+         Detector.feature_r1r2r3LnRn[i * Detector.FEATURE_INTS + 4] = (f.has_right_val) ? -1 : f.tree.features.get(f.right_node).id;
       }
    }
 }
