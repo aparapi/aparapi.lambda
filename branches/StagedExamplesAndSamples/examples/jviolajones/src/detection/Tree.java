@@ -19,21 +19,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Tree{
+   final int id;
 
-   int id;
+   final Stage stage;
 
-   Stage stage;
+   final List<Feature> features = new ArrayList<Feature>();
 
-   List<Feature> features = new ArrayList<Feature>();
-
-   public Tree(Stage stage) {
-      this.id = Detector.tree_ids++;
-      this.stage = stage;
-      Detector.tree_instances.add(this);
+   public Tree(int _id, Stage _stage) {
+      id = _id;
+      stage = _stage;
    }
 
    public void addFeature(Feature f) {
       features.add(f);
    }
-
 }

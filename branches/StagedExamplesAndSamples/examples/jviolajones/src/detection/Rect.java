@@ -16,19 +16,18 @@ as the basis of an Aparapi example.
 **/
 
 public class Rect{
-   int id; // we use this to access from global parallel arrays
+   final int id; // we use this to access from global parallel arrays
 
-   int x1, x2, y1, y2;
+   final int x1, x2, y1, y2;
 
-   float weight;
+   final float weight;
 
-   public Rect(int x1, int x2, int y1, int y2, float weight) {
-      this.id = Detector.rect_ids++;
-      this.x1 = x1;
-      this.x2 = x2;
-      this.y1 = y1;
-      this.y2 = y2;
-      this.weight = weight;
-      Detector.rect_instances.add(this);
+   public Rect(int _id, int _x1, int _x2, int _y1, int _y2, float _weight) {
+      id = _id;
+      x1 = _x1;
+      x2 = _x2;
+      y1 = _y1;
+      y2 = _y2;
+      weight = _weight;
    }
 }

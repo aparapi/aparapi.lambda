@@ -15,28 +15,22 @@ Many thanks to Simon for his excellent project and for permission to use it
 as the basis of an Aparapi example.
 **/
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Stage{
+   final int id;
 
-   int id;
+   final List<Tree> trees = new ArrayList<Tree>();
 
-   List<Tree> trees;
+   final float threshold;
 
-   float threshold;
-
-   public Stage(float threshold) {
-      this.id = Detector.stage_ids++;
-      this.threshold = threshold;
-      trees = new LinkedList<Tree>();
-      Detector.stage_instances.add(this);
+   public Stage(int _id, float _threshold) {
+      id = _id;
+      threshold = _threshold;
    }
 
    public void addTree(Tree t) {
-
       trees.add(t);
-
    }
-
 }
