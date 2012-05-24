@@ -55,7 +55,7 @@ public class Rect{
          x1y1x2y2[i * INTS + 0] = r.x1;
          x1y1x2y2[i * INTS + 1] = r.y1;
          x1y1x2y2[i * INTS + 2] = r.x2;
-         x1y1x2y2[i * INTS + 3] = r.y1;
+         x1y1x2y2[i * INTS + 3] = r.y2;
       }
    }
 
