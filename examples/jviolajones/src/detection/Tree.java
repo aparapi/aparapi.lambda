@@ -23,24 +23,24 @@ public class Tree{
 
    final static int RIGHT = 1;
 
-   static int ids;
+   final static List<Tree> tree_instances = new ArrayList<Tree>();
 
-   static List<Tree> instances = new ArrayList<Tree>();
+   final static int TREE_INTS = 2;
+
+   static int tree_ids;
+
+   static int tree_startEnd[];
 
    int id;
-
-   static final int INTS = 2;
-
-   static int startEnd[];
 
    Stage stage;
 
    List<Feature> features = new ArrayList<Feature>();
 
    public Tree(Stage stage) {
-      this.id = ids++;
+      this.id = tree_ids++;
       this.stage = stage;
-      instances.add(this);
+      tree_instances.add(this);
    }
 
    public void addFeature(Feature f) {
@@ -48,12 +48,12 @@ public class Tree{
    }
 
    public static void flatten() {
-      startEnd = new int[ids * INTS];
+      tree_startEnd = new int[tree_ids * TREE_INTS];
 
-      for (int i = 0; i < ids; i++) {
-         Tree t = instances.get(i);
-         startEnd[i * INTS + 0] = t.features.get(0).id;
-         startEnd[i * INTS + 1] = t.features.get(t.features.size() - 1).id;
+      for (int i = 0; i < tree_ids; i++) {
+         Tree t = tree_instances.get(i);
+         tree_startEnd[i * TREE_INTS + 0] = t.features.get(0).id;
+         tree_startEnd[i * TREE_INTS + 1] = t.features.get(t.features.size() - 1).id;
       }
    }
 

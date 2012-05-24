@@ -20,41 +20,39 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class Stage{
-   static int ids;
+   final static List<Stage> stage_instances = new ArrayList<Stage>();
 
-   static List<Stage> instances = new ArrayList<Stage>();
+   final static int STAGE_INTS = 2;
+
+   final static int STAGE_FLOATS = 1;
+
+   static int stage_ids;
+
+   static int stage_startEnd[];
+
+   static float stage_thresh[];
 
    int id;
-
-   static final int INTS = 2;
-
-   static final int FLOATS = 1;
-
-   static int startEnd[];
-
-   static float thresh[];
 
    List<Tree> trees;
 
    float threshold;
 
    public Stage(float threshold) {
-      this.id = ids++;
+      this.id = stage_ids++;
       this.threshold = threshold;
       trees = new LinkedList<Tree>();
-      instances.add(this);
-      //features = new LinkedList<Feature>();
-
+      stage_instances.add(this);
    }
 
    public static void flatten() {
-      startEnd = new int[ids * INTS];
-      thresh = new float[ids * FLOATS];
-      for (int i = 0; i < ids; i++) {
-         Stage t = instances.get(i);
-         startEnd[i * INTS + 0] = t.trees.get(0).id;
-         startEnd[i * INTS + 1] = t.trees.get(t.trees.size() - 1).id;
-         thresh[i * FLOATS + 0] = t.threshold;
+      stage_startEnd = new int[stage_ids * STAGE_INTS];
+      stage_thresh = new float[stage_ids * STAGE_FLOATS];
+      for (int i = 0; i < stage_ids; i++) {
+         Stage t = stage_instances.get(i);
+         stage_startEnd[i * STAGE_INTS + 0] = t.trees.get(0).id;
+         stage_startEnd[i * STAGE_INTS + 1] = t.trees.get(t.trees.size() - 1).id;
+         stage_thresh[i * STAGE_FLOATS + 0] = t.threshold;
       }
    }
 
