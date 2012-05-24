@@ -21,46 +21,44 @@ import java.util.List;
 
 public class Feature{
 
-   int id;
+   final int id;
 
-   List<Rect> rects;
+   final List<Rect> rects = new ArrayList<Rect>();
 
-   int nb_rects;
+   final int nb_rects;
 
-   float threshold;
+   final float threshold;
 
-   float left_val;
+   final float left_val;
 
-   float right_val;
+   final float right_val;
 
-   Point size;
+   final Point size;
 
-   int left_node;
+   final int left_node;
 
-   int right_node;
+   final int right_node;
 
-   boolean has_left_val;
+   final boolean has_left_val;
 
-   boolean has_right_val;
+   final boolean has_right_val;
 
-   Tree tree;
+   final Tree tree;
 
-   public Feature(Tree tree, float threshold, float left_val, int left_node, boolean has_left_val, float right_val, int right_node,
-         boolean has_right_val, Point size) {
-      this.id = Detector.feature_ids++;
+   public Feature(int _id, Tree _tree, float _threshold, float _left_val, int _left_node, boolean _has_left_val, float _right_val,
+         int _right_node, boolean _has_right_val, Point _size) {
+      id = _id;
+      tree = _tree;
       nb_rects = 0;
-      rects = new ArrayList<Rect>();
-      this.tree = tree;
-      this.threshold = threshold;
-      this.left_val = left_val;
-      this.left_node = left_node;
-      this.has_left_val = has_left_val;
-      this.right_val = right_val;
-      this.right_node = right_node;
-      this.has_right_val = has_right_val;
-      this.size = size;
-      Detector.feature_instances.add(this);
 
+      threshold = _threshold;
+      left_val = _left_val;
+      left_node = _left_node;
+      has_left_val = _has_left_val;
+      right_val = _right_val;
+      right_node = _right_node;
+      has_right_val = _has_right_val;
+      size = _size;
    }
 
    public void add(Rect r) {

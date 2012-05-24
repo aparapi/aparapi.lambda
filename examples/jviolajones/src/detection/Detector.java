@@ -132,12 +132,16 @@ public class Detector{
          float thres = Float.parseFloat(stage.getChild("stage_threshold").getText());
          //System.out.println(thres);
          Iterator it2 = stage.getChild("trees").getChildren("_").iterator();
-         Stage st = new Stage(thres);
+         Stage st = new Stage(Detector.stage_ids++, thres);
+
+         Detector.stage_instances.add(st);
 
          System.out.println("create stage " + thres);
          while (it2.hasNext()) {
             Element tree = ((Element) it2.next());
-            Tree t = new Tree(st);
+            Tree t = new Tree(Detector.tree_ids++, st);
+
+            Detector.tree_instances.add(t);
             Iterator it4 = tree.getChildren("_").iterator();
             while (it4.hasNext()) {
                Element feature = (Element) it4.next();
@@ -164,7 +168,9 @@ public class Detector{
                   right_node = Integer.parseInt(feature.getChild("right_node").getText());
                   has_right_val = false;
                }
-               Feature f = new Feature(t, thres2, left_val, left_node, has_left_val, right_val, right_node, has_right_val, size);
+               Feature f = new Feature(Detector.feature_ids++, t, thres2, left_val, left_node, has_left_val, right_val, right_node,
+                     has_right_val, size);
+               Detector.feature_instances.add(f);
                Iterator it3 = feature.getChild("feature").getChild("rects").getChildren("_").iterator();
                while (it3.hasNext()) {
                   String s = ((Element) it3.next()).getText().trim();
@@ -177,8 +183,8 @@ public class Detector{
                   int y2 = Integer.parseInt(tab[3]);
                   float w = Float.parseFloat(tab[4]);
 
-                  Rect r = new Rect(x1, x2, y1, y2, w);
-
+                  Rect r = new Rect(rect_ids++, x1, x2, y1, y2, w);
+                  Detector.rect_instances.add(r);
                   f.add(r);
 
                }

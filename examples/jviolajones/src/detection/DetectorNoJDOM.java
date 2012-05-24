@@ -133,11 +133,11 @@ public class DetectorNoJDOM{
 
       for (org.w3c.dom.Element stage : getNodes(racine, org.w3c.dom.Element.class, "stages/_")) {
          float thres = Float.parseFloat(getNode(stage, org.w3c.dom.Text.class, "stage_threshold/text()").getNodeValue());
-         Stage st = new Stage(thres);
+         Stage st = new Stage(0, thres);
          //  System.out.println("create stage "+thres);
 
          for (org.w3c.dom.Element tree : getNodes(stage, org.w3c.dom.Element.class, "trees/_")) {
-            Tree t = new Tree(st);
+            Tree t = new Tree(0, st);
             for (org.w3c.dom.Element feature : getNodes(tree, org.w3c.dom.Element.class, "_")) {
                float thres2 = Float.parseFloat(getNode(feature, org.w3c.dom.Text.class, "threshold/text()").getNodeValue());
                //  System.out.println(thres2);
@@ -164,7 +164,7 @@ public class DetectorNoJDOM{
                   right_node = Integer.parseInt(getNode(feature, org.w3c.dom.Text.class, "right_node/text()").getNodeValue());
                   has_right_val = false;
                }
-               Feature f = new Feature(t, thres2, left_val, left_node, has_left_val, right_val, right_node, has_right_val, size);
+               Feature f = new Feature(0, t, thres2, left_val, left_node, has_left_val, right_val, right_node, has_right_val, size);
                for (org.w3c.dom.Text txt : getNodes(feature, org.w3c.dom.Text.class, "feature/rects/_/text()")) {
                   String s = txt.getNodeValue().trim();
                   //System.out.println(s);
@@ -175,7 +175,7 @@ public class DetectorNoJDOM{
                   int y2 = Integer.parseInt(tab[3]);
                   float w = Float.parseFloat(tab[4]);
 
-                  Rect r = new Rect(x1, x2, y1, y2, w);
+                  Rect r = new Rect(0, x1, x2, y1, y2, w);
 
                   f.add(r);
                }
