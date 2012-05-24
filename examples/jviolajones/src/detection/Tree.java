@@ -18,19 +18,3 @@ as the basis of an Aparapi example.
 import java.util.ArrayList;
 import java.util.List;
 
-public class Tree{
-   final int id;
-
-   final Stage stage;
-
-   final List<Feature> features = new ArrayList<Feature>();
-
-   public Tree(int _id, Stage _stage) {
-      id = _id;
-      stage = _stage;
-   }
-
-   public void addFeature(Feature f) {
-      features.add(f);
-   }
-}
