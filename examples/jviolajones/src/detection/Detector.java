@@ -31,13 +31,14 @@ import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
 
+import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
 
 public class Detector{
 
    /** The list of classifiers that the test image should pass to be considered as an image.*/
-   Stage[] stages;
+   int[] stageIds;
 
    Point size;
 
@@ -72,9 +73,8 @@ public class Detector{
     * 
     * http://code.google.com/p/jjil/wiki/ImplementingHaarCascade
     */
-   public Detector(org.jdom.Document document) {
+   public Detector(Document document) {
 
-      int rectCount = 0, featureCount = 0, nodeCount = 0, treeCount = 0, stageCount = 0;
       List<Stage> stageList = new LinkedList<Stage>();
       Element racine = (Element) document.getRootElement().getChildren().get(0);
       Scanner scanner = new Scanner(racine.getChild("size").getText());
@@ -124,21 +124,25 @@ public class Detector{
                   //System.out.println(s);
                   Rect r = Rect.fromString(s);
                   f.add(r);
-                  rectCount++;
+
                }
 
                t.addFeature(f);
-               featureCount++;
+
             }
             st.addTree(t);
-            treeCount++;
+
             // System.out.println("Number of nodes in tree " + t.features.size());
          }
          // System.out.println("Number of trees : " + st.trees.size());
          stageList.add(st);
-         stageCount++;
+
       }
-      stages = stageList.toArray(new Stage[0]);
+      stageIds = new int[stageList.size()];
+      for (int i = 0; i < stageIds.length; i++) {
+         stageIds[i] = stageList.get(i).id;
+      }
+
       Rect.flatten();
       Feature.flatten();
       Tree.flatten();
@@ -255,8 +259,8 @@ public class Detector{
                            public void run() {
 
                               boolean pass = true;
-                              for (Stage s : stages) {
-                                 if (!pass(s.id, grayImage, squares, width, height, i_final, j_final, scale_final)) {
+                              for (int stageId : stageIds) {
+                                 if (!pass(stageId, grayImage, squares, width, height, i_final, j_final, scale_final)) {
                                     pass = false;
                                     //  System.out.println("Failed at Stage " + k);
                                     break;
@@ -295,8 +299,8 @@ public class Detector{
                               final int size_final = size;
 
                               boolean pass = true;
-                              for (Stage s : stages) {
-                                 if (!pass(s.id, grayImage, squares, width, height, i_final, j_final, scale_final)) {
+                              for (int stageId : stageIds) {
+                                 if (!pass(stageId, grayImage, squares, width, height, i_final, j_final, scale_final)) {
                                     pass = false;
                                     //  System.out.println("Failed at Stage " + k);
                                     break;
@@ -336,12 +340,8 @@ public class Detector{
                   for (int j = 0; j < height - size; j += step) {
 
                      boolean pass = true;
-                     for (Stage s : stages) {
-
-                        //    boolean pass1=true;
-                        //  boolean pass2=true;
-                        // System.out.println("-----flat-start----");
-                        if (!pass(s.id, grayImage, squares, width, height, i, j, scale)) {
+                     for (int stageId : stageIds) {
+                        if (!pass(stageId, grayImage, squares, width, height, i, j, scale)) {
                            pass = false;
                            //  System.out.println("Failed at Stage " + k);
                            break;
@@ -381,8 +381,8 @@ public class Detector{
                   }
                   boolean pass = true;
                   int k = 0;
-                  for (Stage s : stages) {
-                     if (!s.pass(grayImage, squares, width, height, i, j, scale)) {
+                  for (int stageId : stageIds) {
+                     if (!pass(stageId, grayImage, squares, width, height, i, j, scale)) {
                         pass = false;
                         //  System.out.println("Failed at Stage " + k);
                         break;

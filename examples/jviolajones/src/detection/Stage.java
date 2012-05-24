@@ -62,19 +62,4 @@ public class Stage{
 
    }
 
-   public boolean pass(int[] grayImage, int[] squares, int width, int height, int i, int j, float scale) {
-
-      float sum = 0;
-      for (Tree t : trees) {
-
-         //System.out.println("Returned value :"+t.getVal(grayImage, squares,i, j, scale));
-
-         sum += t.getVal(grayImage, squares, width, height, i, j, scale);
-      }
-      //System.out.println(sum+" "+threshold);
-
-      return sum > threshold;
-
-   }
-
 }

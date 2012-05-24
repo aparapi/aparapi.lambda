@@ -39,7 +39,6 @@ public class HaarCascade{
     */
    public HaarCascade(org.jdom.Document document) {
 
-      int rectCount = 0, featureCount = 0, nodeCount = 0, treeCount = 0, stageCount = 0;
       List<Stage> stageList = new LinkedList<Stage>();
       Element racine = (Element) document.getRootElement().getChildren().get(0);
       Scanner scanner = new Scanner(racine.getChild("size").getText());
@@ -91,19 +90,15 @@ public class HaarCascade{
                   //System.out.println(s);
                   Rect r = Rect.fromString(s);
                   f.add(r);
-                  rectCount++;
                }
 
                t.addFeature(f);
-               featureCount++;
             }
             st.addTree(t);
-            treeCount++;
             // System.out.println("Number of nodes in tree " + t.features.size());
          }
          // System.out.println("Number of trees : " + st.trees.size());
          stageList.add(st);
-         stageCount++;
       }
       stages = stageList.toArray(new Stage[0]);
       Rect.flatten();
