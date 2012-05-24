@@ -172,10 +172,6 @@ public class Detector{
 
    static float stage_thresh[];
 
-   final static int LEFT = 0;
-
-   final static int RIGHT = 1;
-
    final static List<Tree> tree_instances = new ArrayList<Tree>();
 
    final static int TREE_INTS = 2;
@@ -389,6 +385,7 @@ public class Detector{
       final int[] grayImage = new int[width * height];
       final int[] img = new int[width * height];
       final int[] squares = new int[width * height];
+      final StopWatch allTimer = new StopWatch("All");
       final StopWatch timer = new StopWatch();
       System.out.println(image);
       timer.start();
@@ -435,7 +432,7 @@ public class Detector{
          timer.print("canny pruning");
       }
 
-      boolean simple = false;
+      boolean simple = true;
       StopWatch faceDetectTimer = new StopWatch("face detection");
       faceDetectTimer.start();
       if (simple) {
@@ -550,11 +547,6 @@ public class Detector{
                            break;
                         }
 
-                        // System.out.println("-----end----");
-                        // if (pass1 != pass2){
-                        //  System.out.println("broken!");
-                        // }
-                        //  pass = !(pass1 | pass2);
                      }
                      if (pass) {
                         System.out.println("pass!");
@@ -603,49 +595,8 @@ public class Detector{
          }
       }
       faceDetectTimer.stop();
+      allTimer.stop();
       return merge(ret, min_neighbors);
-   }
-
-   private int getLeftOrRight(int featureId, int[] grayImage, int[] squares, int width, int height, int i, int j, float scale) {
-
-      int w = (int) (scale * size.x);
-      int h = (int) (scale * size.y);
-      double inv_area = 1. / (w * h);
-      //System.out.println("w2 : "+w2);
-      int total_x = grayImage[i + w + (j + h) * width] + grayImage[i + (j) * width] - grayImage[i + (j + h) * width]
-            - grayImage[i + w + (j) * width];
-      int total_x2 = squares[i + w + (j + h) * width] + squares[i + (j) * width] - squares[i + (j + h) * width]
-            - squares[i + w + (j) * width];
-      double moy = total_x * inv_area;
-      double vnorm = total_x2 * inv_area - moy * moy;
-      vnorm = (vnorm > 1) ? Math.sqrt(vnorm) : 1;
-      // System.out.println(vnorm);
-      int rect_sum = 0;
-      for (int r = 0; r < 3; r++) {
-         int rectId = feature_r1r2r3LnRn[featureId * FEATURE_INTS + r];
-         if (rectId != -1) {
-            // System.out.println("rect " + r + " id " + rectId);
-            int x1 = rect_x1y1x2y2[rectId * RECT_INTS + 0];
-            int y1 = rect_x1y1x2y2[rectId * RECT_INTS + 1];
-            int x2 = rect_x1y1x2y2[rectId * RECT_INTS + 2];
-            int y2 = rect_x1y1x2y2[rectId * RECT_INTS + 3];
-            float weight = rect_w[rectId * RECT_FLOATS + 0];
-            int rx1 = i + (int) (scale * x1);
-            int rx2 = i + (int) (scale * (x1 + y1));
-            int ry1 = j + (int) (scale * x2);
-            int ry2 = j + (int) (scale * (x2 + y2));
-            //System.out.println((rx2-rx1)*(ry2-ry1)+" "+r.weight);
-            rect_sum += (int) ((grayImage[rx2 + (ry2) * width] - grayImage[rx1 + (ry2) * width] - grayImage[rx2 + (ry1) * width] + grayImage[rx1
-                  + (ry1) * width]) * weight);
-         }
-      }
-      // System.out.println(rect_sum);
-      double rect_sum2 = rect_sum * inv_area;
-
-      // System.out.println(rect_sum2+" "+ Feature.LvRvThres[featureId * Feature.FLOATS + 2]*vnorm);  
-
-      return (rect_sum2 < feature_LvRvThres[featureId * FEATURE_FLOATS + 2] * vnorm) ? LEFT : RIGHT;
-
    }
 
    private boolean pass(int stageId, int[] grayImage, int[] squares, int width, int height, int i, int j, float scale) {
@@ -659,8 +610,45 @@ public class Detector{
          boolean done = false;
          while (!done) {
             //  System.out.println("feature id "+featureId);
-            int where = getLeftOrRight(featureId, grayImage, squares, width, height, i, j, scale);
-            if (where == LEFT) {
+
+            int w = (int) (scale * size.x);
+            int h = (int) (scale * size.y);
+            double inv_area = 1. / (w * h);
+            //System.out.println("w2 : "+w2);
+            int total_x = grayImage[i + w + (j + h) * width] + grayImage[i + (j) * width] - grayImage[i + (j + h) * width]
+                  - grayImage[i + w + (j) * width];
+            int total_x2 = squares[i + w + (j + h) * width] + squares[i + (j) * width] - squares[i + (j + h) * width]
+                  - squares[i + w + (j) * width];
+            double moy = total_x * inv_area;
+            double vnorm = total_x2 * inv_area - moy * moy;
+            vnorm = (vnorm > 1) ? Math.sqrt(vnorm) : 1;
+            // System.out.println(vnorm);
+            int rect_sum = 0;
+            for (int r = 0; r < 3; r++) {
+               int rectId = feature_r1r2r3LnRn[featureId * FEATURE_INTS + r];
+               if (rectId != -1) {
+                  // System.out.println("rect " + r + " id " + rectId);
+                  int x1 = rect_x1y1x2y2[rectId * RECT_INTS + 0];
+                  int y1 = rect_x1y1x2y2[rectId * RECT_INTS + 1];
+                  int x2 = rect_x1y1x2y2[rectId * RECT_INTS + 2];
+                  int y2 = rect_x1y1x2y2[rectId * RECT_INTS + 3];
+                  float weight = rect_w[rectId * RECT_FLOATS + 0];
+                  int rx1 = i + (int) (scale * x1);
+                  int rx2 = i + (int) (scale * (x1 + y1));
+                  int ry1 = j + (int) (scale * x2);
+                  int ry2 = j + (int) (scale * (x2 + y2));
+                  //System.out.println((rx2-rx1)*(ry2-ry1)+" "+r.weight);
+                  rect_sum += (int) ((grayImage[rx2 + (ry2) * width] - grayImage[rx1 + (ry2) * width]
+                        - grayImage[rx2 + (ry1) * width] + grayImage[rx1 + (ry1) * width]) * weight);
+               }
+            }
+            // System.out.println(rect_sum);
+            double rect_sum2 = rect_sum * inv_area;
+
+            // System.out.println(rect_sum2+" "+ Feature.LvRvThres[featureId * Feature.FLOATS + 2]*vnorm);  
+
+            if (rect_sum2 < feature_LvRvThres[featureId * FEATURE_FLOATS + 2] * vnorm) {
+
                int leftNodeId = feature_r1r2r3LnRn[featureId * FEATURE_INTS + 3];
                if (leftNodeId == -1) {
                   //  System.out.println("left-val");
