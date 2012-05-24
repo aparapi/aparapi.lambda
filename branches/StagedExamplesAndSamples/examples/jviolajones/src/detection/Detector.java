@@ -36,6 +36,106 @@ import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
 
 public class Detector{
+
+   public static class Stage{
+      final int id;
+
+      final List<Tree> trees = new ArrayList<Tree>();
+
+      final float threshold;
+
+      public Stage(int _id, float _threshold) {
+         id = _id;
+         threshold = _threshold;
+      }
+
+      public void addTree(Tree t) {
+         trees.add(t);
+      }
+   }
+
+   public static class Tree{
+      final int id;
+
+      final Stage stage;
+
+      final List<Feature> features = new ArrayList<Feature>();
+
+      public Tree(int _id, Stage _stage) {
+         id = _id;
+         stage = _stage;
+      }
+
+      public void addFeature(Feature f) {
+         features.add(f);
+      }
+   }
+
+   public static class Feature{
+
+      final int id;
+
+      final List<Rect> rects = new ArrayList<Rect>();
+
+      final int nb_rects;
+
+      final float threshold;
+
+      final float left_val;
+
+      final float right_val;
+
+      final Point size;
+
+      final int left_node;
+
+      final int right_node;
+
+      final boolean has_left_val;
+
+      final boolean has_right_val;
+
+      final Tree tree;
+
+      public Feature(int _id, Tree _tree, float _threshold, float _left_val, int _left_node, boolean _has_left_val,
+            float _right_val, int _right_node, boolean _has_right_val, Point _size) {
+         id = _id;
+         tree = _tree;
+         nb_rects = 0;
+
+         threshold = _threshold;
+         left_val = _left_val;
+         left_node = _left_node;
+         has_left_val = _has_left_val;
+         right_val = _right_val;
+         right_node = _right_node;
+         has_right_val = _has_right_val;
+         size = _size;
+      }
+
+      public void add(Rect r) {
+         rects.add(r);
+      }
+
+   }
+
+   public static class Rect{
+      final int id; // we use this to access from global parallel arrays
+
+      final int x1, x2, y1, y2;
+
+      final float weight;
+
+      public Rect(int _id, int _x1, int _x2, int _y1, int _y2, float _weight) {
+         id = _id;
+         x1 = _x1;
+         x2 = _x2;
+         y1 = _y1;
+         y2 = _y2;
+         weight = _weight;
+      }
+   }
+
    final static List<Feature> feature_instances = new ArrayList<Feature>();
 
    final static int FEATURE_INTS = 5;
@@ -335,10 +435,11 @@ public class Detector{
          timer.print("canny pruning");
       }
 
-      boolean simple = true;
+      boolean simple = false;
+      StopWatch faceDetectTimer = new StopWatch("face detection");
+      faceDetectTimer.start();
       if (simple) {
-         StopWatch faceDetectTimer = new StopWatch("face detection");
-         faceDetectTimer.start();
+
          boolean multiThread = true; // true fastest
 
          if (multiThread) {
@@ -464,7 +565,7 @@ public class Detector{
                timer.print("scale " + scale + " " + loops + " ");
             }
          }
-         faceDetectTimer.stop();
+
       } else {
 
          for (float scale = baseScale; scale < maxScale; scale *= scale_inc) {
@@ -501,7 +602,7 @@ public class Detector{
             timer.print("scale " + scale + " " + loops + " ");
          }
       }
-
+      faceDetectTimer.stop();
       return merge(ret, min_neighbors);
    }
 
