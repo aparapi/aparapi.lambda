@@ -15,6 +15,4 @@ Many thanks to Simon for his excellent project and for permission to use it
 as the basis of an Aparapi example.
 **/
 
-import java.util.ArrayList;
-import java.util.List;
 
