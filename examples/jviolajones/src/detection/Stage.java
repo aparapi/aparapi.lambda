@@ -15,22 +15,10 @@ Many thanks to Simon for his excellent project and for permission to use it
 as the basis of an Aparapi example.
 **/
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 public class Stage{
-   final static List<Stage> stage_instances = new ArrayList<Stage>();
-
-   final static int STAGE_INTS = 2;
-
-   final static int STAGE_FLOATS = 1;
-
-   static int stage_ids;
-
-   static int stage_startEnd[];
-
-   static float stage_thresh[];
 
    int id;
 
@@ -39,20 +27,20 @@ public class Stage{
    float threshold;
 
    public Stage(float threshold) {
-      this.id = stage_ids++;
+      this.id = Detector.stage_ids++;
       this.threshold = threshold;
       trees = new LinkedList<Tree>();
-      stage_instances.add(this);
+      Detector.stage_instances.add(this);
    }
 
    public static void flatten() {
-      stage_startEnd = new int[stage_ids * STAGE_INTS];
-      stage_thresh = new float[stage_ids * STAGE_FLOATS];
-      for (int i = 0; i < stage_ids; i++) {
-         Stage t = stage_instances.get(i);
-         stage_startEnd[i * STAGE_INTS + 0] = t.trees.get(0).id;
-         stage_startEnd[i * STAGE_INTS + 1] = t.trees.get(t.trees.size() - 1).id;
-         stage_thresh[i * STAGE_FLOATS + 0] = t.threshold;
+      Detector.stage_startEnd = new int[Detector.stage_ids * Detector.STAGE_INTS];
+      Detector.stage_thresh = new float[Detector.stage_ids * Detector.STAGE_FLOATS];
+      for (int i = 0; i < Detector.stage_ids; i++) {
+         Stage t = Detector.stage_instances.get(i);
+         Detector.stage_startEnd[i * Detector.STAGE_INTS + 0] = t.trees.get(0).id;
+         Detector.stage_startEnd[i * Detector.STAGE_INTS + 1] = t.trees.get(t.trees.size() - 1).id;
+         Detector.stage_thresh[i * Detector.STAGE_FLOATS + 0] = t.threshold;
       }
    }
 

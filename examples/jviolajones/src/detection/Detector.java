@@ -36,6 +36,53 @@ import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
 
 public class Detector{
+   final static List<Feature> feature_instances = new ArrayList<Feature>();
+
+   final static int FEATURE_INTS = 5;
+
+   final static int FEATURE_FLOATS = 3;
+
+   static int[] feature_r1r2r3LnRn;
+
+   static float[] feature_LvRvThres;
+
+   static int feature_ids;
+
+   final static int RECT_INTS = 4;
+
+   final static int RECT_FLOATS = 1;
+
+   final static List<Rect> rect_instances = new ArrayList<Rect>();
+
+   static int rect_x1y1x2y2[];
+
+   static float rect_w[];
+
+   static int rect_ids;
+
+   final static List<Stage> stage_instances = new ArrayList<Stage>();
+
+   final static int STAGE_INTS = 2;
+
+   final static int STAGE_FLOATS = 1;
+
+   static int stage_ids;
+
+   static int stage_startEnd[];
+
+   static float stage_thresh[];
+
+   final static int LEFT = 0;
+
+   final static int RIGHT = 1;
+
+   final static List<Tree> tree_instances = new ArrayList<Tree>();
+
+   final static int TREE_INTS = 2;
+
+   static int tree_ids;
+
+   static int tree_startEnd[];
 
    /** The list of classifiers that the test image should pass to be considered as an image.*/
    int[] stageIds;
@@ -160,7 +207,7 @@ public class Detector{
     * @param increment The shift of the window at each sub-step, in terms of percentage of the window size.
     * @return the list of rectangles containing searched objects, expressed in pixels.
     */
-   public List<java.awt.Rectangle> getFaces(String file, float baseScale, float scale_inc, float increment, int min_neighbors,
+   public List<Rectangle> getFaces(String file, float baseScale, float scale_inc, float increment, int min_neighbors,
          boolean doCannyPruning) {
 
       try {
@@ -176,8 +223,8 @@ public class Detector{
 
    }
 
-   public List<java.awt.Rectangle> getFaces(BufferedImage image, float baseScale, float scale_inc, float increment,
-         int min_neighbors, boolean doCannyPruning) {
+   public List<Rectangle> getFaces(BufferedImage image, float baseScale, float scale_inc, float increment, int min_neighbors,
+         boolean doCannyPruning) {
 
       final List<Rectangle> ret = new ArrayList<Rectangle>();
       final int width = image.getWidth();
@@ -403,10 +450,6 @@ public class Detector{
       return merge(ret, min_neighbors);
    }
 
-   final static int LEFT = 0;
-
-   final static int RIGHT = 1;
-
    private int getLeftOrRight(int featureId, int[] grayImage, int[] squares, int width, int height, int i, int j, float scale) {
 
       int w = (int) (scale * size.x);
@@ -423,14 +466,14 @@ public class Detector{
       // System.out.println(vnorm);
       int rect_sum = 0;
       for (int r = 0; r < 3; r++) {
-         int rectId = Feature.feature_r1r2r3LnRn[featureId * Feature.FEATURE_INTS + r];
+         int rectId = feature_r1r2r3LnRn[featureId * FEATURE_INTS + r];
          if (rectId != -1) {
             // System.out.println("rect " + r + " id " + rectId);
-            int x1 = Rect.rect_x1y1x2y2[rectId * Rect.RECT_INTS + 0];
-            int y1 = Rect.rect_x1y1x2y2[rectId * Rect.RECT_INTS + 1];
-            int x2 = Rect.rect_x1y1x2y2[rectId * Rect.RECT_INTS + 2];
-            int y2 = Rect.rect_x1y1x2y2[rectId * Rect.RECT_INTS + 3];
-            float weight = Rect.rect_w[rectId * Rect.RECT_FLOATS + 0];
+            int x1 = rect_x1y1x2y2[rectId * RECT_INTS + 0];
+            int y1 = rect_x1y1x2y2[rectId * RECT_INTS + 1];
+            int x2 = rect_x1y1x2y2[rectId * RECT_INTS + 2];
+            int y2 = rect_x1y1x2y2[rectId * RECT_INTS + 3];
+            float weight = rect_w[rectId * RECT_FLOATS + 0];
             int rx1 = i + (int) (scale * x1);
             int rx2 = i + (int) (scale * (x1 + y1));
             int ry1 = j + (int) (scale * x2);
@@ -445,38 +488,37 @@ public class Detector{
 
       // System.out.println(rect_sum2+" "+ Feature.LvRvThres[featureId * Feature.FLOATS + 2]*vnorm);  
 
-      return (rect_sum2 < Feature.feature_LvRvThres[featureId * Feature.FEATURE_FLOATS + 2] * vnorm) ? Tree.LEFT : Tree.RIGHT;
+      return (rect_sum2 < feature_LvRvThres[featureId * FEATURE_FLOATS + 2] * vnorm) ? LEFT : RIGHT;
 
    }
 
    private boolean pass(int stageId, int[] grayImage, int[] squares, int width, int height, int i, int j, float scale) {
 
       float sum = 0;
-      for (int treeId = Stage.stage_startEnd[stageId * Stage.STAGE_INTS + 0]; treeId <= Stage.stage_startEnd[stageId
-            * Stage.STAGE_INTS + 1]; treeId++) {
+      for (int treeId = stage_startEnd[stageId * STAGE_INTS + 0]; treeId <= stage_startEnd[stageId * STAGE_INTS + 1]; treeId++) {
 
          //  System.out.println("stage id " + stageId + "  tree id" + treeId);
-         int featureId = Tree.tree_startEnd[treeId * Tree.TREE_INTS + 0];
+         int featureId = tree_startEnd[treeId * TREE_INTS + 0];
          float thresh = 0f;
          boolean done = false;
          while (!done) {
             //  System.out.println("feature id "+featureId);
             int where = getLeftOrRight(featureId, grayImage, squares, width, height, i, j, scale);
             if (where == LEFT) {
-               int leftNodeId = Feature.feature_r1r2r3LnRn[featureId * Feature.FEATURE_INTS + 3];
+               int leftNodeId = feature_r1r2r3LnRn[featureId * FEATURE_INTS + 3];
                if (leftNodeId == -1) {
                   //  System.out.println("left-val");
-                  thresh = Feature.feature_LvRvThres[featureId * Feature.FEATURE_FLOATS + 0];
+                  thresh = feature_LvRvThres[featureId * FEATURE_FLOATS + 0];
                   done = true;
                } else {
                   // System.out.println("left");
                   featureId = leftNodeId;
                }
             } else {
-               int rightNodeId = Feature.feature_r1r2r3LnRn[featureId * Feature.FEATURE_INTS + 4];
+               int rightNodeId = feature_r1r2r3LnRn[featureId * FEATURE_INTS + 4];
                if (rightNodeId == -1) {
                   // System.out.println("right-val");
-                  thresh = Feature.feature_LvRvThres[featureId * Feature.FEATURE_FLOATS + 1];
+                  thresh = feature_LvRvThres[featureId * FEATURE_FLOATS + 1];
                   done = true;
                } else {
                   //  System.out.println("right");
@@ -489,7 +531,7 @@ public class Detector{
       }
       //System.out.println(sum+" "+threshold);
 
-      return sum > Stage.stage_thresh[stageId * Stage.STAGE_FLOATS + 0];
+      return sum > stage_thresh[stageId * STAGE_FLOATS + 0];
    }
 
    public int[] getIntegralCanny(int[] grayImage, int width, int height) {
@@ -613,12 +655,6 @@ public class Detector{
 
       int distance = (int) (r1.width * 0.2);
 
-      /*return r2.x <= r1.x + distance &&
-             r2.x >= r1.x - distance &&
-             r2.y <= r1.y + distance &&
-             r2.y >= r1.y - distance &&
-             r2.width <= (int)( r1.width * 1.2 ) &&
-             (int)( r2.width * 1.2 ) >= r1.width;*/
       if (r2.x <= r1.x + distance && r2.x >= r1.x - distance && r2.y <= r1.y + distance && r2.y >= r1.y - distance
             && r2.width <= (int) (r1.width * 1.2) && (int) (r2.width * 1.2) >= r1.width) {
 

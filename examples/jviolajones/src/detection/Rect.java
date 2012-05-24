@@ -1,7 +1,5 @@
 package detection;
 
-import java.util.ArrayList;
-import java.util.List;
 
 /**
 This project is based on the open source jviolajones project created by Simon
@@ -19,17 +17,6 @@ as the basis of an Aparapi example.
 **/
 
 public class Rect{
-   final static int RECT_INTS = 4;
-
-   final static int RECT_FLOATS = 1;
-
-   final static List<Rect> rect_instances = new ArrayList<Rect>();
-
-   static int rect_x1y1x2y2[];
-
-   static float rect_w[];
-
-   static int rect_ids;
 
    int id; // we use this to access from global parallel arrays
 
@@ -38,25 +25,25 @@ public class Rect{
    float weight;
 
    public Rect(int x1, int x2, int y1, int y2, float weight) {
-      this.id = rect_ids++;
+      this.id = Detector.rect_ids++;
       this.x1 = x1;
       this.x2 = x2;
       this.y1 = y1;
       this.y2 = y2;
       this.weight = weight;
-      rect_instances.add(this);
+      Detector.rect_instances.add(this);
    }
 
    public static void flatten() {
-      rect_x1y1x2y2 = new int[rect_ids * RECT_INTS];
-      rect_w = new float[rect_ids * RECT_FLOATS];
-      for (int i = 0; i < rect_ids; i++) {
-         Rect r = rect_instances.get(i);
-         rect_w[i * RECT_FLOATS + 0] = r.weight;
-         rect_x1y1x2y2[i * RECT_INTS + 0] = r.x1;
-         rect_x1y1x2y2[i * RECT_INTS + 1] = r.y1;
-         rect_x1y1x2y2[i * RECT_INTS + 2] = r.x2;
-         rect_x1y1x2y2[i * RECT_INTS + 3] = r.y2;
+      Detector.rect_x1y1x2y2 = new int[Detector.rect_ids * Detector.RECT_INTS];
+      Detector.rect_w = new float[Detector.rect_ids * Detector.RECT_FLOATS];
+      for (int i = 0; i < Detector.rect_ids; i++) {
+         Rect r = Detector.rect_instances.get(i);
+         Detector.rect_w[i * Detector.RECT_FLOATS + 0] = r.weight;
+         Detector.rect_x1y1x2y2[i * Detector.RECT_INTS + 0] = r.x1;
+         Detector.rect_x1y1x2y2[i * Detector.RECT_INTS + 1] = r.y1;
+         Detector.rect_x1y1x2y2[i * Detector.RECT_INTS + 2] = r.x2;
+         Detector.rect_x1y1x2y2[i * Detector.RECT_INTS + 3] = r.y2;
       }
    }
 
