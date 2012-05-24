@@ -28,7 +28,11 @@ public class Stage{
 
    static final int INTS = 2;
 
+   static final int FLOATS = 1;
+
    static int startEnd[];
+
+   static float thresh[];
 
    List<Tree> trees;
 
@@ -45,11 +49,12 @@ public class Stage{
 
    public static void flatten() {
       startEnd = new int[ids * INTS];
-
+      thresh = new float[ids * FLOATS];
       for (int i = 0; i < ids; i++) {
          Stage t = instances.get(i);
          startEnd[i * INTS + 0] = t.trees.get(0).id;
          startEnd[i * INTS + 1] = t.trees.get(t.trees.size() - 1).id;
+         thresh[i * FLOATS + 0] = t.threshold;
       }
    }
 

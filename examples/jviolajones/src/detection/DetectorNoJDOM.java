@@ -79,7 +79,7 @@ public class DetectorNoJDOM{
             } catch (SAXException e) {
                // TODO Auto-generated catch block
                e.printStackTrace();
-            }catch (IOException e) {
+            } catch (IOException e) {
                // TODO Auto-generated catch block
                e.printStackTrace();
             }
