@@ -36,14 +36,4 @@ public class Tree{
       features.add(f);
    }
 
-   public static void flatten() {
-      Detector.tree_startEnd = new int[Detector.tree_ids * Detector.TREE_INTS];
-
-      for (int i = 0; i < Detector.tree_ids; i++) {
-         Tree t = Detector.tree_instances.get(i);
-         Detector.tree_startEnd[i * Detector.TREE_INTS + 0] = t.features.get(0).id;
-         Detector.tree_startEnd[i * Detector.TREE_INTS + 1] = t.features.get(t.features.size() - 1).id;
-      }
-   }
-
 }

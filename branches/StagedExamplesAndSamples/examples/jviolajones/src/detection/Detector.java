@@ -169,7 +169,16 @@ public class Detector{
                while (it3.hasNext()) {
                   String s = ((Element) it3.next()).getText().trim();
                   //System.out.println(s);
-                  Rect r = Rect.fromString(s);
+
+                  String[] tab = s.split(" ");
+                  int x1 = Integer.parseInt(tab[0]);
+                  int x2 = Integer.parseInt(tab[1]);
+                  int y1 = Integer.parseInt(tab[2]);
+                  int y2 = Integer.parseInt(tab[3]);
+                  float w = Float.parseFloat(tab[4]);
+
+                  Rect r = new Rect(x1, x2, y1, y2, w);
+
                   f.add(r);
 
                }
@@ -185,15 +194,55 @@ public class Detector{
          stageList.add(st);
 
       }
+
+      // now we take the above generated data structure apart and create a data parallel friendly form. 
+
       stageIds = new int[stageList.size()];
       for (int i = 0; i < stageIds.length; i++) {
          stageIds[i] = stageList.get(i).id;
       }
 
-      Rect.flatten();
-      Feature.flatten();
-      Tree.flatten();
-      Stage.flatten();
+      Detector.rect_x1y1x2y2 = new int[Detector.rect_ids * Detector.RECT_INTS];
+      Detector.rect_w = new float[Detector.rect_ids * Detector.RECT_FLOATS];
+      for (int i = 0; i < Detector.rect_ids; i++) {
+         Rect r = Detector.rect_instances.get(i);
+         Detector.rect_w[i * Detector.RECT_FLOATS + 0] = r.weight;
+         Detector.rect_x1y1x2y2[i * Detector.RECT_INTS + 0] = r.x1;
+         Detector.rect_x1y1x2y2[i * Detector.RECT_INTS + 1] = r.y1;
+         Detector.rect_x1y1x2y2[i * Detector.RECT_INTS + 2] = r.x2;
+         Detector.rect_x1y1x2y2[i * Detector.RECT_INTS + 3] = r.y2;
+      }
+
+      Detector.feature_r1r2r3LnRn = new int[Detector.feature_ids * Detector.FEATURE_INTS];
+      Detector.feature_LvRvThres = new float[Detector.feature_ids * Detector.FEATURE_FLOATS];
+      for (int i = 0; i < Detector.feature_ids; i++) {
+         Feature f = Detector.feature_instances.get(i);
+         Detector.feature_LvRvThres[i * Detector.FEATURE_FLOATS + 0] = f.left_val;
+         Detector.feature_LvRvThres[i * Detector.FEATURE_FLOATS + 1] = f.right_val;
+         Detector.feature_LvRvThres[i * Detector.FEATURE_FLOATS + 2] = f.threshold;
+         Detector.feature_r1r2r3LnRn[i * Detector.FEATURE_INTS + 0] = (f.rects.size() > 0) ? f.rects.get(0).id : -1;
+         Detector.feature_r1r2r3LnRn[i * Detector.FEATURE_INTS + 1] = (f.rects.size() > 1) ? f.rects.get(1).id : -1;
+         Detector.feature_r1r2r3LnRn[i * Detector.FEATURE_INTS + 2] = (f.rects.size() > 2) ? f.rects.get(2).id : -1;
+         Detector.feature_r1r2r3LnRn[i * Detector.FEATURE_INTS + 3] = (f.has_left_val) ? -1 : f.tree.features.get(f.left_node).id;
+         Detector.feature_r1r2r3LnRn[i * Detector.FEATURE_INTS + 4] = (f.has_right_val) ? -1 : f.tree.features.get(f.right_node).id;
+      }
+
+      Detector.tree_startEnd = new int[Detector.tree_ids * Detector.TREE_INTS];
+
+      for (int i = 0; i < Detector.tree_ids; i++) {
+         Tree t = Detector.tree_instances.get(i);
+         Detector.tree_startEnd[i * Detector.TREE_INTS + 0] = t.features.get(0).id;
+         Detector.tree_startEnd[i * Detector.TREE_INTS + 1] = t.features.get(t.features.size() - 1).id;
+      }
+
+      Detector.stage_startEnd = new int[Detector.stage_ids * Detector.STAGE_INTS];
+      Detector.stage_thresh = new float[Detector.stage_ids * Detector.STAGE_FLOATS];
+      for (int i = 0; i < Detector.stage_ids; i++) {
+         Stage t = Detector.stage_instances.get(i);
+         Detector.stage_startEnd[i * Detector.STAGE_INTS + 0] = t.trees.get(0).id;
+         Detector.stage_startEnd[i * Detector.STAGE_INTS + 1] = t.trees.get(t.trees.size() - 1).id;
+         Detector.stage_thresh[i * Detector.STAGE_FLOATS + 0] = t.threshold;
+      }
 
    }
 
