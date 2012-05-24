@@ -233,11 +233,11 @@ public class Detector{
       if (simple) {
          StopWatch faceDetectTimer = new StopWatch("face detection");
          faceDetectTimer.start();
-         boolean multiThread = false;
+         boolean multiThread = true; // true fastest
 
          if (multiThread) {
             ExecutorService threadPool = Executors.newFixedThreadPool(16);
-            boolean inner = true;
+            boolean inner = false; // false fastest
             if (inner) {
                for (float scale = baseScale; scale < maxScale; scale *= scale_inc) {
 
@@ -256,7 +256,7 @@ public class Detector{
 
                               boolean pass = true;
                               for (Stage s : stages) {
-                                 if (!s.pass(grayImage, squares, width, height, i_final, j_final, scale_final)) {
+                                 if (!pass(s.id, grayImage, squares, width, height, i_final, j_final, scale_final)) {
                                     pass = false;
                                     //  System.out.println("Failed at Stage " + k);
                                     break;
@@ -296,7 +296,7 @@ public class Detector{
 
                               boolean pass = true;
                               for (Stage s : stages) {
-                                 if (!s.pass(grayImage, squares, width, height, i_final, j_final, scale_final)) {
+                                 if (!pass(s.id, grayImage, squares, width, height, i_final, j_final, scale_final)) {
                                     pass = false;
                                     //  System.out.println("Failed at Stage " + k);
                                     break;
@@ -341,17 +341,12 @@ public class Detector{
                         //    boolean pass1=true;
                         //  boolean pass2=true;
                         // System.out.println("-----flat-start----");
-                        if (false && !pass(s.id, grayImage, squares, width, height, i, j, scale)) {
+                        if (!pass(s.id, grayImage, squares, width, height, i, j, scale)) {
                            pass = false;
                            //  System.out.println("Failed at Stage " + k);
                            break;
                         }
-                        //  System.out.println("-----normal-start----");
-                        if (true && !s.pass(grayImage, squares, width, height, i, j, scale)) {
-                           pass = false;
-                           //  System.out.println("Failed at Stage " + k);
-                           break;
-                        }
+
                         // System.out.println("-----end----");
                         // if (pass1 != pass2){
                         //  System.out.println("broken!");
@@ -428,14 +423,14 @@ public class Detector{
       // System.out.println(vnorm);
       int rect_sum = 0;
       for (int r = 0; r < 3; r++) {
-         int rectId = Feature.r1r2r3LnRn[featureId * Feature.INTS + r];
+         int rectId = Feature.feature_r1r2r3LnRn[featureId * Feature.FEATURE_INTS + r];
          if (rectId != -1) {
             // System.out.println("rect " + r + " id " + rectId);
-            int x1 = Rect.x1y1x2y2[rectId * Rect.INTS + 0];
-            int y1 = Rect.x1y1x2y2[rectId * Rect.INTS + 1];
-            int x2 = Rect.x1y1x2y2[rectId * Rect.INTS + 2];
-            int y2 = Rect.x1y1x2y2[rectId * Rect.INTS + 3];
-            float weight = Rect.w[rectId * Rect.FLOATS + 0];
+            int x1 = Rect.rect_x1y1x2y2[rectId * Rect.RECT_INTS + 0];
+            int y1 = Rect.rect_x1y1x2y2[rectId * Rect.RECT_INTS + 1];
+            int x2 = Rect.rect_x1y1x2y2[rectId * Rect.RECT_INTS + 2];
+            int y2 = Rect.rect_x1y1x2y2[rectId * Rect.RECT_INTS + 3];
+            float weight = Rect.rect_w[rectId * Rect.RECT_FLOATS + 0];
             int rx1 = i + (int) (scale * x1);
             int rx2 = i + (int) (scale * (x1 + y1));
             int ry1 = j + (int) (scale * x2);
@@ -450,37 +445,38 @@ public class Detector{
 
       // System.out.println(rect_sum2+" "+ Feature.LvRvThres[featureId * Feature.FLOATS + 2]*vnorm);  
 
-      return (rect_sum2 < Feature.LvRvThres[featureId * Feature.FLOATS + 2] * vnorm) ? Tree.LEFT : Tree.RIGHT;
+      return (rect_sum2 < Feature.feature_LvRvThres[featureId * Feature.FEATURE_FLOATS + 2] * vnorm) ? Tree.LEFT : Tree.RIGHT;
 
    }
 
    private boolean pass(int stageId, int[] grayImage, int[] squares, int width, int height, int i, int j, float scale) {
 
       float sum = 0;
-      for (int treeId = Stage.startEnd[stageId * Stage.INTS + 0]; treeId <= Stage.startEnd[stageId * Stage.INTS + 1]; treeId++) {
+      for (int treeId = Stage.stage_startEnd[stageId * Stage.STAGE_INTS + 0]; treeId <= Stage.stage_startEnd[stageId
+            * Stage.STAGE_INTS + 1]; treeId++) {
 
          //  System.out.println("stage id " + stageId + "  tree id" + treeId);
-         int featureId = Tree.startEnd[treeId * Tree.INTS + 0];
+         int featureId = Tree.tree_startEnd[treeId * Tree.TREE_INTS + 0];
          float thresh = 0f;
          boolean done = false;
          while (!done) {
             //  System.out.println("feature id "+featureId);
             int where = getLeftOrRight(featureId, grayImage, squares, width, height, i, j, scale);
             if (where == LEFT) {
-               int leftNodeId = Feature.r1r2r3LnRn[featureId * Feature.INTS + 3];
+               int leftNodeId = Feature.feature_r1r2r3LnRn[featureId * Feature.FEATURE_INTS + 3];
                if (leftNodeId == -1) {
                   //  System.out.println("left-val");
-                  thresh = Feature.LvRvThres[featureId * Feature.FLOATS + 0];
+                  thresh = Feature.feature_LvRvThres[featureId * Feature.FEATURE_FLOATS + 0];
                   done = true;
                } else {
                   // System.out.println("left");
                   featureId = leftNodeId;
                }
             } else {
-               int rightNodeId = Feature.r1r2r3LnRn[featureId * Feature.INTS + 4];
+               int rightNodeId = Feature.feature_r1r2r3LnRn[featureId * Feature.FEATURE_INTS + 4];
                if (rightNodeId == -1) {
                   // System.out.println("right-val");
-                  thresh = Feature.LvRvThres[featureId * Feature.FLOATS + 1];
+                  thresh = Feature.feature_LvRvThres[featureId * Feature.FEATURE_FLOATS + 1];
                   done = true;
                } else {
                   //  System.out.println("right");
@@ -493,7 +489,7 @@ public class Detector{
       }
       //System.out.println(sum+" "+threshold);
 
-      return sum > Stage.thresh[stageId * Stage.FLOATS + 0];
+      return sum > Stage.stage_thresh[stageId * Stage.STAGE_FLOATS + 0];
    }
 
    public int[] getIntegralCanny(int[] grayImage, int width, int height) {
