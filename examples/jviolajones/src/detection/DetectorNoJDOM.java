@@ -168,7 +168,15 @@ public class DetectorNoJDOM{
                for (org.w3c.dom.Text txt : getNodes(feature, org.w3c.dom.Text.class, "feature/rects/_/text()")) {
                   String s = txt.getNodeValue().trim();
                   //System.out.println(s);
-                  Rect r = Rect.fromString(s);
+                  String[] tab = s.split(" ");
+                  int x1 = Integer.parseInt(tab[0]);
+                  int x2 = Integer.parseInt(tab[1]);
+                  int y1 = Integer.parseInt(tab[2]);
+                  int y2 = Integer.parseInt(tab[3]);
+                  float w = Float.parseFloat(tab[4]);
+
+                  Rect r = new Rect(x1, x2, y1, y2, w);
+
                   f.add(r);
                }
                t.addFeature(f);

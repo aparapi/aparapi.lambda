@@ -33,17 +33,6 @@ public class Stage{
       Detector.stage_instances.add(this);
    }
 
-   public static void flatten() {
-      Detector.stage_startEnd = new int[Detector.stage_ids * Detector.STAGE_INTS];
-      Detector.stage_thresh = new float[Detector.stage_ids * Detector.STAGE_FLOATS];
-      for (int i = 0; i < Detector.stage_ids; i++) {
-         Stage t = Detector.stage_instances.get(i);
-         Detector.stage_startEnd[i * Detector.STAGE_INTS + 0] = t.trees.get(0).id;
-         Detector.stage_startEnd[i * Detector.STAGE_INTS + 1] = t.trees.get(t.trees.size() - 1).id;
-         Detector.stage_thresh[i * Detector.STAGE_FLOATS + 0] = t.threshold;
-      }
-   }
-
    public void addTree(Tree t) {
 
       trees.add(t);
