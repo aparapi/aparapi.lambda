@@ -68,7 +68,7 @@ public class Detector{
       final List<Rectangle> ret = new ArrayList<Rectangle>();
       final int width = image.getWidth();
       final int height = image.getHeight();
-      final float maxScale = (Math.min((width + 0.f) / haarCascade.size.x, (height + 0.0f) / haarCascade.size.y));
+      final float maxScale = (Math.min((width + 0.f) / haarCascade.width, (height + 0.0f) / haarCascade.height));
       final int[] imagePixels = new int[width * height];
       final int[] grayImage = new int[width * height];
       final int[] img = new int[width * height];
@@ -135,8 +135,8 @@ public class Detector{
 
                   //  int loops = 0;
                   //  timer.start();
-                  int step = (int) (scale * haarCascade.size.x * increment);
-                  int size = (int) (scale * haarCascade.size.x);
+                  int step = (int) (scale * haarCascade.width * increment);
+                  int size = (int) (scale * haarCascade.width);
                   for (int i = 0; i < width - size; i += step) {
                      for (int j = 0; j < height - size; j += step) {
                         final int i_final = i;
@@ -172,8 +172,8 @@ public class Detector{
 
                   //  int loops = 0;
                   //  timer.start();
-                  final int step = (int) (scale * haarCascade.size.x * increment);
-                  final int size = (int) (scale * haarCascade.size.x);
+                  final int step = (int) (scale * haarCascade.width * increment);
+                  final int size = (int) (scale * haarCascade.width);
                   final float scale_final = scale;
 
                   for (int i = 0; i < width - size; i += step) {
@@ -222,8 +222,8 @@ public class Detector{
             for (float scale = baseScale; scale < maxScale; scale *= scale_inc) {
                int loops = 0;
                timer.start();
-               int step = (int) (scale * haarCascade.size.x * increment);
-               int size = (int) (scale * haarCascade.size.x);
+               int step = (int) (scale * haarCascade.width * increment);
+               int size = (int) (scale * haarCascade.width);
                for (int i = 0; i < width - size; i += step) {
                   for (int j = 0; j < height - size; j += step) {
 
@@ -251,8 +251,8 @@ public class Detector{
          for (float scale = baseScale; scale < maxScale; scale *= scale_inc) {
             int loops = 0;
             timer.start();
-            int step = (int) (scale * haarCascade.size.x * increment);
-            int size = (int) (scale * haarCascade.size.x);
+            int step = (int) (scale * haarCascade.width * increment);
+            int size = (int) (scale * haarCascade.width);
             for (int i = 0; i < width - size; i += step) {
                for (int j = 0; j < height - size; j += step) {
                   if (doCannyPruning) {
@@ -300,8 +300,8 @@ public class Detector{
          while (!done) {
             //  System.out.println("feature id "+featureId);
 
-            int w = (int) (scale * haarCascade.size.x);
-            int h = (int) (scale * haarCascade.size.y);
+            int w = (int) (scale * haarCascade.width);
+            int h = (int) (scale * haarCascade.height);
             double inv_area = 1. / (w * h);
             //System.out.println("w2 : "+w2);
             int total_x = grayImage[i + w + (j + h) * width] + grayImage[i + (j) * width] - grayImage[i + (j + h) * width]
