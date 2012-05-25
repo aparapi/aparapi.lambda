@@ -63,7 +63,7 @@ public class Detector{
    }
 
    public List<Rectangle> getFaces(BufferedImage image, float baseScale, float scale_inc, float increment, int min_neighbors,
-         boolean doCannyPruning) {
+         final boolean doCannyPruning) {
 
       final List<Rectangle> ret = new ArrayList<Rectangle>();
       final int width = image.getWidth();
@@ -105,266 +105,68 @@ public class Detector{
          for (int j = 0; j < height; j++) {
             int value = img[i + j * width];
             col += value;
-            grayImage[i + j * width] = (i > 0 ? grayImage[i - 1 + j * width] : 0) + col;
+            grayImage[i + j * width] = (i > 0 ? grayImage[i - 1 + j * width] : 0) + col; // NOT data parallel !
             col2 += value * value;
-            squares[i + j * width] = (i > 0 ? squares[i - 1 + j * width] : 0) + col2;
+            squares[i + j * width] = (i > 0 ? squares[i - 1 + j * width] : 0) + col2; // NOT data parallel
          }
       }
 
       timer.print("grey and squares");
 
-      int[] canny = null;
+      int[] cannyIsh = null;
       if (doCannyPruning) {
          timer.start();
-         canny = getIntegralCanny(img, width, height);
+         cannyIsh = getIntegralCanny(img, width, height);
          timer.print("canny pruning");
       }
 
-      boolean simple = true;
+      final int[] canny = cannyIsh;
+
       StopWatch faceDetectTimer = new StopWatch("face detection");
       faceDetectTimer.start();
-      if (simple) {
 
-         boolean multiThread = true; // true fastest
+      ExecutorService threadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+      for (float scale = baseScale; scale < maxScale; scale *= scale_inc) {
+         final int step_f = (int) (scale * haarCascade.width * increment);
+         final int size_f = (int) (scale * haarCascade.width);
+         final float scale_f = scale;
 
-         if (multiThread) {
-            ExecutorService threadPool = Executors.newFixedThreadPool(16);
-            boolean inner = false; // false fastest
-            if (inner) {
-               for (float scale = baseScale; scale < maxScale; scale *= scale_inc) {
+         for (int i = 0; i < width - size_f; i += step_f) {
+            final int i_f = i;
+            threadPool.execute(new Runnable(){
+               public void run() {
+                  for (int j = 0; j < height - size_f; j += step_f) {
 
-                  //  int loops = 0;
-                  //  timer.start();
-                  int step = (int) (scale * haarCascade.width * increment);
-                  int size = (int) (scale * haarCascade.width);
-                  for (int i = 0; i < width - size; i += step) {
-                     for (int j = 0; j < height - size; j += step) {
-                        final int i_final = i;
-                        final int j_final = j;
-                        final float scale_final = scale;
-                        final int size_final = size;
-                        Runnable r = new Runnable(){
-                           public void run() {
-
-                              boolean pass = true;
-                              for (int stageId : haarCascade.stageIds) {
-                                 if (!pass(stageId, grayImage, squares, width, height, i_final, j_final, scale_final)) {
-                                    pass = false;
-                                    //  System.out.println("Failed at Stage " + k);
-                                    break;
-                                 }
-                              }
-                              if (pass) {
-                                 System.out.println("found!");
-                                 synchronized (ret) {
-                                    ret.add(new Rectangle(i_final, j_final, size_final, size_final));
-                                 }
-                              }
-                           }
-                        };
-                        threadPool.execute(r);
+                     if (doCannyPruning) {
+                        int edges_density = canny[i_f + size_f + (j + size_f) * width] + canny[i_f + (j) * width]
+                              - canny[i_f + (j + size_f) * width] - canny[i_f + size_f + (j) * width];
+                        int d = edges_density / size_f / size_f;
+                        if (d < 20 || d > 100)
+                           continue;
                      }
-                  }
-                  //  timer.print("scale " + scale + " " + loops + " ");
-               }
-            } else {
-               for (float scale = baseScale; scale < maxScale; scale *= scale_inc) {
 
-                  //  int loops = 0;
-                  //  timer.start();
-                  final int step = (int) (scale * haarCascade.width * increment);
-                  final int size = (int) (scale * haarCascade.width);
-                  final float scale_final = scale;
-
-                  for (int i = 0; i < width - size; i += step) {
-                     final int i_final = i;
-                     Runnable r = new Runnable(){
-                        public void run() {
-                           for (int j = 0; j < height - size; j += step) {
-
-                              int j_final = j;
-
-                              final int size_final = size;
-
-                              boolean pass = true;
-                              for (int stageId : haarCascade.stageIds) {
-                                 if (!pass(stageId, grayImage, squares, width, height, i_final, j_final, scale_final)) {
-                                    pass = false;
-                                    //  System.out.println("Failed at Stage " + k);
-                                    break;
-                                 }
-                              }
-                              if (pass) {
-                                 System.out.println("found!");
-                                 synchronized (ret) {
-                                    ret.add(new Rectangle(i_final, j_final, size_final, size_final));
-                                 }
-                              }
-                           }
-
+                     Rectangle rectangle = haarCascade.getFeature(grayImage, squares, width, height, i_f, j, scale_f, size_f);
+                     if (rectangle != null) {
+                        synchronized (ret) {
+                           ret.add(rectangle);
                         }
-                     };
-                     threadPool.execute(r);
-                  }
-                  //  timer.print("scale " + scale + " " + loops + " ");
-
-               }
-            }
-            threadPool.shutdown();
-            try {
-               threadPool.awaitTermination(60, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-               // TODO Auto-generated catch block
-               e.printStackTrace();
-            }
-         } else {
-
-            for (float scale = baseScale; scale < maxScale; scale *= scale_inc) {
-               int loops = 0;
-               timer.start();
-               int step = (int) (scale * haarCascade.width * increment);
-               int size = (int) (scale * haarCascade.width);
-               for (int i = 0; i < width - size; i += step) {
-                  for (int j = 0; j < height - size; j += step) {
-
-                     boolean pass = true;
-                     for (int stageId : haarCascade.stageIds) {
-                        if (!pass(stageId, grayImage, squares, width, height, i, j, scale)) {
-                           pass = false;
-                           //  System.out.println("Failed at Stage " + k);
-                           break;
-                        }
-
-                     }
-                     if (pass) {
-                        System.out.println("pass!");
-                        ret.add(new Rectangle(i, j, size, size));
                      }
                   }
                }
-               timer.print("scale " + scale + " " + loops + " ");
-            }
-         }
-
-      } else {
-
-         for (float scale = baseScale; scale < maxScale; scale *= scale_inc) {
-            int loops = 0;
-            timer.start();
-            int step = (int) (scale * haarCascade.width * increment);
-            int size = (int) (scale * haarCascade.width);
-            for (int i = 0; i < width - size; i += step) {
-               for (int j = 0; j < height - size; j += step) {
-                  if (doCannyPruning) {
-                     int edges_density = canny[i + size + (j + size) * width] + canny[i + (j) * width]
-                           - canny[i + (j + size) * width] - canny[i + size + (j) * width];
-                     int d = edges_density / size / size;
-                     if (d < 20 || d > 100)
-                        continue;
-                  }
-                  boolean pass = true;
-                  int k = 0;
-                  for (int stageId : haarCascade.stageIds) {
-                     if (!pass(stageId, grayImage, squares, width, height, i, j, scale)) {
-                        pass = false;
-                        //  System.out.println("Failed at Stage " + k);
-                        break;
-                     }
-                     k++;
-                  }
-                  if (pass) {
-
-                     System.out.println("found!");
-                     ret.add(new Rectangle(i, j, size, size));
-                  }
-               }
-            }
-            timer.print("scale " + scale + " " + loops + " ");
+            });
          }
       }
+      threadPool.shutdown(); // we won't add anymore
+      try {
+         threadPool.awaitTermination(60, TimeUnit.SECONDS);
+      } catch (InterruptedException e) {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }
+
       faceDetectTimer.stop();
       allTimer.stop();
       return merge(ret, min_neighbors);
-   }
-
-   private boolean pass(int stageId, int[] grayImage, int[] squares, int width, int height, int i, int j, float scale) {
-
-      float sum = 0;
-      for (int treeId = haarCascade.stage_startEnd[stageId * haarCascade.STAGE_INTS + 0]; treeId <= haarCascade.stage_startEnd[stageId
-            * haarCascade.STAGE_INTS + 1]; treeId++) {
-
-         //  System.out.println("stage id " + stageId + "  tree id" + treeId);
-         int featureId = haarCascade.tree_startEnd[treeId * haarCascade.TREE_INTS + 0];
-         float thresh = 0f;
-         boolean done = false;
-         while (!done) {
-            //  System.out.println("feature id "+featureId);
-
-            int w = (int) (scale * haarCascade.width);
-            int h = (int) (scale * haarCascade.height);
-            double inv_area = 1. / (w * h);
-            //System.out.println("w2 : "+w2);
-            int total_x = grayImage[i + w + (j + h) * width] + grayImage[i + (j) * width] - grayImage[i + (j + h) * width]
-                  - grayImage[i + w + (j) * width];
-            int total_x2 = squares[i + w + (j + h) * width] + squares[i + (j) * width] - squares[i + (j + h) * width]
-                  - squares[i + w + (j) * width];
-            double moy = total_x * inv_area;
-            double vnorm = total_x2 * inv_area - moy * moy;
-            vnorm = (vnorm > 1) ? Math.sqrt(vnorm) : 1;
-            // System.out.println(vnorm);
-            int rect_sum = 0;
-            for (int r = 0; r < 3; r++) {
-               int rectId = haarCascade.feature_r1r2r3LnRn[featureId * haarCascade.FEATURE_INTS + r];
-               if (rectId != -1) {
-                  // System.out.println("rect " + r + " id " + rectId);
-                  int x1 = haarCascade.rect_x1y1x2y2[rectId * haarCascade.RECT_INTS + 0];
-                  int y1 = haarCascade.rect_x1y1x2y2[rectId * haarCascade.RECT_INTS + 1];
-                  int x2 = haarCascade.rect_x1y1x2y2[rectId * haarCascade.RECT_INTS + 2];
-                  int y2 = haarCascade.rect_x1y1x2y2[rectId * haarCascade.RECT_INTS + 3];
-                  float weight = haarCascade.rect_w[rectId * haarCascade.RECT_FLOATS + 0];
-                  int rx1 = i + (int) (scale * x1);
-                  int rx2 = i + (int) (scale * (x1 + y1));
-                  int ry1 = j + (int) (scale * x2);
-                  int ry2 = j + (int) (scale * (x2 + y2));
-                  //System.out.println((rx2-rx1)*(ry2-ry1)+" "+r.weight);
-                  rect_sum += (int) ((grayImage[rx2 + (ry2) * width] - grayImage[rx1 + (ry2) * width]
-                        - grayImage[rx2 + (ry1) * width] + grayImage[rx1 + (ry1) * width]) * weight);
-               }
-            }
-            // System.out.println(rect_sum);
-            double rect_sum2 = rect_sum * inv_area;
-
-            // System.out.println(rect_sum2+" "+ Feature.LvRvThres[featureId * Feature.FLOATS + 2]*vnorm);  
-
-            if (rect_sum2 < haarCascade.feature_LvRvThres[featureId * haarCascade.FEATURE_FLOATS + 2] * vnorm) {
-
-               int leftNodeId = haarCascade.feature_r1r2r3LnRn[featureId * haarCascade.FEATURE_INTS + 3];
-               if (leftNodeId == -1) {
-                  //  System.out.println("left-val");
-                  thresh = haarCascade.feature_LvRvThres[featureId * haarCascade.FEATURE_FLOATS + 0];
-                  done = true;
-               } else {
-                  // System.out.println("left");
-                  featureId = leftNodeId;
-               }
-            } else {
-               int rightNodeId = haarCascade.feature_r1r2r3LnRn[featureId * haarCascade.FEATURE_INTS + 4];
-               if (rightNodeId == -1) {
-                  // System.out.println("right-val");
-                  thresh = haarCascade.feature_LvRvThres[featureId * haarCascade.FEATURE_FLOATS + 1];
-                  done = true;
-               } else {
-                  //  System.out.println("right");
-                  featureId = rightNodeId;
-               }
-            }
-         }
-
-         sum += thresh;
-      }
-      //System.out.println(sum+" "+threshold);
-
-      return sum > HaarCascade.stage_thresh[stageId * HaarCascade.STAGE_FLOATS + 0];
    }
 
    public int[] getIntegralCanny(int[] grayImage, int width, int height) {
@@ -427,7 +229,7 @@ public class Detector{
          int col = 0;
          for (int j = 0; j < height; j++) {
             int value = grad[i + j * width];
-            canny[i + j * width] = (i > 0 ? canny[i - 1 + j * width] : 0) + col + value;
+            canny[i + j * width] = (i > 0 ? canny[i - 1 + j * width] : 0) + col + value; // NOT data parallel
             col += value;
          }
       }

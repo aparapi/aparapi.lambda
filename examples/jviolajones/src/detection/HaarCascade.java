@@ -15,6 +15,7 @@ Many thanks to Simon for his excellent project and for permission to use it
 as the basis of an Aparapi example.
 **/
 
+import java.awt.Rectangle;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -27,7 +28,7 @@ import org.jdom.input.SAXBuilder;
 
 public class HaarCascade{
 
-   private static class Stage{
+   private class Stage{
       final int id;
 
       final List<Tree> trees = new ArrayList<Tree>();
@@ -45,7 +46,7 @@ public class HaarCascade{
       }
    }
 
-   private static class Tree{
+   private class Tree{
       final int id;
 
       final List<Feature> features = new ArrayList<Feature>();
@@ -60,7 +61,7 @@ public class HaarCascade{
       }
    }
 
-   private static class Feature{
+   private class Feature{
 
       final int id;
 
@@ -96,7 +97,7 @@ public class HaarCascade{
 
    }
 
-   private static class Rect{
+   private class Rect{
       final int id; // we use this to access from global parallel arrays
 
       final int x1, x2, y1, y2;
@@ -117,37 +118,37 @@ public class HaarCascade{
 
    final static int FEATURE_FLOATS = 3;
 
-   static int[] feature_r1r2r3LnRn;
+   int[] feature_r1r2r3LnRn;
 
-   static float[] feature_LvRvThres;
+   float[] feature_LvRvThres;
 
-   static int feature_ids;
+   int feature_ids;
 
    final static int RECT_INTS = 4;
 
    final static int RECT_FLOATS = 1;
 
-   static int rect_x1y1x2y2[];
+   int rect_x1y1x2y2[];
 
-   static float rect_w[];
+   float rect_w[];
 
-   static int rect_ids;
+   int rect_ids;
 
    final static int STAGE_INTS = 2;
 
    final static int STAGE_FLOATS = 1;
 
-   static int stage_ids;
+   int stage_ids;
 
-   static int stage_startEnd[];
+   int stage_startEnd[];
 
-   static float stage_thresh[];
+   float stage_thresh[];
 
    final static int TREE_INTS = 2;
 
-   static int tree_ids;
+   int tree_ids;
 
-   static int tree_startEnd[];
+   int tree_startEnd[];
 
    /** The list of classifiers that the test image should pass to be considered as an image.*/
    int[] stageIds;
@@ -215,18 +216,18 @@ public class HaarCascade{
       Element stagesElement = racineElement.getChild("stages");
       for (Element stageElement : new Itr(stagesElement)) {
          Element stageThresholdElement = stageElement.getChild("stage_threshold");
-         Stage stage = new Stage(HaarCascade.stage_ids++, Float.parseFloat(stageThresholdElement.getText()));
+         Stage stage = new Stage(stage_ids++, Float.parseFloat(stageThresholdElement.getText()));
          stage_instances.add(stage);
          Element treesElement = stageElement.getChild("trees");
          for (Element treeElement : new Itr(treesElement)) {
-            Tree tree = new Tree(HaarCascade.tree_ids++);
+            Tree tree = new Tree(tree_ids++);
             tree_instances.add(stage.addTree(tree));
             for (Element featureElement : new Itr(treeElement)) {
                Element leftNodeElement = featureElement.getChild("left_node");
                Element rightNodeElement = featureElement.getChild("right_node");
                Element rightValElement = featureElement.getChild("right_val");
                Element leftValElement = featureElement.getChild("left_val");
-               Feature feature = new Feature(HaarCascade.feature_ids++, tree,//
+               Feature feature = new Feature(feature_ids++, tree,//
                      Float.parseFloat(featureElement.getChild("threshold").getText()),//
                      (leftValElement != null) ? Float.parseFloat(leftValElement.getText()) : 0f,//
                      (leftNodeElement != null) ? Integer.parseInt(leftNodeElement.getText()) : -1,//
@@ -254,49 +255,144 @@ public class HaarCascade{
          stageIds[i] = stageList.get(i).id;
       }
 
-      HaarCascade.rect_x1y1x2y2 = new int[HaarCascade.rect_ids * HaarCascade.RECT_INTS];
-      HaarCascade.rect_w = new float[HaarCascade.rect_ids * HaarCascade.RECT_FLOATS];
-      for (int i = 0; i < HaarCascade.rect_ids; i++) {
+      rect_x1y1x2y2 = new int[rect_ids * RECT_INTS];
+      rect_w = new float[rect_ids * RECT_FLOATS];
+      for (int i = 0; i < rect_ids; i++) {
          Rect r = rect_instances.get(i);
-         HaarCascade.rect_w[i * HaarCascade.RECT_FLOATS + 0] = r.weight;
-         HaarCascade.rect_x1y1x2y2[i * HaarCascade.RECT_INTS + 0] = r.x1;
-         HaarCascade.rect_x1y1x2y2[i * HaarCascade.RECT_INTS + 1] = r.y1;
-         HaarCascade.rect_x1y1x2y2[i * HaarCascade.RECT_INTS + 2] = r.x2;
-         HaarCascade.rect_x1y1x2y2[i * HaarCascade.RECT_INTS + 3] = r.y2;
+         rect_w[i * RECT_FLOATS + 0] = r.weight;
+         rect_x1y1x2y2[i * RECT_INTS + 0] = r.x1;
+         rect_x1y1x2y2[i * RECT_INTS + 1] = r.y1;
+         rect_x1y1x2y2[i * RECT_INTS + 2] = r.x2;
+         rect_x1y1x2y2[i * RECT_INTS + 3] = r.y2;
       }
 
-      HaarCascade.feature_r1r2r3LnRn = new int[HaarCascade.feature_ids * HaarCascade.FEATURE_INTS];
-      HaarCascade.feature_LvRvThres = new float[HaarCascade.feature_ids * HaarCascade.FEATURE_FLOATS];
-      for (int i = 0; i < HaarCascade.feature_ids; i++) {
+      feature_r1r2r3LnRn = new int[feature_ids * FEATURE_INTS];
+      feature_LvRvThres = new float[feature_ids * FEATURE_FLOATS];
+      for (int i = 0; i < feature_ids; i++) {
          Feature f = feature_instances.get(i);
-         HaarCascade.feature_LvRvThres[i * HaarCascade.FEATURE_FLOATS + 0] = f.left_val;
-         HaarCascade.feature_LvRvThres[i * HaarCascade.FEATURE_FLOATS + 1] = f.right_val;
-         HaarCascade.feature_LvRvThres[i * HaarCascade.FEATURE_FLOATS + 2] = f.threshold;
-         HaarCascade.feature_r1r2r3LnRn[i * HaarCascade.FEATURE_INTS + 0] = (f.rects.size() > 0) ? f.rects.get(0).id : -1;
-         HaarCascade.feature_r1r2r3LnRn[i * HaarCascade.FEATURE_INTS + 1] = (f.rects.size() > 1) ? f.rects.get(1).id : -1;
-         HaarCascade.feature_r1r2r3LnRn[i * HaarCascade.FEATURE_INTS + 2] = (f.rects.size() > 2) ? f.rects.get(2).id : -1;
-         HaarCascade.feature_r1r2r3LnRn[i * HaarCascade.FEATURE_INTS + 3] = (f.left_node == -1) ? -1 : f.tree.features
-               .get(f.left_node).id;
-         HaarCascade.feature_r1r2r3LnRn[i * HaarCascade.FEATURE_INTS + 4] = (f.right_node == -1) ? -1 : f.tree.features
-               .get(f.right_node).id;
+         feature_LvRvThres[i * FEATURE_FLOATS + 0] = f.left_val;
+         feature_LvRvThres[i * FEATURE_FLOATS + 1] = f.right_val;
+         feature_LvRvThres[i * FEATURE_FLOATS + 2] = f.threshold;
+         feature_r1r2r3LnRn[i * FEATURE_INTS + 0] = (f.rects.size() > 0) ? f.rects.get(0).id : -1;
+         feature_r1r2r3LnRn[i * FEATURE_INTS + 1] = (f.rects.size() > 1) ? f.rects.get(1).id : -1;
+         feature_r1r2r3LnRn[i * FEATURE_INTS + 2] = (f.rects.size() > 2) ? f.rects.get(2).id : -1;
+         feature_r1r2r3LnRn[i * FEATURE_INTS + 3] = (f.left_node == -1) ? -1 : f.tree.features.get(f.left_node).id;
+         feature_r1r2r3LnRn[i * FEATURE_INTS + 4] = (f.right_node == -1) ? -1 : f.tree.features.get(f.right_node).id;
       }
 
-      HaarCascade.tree_startEnd = new int[HaarCascade.tree_ids * HaarCascade.TREE_INTS];
+      tree_startEnd = new int[tree_ids * TREE_INTS];
 
-      for (int i = 0; i < HaarCascade.tree_ids; i++) {
+      for (int i = 0; i < tree_ids; i++) {
          Tree t = tree_instances.get(i);
-         HaarCascade.tree_startEnd[i * HaarCascade.TREE_INTS + 0] = t.features.get(0).id;
-         HaarCascade.tree_startEnd[i * HaarCascade.TREE_INTS + 1] = t.features.get(t.features.size() - 1).id;
+         tree_startEnd[i * TREE_INTS + 0] = t.features.get(0).id;
+         tree_startEnd[i * TREE_INTS + 1] = t.features.get(t.features.size() - 1).id;
       }
 
-      HaarCascade.stage_startEnd = new int[HaarCascade.stage_ids * HaarCascade.STAGE_INTS];
-      HaarCascade.stage_thresh = new float[HaarCascade.stage_ids * HaarCascade.STAGE_FLOATS];
-      for (int i = 0; i < HaarCascade.stage_ids; i++) {
+      stage_startEnd = new int[stage_ids * STAGE_INTS];
+      stage_thresh = new float[stage_ids * STAGE_FLOATS];
+      for (int i = 0; i < stage_ids; i++) {
          Stage t = stage_instances.get(i);
-         HaarCascade.stage_startEnd[i * HaarCascade.STAGE_INTS + 0] = t.trees.get(0).id;
-         HaarCascade.stage_startEnd[i * HaarCascade.STAGE_INTS + 1] = t.trees.get(t.trees.size() - 1).id;
-         HaarCascade.stage_thresh[i * HaarCascade.STAGE_FLOATS + 0] = t.threshold;
+         stage_startEnd[i * STAGE_INTS + 0] = t.trees.get(0).id;
+         stage_startEnd[i * STAGE_INTS + 1] = t.trees.get(t.trees.size() - 1).id;
+         stage_thresh[i * STAGE_FLOATS + 0] = t.threshold;
       }
+   }
+
+   boolean pass(int stageId, int[] grayImage, int[] squares, int width, int height, int i, int j, float scale) {
+
+      float sum = 0;
+      for (int treeId = stage_startEnd[stageId * STAGE_INTS + 0]; treeId <= stage_startEnd[stageId * STAGE_INTS + 1]; treeId++) {
+
+         //  System.out.println("stage id " + stageId + "  tree id" + treeId);
+         int featureId = tree_startEnd[treeId * TREE_INTS + 0];
+         float thresh = 0f;
+         boolean done = false;
+         while (!done) {
+            //  System.out.println("feature id "+featureId);
+
+            int w = (int) (scale * this.width);
+            int h = (int) (scale * this.height);
+            double inv_area = 1. / (w * h);
+            //System.out.println("w2 : "+w2);
+            int total_x = grayImage[i + w + (j + h) * width] + grayImage[i + (j) * width] - grayImage[i + (j + h) * width]
+                  - grayImage[i + w + (j) * width];
+            int total_x2 = squares[i + w + (j + h) * width] + squares[i + (j) * width] - squares[i + (j + h) * width]
+                  - squares[i + w + (j) * width];
+            double moy = total_x * inv_area;
+            double vnorm = total_x2 * inv_area - moy * moy;
+            vnorm = (vnorm > 1) ? Math.sqrt(vnorm) : 1;
+            // System.out.println(vnorm);
+            int rect_sum = 0;
+            for (int r = 0; r < 3; r++) {
+               int rectId = feature_r1r2r3LnRn[featureId * FEATURE_INTS + r];
+               if (rectId != -1) {
+                  // System.out.println("rect " + r + " id " + rectId);
+                  int x1 = rect_x1y1x2y2[rectId * RECT_INTS + 0];
+                  int y1 = rect_x1y1x2y2[rectId * RECT_INTS + 1];
+                  int x2 = rect_x1y1x2y2[rectId * RECT_INTS + 2];
+                  int y2 = rect_x1y1x2y2[rectId * RECT_INTS + 3];
+                  float weight = rect_w[rectId * RECT_FLOATS + 0];
+                  int rx1 = i + (int) (scale * x1);
+                  int rx2 = i + (int) (scale * (x1 + y1));
+                  int ry1 = j + (int) (scale * x2);
+                  int ry2 = j + (int) (scale * (x2 + y2));
+                  //System.out.println((rx2-rx1)*(ry2-ry1)+" "+r.weight);
+                  rect_sum += (int) ((grayImage[rx2 + (ry2) * width] - grayImage[rx1 + (ry2) * width]
+                        - grayImage[rx2 + (ry1) * width] + grayImage[rx1 + (ry1) * width]) * weight);
+               }
+            }
+            // System.out.println(rect_sum);
+            double rect_sum2 = rect_sum * inv_area;
+
+            // System.out.println(rect_sum2+" "+ Feature.LvRvThres[featureId * Feature.FLOATS + 2]*vnorm);  
+
+            if (rect_sum2 < feature_LvRvThres[featureId * FEATURE_FLOATS + 2] * vnorm) {
+
+               int leftNodeId = feature_r1r2r3LnRn[featureId * FEATURE_INTS + 3];
+               if (leftNodeId == -1) {
+                  //  System.out.println("left-val");
+                  thresh = feature_LvRvThres[featureId * FEATURE_FLOATS + 0];
+                  done = true;
+               } else {
+                  // System.out.println("left");
+                  featureId = leftNodeId;
+               }
+            } else {
+               int rightNodeId = feature_r1r2r3LnRn[featureId * FEATURE_INTS + 4];
+               if (rightNodeId == -1) {
+                  // System.out.println("right-val");
+                  thresh = feature_LvRvThres[featureId * FEATURE_FLOATS + 1];
+                  done = true;
+               } else {
+                  //  System.out.println("right");
+                  featureId = rightNodeId;
+               }
+            }
+         }
+
+         sum += thresh;
+      }
+      //System.out.println(sum+" "+threshold);
+
+      return sum > stage_thresh[stageId * STAGE_FLOATS + 0];
+   }
+
+   public Rectangle getFeature(int[] grayImage, int[] squares, int width2, int height2, int i_final, int j_final,
+         float scale_final, int size_final) {
+      boolean pass = true;
+      Rectangle rectangle = null;
+      for (int stageId : stageIds) {
+         if (!pass(stageId, grayImage, squares, width2, height2, i_final, j_final, scale_final)) {
+            pass = false;
+            break;
+         }
+      }
+      if (pass) {
+
+         rectangle = new Rectangle(i_final, j_final, size_final, size_final);
+
+      }
+      return (rectangle);
    }
 
 }
