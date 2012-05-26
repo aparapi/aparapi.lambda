@@ -16,9 +16,15 @@ as the basis of an Aparapi example.
 **/
 
 import java.awt.Rectangle;
+import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorConvertOp;
+import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferByte;
+import java.awt.image.DataBufferInt;
 import java.io.File;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -69,49 +75,128 @@ public class Detector{
       final int width = image.getWidth();
       final int height = image.getHeight();
       final float maxScale = (Math.min((width + 0.f) / haarCascade.width, (height + 0.0f) / haarCascade.height));
-      final int[] imagePixels = new int[width * height];
+      // final int[] imagePixels = new int[width * height];
       final int[] grayImage = new int[width * height];
-      final int[] img = new int[width * height];
+      int[] img = new int[width * height];
       final int[] squares = new int[width * height];
       final StopWatch allTimer = new StopWatch("All");
       final StopWatch timer = new StopWatch();
       System.out.println(image);
-      timer.start();
-      for (int i = 0; i < width; i++) {
-         for (int j = 0; j < height; j++) {
-            imagePixels[i + j * width] = image.getRGB(i, j);
+
+      boolean javagrey = false;
+      if (javagrey) {
+         timer.start();
+         ColorSpace cs = ColorSpace.getInstance(ColorSpace.CS_GRAY);
+         ColorConvertOp op = new ColorConvertOp(cs, null);
+         image = op.filter(image, null);
+
+         // timer.print("greyimage");
+         DataBuffer dataBuffer = image.getRaster().getDataBuffer();
+         byte[] imagePixels = ((DataBufferByte) dataBuffer).getData();
+         boolean local = false;
+         if (local) {
+
+            for (int i = 0; i < width; i++) {
+               int col = 0;
+               int col2 = 0;
+               for (int j = i; j < height * width; j += width) {
+                  int value = imagePixels[j] & 0xff;
+                  if (doCannyPruning) img[j]=value;
+                  col += value;
+                  grayImage[j] = (i > 0 ? grayImage[j-1] : 0) + col; // NOT data parallel !
+                  col2 += value * value;
+                  squares[j] = (i > 0 ? squares[j-1] : 0) + col2; // NOT data parallel
+               }
+            }
+         } else {
+            //  System.out.println(image);
+            //  timer.print("greyimage");
+            // timer.start();
+            for (int i = 0; i < width; i++) {
+               int col = 0;
+               int col2 = 0;
+               for (int j = 0; j < height; j++) {
+                  int value = imagePixels[i + j * width] & 0xff;
+                  if (doCannyPruning) img[j]=value;
+                  col += value;
+                  grayImage[i + j * width] = (i > 0 ? grayImage[i - 1 + j * width] : 0) + col; // NOT data parallel !
+                  col2 += value * value;
+                  squares[i + j * width] = (i > 0 ? squares[i - 1 + j * width] : 0) + col2; // NOT data parallel
+               }
+            }
          }
-      }
-      timer.print("imagegrabber");
+         timer.print("grey and squares");
 
-      timer.start();
+      } else {
+         DataBuffer dataBuffer = image.getRaster().getDataBuffer();
+         if (dataBuffer instanceof DataBufferByte) {
+            // 
+            byte[] imagePixels = ((DataBufferByte) dataBuffer).getData();
+            
+            timer.start();
+            for (int i = 0; i < width; i++) {
+               int col = 0;
+               int col2 = 0;
+               for (int j = i; j < height*width; j+=width) {
+                  int red = imagePixels[0 + 3 * j] & 0xff;
+                  int green = imagePixels[1 + 3 * j] & 0xff;
+                  int blue = imagePixels[2 + 3 *j] & 0xff;
+                  int value = (30 * red + 59 * green + 11 * blue) / 100;
+                  if (doCannyPruning) img[j]=value;
+                  col += value;
+                  grayImage[j] = (i > 0 ? grayImage[j-1] : 0) + col; // NOT data parallel !
+                  col2 += value * value;
+                  squares[j] = (i > 0 ? squares[j-1] : 0) + col2; // NOT data parallel
+               }
+            }
 
-      for (int i = 0; i < width; i++) {
-         for (int j = 0; j < height; j++) {
-            int c = imagePixels[i + j * width];
-            int red = (c & 0x00ff0000) >> 16;
-            int green = (c & 0x0000ff00) >> 8;
-            int blue = c & 0x000000ff;
-            int value = (30 * red + 59 * green + 11 * blue) / 100;
-            img[i + j * width] = value;
+            timer.print("grey and squares byte");
+            
+         } else if (dataBuffer instanceof DataBufferInt) {
+            //byte[] imagePixels = ((DataBufferByte) dataBuffer).getData();
+            int imagePixels[] = null;
+            boolean raw = true;
+            timer.start();
+            if (raw) {
+               imagePixels = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
+            } else {
+               imagePixels = new int[width * height];
+               timer.start();
+               for (int i = 0; i < width; i++) {
+                  for (int j = 0; j < height; j++) {
+                     imagePixels[i + j * width] = image.getRGB(i, j);
+                  }
+               }
+              
+            }
+          
+
+         
+            timer.print("greyscaler int");
+            timer.start();
+            for (int i = 0; i < width; i++) {
+               int col = 0;
+               int col2 = 0;
+               for (int j = 0; j < height; j++) {
+                  
+                  int c = imagePixels[i + j * width] & 0xff;
+                  int red = (c & 0x00ff0000) >> 16;
+                  int green = (c & 0x0000ff00) >> 8;
+                  int blue = c & 0x000000ff;
+                  int value = (30 * red + 59 * green + 11 * blue) / 100; 
+                  if (doCannyPruning) img[j]=value;
+                  col += value;
+                  grayImage[i + j * width] = (i > 0 ? grayImage[i - 1 + j * width] : 0) + col; // NOT data parallel !
+                  col2 += value * value;
+                  squares[i + j * width] = (i > 0 ? squares[i - 1 + j * width] : 0) + col2; // NOT data parallel
+               }
+            }
+
+            timer.print("grey and squares int");
          }
-      }
-      timer.print("greyscaler");
-      timer.start();
+        
 
-      for (int i = 0; i < width; i++) {
-         int col = 0;
-         int col2 = 0;
-         for (int j = 0; j < height; j++) {
-            int value = img[i + j * width];
-            col += value;
-            grayImage[i + j * width] = (i > 0 ? grayImage[i - 1 + j * width] : 0) + col; // NOT data parallel !
-            col2 += value * value;
-            squares[i + j * width] = (i > 0 ? squares[i - 1 + j * width] : 0) + col2; // NOT data parallel
-         }
       }
-
-      timer.print("grey and squares");
 
       int[] cannyIsh = null;
       if (doCannyPruning) {
