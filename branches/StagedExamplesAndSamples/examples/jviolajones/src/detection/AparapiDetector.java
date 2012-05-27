@@ -39,10 +39,12 @@ public class AparapiDetector extends Detector{
       private int[] weightedGrayImage;
 
       private int[] weightedGrayImageSquared;
-      private int MAXFOUND=100;
-      
-      private int[] rects = new int[MAXFOUND*4];
-      private int[] found= new int[1];
+
+      private int MAXFOUND = 100;
+
+      private int[] rects = new int[MAXFOUND * 4];
+
+      private int[] found = new int[1];
 
       @Override public void run() {
 
@@ -50,8 +52,7 @@ public class AparapiDetector extends Detector{
 
          int j = getGlobalId(1) * scaledFeatureStep;
 
-         haarCascade.getFeature(weightedGrayImage, weightedGrayImageSquared, width, height, i, j, scale,
-               scaledFeatureWidth);
+         haarCascade.getFeature(weightedGrayImage, weightedGrayImageSquared, width, height, i, j, scale, scaledFeatureWidth);
 
       }
 
@@ -85,7 +86,7 @@ public class AparapiDetector extends Detector{
          final int scaledFeatureStep = (int) (scale * haarCascade.width * increment);
          final int scaledFeatureWidth = (int) (scale * haarCascade.width);
 
-         Range range = Range.create2D(width - scaledFeatureWidth, height-scaledFeatureWidth);
+         Range range = Range.create2D(width - scaledFeatureWidth, height - scaledFeatureWidth);
          kernel.set(width, height, scale, scaledFeatureWidth, scaledFeatureStep, weightedGrayImage, weightedGrayImageSquared);
          kernel.execute(range);
       }

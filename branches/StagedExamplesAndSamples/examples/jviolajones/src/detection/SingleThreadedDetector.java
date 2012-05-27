@@ -38,7 +38,6 @@ public class SingleThreadedDetector extends Detector{
          final float scale_f = scale;
 
          for (int i = 0; i < width - scaledFeatureWidth; i += scaledFeatureStep) {
-            
 
             for (int j = 0; j < height - scaledFeatureWidth; j += scaledFeatureStep) {
 
@@ -54,9 +53,9 @@ public class SingleThreadedDetector extends Detector{
                Rectangle rectangle = haarCascade.getFeature(weightedGrayImage, weightedGrayImageSquared, width, height, i, j,
                      scale_f, scaledFeatureWidth);
                if (rectangle != null) {
-                
-                     features.add(rectangle);
-                
+
+                  features.add(rectangle);
+
                }
             }
 
