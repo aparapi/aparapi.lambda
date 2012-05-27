@@ -50,7 +50,7 @@ public class Test extends JFrame{
       //  Detector detector = new Detector(haarCascade, 1f, 1.25f, 0.1f,true);
       //  Detector detector = new Detector(haarCascade, 1.2f, 1.1f, .05f,  false);
 
-      List<Rectangle> res = detector.getFaces(img.getAbsolutePath());
+      List<Rectangle> res = detector.getFeatures(img.getAbsolutePath());
 
       res = RectanglePruner.merge(res, 1);
 
