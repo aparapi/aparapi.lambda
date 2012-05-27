@@ -35,10 +35,20 @@ import javax.imageio.ImageIO;
 
 public class Detector{
 
-   HaarCascade haarCascade;
-
-   Detector(HaarCascade _haarCascade) {
+   final HaarCascade haarCascade;
+   final float baseScale;
+   final float scale_inc;
+   final float increment;
+   final int min_neighbors;
+   final boolean doCannyPruning;
+   Detector(HaarCascade _haarCascade, float _baseScale, float _scale_inc, float _increment, int _min_neighbors,
+         boolean _doCannyPruning) {
       haarCascade = _haarCascade;
+      baseScale = _baseScale;
+      scale_inc = _scale_inc;
+      increment = _increment;
+      min_neighbors = _min_neighbors;
+      doCannyPruning = _doCannyPruning;
    }
 
    /** Returns the list of detected objects in an image applying the Viola-Jones algorithm.
@@ -51,13 +61,12 @@ public class Detector{
     * @param increment The shift of the window at each sub-step, in terms of percentage of the window size.
     * @return the list of rectangles containing searched objects, expressed in pixels.
     */
-   public List<Rectangle> getFaces(String file, float baseScale, float scale_inc, float increment, int min_neighbors,
-         boolean doCannyPruning) {
+   public List<Rectangle> getFaces(String file) {
 
       try {
          BufferedImage image = ImageIO.read(new File(file));
 
-         return getFaces(image, baseScale, scale_inc, increment, min_neighbors, doCannyPruning);
+         return getFaces(image);
       } catch (IOException e) {
          // TODO Auto-generated catch block
          e.printStackTrace();
@@ -67,14 +76,13 @@ public class Detector{
 
    }
 
-   public List<Rectangle> getFaces(BufferedImage image, float baseScale, float scale_inc, float increment, int min_neighbors,
-         final boolean doCannyPruning) {
+   public List<Rectangle> getFaces(BufferedImage image) {
 
       final List<Rectangle> ret = new ArrayList<Rectangle>();
       final int width = image.getWidth();
       final int height = image.getHeight();
       final float maxScale = (Math.min((width + 0.f) / haarCascade.width, (height + 0.0f) / haarCascade.height));
-      // final int[] imagePixels = new int[width * height];
+     
       final int[] grayImage = new int[width * height];
       int[] img = new int[width * height];
       final int[] squares = new int[width * height];
