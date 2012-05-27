@@ -24,7 +24,6 @@ import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferInt;
 import java.io.File;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -93,7 +92,7 @@ public class Detector{
          // timer.print("greyimage");
          DataBuffer dataBuffer = image.getRaster().getDataBuffer();
          byte[] imagePixels = ((DataBufferByte) dataBuffer).getData();
-         boolean local = false;
+         boolean local = true;
          if (local) {
 
             for (int i = 0; i < width; i++) {
@@ -101,11 +100,12 @@ public class Detector{
                int col2 = 0;
                for (int j = i; j < height * width; j += width) {
                   int value = imagePixels[j] & 0xff;
-                  if (doCannyPruning) img[j]=value;
+                  if (doCannyPruning)
+                     img[j] = value;
                   col += value;
-                  grayImage[j] = (i > 0 ? grayImage[j-1] : 0) + col; // NOT data parallel !
+                  grayImage[j] = (i > 0 ? grayImage[j - 1] : 0) + col; // NOT data parallel !
                   col2 += value * value;
-                  squares[j] = (i > 0 ? squares[j-1] : 0) + col2; // NOT data parallel
+                  squares[j] = (i > 0 ? squares[j - 1] : 0) + col2; // NOT data parallel
                }
             }
          } else {
@@ -117,7 +117,8 @@ public class Detector{
                int col2 = 0;
                for (int j = 0; j < height; j++) {
                   int value = imagePixels[i + j * width] & 0xff;
-                  if (doCannyPruning) img[j]=value;
+                  if (doCannyPruning)
+                     img[j] = value;
                   col += value;
                   grayImage[i + j * width] = (i > 0 ? grayImage[i - 1 + j * width] : 0) + col; // NOT data parallel !
                   col2 += value * value;
@@ -132,26 +133,50 @@ public class Detector{
          if (dataBuffer instanceof DataBufferByte) {
             // 
             byte[] imagePixels = ((DataBufferByte) dataBuffer).getData();
-            
+
             timer.start();
-            for (int i = 0; i < width; i++) {
-               int col = 0;
-               int col2 = 0;
-               for (int j = i; j < height*width; j+=width) {
-                  int red = imagePixels[0 + 3 * j] & 0xff;
-                  int green = imagePixels[1 + 3 * j] & 0xff;
-                  int blue = imagePixels[2 + 3 *j] & 0xff;
-                  int value = (30 * red + 59 * green + 11 * blue) / 100;
-                  if (doCannyPruning) img[j]=value;
-                  col += value;
-                  grayImage[j] = (i > 0 ? grayImage[j-1] : 0) + col; // NOT data parallel !
-                  col2 += value * value;
-                  squares[j] = (i > 0 ? squares[j-1] : 0) + col2; // NOT data parallel
+            if (false) {
+
+               for (int i = 0; i < width; i++) {
+                  int col = 0;
+                  int col2 = 0;
+                  for (int j = i; j < height * width; j += width) {
+                     int red = imagePixels[0 + 3 * j] & 0xff;
+                     int green = imagePixels[1 + 3 * j] & 0xff;
+                     int blue = imagePixels[2 + 3 * j] & 0xff;
+                     int value = (30 * red + 59 * green + 11 * blue) / 100;
+                     if (doCannyPruning)
+                        img[j] = value;
+                     col += value;
+                     grayImage[j] = (i > 0 ? grayImage[j - 1] : 0) + col; // NOT data parallel !
+                     col2 += value * value;
+                     squares[j] = (i > 0 ? squares[j - 1] : 0) + col2; // NOT data parallel
+                  }
                }
+            } else {
+
+               for (int j = 0; j < height; j++) {
+
+                  int col = 0;
+                  int col2 = 0;
+                  for (int i = 0; i < width; i++) {
+                     int red = imagePixels[0 + 3 * (i + j * width)] & 0xff;
+                     int green = imagePixels[1 + 3 * (i + j * width)] & 0xff;
+                     int blue = imagePixels[2 + 3 * (i + j * width)] & 0xff;
+                     int value = (30 * red + 59 * green + 11 * blue) / 100;
+                     if (doCannyPruning)
+                        img[(i + j * width)] = value;
+                     col += value;
+                     grayImage[(i + j * width)] = (j > 0 ? grayImage[(i + j * width) - width] : 0) + col; // NOT data parallel !
+                     col2 += value * value;
+                     squares[(i + j * width)] = (j > 0 ? squares[(i + j * width) - width] : 0) + col2; // NOT data parallel
+                  }
+               }
+
             }
 
             timer.print("grey and squares byte");
-            
+
          } else if (dataBuffer instanceof DataBufferInt) {
             //byte[] imagePixels = ((DataBufferByte) dataBuffer).getData();
             int imagePixels[] = null;
@@ -167,24 +192,23 @@ public class Detector{
                      imagePixels[i + j * width] = image.getRGB(i, j);
                   }
                }
-              
-            }
-          
 
-         
+            }
+
             timer.print("greyscaler int");
             timer.start();
             for (int i = 0; i < width; i++) {
                int col = 0;
                int col2 = 0;
                for (int j = 0; j < height; j++) {
-                  
+
                   int c = imagePixels[i + j * width] & 0xff;
                   int red = (c & 0x00ff0000) >> 16;
                   int green = (c & 0x0000ff00) >> 8;
                   int blue = c & 0x000000ff;
-                  int value = (30 * red + 59 * green + 11 * blue) / 100; 
-                  if (doCannyPruning) img[j]=value;
+                  int value = (30 * red + 59 * green + 11 * blue) / 100;
+                  if (doCannyPruning)
+                     img[j] = value;
                   col += value;
                   grayImage[i + j * width] = (i > 0 ? grayImage[i - 1 + j * width] : 0) + col; // NOT data parallel !
                   col2 += value * value;
@@ -194,7 +218,6 @@ public class Detector{
 
             timer.print("grey and squares int");
          }
-        
 
       }
 
@@ -323,9 +346,9 @@ public class Detector{
 
    }
 
-   public List<java.awt.Rectangle> merge(List<java.awt.Rectangle> rects, int min_neighbors) {
+   public List<Rectangle> merge(List<Rectangle> rects, int min_neighbors) {
 
-      List<java.awt.Rectangle> retour = new LinkedList<java.awt.Rectangle>();
+      List<Rectangle> retour = new LinkedList<Rectangle>();
       int[] ret = new int[rects.size()];
       int nb_classes = 0;
       for (int i = 0; i < rects.size(); i++) {
