@@ -238,8 +238,8 @@ public class HaarCascade{
                Element rectsElement = featureElement.getChild("feature").getChild("rects");
                for (Element rectElement : new Itr(rectsElement)) {
                   String[] rectValues = rectElement.getTextTrim().split(" ");
-                  Rect rect = new Rect(rect_ids++, Integer.parseInt(rectValues[0]), Integer.parseInt(rectValues[1]),
-                        Integer.parseInt(rectValues[2]), Integer.parseInt(rectValues[3]), Float.parseFloat(rectValues[4]));
+                  Rect rect = new Rect(rect_ids++, Integer.parseInt(rectValues[0]), Integer.parseInt(rectValues[1]), Integer
+                        .parseInt(rectValues[2]), Integer.parseInt(rectValues[3]), Float.parseFloat(rectValues[4]));
                   rect_instances.add(feature.add(rect));
                }
             }

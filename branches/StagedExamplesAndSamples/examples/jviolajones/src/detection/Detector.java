@@ -22,15 +22,11 @@ import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferInt;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
 
-public class Detector{
+public abstract class Detector{
 
    final HaarCascade haarCascade;
 
@@ -168,50 +164,7 @@ public class Detector{
       return (ret);
    }
 
-   List<Rectangle> getFeatures(final int width, final int height, float maxScale, final int[] weightedGrayImage,
-         final int[] weightedGrayImageSquared, final int[] cannyIntegral) {
-      final List<Rectangle> ret = new ArrayList<Rectangle>();
-      ExecutorService threadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-      for (float scale = baseScale; scale < maxScale; scale *= scale_inc) {
-         final int step_f = (int) (scale * haarCascade.width * increment);
-         final int size_f = (int) (scale * haarCascade.width);
-         final float scale_f = scale;
-
-         for (int i = 0; i < width - size_f; i += step_f) {
-            final int i_f = i;
-            threadPool.execute(new Runnable(){
-               public void run() {
-                  for (int j = 0; j < height - size_f; j += step_f) {
-
-                     if (cannyIntegral != null) {
-                        int edges_density = cannyIntegral[i_f + size_f + (j + size_f) * width] + cannyIntegral[i_f + (j) * width]
-                              - cannyIntegral[i_f + (j + size_f) * width] - cannyIntegral[i_f + size_f + (j) * width];
-                        int d = edges_density / size_f / size_f;
-                        if (d < 20 || d > 100)
-                           continue;
-                     }
-
-                     Rectangle rectangle = haarCascade.getFeature(weightedGrayImage, weightedGrayImageSquared, width, height, i_f,
-                           j, scale_f, size_f);
-                     if (rectangle != null) {
-                        synchronized (ret) {
-                           ret.add(rectangle);
-                        }
-                     }
-                  }
-               }
-            });
-         }
-      }
-      threadPool.shutdown(); // we won't add anymore
-      try {
-         threadPool.awaitTermination(60, TimeUnit.SECONDS);
-      } catch (InterruptedException e) {
-         // TODO Auto-generated catch block
-         e.printStackTrace();
-      }
-      return (ret);
-
-   }
+   abstract List<Rectangle> getFeatures(final int width, final int height, float maxScale, final int[] weightedGrayImage,
+         final int[] weightedGrayImageSquared, final int[] cannyIntegral);
 
 }
