@@ -46,10 +46,11 @@ public class Test extends JFrame{
       Dessin d = new Dessin(image);
       HaarCascade haarCascade = HaarCascade.create(XMLFile);
 
-      Detector detector = new Detector(haarCascade);
-      // List<Rectangle> res=detector.getFaces(img.getAbsolutePath(), 1, 1.25f, 0.1f,1,true);
-      List<Rectangle> res = detector.getFaces(img.getAbsolutePath(), 1, 2f, 0.1f, 1, false);
-      // List<Rectangle> res = detector.getFaces(img.getAbsolutePath(), 1.2f, 1.1f, .05f, 2, false);
+      Detector detector = new Detector(haarCascade, 1, 2f, 0.1f, 1, false);
+    //  Detector detector = new Detector(haarCascade, 1, 1.25f, 0.1f,1,true);
+      //  Detector detector = new Detector(haarCascade, 1.2f, 1.1f, .05f, 2, false);
+      
+      List<Rectangle> res = detector.getFaces(img.getAbsolutePath());
 
       System.out.println(res.size() + " faces found!");
       d.setRects(res);
