@@ -48,6 +48,14 @@ public class AparapiDetector extends Detector{
 
    @Override List<Rectangle> getFeatures(final int width, final int height, float maxScale, final int[] weightedGrayImage,
          final int[] weightedGrayImageSquared, final int[] cannyIntegral) {
+      
+      for (float scale = baseScale; scale < maxScale; scale *= scale_inc) {
+         final int scaledFeatureStep = (int) (scale * haarCascade.width * increment);
+         final int scaledFeatureWidth = (int) (scale * haarCascade.width);
+         final float scale_f = scale;
+         Range range = Range.create2D(width, height);
+      }
+      
       Range range = Range.create2D(width, height);
       final List<Rectangle> ret = new ArrayList<Rectangle>();
       kernel.set(width, height, maxScale, weightedGrayImage, weightedGrayImageSquared);
