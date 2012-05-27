@@ -65,12 +65,12 @@ public class Detector{
     * @param increment The shift of the window at each sub-step, in terms of percentage of the window size.
     * @return the list of rectangles containing searched objects, expressed in pixels.
     */
-   public List<Rectangle> getFaces(String file) {
+   public List<Rectangle> getFeatures(String file) {
 
       try {
          BufferedImage image = ImageIO.read(new File(file));
 
-         return getFaces(image);
+         return getFeatures(image);
       } catch (IOException e) {
          // TODO Auto-generated catch block
          e.printStackTrace();
@@ -80,9 +80,8 @@ public class Detector{
 
    }
 
-   public List<Rectangle> getFaces(BufferedImage image) {
+   public List<Rectangle> getFeatures(BufferedImage image) {
 
-      final List<Rectangle> ret = new ArrayList<Rectangle>();
       final int width = image.getWidth();
       final int height = image.getHeight();
       final float maxScale = (Math.min((width + 0.f) / haarCascade.width, (height + 0.0f) / haarCascade.height));
@@ -162,7 +161,16 @@ public class Detector{
 
       StopWatch faceDetectTimer = new StopWatch("face detection");
       faceDetectTimer.start();
+      final List<Rectangle> ret = getFeatures(width, height, maxScale, weightedGrayImage, weightedGrayImageSquared, cannyIntegral);
 
+      faceDetectTimer.stop();
+      allTimer.stop();
+      return (ret);
+   }
+
+   List<Rectangle> getFeatures(final int width, final int height, float maxScale, final int[] weightedGrayImage,
+         final int[] weightedGrayImageSquared, final int[] cannyIntegral) {
+      final List<Rectangle> ret = new ArrayList<Rectangle>();
       ExecutorService threadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
       for (float scale = baseScale; scale < maxScale; scale *= scale_inc) {
          final int step_f = (int) (scale * haarCascade.width * increment);
@@ -202,10 +210,8 @@ public class Detector{
          // TODO Auto-generated catch block
          e.printStackTrace();
       }
-
-      faceDetectTimer.stop();
-      allTimer.stop();
       return (ret);
+
    }
 
 }
