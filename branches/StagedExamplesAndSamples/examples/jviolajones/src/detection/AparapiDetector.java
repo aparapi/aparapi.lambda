@@ -45,19 +45,37 @@ public class AparapiDetector extends Detector{
       private int[] rects = new int[MAXFOUND * 4];
 
       private int[] found = new int[1];
+      
+      private List<Rectangle> features;
 
       @Override public void run() {
 
          int i = getGlobalId(0) * scaledFeatureStep;
 
          int j = getGlobalId(1) * scaledFeatureStep;
+         
+         if (i < width - scaledFeatureWidth ){
+            if ( j < height - scaledFeatureWidth ){
+               
+               Rectangle rectangle = haarCascade.getFeature(weightedGrayImage, weightedGrayImageSquared, width, height, i, j,
+                     scale, scaledFeatureWidth);
+               if (rectangle != null) {
 
-         haarCascade.getFeature(weightedGrayImage, weightedGrayImageSquared, width, height, i, j, scale, scaledFeatureWidth);
+                  features.add(rectangle);
+
+               }
+           
+            }else{
+              // System.out.println("out j "+j);
+            }
+         }else{
+           // System.out.println("out i"+i);
+         }
 
       }
 
       public void set(int _width, int _height, float _scale, int _scaledFeatureWidth, int _scaledFeatureStep,
-            int[] _weightedGrayImage, int[] _weightedGreyImageSquared) {
+            int[] _weightedGrayImage, int[] _weightedGreyImageSquared,List<Rectangle> _features) {
          width = _width;
          height = _height;
          scale = _scale;
@@ -66,6 +84,7 @@ public class AparapiDetector extends Detector{
 
          weightedGrayImage = _weightedGrayImage;
          weightedGrayImageSquared = _weightedGreyImageSquared;
+         features = _features;
 
       }
 
@@ -81,19 +100,20 @@ public class AparapiDetector extends Detector{
 
    @Override List<Rectangle> getFeatures(final int width, final int height, float maxScale, final int[] weightedGrayImage,
          final int[] weightedGrayImageSquared, final int[] cannyIntegral) {
-
+      final List<Rectangle> features = new ArrayList<Rectangle>();
       for (float scale = baseScale; scale < maxScale; scale *= scale_inc) {
          final int scaledFeatureStep = (int) (scale * haarCascade.width * increment);
          final int scaledFeatureWidth = (int) (scale * haarCascade.width);
 
-         Range range = Range.create2D(width - scaledFeatureWidth, height - scaledFeatureWidth);
-         kernel.set(width, height, scale, scaledFeatureWidth, scaledFeatureStep, weightedGrayImage, weightedGrayImageSquared);
+         Range range = Range.create2D(width- scaledFeatureWidth, height -scaledFeatureWidth);
+         System.out.println(range);
+         kernel.set(width, height, scale, scaledFeatureWidth, scaledFeatureStep, weightedGrayImage, weightedGrayImageSquared, features);
          kernel.execute(range);
       }
 
-      final List<Rectangle> ret = new ArrayList<Rectangle>();
+     
 
-      return (ret);
+      return (features);
    }
 
 }
