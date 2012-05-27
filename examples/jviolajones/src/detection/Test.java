@@ -46,7 +46,7 @@ public class Test extends JFrame{
       Dessin d = new Dessin(image);
       HaarCascade haarCascade = HaarCascade.create(XMLFile);
 
-      Detector detector = new SingleThreadedDetector(haarCascade, 1f, 2f, 0.1f, false);
+      Detector detector = new AparapiDetector(haarCascade, 1f, 2f, 0.1f, false);
       //  Detector detector = new Detector(haarCascade, 1f, 1.25f, 0.1f,true);
       //  Detector detector = new Detector(haarCascade, 1.2f, 1.1f, .05f,  false);
 
