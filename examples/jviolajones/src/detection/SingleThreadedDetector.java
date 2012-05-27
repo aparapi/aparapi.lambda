@@ -3,9 +3,6 @@ package detection;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 /**
 This project is based on the open source jviolajones project created by Simon
