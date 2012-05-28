@@ -80,7 +80,7 @@ public abstract class Detector{
 
       final int width = image.getWidth();
       final int height = image.getHeight();
-      final float maxScale = (Math.min((width + 0.f) / haarCascade.width, (height + 0.0f) / haarCascade.height));
+      final float maxScale = (Math.min((width + 0.f) / haarCascade.cascadeWidth, (height + 0.0f) / haarCascade.cascadeHeight));
       final int[] grayImage = new int[width * height];
       final int[] weightedGrayImage = new int[width * height];
       final int[] weightedGrayImageSquared = new int[width * height];

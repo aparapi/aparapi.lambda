@@ -34,8 +34,8 @@ public class MultiThreadedDetector extends Detector{
       final List<Rectangle> features = new ArrayList<Rectangle>();
       ExecutorService threadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
       for (float scale = baseScale; scale < maxScale; scale *= scale_inc) {
-         final int scaledFeatureStep = (int) (scale * haarCascade.width * increment);
-         final int scaledFeatureWidth = (int) (scale * haarCascade.width);
+         final int scaledFeatureStep = (int) (scale * haarCascade.cascadeWidth * increment);
+         final int scaledFeatureWidth = (int) (scale * haarCascade.cascadeWidth);
          final float scale_f = scale;
 
          for (int i = 0; i < width - scaledFeatureWidth; i += scaledFeatureStep) {

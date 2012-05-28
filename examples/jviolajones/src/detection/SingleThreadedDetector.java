@@ -29,14 +29,16 @@ public class SingleThreadedDetector extends Detector{
    @Override List<Rectangle> getFeatures(final int width, final int height, float maxScale, final int[] weightedGrayImage,
          final int[] weightedGrayImageSquared, final int[] cannyIntegral) {
       final List<Rectangle> features = new ArrayList<Rectangle>();
+      int maxi = 0, maxj = 0;
       for (float scale = baseScale; scale < maxScale; scale *= scale_inc) {
-         final int scaledFeatureStep = (int) (scale * haarCascade.width * increment);
-         final int scaledFeatureWidth = (int) (scale * haarCascade.width);
+         final int scaledFeatureStep = (int) (scale * haarCascade.cascadeWidth * increment);
+         final int scaledFeatureWidth = (int) (scale * haarCascade.cascadeWidth);
          final float scale_f = scale;
 
          for (int i = 0; i < width - scaledFeatureWidth; i += scaledFeatureStep) {
-
+            maxi = Math.max(maxi, i);
             for (int j = 0; j < height - scaledFeatureWidth; j += scaledFeatureStep) {
+               maxj = Math.max(maxj, j);
 
                if (cannyIntegral != null) {
                   int edges_density = cannyIntegral[i + scaledFeatureWidth + (j + scaledFeatureWidth) * width]
@@ -58,6 +60,7 @@ public class SingleThreadedDetector extends Detector{
 
          }
       }
+      System.out.println("max i=" + maxi + " j=" + maxj + " width=" + width + " height=" + height);
 
       return (features);
 
