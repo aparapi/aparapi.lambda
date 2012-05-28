@@ -28,8 +28,6 @@ public class AparapiDetector extends Detector{
 
       private int width;
 
-      private int height;
-
       private int scaledFeatureWidth;
 
       private int scaledFeatureStep;
@@ -46,12 +44,7 @@ public class AparapiDetector extends Detector{
 
       private int[] found = new int[1];
 
-      private List<Rectangle> features;
-
-      //  final private int[] stageIds;
       final private int stage_ids;
-
-      // final private int tree_ids;
 
       final private int[] tree_startEnd;
 
@@ -86,7 +79,6 @@ public class AparapiDetector extends Detector{
       final int cascadeHeight;
 
       public DetectorKernel(HaarCascade _haarCascade) {
-         //  stageIds=_haarCascade.stageIds;
          stage_ids = _haarCascade.stage_ids;
          stage_startEnd = _haarCascade.stage_startEnd;
          stage_thresh = _haarCascade.stage_thresh;
@@ -97,7 +89,6 @@ public class AparapiDetector extends Detector{
          STAGE_FLOATS = HaarCascade.STAGE_FLOATS;
          STAGE_INTS = HaarCascade.STAGE_INTS;
          TREE_INTS = HaarCascade.TREE_INTS;
-         //  tree_ids = _haarCascade.tree_ids;
          tree_startEnd = _haarCascade.tree_startEnd;
          feature_r1r2r3LnRn = _haarCascade.feature_r1r2r3LnRn;
          feature_LvRvThres = _haarCascade.feature_LvRvThres;
@@ -107,35 +98,29 @@ public class AparapiDetector extends Detector{
          cascadeHeight = _haarCascade.cascadeHeight;
       }
 
-      boolean pass(int stageId, int[] grayImage, int[] squares, int width, int height, int i, int j, float scale) {
+      boolean pass(int stageId,  int i, int j) {
 
          float sum = 0;
          for (int treeId = stage_startEnd[stageId * STAGE_INTS + 0]; treeId <= stage_startEnd[stageId * STAGE_INTS + 1]; treeId++) {
-
-            //  System.out.println("stage id " + stageId + "  tree id" + treeId);
             int featureId = tree_startEnd[treeId * TREE_INTS + 0];
             float thresh = 0f;
             boolean done = false;
             while (!done) {
-               //  System.out.println("feature id "+featureId);
 
                int w = (int) (scale * cascadeWidth);
                int h = (int) (scale * cascadeHeight);
                float inv_area = 1f / (w * h);
-               //System.out.println("w2 : "+w2);
-               int total_x = grayImage[i + w + (j + h) * width] + grayImage[i + (j) * width] - grayImage[i + (j + h) * width]
-                     - grayImage[i + w + (j) * width];
-               int total_x2 = squares[i + w + (j + h) * width] + squares[i + (j) * width] - squares[i + (j + h) * width]
-                     - squares[i + w + (j) * width];
+               int total_x = weightedGrayImage[i + w + (j + h) * width] + weightedGrayImage[i + (j) * width] - weightedGrayImage[i + (j + h) * width]
+                     - weightedGrayImage[i + w + (j) * width];
+               int total_x2 = weightedGrayImageSquared[i + w + (j + h) * width] + weightedGrayImageSquared[i + (j) * width] - weightedGrayImageSquared[i + (j + h) * width]
+                     - weightedGrayImageSquared[i + w + (j) * width];
                float moy = total_x * inv_area;
                float vnorm = total_x2 * inv_area - moy * moy;
                vnorm = (vnorm > 1) ? sqrt(vnorm) : 1;
-               // System.out.println(vnorm);
                int rect_sum = 0;
                for (int r = 0; r < 3; r++) {
                   int rectId = feature_r1r2r3LnRn[featureId * FEATURE_INTS + r];
                   if (rectId != -1) {
-                     // System.out.println("rect " + r + " id " + rectId);
                      int x1 = rect_x1y1x2y2[rectId * RECT_INTS + 0];
                      int y1 = rect_x1y1x2y2[rectId * RECT_INTS + 1];
                      int x2 = rect_x1y1x2y2[rectId * RECT_INTS + 2];
@@ -145,35 +130,28 @@ public class AparapiDetector extends Detector{
                      int rx2 = i + (int) (scale * (x1 + y1));
                      int ry1 = j + (int) (scale * x2);
                      int ry2 = j + (int) (scale * (x2 + y2));
-                     //System.out.println((rx2-rx1)*(ry2-ry1)+" "+r.weight);
-                     rect_sum += (int) ((grayImage[rx2 + (ry2) * width] - grayImage[rx1 + (ry2) * width]
-                           - grayImage[rx2 + (ry1) * width] + grayImage[rx1 + (ry1) * width]) * weight);
+                     rect_sum += (int) ((weightedGrayImage[rx2 + (ry2) * width] - weightedGrayImage[rx1 + (ry2) * width]
+                           - weightedGrayImage[rx2 + (ry1) * width] + weightedGrayImage[rx1 + (ry1) * width]) * weight);
                   }
                }
-               // System.out.println(rect_sum);
                float rect_sum2 = rect_sum * inv_area;
-
-               // System.out.println(rect_sum2+" "+ Feature.LvRvThres[featureId * Feature.FLOATS + 2]*vnorm);  
+ 
 
                if (rect_sum2 < feature_LvRvThres[featureId * FEATURE_FLOATS + 2] * vnorm) {
 
                   int leftNodeId = feature_r1r2r3LnRn[featureId * FEATURE_INTS + 3];
                   if (leftNodeId == -1) {
-                     //  System.out.println("left-val");
                      thresh = feature_LvRvThres[featureId * FEATURE_FLOATS + 0];
                      done = true;
                   } else {
-                     // System.out.println("left");
                      featureId = leftNodeId;
                   }
                } else {
                   int rightNodeId = feature_r1r2r3LnRn[featureId * FEATURE_INTS + 4];
                   if (rightNodeId == -1) {
-                     // System.out.println("right-val");
                      thresh = feature_LvRvThres[featureId * FEATURE_FLOATS + 1];
                      done = true;
                   } else {
-                     //  System.out.println("right");
                      featureId = rightNodeId;
                   }
                }
@@ -181,51 +159,43 @@ public class AparapiDetector extends Detector{
 
             sum += thresh;
          }
-         //System.out.println(sum+" "+threshold);
 
          return sum > stage_thresh[stageId * STAGE_FLOATS + 0];
       }
 
-      public void getFeature(int[] grayImage, int[] squares, int width2, int height2, int i_final, int j_final, float scale_final,
-            int size_final) {
+    
+
+      @Override public void run() {
+         int i = getGlobalId(0) * scaledFeatureStep;
+         int j = getGlobalId(1) * scaledFeatureStep;
+      
+
          boolean pass = true;
-         // Rectangle rectangle = null;
          for (int stageId = 0; pass == true && stageId < stage_ids; stageId++) {
 
-            if (!pass(stageId, grayImage, squares, width2, height2, i_final, j_final, scale_final)) {
+            if (!pass(stageId,  i, j)) {
                pass = false;
 
             }
          }
          if (pass) {
             int value = atomicAdd(found, 0, 1);
-            // System.out.println("value ="+value);
-            rects[value * 4 + 0] = i_final;
-            rects[value * 4 + 1] = j_final;
-            rects[value * 4 + 2] = size_final;
-            rects[value * 4 + 3] = size_final;
+            rects[value * 4 + 0] = i;
+            rects[value * 4 + 1] = j;
+            rects[value * 4 + 2] = scaledFeatureWidth;
+            rects[value * 4 + 3] = scaledFeatureWidth;
          }
 
       }
 
-      @Override public void run() {
-         int i = getGlobalId(0) * scaledFeatureStep;
-         int j = getGlobalId(1) * scaledFeatureStep;
-         //  System.out.println("i="+i+"  j="+j);
-         getFeature(weightedGrayImage, weightedGrayImageSquared, width, height, i, j, scale, scaledFeatureWidth);
-
-      }
-
-      public void set(int _width, int _height, float _scale, int _scaledFeatureWidth, int _scaledFeatureStep,
-            int[] _weightedGrayImage, int[] _weightedGreyImageSquared, List<Rectangle> _features) {
+      public void set(int _width,  float _scale, int _scaledFeatureWidth, int _scaledFeatureStep,
+            int[] _weightedGrayImage, int[] _weightedGreyImageSquared) {
          width = _width;
-         height = _height;
          scale = _scale;
          scaledFeatureWidth = _scaledFeatureWidth;
          scaledFeatureStep = _scaledFeatureStep;
          weightedGrayImage = _weightedGrayImage;
          weightedGrayImageSquared = _weightedGreyImageSquared;
-         features = _features;
 
       }
 
@@ -252,8 +222,7 @@ public class AparapiDetector extends Detector{
                / scaledFeatureStep);
          System.out.println(range);
          kernel.found[0] = 0;
-         kernel.set(width, height, scale, scaledFeatureWidth, scaledFeatureStep, weightedGrayImage, weightedGrayImageSquared,
-               features);
+         kernel.set(width,  scale, scaledFeatureWidth, scaledFeatureStep, weightedGrayImage, weightedGrayImageSquared);
          kernel.execute(range);
          System.out.println(kernel.getExecutionMode() + " " + kernel.getConversionTime());
          System.out.println(kernel.getExecutionMode() + " " + kernel.getExecutionTime());
