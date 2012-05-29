@@ -21,7 +21,7 @@ as the basis of an Aparapi example.
 
 public class SingleThreadedDetector extends Detector{
 
-   SingleThreadedDetector(HaarCascade haarCascade, float baseScale, float scaleInc, float increment, boolean doCannyPruning) {
+   public SingleThreadedDetector(HaarCascade haarCascade, float baseScale, float scaleInc, float increment, boolean doCannyPruning) {
       super(haarCascade, baseScale, scaleInc, increment, doCannyPruning);
       // TODO Auto-generated constructor stub
    }

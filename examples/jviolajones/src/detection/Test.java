@@ -51,7 +51,7 @@ public class Test extends JFrame{
       //  Detector detector = new Detector(haarCascade, 1.2f, 1.1f, .05f,  false);
 
       List<Rectangle> res = detector.getFeatures(img.getAbsolutePath());
-
+       res = detector.getFeatures(img.getAbsolutePath());
       res = RectanglePruner.merge(res, 1);
 
       System.out.println(res.size() + " faces found!");

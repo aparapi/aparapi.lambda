@@ -19,6 +19,7 @@ import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.amd.aparapi.Device;
 import com.amd.aparapi.Kernel;
 import com.amd.aparapi.Range;
 
@@ -38,7 +39,7 @@ public class AparapiDetector extends Detector{
 
       private int[] weightedGrayImageSquared;
 
-      private int MAXFOUND = 100;
+      private int MAXFOUND = 1000;
 
       private int[] rects = new int[MAXFOUND * 4];
 
@@ -192,13 +193,14 @@ public class AparapiDetector extends Detector{
    }
 
    DetectorKernel kernel;
+   private Device device;
 
-   AparapiDetector(HaarCascade haarCascade, float baseScale, float scaleInc, float increment, boolean doCannyPruning) {
+   public AparapiDetector(HaarCascade haarCascade, float baseScale, float scaleInc, float increment, boolean doCannyPruning) {
       super(haarCascade, baseScale, scaleInc, increment, doCannyPruning);
-
+      device = Device.best();
       kernel = new DetectorKernel(haarCascade);
       kernel.setExplicit(true);
-      kernel.setExecutionMode(Kernel.EXECUTION_MODE.GPU);
+     // kernel.setExecutionMode(Kernel.EXECUTION_MODE.JTP);
    }
 
    @Override List<Rectangle> getFeatures(final int width, final int height, float maxScale, final int[] weightedGrayImage,
@@ -208,14 +210,18 @@ public class AparapiDetector extends Detector{
          final int scaledFeatureStep = (int) (scale * haarCascade.cascadeWidth * increment);
          final int scaledFeatureWidth = (int) (scale * haarCascade.cascadeWidth);
 
-         Range range = Range.create2D((width - scaledFeatureWidth) / scaledFeatureStep, (height - scaledFeatureWidth)
+         Range range = device.createRange2D((width - scaledFeatureWidth) / scaledFeatureStep, (height - scaledFeatureWidth)
                / scaledFeatureStep);
-         System.out.println(range);
+         
+        // Range range = Range.create2D((width - scaledFeatureWidth) / scaledFeatureStep, (height - scaledFeatureWidth)
+              // / scaledFeatureStep);
+    //     System.out.println(range);
          kernel.found[0] = 0;
+         kernel.put(kernel.found);
          kernel.set(width,  scale, scaledFeatureWidth, scaledFeatureStep, weightedGrayImage, weightedGrayImageSquared);
          kernel.execute(range);
-         System.out.println(kernel.getExecutionMode() + " " + kernel.getConversionTime());
-         System.out.println(kernel.getExecutionMode() + " " + kernel.getExecutionTime());
+        // System.out.println(kernel.getExecutionMode() + " " + kernel.getConversionTime());
+      //   System.out.println(kernel.getExecutionMode() + " " + kernel.getExecutionTime());
          kernel.get(kernel.found);
          kernel.get(kernel.rects);
          for (int i = 0; i < kernel.found[0]; i++) {

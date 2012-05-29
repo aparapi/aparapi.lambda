@@ -86,7 +86,7 @@ public abstract class Detector{
       final int[] weightedGrayImageSquared = new int[width * height];
       final StopWatch allTimer = new StopWatch("All");
       final StopWatch timer = new StopWatch();
-      System.out.println(image);
+   //   System.out.println(image);
 
       DataBuffer dataBuffer = image.getRaster().getDataBuffer();
       if (dataBuffer instanceof DataBufferByte) {
