@@ -40,7 +40,7 @@ public class Faces{
                name = "C:\\Users\\gfrost\\Downloads\\Pink Floyd - Arnold Layne.mp4";
                name = "C:\\Users\\gfrost\\Downloads\\Faces in the Crowd.mp4";
                name = "C:\\Users\\gfrost\\Downloads\\Godley and Creme - Cry.mp4";
-               name = "C:\\Users\\gfrost\\Downloads\\The Matrix Red Dress.mp4";
+             //  name = "C:\\Users\\gfrost\\Downloads\\The Matrix Red Dress.mp4";
                final JJMediaReader reader = new JJMediaReader(name);
                final JJReaderVideo vs = reader.openFirstVideoStream();
                final BufferedImage image = vs.createImage();
@@ -48,7 +48,7 @@ public class Faces{
 
                HaarCascade haarCascade = HaarCascade
                      .create("..\\jviolajones\\haarcascade_frontalface_alt2.xml");
-               //final Detector detector = new AparapiDetector(haarCascade, 1f, 2f, 0.1f, false);
+              // final Detector detector = new AparapiDetector(haarCascade, 1f, 2f, 0.1f, false);
                   final Detector detector = new MultiThreadedDetector(haarCascade, 1f, 2f, 0.1f, false);
                frame.pack();
                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

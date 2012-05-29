@@ -39,7 +39,7 @@ public class AparapiDetector extends Detector{
 
       private int[] weightedGrayImageSquared;
 
-      private int MAXFOUND = 1000;
+      static final private int MAXFOUND = 1000;
 
       private int[] rects = new int[MAXFOUND * 4];
 
@@ -53,19 +53,19 @@ public class AparapiDetector extends Detector{
 
       final private float[] stage_thresh;
 
-      final private int FEATURE_FLOATS;
+      static final private int FEATURE_FLOATS= HaarCascade.FEATURE_FLOATS;
 
-      final private int FEATURE_INTS;
+      static final private int FEATURE_INTS = HaarCascade.FEATURE_INTS;
 
-      final private int RECT_FLOATS;
+      static final private int RECT_FLOATS = HaarCascade.RECT_FLOATS;
 
-      final private int RECT_INTS;
+      static final private int RECT_INTS  = HaarCascade.RECT_INTS;
 
-      final private int STAGE_FLOATS;
+      static final private int STAGE_FLOATS=HaarCascade.STAGE_FLOATS;
 
-      final private int STAGE_INTS;
+      static final private int STAGE_INTS= HaarCascade.STAGE_INTS;
 
-      final private int TREE_INTS;
+      static final private int TREE_INTS =  HaarCascade.TREE_INTS;
 
       final private int[] feature_r1r2r3LnRn;
 
@@ -82,14 +82,7 @@ public class AparapiDetector extends Detector{
       public DetectorKernel(HaarCascade _haarCascade) {
          stage_ids = _haarCascade.stage_ids;
          stage_startEnd = _haarCascade.stage_startEnd;
-         stage_thresh = _haarCascade.stage_thresh;
-         FEATURE_FLOATS = HaarCascade.FEATURE_FLOATS;
-         FEATURE_INTS = HaarCascade.FEATURE_INTS;
-         RECT_FLOATS = HaarCascade.RECT_FLOATS;
-         RECT_INTS = HaarCascade.RECT_INTS;
-         STAGE_FLOATS = HaarCascade.STAGE_FLOATS;
-         STAGE_INTS = HaarCascade.STAGE_INTS;
-         TREE_INTS = HaarCascade.TREE_INTS;
+         stage_thresh = _haarCascade.stage_thresh;    
          tree_startEnd = _haarCascade.tree_startEnd;
          feature_r1r2r3LnRn = _haarCascade.feature_r1r2r3LnRn;
          feature_LvRvThres = _haarCascade.feature_LvRvThres;
@@ -169,6 +162,7 @@ public class AparapiDetector extends Detector{
          }
          if (pass) {
             int value = atomicAdd(found, 0, 1);
+           
             rects[value * 4 + 0] = i;
             rects[value * 4 + 1] = j;
             rects[value * 4 + 2] = scaledFeatureWidth;
