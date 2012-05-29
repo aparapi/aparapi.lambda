@@ -24,7 +24,7 @@ as the basis of an Aparapi example.
 
 public class MultiThreadedDetector extends Detector{
 
-   MultiThreadedDetector(HaarCascade haarCascade, float baseScale, float scaleInc, float increment, boolean doCannyPruning) {
+   public MultiThreadedDetector(HaarCascade haarCascade, float baseScale, float scaleInc, float increment, boolean doCannyPruning) {
       super(haarCascade, baseScale, scaleInc, increment, doCannyPruning);
       // TODO Auto-generated constructor stub
    }

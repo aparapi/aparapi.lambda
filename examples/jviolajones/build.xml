@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 
 <project name="jvj" default="build" basedir=".">
-   <property name="aparapi" value="..\..\..\trunk\"/>
+   <property name="aparapi" value="..\..\..\..\trunk\"/>
 
    <target name="build" depends="clean">
       <mkdir dir="classes"/>
