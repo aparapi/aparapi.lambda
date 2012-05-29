@@ -99,14 +99,12 @@ public class AparapiDetector extends Detector{
          cascadeHeight = _haarCascade.cascadeHeight;
       }
 
-
       @Override public void run() {
          int i = getGlobalId(0) * scaledFeatureStep;
          int j = getGlobalId(1) * scaledFeatureStep;
-      
 
          boolean pass = true;
-         for (int stageId = 0; pass == true && stageId < stage_ids; stageId++) {          
+         for (int stageId = 0; pass == true && stageId < stage_ids; stageId++) {
             float sum = 0;
             for (int treeId = stage_startEnd[stageId * STAGE_INTS + 0]; treeId <= stage_startEnd[stageId * STAGE_INTS + 1]; treeId++) {
                int featureId = tree_startEnd[treeId * TREE_INTS + 0];
@@ -117,10 +115,10 @@ public class AparapiDetector extends Detector{
                   int w = (int) (scale * cascadeWidth);
                   int h = (int) (scale * cascadeHeight);
                   float inv_area = 1f / (w * h);
-                  int total_x = weightedGrayImage[i + w + (j + h) * width] + weightedGrayImage[i + (j) * width] - weightedGrayImage[i + (j + h) * width]
-                        - weightedGrayImage[i + w + (j) * width];
-                  int total_x2 = weightedGrayImageSquared[i + w + (j + h) * width] + weightedGrayImageSquared[i + (j) * width] - weightedGrayImageSquared[i + (j + h) * width]
-                        - weightedGrayImageSquared[i + w + (j) * width];
+                  int total_x = weightedGrayImage[i + w + (j + h) * width] + weightedGrayImage[i + (j) * width]
+                        - weightedGrayImage[i + (j + h) * width] - weightedGrayImage[i + w + (j) * width];
+                  int total_x2 = weightedGrayImageSquared[i + w + (j + h) * width] + weightedGrayImageSquared[i + (j) * width]
+                        - weightedGrayImageSquared[i + (j + h) * width] - weightedGrayImageSquared[i + w + (j) * width];
                   float moy = total_x * inv_area;
                   float vnorm = total_x2 * inv_area - moy * moy;
                   vnorm = (vnorm > 1) ? sqrt(vnorm) : 1;
@@ -142,7 +140,7 @@ public class AparapiDetector extends Detector{
                      }
                   }
                   float rect_sum2 = rect_sum * inv_area;
-    
+
                   if (rect_sum2 < feature_LvRvThres[featureId * FEATURE_FLOATS + 2] * vnorm) {
                      int leftNodeId = feature_r1r2r3LnRn[featureId * FEATURE_INTS + 3];
                      if (leftNodeId == -1) {
@@ -165,9 +163,9 @@ public class AparapiDetector extends Detector{
                sum += thresh;
             }
 
-            if (sum <= stage_thresh[stageId * STAGE_FLOATS + 0]){
+            if (sum <= stage_thresh[stageId * STAGE_FLOATS + 0]) {
                pass = false;
-            }      
+            }
          }
          if (pass) {
             int value = atomicAdd(found, 0, 1);
@@ -179,8 +177,8 @@ public class AparapiDetector extends Detector{
 
       }
 
-      public void set(int _width,  float _scale, int _scaledFeatureWidth, int _scaledFeatureStep,
-            int[] _weightedGrayImage, int[] _weightedGreyImageSquared) {
+      public void set(int _width, float _scale, int _scaledFeatureWidth, int _scaledFeatureStep, int[] _weightedGrayImage,
+            int[] _weightedGreyImageSquared) {
          width = _width;
          scale = _scale;
          scaledFeatureWidth = _scaledFeatureWidth;
@@ -193,6 +191,7 @@ public class AparapiDetector extends Detector{
    }
 
    DetectorKernel kernel;
+
    private Device device;
 
    public AparapiDetector(HaarCascade haarCascade, float baseScale, float scaleInc, float increment, boolean doCannyPruning) {
@@ -200,7 +199,7 @@ public class AparapiDetector extends Detector{
       device = Device.best();
       kernel = new DetectorKernel(haarCascade);
       kernel.setExplicit(true);
-     // kernel.setExecutionMode(Kernel.EXECUTION_MODE.JTP);
+      // kernel.setExecutionMode(Kernel.EXECUTION_MODE.JTP);
    }
 
    @Override List<Rectangle> getFeatures(final int width, final int height, float maxScale, final int[] weightedGrayImage,
@@ -212,16 +211,16 @@ public class AparapiDetector extends Detector{
 
          Range range = device.createRange2D((width - scaledFeatureWidth) / scaledFeatureStep, (height - scaledFeatureWidth)
                / scaledFeatureStep);
-         
-        // Range range = Range.create2D((width - scaledFeatureWidth) / scaledFeatureStep, (height - scaledFeatureWidth)
-              // / scaledFeatureStep);
-    //     System.out.println(range);
+
+         // Range range = Range.create2D((width - scaledFeatureWidth) / scaledFeatureStep, (height - scaledFeatureWidth)
+         // / scaledFeatureStep);
+         //     System.out.println(range);
          kernel.found[0] = 0;
          kernel.put(kernel.found);
-         kernel.set(width,  scale, scaledFeatureWidth, scaledFeatureStep, weightedGrayImage, weightedGrayImageSquared);
+         kernel.set(width, scale, scaledFeatureWidth, scaledFeatureStep, weightedGrayImage, weightedGrayImageSquared);
          kernel.execute(range);
-        // System.out.println(kernel.getExecutionMode() + " " + kernel.getConversionTime());
-      //   System.out.println(kernel.getExecutionMode() + " " + kernel.getExecutionTime());
+         // System.out.println(kernel.getExecutionMode() + " " + kernel.getConversionTime());
+         //   System.out.println(kernel.getExecutionMode() + " " + kernel.getExecutionTime());
          kernel.get(kernel.found);
          kernel.get(kernel.rects);
          for (int i = 0; i < kernel.found[0]; i++) {
