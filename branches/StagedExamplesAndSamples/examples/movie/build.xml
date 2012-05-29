@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 
 <project name="movie" default="build" basedir=".">
-   <property name="aparapi" value="C:\Users\gfrost\javalabs\projects\aparapi\trunk\aparapi.googlecode.com\trunk"/>
+   <property name="aparapi" value="..\..\..\..\trunk"/>
 
    <target name="build" depends="clean">
       <mkdir dir="classes"/>
@@ -9,6 +9,7 @@
          <classpath>
             <pathelement path="${aparapi}\com.amd.aparapi\dist\aparapi.jar"/>
             <pathelement path="jjmpeg\jjmpeg-0.0\dist\jjmpeg.jar/"/>
+            <pathelement path="..\jviolajones\jvj.jar/"/>
          </classpath>
       </javac>
       <jar jarfile="${ant.project.name}.jar" basedir="classes"/>
@@ -26,6 +27,7 @@
             <pathelement path="${ant.project.name}.jar"/>
             <pathelement path="${aparapi}\com.amd.aparapi\dist\aparapi.jar"/>
             <pathelement path="jjmpeg\jjmpeg-0.0\dist\jjmpeg.jar/"/>
+            <pathelement path="..\jviolajones\jvj.jar/"/>
          </classpath>
       </java>
    </target>
@@ -37,6 +39,7 @@
             <pathelement path="${ant.project.name}.jar"/>
             <pathelement path="${aparapi}\com.amd.aparapi\dist\aparapi.jar"/>
             <pathelement path="jjmpeg\jjmpeg-0.0\dist\jjmpeg.jar/"/>
+            <pathelement path="..\jviolajones\jvj.jar/"/>
          </classpath>
       </java>
    </target>
@@ -46,6 +49,7 @@
          <classpath>
             <pathelement path="${ant.project.name}.jar"/>
             <pathelement path="jjmpeg\jjmpeg-0.0\dist\jjmpeg.jar/"/>
+            <pathelement path="..\jviolajones\jvj.jar/"/>
          </classpath>
       </java>
    </target>
