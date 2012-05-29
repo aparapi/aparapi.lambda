@@ -4,11 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
-import java.io.File;
 import java.util.List;
-import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.CyclicBarrier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -19,14 +15,9 @@ import javax.swing.SwingUtilities;
 
 import au.notzed.jjmpeg.io.JJMediaReader;
 import au.notzed.jjmpeg.io.JJMediaReader.JJReaderVideo;
-
-import com.amd.aparapi.Kernel;
-import com.amd.aparapi.Range;
-
 import detection.AparapiDetector;
 import detection.Detector;
 import detection.HaarCascade;
-import detection.SingleThreadedDetector;
 
 /**
  * Code based on Demo of JJVideoScanner class
@@ -34,7 +25,7 @@ import detection.SingleThreadedDetector;
  * @author notzed
  */
 public class Faces{
- 
+
    public static void main(final String[] args) {
       SwingUtilities.invokeLater(new Runnable(){
          public void run() {
@@ -43,19 +34,20 @@ public class Faces{
             frame.getContentPane().setLayout(new BorderLayout());
             frame.getContentPane().add(label, BorderLayout.CENTER);
             try {
-               String  name = "C:\\Users\\gfrost\\Downloads\\Lumber jack song.mp4";
-                name = "C:\\Users\\gfrost\\Downloads\\Pink Floyd - Arnold Layne.mp4";
-                name = "C:\\Users\\gfrost\\Downloads\\Faces in the Crowd.mp4";
-                name = "C:\\Users\\gfrost\\Downloads\\Godley and Creme - Cry.mp4";
-                name = "C:\\Users\\gfrost\\Downloads\\The Matrix Red Dress.mp4";
+               String name = "C:\\Users\\gfrost\\Downloads\\Lumber jack song.mp4";
+               name = "C:\\Users\\gfrost\\Downloads\\Pink Floyd - Arnold Layne.mp4";
+               name = "C:\\Users\\gfrost\\Downloads\\Faces in the Crowd.mp4";
+               name = "C:\\Users\\gfrost\\Downloads\\Godley and Creme - Cry.mp4";
+               name = "C:\\Users\\gfrost\\Downloads\\The Matrix Red Dress.mp4";
                final JJMediaReader reader = new JJMediaReader(name);
                final JJReaderVideo vs = reader.openFirstVideoStream();
                final BufferedImage image = vs.createImage();
                label.setIcon(new ImageIcon(image));
-               
-               HaarCascade haarCascade = HaarCascade.create("C:\\Users\\gfrost\\javalabs\\projects\\aparapi\\trunk\\aparapi.googlecode.com\\branches\\StagedExamplesAndSamples\\examples\\jviolajones\\haarcascade_frontalface_alt2.xml");
-              final Detector detector = new AparapiDetector(haarCascade, 1f, 2f, 0.1f, false);
-            //   final Detector detector = new SingleThreadedDetector(haarCascade, 1f, 2f, 0.1f, false);
+
+               HaarCascade haarCascade = HaarCascade
+                     .create("C:\\Users\\gfrost\\javalabs\\projects\\aparapi\\trunk\\aparapi.googlecode.com\\branches\\StagedExamplesAndSamples\\examples\\jviolajones\\haarcascade_frontalface_alt2.xml");
+               final Detector detector = new AparapiDetector(haarCascade, 1f, 2f, 0.1f, false);
+               //   final Detector detector = new SingleThreadedDetector(haarCascade, 1f, 2f, 0.1f, false);
                frame.pack();
                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                frame.setVisible(true);
@@ -69,10 +61,10 @@ public class Faces{
                               long start = System.currentTimeMillis();
                               List<Rectangle> rects = detector.getFeatures(image);
                               Graphics2D gc = image.createGraphics();
-                              for (Rectangle rect:rects){
+                              for (Rectangle rect : rects) {
                                  gc.draw(rect);
                               }
-                          
+
                               System.out.println("elapsed  =" + (System.currentTimeMillis() - start));
 
                               //System.out.println(kernel.getExecutionTime());
