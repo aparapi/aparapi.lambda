@@ -185,6 +185,7 @@ public class Main{
                //   name = "C:\\Users\\gfrost\\Downloads\\HK2207_720p.mp4";
                // name= "C:\\Users\\gfrost\\Downloads\\Froblins.H.264-SD.mov";
                name = "C:\\Users\\gfrost\\Downloads\\leo_1080p.mov";
+             
                final JJMediaReader reader = new JJMediaReader(name);
                final JJReaderVideo vs = reader.openFirstVideoStream();
                final BufferedImage image = vs.createImage();
