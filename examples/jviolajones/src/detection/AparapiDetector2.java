@@ -23,25 +23,19 @@ import com.amd.aparapi.Device;
 import com.amd.aparapi.Kernel;
 import com.amd.aparapi.Range;
 
-import detection.Detector.ScaleInfo;
 
-public class AparapiDetector extends Detector{
+
+public class AparapiDetector2 extends Detector{
 
    class DetectorKernel extends Kernel{
 
       private int width;
 
-      private int scaledFeatureWidth;
-
-      private int scaledFeatureStep;
-
-      private float scale;
-
       private int[] weightedGrayImage;
 
       private int[] weightedGrayImageSquared;
 
-      static final private int MAXFOUND = 1000;
+      static final private int MAXFOUND = 20;
 
       private int[] rects = new int[MAXFOUND * 4];
 
@@ -55,19 +49,24 @@ public class AparapiDetector extends Detector{
 
       final private float[] stage_thresh;
 
-      static final private int FEATURE_FLOATS= HaarCascade.FEATURE_FLOATS;
+      static final private int FEATURE_FLOATS = HaarCascade.FEATURE_FLOATS;
 
       static final private int FEATURE_INTS = HaarCascade.FEATURE_INTS;
 
       static final private int RECT_FLOATS = HaarCascade.RECT_FLOATS;
 
-      static final private int RECT_INTS  = HaarCascade.RECT_INTS;
+      static final private int RECT_INTS = HaarCascade.RECT_INTS;
 
-      static final private int STAGE_FLOATS=HaarCascade.STAGE_FLOATS;
+      static final private int STAGE_FLOATS = HaarCascade.STAGE_FLOATS;
 
-      static final private int STAGE_INTS= HaarCascade.STAGE_INTS;
+      static final private int STAGE_INTS = HaarCascade.STAGE_INTS;
 
-      static final private int TREE_INTS =  HaarCascade.TREE_INTS;
+      static final private int TREE_INTS = HaarCascade.TREE_INTS;
+      
+      static final private int SCALE_INTS = ScaleInfo.SCALE_INTS;
+
+      static final private int SCALE_FLOATS = ScaleInfo.SCALE_FLOATS;
+
 
       final private int[] feature_r1r2r3LnRn;
 
@@ -81,10 +80,14 @@ public class AparapiDetector extends Detector{
 
       final int cascadeHeight;
 
+      private int[] scale_StepWidthIJ;
+
+      private float[] scale_value;
+
       public DetectorKernel(HaarCascade _haarCascade) {
          stage_ids = _haarCascade.stage_ids;
          stage_startEnd = _haarCascade.stage_startEnd;
-         stage_thresh = _haarCascade.stage_thresh;    
+         stage_thresh = _haarCascade.stage_thresh;
          tree_startEnd = _haarCascade.tree_startEnd;
          feature_r1r2r3LnRn = _haarCascade.feature_r1r2r3LnRn;
          feature_LvRvThres = _haarCascade.feature_LvRvThres;
@@ -92,12 +95,19 @@ public class AparapiDetector extends Detector{
          rect_x1y1x2y2 = _haarCascade.rect_x1y1x2y2;
          cascadeWidth = _haarCascade.cascadeWidth;
          cascadeHeight = _haarCascade.cascadeHeight;
+         
       }
 
       @Override public void run() {
-         int i = getGlobalId(0) * scaledFeatureStep;
-         int j = getGlobalId(1) * scaledFeatureStep;
-
+         int scaleId = getGlobalId(0);
+         int i = scale_StepWidthIJ[scaleId*SCALE_INTS+2];
+         
+         int j = scale_StepWidthIJ[scaleId*SCALE_INTS+3];
+         int scaledFeatureWidth = scale_StepWidthIJ[scaleId*SCALE_INTS+1];
+         float scale = scale_value[scaleId*SCALE_FLOATS+0];
+         int w = (int) (scale * cascadeWidth);
+         int h = (int) (scale * cascadeHeight);
+         float inv_area = 1f / (w * h);
          boolean pass = true;
          for (int stageId = 0; pass == true && stageId < stage_ids; stageId++) {
             float sum = 0;
@@ -106,10 +116,8 @@ public class AparapiDetector extends Detector{
                float thresh = 0f;
                boolean done = false;
                while (!done) {
-
-                  int w = (int) (scale * cascadeWidth);
-                  int h = (int) (scale * cascadeHeight);
-                  float inv_area = 1f / (w * h);
+                
+               
                   int total_x = weightedGrayImage[i + w + (j + h) * width] + weightedGrayImage[i + (j) * width]
                         - weightedGrayImage[i + (j + h) * width] - weightedGrayImage[i + w + (j) * width];
                   int total_x2 = weightedGrayImageSquared[i + w + (j + h) * width] + weightedGrayImageSquared[i + (j) * width]
@@ -164,7 +172,6 @@ public class AparapiDetector extends Detector{
          }
          if (pass) {
             int value = atomicAdd(found, 0, 1);
-           
             rects[value * 4 + 0] = i;
             rects[value * 4 + 1] = j;
             rects[value * 4 + 2] = scaledFeatureWidth;
@@ -173,12 +180,11 @@ public class AparapiDetector extends Detector{
 
       }
 
-      public void set(int _width, float _scale, int _scaledFeatureWidth, int _scaledFeatureStep, int[] _weightedGrayImage,
+      public void set(int _width,  int[] _scale_StepWidthIJ, float[] _scale_value,  int[] _weightedGrayImage,
             int[] _weightedGreyImageSquared) {
          width = _width;
-         scale = _scale;
-         scaledFeatureWidth = _scaledFeatureWidth;
-         scaledFeatureStep = _scaledFeatureStep;
+         scale_StepWidthIJ = _scale_StepWidthIJ;
+         scale_value = _scale_value;
          weightedGrayImage = _weightedGrayImage;
          weightedGrayImageSquared = _weightedGreyImageSquared;
 
@@ -190,7 +196,7 @@ public class AparapiDetector extends Detector{
 
    private Device device;
 
-   public AparapiDetector(HaarCascade haarCascade, float baseScale, float scaleInc, float increment, boolean doCannyPruning) {
+   public AparapiDetector2(HaarCascade haarCascade, float baseScale, float scaleInc, float increment, boolean doCannyPruning) {
       super(haarCascade, baseScale, scaleInc, increment, doCannyPruning);
       device = Device.best();
       kernel = new DetectorKernel(haarCascade);
@@ -198,32 +204,28 @@ public class AparapiDetector extends Detector{
       // kernel.setExecutionMode(Kernel.EXECUTION_MODE.JTP);
    }
 
+   ScaleInfo scaleInfo = null;
+
    @Override List<Rectangle> getFeatures(final int width, final int height, float maxScale, final int[] weightedGrayImage,
          final int[] weightedGrayImageSquared, final int[] cannyIntegral) {
-      
+
       final List<Rectangle> features = new ArrayList<Rectangle>();
-      for (float scale = baseScale; scale < maxScale; scale *= scale_inc) {
-         final int scaledFeatureStep = (int) (scale * haarCascade.cascadeWidth * increment);
-         final int scaledFeatureWidth = (int) (scale * haarCascade.cascadeWidth);
+      if (scaleInfo == null) {
+         scaleInfo = new ScaleInfo(width, height, maxScale);
+      }
 
-         Range range = device.createRange2D((width - scaledFeatureWidth) / scaledFeatureStep, (height - scaledFeatureWidth)
-               / scaledFeatureStep);
+      Range range = device.createRange(scaleInfo.scaleIds);
 
-         // Range range = Range.create2D((width - scaledFeatureWidth) / scaledFeatureStep, (height - scaledFeatureWidth)
-         // / scaledFeatureStep);
-         //     System.out.println(range);
-         kernel.found[0] = 0;
-         kernel.put(kernel.found);
-         kernel.set(width, scale, scaledFeatureWidth, scaledFeatureStep, weightedGrayImage, weightedGrayImageSquared);
-         kernel.execute(range);
-         // System.out.println(kernel.getExecutionMode() + " " + kernel.getConversionTime());
-         //   System.out.println(kernel.getExecutionMode() + " " + kernel.getExecutionTime());
-         kernel.get(kernel.found);
-         kernel.get(kernel.rects);
-         for (int i = 0; i < kernel.found[0]; i++) {
-            features.add(new Rectangle(kernel.rects[i * 4 + 0], kernel.rects[i * 4 + 1], kernel.rects[i * 4 + 2],
-                  kernel.rects[i * 4 + 3]));
-         }
+      kernel.found[0] = 0;
+      kernel.put(kernel.found);
+      kernel.set(width, scaleInfo.scale_StepWidthIJ, scaleInfo.scale_value, weightedGrayImage,
+            weightedGrayImageSquared);
+      kernel.execute(range);
+      kernel.get(kernel.found);
+      kernel.get(kernel.rects);
+      for (int i = 0; i < kernel.found[0]; i++) {
+         features.add(new Rectangle(kernel.rects[i * 4 + 0], kernel.rects[i * 4 + 1], kernel.rects[i * 4 + 2],
+               kernel.rects[i * 4 + 3]));
       }
 
       return (features);

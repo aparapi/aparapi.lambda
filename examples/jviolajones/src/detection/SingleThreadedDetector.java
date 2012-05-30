@@ -25,20 +25,28 @@ public class SingleThreadedDetector extends Detector{
       super(haarCascade, baseScale, scaleInc, increment, doCannyPruning);
       // TODO Auto-generated constructor stub
    }
+   
+   ScaleInfo scaleInfo = null;
 
-   @Override List<Rectangle> getFeatures(final int width, final int height, float maxScale, final int[] weightedGrayImage,
+  
+   List<Rectangle> getFeatures(final int width, final int height, float maxScale, final int[] weightedGrayImage,
          final int[] weightedGrayImageSquared, final int[] cannyIntegral) {
+      System.out.println("old");
+    
       final List<Rectangle> features = new ArrayList<Rectangle>();
-      int maxi = 0, maxj = 0;
+
+ 
       for (float scale = baseScale; scale < maxScale; scale *= scale_inc) {
          final int scaledFeatureStep = (int) (scale * haarCascade.cascadeWidth * increment);
          final int scaledFeatureWidth = (int) (scale * haarCascade.cascadeWidth);
          final float scale_f = scale;
 
+       
          for (int i = 0; i < width - scaledFeatureWidth; i += scaledFeatureStep) {
-            maxi = Math.max(maxi, i);
+
             for (int j = 0; j < height - scaledFeatureWidth; j += scaledFeatureStep) {
-               maxj = Math.max(maxj, j);
+
+             
 
                if (cannyIntegral != null) {
                   int edges_density = cannyIntegral[i + scaledFeatureWidth + (j + scaledFeatureWidth) * width]
@@ -59,11 +67,55 @@ public class SingleThreadedDetector extends Detector{
             }
 
          }
+        
       }
-      System.out.println("max i=" + maxi + " j=" + maxj + " width=" + width + " height=" + height);
 
       return (features);
 
    }
+   
+   List<Rectangle> getFeaturesNew(final int width, final int height, float maxScale, final int[] weightedGrayImage,
+         final int[] weightedGrayImageSquared, final int[] cannyIntegral) {
+      final List<Rectangle> features = new ArrayList<Rectangle>();
+      System.out.println("new");
+      if (scaleInfo == null){
+         scaleInfo = new ScaleInfo(width, height, maxScale);
+      }
+      
+      for (int scaleId =0; scaleId<scaleInfo.scaleIds; scaleId++){
+         int i = scaleInfo.scale_StepWidthIJ[scaleId*ScaleInfo.SCALE_INTS+2];
+         int j = scaleInfo.scale_StepWidthIJ[scaleId*ScaleInfo.SCALE_INTS+3];
+         int scaledFeatureWidth = scaleInfo.scale_StepWidthIJ[scaleId*ScaleInfo.SCALE_INTS+1];
+         int scaledFeatureStep = scaleInfo.scale_StepWidthIJ[scaleId*ScaleInfo.SCALE_INTS+0];
+         float scale= scaleInfo.scale_value[ScaleInfo.SCALE_FLOATS*scaleId+0];
+
+             
+
+               if (cannyIntegral != null) {
+                  int edges_density = cannyIntegral[i + scaledFeatureWidth + (j + scaledFeatureWidth) * width]
+                        + cannyIntegral[i + (j) * width] - cannyIntegral[i + (j + scaledFeatureWidth) * width]
+                        - cannyIntegral[i + scaledFeatureWidth + (j) * width];
+                  int d = edges_density / scaledFeatureWidth / scaledFeatureWidth;
+                  if (d < 20 || d > 100)
+                     continue;
+               }
+
+               Rectangle rectangle = haarCascade.getFeature(weightedGrayImage, weightedGrayImageSquared, width, height, i, j,
+                     scale, scaledFeatureWidth);
+               if (rectangle != null) {
+
+                  features.add(rectangle);
+
+               
+            
+
+         }
+        
+      }
+
+      return (features);
+
+   }
+
 
 }
