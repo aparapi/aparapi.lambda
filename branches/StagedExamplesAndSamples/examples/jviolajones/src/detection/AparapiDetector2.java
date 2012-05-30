@@ -23,8 +23,6 @@ import com.amd.aparapi.Device;
 import com.amd.aparapi.Kernel;
 import com.amd.aparapi.Range;
 
-
-
 public class AparapiDetector2 extends Detector{
 
    class DetectorKernel extends Kernel{
@@ -35,9 +33,11 @@ public class AparapiDetector2 extends Detector{
 
       private int[] weightedGrayImageSquared;
 
-      static final private int MAXFOUND = 20;
+      static final private int MAX_FOUND = 20;
 
-      private int[] rects = new int[MAXFOUND * 4];
+      static final private int RECT_FOUND_INTS = 3;
+
+      private int[] found_rects = new int[MAX_FOUND * RECT_FOUND_INTS];
 
       private int[] found = new int[1];
 
@@ -62,11 +62,10 @@ public class AparapiDetector2 extends Detector{
       static final private int STAGE_INTS = HaarCascade.STAGE_INTS;
 
       static final private int TREE_INTS = HaarCascade.TREE_INTS;
-      
+
       static final private int SCALE_INTS = ScaleInfo.SCALE_INTS;
 
       static final private int SCALE_FLOATS = ScaleInfo.SCALE_FLOATS;
-
 
       final private int[] feature_r1r2r3LnRn;
 
@@ -80,7 +79,7 @@ public class AparapiDetector2 extends Detector{
 
       final int cascadeHeight;
 
-      private int[] scale_StepWidthIJ;
+      private int[] scale_WidthIJ;
 
       private float[] scale_value;
 
@@ -95,16 +94,16 @@ public class AparapiDetector2 extends Detector{
          rect_x1y1x2y2 = _haarCascade.rect_x1y1x2y2;
          cascadeWidth = _haarCascade.cascadeWidth;
          cascadeHeight = _haarCascade.cascadeHeight;
-         
+
       }
 
       @Override public void run() {
          int scaleId = getGlobalId(0);
-         int i = scale_StepWidthIJ[scaleId*SCALE_INTS+2];
-         
-         int j = scale_StepWidthIJ[scaleId*SCALE_INTS+3];
-         int scaledFeatureWidth = scale_StepWidthIJ[scaleId*SCALE_INTS+1];
-         float scale = scale_value[scaleId*SCALE_FLOATS+0];
+         int i = scale_WidthIJ[scaleId * SCALE_INTS + 1];
+
+         int j = scale_WidthIJ[scaleId * SCALE_INTS + 2];
+         int scaledFeatureWidth = scale_WidthIJ[scaleId * SCALE_INTS + 0];
+         float scale = scale_value[scaleId * SCALE_FLOATS + 0];
          int w = (int) (scale * cascadeWidth);
          int h = (int) (scale * cascadeHeight);
          float inv_area = 1f / (w * h);
@@ -116,8 +115,7 @@ public class AparapiDetector2 extends Detector{
                float thresh = 0f;
                boolean done = false;
                while (!done) {
-                
-               
+
                   int total_x = weightedGrayImage[i + w + (j + h) * width] + weightedGrayImage[i + (j) * width]
                         - weightedGrayImage[i + (j + h) * width] - weightedGrayImage[i + w + (j) * width];
                   int total_x2 = weightedGrayImageSquared[i + w + (j + h) * width] + weightedGrayImageSquared[i + (j) * width]
@@ -172,18 +170,18 @@ public class AparapiDetector2 extends Detector{
          }
          if (pass) {
             int value = atomicAdd(found, 0, 1);
-            rects[value * 4 + 0] = i;
-            rects[value * 4 + 1] = j;
-            rects[value * 4 + 2] = scaledFeatureWidth;
-            rects[value * 4 + 3] = scaledFeatureWidth;
+            found_rects[value * RECT_FOUND_INTS + 0] = i;
+            found_rects[value * RECT_FOUND_INTS + 1] = j;
+            found_rects[value * RECT_FOUND_INTS + 2] = scaledFeatureWidth;
+         
          }
 
       }
 
-      public void set(int _width,  int[] _scale_StepWidthIJ, float[] _scale_value,  int[] _weightedGrayImage,
+      public void set(int _width, int[] _scale_WidthIJ, float[] _scale_value, int[] _weightedGrayImage,
             int[] _weightedGreyImageSquared) {
          width = _width;
-         scale_StepWidthIJ = _scale_StepWidthIJ;
+         scale_WidthIJ = _scale_WidthIJ;
          scale_value = _scale_value;
          weightedGrayImage = _weightedGrayImage;
          weightedGrayImageSquared = _weightedGreyImageSquared;
@@ -218,14 +216,13 @@ public class AparapiDetector2 extends Detector{
 
       kernel.found[0] = 0;
       kernel.put(kernel.found);
-      kernel.set(width, scaleInfo.scale_StepWidthIJ, scaleInfo.scale_value, weightedGrayImage,
-            weightedGrayImageSquared);
+      kernel.set(width, scaleInfo.scale_WidthIJ, scaleInfo.scale_value, weightedGrayImage, weightedGrayImageSquared);
       kernel.execute(range);
       kernel.get(kernel.found);
-      kernel.get(kernel.rects);
+      kernel.get(kernel.found_rects);
       for (int i = 0; i < kernel.found[0]; i++) {
-         features.add(new Rectangle(kernel.rects[i * 4 + 0], kernel.rects[i * 4 + 1], kernel.rects[i * 4 + 2],
-               kernel.rects[i * 4 + 3]));
+         features.add(new Rectangle(kernel.found_rects[i * DetectorKernel.RECT_FOUND_INTS + 0], kernel.found_rects[i * DetectorKernel.RECT_FOUND_INTS + 1], kernel.found_rects[i * DetectorKernel.RECT_FOUND_INTS + 2],
+               kernel.found_rects[i * DetectorKernel.RECT_FOUND_INTS + 2]));
       }
 
       return (features);

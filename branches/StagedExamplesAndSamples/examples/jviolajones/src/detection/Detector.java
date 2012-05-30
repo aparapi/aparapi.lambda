@@ -31,11 +31,11 @@ import javax.imageio.ImageIO;
 public abstract class Detector{
    
    public class ScaleInfo{
-      final static int SCALE_INTS = 4;
+      final static int SCALE_INTS = 3;
 
       final static int SCALE_FLOATS = 1;
 
-      int[] scale_StepWidthIJ;
+      int[] scale_WidthIJ;
 
       float[] scale_value;
       
@@ -44,15 +44,15 @@ public abstract class Detector{
       List<Scale> scaleInstances = new ArrayList<Scale>();
 
       public class Scale{
-         public Scale(float _value, int _step, int _width, int _i, int _j) {
+         public Scale(float _value, int _width, int _i, int _j) {
             value = _value;
             i=_i;
             j = _j;
-            step = _step;
+           
             width = _width;
          }
 
-         int step;
+       
 
          int width;
 
@@ -62,7 +62,7 @@ public abstract class Detector{
          float value;
 
          public String toString() {
-            return ("Scale value=" + value + " i=" + i +" j="+j+ " width=" + width + " step=" + step);
+            return ("Scale value=" + value + " i=" + i +" j="+j+ " width=" + width);
          }
       }
 
@@ -74,20 +74,19 @@ public abstract class Detector{
          
             for (int i = 0; i < _width - scaledFeatureWidth; i += scaledFeatureStep) {
                for (int j = 0; j < _height - scaledFeatureWidth; j += scaledFeatureStep) {
-                  scaleInstances.add(new Scale(scale, scaledFeatureStep, scaledFeatureWidth, i,j));
+                  scaleInstances.add(new Scale(scale,  scaledFeatureWidth, i,j));
                   
                }
             }   
          }
          scaleIds = scaleInstances.size();
-         scale_StepWidthIJ = new int[scaleIds*SCALE_INTS];
+         scale_WidthIJ = new int[scaleIds*SCALE_INTS];
          scale_value=new float[scaleIds*SCALE_FLOATS];
          for (int scaleId=0;scaleId<scaleIds;scaleId++){
             Scale scale = scaleInstances.get(scaleId);
-            scale_StepWidthIJ[scaleId*SCALE_INTS+0]=scale.step;
-            scale_StepWidthIJ[scaleId*SCALE_INTS+1]=scale.width;
-            scale_StepWidthIJ[scaleId*SCALE_INTS+2]=scale.i;
-            scale_StepWidthIJ[scaleId*SCALE_INTS+3]=scale.j; 
+            scale_WidthIJ[scaleId*SCALE_INTS+0]=scale.width;
+            scale_WidthIJ[scaleId*SCALE_INTS+1]=scale.i;
+            scale_WidthIJ[scaleId*SCALE_INTS+2]=scale.j; 
             scale_value[scaleId*SCALE_FLOATS]=scale.value;
          }
       }

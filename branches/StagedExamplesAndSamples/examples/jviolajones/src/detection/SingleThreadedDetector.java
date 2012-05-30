@@ -83,10 +83,9 @@ public class SingleThreadedDetector extends Detector{
       }
       
       for (int scaleId =0; scaleId<scaleInfo.scaleIds; scaleId++){
-         int i = scaleInfo.scale_StepWidthIJ[scaleId*ScaleInfo.SCALE_INTS+2];
-         int j = scaleInfo.scale_StepWidthIJ[scaleId*ScaleInfo.SCALE_INTS+3];
-         int scaledFeatureWidth = scaleInfo.scale_StepWidthIJ[scaleId*ScaleInfo.SCALE_INTS+1];
-         int scaledFeatureStep = scaleInfo.scale_StepWidthIJ[scaleId*ScaleInfo.SCALE_INTS+0];
+         int i = scaleInfo.scale_WidthIJ[scaleId*ScaleInfo.SCALE_INTS+1];
+         int j = scaleInfo.scale_WidthIJ[scaleId*ScaleInfo.SCALE_INTS+2];
+         int scaledFeatureWidth = scaleInfo.scale_WidthIJ[scaleId*ScaleInfo.SCALE_INTS+0];
          float scale= scaleInfo.scale_value[ScaleInfo.SCALE_FLOATS*scaleId+0];
 
              
