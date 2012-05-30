@@ -21,6 +21,7 @@ import java.util.List;
 
 import com.amd.aparapi.Device;
 import com.amd.aparapi.Kernel;
+import com.amd.aparapi.ProfileInfo;
 import com.amd.aparapi.Range;
 
 public class AparapiDetector2 extends Detector{
@@ -65,8 +66,6 @@ public class AparapiDetector2 extends Detector{
 
       static final private int SCALE_INTS = ScaleInfo.SCALE_INTS;
 
-      static final private int SCALE_FLOATS = ScaleInfo.SCALE_FLOATS;
-
       final private int[] feature_r1r2r3LnRn;
 
       final private int[] rect_x1y1x2y2;
@@ -79,9 +78,7 @@ public class AparapiDetector2 extends Detector{
 
       final int cascadeHeight;
 
-      private int[] scale_WidthIJ;
-
-      private float[] scale_value;
+      private short[] scale_ValueWidthIJ;
 
       public DetectorKernel(HaarCascade _haarCascade) {
          stage_ids = _haarCascade.stage_ids;
@@ -99,22 +96,22 @@ public class AparapiDetector2 extends Detector{
 
       @Override public void run() {
          int scaleId = getGlobalId(0);
-         int i = scale_WidthIJ[scaleId * SCALE_INTS + 1];
+         short i = (short) scale_ValueWidthIJ[scaleId * SCALE_INTS + 2];
 
-         int j = scale_WidthIJ[scaleId * SCALE_INTS + 2];
-         int scaledFeatureWidth = scale_WidthIJ[scaleId * SCALE_INTS + 0];
-         float scale = scale_value[scaleId * SCALE_FLOATS + 0];
-         int w = (int) (scale * cascadeWidth);
-         int h = (int) (scale * cascadeHeight);
+         short j = (short) scale_ValueWidthIJ[scaleId * SCALE_INTS + 3];
+         short scaledFeatureWidth = (short) scale_ValueWidthIJ[scaleId * SCALE_INTS + 1];
+         short scale = (short) scale_ValueWidthIJ[scaleId * SCALE_INTS + 0];
+         short w = (short) (scale * cascadeWidth);
+         short h = (short) (scale * cascadeHeight);
          float inv_area = 1f / (w * h);
          boolean pass = true;
-         for (int stageId = 0; pass == true && stageId < stage_ids; stageId++) {
+         for (short stageId = 0; pass == true && stageId < stage_ids; stageId++) {
             float sum = 0;
             for (int treeId = stage_startEnd[stageId * STAGE_INTS + 0]; treeId <= stage_startEnd[stageId * STAGE_INTS + 1]; treeId++) {
                int featureId = tree_startEnd[treeId * TREE_INTS + 0];
                float thresh = 0f;
-               boolean done = false;
-               while (!done) {
+
+               for (boolean done = false; !done;) {
 
                   int total_x = weightedGrayImage[i + w + (j + h) * width] + weightedGrayImage[i + (j) * width]
                         - weightedGrayImage[i + (j + h) * width] - weightedGrayImage[i + w + (j) * width];
@@ -164,9 +161,7 @@ public class AparapiDetector2 extends Detector{
                sum += thresh;
             }
 
-            if (sum <= stage_thresh[stageId * STAGE_FLOATS + 0]) {
-               pass = false;
-            }
+            pass = sum > stage_thresh[stageId * STAGE_FLOATS + 0];
          }
          if (pass) {
             int value = atomicAdd(found, 0, 1);
@@ -178,11 +173,10 @@ public class AparapiDetector2 extends Detector{
 
       }
 
-      public void set(int _width, int[] _scale_WidthIJ, float[] _scale_value, int[] _weightedGrayImage,
-            int[] _weightedGreyImageSquared) {
+      public void set(int _width, short[] _scale_ValueWidthIJ, int[] _weightedGrayImage, int[] _weightedGreyImageSquared) {
          width = _width;
-         scale_WidthIJ = _scale_WidthIJ;
-         scale_value = _scale_value;
+         scale_ValueWidthIJ = _scale_ValueWidthIJ;
+
          weightedGrayImage = _weightedGrayImage;
          weightedGrayImageSquared = _weightedGreyImageSquared;
 
@@ -215,8 +209,9 @@ public class AparapiDetector2 extends Detector{
       Range range = device.createRange(scaleInfo.scaleIds);
 
       kernel.found[0] = 0;
+
+      kernel.set(width, scaleInfo.scale_ValueWidthIJ, weightedGrayImage, weightedGrayImageSquared);
       kernel.put(kernel.found);
-      kernel.set(width, scaleInfo.scale_WidthIJ, scaleInfo.scale_value, weightedGrayImage, weightedGrayImageSquared);
       kernel.execute(range);
       kernel.get(kernel.found);
       kernel.get(kernel.found_rects);
@@ -224,6 +219,10 @@ public class AparapiDetector2 extends Detector{
          features.add(new Rectangle(kernel.found_rects[i * DetectorKernel.RECT_FOUND_INTS + 0], kernel.found_rects[i
                * DetectorKernel.RECT_FOUND_INTS + 1], kernel.found_rects[i * DetectorKernel.RECT_FOUND_INTS + 2],
                kernel.found_rects[i * DetectorKernel.RECT_FOUND_INTS + 2]));
+      }
+      List<ProfileInfo> profileInfoList = kernel.getProfileInfo();
+      for (ProfileInfo profileInfo : profileInfoList) {
+         System.out.println(profileInfo);
       }
 
       return (features);
