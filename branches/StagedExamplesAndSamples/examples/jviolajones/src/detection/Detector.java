@@ -27,9 +27,8 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
-
 public abstract class Detector{
-   
+
    public class ScaleInfo{
       final static int SCALE_INTS = 3;
 
@@ -38,60 +37,58 @@ public abstract class Detector{
       int[] scale_WidthIJ;
 
       float[] scale_value;
-      
-      int scaleIds=0;
+
+      int scaleIds = 0;
 
       List<Scale> scaleInstances = new ArrayList<Scale>();
 
       public class Scale{
          public Scale(float _value, int _width, int _i, int _j) {
             value = _value;
-            i=_i;
+            i = _i;
             j = _j;
-           
+
             width = _width;
          }
-
-       
 
          int width;
 
          int i;
+
          int j;
 
          float value;
 
          public String toString() {
-            return ("Scale value=" + value + " i=" + i +" j="+j+ " width=" + width);
+            return ("Scale value=" + value + " i=" + i + " j=" + j + " width=" + width);
          }
       }
 
       public ScaleInfo(int _width, int _height, float _maxScale) {
-        
+
          for (float scale = baseScale; scale < _maxScale; scale *= scale_inc) {
             int scaledFeatureStep = (int) (scale * haarCascade.cascadeWidth * increment);
             int scaledFeatureWidth = (int) (scale * haarCascade.cascadeWidth);
-         
+
             for (int i = 0; i < _width - scaledFeatureWidth; i += scaledFeatureStep) {
                for (int j = 0; j < _height - scaledFeatureWidth; j += scaledFeatureStep) {
-                  scaleInstances.add(new Scale(scale,  scaledFeatureWidth, i,j));
-                  
+                  scaleInstances.add(new Scale(scale, scaledFeatureWidth, i, j));
+
                }
-            }   
+            }
          }
          scaleIds = scaleInstances.size();
-         scale_WidthIJ = new int[scaleIds*SCALE_INTS];
-         scale_value=new float[scaleIds*SCALE_FLOATS];
-         for (int scaleId=0;scaleId<scaleIds;scaleId++){
+         scale_WidthIJ = new int[scaleIds * SCALE_INTS];
+         scale_value = new float[scaleIds * SCALE_FLOATS];
+         for (int scaleId = 0; scaleId < scaleIds; scaleId++) {
             Scale scale = scaleInstances.get(scaleId);
-            scale_WidthIJ[scaleId*SCALE_INTS+0]=scale.width;
-            scale_WidthIJ[scaleId*SCALE_INTS+1]=scale.i;
-            scale_WidthIJ[scaleId*SCALE_INTS+2]=scale.j; 
-            scale_value[scaleId*SCALE_FLOATS]=scale.value;
+            scale_WidthIJ[scaleId * SCALE_INTS + 0] = scale.width;
+            scale_WidthIJ[scaleId * SCALE_INTS + 1] = scale.i;
+            scale_WidthIJ[scaleId * SCALE_INTS + 2] = scale.j;
+            scale_value[scaleId * SCALE_FLOATS] = scale.value;
          }
       }
    }
-
 
    final HaarCascade haarCascade;
 
