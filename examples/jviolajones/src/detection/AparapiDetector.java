@@ -23,8 +23,6 @@ import com.amd.aparapi.Device;
 import com.amd.aparapi.Kernel;
 import com.amd.aparapi.Range;
 
-import detection.Detector.ScaleInfo;
-
 public class AparapiDetector extends Detector{
 
    class DetectorKernel extends Kernel{
@@ -41,9 +39,11 @@ public class AparapiDetector extends Detector{
 
       private int[] weightedGrayImageSquared;
 
-      static final private int MAXFOUND = 1000;
+      static final private int MAX_FOUND = 100;
 
-      private int[] rects = new int[MAXFOUND * 4];
+      static final private int RECT_FOUND_INTS = 3;
+
+      private int[] found_rects = new int[MAX_FOUND * RECT_FOUND_INTS];
 
       private int[] found = new int[1];
 
@@ -55,19 +55,19 @@ public class AparapiDetector extends Detector{
 
       final private float[] stage_thresh;
 
-      static final private int FEATURE_FLOATS= HaarCascade.FEATURE_FLOATS;
+      static final private int FEATURE_FLOATS = HaarCascade.FEATURE_FLOATS;
 
       static final private int FEATURE_INTS = HaarCascade.FEATURE_INTS;
 
       static final private int RECT_FLOATS = HaarCascade.RECT_FLOATS;
 
-      static final private int RECT_INTS  = HaarCascade.RECT_INTS;
+      static final private int RECT_INTS = HaarCascade.RECT_INTS;
 
-      static final private int STAGE_FLOATS=HaarCascade.STAGE_FLOATS;
+      static final private int STAGE_FLOATS = HaarCascade.STAGE_FLOATS;
 
-      static final private int STAGE_INTS= HaarCascade.STAGE_INTS;
+      static final private int STAGE_INTS = HaarCascade.STAGE_INTS;
 
-      static final private int TREE_INTS =  HaarCascade.TREE_INTS;
+      static final private int TREE_INTS = HaarCascade.TREE_INTS;
 
       final private int[] feature_r1r2r3LnRn;
 
@@ -84,7 +84,7 @@ public class AparapiDetector extends Detector{
       public DetectorKernel(HaarCascade _haarCascade) {
          stage_ids = _haarCascade.stage_ids;
          stage_startEnd = _haarCascade.stage_startEnd;
-         stage_thresh = _haarCascade.stage_thresh;    
+         stage_thresh = _haarCascade.stage_thresh;
          tree_startEnd = _haarCascade.tree_startEnd;
          feature_r1r2r3LnRn = _haarCascade.feature_r1r2r3LnRn;
          feature_LvRvThres = _haarCascade.feature_LvRvThres;
@@ -164,11 +164,11 @@ public class AparapiDetector extends Detector{
          }
          if (pass) {
             int value = atomicAdd(found, 0, 1);
-           
-            rects[value * 4 + 0] = i;
-            rects[value * 4 + 1] = j;
-            rects[value * 4 + 2] = scaledFeatureWidth;
-            rects[value * 4 + 3] = scaledFeatureWidth;
+
+            found_rects[value * RECT_FOUND_INTS + 0] = i;
+            found_rects[value * RECT_FOUND_INTS + 1] = j;
+            found_rects[value * RECT_FOUND_INTS + 2] = scaledFeatureWidth;
+
          }
 
       }
@@ -200,7 +200,7 @@ public class AparapiDetector extends Detector{
 
    @Override List<Rectangle> getFeatures(final int width, final int height, float maxScale, final int[] weightedGrayImage,
          final int[] weightedGrayImageSquared, final int[] cannyIntegral) {
-      
+
       final List<Rectangle> features = new ArrayList<Rectangle>();
       for (float scale = baseScale; scale < maxScale; scale *= scale_inc) {
          final int scaledFeatureStep = (int) (scale * haarCascade.cascadeWidth * increment);
@@ -219,10 +219,11 @@ public class AparapiDetector extends Detector{
          // System.out.println(kernel.getExecutionMode() + " " + kernel.getConversionTime());
          //   System.out.println(kernel.getExecutionMode() + " " + kernel.getExecutionTime());
          kernel.get(kernel.found);
-         kernel.get(kernel.rects);
+         kernel.get(kernel.found_rects);
          for (int i = 0; i < kernel.found[0]; i++) {
-            features.add(new Rectangle(kernel.rects[i * 4 + 0], kernel.rects[i * 4 + 1], kernel.rects[i * 4 + 2],
-                  kernel.rects[i * 4 + 3]));
+            features.add(new Rectangle(kernel.found_rects[i * DetectorKernel.RECT_FOUND_INTS + 0], kernel.found_rects[i
+                  * DetectorKernel.RECT_FOUND_INTS + 1], kernel.found_rects[i * DetectorKernel.RECT_FOUND_INTS + 2],
+                  kernel.found_rects[i * DetectorKernel.RECT_FOUND_INTS + 2]));
          }
       }
 

@@ -33,7 +33,7 @@ public class AparapiDetector2 extends Detector{
 
       private int[] weightedGrayImageSquared;
 
-      static final private int MAX_FOUND = 20;
+      static final private int MAX_FOUND = 100;
 
       static final private int RECT_FOUND_INTS = 3;
 
@@ -173,7 +173,7 @@ public class AparapiDetector2 extends Detector{
             found_rects[value * RECT_FOUND_INTS + 0] = i;
             found_rects[value * RECT_FOUND_INTS + 1] = j;
             found_rects[value * RECT_FOUND_INTS + 2] = scaledFeatureWidth;
-         
+
          }
 
       }
@@ -221,7 +221,8 @@ public class AparapiDetector2 extends Detector{
       kernel.get(kernel.found);
       kernel.get(kernel.found_rects);
       for (int i = 0; i < kernel.found[0]; i++) {
-         features.add(new Rectangle(kernel.found_rects[i * DetectorKernel.RECT_FOUND_INTS + 0], kernel.found_rects[i * DetectorKernel.RECT_FOUND_INTS + 1], kernel.found_rects[i * DetectorKernel.RECT_FOUND_INTS + 2],
+         features.add(new Rectangle(kernel.found_rects[i * DetectorKernel.RECT_FOUND_INTS + 0], kernel.found_rects[i
+               * DetectorKernel.RECT_FOUND_INTS + 1], kernel.found_rects[i * DetectorKernel.RECT_FOUND_INTS + 2],
                kernel.found_rects[i * DetectorKernel.RECT_FOUND_INTS + 2]));
       }
 
