@@ -15,12 +15,9 @@ import javax.swing.SwingUtilities;
 
 import au.notzed.jjmpeg.io.JJMediaReader;
 import au.notzed.jjmpeg.io.JJMediaReader.JJReaderVideo;
-import detection.AparapiDetector;
 import detection.AparapiDetector2;
 import detection.Detector;
 import detection.HaarCascade;
-import detection.MultiThreadedDetector;
-import detection.SingleThreadedDetector;
 
 /**
  * Code based on Demo of JJVideoScanner class
@@ -49,7 +46,7 @@ public class Faces{
                label.setIcon(new ImageIcon(image));
 
                HaarCascade haarCascade = HaarCascade.create("..\\jviolajones\\haarcascade_frontalface_alt2.xml");
-               final Detector detector = new MultiThreadedDetector(haarCascade, 1f, 2f, 0.1f, false);
+               final Detector detector = new AparapiDetector2(haarCascade, 1f, 2f, 0.1f, false);
                //    final Detector detector = new MultiThreadedDetector(haarCascade, 1f, 2f, 0.1f, false);
                frame.pack();
                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -58,13 +55,13 @@ public class Faces{
                   public void run() {
                      try {
                         long start = System.currentTimeMillis();
-                        
+
                         int frames = 0;
                         while (true) {
                            JJMediaReader.JJReaderStream rs = reader.readFrame();
                            if (rs != null) {
                               vs.getOutputFrame(image);
-                            
+
                               List<Rectangle> rects = detector.getFeatures(image);
                               Graphics2D gc = image.createGraphics();
                               for (Rectangle rect : rects) {
@@ -72,9 +69,9 @@ public class Faces{
                               }
 
                               frames++;
-                               
-                              long fps = (frames*1000)/(System.currentTimeMillis() - start);
-                             
+
+                              long fps = (frames * 1000) / (System.currentTimeMillis() - start);
+
                               gc.drawString("" + fps, 20, 20);
 
                               // System.out.println("elapsed  =" + (System.currentTimeMillis() - start));

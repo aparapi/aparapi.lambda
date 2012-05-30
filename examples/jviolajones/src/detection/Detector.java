@@ -23,6 +23,8 @@ import java.awt.image.DataBufferInt;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.imageio.ImageIO;
@@ -30,34 +32,29 @@ import javax.imageio.ImageIO;
 public abstract class Detector{
 
    public class ScaleInfo{
-      final static int SCALE_INTS = 3;
+      final static int SCALE_INTS = 4;
 
-      final static int SCALE_FLOATS = 1;
-
-      int[] scale_WidthIJ;
-
-      float[] scale_value;
+      short[] scale_ValueWidthIJ;
 
       int scaleIds = 0;
 
       List<Scale> scaleInstances = new ArrayList<Scale>();
 
       public class Scale{
-         public Scale(float _value, int _width, int _i, int _j) {
+         public Scale(short _value, short _width, short _i, short _j) {
             value = _value;
             i = _i;
             j = _j;
-
             width = _width;
          }
 
-         int width;
+         short width;
 
-         int i;
+         short i;
 
-         int j;
+         short j;
 
-         float value;
+         short value;
 
          public String toString() {
             return ("Scale value=" + value + " i=" + i + " j=" + j + " width=" + width);
@@ -67,25 +64,34 @@ public abstract class Detector{
       public ScaleInfo(int _width, int _height, float _maxScale) {
 
          for (float scale = baseScale; scale < _maxScale; scale *= scale_inc) {
-            int scaledFeatureStep = (int) (scale * haarCascade.cascadeWidth * increment);
-            int scaledFeatureWidth = (int) (scale * haarCascade.cascadeWidth);
-
-            for (int i = 0; i < _width - scaledFeatureWidth; i += scaledFeatureStep) {
-               for (int j = 0; j < _height - scaledFeatureWidth; j += scaledFeatureStep) {
-                  scaleInstances.add(new Scale(scale, scaledFeatureWidth, i, j));
-
+            short scaledFeatureStep = (short) (scale * haarCascade.cascadeWidth * increment);
+            short scaledFeatureWidth = (short) (scale * haarCascade.cascadeWidth);
+            for (short j = 0; j < _height - scaledFeatureWidth; j += scaledFeatureStep) {
+               for (short i = 0; i < _width - scaledFeatureWidth; i += scaledFeatureStep) {
+                  scaleInstances.add(new Scale((short) scale, scaledFeatureWidth, i, j));
                }
             }
          }
+         Collections.sort(scaleInstances, new Comparator<Scale>(){
+
+            @Override public int compare(Scale o1, Scale o2) {
+               int primary = Integer.compare(o1.j, o2.j);
+               // int is = 0;// Integer.compare(o2.i, o1.i);
+               //  int secondary = Float.compare(o1.value, o2.value);
+               int secondary = 0;// Integer.compare(o1.width, o2.width);
+               return (primary == 0 ? secondary : primary);
+               // return(secondary==0?primary:secondary);
+
+            }
+         });
          scaleIds = scaleInstances.size();
-         scale_WidthIJ = new int[scaleIds * SCALE_INTS];
-         scale_value = new float[scaleIds * SCALE_FLOATS];
+         scale_ValueWidthIJ = new short[scaleIds * SCALE_INTS];
          for (int scaleId = 0; scaleId < scaleIds; scaleId++) {
             Scale scale = scaleInstances.get(scaleId);
-            scale_WidthIJ[scaleId * SCALE_INTS + 0] = scale.width;
-            scale_WidthIJ[scaleId * SCALE_INTS + 1] = scale.i;
-            scale_WidthIJ[scaleId * SCALE_INTS + 2] = scale.j;
-            scale_value[scaleId * SCALE_FLOATS] = scale.value;
+            scale_ValueWidthIJ[scaleId * SCALE_INTS + 0] = scale.value;
+            scale_ValueWidthIJ[scaleId * SCALE_INTS + 1] = scale.width;
+            scale_ValueWidthIJ[scaleId * SCALE_INTS + 2] = scale.i;
+            scale_ValueWidthIJ[scaleId * SCALE_INTS + 3] = scale.j;
          }
       }
    }
