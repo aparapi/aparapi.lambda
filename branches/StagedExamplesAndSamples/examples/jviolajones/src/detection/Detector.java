@@ -22,11 +22,77 @@ import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferInt;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.imageio.ImageIO;
 
+
 public abstract class Detector{
+   
+   public class ScaleInfo{
+      final static int SCALE_INTS = 4;
+
+      final static int SCALE_FLOATS = 1;
+
+      int[] scale_StepWidthIJ;
+
+      float[] scale_value;
+      
+      int scaleIds=0;
+
+      List<Scale> scaleInstances = new ArrayList<Scale>();
+
+      public class Scale{
+         public Scale(float _value, int _step, int _width, int _i, int _j) {
+            value = _value;
+            i=_i;
+            j = _j;
+            step = _step;
+            width = _width;
+         }
+
+         int step;
+
+         int width;
+
+         int i;
+         int j;
+
+         float value;
+
+         public String toString() {
+            return ("Scale value=" + value + " i=" + i +" j="+j+ " width=" + width + " step=" + step);
+         }
+      }
+
+      public ScaleInfo(int _width, int _height, float _maxScale) {
+        
+         for (float scale = baseScale; scale < _maxScale; scale *= scale_inc) {
+            int scaledFeatureStep = (int) (scale * haarCascade.cascadeWidth * increment);
+            int scaledFeatureWidth = (int) (scale * haarCascade.cascadeWidth);
+         
+            for (int i = 0; i < _width - scaledFeatureWidth; i += scaledFeatureStep) {
+               for (int j = 0; j < _height - scaledFeatureWidth; j += scaledFeatureStep) {
+                  scaleInstances.add(new Scale(scale, scaledFeatureStep, scaledFeatureWidth, i,j));
+                  
+               }
+            }   
+         }
+         scaleIds = scaleInstances.size();
+         scale_StepWidthIJ = new int[scaleIds*SCALE_INTS];
+         scale_value=new float[scaleIds*SCALE_FLOATS];
+         for (int scaleId=0;scaleId<scaleIds;scaleId++){
+            Scale scale = scaleInstances.get(scaleId);
+            scale_StepWidthIJ[scaleId*SCALE_INTS+0]=scale.step;
+            scale_StepWidthIJ[scaleId*SCALE_INTS+1]=scale.width;
+            scale_StepWidthIJ[scaleId*SCALE_INTS+2]=scale.i;
+            scale_StepWidthIJ[scaleId*SCALE_INTS+3]=scale.j; 
+            scale_value[scaleId*SCALE_FLOATS]=scale.value;
+         }
+      }
+   }
+
 
    final HaarCascade haarCascade;
 
