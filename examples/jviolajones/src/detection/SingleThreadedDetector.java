@@ -28,7 +28,7 @@ public class SingleThreadedDetector extends Detector{
 
    ScaleInfo scaleInfo = null;
 
-   List<Rectangle> getFeatures(final int width, final int height, float maxScale, final int[] weightedGrayImage,
+   List<Rectangle> getFeaturesOld(final int width, final int height, float maxScale, final int[] weightedGrayImage,
          final int[] weightedGrayImageSquared, final int[] cannyIntegral) {
       System.out.println("old");
 
@@ -69,7 +69,7 @@ public class SingleThreadedDetector extends Detector{
 
    }
 
-   List<Rectangle> getFeaturesNew(final int width, final int height, float maxScale, final int[] weightedGrayImage,
+   List<Rectangle> getFeatures(final int width, final int height, float maxScale, final int[] weightedGrayImage,
          final int[] weightedGrayImageSquared, final int[] cannyIntegral) {
       final List<Rectangle> features = new ArrayList<Rectangle>();
       System.out.println("new");
