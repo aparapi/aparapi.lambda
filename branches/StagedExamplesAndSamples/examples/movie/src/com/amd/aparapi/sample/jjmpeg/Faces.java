@@ -15,9 +15,12 @@ import javax.swing.SwingUtilities;
 
 import au.notzed.jjmpeg.io.JJMediaReader;
 import au.notzed.jjmpeg.io.JJMediaReader.JJReaderVideo;
+import detection.AparapiDetector;
 import detection.AparapiDetector2;
 import detection.Detector;
 import detection.HaarCascade;
+import detection.MultiThreadedDetector;
+import detection.SingleThreadedDetector;
 
 /**
  * Code based on Demo of JJVideoScanner class
@@ -36,6 +39,7 @@ public class Faces{
             try {
                String name = "C:\\Users\\gfrost\\Downloads\\Lumber jack song.mp4";
                name = "C:\\Users\\gfrost\\Downloads\\Pink Floyd - Arnold Layne.mp4";
+               name = "C:\\Users\\gfrost\\Downloads\\Arnold Lane.mp4";
                //   name = "C:\\Users\\gfrost\\Downloads\\Faces in the Crowd.mp4";
                //   name = "C:\\Users\\gfrost\\Downloads\\Godley and Creme - Cry.mp4";
                //   name = "C:\\Users\\gfrost\\Downloads\\The Matrix Red Dress.mp4";
@@ -45,7 +49,7 @@ public class Faces{
                label.setIcon(new ImageIcon(image));
 
                HaarCascade haarCascade = HaarCascade.create("..\\jviolajones\\haarcascade_frontalface_alt2.xml");
-               final Detector detector = new AparapiDetector2(haarCascade, 1f, 2f, 0.1f, false);
+               final Detector detector = new MultiThreadedDetector(haarCascade, 1f, 2f, 0.1f, false);
                //    final Detector detector = new MultiThreadedDetector(haarCascade, 1f, 2f, 0.1f, false);
                frame.pack();
                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -53,22 +57,25 @@ public class Faces{
                new Thread(new Runnable(){
                   public void run() {
                      try {
-                        int total = 0;
-                        int count = 0;
+                        long start = System.currentTimeMillis();
+                        
+                        int frames = 0;
                         while (true) {
                            JJMediaReader.JJReaderStream rs = reader.readFrame();
                            if (rs != null) {
                               vs.getOutputFrame(image);
-                              long start = System.currentTimeMillis();
+                            
                               List<Rectangle> rects = detector.getFeatures(image);
                               Graphics2D gc = image.createGraphics();
                               for (Rectangle rect : rects) {
                                  gc.draw(rect);
                               }
 
-                              total += (System.currentTimeMillis() - start);
-                              count++;
-                              gc.drawString("" + (total / count), 20, 20);
+                              frames++;
+                               
+                              long fps = (frames*1000)/(System.currentTimeMillis() - start);
+                             
+                              gc.drawString("" + fps, 20, 20);
 
                               // System.out.println("elapsed  =" + (System.currentTimeMillis() - start));
 
