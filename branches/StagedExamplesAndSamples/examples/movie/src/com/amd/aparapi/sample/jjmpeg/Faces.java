@@ -15,9 +15,11 @@ import javax.swing.SwingUtilities;
 
 import au.notzed.jjmpeg.io.JJMediaReader;
 import au.notzed.jjmpeg.io.JJMediaReader.JJReaderVideo;
+import detection.AparapiDetector;
 import detection.AparapiDetector2;
 import detection.Detector;
 import detection.HaarCascade;
+import detection.MultiThreadedDetector;
 
 /**
  * Code based on Demo of JJVideoScanner class
@@ -35,11 +37,11 @@ public class Faces{
             frame.getContentPane().add(label, BorderLayout.CENTER);
             try {
                String name = "C:\\Users\\gfrost\\Downloads\\Lumber jack song.mp4";
-               name = "C:\\Users\\gfrost\\Downloads\\Pink Floyd - Arnold Layne.mp4";
-               name = "C:\\Users\\gfrost\\Downloads\\Arnold Lane.mp4";
-               //   name = "C:\\Users\\gfrost\\Downloads\\Faces in the Crowd.mp4";
+              // name = "C:\\Users\\gfrost\\Downloads\\Pink Floyd - Arnold Layne.mp4";
+             //  name = "C:\\Users\\gfrost\\Downloads\\Arnold Lane.mp4";
+                  name = "C:\\Users\\gfrost\\Downloads\\Faces in the Crowd.mp4";
                //   name = "C:\\Users\\gfrost\\Downloads\\Godley and Creme - Cry.mp4";
-               //   name = "C:\\Users\\gfrost\\Downloads\\The Matrix Red Dress.mp4";
+              //    name = "C:\\Users\\gfrost\\Downloads\\The Matrix Red Dress.mp4";
                final JJMediaReader reader = new JJMediaReader(name);
                final JJReaderVideo vs = reader.openFirstVideoStream();
                final BufferedImage image = vs.createImage();
@@ -47,7 +49,7 @@ public class Faces{
 
                HaarCascade haarCascade = HaarCascade.create("..\\jviolajones\\haarcascade_frontalface_alt2.xml");
                final Detector detector = new AparapiDetector2(haarCascade, 1f, 2f, 0.1f, false);
-               //    final Detector detector = new MultiThreadedDetector(haarCascade, 1f, 2f, 0.1f, false);
+             //      final Detector detector = new MultiThreadedDetector(haarCascade, 1f, 2f, 0.1f, false);
                frame.pack();
                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                frame.setVisible(true);
