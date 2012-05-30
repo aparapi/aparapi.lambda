@@ -39,7 +39,7 @@ public class AparapiDetector extends Detector{
 
       private int[] weightedGrayImageSquared;
 
-      static final private int MAX_FOUND = 100;
+      static final private int MAX_FOUND = 200;
 
       static final private int RECT_FOUND_INTS = 3;
 
