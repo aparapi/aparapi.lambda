@@ -75,7 +75,7 @@ public abstract class Detector{
          Collections.sort(scaleInstances, new Comparator<Scale>(){
 
             @Override public int compare(Scale o1, Scale o2) {
-               int primary = o1.j- o2.j;
+               int primary = o1.j - o2.j;
                // int is = 0;// Integer.compare(o2.i, o1.i);
                //  int secondary = Float.compare(o1.value, o2.value);
                int secondary = 0;// Integer.compare(o1.width, o2.width);
