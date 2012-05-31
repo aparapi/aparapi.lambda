@@ -100,7 +100,6 @@ public class AparapiDetector2 extends Detector{
       @Override public void run() {
          int scaleId = getGlobalId(0);
          if (scaleId < scaleIds) {
-            int localSize = getLocalSize(0);
 
             short i = (short) scale_ValueWidthIJ[scaleId * SCALE_INTS + 2];
 
@@ -190,7 +189,7 @@ public class AparapiDetector2 extends Detector{
 
    public AparapiDetector2(HaarCascade haarCascade, float baseScale, float scaleInc, float increment, boolean doCannyPruning) {
       super(haarCascade, baseScale, scaleInc, increment, doCannyPruning);
-      device = Device.firstGPU();
+      device = Device.best();
       kernel = new DetectorKernel(haarCascade);
       kernel.setExplicit(true);
       // kernel.setExecutionMode(Kernel.EXECUTION_MODE.JTP);
