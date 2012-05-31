@@ -21,6 +21,7 @@ import java.util.List;
 
 import com.amd.aparapi.Device;
 import com.amd.aparapi.Kernel;
+import com.amd.aparapi.ProfileInfo;
 import com.amd.aparapi.Range;
 
 public class AparapiDetector2 extends Detector{
@@ -81,10 +82,6 @@ public class AparapiDetector2 extends Detector{
 
       private short[] scale_ValueWidthIJ;
 
-      static final private int rectcache_size = 8192;
-
-      final private int rect_x1y1x2y2_$local$[] = new int[rectcache_size];
-
       public DetectorKernel(HaarCascade _haarCascade) {
 
          stage_ids = _haarCascade.stage_ids;
@@ -97,9 +94,6 @@ public class AparapiDetector2 extends Detector{
          rect_x1y1x2y2 = _haarCascade.rect_x1y1x2y2;
          cascadeWidth = _haarCascade.cascadeWidth;
          cascadeHeight = _haarCascade.cascadeHeight;
-         System.out.println("RECT_INTS=" + RECT_INTS);
-         System.out.println("rect arr size=" + rect_x1y1x2y2.length);
-         System.out.println("rect arr bytes=" + rect_x1y1x2y2.length * 8);
 
       }
 
@@ -107,12 +101,7 @@ public class AparapiDetector2 extends Detector{
          int scaleId = getGlobalId(0);
          if (scaleId < scaleIds) {
             int localSize = getLocalSize(0);
-            int localId = getLocalId(0);
-            int chunk = rectcache_size / localSize;
-            for (int i = localId * chunk; i < (localId + 1) * chunk; i++) {
-               rect_x1y1x2y2_$local$[i] = rect_x1y1x2y2[i];
-            }
-            this.localBarrier();
+
             short i = (short) scale_ValueWidthIJ[scaleId * SCALE_INTS + 2];
 
             short j = (short) scale_ValueWidthIJ[scaleId * SCALE_INTS + 3];
@@ -142,21 +131,10 @@ public class AparapiDetector2 extends Detector{
                      for (int r = 0; r < 3; r++) {
                         int rectId = feature_r1r2r3LnRn[featureId * FEATURE_INTS + r];
                         if (rectId != -1) {
-                           int x1 = 0;
-                           int y1 = 0;
-                           int x2 = 0;
-                           int y2 = 0;
-                           if (rectId < rectcache_size / 4) {
-                              x1 = rect_x1y1x2y2_$local$[rectId * RECT_INTS + 0];
-                              y1 = rect_x1y1x2y2_$local$[rectId * RECT_INTS + 1];
-                              x2 = rect_x1y1x2y2_$local$[rectId * RECT_INTS + 2];
-                              y2 = rect_x1y1x2y2_$local$[rectId * RECT_INTS + 3];
-                           } else {
-                              x1 = rect_x1y1x2y2[rectId * RECT_INTS + 0];
-                              y1 = rect_x1y1x2y2[rectId * RECT_INTS + 1];
-                              x2 = rect_x1y1x2y2[rectId * RECT_INTS + 2];
-                              y2 = rect_x1y1x2y2[rectId * RECT_INTS + 3];
-                           }
+                           int x1 = rect_x1y1x2y2[rectId * RECT_INTS + 0];
+                           int y1 = rect_x1y1x2y2[rectId * RECT_INTS + 1];
+                           int x2 = rect_x1y1x2y2[rectId * RECT_INTS + 2];
+                           int y2 = rect_x1y1x2y2[rectId * RECT_INTS + 3];
                            float weight = rect_w[rectId * RECT_FLOATS + 0];
                            int rx1 = i + (int) (scale * x1);
                            int rx2 = i + (int) (scale * (x1 + y1));
@@ -228,16 +206,12 @@ public class AparapiDetector2 extends Detector{
       final List<Rectangle> features = new ArrayList<Rectangle>();
       if (scaleInfo == null) {
          scaleInfo = new ScaleInfo(width, height, maxScale);
-
-         int scaleIds = scaleInfo.scaleIds;
-
-         scaleIds = scaleIds + (256 - (scaleIds % 256));
-
-         range = device.createRange(scaleIds);
-         System.out.println(range);
+         kernel.scaleIds = scaleInfo.scaleIds;      
+         range = device.createRange(kernel.scaleIds + ((device.getMaxWorkItemSize()[0])- (kernel.scaleIds % device.getMaxWorkItemSize()[0])));
+        // System.out.println(range);
          kernel.width = width;
-         kernel.scaleIds = scaleInfo.scaleIds;
-         System.out.println("scaledIds = " + kernel.scaleIds);
+        
+        // System.out.println("scaledIds = " + kernel.scaleIds);
          kernel.scale_ValueWidthIJ = scaleInfo.scale_ValueWidthIJ;
       }
 
@@ -246,23 +220,22 @@ public class AparapiDetector2 extends Detector{
       kernel.weightedGrayImage = weightedGrayImage;
       kernel.weightedGrayImageSquared = weightedGrayImageSquared;
       kernel.put(kernel.found);
-      kernel.put(kernel.weightedGrayImage);
-      kernel.put(kernel.weightedGrayImageSquared);
+     // kernel.put(kernel.weightedGrayImage);
+    //  kernel.put(kernel.weightedGrayImageSquared);
       kernel.execute(range);
       kernel.get(kernel.found);
       kernel.get(kernel.found_rects);
-      kernel.get(kernel.weightedGrayImage);
-      kernel.get(kernel.weightedGrayImageSquared);
-      kernel.get(kernel.weightedGrayImageSquared);
+      //kernel.get(kernel.weightedGrayImage);
+     // kernel.get(kernel.weightedGrayImageSquared);
       for (int i = 0; i < kernel.found[0]; i++) {
          features.add(new Rectangle(kernel.found_rects[i * DetectorKernel.RECT_FOUND_INTS + 0], kernel.found_rects[i
                * DetectorKernel.RECT_FOUND_INTS + 1], kernel.found_rects[i * DetectorKernel.RECT_FOUND_INTS + 2],
                kernel.found_rects[i * DetectorKernel.RECT_FOUND_INTS + 2]));
       }
-      // List<ProfileInfo> profileInfoList = kernel.getProfileInfo();
-      //  for (ProfileInfo profileInfo : profileInfoList) {
-      //   System.out.println(profileInfo);
-      // }
+       List<ProfileInfo> profileInfoList = kernel.getProfileInfo();
+        for (ProfileInfo profileInfo : profileInfoList) {
+         System.out.println(profileInfo);
+       }
 
       return (features);
    }
