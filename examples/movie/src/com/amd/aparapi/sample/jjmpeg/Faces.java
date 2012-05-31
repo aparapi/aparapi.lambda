@@ -15,9 +15,11 @@ import javax.swing.SwingUtilities;
 
 import au.notzed.jjmpeg.io.JJMediaReader;
 import au.notzed.jjmpeg.io.JJMediaReader.JJReaderVideo;
+import detection.AparapiDetector;
 import detection.AparapiDetector2;
 import detection.Detector;
 import detection.HaarCascade;
+import detection.MultiThreadedDetector;
 
 /**
  * Code based on Demo of JJVideoScanner class
@@ -39,7 +41,7 @@ public class Faces{
                // name = "C:\\Users\\gfrost\\Downloads\\Pink Floyd - Arnold Layne.mp4";
                //  name = "C:\\Users\\gfrost\\Downloads\\Arnold Lane.mp4";
                name = "C:\\Users\\gfrost\\Downloads\\Faces in the Crowd.mp4";
-               name = "C:\\Users\\gfrost\\Downloads\\Faces in the Crowd (2011) Movie Trailer.mp4";
+             //  name = "C:\\Users\\gfrost\\Downloads\\Faces in the Crowd (2011) Movie Trailer.mp4";
 
                //   name = "C:\\Users\\gfrost\\Downloads\\Godley and Creme - Cry.mp4";
                //    name = "C:\\Users\\gfrost\\Downloads\\The Matrix Red Dress.mp4";
@@ -50,8 +52,8 @@ public class Faces{
                label.setIcon(new ImageIcon(image));
 
                HaarCascade haarCascade = HaarCascade.create("..\\jviolajones\\haarcascade_frontalface_alt2.xml");
-               final Detector detector = new AparapiDetector2(haarCascade, 1f, 2f, 0.1f, false);
-               //      final Detector detector = new MultiThreadedDetector(haarCascade, 1f, 2f, 0.1f, false);
+               final Detector detector = new AparapiDetector(haarCascade, 1f, 2f, 0.1f, false);
+                   // final Detector detector = new MultiThreadedDetector(haarCascade, 1f, 2f, 0.1f, false);
 
                frame.pack();
                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
