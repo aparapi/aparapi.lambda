@@ -21,7 +21,6 @@ import java.util.List;
 
 import com.amd.aparapi.Device;
 import com.amd.aparapi.Kernel;
-import com.amd.aparapi.ProfileInfo;
 import com.amd.aparapi.Range;
 
 public class AparapiDetector2 extends Detector{

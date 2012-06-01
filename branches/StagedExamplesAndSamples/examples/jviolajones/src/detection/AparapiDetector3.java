@@ -20,12 +20,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.amd.aparapi.Device;
-import com.amd.aparapi.Kernel;
 import com.amd.aparapi.OpenCL;
 import com.amd.aparapi.OpenCLDevice;
-import com.amd.aparapi.ProfileInfo;
 import com.amd.aparapi.Range;
-import com.amd.aparapi.OpenCL.GlobalReadOnly;
 
 public class AparapiDetector3 extends Detector{
    @OpenCL.Resource("detector/detector.cl") public static interface DetectorCL extends OpenCL<DetectorCL>{
