@@ -49,7 +49,6 @@ public class AparapiDetector3 extends Detector{
       );
    }
 
- 
    DetectorCL kernel;
 
    private Device device;
@@ -57,13 +56,14 @@ public class AparapiDetector3 extends Detector{
    public AparapiDetector3(HaarCascade haarCascade, float baseScale, float scaleInc, float increment, boolean doCannyPruning) {
       super(haarCascade, baseScale, scaleInc, increment, doCannyPruning);
       device = Device.best();
-      kernel = ((OpenCLDevice)device).bind(DetectorCL.class);
-     
+      kernel = ((OpenCLDevice) device).bind(DetectorCL.class);
+
    }
 
    ScaleInfo scaleInfo = null;
 
    int found[] = new int[1000];
+
    Range range = null;
 
    @Override List<Rectangle> getFeatures(final int width, final int height, float maxScale, final int[] weightedGrayImage,
@@ -72,34 +72,32 @@ public class AparapiDetector3 extends Detector{
       final List<Rectangle> features = new ArrayList<Rectangle>();
       if (scaleInfo == null) {
          scaleInfo = new ScaleInfo(width, height, maxScale);
-       
+
          range = device.createRange(scaleInfo.scaleIds
                + ((device.getMaxWorkItemSize()[0]) - (scaleInfo.scaleIds % device.getMaxWorkItemSize()[0])));
       }
-      
-      
 
-//      kernel.found[0] = 0;
-//
-//      kernel.weightedGrayImage = weightedGrayImage;
-//      kernel.weightedGrayImageSquared = weightedGrayImageSquared;
-//      kernel.put(kernel.found);
-//      // kernel.put(kernel.weightedGrayImage);
-//      //  kernel.put(kernel.weightedGrayImageSquared);
-//      kernel.execute(range);
-//      kernel.get(kernel.found);
-//      kernel.get(kernel.found_rects);
-//      //kernel.get(kernel.weightedGrayImage);
-//      // kernel.get(kernel.weightedGrayImageSquared);
-//      for (int i = 0; i < kernel.found[0]; i++) {
-//         features.add(new Rectangle(kernel.found_rects[i * DetectorKernel.RECT_FOUND_INTS + 0], kernel.found_rects[i
-//               * DetectorKernel.RECT_FOUND_INTS + 1], kernel.found_rects[i * DetectorKernel.RECT_FOUND_INTS + 2],
-//               kernel.found_rects[i * DetectorKernel.RECT_FOUND_INTS + 2]));
-//      }
-//      List<ProfileInfo> profileInfoList = kernel.getProfileInfo();
-//      for (ProfileInfo profileInfo : profileInfoList) {
-//         System.out.println(profileInfo);
-//      }
+      //      kernel.found[0] = 0;
+      //
+      //      kernel.weightedGrayImage = weightedGrayImage;
+      //      kernel.weightedGrayImageSquared = weightedGrayImageSquared;
+      //      kernel.put(kernel.found);
+      //      // kernel.put(kernel.weightedGrayImage);
+      //      //  kernel.put(kernel.weightedGrayImageSquared);
+      //      kernel.execute(range);
+      //      kernel.get(kernel.found);
+      //      kernel.get(kernel.found_rects);
+      //      //kernel.get(kernel.weightedGrayImage);
+      //      // kernel.get(kernel.weightedGrayImageSquared);
+      //      for (int i = 0; i < kernel.found[0]; i++) {
+      //         features.add(new Rectangle(kernel.found_rects[i * DetectorKernel.RECT_FOUND_INTS + 0], kernel.found_rects[i
+      //               * DetectorKernel.RECT_FOUND_INTS + 1], kernel.found_rects[i * DetectorKernel.RECT_FOUND_INTS + 2],
+      //               kernel.found_rects[i * DetectorKernel.RECT_FOUND_INTS + 2]));
+      //      }
+      //      List<ProfileInfo> profileInfoList = kernel.getProfileInfo();
+      //      for (ProfileInfo profileInfo : profileInfoList) {
+      //         System.out.println(profileInfo);
+      //      }
 
       return (features);
    }

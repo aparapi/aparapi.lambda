@@ -205,12 +205,13 @@ public class AparapiDetector2 extends Detector{
       final List<Rectangle> features = new ArrayList<Rectangle>();
       if (scaleInfo == null) {
          scaleInfo = new ScaleInfo(width, height, maxScale);
-         kernel.scaleIds = scaleInfo.scaleIds;      
-         range = device.createRange(kernel.scaleIds + ((device.getMaxWorkItemSize()[0])- (kernel.scaleIds % device.getMaxWorkItemSize()[0])));
-        // System.out.println(range);
+         kernel.scaleIds = scaleInfo.scaleIds;
+         range = device.createRange(kernel.scaleIds
+               + ((device.getMaxWorkItemSize()[0]) - (kernel.scaleIds % device.getMaxWorkItemSize()[0])));
+         // System.out.println(range);
          kernel.width = width;
-        
-        // System.out.println("scaledIds = " + kernel.scaleIds);
+
+         // System.out.println("scaledIds = " + kernel.scaleIds);
          kernel.scale_ValueWidthIJ = scaleInfo.scale_ValueWidthIJ;
       }
 
@@ -219,22 +220,22 @@ public class AparapiDetector2 extends Detector{
       kernel.weightedGrayImage = weightedGrayImage;
       kernel.weightedGrayImageSquared = weightedGrayImageSquared;
       kernel.put(kernel.found);
-     // kernel.put(kernel.weightedGrayImage);
-    //  kernel.put(kernel.weightedGrayImageSquared);
+      // kernel.put(kernel.weightedGrayImage);
+      //  kernel.put(kernel.weightedGrayImageSquared);
       kernel.execute(range);
       kernel.get(kernel.found);
       kernel.get(kernel.found_rects);
       //kernel.get(kernel.weightedGrayImage);
-     // kernel.get(kernel.weightedGrayImageSquared);
+      // kernel.get(kernel.weightedGrayImageSquared);
       for (int i = 0; i < kernel.found[0]; i++) {
          features.add(new Rectangle(kernel.found_rects[i * DetectorKernel.RECT_FOUND_INTS + 0], kernel.found_rects[i
                * DetectorKernel.RECT_FOUND_INTS + 1], kernel.found_rects[i * DetectorKernel.RECT_FOUND_INTS + 2],
                kernel.found_rects[i * DetectorKernel.RECT_FOUND_INTS + 2]));
       }
-       List<ProfileInfo> profileInfoList = kernel.getProfileInfo();
-        for (ProfileInfo profileInfo : profileInfoList) {
-         System.out.println(profileInfo);
-       }
+      // List<ProfileInfo> profileInfoList = kernel.getProfileInfo();
+      // for (ProfileInfo profileInfo : profileInfoList) {
+      //  System.out.println(profileInfo);
+      //  }
 
       return (features);
    }
