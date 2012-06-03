@@ -21,7 +21,6 @@ import java.util.List;
 
 import com.amd.aparapi.Device;
 import com.amd.aparapi.Kernel;
-import com.amd.aparapi.ProfileInfo;
 import com.amd.aparapi.Range;
 
 public class AparapiDetector5 extends Detector{
@@ -214,7 +213,7 @@ public class AparapiDetector5 extends Detector{
       int even = 0;
       int odd = 0;
       for (kernel.stageId = 0; count > 0 && kernel.stageId < haarCascade.stage_ids; kernel.stageId++) {
-        // System.out.println("#1 pass count for stage " + kernel.stageId + " is " + count);
+         // System.out.println("#1 pass count for stage " + kernel.stageId + " is " + count);
          even = (kernel.stageId & 1); // 1 for odd 0 for even
          odd = ((kernel.stageId + 1) & 1); // 0 for odd 1 for even
          kernel.scaleIdCountEvenOdd[even] = count;

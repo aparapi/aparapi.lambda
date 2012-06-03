@@ -93,10 +93,10 @@ public class AparapiDetector4 extends Detector{
 
       @Override public void run() {
          int gid = getGlobalId(0);
-         int even = (stageId & 1);  // 1 for odd 0 for even
-       
+         int even = (stageId & 1); // 1 for odd 0 for even
+
          if (gid < scaleIdCountEvenOdd[even]) { // so that gid can be rounded up to next multiple of groupsize.
-            int scaleId = (even==0 ? scaleIdsEven[gid] : scaleIdsOdd[gid]);
+            int scaleId = (even == 0 ? scaleIdsEven[gid] : scaleIdsOdd[gid]);
             short scale = (short) scale_ValueWidthIJ[scaleId * SCALE_INTS + 0];
             short i = (short) scale_ValueWidthIJ[scaleId * SCALE_INTS + 2];
             short j = (short) scale_ValueWidthIJ[scaleId * SCALE_INTS + 3];
@@ -162,7 +162,7 @@ public class AparapiDetector4 extends Detector{
             }
 
             if (sum > stage_thresh[stageId * STAGE_FLOATS + 0]) {
-               if (even==0) {
+               if (even == 0) {
                   scaleIdsOdd[atomicAdd(scaleIdCountEvenOdd, 1, 1)] = scaleId;
                } else {
                   scaleIdsEven[atomicAdd(scaleIdCountEvenOdd, 0, 1)] = scaleId;
@@ -220,10 +220,10 @@ public class AparapiDetector4 extends Detector{
       System.arraycopy(defaultIds, 0, kernel.scaleIdsEven, 0, kernel.scaleIds);
       kernel.put(kernel.scaleIdsEven);
       boolean even = true;
-     // kernel.put(kernel.weightedGrayImage);
-     // kernel.put(kernel.weightedGrayImageSquared);
+      // kernel.put(kernel.weightedGrayImage);
+      // kernel.put(kernel.weightedGrayImageSquared);
       for (kernel.stageId = 0; count > 0 && kernel.stageId < haarCascade.stage_ids; kernel.stageId++) {
-          // System.out.println("#1 pass count for stage " + kernel.stageId + " is " + count);
+         // System.out.println("#1 pass count for stage " + kernel.stageId + " is " + count);
          //even = (kernel.stageId & 1) == 0;
          if (even) {
             kernel.scaleIdCountEvenOdd[0] = count;
@@ -245,7 +245,7 @@ public class AparapiDetector4 extends Detector{
          //   System.out.println("scale "+((end-start)/1000));
          kernel.execute(range);
          kernel.get(kernel.scaleIdCountEvenOdd);
-         if (even) {         
+         if (even) {
             count = kernel.scaleIdCountEvenOdd[1];
          } else {
             count = kernel.scaleIdCountEvenOdd[0];
@@ -269,7 +269,7 @@ public class AparapiDetector4 extends Detector{
             passes = kernel.scaleIdsEven;
             count = kernel.scaleIdCountEvenOdd[0];
          }
-       
+
          for (int i = 0; i < count; i++) {
             int scaleId = passes[i];
             int x = kernel.scale_ValueWidthIJ[scaleId * kernel.SCALE_INTS + 2];
