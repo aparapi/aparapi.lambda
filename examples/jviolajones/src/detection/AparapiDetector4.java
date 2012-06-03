@@ -217,14 +217,11 @@ public class AparapiDetector4 extends Detector{
       kernel.weightedGrayImageSquared = weightedGrayImageSquared;
       int count = kernel.scaleIds;
 
-      //System.arraycopy(defaultIds, 0, kernel.scaleIdsEven, 0, kernel.scaleIds);
-      for (int i = 0; i < kernel.scaleIds; i++) {
-         kernel.scaleIdsEven[i] = i;
-      }
+      System.arraycopy(defaultIds, 0, kernel.scaleIdsEven, 0, kernel.scaleIds);
       kernel.put(kernel.scaleIdsEven);
       boolean even = true;
-      kernel.put(kernel.weightedGrayImage);
-      kernel.put(kernel.weightedGrayImageSquared);
+     // kernel.put(kernel.weightedGrayImage);
+     // kernel.put(kernel.weightedGrayImageSquared);
       for (kernel.stageId = 0; count > 0 && kernel.stageId < haarCascade.stage_ids; kernel.stageId++) {
          //   System.out.println("#1 pass count for stage " + kernel.stageId + " is " + count);
          //even = (kernel.stageId & 1) == 0;
@@ -247,12 +244,10 @@ public class AparapiDetector4 extends Detector{
          //  long end = System.nanoTime();
          //   System.out.println("scale "+((end-start)/1000));
          kernel.execute(range);
-
-         if (even) {
-            kernel.get(kernel.scaleIdCountEvenOdd);
+         kernel.get(kernel.scaleIdCountEvenOdd);
+         if (even) {         
             count = kernel.scaleIdCountEvenOdd[1];
          } else {
-            kernel.get(kernel.scaleIdCountEvenOdd);
             count = kernel.scaleIdCountEvenOdd[0];
          }
          //  List<ProfileInfo> profileInfoList = kernel.getProfileInfo();
