@@ -266,11 +266,11 @@ public class AparapiDetector4 extends Detector{
       }
       if (count > 0) {
          int passes[] = null;
-         if (even) {
+         if (!even) {
             kernel.get(kernel.scaleIdsOdd);
             passes = kernel.scaleIdsOdd;
          } else {
-            kernel.get(kernel.scaleIdCountEven);
+            kernel.get(kernel.scaleIdsEven);
             passes = kernel.scaleIdsEven;
          }
 
