@@ -17,6 +17,9 @@ import au.notzed.jjmpeg.io.JJMediaReader;
 import au.notzed.jjmpeg.io.JJMediaReader.JJReaderVideo;
 
 import detection.AparapiDetector5;
+import detection.AparapiDetector6;
+import detection.MultiThreadedDetector;
+import detection.SingleThreadedDetector;
 
 import detection.Detector;
 import detection.HaarCascade;
@@ -36,17 +39,7 @@ public class Faces{
             frame.getContentPane().setLayout(new BorderLayout());
             frame.getContentPane().add(label, BorderLayout.CENTER);
             try {
-               String name = "C:\\Users\\gfrost\\Downloads\\Lumber jack song.mp4";
-
-               // name = "C:\\Users\\gfrost\\Downloads\\Pink Floyd - Arnold Layne.mp4";
-               //  name = "C:\\Users\\gfrost\\Downloads\\Arnold Lane.mp4";
-               name = "C:\\Users\\gfrost\\Downloads\\Faces in the Crowd.mp4";
-               //name = "C:\\Users\\gfrost\\Downloads\\Faces in the Crowd (2011) Movie Trailer.mp4";
-               name = "C:\\Users\\gfrost\\Downloads\\Men In Black 3 Official Trailer 1 - Will Smith, Tommy Lee Jones Movie, Josh Brolin 3D (2012) HD.mp4";
-               name = "C:\\Users\\gfrost\\Downloads\\Record Toss - Shaun of the Dead (48) Movie CLIP (2004) HD.mp4";
-               name = "C:\\Users\\gfrost\\Downloads\\Record Toss - Shaun of the Dead (48) Movie CLIP (2004) HD (1).mp4";
-               //   name = "C:\\Users\\gfrost\\Downloads\\Godley and Creme - Cry.mp4";
-               //    name = "C:\\Users\\gfrost\\Downloads\\The Matrix Red Dress.mp4";
+               String name = "faces.mp4";
 
                final JJMediaReader reader = new JJMediaReader(name);
                final JJReaderVideo vs = reader.openFirstVideoStream();
@@ -55,7 +48,7 @@ public class Faces{
 
                HaarCascade haarCascade = HaarCascade.create("..\\jviolajones\\haarcascade_frontalface_alt2.xml");
 
-               final Detector detector = new AparapiDetector5(haarCascade, 1f, 2f, 0.1f, false);
+               final Detector detector = new AparapiDetector6(haarCascade, 1f, 2f, 0.1f, false);
 
                // final Detector detector = new MultiThreadedDetector(haarCascade, 1f, 2f, 0.1f, false);
 
