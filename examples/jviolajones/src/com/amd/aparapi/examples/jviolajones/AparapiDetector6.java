@@ -1,4 +1,4 @@
-package detection;
+package com.amd.aparapi.examples.jviolajones;
 
 /**
 This project is based on the open source jviolajones project created by Simon
@@ -23,31 +23,15 @@ import com.amd.aparapi.Device;
 import com.amd.aparapi.Kernel;
 import com.amd.aparapi.Range;
 
-public class AparapiDetector extends Detector{
+public class AparapiDetector6 extends Detector{
 
    class DetectorKernel extends Kernel{
 
       private int width;
 
-      private int scaledFeatureWidth;
-
-      private int scaledFeatureStep;
-
-      private float scale;
-
       private int[] weightedGrayImage;
 
       private int[] weightedGrayImageSquared;
-
-      static final private int MAX_FOUND = 200;
-
-      static final private int RECT_FOUND_INTS = 3;
-
-      private int[] found_rects = new int[MAX_FOUND * RECT_FOUND_INTS];
-
-      private int[] found = new int[1];
-
-      final private int stage_ids;
 
       final private int[] tree_startEnd;
 
@@ -69,6 +53,8 @@ public class AparapiDetector extends Detector{
 
       static final private int TREE_INTS = HaarCascade.TREE_INTS;
 
+      static final private int SCALE_INTS = ScaleInfo.SCALE_INTS;
+
       final private int[] feature_r1r2r3LnRn;
 
       final private int[] rect_x1y1x2y2;
@@ -77,12 +63,23 @@ public class AparapiDetector extends Detector{
 
       final private float[] feature_LvRvThres;
 
+      private int scaleIds;
+
       final int cascadeWidth;
 
       final int cascadeHeight;
 
+      private short[] scale_ValueWidthIJ;
+
+      private int stageId = 0;
+
+      private int[] scaleIdCountEvenOdd = new int[2];
+
+      private int[] scaleIdsEvenOdd;
+
+      private int[] counts_$local$;
+
       public DetectorKernel(HaarCascade _haarCascade) {
-         stage_ids = _haarCascade.stage_ids;
          stage_startEnd = _haarCascade.stage_startEnd;
          stage_thresh = _haarCascade.stage_thresh;
          tree_startEnd = _haarCascade.tree_startEnd;
@@ -95,21 +92,31 @@ public class AparapiDetector extends Detector{
       }
 
       @Override public void run() {
-         int i = getGlobalId(0) * scaledFeatureStep;
-         int j = getGlobalId(1) * scaledFeatureStep;
+         int gid = getGlobalId(0);
+         int even = (stageId & 1); // 1 for odd 0 for even
+         int odd = ((stageId + 1) & 1); // 0 for odd 1 for even
+         int lid = getLocalId(0);
+         int lsz = getLocalSize(0);
+         counts_$local$[lid * 2] = 0;
+         counts_$local$[lid * 2 + 1] = 0;
+         localBarrier();
 
-         boolean pass = true;
-         for (int stageId = 0; pass == true && stageId < stage_ids; stageId++) {
+         if (gid < scaleIdCountEvenOdd[even]) { // so that gid can be rounded up to next multiple of groupsize.
+            int scaleId = scaleIdsEvenOdd[scaleIds * even + gid];
+            short scale = scale_ValueWidthIJ[scaleId * SCALE_INTS + 0];
+            short i = scale_ValueWidthIJ[scaleId * SCALE_INTS + 2];
+            short j = scale_ValueWidthIJ[scaleId * SCALE_INTS + 3];
+
+            short w = (short) (scale * cascadeWidth);
+            short h = (short) (scale * cascadeHeight);
+            float inv_area = 1f / (w * h);
             float sum = 0;
             for (int treeId = stage_startEnd[stageId * STAGE_INTS + 0]; treeId <= stage_startEnd[stageId * STAGE_INTS + 1]; treeId++) {
                int featureId = tree_startEnd[treeId * TREE_INTS + 0];
                float thresh = 0f;
-               boolean done = false;
-               while (!done) {
 
-                  int w = (int) (scale * cascadeWidth);
-                  int h = (int) (scale * cascadeHeight);
-                  float inv_area = 1f / (w * h);
+               for (boolean done = false; !done;) {
+
                   int total_x = weightedGrayImage[i + w + (j + h) * width] + weightedGrayImage[i + (j) * width]
                         - weightedGrayImage[i + (j + h) * width] - weightedGrayImage[i + w + (j) * width];
                   int total_x2 = weightedGrayImageSquared[i + w + (j + h) * width] + weightedGrayImageSquared[i + (j) * width]
@@ -118,6 +125,7 @@ public class AparapiDetector extends Detector{
                   float vnorm = total_x2 * inv_area - moy * moy;
                   vnorm = (vnorm > 1) ? sqrt(vnorm) : 1;
                   int rect_sum = 0;
+
                   for (int r = 0; r < 3; r++) {
                      int rectId = feature_r1r2r3LnRn[featureId * FEATURE_INTS + r];
                      if (rectId != -1) {
@@ -134,6 +142,7 @@ public class AparapiDetector extends Detector{
                               - weightedGrayImage[rx2 + (ry1) * width] + weightedGrayImage[rx1 + (ry1) * width]) * weight);
                      }
                   }
+
                   float rect_sum2 = rect_sum * inv_area;
 
                   if (rect_sum2 < feature_LvRvThres[featureId * FEATURE_FLOATS + 2] * vnorm) {
@@ -158,75 +167,101 @@ public class AparapiDetector extends Detector{
                sum += thresh;
             }
 
-            if (sum <= stage_thresh[stageId * STAGE_FLOATS + 0]) {
-               pass = false;
+            if (sum > stage_thresh[stageId * STAGE_FLOATS + 0]) {
+               counts_$local$[lid] = 1;
+               counts_$local$[lid+lsz] = scaleId;
+            }
+
+         }
+
+         localBarrier();
+         if (lid == 0) {
+            int count = 0;
+            for (int wi = 0; wi < lsz; wi++) {
+               count += counts_$local$[wi];
+            }
+            int base = atomicAdd(scaleIdCountEvenOdd, odd, count);
+            count = 0;
+            for (int wi = 0; wi < lsz; wi ++) {
+               if (counts_$local$[wi] == 1) {
+                  scaleIdsEvenOdd[scaleIds * odd + base + count] = counts_$local$[wi+lsz];
+                  count++;
+               }
+
             }
          }
-         if (pass) {
-            int value = atomicAdd(found, 0, 1);
-
-            found_rects[value * RECT_FOUND_INTS + 0] = i;
-            found_rects[value * RECT_FOUND_INTS + 1] = j;
-            found_rects[value * RECT_FOUND_INTS + 2] = scaledFeatureWidth;
-
-         }
-
       }
-
-      public void set(int _width, float _scale, int _scaledFeatureWidth, int _scaledFeatureStep, int[] _weightedGrayImage,
-            int[] _weightedGreyImageSquared) {
-         width = _width;
-         scale = _scale;
-         scaledFeatureWidth = _scaledFeatureWidth;
-         scaledFeatureStep = _scaledFeatureStep;
-         weightedGrayImage = _weightedGrayImage;
-         weightedGrayImageSquared = _weightedGreyImageSquared;
-
-      }
-
    }
 
    DetectorKernel kernel;
 
    private Device device;
 
-   public AparapiDetector(HaarCascade haarCascade, float baseScale, float scaleInc, float increment, boolean doCannyPruning) {
+   public AparapiDetector6(HaarCascade haarCascade, float baseScale, float scaleInc, float increment, boolean doCannyPruning) {
       super(haarCascade, baseScale, scaleInc, increment, doCannyPruning);
       device = Device.best();
       kernel = new DetectorKernel(haarCascade);
       kernel.setExplicit(true);
-      // kernel.setExecutionMode(Kernel.EXECUTION_MODE.JTP);
    }
+
+   ScaleInfo scaleInfo = null;
+
+   Range range = null;
+
+   int[] defaultIds = null;
 
    @Override List<Rectangle> getFeatures(final int width, final int height, float maxScale, final int[] weightedGrayImage,
          final int[] weightedGrayImageSquared, final int[] cannyIntegral) {
 
       final List<Rectangle> features = new ArrayList<Rectangle>();
-      for (float scale = baseScale; scale < maxScale; scale *= scale_inc) {
-         final int scaledFeatureStep = (int) (scale * haarCascade.cascadeWidth * increment);
-         final int scaledFeatureWidth = (int) (scale * haarCascade.cascadeWidth);
-
-         Range range = device.createRange2D((width - scaledFeatureWidth) / scaledFeatureStep, (height - scaledFeatureWidth)
-               / scaledFeatureStep);
-
-         // Range range = Range.create2D((width - scaledFeatureWidth) / scaledFeatureStep, (height - scaledFeatureWidth)
-         // / scaledFeatureStep);
-         //     System.out.println(range);
-         kernel.found[0] = 0;
-         kernel.put(kernel.found);
-         kernel.set(width, scale, scaledFeatureWidth, scaledFeatureStep, weightedGrayImage, weightedGrayImageSquared);
-         kernel.execute(range);
-         // System.out.println(kernel.getExecutionMode() + " " + kernel.getConversionTime());
-         //   System.out.println(kernel.getExecutionMode() + " " + kernel.getExecutionTime());
-         kernel.get(kernel.found);
-         kernel.get(kernel.found_rects);
-         for (int i = 0; i < kernel.found[0]; i++) {
-            features.add(new Rectangle(kernel.found_rects[i * DetectorKernel.RECT_FOUND_INTS + 0], kernel.found_rects[i
-                  * DetectorKernel.RECT_FOUND_INTS + 1], kernel.found_rects[i * DetectorKernel.RECT_FOUND_INTS + 2],
-                  kernel.found_rects[i * DetectorKernel.RECT_FOUND_INTS + 2]));
+      if (scaleInfo == null) {
+         scaleInfo = new ScaleInfo(width, height, maxScale);
+         kernel.scaleIds = scaleInfo.scaleIds;
+         defaultIds = new int[kernel.scaleIds];
+         for (int i = 0; i < kernel.scaleIds; i++) {
+            defaultIds[i] = i;
          }
+         kernel.scaleIdsEvenOdd = new int[kernel.scaleIds * 2];
+         kernel.counts_$local$ = new int[device.getMaxWorkItemSize()[0] * 2];
+         kernel.width = width;
+         kernel.scale_ValueWidthIJ = scaleInfo.scale_ValueWidthIJ;
       }
+      kernel.weightedGrayImage = weightedGrayImage;
+      kernel.weightedGrayImageSquared = weightedGrayImageSquared;
+      int count = kernel.scaleIds;
 
+      System.arraycopy(defaultIds, 0, kernel.scaleIdsEvenOdd, 0, kernel.scaleIds);
+      kernel.put(kernel.scaleIdsEvenOdd);
+      int even = 0;
+      int odd = 0;
+      for (kernel.stageId = 0; count > 0 && kernel.stageId < haarCascade.stage_ids; kernel.stageId++) {
+         // System.out.println("#1 pass count for stage " + kernel.stageId + " is " + count);
+         even = (kernel.stageId & 1); // 1 for odd 0 for even
+         odd = ((kernel.stageId + 1) & 1); // 0 for odd 1 for even
+         kernel.scaleIdCountEvenOdd[even] = count;
+         kernel.scaleIdCountEvenOdd[odd] = 0;
+         kernel.put(kernel.scaleIdCountEvenOdd);
+         range = device.createRange(count + ((device.getMaxWorkItemSize()[0]) - (count % device.getMaxWorkItemSize()[0])));
+         kernel.execute(range);
+         kernel.get(kernel.scaleIdCountEvenOdd);
+         count = kernel.scaleIdCountEvenOdd[odd];
+
+         // List<ProfileInfo> profileInfoList = kernel.getProfileInfo();
+         //  for (ProfileInfo profileInfo : profileInfoList) {
+         //   System.out.println(profileInfo);
+         // }
+      }
+      if (count > 0) {
+         kernel.get(kernel.scaleIdsEvenOdd);
+         for (int i = 0; i < count; i++) {
+            int scaleId = kernel.scaleIdsEvenOdd[odd * kernel.scaleIds + i];
+            int x = kernel.scale_ValueWidthIJ[scaleId * kernel.SCALE_INTS + 2];
+            int y = kernel.scale_ValueWidthIJ[scaleId * kernel.SCALE_INTS + 3];
+            int scaledFeatureWidth = kernel.scale_ValueWidthIJ[scaleId * kernel.SCALE_INTS + 1];
+            features.add(new Rectangle(x, y, scaledFeatureWidth, scaledFeatureWidth));
+         }
+
+      }
       return (features);
    }
 

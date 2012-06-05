@@ -1,4 +1,4 @@
-package detection;
+package com.amd.aparapi.examples.jviolajones;
 
 import java.awt.Rectangle;
 import java.util.ArrayList;
