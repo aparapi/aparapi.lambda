@@ -1,6 +1,7 @@
 package com.amd.aparapi.sample.jjmpeg;
 
 import java.awt.BorderLayout;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.util.concurrent.BrokenBarrierException;
@@ -173,57 +174,17 @@ public class Main{
    }
 
    public static void main(final String[] args) {
-      SwingUtilities.invokeLater(new Runnable(){
-         public void run() {
-            JFrame frame = new JFrame("Video Frames");
-            final JLabel label = new JLabel();
-            frame.getContentPane().setLayout(new BorderLayout());
-            frame.getContentPane().add(label, BorderLayout.CENTER);
-            try {
-               String name = "c:\\users\\gfrost\\Desktop\\afds\\MV5BMjEyMjMzODc0MV5BMTFeQW1wNF5BbWU3MDE3NzA0Nzc@.mp4";
-               name = "C:\\Users\\gfrost\\Downloads\\leo_1080p.mov";
-               //   name = "C:\\Users\\gfrost\\Downloads\\HK2207_720p.mp4";
-               // name= "C:\\Users\\gfrost\\Downloads\\Froblins.H.264-SD.mov";
-               name = "C:\\Users\\gfrost\\Downloads\\leo_1080p.mov";
 
-               final JJMediaReader reader = new JJMediaReader(name);
-               final JJReaderVideo vs = reader.openFirstVideoStream();
-               final BufferedImage image = vs.createImage();
-               final ConvolutionKernel kernel = new ConvolutionKernel(image.getWidth(), image.getHeight());
-               label.setIcon(new ImageIcon(image));
-               frame.pack();
-               frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-               frame.setVisible(true);
-               new Thread(new Runnable(){
-                  public void run() {
-                     try {
-                        while (true) {
-                           JJMediaReader.JJReaderStream rs = reader.readFrame();
-                           if (rs != null) {
-                              vs.getOutputFrame(image);
-                              long start = System.currentTimeMillis();
-                              kernel.apply(EDGE, image);
-                              System.out.println("elapsed  =" + (System.currentTimeMillis() - start));
+      new JJMPEGPlayer("Faces", "C:\\Users\\gfrost\\Downloads\\leo_1080p.mov", false){
+         ConvolutionKernel kernel = null;
 
-                              //System.out.println(kernel.getExecutionTime());
-                              label.repaint();
-                           } else {
-                              System.out.println("end of file, restart");
-                              reader.dispose();
-                              System.exit(1);
-                           }
-                           Thread.sleep(1);
-                        }
-                     } catch (Exception ex) {
-                        ex.printStackTrace();
-                        Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-                     }
-                  }
-               }).start();
-            } catch (Exception ex) {
-               Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+         @Override protected void process(Graphics2D gc, BufferedImage in) {
+            if (kernel == null) {
+               kernel = new ConvolutionKernel(in.getWidth(), in.getHeight());
             }
+            kernel.apply(EDGE, in);
          }
-      });
+      };
+
    }
 }
