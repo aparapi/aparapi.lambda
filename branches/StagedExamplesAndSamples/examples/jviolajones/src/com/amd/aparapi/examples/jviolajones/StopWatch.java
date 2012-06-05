@@ -1,4 +1,4 @@
-package detection;
+package com.amd.aparapi.examples.jviolajones;
 
 /**
 This project is based on the open source jviolajones project created by Simon

@@ -13,16 +13,17 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 
+import com.amd.aparapi.examples.jviolajones.AparapiDetector5;
+import com.amd.aparapi.examples.jviolajones.AparapiDetector6;
+import com.amd.aparapi.examples.jviolajones.Detector;
+import com.amd.aparapi.examples.jviolajones.HaarCascade;
+import com.amd.aparapi.examples.jviolajones.MultiThreadedDetector;
+import com.amd.aparapi.examples.jviolajones.SingleThreadedDetector;
+
 import au.notzed.jjmpeg.io.JJMediaReader;
 import au.notzed.jjmpeg.io.JJMediaReader.JJReaderVideo;
 
-import detection.AparapiDetector5;
-import detection.AparapiDetector6;
-import detection.MultiThreadedDetector;
-import detection.SingleThreadedDetector;
 
-import detection.Detector;
-import detection.HaarCascade;
 
 /**
  * Code based on Demo of JJVideoScanner class
@@ -48,9 +49,9 @@ public class Faces{
 
                HaarCascade haarCascade = HaarCascade.create("..\\jviolajones\\haarcascade_frontalface_alt2.xml");
 
-               final Detector detector = new AparapiDetector6(haarCascade, 1f, 2f, 0.1f, false);
+               //final Detector detector = new AparapiDetector6(haarCascade, 1f, 2f, 0.1f, false);
 
-               // final Detector detector = new MultiThreadedDetector(haarCascade, 1f, 2f, 0.1f, false);
+                final Detector detector = new MultiThreadedDetector(haarCascade, 1f, 2f, 0.1f, false);
 
                frame.pack();
                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

@@ -1,4 +1,4 @@
-package detection;
+package com.amd.aparapi.examples.jviolajones;
 
 /**
 This project is based on the open source jviolajones project created by Simon
@@ -23,7 +23,7 @@ import com.amd.aparapi.Device;
 import com.amd.aparapi.Kernel;
 import com.amd.aparapi.Range;
 
-public class AparapiDetector4 extends Detector{
+public class AparapiDetector5 extends Detector{
 
    class DetectorKernel extends Kernel{
 
@@ -75,9 +75,7 @@ public class AparapiDetector4 extends Detector{
 
       private int[] scaleIdCountEvenOdd = new int[2];
 
-      private int[] scaleIdsOdd;
-
-      private int[] scaleIdsEven;
+      private int[] scaleIdsEvenOdd;
 
       public DetectorKernel(HaarCascade _haarCascade) {
          stage_startEnd = _haarCascade.stage_startEnd;
@@ -94,12 +92,13 @@ public class AparapiDetector4 extends Detector{
       @Override public void run() {
          int gid = getGlobalId(0);
          int even = (stageId & 1); // 1 for odd 0 for even
+         int odd = ((stageId + 1) & 1); // 0 for odd 1 for even
 
          if (gid < scaleIdCountEvenOdd[even]) { // so that gid can be rounded up to next multiple of groupsize.
-            int scaleId = (even == 0 ? scaleIdsEven[gid] : scaleIdsOdd[gid]);
-            short scale = (short) scale_ValueWidthIJ[scaleId * SCALE_INTS + 0];
-            short i = (short) scale_ValueWidthIJ[scaleId * SCALE_INTS + 2];
-            short j = (short) scale_ValueWidthIJ[scaleId * SCALE_INTS + 3];
+            int scaleId = scaleIdsEvenOdd[scaleIds * even + gid];
+            short scale = scale_ValueWidthIJ[scaleId * SCALE_INTS + 0];
+            short i = scale_ValueWidthIJ[scaleId * SCALE_INTS + 2];
+            short j = scale_ValueWidthIJ[scaleId * SCALE_INTS + 3];
 
             short w = (short) (scale * cascadeWidth);
             short h = (short) (scale * cascadeHeight);
@@ -162,11 +161,9 @@ public class AparapiDetector4 extends Detector{
             }
 
             if (sum > stage_thresh[stageId * STAGE_FLOATS + 0]) {
-               if (even == 0) {
-                  scaleIdsOdd[atomicAdd(scaleIdCountEvenOdd, 1, 1)] = scaleId;
-               } else {
-                  scaleIdsEven[atomicAdd(scaleIdCountEvenOdd, 0, 1)] = scaleId;
-               }
+
+               scaleIdsEvenOdd[scaleIds * odd + atomicAdd(scaleIdCountEvenOdd, odd, 1)] = scaleId;
+
             }
 
          }
@@ -179,12 +176,11 @@ public class AparapiDetector4 extends Detector{
 
    private Device device;
 
-   public AparapiDetector4(HaarCascade haarCascade, float baseScale, float scaleInc, float increment, boolean doCannyPruning) {
+   public AparapiDetector5(HaarCascade haarCascade, float baseScale, float scaleInc, float increment, boolean doCannyPruning) {
       super(haarCascade, baseScale, scaleInc, increment, doCannyPruning);
       device = Device.best();
       kernel = new DetectorKernel(haarCascade);
       kernel.setExplicit(true);
-      // kernel.setExecutionMode(Kernel.EXECUTION_MODE.JTP);
    }
 
    ScaleInfo scaleInfo = null;
@@ -204,74 +200,39 @@ public class AparapiDetector4 extends Detector{
          for (int i = 0; i < kernel.scaleIds; i++) {
             defaultIds[i] = i;
          }
-         kernel.scaleIdsEven = new int[kernel.scaleIds];
-         kernel.scaleIdsOdd = new int[kernel.scaleIds];
-
-         // System.out.println(range);
+         kernel.scaleIdsEvenOdd = new int[kernel.scaleIds * 2];
          kernel.width = width;
-
-         // System.out.println("scaledIds = " + kernel.scaleIds);
          kernel.scale_ValueWidthIJ = scaleInfo.scale_ValueWidthIJ;
       }
       kernel.weightedGrayImage = weightedGrayImage;
       kernel.weightedGrayImageSquared = weightedGrayImageSquared;
       int count = kernel.scaleIds;
 
-      System.arraycopy(defaultIds, 0, kernel.scaleIdsEven, 0, kernel.scaleIds);
-      kernel.put(kernel.scaleIdsEven);
-      boolean even = true;
-      // kernel.put(kernel.weightedGrayImage);
-      // kernel.put(kernel.weightedGrayImageSquared);
+      System.arraycopy(defaultIds, 0, kernel.scaleIdsEvenOdd, 0, kernel.scaleIds);
+      kernel.put(kernel.scaleIdsEvenOdd);
+      int even = 0;
+      int odd = 0;
       for (kernel.stageId = 0; count > 0 && kernel.stageId < haarCascade.stage_ids; kernel.stageId++) {
          // System.out.println("#1 pass count for stage " + kernel.stageId + " is " + count);
-         //even = (kernel.stageId & 1) == 0;
-         if (even) {
-            kernel.scaleIdCountEvenOdd[0] = count;
-            kernel.scaleIdCountEvenOdd[1] = 0;
-         } else {
-            kernel.scaleIdCountEvenOdd[1] = count;
-            kernel.scaleIdCountEvenOdd[0] = 0;
-
-         }
+         even = (kernel.stageId & 1); // 1 for odd 0 for even
+         odd = ((kernel.stageId + 1) & 1); // 0 for odd 1 for even
+         kernel.scaleIdCountEvenOdd[even] = count;
+         kernel.scaleIdCountEvenOdd[odd] = 0;
          kernel.put(kernel.scaleIdCountEvenOdd);
-
-         // kernel.put(kernel.weightedGrayImage);
-         //   kernel.put(kernel.weightedGrayImageSquared);
-         // long start = System.nanoTime();
          range = device.createRange(count + ((device.getMaxWorkItemSize()[0]) - (count % device.getMaxWorkItemSize()[0])));
-
-         // range = device.createRange(count);
-         //  long end = System.nanoTime();
-         //   System.out.println("scale "+((end-start)/1000));
          kernel.execute(range);
          kernel.get(kernel.scaleIdCountEvenOdd);
-         if (even) {
-            count = kernel.scaleIdCountEvenOdd[1];
-         } else {
-            count = kernel.scaleIdCountEvenOdd[0];
-         }
-         //  List<ProfileInfo> profileInfoList = kernel.getProfileInfo();
-         // for (ProfileInfo profileInfo : profileInfoList) {
-         //    System.out.println(profileInfo);
-         //  }
-         even = !even;
+         count = kernel.scaleIdCountEvenOdd[odd];
+
+         // List<ProfileInfo> profileInfoList = kernel.getProfileInfo();
+         //  for (ProfileInfo profileInfo : profileInfoList) {
+         //   System.out.println(profileInfo);
+         // }
       }
       if (count > 0) {
-         int passes[] = null;
-         if (!even) {
-            kernel.get(kernel.scaleIdsOdd);
-            kernel.get(kernel.scaleIdCountEvenOdd);
-            passes = kernel.scaleIdsOdd;
-            count = kernel.scaleIdCountEvenOdd[1];
-         } else {
-            kernel.get(kernel.scaleIdsEven);
-            kernel.get(kernel.scaleIdCountEvenOdd);
-            passes = kernel.scaleIdsEven;
-            count = kernel.scaleIdCountEvenOdd[0];
-         }
-
+         kernel.get(kernel.scaleIdsEvenOdd);
          for (int i = 0; i < count; i++) {
-            int scaleId = passes[i];
+            int scaleId = kernel.scaleIdsEvenOdd[odd * kernel.scaleIds + i];
             int x = kernel.scale_ValueWidthIJ[scaleId * kernel.SCALE_INTS + 2];
             int y = kernel.scale_ValueWidthIJ[scaleId * kernel.SCALE_INTS + 3];
             int scaledFeatureWidth = kernel.scale_ValueWidthIJ[scaleId * kernel.SCALE_INTS + 1];
