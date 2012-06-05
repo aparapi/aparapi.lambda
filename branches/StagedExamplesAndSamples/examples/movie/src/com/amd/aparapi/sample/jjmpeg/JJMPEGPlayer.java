@@ -2,6 +2,7 @@ package com.amd.aparapi.sample.jjmpeg;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
@@ -25,11 +26,19 @@ public class JJMPEGPlayer{
 
    public JJMPEGPlayer(final String _title, final String _fileName, final boolean _useDestBuffer) {
       SwingUtilities.invokeLater(new Runnable(){
+         final Object doorBell = new Object();
          public void run() {
 
             JFrame frame = new JFrame(_title);
             frame.getContentPane().setLayout(new BorderLayout());
-            final JLabel label = new JLabel();
+            final JLabel label = new JLabel(){
+              @Override public void paint(Graphics GC){
+                 super.paint(GC);
+                 synchronized (doorBell) {
+                    doorBell.notify();
+                 }
+              }
+            };
             frame.getContentPane().add(label, BorderLayout.CENTER);
 
             try {
@@ -62,6 +71,13 @@ public class JJMPEGPlayer{
                               }
 
                               label.repaint();
+                              synchronized (doorBell) {
+                                 try {
+                                    doorBell.wait();
+                                 } catch (InterruptedException ie) {
+                                    ie.getStackTrace();
+                                 }
+                              }
                            } else {
                               reader.dispose();
                               System.exit(1);
