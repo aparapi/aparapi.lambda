@@ -40,8 +40,8 @@ public class PureJava{
       });
       final ConvolveOp convOp = new ConvolveOp(conv, ConvolveOp.EDGE_NO_OP, null);
       // String name = "c:\\users\\gfrost\\Desktop\\afds\\MV5BMjEyMjMzODc0MV5BMTFeQW1wNF5BbWU3MDE3NzA0Nzc@.mp4";
-      // name = "C:\\Users\\gfrost\\Downloads\\HK2207_720p.mp4";
-      new JJMPEGPlayer("Faces", "C:\\Users\\gfrost\\Downloads\\leo_1080p.mov", true){
+// name = "C:\\Users\\gfrost\\Downloads\\HK2207_720p.mp4";
+      new JJMPEGPlayer("Faces", args[0], true){
          @Override protected void process(Graphics2D gc, BufferedImage in, BufferedImage out) {
 
             convOp.filter(in, out);
