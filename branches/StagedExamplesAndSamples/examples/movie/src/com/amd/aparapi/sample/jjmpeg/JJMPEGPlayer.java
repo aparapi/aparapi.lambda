@@ -27,17 +27,18 @@ public class JJMPEGPlayer{
    public JJMPEGPlayer(final String _title, final String _fileName, final boolean _useDestBuffer) {
       SwingUtilities.invokeLater(new Runnable(){
          final Object doorBell = new Object();
+
          public void run() {
 
             JFrame frame = new JFrame(_title);
             frame.getContentPane().setLayout(new BorderLayout());
             final JLabel label = new JLabel(){
-              @Override public void paint(Graphics GC){
-                 super.paint(GC);
-                 synchronized (doorBell) {
-                    doorBell.notify();
-                 }
-              }
+               @Override public void paint(Graphics GC) {
+                  super.paint(GC);
+                  synchronized (doorBell) {
+                     doorBell.notify();
+                  }
+               }
             };
             frame.getContentPane().add(label, BorderLayout.CENTER);
 
@@ -46,10 +47,10 @@ public class JJMPEGPlayer{
                final JJReaderVideo vs = reader.openFirstVideoStream();
                final BufferedImage in = vs.createImage();
                final BufferedImage out = vs.createImage();
-               if (_useDestBuffer){
-               label.setIcon(new ImageIcon(out));
-               }else{
-               label.setIcon(new ImageIcon(in));
+               if (_useDestBuffer) {
+                  label.setIcon(new ImageIcon(out));
+               } else {
+                  label.setIcon(new ImageIcon(in));
                }
                new Thread(new Runnable(){
                   public void run() {
@@ -64,9 +65,9 @@ public class JJMPEGPlayer{
                               frames++;
                               long fps = (frames * 1000) / (System.currentTimeMillis() - start);
                               gc.drawString("" + fps, 20, 20);
-                              if (_useDestBuffer){
+                              if (_useDestBuffer) {
                                  process(gc, in, out);
-                              }else{
+                              } else {
                                  process(gc, in);
                               }
 
@@ -104,6 +105,7 @@ public class JJMPEGPlayer{
    protected void process(Graphics2D gc, BufferedImage image) {
 
    }
+
    protected void process(Graphics2D gc, BufferedImage in, BufferedImage _out) {
 
    }

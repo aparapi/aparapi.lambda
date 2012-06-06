@@ -175,7 +175,7 @@ public class Main{
 
    public static void main(final String[] args) {
 
-      new JJMPEGPlayer("Faces", "C:\\Users\\gfrost\\Downloads\\leo_1080p.mov", false){
+      new JJMPEGPlayer("Faces", args[0], false){
          ConvolutionKernel kernel = null;
 
          @Override protected void process(Graphics2D gc, BufferedImage in) {
