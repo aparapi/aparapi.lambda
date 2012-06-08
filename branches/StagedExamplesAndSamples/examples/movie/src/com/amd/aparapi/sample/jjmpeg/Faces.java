@@ -40,6 +40,7 @@ public class Faces{
 
       new JJMPEGPlayer("Faces", args[0], false){
          @Override protected void process(Graphics2D gc, BufferedImage image) {
+            System.out.println(image);
             List<Rectangle> rects = detector.getFeatures(image);
             gc.setColor(Color.RED);
             for (Rectangle rect : rects) {
