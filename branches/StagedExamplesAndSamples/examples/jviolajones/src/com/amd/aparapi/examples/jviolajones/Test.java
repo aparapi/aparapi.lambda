@@ -47,9 +47,12 @@ public class Test extends JFrame{
       HaarCascade haarCascade = HaarCascade.create(XMLFile);
 
       Detector detector = new AparapiDetector6(haarCascade, 1f, 2f, 0.1f, false);
-
+      StopWatch sw1 = new StopWatch("first detection");
       List<Rectangle> res = detector.getFeatures(img.getAbsolutePath());
+      sw1.stop();
+      StopWatch sw2 = new StopWatch("second detection");
       res = detector.getFeatures(img.getAbsolutePath());
+      sw2.stop();
       res = RectanglePruner.merge(res, 1);
 
       System.out.println(res.size() + " faces found!");

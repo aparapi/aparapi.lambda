@@ -11,13 +11,14 @@ import java.awt.event.*;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.*;
 import java.io.*;
 import javax.imageio.ImageIO;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+
+import com.amd.aparapi.examples.jviolajones.StopWatch;
 
 public class Test extends JFrame{
 	
@@ -32,7 +33,12 @@ public class Test extends JFrame{
 		}
 		Dessin d = new Dessin(image);
 		Detector detector=Detector.create(XMLFile);
-		List<Rectangle> res=detector.getFaces(img.getAbsolutePath(), 1, 1.25f, 0.1f,1,true);
+		StopWatch sw1 = new StopWatch("first detection");
+      List<Rectangle> res=detector.getFaces(img.getAbsolutePath(), 1f, 2f, 0.1f,1,false);
+      sw1.stop();
+		StopWatch sw2 = new StopWatch("second detection");
+		res=detector.getFaces(img.getAbsolutePath(), 1f, 2f, 0.1f,1,false);
+		sw2.stop();
 		System.out.println(res.size()+" faces found!");
         d.setRects(res);
 		setContentPane(d);
