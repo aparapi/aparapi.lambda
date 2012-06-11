@@ -46,7 +46,7 @@ public class Test extends JFrame{
       Dessin d = new Dessin(image);
       HaarCascade haarCascade = HaarCascade.create(XMLFile);
 
-      Detector detector = new AparapiDetector6(haarCascade, 1f, 2f, 0.1f, false);
+      Detector detector = new AparapiDetector5(haarCascade, 1f, 2f, 0.1f, false);
       StopWatch sw1 = new StopWatch("first detection");
       List<Rectangle> res = detector.getFeatures(img.getAbsolutePath());
       sw1.stop();
