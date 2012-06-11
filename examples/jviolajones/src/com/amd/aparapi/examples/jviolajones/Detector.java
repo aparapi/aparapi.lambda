@@ -152,15 +152,15 @@ public abstract class Detector{
       final int[] grayImage = new int[width * height];
       final int[] weightedGrayImage = new int[width * height];
       final int[] weightedGrayImageSquared = new int[width * height];
-      final StopWatch allTimer = new StopWatch("All");
-      final StopWatch timer = new StopWatch();
+     // final StopWatch allTimer = new StopWatch("All");
+    //  final StopWatch timer = new StopWatch();
       //   System.out.println(image);
 
       DataBuffer dataBuffer = image.getRaster().getDataBuffer();
       if (dataBuffer instanceof DataBufferByte) {
          // 
          byte[] imagePixels = ((DataBufferByte) dataBuffer).getData();
-         timer.start();
+       // timer.start();
          for (int j = 0; j < height; j++) {
             int col = 0;
             int col2 = 0;
@@ -176,17 +176,17 @@ public abstract class Detector{
                weightedGrayImageSquared[(i + j * width)] = (j > 0 ? weightedGrayImageSquared[(i + j * width) - width] : 0) + col2; // NOT data parallel
             }
          }
-         timer.print("grey and squares byte");
+       //  timer.print("grey and squares byte");
       } else if (dataBuffer instanceof DataBufferInt) {
          //byte[] imagePixels = ((DataBufferByte) dataBuffer).getData();
          int imagePixels[] = null;
          boolean raw = true;
-         timer.start();
+       //  timer.start();
          if (raw) {
             imagePixels = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
          } else {
             imagePixels = new int[width * height];
-            timer.start();
+          //  timer.start();
             for (int i = 0; i < width; i++) {
                for (int j = 0; j < height; j++) {
                   imagePixels[i + j * width] = image.getRGB(i, j);
@@ -195,8 +195,8 @@ public abstract class Detector{
 
          }
 
-         timer.print("greyscaler int");
-         timer.start();
+       //  timer.print("greyscaler int");
+         //timer.start();
 
          // SWAP this! to j*i
          for (int i = 0; i < width; i++) {
@@ -217,18 +217,18 @@ public abstract class Detector{
             }
          }
 
-         timer.print("grey and squares int");
+       //  timer.print("grey and squares int");
       }
 
       final int[] cannyIntegral = (cannyPruner == null) ? null : cannyPruner.getIntegralCanny(weightedGrayImageSquared, width,
             height);
 
-      StopWatch faceDetectTimer = new StopWatch("face detection");
-      faceDetectTimer.start();
+    //  StopWatch faceDetectTimer = new StopWatch("face detection");
+     // faceDetectTimer.start();
       final List<Rectangle> ret = getFeatures(width, height, maxScale, weightedGrayImage, weightedGrayImageSquared, cannyIntegral);
 
-      faceDetectTimer.stop();
-      allTimer.stop();
+    //  faceDetectTimer.stop();
+   //   allTimer.stop();
       return (ret);
    }
 
