@@ -19,6 +19,7 @@ The classfile format is well documented [http://en.wikipedia.org/wiki/Java_class
 
 Lets start with a simple Kernel.
 
+
 {{{
 import com.amd.aparapi.Kernel;
 
@@ -171,5 +172,21 @@ So the VM will pop the top value (int - const 0) as the method arg, and then wil
 
 So our stack which contains {this,0} now contains the result of {{{this.getGlobalId(0)}}}, lets assume it is {0}.  We describe this invoke instruction as consuming two operands from the stack and producing one.
 
+Before we start executing our stack is empty {}, the slots are initialized with 'this' (if an instance method) and any arguments passed to the method.
+
+{{{
+                                                               0   1
+                                                      slots=[this, ?  ]    stack={}
+}}}
+
+{{{
+                                                               0   1
+  0:   aload_0                                        slots=[this, ?  ]    stack={this}
+                                                               0   1
+  1:   iconst_0                                       slots=[this, ?  ]    stack={this, 0}
+                                                               0   1
+  2:   invokevirtual   #2; //Method getGlobalId:(I)I  slots=[this, ?  ]  stack={result of this.getGlobalId(0) lets say 0}
+  
+}}}
 
  
