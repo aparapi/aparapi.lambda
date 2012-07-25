@@ -10,7 +10,7 @@ Use a small array buffer (possibly containing a single element) and assign it fr
 For example, the following kernel code detects whether the {{{buffer[]}}} contains the value 1234. The  flag (true or false) is returned in {{{found[0]}}}.
 {{{
 final int buffer[] = new int[HUGE];
-final Boolean found[] = new Boolean[]{false};
+final boolean found[] = new boolean[]{false};
 // fill buffer somehow
  kernel kernel = new kernel(){
     @Override public void run(){
