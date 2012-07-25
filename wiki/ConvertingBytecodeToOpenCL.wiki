@@ -80,10 +80,96 @@ public void run();
 
 Here we see the bytecode of the default constructor {{{Squarer()}}} and the {{{Squarer.run()}}} method we are really interested in. 
 
-Bytecode is able to access three four things
+Bytecode is basically able to access three things
  * Constant pool entries
  * Variable slots
  * Stack operands
 
-First thing to note is that {{{run()}}} is a normal instance method, so it a
+Instructions are able to pop operands from the stack, push operands to the stack, load values from variable slots (to the stack), store values (from the stack) to variable slots, store values from accessed fields (to the stack) and call methods (popping args from the stacl). 
+
+Instructions that act upon data are only able to handle specific types (int, float, double,  and object instances - arrays are special forms of objects) and usually the first character of the instruction helps determine which type the instruction operates upon.  So imul would be a multiply instruction that operates on integers, fmul would multiply floats, dmul for doubles.  Instructions that begin with 'a' operate on object instances.   
+
+So lets look at the first instruction.
+{{{
+  0:   aload_0
+}}}
+
+This instruction loads an object (a is the first character) from variable slot 0 (we'll come back to the variable slots in a moment) and pushes it on the stack. 
+
+Variables are held in 'slots' that are reserved at compiled time.
+
+Consider this static method. 
+{{{
+static int squareMe(int value){
+  value += value;
+  return(value);
+} 
+}}}
+
+This method requires one variable slot. At any one time there is only one variable that is live, it just happens to be an argument to the method. 
+
+The following method also contains one slot.
+{{{
+static int squareMe(){
+  int value=4;
+  value += value;
+  return(value);
+} 
+}}}
+
+Here we need two slots
+{{{
+static int squareMe(int arg){
+  int value=arg*arg;
+  return(value);
+} 
+}}}
+
+Suprisingly the following also only requires two slots.
+{{{
+static int squareMe(int arg){
+  {
+    int temp = arg*arg;
+  }
+  int value=arg*arg;
+  return(value);
+} 
+}}}
+
+Note that in the above example the _temp_ variable loses scope before the local variable _value_ is used.  So only two slots are required.  Both _temp_ and _value_ can share a slot.  
+
+If we have an instance method we always require one extra slot (always slot 0) for the _this_ reference. 
+
+So 
+{{{
+int squareMe(int arg){
+  int value=arg*arg;
+  return(value);
+} 
+}}}
+Requires three slots. 
+
+Anyway back to our bytecode
+{{{
+  0:   aload_0
+}}}
+This loads the object instance in slot 0 (this) and pushes it on the stack. 
+
+Next we have
+{{{
+  1:   iconst_0
+}}}
+Which pushes the int constant 0 on the stack. So the stack contains {this,0}
+
+Next we have 
+{{{
+  2:   invokevirtual   #2; //Method getGlobalId:(I)I
+}}}
+This is the bytecode for calling a method.  Basically the instruction itself references the constant pool (we'll come back to this ;) ) and pulls the method description in constantPool[2] which happens to be the description for a method called getGlobalId() which takes an integer and returns an int. 
+
+So the VM will pop the top value (int - const 0) as the method arg, and then will pop an object reference (this!) and will call the method {{{this.getGlobalId(0)}}} and will push the result (an int) back on the stack.
+
+So our stack which contains {this,0} now contains the result of {{{this.getGlobalId(0)}}}, lets assume it is {0}.  We describe this invoke instruction as consuming two operands from the stack and producing one.
+
+
  
