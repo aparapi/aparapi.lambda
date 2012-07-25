@@ -44,19 +44,52 @@ and then we can look at the bytecode using {{{javap}}}
 {{{
 javap -c -classpath path/to/aparapi/aparapi.jar;. Squarer
 Compiled from "Squarer.java"
-public class Squarer extends com.amd.aparapi.Kernel{
+public class Squarer extends com.amd.aparapi.Kernel
+  SourceFile: "Squarer.java"
+  minor version: 0
+  major version: 50
+  Constant pool:
+const #1 = Method       #6.#17; //  com/amd/aparapi/Kernel."<init>":()V
+const #2 = Method       #5.#18; //  Squarer.getGlobalId:(I)I
+const #3 = Field        #5.#19; //  Squarer.out:[I
+const #4 = Field        #5.#20; //  Squarer.in:[I
+const #5 = class        #21;    //  Squarer
+const #6 = class        #22;    //  com/amd/aparapi/Kernel
+const #7 = Asciz        in;
+const #8 = Asciz        [I;
+const #9 = Asciz        out;
+const #10 = Asciz       <init>;
+const #11 = Asciz       ()V;
+const #12 = Asciz       Code;
+const #13 = Asciz       LineNumberTable;
+const #14 = Asciz       run;
+const #15 = Asciz       SourceFile;
+const #16 = Asciz       Squarer.java;
+const #17 = NameAndType #10:#11;//  "<init>":()V
+const #18 = NameAndType #23:#24;//  getGlobalId:(I)I
+const #19 = NameAndType #9:#8;//  out:[I
+const #20 = NameAndType #7:#8;//  in:[I
+const #21 = Asciz       Squarer;
+const #22 = Asciz       com/amd/aparapi/Kernel;
+const #23 = Asciz       getGlobalId;
+const #24 = Asciz       (I)I;
+
+{
 int[] in;
 
 int[] out;
 
 public Squarer();
   Code:
+   Stack=1, Locals=1, Args_size=1
    0:   aload_0
    1:   invokespecial   #1; //Method com/amd/aparapi/Kernel."<init>":()V
    4:   return
 
+
 public void run();
   Code:
+   Stack=5, Locals=2, Args_size=1
    0:   aload_0
    1:   iconst_0
    2:   invokevirtual   #2; //Method getGlobalId:(I)I
@@ -75,20 +108,97 @@ public void run();
    23:  imul
    24:  iastore
    25:  return
-
 }
 }}}
 
-Here we see the bytecode of the default constructor {{{Squarer()}}} and the {{{Squarer.run()}}} method we are really interested in. 
+Here we see constant pool of the class and the disassembled bytecode of the default constructor {{{Squarer()}}} and the {{{Squarer.run()}}} method.
+
+The constant pool is a table of constant values that can be accessed from the bytecode of any methods from within this class. Some of the constants are String literals defined within the source (or literals used to name classes, fields, methods, variables or signatures), other slots represent Classes, Methods, Fields or Type signatures.  These later constant pool entries cross-reference other constant pool entries to describe higher level artifact.  
+
+For example constant pool entry #1 is 
+{{{
+const #1 = Method       #6.#17; //  com/amd/aparapi/Kernel."<init>":()V
+}}}   
+
+So entry #1 defines a method.  The class containing the method is defined in constant pool entry #6.  So lets look at constant pool entry #6.
+
+{{{
+const #1 = Method       #6.#17; //  com/amd/aparapi/Kernel."<init>":()V
+
+const #6 = class        #22;    //  com/amd/aparapi/Kernel
+}}}
+
+At constant pool entry #6 we find a class definition which refers to entry #22 
+{{{
+const #1 = Method       #6.#17; //  com/amd/aparapi/Kernel."<init>":()V
+
+const #6 = class        #22;    //  com/amd/aparapi/Kernel
+
+const #22 = Asciz       com/amd/aparapi/Kernel;
+}}}
+Which just contains the String (Ascii) name of the class. 
+
+Looking back at entry #1 again, we note that the Method also references entry #17 which contains a NameAndType entry for determining the method name and the signature.
+{{{
+const #1 = Method       #6.#17; //  com/amd/aparapi/Kernel."<init>":()V
+
+const #6 = class        #22;    //  com/amd/aparapi/Kernel
+
+
+const #17 = NameAndType #10:#11;//  "<init>":()V
+
+const #22 = Asciz       com/amd/aparapi/Kernel;
+}}}
+
+Entry #17's "NameAndType" references #10 for the method name.
+
+{{{
+const #1 = Method       #6.#17; //  com/amd/aparapi/Kernel."<init>":()V
+
+const #6 = class        #22;    //  com/amd/aparapi/Kernel
+
+const #10 = Asciz       <init>;
+
+const #17 = NameAndType #10:#11;//  "<init>":()V
+
+const #22 = Asciz       com/amd/aparapi/Kernel;
+}}}
+
+And then references #11 to get the signature.
+
+{{{
+const #1 = Method       #6.#17; //  com/amd/aparapi/Kernel."<init>":()V
+
+const #6 = class        #22;    //  com/amd/aparapi/Kernel
+
+const #10 = Asciz       <init>;
+
+const #11 = Asciz       ()V;
+
+const #17 = NameAndType #10:#11;//  "<init>":()V
+
+const #22 = Asciz       com/amd/aparapi/Kernel;
+}}}
+
+So from constant pool #1 we ended up using slots 1,6,10,11,17 and 22 to fully resolve the method.
+
+This looks like a lot of work, however by breaking method and field references up like this, allows the various slots to be reused by other field/method descriptions. 
+
+So when we see disassembled bytecode which references a constantpool slot the actual slot # (2 in the example below) will appear after the bytecode for invokevirtual. 
+
+{{{
+  2:   invokevirtual   #2; Method getGlobalId:(I)I
+}}}
+
 
 Bytecode is basically able to access three things
  * Constant pool entries
  * Variable slots
  * Stack operands
 
-Instructions are able to pop operands from the stack, push operands to the stack, load values from variable slots (to the stack), store values (from the stack) to variable slots, store values from accessed fields (to the stack) and call methods (popping args from the stacl). 
+Instructions are able to pop operands from the stack, push operands to the stack, load values from variable slots (to the stack), store values (from the stack) to variable slots, store values from accessed fields (to the stack) and call methods (popping args from the stack). 
 
-Instructions that act upon data are only able to handle specific types (int, float, double,  and object instances - arrays are special forms of objects) and usually the first character of the instruction helps determine which type the instruction operates upon.  So imul would be a multiply instruction that operates on integers, fmul would multiply floats, dmul for doubles.  Instructions that begin with 'a' operate on object instances.   
+Some instructions can only handle specific types (int, float, double,  and object instances - arrays are special forms of objects) and usually the first character of the instruction helps determine which type the instruction acts upon.  So _imul_ would be a multiply instruction that operates on integers, _fmul_ would multiply two floats, _dmul_ for doubles.  Instructions that begin with 'a' operate on object instances.   
 
 So lets look at the first instruction.
 {{{
@@ -185,7 +295,13 @@ Before we start executing our stack is empty {}, the slots are initialized with 
                                                                0   1
   1:   iconst_0                                       slots=[this, ?  ]    stack={this, 0}
                                                                0   1
-  2:   invokevirtual   #2; //Method getGlobalId:(I)I  slots=[this, ?  ]  stack={result of this.getGlobalId(0) lets say 0}
+  2:   invokevirtual   #2; Method getGlobalId:(I)I    slots=[this, ?  ]  stack={result of this.getGlobalId(0) lets say 0}
+
+  5:   istore_1                                       slots=[this, 0  ]    stack={}
+
+  6:   aload_0                                        slots=[this, 0  ]    stack={this}
+
+  7:   getfield        #3; //Field out:[I
   
 }}}
 
