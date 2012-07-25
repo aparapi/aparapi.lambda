@@ -1,0 +1,89 @@
+#summary How Aparapi converts bytecode to OpenCL
+
+= Introduction =
+
+One of the unique Aparapi features is it's ability to convert Java bytecode to OpenCL automatically. 
+
+In this page we will try to describe the process used to perform this conversion. 
+ 
+If you are unfamiliar with bytecode consider visiting this page WhatIsBytecode.
+
+The command
+{{{
+javac Source.java
+}}}
+
+Will compile the java source file _Source.java_ to _Source.class_
+
+The classfile format is well documented [http://en.wikipedia.org/wiki/Java_class_file here] and we will not go into too much detail here, however it should be known that Aparapi must parse the classfile of each {{{Kernel}}} to extract the bytecode for the {{{Kernel.run()}}} and any method reachable from {{{Kernel.run()}}}.
+
+Lets start with a simple Kernel.
+
+{{{
+import com.amd.aparapi.Kernel;
+
+public class Squarer extends Kernel{
+   int[] in;
+   int[] out;
+   @Override public void run(){
+      int gid = getGlobalId(0);
+      out[gid] = in[gid] * in[gid]; 
+   }
+}
+}}}
+
+We will compile this 
+
+{{{
+javac -g -cp path/to/aparapi/aparapi.jar Squarer.java
+}}}
+
+and then we can look at the bytecode using {{{javap}}}
+
+{{{
+javap -c -classpath path/to/aparapi/aparapi.jar;. Squarer
+Compiled from "Squarer.java"
+public class Squarer extends com.amd.aparapi.Kernel{
+int[] in;
+
+int[] out;
+
+public Squarer();
+  Code:
+   0:   aload_0
+   1:   invokespecial   #1; //Method com/amd/aparapi/Kernel."<init>":()V
+   4:   return
+
+public void run();
+  Code:
+   0:   aload_0
+   1:   iconst_0
+   2:   invokevirtual   #2; //Method getGlobalId:(I)I
+   5:   istore_1
+   6:   aload_0
+   7:   getfield        #3; //Field out:[I
+   10:  iload_1
+   11:  aload_0
+   12:  getfield        #4; //Field in:[I
+   15:  iload_1
+   16:  iaload
+   17:  aload_0
+   18:  getfield        #4; //Field in:[I
+   21:  iload_1
+   22:  iaload
+   23:  imul
+   24:  iastore
+   25:  return
+
+}
+}}}
+
+Here we see the bytecode of the default constructor {{{Squarer()}}} and the {{{Squarer.run()}}} method we are really interested in. 
+
+Bytecode is able to access three four things
+ * Constant pool entries
+ * Variable slots
+ * Stack operands
+
+First thing to note is that {{{run()}}} is a normal instance method, so it a
+ 
