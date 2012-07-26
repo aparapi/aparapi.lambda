@@ -1,4 +1,4 @@
-#summary How Aparapi converts bytecode to OpenCL
+#summary How to extend Aparapi to allow multiple entrypoints for kernels
 
 = Introduction =
 
