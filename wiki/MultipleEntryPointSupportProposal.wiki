@@ -1,0 +1,166 @@
+#summary How Aparapi converts bytecode to OpenCL
+
+= Introduction =
+
+Standby whilst I prepare a proposal based on some Proxy hacking.....
+
+Just a collection of code at present.
+
+{{{
+public static class Squarer{
+  interface API {
+    public API foo(Range range, int[] in, int[] out);
+    public Squarer dispatch();
+  }
+
+  public API foo(RangeId rangeId, int[] in, int[] out) {
+     out[rangeId.wgid] = in[rangeId.wgid]*in[rangeId.wgid];
+     return(null);
+  }
+}
+}}}
+
+{{{
+Squarer.API squarer = create(new Squarer(), Squarer.API.class);
+int[] in = new int[] {...}
+int[] out = new int[in.length];
+Range range = new Range(in.length);
+
+squarer.foo(range, in, out);
+      
+for (int s:out){
+   System.out.println(s);
+}
+}}}
+
+test harness
+{{{
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+
+
+public class Ideal{
+
+   public static class OpenCLInvocationHandler<T> implements InvocationHandler {
+       Object instance;
+       OpenCLInvocationHandler(Object _instance){
+          instance = _instance;
+       }
+      @Override public Object invoke(Object interfaceThis, Method interfaceMethod, Object[] interfaceArgs) throws Throwable {
+         Class clazz = instance.getClass();
+         
+         Class[] argTypes =  interfaceMethod.getParameterTypes();
+         argTypes[0]=RangeId.class;
+         Method method = clazz.getDeclaredMethod(interfaceMethod.getName(), argTypes);
+         
+         
+         if (method == null){
+            System.out.println("can't find method");
+         }else{
+            RangeId rangeId = new RangeId((Range)interfaceArgs[0]);
+            interfaceArgs[0]=rangeId;
+            for (rangeId.wgid = 0; rangeId.wgid <rangeId.r.width; rangeId.wgid++){
+                method.invoke(instance, interfaceArgs);
+            }
+         }
+         
+         return null;
+      }
+   }
+
+   static class Range{
+      int width;
+      Range(int _width) {
+         width = _width;
+      }
+   }
+
+   static class Range2D extends Range{
+      int height;
+
+      Range2D(int _width, int _height) {
+         super(_width);
+         height = _height;
+      }
+   }
+
+   static class Range1DId<T extends Range>{
+      Range1DId(T _r){
+         r = _r;
+      }
+      T r;
+
+      int wgid, wlid, wgsize, wlsize, wgroup;
+   }
+   
+   static class RangeId  extends Range1DId<Range>{
+      RangeId(Range r){
+         super(r);
+      }
+   }
+
+   static class Range2DId extends Range1DId<Range2D>{
+      Range2DId(Range2D r){
+         super(r);
+      }
+
+      int hgid, hlid, hgsize, hlsize, hgroup;
+   }
+
+  
+   
+  
+
+   static <T> T create(Object _instance, Class<T> _interface) {
+      OpenCLInvocationHandler<T> invocationHandler = new OpenCLInvocationHandler<T>(_instance);
+      T instance = (T) Proxy.newProxyInstance(Ideal.class.getClassLoader(), new Class[] {
+            _interface,
+          
+      }, invocationHandler);
+      return (instance);
+
+   }
+   
+   
+   
+   public static class Squarer{
+      interface API {
+         public API foo(Range range, int[] in, int[] out);
+         public Squarer dispatch();
+
+      }
+
+      public API foo(RangeId rangeId, int[] in, int[] out) {
+         out[rangeId.wgid] = in[rangeId.wgid]*in[rangeId.wgid];
+         return(null);
+      }
+   }
+
+   /**
+    * @param args
+    */
+   public static void main(String[] args) {
+      
+      Squarer.API squarer = create(new Squarer(), Squarer.API.class);
+      int[] in = new int[] {
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+      };
+      int[] out = new int[in.length];
+      Range range = new Range(in.length);
+
+      squarer.foo(range, in, out);
+      
+      for (int s:out){
+         System.out.println(s);
+      }
+
+   }
+
+}
+}}}
