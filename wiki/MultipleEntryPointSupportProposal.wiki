@@ -1,9 +1,8 @@
 #summary How to extend Aparapi to allow multiple entrypoints for kernels
 
-= Current state of play =
+= The Current Single Entrypoint World =
 
-
-At present Aparapi allows a kernel to be called via a 'single entry point'. Essentially for each {{{Kernel}}} only the one overridden {{{Kernel.run()}}} (and run-reachable methods) method can be converted to OpenCL and executed on the GPU.
+At present Aparapi allows us to dispatch execution to a single 'single entry point' in a Kernel. Essentially for each {{{Kernel}}} only the overridden {{{Kernel.run()}}} method can be used to initiate execution on the GPU.
 
 Our canonical example is the 'Squarer' Kernel which allows us to create squares for each element in an input array in an output array. 
 
@@ -27,11 +26,11 @@ Kernel adder = new Kernel(){
 }; 
 }}}
 
-So to square and then add a constant we would have to invoke two kernels. Or of course create single SquarerAdder kernel.
+For us to square and then add a constant we would have to invoke two kernels. Or of course create single SquarerAdder kernel.
 
-If we wanted to create a general VectorMath Kernel which might expose square, squareroot, addition, subtraction functionality we have to perform some 'unnatural acts'.  
+If we wanted to create a more general {{{VectorMath}}} kernel which might expose unary square, squareroot and binary addition, subtraction functionality we would have to perform some 'unnatural acts' in our implementation.  
 
-For example we can approximate by passing a separate arg to dictate the 'function' that we wish to perform.
+For example we can approximate having separate methods by passing a separate arg to dictate the 'function' that we wish to perform.
 
 {{{
 class VectorKernel extends Kernel{
@@ -76,13 +75,13 @@ vk.result = new float[SIZE];
 vk.function = VectorKernel.FUNC_ADD;
 vk.execute(range);  
 System.arrayCopy(vk.result, 0, vk.unaryOperand, 0, SIZE);
-vk.function = VectorKernel.FUN_SQRT;
+vk.function = VectorKernel.FUNC_SQRT;
 vk.execute(range); 
 }}}
 
-This approach is fairly common and I have used it to perform various pipeline stages for calculating FFT's for example. 
+This approach is fairly common and I have used it successfully to perform various pipeline stages for calculating FFT's for example. 
  
-Whilst this is functional it is not a great solution. First the API is clumsy.  We have to mutate the state of the kernel instance and then re-arrange the arrays manually to chain math operations. We could of course hide all of this behind helper methods.  One could imagine for example 
+Whilst this is functional it is not a great solution. First the API is clumsy.  We have to mutate the state of the kernel instance and then re-arrange the arrays manually to chain math operations. We could of course hide all of this behind helper methods.  One could imagine for example an implementation which exposes helper {{{add(lhs, rhs)}}, or {{{sqrt()}}} which hid all the nasty stuff. 
 
 {{{
 VectorKernel vk = new VectorKernel(SIZE);
@@ -95,9 +94,9 @@ vk.sqrt();                 // because we have no arg
                            // execute kernel  
 }}}
 
-However there is one more objection to this approach, namely that it is unnecessarily copying buffers.  
+However there is one more objection to this approach, namely that it by default will force unnecessarily buffer copies.  
 
-When the bytecode for the above {{{Kernel.run()}}} method is analyzed Aparapi finds bytecode reading from lhsOperand, rhsOperand and unaryOperand arrays/buffers.  Obviously at this bytecode analysis stage we can't predict which 'function type' will be used, so  on every executions ({{{Kernel.run()}}}) Aparapi must copy all three buffers to the GPU. For binary operations this is one buffer copy wasted (the unaryOperand), for  the unary operations we copy two buffers unnecessarily (lhs and rhs Operands).  We can of course use explicit buffer management to help us reduce these costs, either my making the user do it implicitly. 
+When the bytecode for the above {{{Kernel.run()}}} method is analyzed Aparapi finds bytecode reading from {{{lhsOperand}}}, {{{rhsOperand}}} and {{{unaryOperand}}} arrays/buffers.  Obviously at this bytecode analysis stage we can't predict which 'function type' will be used, so  on every executions ({{{Kernel.run()}}}) Aparapi must copy all three buffers to the GPU. For binary operations this is one buffer copy wasted (the unaryOperand), for  the unary operations we copy two buffers unnecessarily (lhsOperand and rhsOperand).  We can of course use explicit buffer management to help us reduce these costs, either my making the user do it implicitly. 
 
 {{{
 int SIZE=1024;
@@ -122,7 +121,7 @@ vk.execute(range);
 vk.get(vk.result);
 }}}
 
-Or we can hide these behind helper methods.
+Or preferably we hide these explicit buffer movements behind our earlier helper methods.
 
 = Why can't Aparapi just allow 'arbitary' methods = 
 
@@ -139,7 +138,7 @@ class VectorKernel extends Kernel{
 }
 }}}
 
-Unfortunately this is hard for us to implement using Aparapi. There are two distinct problems, both at runtime.
+Unfortunately this is hard to implement using Aparapi. There are two distinct problems, both at runtime.
 
  # How will Aparapi know which of the available methods we want to execute when we call {{{Kernel.execute(range)}}}?
  # On first execution how does Aparapi determine which methods *might* be entrypoints and are therefore need to be converted to OpenCL?
@@ -151,19 +150,29 @@ The first problem can be solved by extending {{{Kernel.execute()}}} to accept a 
 kernel.execute(SIZE, "add");
 }}}
 
-This is the obvious solution, but really causes maintenence issues as it trades compile time checking for a runtime error.  If a developer mistypes the name of the method, :-
+This is the obvious solution, but really causes maintenence issues int that it trades compile time reporting for a runtime errors.  If a developer mistypes the name of the method, :-
 
 {{{
 kernel.execute(SIZE, "sadd"); // there is no such method 
 }}}
 
-The code will compile, but no error can be reported until runtime.
+The code will compile perfectly, only at runtime will we detect that there is no such method.
 
 ==An aside ===
-Maybe the new Java 8 method reference feature method might help here. In this paper Brian Goetz talks about a double-colon syntax (Class::Method) for directly referencing a method which is presumably checked at compile time.
+Maybe the new Java 8 method reference feature method might help here. In the paper below Brian Goetz talks about a double-colon syntax (Class::Method) for directly referencing a method which is presumably checked at compile time.
+
+So presumably  
+
 {{{
-kernel.execute(SIZE, VectorKernel::sadd); // would fail? 
+kernel.execute(SIZE, VectorKernel::add); 
 }}}
+
+Would compile just fine, whereby 
+{{{
+kernel.execute(SIZE, VectorKernel::sadd); 
+}}}
+
+Would yield a compile time error. 
 
 See [http://cr.openjdk.java.net/~briangoetz/lambda/lambda-state-4.html Brian Goetz's excellent Lambda documentation]
 
@@ -180,11 +189,13 @@ class VectorKernel extends Kernel{
 }
 }}}
 
-Whereby the {{{@EntryPoint}}} annotation allows the Aparapi runtime to determine which methods need to be exposed. 
+Here the {{{@EntryPoint}}} annotation allows the Aparapi runtime to determine which methods need to be exposed. 
 
 =My Extension Proposal=
 
-Here is my proposal.  Not only does it allow us to reference multiple entryoints, but it actually improves (I think) the single entrypoint API, albeit at the cost of being more verbose. 
+Here is my proposal.  Not only does it allow us to reference multiple entryoints, but I think it actually improves the single entrypoint API, albeit at the cost of being more verbose. 
+
+== The developer must provide an API interface ==
 
 First I propose that we should ask the developer to provide an interface for all methods that we wish to execute on the GPU (or convert to OpenCL). 
 
@@ -199,7 +210,12 @@ interface VectorAPI extends AparapiAPI {
 
 Note that each API takes a {{{Range}}}, this will make more sense in a moment.
 
-We should also provide a mechanism for mapping the proposed  implementation of the API (note the weasel words, this is not a conventional implementation of an interface!) using a new annotation @Implements(Class class).
+== The developer provides a bound implementation ==
+
+Aparapi should provide a mechanism for mapping the proposed  implementation of the API to it's implementation. 
+
+Note the weasel words here, this is not a conventional implementation of an interface. We will use an annotation ({{{@Implements(Class class)}}}) to provide the binding.
+
 
 {{{
 @Implements(VectorAPI.class) class Vector extends Kernel {
@@ -211,9 +227,15 @@ We should also provide a mechanism for mapping the proposed  implementation of t
 }
 }}}
 
-We instantiate our Kernel by creating an instance using {{{new}}}, but then force the OpenCL generation by asking an instance for access to the API.  Some java.util.Proxy 
+==Why we can't the implementation just implement the interface?==
 
-Using something like. 
+This would be ideal.  Sadly we need to intercept a call to say VectorAPI.add(Range) and dispatch to the resulting Vector.add(RangeId) instances.  If you look at the signatures, the interface accepts a Range as it's arg (the range over which we intend to execute) whereas the implementation (either called by JTP threads or GPU OpenCL dispatch) receives a RangeId (containing the unique globalId, localId, etc fields). At the very end of this page I show a strawman implementation of a sequential loop implementation.
+
+== So how do we get an implementation of VectorAPI ==
+ 
+We instantiate our Kernel by creating an instance using {{{new}}}.  We then ask this instance to create an API instance. Some presumably java.util.Proxy trickery will create an implementation of the actual instance, backed by the Java implementation. 
+
+So execution would look something like. 
 {{{
 Vector kernel = new Vector();
 VectorAPI kernelApi = kernel.api();
@@ -223,7 +245,7 @@ kernalApi.add(range);
 
 So the Vector instance is a pure Java implementation.  The extracted API is the bridge to the GPU.
 
-Of course then we can execute using an inline call through {{{api()}}}
+Of course then we can also execute using an inline call through {{{api()}}}
 
 {{{
 Vector kernel = new Vector();
@@ -241,7 +263,36 @@ kernel.api.add(range);
 kernel.api.sqrt(range);
 }}}
 
+= How would our canonical Squarer example look =
+
+{{{
+interface SquarerAPI extends AparapiAPI{
+   square(Range range);
+}
+
+@Implement(SquarerAPI) class Squarer extends Kernel{
+   int in[];
+   int square[];
+   public void square(RangeId rangeId){
+      square[rangeId.gid] = in[rangeId.gid]*in[rangeId.gid];
+   }
+} 
+}}}
+
+Then we execute using 
+
+{{{
+Squarer squarer = new Squarer();
+// fill squarer.in[SIZE]
+// create squarer.values[SIZE];
+
+squarer.api().square(Range.create(SIZE));
+
+}}}
+
 = Extending this to allow argument passing =
+
+
 
 
 
