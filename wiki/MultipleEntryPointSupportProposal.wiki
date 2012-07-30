@@ -124,7 +124,9 @@ vk.get(vk.result);
 
 Or we can hide these behind helper methods.
 
-Ideally (I will propose) that we might prefer to expose a more natural API which allows us to provide specific methods for each arithmetic operation.  
+= Why can't Aparapi just allow 'arbitary' methods = 
+
+Ideally we would just expose a more natural API, one which allows us to provide specific methods for each arithmetic operation.  
 
 Essentially 
 
@@ -137,16 +139,32 @@ class VectorKernel extends Kernel{
 }
 }}}
 
-So why is this hard for us to implement using Aparapi? I think the main problems are:-
+Unfortunately this is hard for us to implement using Aparapi. There are two distinct problems, both at runtime.
 
- # How do we know which method we wish to execute?
- # How do we differentiate which methods *might* be entrypoints and which are methods that we don't need OpenCL code for? 
+ # How will Aparapi know which of the available methods we want to execute when we call {{{Kernel.execute(range)}}}?
+ # On first execution how does Aparapi determine which methods *might* be entrypoints and are therefore need to be converted to OpenCL?
 
-The first problem can be solved by extending {{{Kernel.execute()}}} to accept a method name...
+
+The first problem can be solved by extending {{{Kernel.execute()}}} to accept a method name 
 
 {{{
 kernel.execute(SIZE, "add");
 }}}
+
+This is the obvious solution, but really causes maintenence issues as it trades compile time checking for a runtime error.  If I call:-
+
+{{{
+kernel.execute(SIZE, "square"); // there is no such method 
+}}}
+
+I don't find out until runtime.
+
+Maybe the new Java 8 method handle feature for method might help here. Ideally we could use some syntax to directly reference a named method in a class which ins
+
+{{{
+kernel.execute(SIZE, kernel#square); 
+}}}
+
 
 The second can probably be solved using an Annotation. 
 {{{
