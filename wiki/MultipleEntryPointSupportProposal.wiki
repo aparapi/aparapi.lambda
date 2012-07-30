@@ -292,43 +292,91 @@ squarer.api().square(Range.create(SIZE));
 
 = Extending this to allow argument passing =
 
+Note that we have effectively replaced the use of the 'abstract' `squarer.execute(range)` with the more concrete `squarer.api().add(range)`.  Now I would like to propose that we take one more step by allowing us to pass arguments to our methods. 
 
+Normally Aparapi captures buffer and field accesses to create the args that it passes to the generated OpenCL code.  In our cannonical squarer example the `in[]` and `square[]` buffers are captured from the bytecode and passed (behind the scenes) to the OpenCL.
+
+TODO: Add generated OpenCl code to show what this looks like. 
+
+However, by exposing the actual method we want to execute, we could also allow the API to accept parameters. 
+
+So our squarer example would go from 
+{{{
+interface SquarerAPI extends AparapiAPI{
+   square(Range range);
+}
+
+@Implement(SquarerAPI) class Squarer extends Kernel{
+   int in[];
+   int square[];
+   public void square(RangeId rangeId){
+      square[rangeId.gid] = in[rangeId.gid]*in[rangeId.gid];
+   }
+} 
+
+
+Squarer squarer = new Squarer();
+// fill squarer.in[SIZE]
+// create squarer.values[SIZE];
+
+squarer.api().square(Range.create(SIZE));
+
+}}}
+
+to 
+{{{
+interface SquarerAPI extends AparapiAPI{
+   square(Range range, int[] in, int[] square);
+}
+
+@Implement(SquarerAPI) class Squarer extends Kernel{
+   public void square(RangeId rangeId, int[] in, int[] square){
+      square[rangeId.gid] = in[rangeId.gid]*in[rangeId.gid];
+   }
+} 
+
+
+Squarer squarer = new Squarer();
+int[] in = // create and fill squarer.in[SIZE]
+int[] square = // create squarer.values[SIZE];
+
+squarer.api().square(Range.create(SIZE), in, result);
+
+}}}
+
+I think that this makes Aparapi look more conventional.  It also allows us to allow overloading for the first time.
+
+{{{
+interface SquarerAPI extends AparapiAPI{
+   square(Range range, int[] in, int[] square);
+   square(Range range, float[] in, float[] square);
+}
+
+@Implement(SquarerAPI) class Squarer extends Kernel{
+   public void square(RangeId rangeId, int[] in, int[] square){
+      square[rangeId.gid] = in[rangeId.gid]*in[rangeId.gid];
+   }
+   public void square(RangeId rangeId, float[] in, float[] square){
+      square[rangeId.gid] = in[rangeId.gid]*in[rangeId.gid];
+   }
+} 
+
+
+Squarer squarer = new Squarer();
+int[] in = // create and fill squarer.in[SIZE]
+int[] square = // create squarer.values[SIZE];
+
+squarer.api().square(Range.create(SIZE), in, result);
+float[] inf = // create and fill squarer.in[SIZE]
+float[] squaref = // create squarer.values[SIZE];
+
+squarer.api().square(Range.create(SIZE), inf, resultf);
+
+}}}
 
 
 
 ---
-below this line is just some implementation musings
-
-Standby whilst I prepare a proposal based on some Proxy hacking.....
-
-Just a collection of code at present.
-
-{{{
-public static class Squarer{
-  interface API {
-    public API foo(Range range, int[] in, int[] out);
-    public Squarer dispatch();
-  }
-
-  public API foo(RangeId rangeId, int[] in, int[] out) {
-     out[rangeId.wgid] = in[rangeId.wgid]*in[rangeId.wgid];
-     return(null);
-  }
-}
-}}}
-
-{{{
-Squarer.API squarer = create(new Squarer(), Squarer.API.class);
-int[] in = new int[] {...}
-int[] out = new int[in.length];
-Range range = new Range(in.length);
-
-squarer.foo(range, in, out);
-      
-for (int s:out){
-   System.out.println(s);
-}
-}}}
 
 test harness
 {{{
