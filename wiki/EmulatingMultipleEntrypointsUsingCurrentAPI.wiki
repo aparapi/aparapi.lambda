@@ -89,7 +89,7 @@ class VectorKernel extends Kernel{
        lhsOperand = lhs;
        rhsOperand = rhs;
        function=operator;
-       execute(lhs.size());
+       execute(lhs.length());
     }
     public void add(float[] lhs, float[] rhs){
        binary(FUNC_ADD, lhs, rhs);
@@ -97,6 +97,21 @@ class VectorKernel extends Kernel{
 
     public void sub(float[] lhs, float[] rhs){
        binary(FUNC_SUB, lhs, rhs);
+    } 
+
+    private void binary(int operator, float[] rhs){
+       System.arrayCopy(result, 0, lhsOperand, result.length);
+       rhsOperand = rhs;
+       function=operator;
+       execute(lhsOperand.legth());
+    }
+
+    public void add(float[] rhs){
+       binary(FUNC_ADD,  rhs);
+    } 
+
+    public void sub( float[] rhs){
+       binary(FUNC_SUB,  rhs);
     } 
 
     private void unary(int operator, float[] unary){
@@ -135,29 +150,89 @@ vk.sqrt();                 // because we have no arg
 
 However there is one more objection to this approach, namely that it by default will force unnecessarily buffer copies.  
 
-When the bytecode for the above {{{Kernel.run()}}} method is analyzed Aparapi finds bytecode reading from {{{lhsOperand}}}, {{{rhsOperand}}} and {{{unaryOperand}}} arrays/buffers.  Obviously at this bytecode analysis stage we can't predict which 'function type' will be used, so  on every executions ({{{Kernel.run()}}}) Aparapi must copy all three buffers to the GPU. For binary operations this is one buffer copy wasted (the unaryOperand), for  the unary operations we copy two buffers unnecessarily (lhsOperand and rhsOperand).  We can of course use explicit buffer management to help us reduce these costs, either my making the user do it implicitly. 
+When the bytecode for the above {{{Kernel.run()}}} method is analyzed Aparapi finds bytecode reading from {{{lhsOperand}}}, {{{rhsOperand}}} and {{{unaryOperand}}} arrays/buffers.  Obviously at this bytecode analysis stage we can't predict which 'function type' will be used, so  on every executions ({{{Kernel.run()}}}) Aparapi must copy all three buffers to the GPU. For binary operations this is one buffer copy wasted (the unaryOperand), for  the unary operations we copy two buffers unnecessarily (lhsOperand and rhsOperand).  We can of course use explicit buffer management to help us reduce these costs. Ideally we add this to our helper methods.
 
 {{{
-int SIZE=1024;
-Range range = Range.create(SIZE);
-VectorKernel vk = new VectorKernel();
-vk.setExplicit(true);
-vk.lhsOperand = new float[SIZE];
-vk.rhsOperand = new float[SIZE];
-vk.unaryOperand = new float[SIZE];
-vk.result = new float[SIZE];
+class VectorKernel extends Kernel{
+    float[] lhsOperand;
+    float[] rhsOperand;
+    float[] unaryOperand;
+    float[] result;
+    final static int FUNC_ADD =0; 
+    final static int FUNC_SUB =1;
+    final static int FUNC_SQR =2;
+    final static int FUNC_SQRT =3;
+    // other functions
+    int function;
+    @Override public void run(){
+        int gid = getGlobalId(0){
+        if (function==FUNC_ADD){
+           result[gid]=lhsOperand[gid]+rhsOperand[gid];
+        }else if (function==FUNC_SUB){
+           result[gid]=lhsOperand[gid]-rhsOperand[gid];
+        }else if (function==FUNC_SQR){
+           result[gid]=unaryOperand[gid]*unaryOperand[gid];
+        }else if (function==FUNC_ADD){
+           result[gid]=sqrt(unaryOperand[gid]);
+        }else if ....
+    }
+    private void binary(int operator, float[] lhs, float[] rhs){
+       lhsOperand = lhs;
+       rhsOperand = rhs;
+       function=operator;
+       put(lhsOperand).put(rhsOperand);
+       execute(lhs.length());
+       get(result);
+    }
+    public void add(float[] lhs, float[] rhs){
+       binary(FUNC_ADD, lhs, rhs);
+    } 
 
-// fill lhsOperand ommitted
-// fill rhsOperand ommitted
-vk.function = VectorKernel.FUNC_ADD;
-vk.put(vk.lhsOperand).put(vk.rhsOperand);
-vk.execute(range);  
-vk.get(vk.result);
-System.arrayCopy(vk.result, 0, vk.unaryOperand, 0, SIZE);
-vk.function = VectorKernel.FUN_SQRT;
-vk.put(vk.unaryOperand);
-vk.execute(range); 
-vk.get(vk.result);
+    public void sub(float[] lhs, float[] rhs){
+       binary(FUNC_SUB, lhs, rhs);
+    } 
+
+    private void binary(int operator, float[] rhs){
+       System.arrayCopy(result, 0, lhsOperand, result.length);
+       rhsOperand = rhs;
+       function=operator;
+       put(lhsOperand).put(rhsOperand);
+       execute(lhsOperand.legth());
+       get(result);
+    }
+
+    public void add(float[] rhs){
+       binary(FUNC_ADD,  rhs);
+    } 
+
+    public void sub( float[] rhs){
+       binary(FUNC_SUB,  rhs);
+    } 
+
+    private void unary(int operator, float[] unary){
+       unaryOperand = unary;
+       function=operator;
+       put(unaryOperand);
+       execute(unaryOperand.length());
+       get(result);
+    }
+
+    public void sqrt(float[] unary){
+       unary(FUNC_SQRT, unary);
+    } 
+
+    private void unary(int operator){
+       System.array.copy(result, 0, unaryOperand, 0, result.length);
+       function=operator;
+       put(unaryOperand);
+       execute(unaryOperand.length());
+       get(result);
+    
+    }
+
+    public void sqrt(){
+       unary(FUNC_SQRT);
+    } 
+
+}  
 }}}
-
-Or preferably we hide these explicit buffer movements behind our earlier helper methods.
