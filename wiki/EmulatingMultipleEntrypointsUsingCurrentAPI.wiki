@@ -1,7 +1,7 @@
-
 Until we have support for multiple entrypoints in Aparapi, there are some tricks for emulating this feature. 
 
-Follow the proposal over here
+Follow the proposal for adding multiple entrypoints on this page MultipleEntryPointSupportProposal.
+
 
 Suppose we wanted to create a general {{{VectorMath}}} kernel which might expose unary square, squareroot methods and binary addition and  subtraction functionality. With our current API limitations we can't easily do this, we can approximate having separate methods by passing a separate arg to dictate the 'function' that we wish to perform.
 
