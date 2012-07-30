@@ -60,6 +60,68 @@ This approach is fairly common and I have used it successfully to perform variou
  
 Whilst this is functional it is not a great solution. First the API is clumsy.  We have to mutate the state of the kernel instance and then re-arrange the arrays manually to chain math operations. We could of course hide all of this behind helper methods.  One could imagine for example an implementation which exposes helper {{{add(lhs, rhs)}}, or {{{sqrt()}}} which hid all the nasty stuff. 
 
+
+{{{
+class VectorKernel extends Kernel{
+    float[] lhsOperand;
+    float[] rhsOperand;
+    float[] unaryOperand;
+    float[] result;
+    final static int FUNC_ADD =0; 
+    final static int FUNC_SUB =1;
+    final static int FUNC_SQR =2;
+    final static int FUNC_SQRT =3;
+    // other functions
+    int function;
+    @Override public void run(){
+        int gid = getGlobalId(0){
+        if (function==FUNC_ADD){
+           result[gid]=lhsOperand[gid]+rhsOperand[gid];
+        }else if (function==FUNC_SUB){
+           result[gid]=lhsOperand[gid]-rhsOperand[gid];
+        }else if (function==FUNC_SQR){
+           result[gid]=unaryOperand[gid]*unaryOperand[gid];
+        }else if (function==FUNC_ADD){
+           result[gid]=sqrt(unaryOperand[gid]);
+        }else if ....
+    }
+    private void binary(int operator, float[] lhs, float[] rhs){
+       lhsOperand = lhs;
+       rhsOperand = rhs;
+       function=operator;
+       execute(lhs.size());
+    }
+    public void add(float[] lhs, float[] rhs){
+       binary(FUNC_ADD, lhs, rhs);
+    } 
+
+    public void sub(float[] lhs, float[] rhs){
+       binary(FUNC_SUB, lhs, rhs);
+    } 
+
+    private void unary(int operator, float[] unary){
+       unaryOperand = unary;
+       function=operator;
+       execute(unaryOperand.length());
+    }
+
+    public void sqrt(float[] unary){
+       unary(FUNC_SQRT, unary);
+    } 
+
+    private void unary(int operator){
+       System.array.copy(result, 0, unaryOperand, 0, result.length);
+       function=operator;
+       execute(unaryOperand.length());
+    }
+
+    public void sqrt(){
+       unary(FUNC_SQRT);
+    } 
+
+}  
+}}}
+
 {{{
 VectorKernel vk = new VectorKernel(SIZE);
 vk.add(copyLhs, copyRhs);  // copies args to lhs and rhs operands
