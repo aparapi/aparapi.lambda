@@ -198,9 +198,11 @@ squarer.api().square(Range.create(SIZE));
 
 }}}
 
-= Extending this to allow argument passing =
+= Extending this proposal to allow argument passing =
 
-Note that we have effectively replaced the use of the 'abstract' `squarer.execute(range)` with the more concrete `squarer.api().add(range)`.  Now I would like to propose that we take one more step by allowing us to pass arguments to our methods. 
+Note that we have effectively replaced the use of the 'abstract' `squarer.execute(range)` with the more concrete `squarer.api().add(range)`.
+
+Now I would like to propose that we take one more step by allowing us to pass arguments to our methods. 
 
 Normally Aparapi captures buffer and field accesses to create the args that it passes to the generated OpenCL code.  In our cannonical squarer example the `in[]` and `square[]` buffers are captured from the bytecode and passed (behind the scenes) to the OpenCL.
 
