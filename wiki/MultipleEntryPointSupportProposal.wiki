@@ -151,22 +151,25 @@ The first problem can be solved by extending {{{Kernel.execute()}}} to accept a 
 kernel.execute(SIZE, "add");
 }}}
 
-This is the obvious solution, but really causes maintenence issues as it trades compile time checking for a runtime error.  If I call:-
+This is the obvious solution, but really causes maintenence issues as it trades compile time checking for a runtime error.  If a developer mistypes the name of the method, :-
 
 {{{
-kernel.execute(SIZE, "square"); // there is no such method 
+kernel.execute(SIZE, "sadd"); // there is no such method 
 }}}
 
-I don't find out until runtime.
+The code will compile, but no error can be reported until runtime.
 
-Maybe the new Java 8 method handle feature for method might help here. Ideally we could use some syntax to directly reference a named method in a class which ins
-
+==An aside ===
+Maybe the new Java 8 method reference feature method might help here. In this paper Brian Goetz talks about a double-colon syntax (Class::Method) for directly referencing a method which is presumably checked at compile time.
 {{{
-kernel.execute(SIZE, kernel#square); 
+kernel.execute(SIZE, VectorKernel::sadd); // would fail? 
 }}}
 
+See [http://cr.openjdk.java.net/~briangoetz/lambda/lambda-state-4.html Brian Goetz's excellent Lambda documentation]
 
-The second can probably be solved using an Annotation. 
+==back from Aside==
+
+The second problem (knowing which methods need to be converted to OpenCL) can probably be solved using an Annotation. 
 {{{
 class VectorKernel extends Kernel{
    @EntryPoint public void add();
@@ -177,19 +180,13 @@ class VectorKernel extends Kernel{
 }
 }}}
 
-So the annotation allows the Aparapi runtime to determine which methods may need to be exposed. 
+Whereby the {{{@EntryPoint}}} annotation allows the Aparapi runtime to determine which methods need to be exposed. 
 
-I have problems with the former in that it trades compile error for runtime errors.  For example, what happens when I mistakenly call 
-
-{{{
-kernel.execute(SIZE, "square"); // there is no square()
-}}}
-
-This is accepted at call time but will fail at runtime.  
+=My Extension Proposal=
 
 Here is my proposal.  Not only does it allow us to reference multiple entryoints, but it actually improves (I think) the single entrypoint API, albeit at the cost of being more verbose. 
 
-First I propose that we are forced to provide an interface for all methods that we wish to expose. 
+First I propose that we should ask the developer to provide an interface for all methods that we wish to execute on the GPU (or convert to OpenCL). 
 
 {{{
 interface VectorAPI extends AparapiAPI {
@@ -200,9 +197,9 @@ interface VectorAPI extends AparapiAPI {
 }
 }}}
 
-Note that each API takes a Range... we will come back to this.
+Note that each API takes a {{{Range}}}, this will make more sense in a moment.
 
-Then we would provide a mapped implementation of this API (note the weasel words, this is not a conventional implementation of an interface!) using a new annotation @Implements(Class class).
+We should also provide a mechanism for mapping the proposed  implementation of the API (note the weasel words, this is not a conventional implementation of an interface!) using a new annotation @Implements(Class class).
 
 {{{
 @Implements(VectorAPI.class) class Vector extends Kernel {
@@ -214,7 +211,9 @@ Then we would provide a mapped implementation of this API (note the weasel words
 }
 }}}
 
-We instantiate our Kernel differently.  Using something like. 
+We instantiate our Kernel by creating an instance using {{{new}}}, but then force the OpenCL generation by asking an instance for access to the API.  Some java.util.Proxy 
+
+Using something like. 
 {{{
 Vector kernel = new Vector();
 VectorAPI kernelApi = kernel.api();
@@ -222,7 +221,9 @@ Range range = Range.create(SIZE);
 kernalApi.add(range);
 }}}
 
-or probably we can use
+So the Vector instance is a pure Java implementation.  The extracted API is the bridge to the GPU.
+
+Of course then we can execute using an inline call through {{{api()}}}
 
 {{{
 Vector kernel = new Vector();
@@ -231,7 +232,7 @@ kernel.api().add(range);
 kernel.api().sqrt(range);
 }}}
 
-or even expose {{{api}}} as a final field.
+or even expose {{{api}}} as public final fields 
 
 {{{
 Vector kernel = new Vector();
@@ -239,6 +240,10 @@ Range range = Range.create(SIZE);
 kernel.api.add(range);
 kernel.api.sqrt(range);
 }}}
+
+= Extending this to allow argument passing =
+
+
 
 ---
 below this line is just some implementation musings
