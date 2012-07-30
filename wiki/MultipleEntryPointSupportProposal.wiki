@@ -28,7 +28,7 @@ Kernel adder = new Kernel(){
 
 For us to square and then add a constant we would have to invoke two kernels. Or of course create single SquarerAdder kernel.
 
-See this page EmulatingMultipleEntrypointsUsingCurrentAPI for ideas on how to emulate having multiple methods, by passing data to a single {{{run()}}} method. 
+See this page [EmulatingMultipleEntrypointsUsingCurrentAPI EmulatingMultipleEntrypointsUsingCurrentAPI] for ideas on how to emulate having multiple methods, by passing data to a single {{{run()}}} method. 
 
 
 = Why can't Aparapi just allow 'arbitary' methods = 
