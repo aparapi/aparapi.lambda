@@ -68,7 +68,7 @@ Download the installation guide for Microsoft® Windows® (and Linux®) from [ht
 The release notes are available here  [http://developer.amd.com/sdks/AMDAPPSDK/assets/AMD_APP_SDK_Release_Notes_Developer.pdf]
 
 == A C++ compiler==
-For Microsoft® Windows® platforms the JNI build can support either Microsoft® Visual Studio® 2008, 2009 or 2010 compiler or MinGW (Minimal GNU for Windows) from GNU.  If you wish to use another compiler then you will have to tweak the com.amd.aparapi.jni/build.xml file to get your compiler to work. 
+For Microsoft® Windows® platforms the JNI build can support either Microsoft® Visual Studio® 2008, 2009 or 2010 compiler or MinGW (Minimal GNU for Windows) from GNU. Now that Visual Studio express is available for free, we would recommend using Visual studio.  If you wish to use another compiler then you will have to tweak the com.amd.aparapi.jni/build.xml file to get your compiler to work. 
 ====Microsoft® Visual Studio® 2008/2010 for 32-bit or 64-bit platforms====
 Aparapi has been tested with various versions of Microsoft® Visual Studio® 2008, 2009 and 2010 including Enterprise, Professional and Express editions, if you encounter any version specific issues please let us know so we can address it and/or update this documentation. 
 
@@ -81,24 +81,28 @@ And an SDK, such as.
 c:\Program Files\Microsoft SDKs\Windows\v6.0A
 
 Note the location of both of these as this information will be needed to configure the com.amd.aparapi.jni\build.property file (later).
+
+=====For Visual Studio Express 64 bit users=====
+Visual studio express does not include the 64 bit compiler or libraries.  You will need to also install the SDK from Microsoft.
+[http://msdn.microsoft.com/en-us/library/9yb4317s(v=vs.80).aspx this link should help]
   
 ====MinGW – (MINimum Gnu for Windows)====
 As an alternative to installing Microsoft® Visual Studio® we have included support for the MinGW tool chain and Aparapi has been (minimally) tested with this compiler. 
 
 MingGW can be downloaded from [http://www.mingw.org/] by following the instructions on their [http://www.mingw.org/wiki/Getting_Started Getting Started] page.  We recommend installing the mingw-get-inst msi installer and just taking the defaults.  
 
-Note the install location as this information will be needed to configure the com.amd.aparapi.jni\build.property file (later).
+Note the install location as this information will be needed to edit build.xml file and uncomment the line referencing the mingw instal dir.
   
 Typically the install location is 
 {{{ 
 C:\MinGW
 }}}
 
-You will need to ensure that the bin sub directory is in your path before you attempting to run an Aparapi enabled application built using MinGW.  MinGW apps require access to MingGW/GNU  C++/C runtime at execution time.
+After a successful build, you will need to ensure that the bin sub directory is in your path before you attempting to run an Aparapi enabled application built using MinGW.  MinGW apps require access to MingGW/GNU  C++/C runtime at execution time.
 {{{
 set PATH=%PATH%;C:\MinGW\bin
 }}}
-
+This is one reason the binary distribution is ''not'' built using mingw.
 ==JUnit==
 The initial Open Source drop includes a suite of JUnit tests for validating bytecode to OpenCL code generation. These tests require JUnit 4. 
 
@@ -119,29 +123,39 @@ You will end up with the following files/directories
 {{{
     aparapi/
        com.amd.aparapi/
-          src/java/com.amd.aparapi/
+          src/java/com.amd.aparapi/*.java
           build.xml 
        com.amd.aparapi.jni/
-          src/cpp/aparapi.cpp
+          src/cpp/*.cpp
+          src/cpp/*.h
           build.xml
-          build.properties
        test/
           codegen/
              src/java/
                 com.amd.aparapi/
                 com.amd.aparapi.test/
              build.xml
+          runtime/
+             src/java/
+                com.amd.aparapi/
+                com.amd.aparapi.test/
+             build.xml
        samples/
           mandel
-             src/java/com.amd.aparapi.samples.mandel/Main.java
+             src/java/com.amd.aparapi.samples.mandel/*.java
              build.xml
              mandel.sh
              mandel.bat 
           squares/
-             src/java/com.amd.aparapi.samples.squares/Main.java
+             src/java/com.amd.aparapi.samples.squares/*.java
              build.xml
              squares.sh
              squares.bat 
+          convolution/
+             src/java/com.amd.aparapi.samples.convolution/*.java
+             build.xml
+             conv.sh
+             conv.bat 
        examples/ 
           nbody/
              src/java/com.amd.aparapi.nbody/
@@ -164,38 +178,12 @@ Use the build.xml file at the root of the tree for two purposes:
  * To create a binary distribution directory and zip file. This zip file is same as those available from the download section of the code.google.com/p/aparapi site. 
 
 ==Preparing for your first build==
-Edit the {{{com.amd.aparapi.jni\build.properties}}} file and ensure that the properties are valid for your platform.  
 
-View the comments in the properties file for assistance. The {{{build.xml}}} ant file does contains some simple checks to help diagnose simple configuration errors.
-
-You will need to set the property {{{amd.app.sdk.dir}}} to point to your AMD APP SDK v2.5® install location.  Typically this is either
-{{{
-amd.app.sdk.dir=C:\Program Files\AMD APP SDK
-}}}
-Or 
-{{{ 
-amd.app.sdk.dir=C:\Program Files (x86)\AMD APP SDK
-}}}
-Depending on whether you are on a 32 or 64 bit version of Microsoft® Windows®.
- 
-The compiler configuration will depend on the compiler you intend to use.  For Microsoft® Visual Studio® you will need to configure two properties. 
-{{{
-msvc.dir= c:\Program Files\Microsoft Visual Studio 9.0
-}}}
-and
-{{{ 
-mscv.sdk.dir= c:\Program Files\Microsoft SDKs\Windows\v6.0A
-}}}
-Note that clearly these depend on the location on your platform.  
-
-For MinGW users you only need to configure one property
-{{{
-mingw.dir =c:\MinGW
-}}}
+You should only need to edit {{{com.amd.aparapi.jni\build.xml}}} file if you wish to use mingw or if you Visual Studio or gcc compiler is in an unusual place.
 
 Perform a build from the root directory using the following command:
 {{{
-$ ant clean build dist
+$ ant clean dist
 }}}
 
 The jni build will perform some simple tests to check the configuration properties and hopefully also guide you to a possible solution. 
