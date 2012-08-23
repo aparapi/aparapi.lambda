@@ -108,29 +108,39 @@ Checkout provides the following:
 {{{
     aparapi/
        com.amd.aparapi/
-          src/java/com.amd.aparapi/
+          src/java/com.amd.aparapi/*.java
           build.xml 
        com.amd.aparapi.jni/
-          src/cpp/aparapi.cpp
+          src/cpp/*.cpp
+          src/cpp/*.h
           build.xml
-          build.properties
        test/
           codegen/
              src/java/
                 com.amd.aparapi/
                 com.amd.aparapi.test/
              build.xml
+          runtime/
+             src/java/
+                com.amd.aparapi/
+                com.amd.aparapi.test/
+             build.xml
        samples/
           mandel
-             src/java/com.amd.aparapi.samples.mandel/Main.java
+             src/java/com.amd.aparapi.samples.mandel/*.java
              build.xml
              mandel.sh
              mandel.bat 
           squares/
-             src/java/com.amd.aparapi.samples.squares/Main.java
+             src/java/com.amd.aparapi.samples.squares/*.java
              build.xml
              squares.sh
              squares.bat 
+          convolution/
+             src/java/com.amd.aparapi.samples.convolution/*.java
+             build.xml
+             conv.sh
+             conv.bat 
        examples/ 
           nbody/
              src/java/com.amd.aparapi.nbody/
@@ -142,6 +152,7 @@ Checkout provides the following:
        LICENSE.txt
        CREDITS.txt
 }}}
+
 
 ==Sub Directories==
 The {{{com.amd.aparapi}}}  and {{{com.amd.aparapi.jni}}} subdirectories contain the source for building and using Aparapi.
@@ -156,10 +167,11 @@ Edit  {{{com.amd.aparapi.jni\build.properties}}} and ensure that the properties 
 
 View the comments in the properties file for assistance. The {{{build.xml}}} ant file contains some simple checks to help diagnose simple configuration errors in case something gets messed up.
 
-For Linux you generally will only need to configure the property {{{amd.app.sdk.dir}}} so that it points to your AMD APP SDK v2.5 install directory, the default for Linux® is {{{/opt/AMDAPP}}}
+For Linux you should not need to edit {{{build.xml}}} unless your APP SDK install location differs from the default.  The default for Linux® is {{{/opt/AMDAPP}}}
 {{{
 amd.app.sdk.dir=/opt/AMDAPP
 }}}
+
 
 Perform a build from the root directory using the following command:
 {{{
