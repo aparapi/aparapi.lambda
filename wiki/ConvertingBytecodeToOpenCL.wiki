@@ -1,7 +1,7 @@
 #summary How Aparapi converts bytecode to OpenCL
 
 = Introduction =
-[../wiki-assets/ByteCode2OpenCL.pdf try this]
+[http://../wiki-assets/ByteCode2OpenCL.pdf try this]
 
 One of the unique Aparapi features is it's ability to convert Java bytecode to OpenCL automatically. 
 
