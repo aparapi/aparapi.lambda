@@ -2,7 +2,8 @@
 
 = Introduction =
 [https://aparapi.googlecode.com/svn/wiki-assets/ByteCode2OpenCL.pdf try this]
-<wiki:gadget url="http://www.ohloh.net/p/gwt/widgets/project_factoids.xml" width="340" height="170" border="0" />
+
+
 One of the unique Aparapi features is it's ability to convert Java bytecode to OpenCL automatically. 
 
 In this page we will try to describe the process used to perform this conversion. 
