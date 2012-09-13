@@ -70,8 +70,8 @@ public class Test extends JFrame{
 
    public static void main(String[] args) throws IOException {
 
-      new Test(new File(args[0]), args[1]).setVisible(true);
-
+    //  new Test(new File(args[0]), args[1]).setVisible(true);
+      new Test(new File("highett.jpg"), "haarcascade_frontalface_alt2.xml").setVisible(true);
    }
 
 }
