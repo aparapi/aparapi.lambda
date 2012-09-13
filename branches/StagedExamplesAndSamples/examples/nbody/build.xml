@@ -4,7 +4,8 @@
    <property name="jogamp-jar-url" value="http://jogamp.org/deployment/archive/rc/gluegen_28-joal_17-jogl_41-jocl_25/jar"/>
 
    <path id="compiler.class.path">
-      <pathelement path="../../com.amd.aparapi/dist/aparapi.jar"/>
+      <!--<pathelement path="../../com.amd.aparapi/dist/aparapi.jar"/>-->
+      <pathelement path="../../../../trunk/com.amd.aparapi/dist/aparapi.jar"/>
       <pathelement path="jogamp/jogl.all.jar"/>
       <pathelement path="jogamp/gluegen-rt.jar"/>
    </path>
