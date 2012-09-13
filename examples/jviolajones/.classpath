@@ -4,6 +4,10 @@
 	<classpathentry kind="lib" path="jdom.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.tptp.platform.instrumentation.ui.ContainerInitializer/Build to Manage Libraries"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/com.amd.aparapi"/>
+	<classpathentry kind="lib" path="/hc4860/aparapi.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="hc4860"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
