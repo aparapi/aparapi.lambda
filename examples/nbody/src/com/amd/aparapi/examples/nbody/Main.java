@@ -134,9 +134,8 @@ public class Main{
       /** 
        * Here is the kernel entrypoint. Here is where we calculate the position of each body
        */
-      @Override public void run() {
-         int body = getGlobalId();
-         int count = getGlobalSize(0) * 3;
+      public void processBody(int body, int count) {
+
          int globalId = body * 3;
 
          float accx = 0.f;
@@ -168,6 +167,16 @@ public class Main{
          vxyz[globalId + 2] = vxyz[globalId + 2] + accz;
       }
 
+      /** 
+       * Here is the kernel entrypoint. Here is where we calculate the position of each body
+       */
+      @Override public void run() {
+         int body = getGlobalId();
+         int count = getGlobalSize(0) * 3;
+         processBody(body, count);
+
+      }
+
       /**
        * Render all particles to the OpenGL context
        * @param gl
@@ -197,9 +206,22 @@ public class Main{
 
    public static boolean running;
 
+   public static enum Mode {
+      Aparapi,
+      NonAparapi
+   };
+
    public static void main(String _args[]) {
 
-      final NBodyKernel kernel = new NBodyKernel(Range.create(Integer.getInteger("bodies", 8192)));
+      final Mode mode = Boolean.getBoolean("UseAparapi") ? Mode.Aparapi : Mode.NonAparapi;
+     
+      
+      final int numberOfBodies = Integer.getInteger("bodies", 8192);
+      
+      width = Integer.getInteger("width", 512);
+      height = Integer.getInteger("height", 512);
+      Range rangeOfBodies = Range.create(numberOfBodies,Integer.getInteger("groupSize", 256));
+      final NBodyKernel kernel = new NBodyKernel(rangeOfBodies);
 
       JFrame frame = new JFrame("NBody");
 
@@ -235,12 +257,12 @@ public class Main{
 
       controlPanel.add(positionUpdatesPerMicroSecondTextField);
       GLCapabilities caps = new GLCapabilities(null);
-      final GLProfile profile = caps.getGLProfile();
+      // final GLProfile profile = caps.getGLProfile();
       caps.setDoubleBuffered(true);
       caps.setHardwareAccelerated(true);
       final GLCanvas canvas = new GLCanvas(caps);
 
-      Dimension dimension = new Dimension(Integer.getInteger("width", 742), Integer.getInteger("height", 742));
+      Dimension dimension = new Dimension(width, height );
       canvas.setPreferredSize(dimension);
 
       canvas.addGLEventListener(new GLEventListener(){
@@ -281,16 +303,23 @@ public class Main{
 
             glu.gluLookAt(xeye, yeye, zeye * zoomFactor, xat, yat, zat, 0f, 1f, 0f);
             if (running) {
-               kernel.execute(kernel.range);
-               if (kernel.isExplicit()) {
-                  kernel.get(kernel.xyz);
-               }
-               List<ProfileInfo> profileInfo = kernel.getProfileInfo();
-               if (profileInfo != null && profileInfo.size() > 0) {
-                  for (ProfileInfo p : profileInfo) {
-                     System.out.print(" " + p.getType() + " " + p.getLabel() + (p.getEnd() - p.getStart()) / 1000 + "us");
+               if (mode == Mode.Aparapi) {
+                  kernel.execute(kernel.range);
+                  if (kernel.isExplicit()) {
+                     kernel.get(kernel.xyz);
                   }
-                  System.out.println();
+                  List<ProfileInfo> profileInfo = kernel.getProfileInfo();
+                  if (profileInfo != null && profileInfo.size() > 0) {
+                     for (ProfileInfo p : profileInfo) {
+                        System.out.print(" " + p.getType() + " " + p.getLabel() + (p.getEnd() - p.getStart()) / 1000 + "us");
+                     }
+                     System.out.println();
+                  }
+               } else {
+                  for (int body=0; body<numberOfBodies; body++){
+                     kernel.processBody(body,numberOfBodies);
+                  }
+                  
                }
             }
             kernel.render(gl);
@@ -348,7 +377,7 @@ public class Main{
       panel.add(canvas, BorderLayout.CENTER);
       frame.getContentPane().add(panel, BorderLayout.CENTER);
       final FPSAnimator animator = new FPSAnimator(canvas, 100);
-    
+
       frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
       frame.pack();
       frame.setVisible(true);

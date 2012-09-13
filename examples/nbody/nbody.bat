@@ -2,6 +2,7 @@
 
 java ^
   -Djava.library.path=..\..\..\..\trunk\com.amd.aparapi.jni\dist;jogamp ^
+  -DUseAparapi=true^
   -Dcom.amd.aparapi.executionMode=%1 ^
   -Dcom.amd.aparapi.enableProfiling=false ^
   -Dbodies=%2 ^
