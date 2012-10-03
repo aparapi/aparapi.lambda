@@ -220,7 +220,7 @@ public class Main{
       
       width = Integer.getInteger("width", 512);
       height = Integer.getInteger("height", 512);
-      Range rangeOfBodies = Range.create(numberOfBodies,Integer.getInteger("groupSize", 256));
+      Range rangeOfBodies = Range.create(numberOfBodies,Integer.getInteger("groupSize", 8));
       final NBodyKernel kernel = new NBodyKernel(rangeOfBodies);
 
       JFrame frame = new JFrame("NBody");
