@@ -1,0 +1,18 @@
+#summary Adding Lambdas to Aparapi
+
+I have been playing with Java 8 lambdas  http://openjdk.java.net/projects/lambda/ for a couple of days and tinkering with a possible Aparapi API. 
+
+I have created a branch called 'MockLambdas' to track my ideas. 
+
+You will need to get the latest binary build of lambdas to make the code in this branch work (check the accept license box!) http://jdk8.java.net/lambda/
+
+Then hack the {{{lambda.bat}}} file in the root dir to point to your installation. All other bat files in 'MockLambdas' use 'lambda.bat' so you should only have to hack one file. 
+
+Then 
+  build.bat
+
+and
+  run.bat 
+
+Should do what you expect ;)
+
