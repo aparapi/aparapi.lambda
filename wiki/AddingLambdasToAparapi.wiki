@@ -2,7 +2,8 @@
 
 I have been playing with Java 8 lambdas  http://openjdk.java.net/projects/lambda/ for a couple of days and tinkering with a possible Aparapi API. 
 
-I have created a branch called 'MockLambdas' to track my ideas. 
+I have created a branch called 'MockLambdas' to track my ideas. See here 
+http://code.google.com/p/aparapi/source/browse/#svn%2Fbranches%2FMockLambda
 
 You will need to get the latest binary build of lambdas to make the code in this branch work (check the accept license box!) http://jdk8.java.net/lambda/
 
@@ -16,3 +17,6 @@ and
 
 Should do what you expect ;)
 
+I will try to update this page as I gain some more insite.  I do have a working mandelbrot example. 
+
+Gary
