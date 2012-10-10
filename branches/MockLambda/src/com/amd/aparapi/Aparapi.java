@@ -10,17 +10,26 @@ public class Aparapi{
    public interface KernelII {
       void run(int x, int y);
    }
+   public interface KernelIII {
+      void run(int x, int y, int id);
+   }
 
-   static void waitForIt(CyclicBarrier barrier){
+   public interface Tail {
+      void run();
+   }
+
+   static void wait(CyclicBarrier barrier){
       try {
          barrier.await(); 
       } catch (InterruptedException ex) { 
       } catch (BrokenBarrierException ex) { 
       }
    }
+
+
    static public void forEach(int width, int height, KernelII kernel){
       final int threads = Runtime.getRuntime().availableProcessors();
-      final CyclicBarrier barrier = new CyclicBarrier(threads+1, ()-> { System.out.println("done!");});
+      final CyclicBarrier barrier = new CyclicBarrier(threads+1);
       for (int t=0; t<threads; t++){
          final int finalt = t;
          new Thread(()->{
@@ -29,21 +38,61 @@ public class Aparapi{
                   kernel.run(x,y);
                }
             }
-            waitForIt(barrier);
+            wait(barrier);
          }).start();
       }
-      waitForIt(barrier);
+      wait(barrier);
 
    }
    static public void forEach(int width, KernelI kernel){
-      for (int x=0; x<width; x++){
-         kernel.run(x);
+      final int threads = Runtime.getRuntime().availableProcessors();
+      final CyclicBarrier barrier = new CyclicBarrier(threads+1);
+      for (int t=0; t<threads; t++){
+         final int finalt = t;
+         new Thread(()->{
+            for (int x=finalt*(width/threads); x<(finalt+1)*(width/threads); x++){
+               kernel.run(x);
+            }
+            wait(barrier);
+         }).start();
       }
+      wait(barrier);
    }
+
    static public void forEach(int[] intArray, KernelII kernel){
-      for (int i=0; i<intArray.length; i++){
-         kernel.run(i,intArray[i]);
+      final int width = intArray.length;
+      final int threads = Runtime.getRuntime().availableProcessors();
+      final CyclicBarrier barrier = new CyclicBarrier(threads+1);
+      for (int t=0; t<threads; t++){
+         final int finalt = t;
+         new Thread(()->{
+            for (int x=finalt*(width/threads); x<(finalt+1)*(width/threads); x++){
+               kernel.run(x,intArray[x]);
+            }
+            wait(barrier);
+         }).start();
       }
+      wait(barrier);
+   }
+
+   static public void forEach(int[][] intArray, KernelIII kernel){
+      final int width = intArray.length;
+      final int threads = Runtime.getRuntime().availableProcessors();
+      final CyclicBarrier barrier = new CyclicBarrier(threads+1);
+      for (int t=0; t<threads; t++){
+         final int finalt = t;
+         new Thread(()->{
+            for (int x=finalt*(width/threads); x<(finalt+1)*(width/threads); x++){
+               int[] arr = intArray[x];
+               int arrLen = arr.length;
+               for (int y=0; y<arrLen; y++){
+                  kernel.run(x,y, arr[y]);
+               }
+            }
+            wait(barrier);
+         }).start();
+      }
+      wait(barrier);
    }
 }
 

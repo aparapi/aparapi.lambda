@@ -21,20 +21,14 @@ public class Mandel{
 
    static final int maxIterations = 64;
 
-
-   static void displayMandel(int width, int height, float offsetx, float offsety, float scale, int rgb[], int[] pallette){
-      Aparapi.forEach(width, height, (xin,yin)->{
-         /** Translate the gid into an x an y value. */
-         float x = (((xin * scale) - ((scale / 2) * width)) / width) + offsetx;
-
-         float y = (((yin * scale) - ((scale / 2) * height)) / height) + offsety;
-
+   static void displayMandel(int width, int height, float offsetx, float offsety, float scale, int rgb[], int[] pallette, JComponent viewer, DoorBell paintedDoorBell){
+      Aparapi.forEach(rgb, (i, value)->{
+         float x = ((((i%width) * scale) - ((scale / 2) * width)) / width) + offsetx;
+         float y = ((((i/width) * scale) - ((scale / 2) * height)) / height) + offsety;
          int count = 0;
-
          float zx = x;
          float zy = y;
          float new_zx = 0f;
-
          // Iterate until the algorithm converges or until maxIterations are reached.
          while (count < maxIterations && zx * zx + zy * zy < 8) {
             new_zx = zx * zx - zy * zy + x;
@@ -42,14 +36,43 @@ public class Mandel{
             zx = new_zx;
             count++;
          }
-
          // Pull the value out of the palette for this iteration count.
-         rgb[xin+(yin*height)] = pallette[count];
+         rgb[i] = pallette[count];
       });
+      viewer.repaint();
+      paintedDoorBell.waitFor();
    }
 
-   /** User selected zoom-in point on the Mandelbrot view. */
-   public static volatile Point to = null;
+   static public class DoorBell<T>{
+      T value;
+      void set(T _value){
+         value = _value;
+         press();
+      }
+      T get(){
+         waitFor();
+         return(value);
+      }
+      private volatile boolean pressed=false;
+      void waitFor(){
+         while(!pressed){
+            synchronized (this) {
+               try {
+                  this.wait();
+               } catch (InterruptedException ie) {
+               }
+            }
+         }
+         pressed = false;
+      }
+      void press(){
+         pressed = true;
+         synchronized (this) {
+            this.notify();
+         }
+      }
+   }
+
 
    @SuppressWarnings("serial") public static void main(String[] _args) {
 
@@ -61,30 +84,24 @@ public class Mandel{
       /** Height of Mandelbrot view. */
       final int height = 768;
 
-
-
-      /** Image for Mandelbrot view. */
       final BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-      final BufferedImage offscreen = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-      // Draw Mandelbrot image
+      final DoorBell paintedDoorBell = new DoorBell();
       JComponent viewer = new JComponent(){
          @Override public void paintComponent(Graphics g) {
             g.drawImage(image, 0, 0, width, height, this);
+            paintedDoorBell.press();
          }
       };
 
       // Set the size of JComponent which displays Mandelbrot image
       viewer.setPreferredSize(new Dimension(width, height));
 
-      final Object doorBell = new Object();
+      final DoorBell<Point> doorBell = new DoorBell<>();
 
       // Mouse listener which reads the user clicked zoom-in point on the Mandelbrot view 
       viewer.addMouseListener(new MouseAdapter(){
          @Override public void mouseClicked(MouseEvent e) {
-            to = e.getPoint();
-            synchronized (doorBell) {
-               doorBell.notify();
-            }
+            doorBell.set(e.getPoint());
          }
       });
 
@@ -96,24 +113,20 @@ public class Mandel{
 
       // Extract the underlying RGB buffer from the image.
       // Pass this to the kernel so it operates directly on the RGB buffer of the image
-      final int[] rgb = ((DataBufferInt) offscreen.getRaster().getDataBuffer()).getData();
-      final int[] imageRgb = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
+      final int[] rgb = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
 
       // create pallette 
       // Initialize palette values
       final int[] pallette = new int[maxIterations+1];
 
-         for (int i = 0; i < maxIterations; i++) {
-            float h = i / (float) maxIterations;
-            float b = 1.0f - h * h;
-            pallette[i] = Color.HSBtoRGB(h, 1f, b);
-         }
+      Aparapi.forEach(maxIterations, (i)->{
+         float h = i / (float) maxIterations;
+         float b = 1.0f - h * h;
+         pallette[i] = Color.HSBtoRGB(h, 1f, b);
+      });
 
-      // Create a Kernel passing the size, RGB buffer and the palette.
-      
-      displayMandel(width, height,  -1f, 0f, 3f, rgb, pallette);
-      System.arraycopy(rgb, 0, imageRgb, 0, rgb.length);
-      viewer.repaint();
+
+      displayMandel(width, height,  -1f, 0f, 3f, rgb, pallette, viewer, paintedDoorBell);
 
       // Window listener to dispose Kernel resources on user exit.
       frame.addWindowListener(new WindowAdapter(){
@@ -124,19 +137,7 @@ public class Mandel{
 
       // Wait until the user selects a zoom-in point on the Mandelbrot view.
       while (true) {
-
-         // Wait for the user to click somewhere
-         while (to == null) {
-            synchronized (doorBell) {
-               try {
-                  doorBell.wait();
-               } catch (InterruptedException ie) {
-                  ie.getStackTrace();
-               }
-            }
-         }
-
-        
+         Point to = doorBell.get();
          float x = -1f;
          float y = 0f;
          float defaultScale=3f;
@@ -152,20 +153,10 @@ public class Mandel{
                scale = scale + sign * defaultScale / frames;
                x = x - sign * (tox / frames);
                y = y - sign * (toy / frames);
-
                // Set the scale and offset, execute the kernel and force a repaint of the viewer.
-               displayMandel(width, height,  x, y, scale, rgb, pallette);
-               System.arraycopy(rgb, 0, imageRgb, 0, rgb.length);
-               viewer.repaint();
+               displayMandel(width, height,  x, y, scale, rgb, pallette, viewer, paintedDoorBell );
             }
          }
-
-         long elapsedMillis = System.currentTimeMillis() - startMillis;
-         System.out.println("FPS = " + frames * 1000 / elapsedMillis);
-         // Reset zoom-in point.
-         to = null;
       }
-
    }
-
 }
