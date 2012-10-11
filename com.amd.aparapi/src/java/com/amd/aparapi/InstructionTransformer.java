@@ -37,12 +37,16 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 */
 package com.amd.aparapi;
 
-public abstract class InstructionTransformer{
-   private String description;
+import com.amd.aparapi.instruction.ExpressionList;
+import com.amd.aparapi.instruction.Instruction;
+
+public abstract class InstructionTransformer {
+
+   private final String description;
 
    public abstract Instruction transform(final ExpressionList _expressionList, final Instruction i);
 
-   InstructionTransformer(String _description) {
+   public InstructionTransformer(String _description) {
       description = _description;
    }
 

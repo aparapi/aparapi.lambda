@@ -35,52 +35,12 @@ of EAR).  For the most current Country Group listings, or for additional informa
 under those regulations, please refer to the U.S. Bureau of Industry and Security's website at http://www.bis.doc.gov/. 
 
 */
-package com.amd.aparapi;
+package com.amd.aparapi.exception;
 
-/**
- * A collection of annotations used at dev time to tag intent.
- * 
- * We should be able to remove all of these before OpenSource release. 
- * 
- * @author gfrost
- */
-public class Annotations {
+@SuppressWarnings("serial")
+public class DeprecatedException extends AparapiException {
 
-   /**
-    * Use this annotation to tag stuff that needs Java Doc added. 
-    * 
-    * @author gfrost
-    */
-   public @interface DocMe {
-   }
-
-   /**
-    * Use this annotation to tag fields that we think need to be removed (method/field/var).
-    * 
-    * @author gfrost
-    */
-   public @interface RemoveMe {
-   }
-
-   /**
-    * Used to tag experimental features (methods/fields).  
-    * 
-    * Do not rely on anything tagged as experimental, it will probably be retracted/refactored. 
-    * 
-    * @author gfrost
-    *
-    */
-   public @interface Experimental {
-   }
-
-   /**
-    * Used to tag unused features (methods/fields).  
-    * 
-    * Do not rely on anything tagged as unused, it will probably be retracted/refactored. 
-    * 
-    * @author gfrost
-    *
-    */
-   public @interface Unused {
+   public DeprecatedException(String msg) {
+      super(msg);
    }
 }

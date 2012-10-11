@@ -35,52 +35,29 @@ of EAR).  For the most current Country Group listings, or for additional informa
 under those regulations, please refer to the U.S. Bureau of Industry and Security's website at http://www.bis.doc.gov/. 
 
 */
-package com.amd.aparapi;
+package com.amd.aparapi.exception;
 
 /**
- * A collection of annotations used at dev time to tag intent.
+ * We use <code>AparapiException</code> class and subclasses to wrap other
+ * <code>Exception</code> classes, mainly to allow differentiation between Aparapi specific issues at runtime. 
  * 
- * We should be able to remove all of these before OpenSource release. 
+ * The class parser for example will throw a specific <code>ClassParseException</code> if any Aparapi unfriendly 
+ * constructs are found.  This allows us to <strong>fail fast</strong> during classfile parsing.
  * 
+ * @see com.amd.aparapi.exception.ClassParseException
+ * @see com.amd.aparapi.exception.CodeGenException
+ *
  * @author gfrost
+ *
  */
-public class Annotations {
+@SuppressWarnings("serial")
+public class AparapiException extends Exception {
 
-   /**
-    * Use this annotation to tag stuff that needs Java Doc added. 
-    * 
-    * @author gfrost
-    */
-   public @interface DocMe {
+   public AparapiException(String _msg) {
+      super(_msg);
    }
 
-   /**
-    * Use this annotation to tag fields that we think need to be removed (method/field/var).
-    * 
-    * @author gfrost
-    */
-   public @interface RemoveMe {
-   }
-
-   /**
-    * Used to tag experimental features (methods/fields).  
-    * 
-    * Do not rely on anything tagged as experimental, it will probably be retracted/refactored. 
-    * 
-    * @author gfrost
-    *
-    */
-   public @interface Experimental {
-   }
-
-   /**
-    * Used to tag unused features (methods/fields).  
-    * 
-    * Do not rely on anything tagged as unused, it will probably be retracted/refactored. 
-    * 
-    * @author gfrost
-    *
-    */
-   public @interface Unused {
+   public AparapiException(Throwable _t) {
+      super(_t);
    }
 }

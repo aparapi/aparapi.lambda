@@ -35,52 +35,131 @@ of EAR).  For the most current Country Group listings, or for additional informa
 under those regulations, please refer to the U.S. Bureau of Industry and Security's website at http://www.bis.doc.gov/. 
 
 */
-package com.amd.aparapi;
+package com.amd.aparapi.reader;
+
+import java.io.InputStream;
 
 /**
- * A collection of annotations used at dev time to tag intent.
- * 
- * We should be able to remove all of these before OpenSource release. 
+ * Primarily used to parse various ClassFile structures. This class provides low level access to sequential bytes in a stream given stream.
+ * <p>
+ * Basically wraps a <code>ByteBuffer</code> and keeps track of the current offset. All requests on 
+ * this <code>ByteReader</code> will be delegated to wrapped<code>ByteBuffer</code>.
+ * </p>
+ * @see com.amd.aparapi.reader.ByteBuffer
  * 
  * @author gfrost
+ *
  */
-public class Annotations {
+public class ByteReader {
+
+   private final ByteBuffer byteBuffer;
+
+   private int offset;
 
    /**
-    * Use this annotation to tag stuff that needs Java Doc added. 
+    * Construct form a given ByteBuffer.
     * 
-    * @author gfrost
+    * @param _byteBuffer an existing <code>ByteBuffer</code>
     */
-   public @interface DocMe {
+   public ByteReader(ByteBuffer _byteBuffer) {
+      byteBuffer = _byteBuffer;
    }
 
    /**
-    * Use this annotation to tag fields that we think need to be removed (method/field/var).
+    * Construct form an array of bytes.
     * 
-    * @author gfrost
+    * @param _bytes an existing byte array
     */
-   public @interface RemoveMe {
+   public ByteReader(byte[] _bytes) {
+      this(new ByteBuffer(_bytes));
    }
 
    /**
-    * Used to tag experimental features (methods/fields).  
+    * Construct form an input stream (say a ClassFile).
     * 
-    * Do not rely on anything tagged as experimental, it will probably be retracted/refactored. 
-    * 
-    * @author gfrost
-    *
+    * @param _inputStream a stream of bytes
     */
-   public @interface Experimental {
+   public ByteReader(InputStream _inputStream) {
+      this(new ByteBuffer(_inputStream));
    }
 
-   /**
-    * Used to tag unused features (methods/fields).  
-    * 
-    * Do not rely on anything tagged as unused, it will probably be retracted/refactored. 
-    * 
-    * @author gfrost
-    *
-    */
-   public @interface Unused {
+   public int u1() {
+      final int value = byteBuffer.u1(offset);
+      offset += 1;
+      return (value);
+   }
+
+   public int u2() {
+      final int value = byteBuffer.u2(offset);
+      offset += 2;
+      return (value);
+   }
+
+   public int s2() {
+      final int value = byteBuffer.s2(offset);
+      offset += 2;
+      return (value);
+   }
+
+   public int peekU2() {
+      return (byteBuffer.u2(offset));
+   }
+
+   public int u4() {
+      final int value = byteBuffer.u4(offset);
+      offset += 4;
+      return (value);
+   }
+
+   public int s4() {
+      final int value = byteBuffer.s4(offset);
+      offset += 4;
+      return (value);
+   }
+
+   public long u8() {
+      final long value = byteBuffer.u8(offset);
+      offset += 8;
+      return (value);
+   }
+
+   public float f4() {
+      final float value = byteBuffer.f4(offset);
+      offset += 4;
+      return (value);
+   }
+
+   public double d8() {
+      final double value = byteBuffer.d8(offset);
+      offset += 8;
+      return (value);
+   }
+
+   public String utf8() {
+      final String utf8 = byteBuffer.utf8(offset);
+      offset += byteBuffer.utf8bytes(offset);
+      return (utf8);
+   }
+
+   public byte[] bytes(int _length) {
+      final byte[] bytes = byteBuffer.bytes(offset, _length);
+      offset += _length;
+      return (bytes);
+   }
+
+   public void skip(int _length) {
+      offset += _length;
+   }
+
+   public int getOffset() {
+      return (offset);
+   }
+
+   public void setOffset(int _offset) {
+      offset = _offset;
+   }
+
+   public boolean hasMore() {
+      return (getOffset() < byteBuffer.size());
    }
 }
