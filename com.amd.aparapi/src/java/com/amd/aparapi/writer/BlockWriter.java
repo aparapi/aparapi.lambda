@@ -39,6 +39,7 @@ package com.amd.aparapi.writer;
 
 import java.util.Stack;
 
+import com.amd.aparapi.Config;
 import com.amd.aparapi.exception.CodeGenException;
 import com.amd.aparapi.instruction.BranchSet;
 import com.amd.aparapi.instruction.BranchSet.CompoundLogicalExpressionNode;
@@ -85,7 +86,6 @@ import com.amd.aparapi.instruction.InstructionSet.MultiAssignInstruction;
 import com.amd.aparapi.instruction.InstructionSet.Return;
 import com.amd.aparapi.instruction.InstructionSet.UnaryOperator;
 import com.amd.aparapi.instruction.InstructionSet.VirtualMethodCall;
-import com.amd.aparapi.jni.ConfigJNI;
 import com.amd.aparapi.model.ClassModel.AttributePool.LocalVariableTableEntry.LocalVariableInfo;
 import com.amd.aparapi.model.ClassModel.ConstantPool.MethodEntry;
 import com.amd.aparapi.model.Entrypoint;
@@ -165,7 +165,7 @@ public abstract class BlockWriter {
             case DCMPG:
             case FCMPL:
             case DCMPL:
-               if (ConfigJNI.verboseComparitor) {
+               if (Config.isVerboseComparitor()) {
                   write("/* bytecode=" + comparisonByteCode.getName() + " invert=" + _invert + "*/");
                }
                writeInstruction(comparison.getFirstChild());
@@ -173,7 +173,7 @@ public abstract class BlockWriter {
                writeInstruction(comparison.getLastChild());
                break;
             default:
-               if (ConfigJNI.verboseComparitor) {
+               if (Config.isVerboseComparitor()) {
                   write("/* default bytecode=" + comparisonByteCode.getName() + " invert=" + _invert + "*/");
                }
                writeInstruction(comparison);
