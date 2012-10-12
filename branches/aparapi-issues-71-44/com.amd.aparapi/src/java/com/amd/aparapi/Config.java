@@ -56,74 +56,170 @@ import com.amd.aparapi.print.InstructionViewer;
  */
 public class Config {
 
-  private static final String propPkgName = Config.class.getPackage().getName();
+   private static final String propPkgName = Config.class.getPackage().getName();
 
-  // Logging setup
-  private static final String logPropName = propPkgName + ".logLevel";
+   // Logging setup
+   private static final String logPropName = propPkgName + ".logLevel";
 
-  private static Logger logger = Logger.getLogger(Config.getLoggerName());
+   private static Logger logger = Logger.getLogger(Config.getLoggerName());
 
-  private static ConfigJNI configJNI = new ConfigJNI(propPkgName);
+   private static ConfigJNI configJNI = new ConfigJNI(propPkgName);
 
-  public static InstructionListener instructionListener = null;
+   public static InstructionListener instructionListener = null;
 
-  static {
-    try {
-      final Level level = Level.parse(System.getProperty(getLoggerName(), "WARNING"));
-
-      final Handler[] handlers = Logger.getLogger("").getHandlers();
-      for (final Handler handler : handlers) {
-        handler.setLevel(level);
-      }
-
-      logger.setLevel(level);
-
-    } catch (final Exception e) {
-      System.out.println("Exception " + e + " in Aparapi logging setup.");
-      e.printStackTrace();
-    }
-  }
-
-  static {
-    if (configJNI.isEnableInstructionDecodeViewer() && ((configJNI.getInstructionListenerClassName() == null) || configJNI.getInstructionListenerClassName().equals(""))) {
-      configJNI.setInstructionListenerClassName(InstructionViewer.class.getName());
-    }
-
-    if ((configJNI.getInstructionListenerClassName() != null) && !configJNI.getInstructionListenerClassName().equals("")) {
+   static {
       try {
-        final Class<?> instructionListenerClass = Class.forName(configJNI.getInstructionListenerClassName());
-        instructionListener = (InstructionListener) instructionListenerClass.newInstance();
-      } catch (final ClassNotFoundException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
-      } catch (final InstantiationException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
-      } catch (final IllegalAccessException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
+         final Level level = Level.parse(System.getProperty(getLoggerName(), "WARNING"));
+
+         final Handler[] handlers = Logger.getLogger("").getHandlers();
+         for (final Handler handler : handlers) {
+            handler.setLevel(level);
+         }
+
+         logger.setLevel(level);
+
+      } catch (final Exception e) {
+         System.out.println("Exception " + e + " in Aparapi logging setup.");
+         e.printStackTrace();
       }
-    }
+   }
 
-    if (configJNI.isDumpFlags()) {
-      System.out.println(propPkgName + ".executionMode{GPU|CPU|JTP|SEQ}=" + configJNI.getExecutionMode());
-      System.out.println(propPkgName + ".logLevel{OFF|FINEST|FINER|FINE|WARNING|SEVERE|ALL}=" + logger.getLevel());
-      System.out.println(propPkgName + ".enableProfiling{true|false}=" + configJNI.isEnableProfiling());
-      System.out.println(propPkgName + ".enableProfilingCSV{true|false}=" + configJNI.isEnableProfilingCSV());
-      System.out.println(propPkgName + ".enableVerboseJNI{true|false}=" + configJNI.isEnableVerboseJNI());
-      System.out.println(propPkgName + ".enableVerboseJNIOpenCLResourceTracking{true|false}=" + configJNI.isEnableVerboseJNIOpenCLResourceTracking());
-      System.out.println(propPkgName + ".enableShowGeneratedOpenCL{true|false}=" + configJNI.isEnableShowGeneratedOpenCL());
-      System.out.println(propPkgName + ".enableExecutionModeReporting{true|false}=" + configJNI.isEnableExecutionModeReporting());
-      System.out.println(propPkgName + ".enableInstructionDecodeViewer{true|false}=" + configJNI.isEnableInstructionDecodeViewer());
-      System.out.println(propPkgName + ".instructionListenerClassName{<class name which extends com.amd.aparapi.Config.InstructionListener>}=" + configJNI.getInstructionListenerClassName());
-    }
-  }
+   static {
+      if (configJNI.isEnableInstructionDecodeViewer() && ((configJNI.getInstructionListenerClassName() == null) || configJNI.getInstructionListenerClassName().equals(""))) {
+         configJNI.setInstructionListenerClassName(InstructionViewer.class.getName());
+      }
 
-  public interface InstructionListener {
-    public void showAndTell(String message, Instruction _start, Instruction _instruction);
-  }
+      if ((configJNI.getInstructionListenerClassName() != null) && !configJNI.getInstructionListenerClassName().equals("")) {
+         try {
+            final Class<?> instructionListenerClass = Class.forName(configJNI.getInstructionListenerClassName());
+            instructionListener = (InstructionListener) instructionListenerClass.newInstance();
+         } catch (final ClassNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+         } catch (final InstantiationException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+         } catch (final IllegalAccessException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+         }
+      }
 
-  public static String getLoggerName() {
-    return logPropName;
-  }
+      if (configJNI.isDumpFlags()) {
+         System.out.println(propPkgName + ".executionMode{GPU|CPU|JTP|SEQ}=" + configJNI.getExecutionMode());
+         System.out.println(propPkgName + ".logLevel{OFF|FINEST|FINER|FINE|WARNING|SEVERE|ALL}=" + logger.getLevel());
+         System.out.println(propPkgName + ".enableProfiling{true|false}=" + configJNI.isEnableProfiling());
+         System.out.println(propPkgName + ".enableProfilingCSV{true|false}=" + configJNI.isEnableProfilingCSV());
+         System.out.println(propPkgName + ".enableVerboseJNI{true|false}=" + configJNI.isEnableVerboseJNI());
+         System.out.println(propPkgName + ".enableVerboseJNIOpenCLResourceTracking{true|false}=" + configJNI.isEnableVerboseJNIOpenCLResourceTracking());
+         System.out.println(propPkgName + ".enableShowGeneratedOpenCL{true|false}=" + configJNI.isEnableShowGeneratedOpenCL());
+         System.out.println(propPkgName + ".enableExecutionModeReporting{true|false}=" + configJNI.isEnableExecutionModeReporting());
+         System.out.println(propPkgName + ".enableInstructionDecodeViewer{true|false}=" + configJNI.isEnableInstructionDecodeViewer());
+         System.out.println(propPkgName + ".instructionListenerClassName{<class name which extends com.amd.aparapi.Config.InstructionListener>}=" + configJNI.getInstructionListenerClassName());
+      }
+   }
+
+   public interface InstructionListener {
+      public void showAndTell(String message, Instruction _start, Instruction _instruction);
+   }
+
+   /**
+    * Retrieves the currently configured Logger Name
+    * 
+    * @return
+    *    The currently configured Logger Name
+    */
+   public static String getLoggerName() {
+      return logPropName;
+   }
+
+   /**
+    * A pass-through method for JNI property accessor
+    * 
+    * @return boolean
+    */
+   public static boolean isEnablePUTFIELD() {
+      return configJNI.isEnablePUTFIELD();
+   }
+
+   /**
+    * A pass-through method for JNI property accessor
+    * 
+    * @return boolean
+    */
+   public static boolean isEnableARETURN() {
+      return configJNI.isEnableARETURN();
+   }
+
+   /**
+    * A pass-through method for JNI property accessor
+    * 
+    * @return boolean
+    */
+   public static boolean isEnablePUTSTATIC() {
+      return configJNI.isEnablePUTSTATIC();
+   }
+
+   /**
+    * A pass-through method for JNI property accessor
+    * 
+    * @return boolean
+    */
+   public static boolean isEnableINVOKEINTERFACE() {
+      return configJNI.isEnableINVOKEINTERFACE();
+   }
+
+   /**
+    * A pass-through method for JNI property accessor
+    * 
+    * @return boolean
+    */
+   public static boolean isEnableGETSTATIC() {
+      return configJNI.isEnableGETSTATIC();
+   }
+
+   /**
+    * A pass-through method for JNI property accessor
+    * 
+    * @return boolean
+    */
+   public static boolean isEnableATHROW() {
+      return configJNI.isEnableATHROW();
+   }
+
+   /**
+    * A pass-through method for JNI property accessor
+    * 
+    * @return boolean
+    */
+   public static boolean isEnableMONITOR() {
+      return configJNI.isEnableMONITOR();
+   }
+
+   /**
+    * A pass-through method for JNI property accessor
+    * 
+    * @return boolean
+    */
+   public static boolean isEnableNEW() {
+      return configJNI.isEnableNEW();
+   }
+
+   /**
+    * A pass-through method for JNI property accessor
+    * 
+    * @return boolean
+    */
+   public static boolean isEnableSWITCH() {
+      return configJNI.isEnableSWITCH();
+   }
+
+   /**
+    * A pass-through method for JNI property accessor
+    * 
+    * @return boolean
+    */
+   public static boolean isEnableMETHODARRAYPASSING() {
+      return configJNI.isEnableMETHODARRAYPASSING();
+   }
 }
