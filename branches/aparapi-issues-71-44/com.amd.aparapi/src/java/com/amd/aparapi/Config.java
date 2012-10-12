@@ -192,6 +192,15 @@ public class Config {
     * 
     * @return boolean
     */
+   public static boolean isVerboseComparitor() {
+      return configJNI.isVerboseComparitor();
+   }
+
+   /**
+    * A pass-through method for JNI property accessor
+    * 
+    * @return boolean
+    */
    public static boolean isEnablePUTFIELD() {
       return configJNI.isEnablePUTFIELD();
    }
