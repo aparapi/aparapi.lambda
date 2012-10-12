@@ -138,6 +138,24 @@ public class Config {
     * 
     * @return boolean
     */
+   public static boolean isDisableUnsafe() {
+      return configJNI.isDisableUnsafe();
+   }
+
+   /**
+    * A pass-through method for JNI property accessor
+    * 
+    * @return String
+    */
+   public static String getExecutionMode() {
+      return configJNI.getExecutionMode();
+   }
+
+   /**
+    * A pass-through method for JNI property accessor
+    * 
+    * @return boolean
+    */
    public static boolean isEnablePUTFIELD() {
       return configJNI.isEnablePUTFIELD();
    }

@@ -51,7 +51,6 @@ import java.util.concurrent.CyclicBarrier;
 import java.util.logging.Logger;
 
 import com.amd.aparapi.exception.DeprecatedException;
-import com.amd.aparapi.jni.ConfigJNI;
 import com.amd.aparapi.jni.OpenCLJNI;
 import com.amd.aparapi.model.ClassModel.ConstantPool.MethodReferenceEntry;
 
@@ -348,7 +347,7 @@ public abstract class Kernel implements Cloneable {
 
       static EXECUTION_MODE getDefaultExecutionMode() {
          EXECUTION_MODE defaultExecutionMode = OpenCLJNI.getInstance().isOpenCLAvailable() ? GPU : JTP;
-         final String executionMode = ConfigJNI.executionMode;
+         final String executionMode = Config.getExecutionMode();
          if (executionMode != null) {
             try {
                EXECUTION_MODE requestedExecutionMode;
@@ -376,7 +375,7 @@ public abstract class Kernel implements Cloneable {
          } else {
             defaultExecutionModes.add(JTP);
          }
-         final String executionMode = ConfigJNI.executionMode;
+         final String executionMode = Config.getExecutionMode();
          if (executionMode != null) {
             try {
                LinkedHashSet<EXECUTION_MODE> requestedExecutionModes;
@@ -1647,7 +1646,7 @@ public abstract class Kernel implements Cloneable {
    @OpenCLMapping(atomic32 = true)
    protected int atomicAdd(int[] _arr, int _index, int _delta) {
 
-      if (!ConfigJNI.disableUnsafe) {
+      if (!Config.isDisableUnsafe()) {
          return UnsafeWrapper.atomicAdd(_arr, _index, _delta);
       } else {
          synchronized (_arr) {
