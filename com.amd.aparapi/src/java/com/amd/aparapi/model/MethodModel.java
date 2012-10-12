@@ -98,7 +98,6 @@ import com.amd.aparapi.instruction.InstructionSet.MethodCall;
 import com.amd.aparapi.instruction.InstructionSet.MultiAssignInstruction;
 import com.amd.aparapi.instruction.InstructionSet.New;
 import com.amd.aparapi.instruction.InstructionSet.Return;
-import com.amd.aparapi.jni.ConfigJNI;
 import com.amd.aparapi.model.ClassModel.AttributePool.LocalVariableTableEntry;
 import com.amd.aparapi.model.ClassModel.AttributePool.LocalVariableTableEntry.LocalVariableInfo;
 import com.amd.aparapi.model.ClassModel.ClassModelMethod;
@@ -242,38 +241,38 @@ public class MethodModel {
          final int pc = codeReader.getOffset();
          final Instruction instruction = InstructionSet.ByteCode.create(this, codeReader);
 
-         if ((!ConfigJNI.enablePUTFIELD) && (instruction instanceof I_PUTFIELD)) {
+         if ((!Config.isEnablePUTFIELD()) && (instruction instanceof I_PUTFIELD)) {
             // Special case putfield handling to allow object setter processing
             // and bail later if necessary
             //throw new ClassParseException("We don't support putfield instructions");
             usesPutfield = true;
          }
 
-         if ((!ConfigJNI.enableARETURN) && (instruction instanceof I_ARETURN)) {
+         if ((!Config.isEnableARETURN()) && (instruction instanceof I_ARETURN)) {
             throw new ClassParseException(instruction, ClassParseException.TYPE.ARRAY_RETURN);
          }
 
-         if ((!ConfigJNI.enablePUTSTATIC) && (instruction instanceof I_PUTSTATIC)) {
+         if ((!Config.isEnablePUTSTATIC()) && (instruction instanceof I_PUTSTATIC)) {
             throw new ClassParseException(instruction, ClassParseException.TYPE.PUTFIELD);
          }
 
-         if ((!ConfigJNI.enableINVOKEINTERFACE) && (instruction instanceof I_INVOKEINTERFACE)) {
+         if ((!Config.isEnableINVOKEINTERFACE()) && (instruction instanceof I_INVOKEINTERFACE)) {
             throw new ClassParseException(instruction, ClassParseException.TYPE.INVOKEINTERFACE);
          }
 
-         if ((!ConfigJNI.enableGETSTATIC) && (instruction instanceof I_GETSTATIC)) {
+         if ((!Config.isEnableGETSTATIC()) && (instruction instanceof I_GETSTATIC)) {
             throw new ClassParseException(instruction, ClassParseException.TYPE.GETSTATIC);
          }
 
-         if ((!ConfigJNI.enableATHROW) && (instruction instanceof I_ATHROW)) {
+         if ((!Config.isEnableATHROW()) && (instruction instanceof I_ATHROW)) {
             throw new ClassParseException(instruction, ClassParseException.TYPE.ATHROW);
          }
 
-         if ((!ConfigJNI.enableMONITOR) && ((instruction instanceof I_MONITORENTER) || (instruction instanceof I_MONITOREXIT))) {
+         if ((!Config.isEnableMONITOR()) && ((instruction instanceof I_MONITORENTER) || (instruction instanceof I_MONITOREXIT))) {
             throw new ClassParseException(instruction, ClassParseException.TYPE.SYNCHRONIZE);
          }
 
-         if ((!ConfigJNI.enableNEW) && (instruction instanceof New)) {
+         if ((!Config.isEnableNEW()) && (instruction instanceof New)) {
             throw new ClassParseException(instruction, ClassParseException.TYPE.NEW);
          }
 
@@ -281,11 +280,11 @@ public class MethodModel {
             throw new ClassParseException(instruction, ClassParseException.TYPE.ARRAYALIAS);
          }
 
-         if ((!ConfigJNI.enableSWITCH) && ((instruction instanceof I_LOOKUPSWITCH) || (instruction instanceof I_TABLESWITCH))) {
+         if ((!Config.isEnableSWITCH()) && ((instruction instanceof I_LOOKUPSWITCH) || (instruction instanceof I_TABLESWITCH))) {
             throw new ClassParseException(instruction, ClassParseException.TYPE.SWITCH);
          }
 
-         if (!ConfigJNI.enableMETHODARRAYPASSING) {
+         if (!Config.isEnableMETHODARRAYPASSING()) {
             if (instruction instanceof MethodCall) {
                final MethodCall methodCall = (MethodCall) instruction;
 
@@ -660,7 +659,7 @@ public class MethodModel {
             public Instruction transform(final ExpressionList _expressionList, final Instruction i) {
                InstructionMatch result = null;
 
-               if (ConfigJNI.enablePUTFIELD
+               if (Config.isEnablePUTFIELD()
                      && (result = InstructionPattern.accessInstanceField.matches(i, InstructionPattern.assignToInstanceField)).ok) {
 
                   final Instruction accessRaw = i;
@@ -709,7 +708,7 @@ public class MethodModel {
             @Override
             public Instruction transform(final ExpressionList _expressionList, final Instruction i) {
                InstructionMatch result = null;
-               if (ConfigJNI.enablePUTFIELD
+               if (Config.isEnablePUTFIELD()
                      && (result = InstructionPattern.fieldPlusOne.matches(i, InstructionPattern.assignToInstanceField)).ok) {
 
                   final Instruction topAddRaw = i;
