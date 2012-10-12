@@ -57,7 +57,6 @@ import com.amd.aparapi.device.OpenCLDevice;
 import com.amd.aparapi.exception.AparapiException;
 import com.amd.aparapi.exception.CodeGenException;
 import com.amd.aparapi.instruction.InstructionSet.TypeSpec;
-import com.amd.aparapi.jni.ConfigJNI;
 import com.amd.aparapi.jni.KernelArgJNI;
 import com.amd.aparapi.jni.KernelRunnerJNI;
 import com.amd.aparapi.jni.OpenCLJNI;
@@ -495,11 +494,11 @@ public class KernelRunner {
     */
    private boolean prepareOopConversionBuffer(KernelArgJNI arg) throws AparapiException {
       usesOopConversion = true;
-      final Class<?> arrayClass = arg.field.getType();
+      final Class<?> arrayClass = arg.getField().getType();
       ClassModel c = null;
       boolean didReallocate = false;
 
-      if (arg.objArrayElementModel == null) {
+      if (arg.getObjArrayElementModel() == null) {
          final String tmp = arrayClass.getName().substring(2).replace("/", ".");
          final String arrayClassInDotForm = tmp.substring(0, tmp.length() - 1);
 
@@ -509,9 +508,9 @@ public class KernelRunner {
 
          // get ClassModel of obj array from entrypt.objectArrayFieldsClasses
          c = entryPoint.getObjectArrayFieldsClasses().get(arrayClassInDotForm);
-         arg.objArrayElementModel = c;
+         arg.setObjArrayElementModel(c);
       } else {
-         c = arg.objArrayElementModel;
+         c = arg.getObjArrayElementModel();
       }
       assert c != null : "should find class for elements " + arrayClass.getName();
 
@@ -526,7 +525,7 @@ public class KernelRunner {
       int objArraySize = 0;
       Object newRef = null;
       try {
-         newRef = arg.field.get(kernel);
+         newRef = arg.getField().get(kernel);
          objArraySize = Array.getLength(newRef);
       } catch (final IllegalAccessException e) {
          throw new AparapiException(e);
@@ -538,23 +537,23 @@ public class KernelRunner {
       final int totalBufferSize = objArraySize * totalStructSize;
 
       // allocate ByteBuffer if first time or array changed
-      if ((arg.objArrayBuffer == null) || (newRef != arg.array)) {
+      if ((arg.getObjArrayBuffer() == null) || (newRef != arg.getArray())) {
          final ByteBuffer structBuffer = ByteBuffer.allocate(totalBufferSize);
-         arg.objArrayByteBuffer = structBuffer.order(ByteOrder.LITTLE_ENDIAN);
-         arg.objArrayBuffer = arg.objArrayByteBuffer.array();
+         arg.setObjArrayByteBuffer(structBuffer.order(ByteOrder.LITTLE_ENDIAN));
+         arg.setObjArrayBuffer(arg.getObjArrayByteBuffer().array());
          didReallocate = true;
          if (logger.isLoggable(Level.FINEST)) {
             logger.finest("objArraySize = " + objArraySize + " totalStructSize= " + totalStructSize + " totalBufferSize="
                   + totalBufferSize);
          }
       } else {
-         arg.objArrayByteBuffer.clear();
+         arg.getObjArrayByteBuffer().clear();
       }
 
       // copy the fields that the JNI uses
-      arg.javaArray = arg.objArrayBuffer;
-      arg.numElements = objArraySize;
-      arg.sizeInBytes = totalBufferSize;
+      arg.setJavaArray(arg.getObjArrayBuffer());
+      arg.setNumElements(objArraySize);
+      arg.setSizeInBytes(totalBufferSize);
 
       for (int j = 0; j < objArraySize; j++) {
          int sizeWritten = 0;
@@ -572,32 +571,32 @@ public class KernelRunner {
             switch (t) {
                case I: {
                   final int x = UnsafeWrapper.getInt(object, offset);
-                  arg.objArrayByteBuffer.putInt(x);
+                  arg.getObjArrayByteBuffer().putInt(x);
                   sizeWritten += t.getSize();
                   break;
                }
                case F: {
                   final float x = UnsafeWrapper.getFloat(object, offset);
-                  arg.objArrayByteBuffer.putFloat(x);
+                  arg.getObjArrayByteBuffer().putFloat(x);
                   sizeWritten += t.getSize();
                   break;
                }
                case J: {
                   final long x = UnsafeWrapper.getLong(object, offset);
-                  arg.objArrayByteBuffer.putLong(x);
+                  arg.getObjArrayByteBuffer().putLong(x);
                   sizeWritten += t.getSize();
                   break;
                }
                case Z: {
                   final boolean x = UnsafeWrapper.getBoolean(object, offset);
-                  arg.objArrayByteBuffer.put(x == true ? (byte) 1 : (byte) 0);
+                  arg.getObjArrayByteBuffer().put(x == true ? (byte) 1 : (byte) 0);
                   // Booleans converted to 1 byte C chars for opencl
                   sizeWritten += TypeSpec.B.getSize();
                   break;
                }
                case B: {
                   final byte x = UnsafeWrapper.getByte(object, offset);
-                  arg.objArrayByteBuffer.put(x);
+                  arg.getObjArrayByteBuffer().put(x);
                   sizeWritten += t.getSize();
                   break;
                }
@@ -619,33 +618,33 @@ public class KernelRunner {
 
          while (sizeWritten < totalStructSize) {
             if (logger.isLoggable(Level.FINEST)) {
-               logger.finest(arg.name + " struct pad byte = " + sizeWritten + " totalStructSize= " + totalStructSize);
+               logger.finest(arg.getName() + " struct pad byte = " + sizeWritten + " totalStructSize= " + totalStructSize);
             }
-            arg.objArrayByteBuffer.put((byte) -1);
+            arg.getObjArrayByteBuffer().put((byte) -1);
             sizeWritten++;
          }
       }
 
-      assert arg.objArrayByteBuffer.arrayOffset() == 0 : "should be zero";
+      assert arg.getObjArrayByteBuffer().arrayOffset() == 0 : "should be zero";
 
       return didReallocate;
    }
 
    private void extractOopConversionBuffer(KernelArgJNI arg) throws AparapiException {
-      final Class<?> arrayClass = arg.field.getType();
-      final ClassModel c = arg.objArrayElementModel;
+      final Class<?> arrayClass = arg.getField().getType();
+      final ClassModel c = arg.getObjArrayElementModel();
       assert c != null : "should find class for elements: " + arrayClass.getName();
-      assert arg.array != null : "array is null";
+      assert arg.getArray() != null : "array is null";
 
       final int arrayBaseOffset = UnsafeWrapper.arrayBaseOffset(arrayClass);
       final int arrayScale = UnsafeWrapper.arrayIndexScale(arrayClass);
       if (logger.isLoggable(Level.FINEST)) {
-         logger.finest("Syncing field:" + arg.name + ", bb=" + arg.objArrayByteBuffer + ", type = " + arrayClass);
+         logger.finest("Syncing field:" + arg.getName() + ", bb=" + arg.getObjArrayByteBuffer() + ", type = " + arrayClass);
       }
 
       int objArraySize = 0;
       try {
-         objArraySize = Array.getLength(arg.field.get(kernel));
+         objArraySize = Array.getLength(arg.getField().get(kernel));
       } catch (final IllegalAccessException e) {
          throw new AparapiException(e);
       }
@@ -656,18 +655,18 @@ public class KernelRunner {
       // int totalBufferSize = objArraySize * totalStructSize;
       // assert arg.objArrayBuffer.length == totalBufferSize : "size should match";
 
-      arg.objArrayByteBuffer.rewind();
+      arg.getObjArrayByteBuffer().rewind();
 
       for (int j = 0; j < objArraySize; j++) {
          int sizeWritten = 0;
-         final Object object = UnsafeWrapper.getObject(arg.array, arrayBaseOffset + (arrayScale * j));
+         final Object object = UnsafeWrapper.getObject(arg.getArray(), arrayBaseOffset + (arrayScale * j));
          for (int i = 0; i < c.getStructMemberTypes().size(); i++) {
             final TypeSpec t = c.getStructMemberTypes().get(i);
             final long offset = c.getStructMemberOffsets().get(i);
             switch (t) {
                case I: {
                   // read int value from buffer and store into obj in the array
-                  final int x = arg.objArrayByteBuffer.getInt();
+                  final int x = arg.getObjArrayByteBuffer().getInt();
                   if (logger.isLoggable(Level.FINEST)) {
                      logger.finest("fType = " + t.getShortName() + " x= " + x);
                   }
@@ -676,7 +675,7 @@ public class KernelRunner {
                   break;
                }
                case F: {
-                  final float x = arg.objArrayByteBuffer.getFloat();
+                  final float x = arg.getObjArrayByteBuffer().getFloat();
                   if (logger.isLoggable(Level.FINEST)) {
                      logger.finest("fType = " + t.getShortName() + " x= " + x);
                   }
@@ -685,7 +684,7 @@ public class KernelRunner {
                   break;
                }
                case J: {
-                  final long x = arg.objArrayByteBuffer.getLong();
+                  final long x = arg.getObjArrayByteBuffer().getLong();
                   if (logger.isLoggable(Level.FINEST)) {
                      logger.finest("fType = " + t.getShortName() + " x= " + x);
                   }
@@ -694,7 +693,7 @@ public class KernelRunner {
                   break;
                }
                case Z: {
-                  final byte x = arg.objArrayByteBuffer.get();
+                  final byte x = arg.getObjArrayByteBuffer().get();
                   if (logger.isLoggable(Level.FINEST)) {
                      logger.finest("fType = " + t.getShortName() + " x= " + x);
                   }
@@ -704,7 +703,7 @@ public class KernelRunner {
                   break;
                }
                case B: {
-                  final byte x = arg.objArrayByteBuffer.get();
+                  final byte x = arg.getObjArrayByteBuffer().get();
                   if (logger.isLoggable(Level.FINEST)) {
                      logger.finest("fType = " + t.getShortName() + " x= " + x);
                   }
@@ -730,7 +729,7 @@ public class KernelRunner {
 
          while (sizeWritten < totalStructSize) {
             // skip over pad bytes
-            arg.objArrayByteBuffer.get();
+            arg.getObjArrayByteBuffer().get();
             sizeWritten++;
          }
       }
@@ -739,7 +738,7 @@ public class KernelRunner {
    private void restoreObjects() throws AparapiException {
       for (int i = 0; i < argc; i++) {
          final KernelArgJNI arg = args[i];
-         if ((arg.type & KernelRunnerJNI.ARG_OBJ_ARRAY_STRUCT) != 0) {
+         if ((arg.getType() & KernelRunnerJNI.ARG_OBJ_ARRAY_STRUCT) != 0) {
             extractOopConversionBuffer(arg);
          }
       }
@@ -751,37 +750,40 @@ public class KernelRunner {
       for (int i = 0; i < argc; i++) {
          final KernelArgJNI arg = args[i];
          try {
-            if ((arg.type & KernelRunnerJNI.ARG_ARRAY) != 0) {
+            if ((arg.getType() & KernelRunnerJNI.ARG_ARRAY) != 0) {
                Object newArrayRef;
-               newArrayRef = arg.field.get(kernel);
+               newArrayRef = arg.getField().get(kernel);
 
                if (newArrayRef == null) {
                   throw new IllegalStateException("Cannot send null refs to kernel, reverting to java");
                }
 
-               if ((arg.type & KernelRunnerJNI.ARG_OBJ_ARRAY_STRUCT) != 0) {
+               if ((arg.getType() & KernelRunnerJNI.ARG_OBJ_ARRAY_STRUCT) != 0) {
                   prepareOopConversionBuffer(arg);
                } else {
                   // set up JNI fields for normal arrays
-                  arg.javaArray = newArrayRef;
-                  arg.numElements = Array.getLength(newArrayRef);
-                  arg.sizeInBytes = arg.numElements * arg.primitiveSize;
+                  arg.setJavaArray(newArrayRef);
+                  arg.setNumElements(Array.getLength(newArrayRef));
+                  arg.setSizeInBytes(arg.getNumElements() * arg.getPrimitiveSize());
 
-                  if (((args[i].type & KernelRunnerJNI.ARG_EXPLICIT) != 0) && puts.contains(newArrayRef)) {
-                     args[i].type |= KernelRunnerJNI.ARG_EXPLICIT_WRITE;
+                  if (((args[i].getType() & KernelRunnerJNI.ARG_EXPLICIT) != 0) && puts.contains(newArrayRef)) {
+                     args[i].setType(args[i].getType() | KernelRunnerJNI.ARG_EXPLICIT_WRITE);
                      // System.out.println("detected an explicit write " + args[i].name);
                      puts.remove(newArrayRef);
                   }
                }
-               if (newArrayRef != arg.array) {
+
+               if (newArrayRef != arg.getArray()) {
                   needsSync = true;
+
                   if (logger.isLoggable(Level.FINE)) {
-                     logger.fine("saw newArrayRef for " + arg.name + " = " + newArrayRef + ", newArrayLen = "
+                     logger.fine("saw newArrayRef for " + arg.getName() + " = " + newArrayRef + ", newArrayLen = "
                            + Array.getLength(newArrayRef));
                   }
                }
-               arg.array = newArrayRef;
-               assert arg.array != null : "null array ref";
+
+               arg.setArray(newArrayRef);
+               assert arg.getArray() != null : "null array ref";
             }
          } catch (final IllegalArgumentException e) {
             e.printStackTrace();
@@ -990,7 +992,7 @@ public class KernelRunner {
                   return warnFallBackAndExecute(_entrypointName, _range, _passes, codeGenException);
                }
 
-               if (ConfigJNI.enableShowGeneratedOpenCL) {
+               if (Config.isEnableShowGeneratedOpenCL()) {
                   System.out.println(openCL);
                }
                if (logger.isLoggable(Level.INFO)) {
@@ -1009,101 +1011,103 @@ public class KernelRunner {
                   try {
                      field.setAccessible(true);
                      args[i] = new KernelArgJNI();
-                     args[i].name = field.getName();
-                     args[i].field = field;
+                     args[i].setName(field.getName());
+                     args[i].setField(field);
                      if ((field.getModifiers() & Modifier.STATIC) == Modifier.STATIC) {
-                        args[i].type |= KernelRunnerJNI.ARG_STATIC;
+                        args[i].setType(args[i].getType() | KernelRunnerJNI.ARG_STATIC);
                      }
 
                      final Class<?> type = field.getType();
                      if (type.isArray()) {
 
-                        if ((field.getAnnotation(com.amd.aparapi.Kernel.Local.class) != null)
-                              || args[i].name.endsWith(Kernel.LOCAL_SUFFIX)) {
-                           args[i].type |= KernelRunnerJNI.ARG_LOCAL;
-                        } else if ((field.getAnnotation(com.amd.aparapi.Kernel.Constant.class) != null)
-                              || args[i].name.endsWith(Kernel.CONSTANT_SUFFIX)) {
-                           args[i].type |= KernelRunnerJNI.ARG_CONSTANT;
+                        if ((field.getAnnotation(com.amd.aparapi.Kernel.Local.class) != null) || args[i].getName().endsWith(Kernel.LOCAL_SUFFIX)) {
+                           args[i].setType(args[i].getType() | KernelRunnerJNI.ARG_LOCAL);
+                        } else if ((field.getAnnotation(com.amd.aparapi.Kernel.Constant.class) != null) || args[i].getName().endsWith(Kernel.CONSTANT_SUFFIX)) {
+                           args[i].setType(args[i].getType() | KernelRunnerJNI.ARG_CONSTANT);
                         } else {
-                           args[i].type |= KernelRunnerJNI.ARG_GLOBAL;
+                           args[i].setType(args[i].getType() | KernelRunnerJNI.ARG_GLOBAL);
                         }
-                        args[i].array = null; // will get updated in updateKernelArrayRefs
-                        args[i].type |= KernelRunnerJNI.ARG_ARRAY;
+
+                        args[i].setArray(null); // will get updated in updateKernelArrayRefs
+                        args[i].setType(args[i].getType() | KernelRunnerJNI.ARG_ARRAY);
+
                         if (isExplicit()) {
-                           args[i].type |= KernelRunnerJNI.ARG_EXPLICIT;
+                           args[i].setType(args[i].getType() | KernelRunnerJNI.ARG_EXPLICIT);
                         }
+
                         // for now, treat all write arrays as read-write, see bugzilla issue 4859
                         // we might come up with a better solution later
-                        args[i].type |= entryPoint.getArrayFieldAssignments().contains(field.getName()) ? (KernelRunnerJNI.ARG_WRITE | KernelRunnerJNI.ARG_READ)
-                              : 0;
-                        args[i].type |= entryPoint.getArrayFieldAccesses().contains(field.getName()) ? KernelRunnerJNI.ARG_READ : 0;
+                        args[i].setType(args[i].getType() | (entryPoint.getArrayFieldAssignments().contains(field.getName()) ? (KernelRunnerJNI.ARG_WRITE | KernelRunnerJNI.ARG_READ)
+                              : 0));
+                        args[i].setType(args[i].getType() | (entryPoint.getArrayFieldAccesses().contains(field.getName()) ? KernelRunnerJNI.ARG_READ : 0));
                         // args[i].type |= ARG_GLOBAL;
-                        args[i].type |= type.isAssignableFrom(float[].class) ? KernelRunnerJNI.ARG_FLOAT : 0;
+                        args[i].setType(args[i].getType() | (type.isAssignableFrom(float[].class) ? KernelRunnerJNI.ARG_FLOAT : 0));
 
-                        args[i].type |= type.isAssignableFrom(int[].class) ? KernelRunnerJNI.ARG_INT : 0;
+                        args[i].setType(args[i].getType() | (type.isAssignableFrom(int[].class) ? KernelRunnerJNI.ARG_INT : 0));
 
-                        args[i].type |= type.isAssignableFrom(boolean[].class) ? KernelRunnerJNI.ARG_BOOLEAN : 0;
+                        args[i].setType(args[i].getType() | (type.isAssignableFrom(boolean[].class) ? KernelRunnerJNI.ARG_BOOLEAN : 0));
 
-                        args[i].type |= type.isAssignableFrom(byte[].class) ? KernelRunnerJNI.ARG_BYTE : 0;
+                        args[i].setType(args[i].getType() | (type.isAssignableFrom(byte[].class) ? KernelRunnerJNI.ARG_BYTE : 0));
 
-                        args[i].type |= type.isAssignableFrom(char[].class) ? KernelRunnerJNI.ARG_CHAR : 0;
+                        args[i].setType(args[i].getType() | (type.isAssignableFrom(char[].class) ? KernelRunnerJNI.ARG_CHAR : 0));
 
-                        args[i].type |= type.isAssignableFrom(double[].class) ? KernelRunnerJNI.ARG_DOUBLE : 0;
+                        args[i].setType(args[i].getType() | (type.isAssignableFrom(double[].class) ? KernelRunnerJNI.ARG_DOUBLE : 0));
 
-                        args[i].type |= type.isAssignableFrom(long[].class) ? KernelRunnerJNI.ARG_LONG : 0;
+                        args[i].setType(args[i].getType() | (type.isAssignableFrom(long[].class) ? KernelRunnerJNI.ARG_LONG : 0));
 
-                        args[i].type |= type.isAssignableFrom(short[].class) ? KernelRunnerJNI.ARG_SHORT : 0;
+                        args[i].setType(args[i].getType() | (type.isAssignableFrom(short[].class) ? KernelRunnerJNI.ARG_SHORT : 0));
 
                         // arrays whose length is used will have an int arg holding
                         // the length as a kernel param
-                        if (entryPoint.getArrayFieldArrayLengthUsed().contains(args[i].name)) {
-                           args[i].type |= KernelRunnerJNI.ARG_ARRAYLENGTH;
+                        if (entryPoint.getArrayFieldArrayLengthUsed().contains(args[i].getName())) {
+                           args[i].setType(args[i].getType() | KernelRunnerJNI.ARG_ARRAYLENGTH);
                         }
                         if (type.getName().startsWith("[L")) {
-                           args[i].type |= (KernelRunnerJNI.ARG_OBJ_ARRAY_STRUCT | KernelRunnerJNI.ARG_WRITE | KernelRunnerJNI.ARG_READ);
+                           args[i].setType(args[i].getType() | (KernelRunnerJNI.ARG_OBJ_ARRAY_STRUCT | KernelRunnerJNI.ARG_WRITE | KernelRunnerJNI.ARG_READ));
+
                            if (logger.isLoggable(Level.FINE)) {
-                              logger.fine("tagging " + args[i].name + " as (ARG_OBJ_ARRAY_STRUCT | ARG_WRITE | ARG_READ)");
+                              logger.fine("tagging " + args[i].getName() + " as (ARG_OBJ_ARRAY_STRUCT | ARG_WRITE | ARG_READ)");
                            }
                         }
 
                      } else if (type.isAssignableFrom(float.class)) {
-                        args[i].type |= KernelRunnerJNI.ARG_PRIMITIVE;
-                        args[i].type |= KernelRunnerJNI.ARG_FLOAT;
+                        args[i].setType(args[i].getType() | KernelRunnerJNI.ARG_PRIMITIVE);
+                        args[i].setType(args[i].getType() | KernelRunnerJNI.ARG_FLOAT);
                      } else if (type.isAssignableFrom(int.class)) {
-                        args[i].type |= KernelRunnerJNI.ARG_PRIMITIVE;
-                        args[i].type |= KernelRunnerJNI.ARG_INT;
+                        args[i].setType(args[i].getType() | KernelRunnerJNI.ARG_PRIMITIVE);
+                        args[i].setType(args[i].getType() | KernelRunnerJNI.ARG_INT);
                      } else if (type.isAssignableFrom(double.class)) {
-                        args[i].type |= KernelRunnerJNI.ARG_PRIMITIVE;
-                        args[i].type |= KernelRunnerJNI.ARG_DOUBLE;
+                        args[i].setType(args[i].getType() | KernelRunnerJNI.ARG_PRIMITIVE);
+                        args[i].setType(args[i].getType() | KernelRunnerJNI.ARG_DOUBLE);
                      } else if (type.isAssignableFrom(long.class)) {
-                        args[i].type |= KernelRunnerJNI.ARG_PRIMITIVE;
-                        args[i].type |= KernelRunnerJNI.ARG_LONG;
+                        args[i].setType(args[i].getType() | KernelRunnerJNI.ARG_PRIMITIVE);
+                        args[i].setType(args[i].getType() | KernelRunnerJNI.ARG_LONG);
                      } else if (type.isAssignableFrom(boolean.class)) {
-                        args[i].type |= KernelRunnerJNI.ARG_PRIMITIVE;
-                        args[i].type |= KernelRunnerJNI.ARG_BOOLEAN;
+                        args[i].setType(args[i].getType() | KernelRunnerJNI.ARG_PRIMITIVE);
+                        args[i].setType(args[i].getType() | KernelRunnerJNI.ARG_BOOLEAN);
                      } else if (type.isAssignableFrom(byte.class)) {
-                        args[i].type |= KernelRunnerJNI.ARG_PRIMITIVE;
-                        args[i].type |= KernelRunnerJNI.ARG_BYTE;
+                        args[i].setType(args[i].getType() | KernelRunnerJNI.ARG_PRIMITIVE);
+                        args[i].setType(args[i].getType() | KernelRunnerJNI.ARG_BYTE);
                      } else if (type.isAssignableFrom(char.class)) {
-                        args[i].type |= KernelRunnerJNI.ARG_PRIMITIVE;
-                        args[i].type |= KernelRunnerJNI.ARG_CHAR;
+                        args[i].setType(args[i].getType() | KernelRunnerJNI.ARG_PRIMITIVE);
+                        args[i].setType(args[i].getType() | KernelRunnerJNI.ARG_CHAR);
                      } else if (type.isAssignableFrom(short.class)) {
-                        args[i].type |= KernelRunnerJNI.ARG_PRIMITIVE;
-                        args[i].type |= KernelRunnerJNI.ARG_SHORT;
+                        args[i].setType(args[i].getType() | KernelRunnerJNI.ARG_PRIMITIVE);
+                        args[i].setType(args[i].getType() | KernelRunnerJNI.ARG_SHORT);
                      }
                      // System.out.printf("in execute, arg %d %s %08x\n", i,args[i].name,args[i].type );
                   } catch (final IllegalArgumentException e) {
                      e.printStackTrace();
                   }
 
-                  args[i].primitiveSize = ((args[i].type & KernelRunnerJNI.ARG_FLOAT) != 0 ? 4 : (args[i].type & KernelRunnerJNI.ARG_INT) != 0 ? 4
-                        : (args[i].type & KernelRunnerJNI.ARG_BYTE) != 0 ? 1 : (args[i].type & KernelRunnerJNI.ARG_CHAR) != 0 ? 2
-                              : (args[i].type & KernelRunnerJNI.ARG_BOOLEAN) != 0 ? 1 : (args[i].type & KernelRunnerJNI.ARG_SHORT) != 0 ? 2
-                                    : (args[i].type & KernelRunnerJNI.ARG_LONG) != 0 ? 8 : (args[i].type & KernelRunnerJNI.ARG_DOUBLE) != 0 ? 8 : 0);
+                  args[i].setPrimitiveSize(((args[i].getType() & KernelRunnerJNI.ARG_FLOAT) != 0 ? 4 : (args[i].getType() & KernelRunnerJNI.ARG_INT) != 0 ? 4
+                        : (args[i].getType() & KernelRunnerJNI.ARG_BYTE) != 0 ? 1 : (args[i].getType() & KernelRunnerJNI.ARG_CHAR) != 0 ? 2
+                              : (args[i].getType() & KernelRunnerJNI.ARG_BOOLEAN) != 0 ? 1 : (args[i].getType() & KernelRunnerJNI.ARG_SHORT) != 0 ? 2
+                                    : (args[i].getType() & KernelRunnerJNI.ARG_LONG) != 0 ? 8 : (args[i].getType() & KernelRunnerJNI.ARG_DOUBLE) != 0 ? 8 : 0));
 
                   if (logger.isLoggable(Level.FINE)) {
-                     logger.fine("arg " + i + ", " + args[i].name + ", type=" + Integer.toHexString(args[i].type)
-                           + ", primitiveSize=" + args[i].primitiveSize);
+                     logger.fine("arg " + i + ", " + args[i].getName() + ", type=" + Integer.toHexString(args[i].getType())
+                           + ", primitiveSize=" + args[i].getPrimitiveSize());
                   }
 
                   i++;
@@ -1141,14 +1145,14 @@ public class KernelRunner {
          executeJava(_range, _passes);
       }
 
-      if (ConfigJNI.enableExecutionModeReporting) {
+      if (Config.isEnableExecutionModeReporting()) {
          System.out.println(kernel.getClass().getCanonicalName() + ":" + kernel.getExecutionMode());
       }
 
       executionTime = System.currentTimeMillis() - executeStartTime;
       accumulatedExecutionTime += executionTime;
 
-      return (kernel);
+      return kernel;
    }
 
    private final Set<Object> puts = new HashSet<Object>();
@@ -1172,8 +1176,7 @@ public class KernelRunner {
     * @see Kernel#get(boolean[] arr)
     */
    protected void get(Object array) {
-      if (explicit
-            && ((kernel.getExecutionMode() == Kernel.EXECUTION_MODE.GPU) || (kernel.getExecutionMode() == Kernel.EXECUTION_MODE.CPU))) {
+      if (explicit && ((kernel.getExecutionMode() == Kernel.EXECUTION_MODE.GPU) || (kernel.getExecutionMode() == Kernel.EXECUTION_MODE.CPU))) {
          // Only makes sense when we are using OpenCL
          KernelRunnerJNI.getJNI(jniContextHandle, array);
       }

@@ -65,6 +65,8 @@ public class Config {
 
    private static ConfigJNI configJNI = new ConfigJNI(propPkgName);
 
+   private static final Config instance = new Config();
+
    public static InstructionListener instructionListener = null;
 
    static {
@@ -119,6 +121,22 @@ public class Config {
       }
    }
 
+   /**
+    * Private singleton default constructor
+    */
+   private Config() {
+
+   }
+
+   /**
+    * Returns the singleton instance of Config
+    * 
+    * @return Singleton instance of Config
+    */
+   public static Config getInstance() {
+      return instance;
+   }
+
    public interface InstructionListener {
       public void showAndTell(String message, Instruction _start, Instruction _instruction);
    }
@@ -149,6 +167,24 @@ public class Config {
     */
    public static String getExecutionMode() {
       return configJNI.getExecutionMode();
+   }
+
+   /**
+    * A pass-through method for JNI property accessor
+    * 
+    * @return boolean
+    */
+   public static boolean isEnableExecutionModeReporting() {
+      return configJNI.isEnableExecutionModeReporting();
+   }
+
+   /**
+    * A pass-through method for JNI property accessor
+    * 
+    * @return boolean
+    */
+   public static boolean isEnableShowGeneratedOpenCL() {
+      return configJNI.isEnableShowGeneratedOpenCL();
    }
 
    /**
