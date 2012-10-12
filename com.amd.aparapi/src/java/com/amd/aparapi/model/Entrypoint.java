@@ -70,7 +70,6 @@ import com.amd.aparapi.instruction.InstructionSet.I_INVOKEVIRTUAL;
 import com.amd.aparapi.instruction.InstructionSet.MethodCall;
 import com.amd.aparapi.instruction.InstructionSet.TypeSpec;
 import com.amd.aparapi.instruction.InstructionSet.VirtualMethodCall;
-import com.amd.aparapi.jni.ConfigJNI;
 import com.amd.aparapi.model.ClassModel.ClassModelField;
 import com.amd.aparapi.model.ClassModel.ClassModelMethod;
 import com.amd.aparapi.model.ClassModel.ConstantPool.FieldEntry;
@@ -645,7 +644,7 @@ public class Entrypoint {
                      updateObjectMemberFieldAccesses(className, field);
                   } else {
 
-                     if ((!ConfigJNI.enablePUTFIELD) && methodModel.methodUsesPutfield() && !methodModel.isSetter()) {
+                     if ((!Config.isEnablePUTFIELD()) && methodModel.methodUsesPutfield() && !methodModel.isSetter()) {
                         throw new ClassParseException(ClassParseException.TYPE.ACCESSEDOBJECTONLYSUPPORTSSIMPLEPUTFIELD);
                      }
 
