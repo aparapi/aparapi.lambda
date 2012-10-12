@@ -34,7 +34,7 @@ to national security controls as identified on the Commerce Control List (curren
 of EAR).  For the most current Country Group listings, or for additional information about the EAR or your obligations
 under those regulations, please refer to the U.S. Bureau of Industry and Security's website at http://www.bis.doc.gov/. 
 
-*/
+ */
 package com.amd.aparapi;
 
 import java.util.logging.Handler;
@@ -48,83 +48,82 @@ import com.amd.aparapi.print.InstructionViewer;
 /**
  * A central location for holding all runtime configurable properties as well as logging configuration.
  * 
- * Ideally we will find all properties used by <code>Aparapi</code> here.  Please consider updating this class if you wish
- * to add new properties which control <code>Aparapi</code>s behavior. 
- *
+ * Ideally we will find all properties used by <code>Aparapi</code> here. Please consider updating this class if you wish
+ * to add new properties which control <code>Aparapi</code>s behavior.
+ * 
  * @author gfrost
- *
+ * 
  */
 public class Config {
 
-   private static final String propPkgName = Config.class.getPackage().getName();
+  private static final String propPkgName = Config.class.getPackage().getName();
 
-   // Logging setup
-   private static final String logPropName = propPkgName + ".logLevel";
+  // Logging setup
+  private static final String logPropName = propPkgName + ".logLevel";
 
-   private static Logger logger = Logger.getLogger(Config.getLoggerName());
+  private static Logger logger = Logger.getLogger(Config.getLoggerName());
 
-   public static InstructionListener instructionListener = null;
+  private static ConfigJNI configJNI = new ConfigJNI(propPkgName);
 
-   static {
+  public static InstructionListener instructionListener = null;
+
+  static {
+    try {
+      final Level level = Level.parse(System.getProperty(getLoggerName(), "WARNING"));
+
+      final Handler[] handlers = Logger.getLogger("").getHandlers();
+      for (final Handler handler : handlers) {
+        handler.setLevel(level);
+      }
+
+      logger.setLevel(level);
+
+    } catch (final Exception e) {
+      System.out.println("Exception " + e + " in Aparapi logging setup.");
+      e.printStackTrace();
+    }
+  }
+
+  static {
+    if (configJNI.isEnableInstructionDecodeViewer() && ((configJNI.getInstructionListenerClassName() == null) || configJNI.getInstructionListenerClassName().equals(""))) {
+      configJNI.setInstructionListenerClassName(InstructionViewer.class.getName());
+    }
+
+    if ((configJNI.getInstructionListenerClassName() != null) && !configJNI.getInstructionListenerClassName().equals("")) {
       try {
-         final Level level = Level.parse(System.getProperty(getLoggerName(), "WARNING"));
-
-         final Handler[] handlers = Logger.getLogger("").getHandlers();
-         for (final Handler handler : handlers) {
-            handler.setLevel(level);
-         }
-
-         logger.setLevel(level);
-
-      } catch (final Exception e) {
-         System.out.println("Exception " + e + " in Aparapi logging setup.");
-         e.printStackTrace();
+        final Class<?> instructionListenerClass = Class.forName(configJNI.getInstructionListenerClassName());
+        instructionListener = (InstructionListener) instructionListenerClass.newInstance();
+      } catch (final ClassNotFoundException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      } catch (final InstantiationException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      } catch (final IllegalAccessException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
       }
-   }
+    }
 
-   static {
-      // Instantiate an instance of ConfigJNI
-      new ConfigJNI(propPkgName);
+    if (configJNI.isDumpFlags()) {
+      System.out.println(propPkgName + ".executionMode{GPU|CPU|JTP|SEQ}=" + configJNI.getExecutionMode());
+      System.out.println(propPkgName + ".logLevel{OFF|FINEST|FINER|FINE|WARNING|SEVERE|ALL}=" + logger.getLevel());
+      System.out.println(propPkgName + ".enableProfiling{true|false}=" + configJNI.isEnableProfiling());
+      System.out.println(propPkgName + ".enableProfilingCSV{true|false}=" + configJNI.isEnableProfilingCSV());
+      System.out.println(propPkgName + ".enableVerboseJNI{true|false}=" + configJNI.isEnableVerboseJNI());
+      System.out.println(propPkgName + ".enableVerboseJNIOpenCLResourceTracking{true|false}=" + configJNI.isEnableVerboseJNIOpenCLResourceTracking());
+      System.out.println(propPkgName + ".enableShowGeneratedOpenCL{true|false}=" + configJNI.isEnableShowGeneratedOpenCL());
+      System.out.println(propPkgName + ".enableExecutionModeReporting{true|false}=" + configJNI.isEnableExecutionModeReporting());
+      System.out.println(propPkgName + ".enableInstructionDecodeViewer{true|false}=" + configJNI.isEnableInstructionDecodeViewer());
+      System.out.println(propPkgName + ".instructionListenerClassName{<class name which extends com.amd.aparapi.Config.InstructionListener>}=" + configJNI.getInstructionListenerClassName());
+    }
+  }
 
-      if (ConfigJNI.enableInstructionDecodeViewer && ((ConfigJNI.instructionListenerClassName == null) || ConfigJNI.instructionListenerClassName.equals(""))) {
-         ConfigJNI.instructionListenerClassName = InstructionViewer.class.getName();
-      }
+  public interface InstructionListener {
+    public void showAndTell(String message, Instruction _start, Instruction _instruction);
+  }
 
-      if ((ConfigJNI.instructionListenerClassName != null) && !ConfigJNI.instructionListenerClassName.equals("")) {
-         try {
-            final Class<?> instructionListenerClass = Class.forName(ConfigJNI.instructionListenerClassName);
-            instructionListener = (InstructionListener) instructionListenerClass.newInstance();
-         } catch (final ClassNotFoundException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-         } catch (final InstantiationException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-         } catch (final IllegalAccessException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-         }
-      }
-
-      if (ConfigJNI.dumpFlags) {
-         System.out.println(propPkgName + ".executionMode{GPU|CPU|JTP|SEQ}=" + ConfigJNI.executionMode);
-         System.out.println(propPkgName + ".logLevel{OFF|FINEST|FINER|FINE|WARNING|SEVERE|ALL}=" + logger.getLevel());
-         System.out.println(propPkgName + ".enableProfiling{true|false}=" + ConfigJNI.enableProfiling);
-         System.out.println(propPkgName + ".enableProfilingCSV{true|false}=" + ConfigJNI.enableProfilingCSV);
-         System.out.println(propPkgName + ".enableVerboseJNI{true|false}=" + ConfigJNI.enableVerboseJNI);
-         System.out.println(propPkgName + ".enableVerboseJNIOpenCLResourceTracking{true|false}=" + ConfigJNI.enableVerboseJNIOpenCLResourceTracking);
-         System.out.println(propPkgName + ".enableShowGeneratedOpenCL{true|false}=" + ConfigJNI.enableShowGeneratedOpenCL);
-         System.out.println(propPkgName + ".enableExecutionModeReporting{true|false}=" + ConfigJNI.enableExecutionModeReporting);
-         System.out.println(propPkgName + ".enableInstructionDecodeViewer{true|false}=" + ConfigJNI.enableInstructionDecodeViewer);
-         System.out.println(propPkgName + ".instructionListenerClassName{<class name which extends com.amd.aparapi.Config.InstructionListener>}=" + ConfigJNI.instructionListenerClassName);
-      }
-   }
-
-   public interface InstructionListener {
-      public void showAndTell(String message, Instruction _start, Instruction _instruction);
-   }
-
-   public static String getLoggerName() {
-      return logPropName;
-   }
+  public static String getLoggerName() {
+    return logPropName;
+  }
 }
