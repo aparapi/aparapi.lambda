@@ -35,11 +35,10 @@ public class OpenCLDevice extends Device {
 
    private long maxMemAllocSize;
 
-   OpenCLDevice(OpenCLPlatform _platform, long _deviceId, TYPE _type) {
+   public OpenCLDevice(OpenCLPlatform _platform, long _deviceId, TYPE _type) {
       platform = _platform;
       deviceId = _deviceId;
       type = _type;
-
    }
 
    public int getMaxComputeUnits() {
