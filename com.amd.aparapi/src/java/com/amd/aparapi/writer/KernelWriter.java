@@ -43,6 +43,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.amd.aparapi.Config;
 import com.amd.aparapi.Kernel;
 import com.amd.aparapi.exception.CodeGenException;
 import com.amd.aparapi.instruction.Instruction;
@@ -59,7 +60,6 @@ import com.amd.aparapi.instruction.InstructionSet.I_IUSHR;
 import com.amd.aparapi.instruction.InstructionSet.I_LUSHR;
 import com.amd.aparapi.instruction.InstructionSet.MethodCall;
 import com.amd.aparapi.instruction.InstructionSet.VirtualMethodCall;
-import com.amd.aparapi.jni.ConfigJNI;
 import com.amd.aparapi.model.ClassModel;
 import com.amd.aparapi.model.ClassModel.AttributePool.LocalVariableTableEntry;
 import com.amd.aparapi.model.ClassModel.AttributePool.LocalVariableTableEntry.LocalVariableInfo;
@@ -380,7 +380,7 @@ public abstract class KernelWriter extends BlockWriter {
          }
       }
 
-      if (ConfigJNI.enableByteWrites || _entryPoint.requiresByteAddressableStorePragma()) {
+      if (Config.isEnableByteWrites() || _entryPoint.requiresByteAddressableStorePragma()) {
          // Starting with OpenCL 1.1 (which is as far back as we support)
          // this feature is part of the core, so we no longer need this pragma
          if (false) {
@@ -390,7 +390,7 @@ public abstract class KernelWriter extends BlockWriter {
       }
 
       boolean usesAtomics = false;
-      if (ConfigJNI.enableAtomic32 || _entryPoint.requiresAtomic32Pragma()) {
+      if (Config.isEnableAtomic32() || _entryPoint.requiresAtomic32Pragma()) {
          usesAtomics = true;
          writePragma("cl_khr_global_int32_base_atomics", true);
          writePragma("cl_khr_global_int32_extended_atomics", true);
@@ -398,7 +398,7 @@ public abstract class KernelWriter extends BlockWriter {
          writePragma("cl_khr_local_int32_extended_atomics", true);
       }
 
-      if (ConfigJNI.enableAtomic64 || _entryPoint.requiresAtomic64Pragma()) {
+      if (Config.isEnableAtomic64() || _entryPoint.requiresAtomic64Pragma()) {
          usesAtomics = true;
          writePragma("cl_khr_int64_base_atomics", true);
          writePragma("cl_khr_int64_extended_atomics", true);
@@ -418,7 +418,7 @@ public abstract class KernelWriter extends BlockWriter {
          newLine();
       }
 
-      if (ConfigJNI.enableDoubles || _entryPoint.requiresDoublePragma()) {
+      if (Config.isEnableDoubles() || _entryPoint.requiresDoublePragma()) {
          writePragma("cl_khr_fp64", true);
          newLine();
       }
