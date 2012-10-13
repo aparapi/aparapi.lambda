@@ -201,6 +201,42 @@ public class Config {
     * 
     * @return boolean
     */
+   public static boolean isEnableByteWrites() {
+      return configJNI.isEnableByteWrites();
+   }
+
+   /**
+    * A pass-through method for JNI property accessor
+    * 
+    * @return boolean
+    */
+   public static boolean isEnableAtomic32() {
+      return configJNI.isEnableAtomic32();
+   }
+
+   /**
+    * A pass-through method for JNI property accessor
+    * 
+    * @return boolean
+    */
+   public static boolean isEnableAtomic64() {
+      return configJNI.isEnableAtomic64();
+   }
+
+   /**
+    * A pass-through method for JNI property accessor
+    * 
+    * @return boolean
+    */
+   public static boolean isEnableDoubles() {
+      return configJNI.isEnableDoubles();
+   }
+
+   /**
+    * A pass-through method for JNI property accessor
+    * 
+    * @return boolean
+    */
    public static boolean isEnablePUTFIELD() {
       return configJNI.isEnablePUTFIELD();
    }
