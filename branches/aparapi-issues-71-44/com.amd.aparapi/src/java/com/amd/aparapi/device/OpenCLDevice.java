@@ -20,15 +20,6 @@ import com.amd.aparapi.opencl.OpenCLArgDescriptor;
 import com.amd.aparapi.opencl.OpenCLKernel;
 import com.amd.aparapi.opencl.OpenCLPlatform;
 import com.amd.aparapi.opencl.OpenCLProgram;
-import com.amd.aparapi.opencl.OpenCL.Arg;
-import com.amd.aparapi.opencl.OpenCL.Constant;
-import com.amd.aparapi.opencl.OpenCL.GlobalReadOnly;
-import com.amd.aparapi.opencl.OpenCL.GlobalReadWrite;
-import com.amd.aparapi.opencl.OpenCL.GlobalWriteOnly;
-import com.amd.aparapi.opencl.OpenCL.Kernel;
-import com.amd.aparapi.opencl.OpenCL.Local;
-import com.amd.aparapi.opencl.OpenCL.Resource;
-import com.amd.aparapi.opencl.OpenCL.Source;
 
 public class OpenCLDevice extends Device {
 
@@ -36,7 +27,7 @@ public class OpenCLDevice extends Device {
 
    private final long deviceId;
 
-   int maxComputeUnits;
+   private int maxComputeUnits;
 
    private long localMemSize;
 
