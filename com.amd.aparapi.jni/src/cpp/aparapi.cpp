@@ -594,7 +594,7 @@ cl_int KernelArg::setPrimitiveArg(JNIEnv *jenv, int argIdx, int argPos){
    return status;
 }
 
-JNI_JAVA(jint, KernelRunner, disposeJNI)
+JNI_JAVA(jint, KernelRunnerJNI, disposeJNI)
    (JNIEnv *jenv, jobject jobj, jlong jniContextHandle) {
       if (config== NULL){
          config = new Config(jenv);
@@ -791,7 +791,7 @@ jint updateNonPrimitiveReferences(JNIEnv *jenv, jobject jobj, JNIContext* jniCon
 
 
 
-JNI_JAVA(jint, KernelRunner, runKernelJNI)
+JNI_JAVA(jint, KernelRunnerJNI, runKernelJNI)
    (JNIEnv *jenv, jobject jobj, jlong jniContextHandle, jobject _range, jboolean needSync, jint passes) {
       if (config== NULL){
          config = new Config(jenv);
@@ -1300,13 +1300,19 @@ JNI_JAVA(jint, KernelRunner, runKernelJNI)
 
 
 // we return the JNIContext from here 
-JNI_JAVA(jlong, KernelRunner, initJNI)
+JNI_JAVA(jlong, KernelRunnerJNI, initJNI)
    (JNIEnv *jenv, jclass clazz, jobject kernelObject, jobject openCLDeviceObject, jint flags) {
+      if (openCLDeviceObject == NULL){
+         fprintf(stderr, "no device object!\n");
+      }
       if (config== NULL){
+         fprintf(stderr, "no config !\n");
          config = new Config(jenv);
+         fprintf(stderr, "created config !\n");
       }
       cl_int status = CL_SUCCESS;
       JNIContext* jniContext = new JNIContext(jenv, kernelObject, openCLDeviceObject, flags);
+         fprintf(stderr, "created JNIContext !\n");
 
       if (jniContext->isValid()){
 
@@ -1317,7 +1323,7 @@ JNI_JAVA(jlong, KernelRunner, initJNI)
    }
 
 
-JNI_JAVA(jlong, KernelRunner, buildProgramJNI)
+JNI_JAVA(jlong, KernelRunnerJNI, buildProgramJNI)
    (JNIEnv *jenv, jobject jobj, jlong jniContextHandle, jstring source) {
       JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);
       if (jniContext == NULL){
@@ -1396,7 +1402,7 @@ JNI_JAVA(jlong, KernelRunner, buildProgramJNI)
 
 
 // this is called once when the arg list is first determined for this kernel
-JNI_JAVA(jint, KernelRunner, setArgsJNI)
+JNI_JAVA(jint, KernelRunnerJNI, setArgsJNI)
    (JNIEnv *jenv, jobject jobj, jlong jniContextHandle, jobjectArray argArray, jint argc) {
       if (config== NULL){
          config = new Config(jenv);
@@ -1457,7 +1463,7 @@ JNI_JAVA(jint, KernelRunner, setArgsJNI)
 
 
 
-JNI_JAVA(jstring, KernelRunner, getExtensionsJNI)
+JNI_JAVA(jstring, KernelRunnerJNI, getExtensionsJNI)
    (JNIEnv *jenv, jobject jobj, jlong jniContextHandle) {
       if (config== NULL){
          config = new Config(jenv);
@@ -1502,7 +1508,7 @@ KernelArg* getArgForBuffer(JNIEnv* jenv, JNIContext* jniContext, jobject buffer)
 }
 
 // Called as a result of Kernel.get(someArray)
-JNI_JAVA(jint, KernelRunner, getJNI)
+JNI_JAVA(jint, KernelRunnerJNI, getJNI)
    (JNIEnv *jenv, jobject jobj, jlong jniContextHandle, jobject buffer) {
       if (config== NULL){
          config = new Config(jenv);
@@ -1556,7 +1562,7 @@ JNI_JAVA(jint, KernelRunner, getJNI)
       return 0;
    }
 
-JNI_JAVA(jobject, KernelRunner, getProfileInfoJNI)
+JNI_JAVA(jobject, KernelRunnerJNI, getProfileInfoJNI)
    (JNIEnv *jenv, jobject jobj, jlong jniContextHandle) {
       if (config== NULL){
          config = new Config(jenv);
