@@ -7,7 +7,7 @@ set MSVC_SDK_DIR=C:\Program Files\Microsoft SDKs\Windows\v7.1
 set PATH=%PATH%;%MSVC_DIR%\Common7\IDE
 REM no need to edit below here
 
-clean.bat 
+call clean.bat 
 
 mkdir ^
   classes^
