@@ -57,7 +57,8 @@ mkdir ^
  src\java\com\amd\aparapi\Range.java ^
  src\java\com\amd\aparapi\RangeException.java ^
  src\java\com\amd\aparapi\UnsafeWrapper.java ^
- src\java\com\amd\aparapi\samples\Mandel.java 
+ src\java\com\amd\aparapi\samples\Mandel.java ^
+ src\java\com\amd\aparapi\samples\Squares.java 
 
 %LAMBDA_JAVA_HOME%\bin\jar ^
   cf aparapi.jar^
