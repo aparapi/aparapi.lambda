@@ -7,19 +7,7 @@ set MSVC_SDK_DIR=C:\Program Files\Microsoft SDKs\Windows\v7.1
 set PATH=%PATH%;%MSVC_DIR%\Common7\IDE
 REM no need to edit below here
 
-rm -r -f ^
-  aparapi.obj ^
-  aparapi.exp ^
-  aparapi.jar ^
-  aparapi_x86_64.dll ^
-  arrayBuffer.obj ^
-  clHelper.obj ^
-  config.obj ^
-  jniHelper.obj ^
-  opencljni.obj ^
-  profileInfo.obj ^
-  classes ^
-  include 
+clean.bat 
 
 mkdir ^
   classes^
