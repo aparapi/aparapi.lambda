@@ -1,4 +1,4 @@
-package com.amd.aparapi.samples.mandel;
+package com.amd.aparapi.samples;
 
 import java.awt.Color;
 import java.awt.Dimension;
