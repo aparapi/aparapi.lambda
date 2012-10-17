@@ -4,6 +4,7 @@ rm -r -f ^
   aparapi.lib ^
   aparapi.obj ^
   aparapi_x86_64.dll ^
+  aparapi_x86.dll ^
   arrayBuffer.obj ^
   clHelper.obj ^
   config.obj ^
