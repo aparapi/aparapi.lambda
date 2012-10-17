@@ -38,6 +38,7 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 
 package com.amd.aparapi.samples;
 
+import com.amd.aparapi.Aparapi;
 import com.amd.aparapi.Kernel;
 import com.amd.aparapi.Range;
 
@@ -70,14 +71,15 @@ public class Squares{
       /** Aparapi Kernel which computes squares of input array elements and populates them in corresponding elements of 
        * output array. 
        **/
-      Kernel kernel = ()->{
-            int gid = getGlobalId();
+      Aparapi.KernelI kernel = (gid)->{
             squares[gid] = values[gid] * values[gid];
       };
 
       // Execute Kernel.
+      //
+      Aparapi.forEach(512, kernel);
 
-      kernel.execute(Range.create(512));
+   //   ((Kernel)kernel).execute(Range.create(512));
 
       // Report target execution mode: GPU or JTP (Java Thread Pool).
 
@@ -86,10 +88,10 @@ public class Squares{
          System.out.printf("%6.0f %8.0f\n", values[i], squares[i]);
       }
 
-      System.out.println("Execution mode=" + kernel.getExecutionMode());
+    //  System.out.println("Execution mode=" + ((Kernel)kernel).getExecutionMode());
 
       // Dispose Kernel resources.
-      kernel.dispose();
+     // ((Kernel)kernel).dispose();
    }
 
 }

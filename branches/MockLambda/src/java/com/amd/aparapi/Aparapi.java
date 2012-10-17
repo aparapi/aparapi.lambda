@@ -14,7 +14,7 @@ public class Aparapi{
       void run(int x, int y, int id);
    }
 
-   public interface Tail {
+   public interface KernelSAM {
       void run();
    }
 

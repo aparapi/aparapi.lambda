@@ -139,7 +139,7 @@ import com.amd.aparapi.ClassModel.ConstantPool.MethodReferenceEntry;
  * @version Alpha, 21/09/2010
  */
 
-public abstract class Kernel implements Cloneable{
+public abstract class Kernel implements Aparapi.KernelSAM, Cloneable{
    @Retention(RetentionPolicy.RUNTIME) @interface OpenCLMapping {
       String mapTo() default "";
 
