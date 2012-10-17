@@ -10,6 +10,7 @@ rm -r -f ^
   jniHelper.obj ^
   opencljni.obj ^
   profileInfo.obj ^
+  samples.jar ^
   classes ^
   include 
 

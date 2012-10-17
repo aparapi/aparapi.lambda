@@ -70,11 +70,9 @@ public class Squares{
       /** Aparapi Kernel which computes squares of input array elements and populates them in corresponding elements of 
        * output array. 
        **/
-      Kernel kernel = new Kernel(){
-         @Override public void run() {
+      Kernel kernel = ()->{
             int gid = getGlobalId();
             squares[gid] = values[gid] * values[gid];
-         }
       };
 
       // Execute Kernel.
