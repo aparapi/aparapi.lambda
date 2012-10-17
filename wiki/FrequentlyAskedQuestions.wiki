@@ -5,9 +5,9 @@
 *Aparapi* is just a contraction of *A PAR*{allel} *API* and is pronounced _(ap-per-rap-ee)_.
 ==Does Aparapi only work with AMD graphics cards?==
 
-No. Aparapi has been tested with AMD's OpenCL enabled drivers and devices as well as a limited set of NVidia devices and drivers on both Windows and Linux platforms. The minimal requirement at runtime is OpenCL 1.1. If you have a compatible OpenCL 1.1 runtime and supported devices Aparapi should work. 
+No. Aparapi has been tested with AMD's OpenCL enabled drivers and devices as well as a limited set of NVidia devices and drivers on both Windows, Linux and Mac OSX platforms. The minimal requirement at runtime is OpenCL 1.1. If you have a compatible OpenCL 1.1 runtime and supported devices Aparapi should work. 
 
-Although the build is currently configured for AMD APP SDK OpenCL is an open standard and we look forward to contributions which will allow Aparapi to be built against other OpenCL SDK's.
+Although the build is currently configured for AMD APP SDK, OpenCL is an open standard and we look forward to contributions which will allow Aparapi to be built against other OpenCL SDK's.
 
 Note that dll's built using AMD APP SDK will work on other platforms at runtime. So the binary builds are expected to work on all OpenCL 1.1 platforms.
 
