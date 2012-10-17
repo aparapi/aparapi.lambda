@@ -1,4 +1,7 @@
-C:\Users\gfrost\lambda-8-b45\jdk1.8.0\bin\java ^
-   -classpath classes ^
+setlocal 
+call setvars.bat
+%LAMBDA_JAVA_HOME%\bin\java ^
+   -classpath aparapi.jar;samples.jar ^
    com.amd.aparapi.samples.%1 %2 %3 %4 %6 %7 %8 %9 
+endlocal 
 
