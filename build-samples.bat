@@ -13,8 +13,9 @@ mkdir classes
  -g ^
  -d classes ^
  -sourcepath src\java^
- src\java\com\amd\aparapi\samples\Mandel.java 
-rem src\java\com\amd\aparapi\samples\Squares.java 
+ src\java\com\amd\aparapi\samples\WheresMyLambdaByteCode.java ^
+ src\java\com\amd\aparapi\samples\Mandel.java ^
+ src\java\com\amd\aparapi\samples\Squares.java 
 
 %LAMBDA_JAVA_HOME%\bin\jar ^
   cf samples.jar^
