@@ -52,9 +52,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.amd.aparapi.Config;
 import com.amd.aparapi.Kernel;
-import com.amd.aparapi.UnsafeWrapper;
+import com.amd.aparapi.config.Config;
 import com.amd.aparapi.exception.AparapiException;
 import com.amd.aparapi.exception.ClassParseException;
 import com.amd.aparapi.instruction.Instruction;
@@ -75,6 +74,7 @@ import com.amd.aparapi.model.ClassModel.ClassModelMethod;
 import com.amd.aparapi.model.ClassModel.ConstantPool.FieldEntry;
 import com.amd.aparapi.model.ClassModel.ConstantPool.MethodEntry;
 import com.amd.aparapi.model.ClassModel.ConstantPool.MethodReferenceEntry.Arg;
+import com.amd.aparapi.util.UnsafeWrapper;
 
 public class Entrypoint {
 

@@ -35,62 +35,20 @@ of EAR).  For the most current Country Group listings, or for additional informa
 under those regulations, please refer to the U.S. Bureau of Industry and Security's website at http://www.bis.doc.gov/. 
 
 */
-package com.amd.aparapi;
+package com.amd.aparapi.instruction;
 
-public class ProfileInfo{
-   private enum TYPE {
-      R,
-      X,
-      W
-   }; // 0 = write, 1 = execute, 2 = read
 
-   TYPE type;
+public abstract class InstructionTransformer {
 
-   private String label;
+   private final String description;
 
-   private long start;
+   public abstract Instruction transform(final ExpressionList _expressionList, final Instruction i);
 
-   private long end;
-
-   private long submit;
-
-   private long queued;
-
-   public ProfileInfo(String _label, int _type, long _start, long _end, long _submit, long _queued) {
-      type = TYPE.values()[_type];
-      label = _label == null ? "exec()" : _label;
-      start = _start;
-      end = _end;
-      submit = _submit;
-      queued = _queued;
+   public InstructionTransformer(String _description) {
+      description = _description;
    }
 
-   public long getStart() {
-      return start;
-   }
-
-   public long getEnd() {
-      return end;
-   }
-
-   public long getSubmit() {
-      return submit;
-   }
-
-   public long getQueued() {
-      return queued;
-   }
-
-   public String toString() {
-      return "ProfileInfo[" + type + " '" + label + "' start=" + start + ", end=" + end + ", submit=" + submit + ", queued="
-            + queued + ", duration=" + (end - start) + "]";
-   }
-
-   public String getLabel() {
-      return (label);
-   }
-
-   public TYPE getType() {
-      return (type);
+   public String getDescription() {
+      return (description);
    }
 }

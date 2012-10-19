@@ -52,6 +52,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.amd.aparapi.Kernel.EXECUTION_MODE;
+import com.amd.aparapi.config.Config;
 import com.amd.aparapi.device.Device;
 import com.amd.aparapi.device.OpenCLDevice;
 import com.amd.aparapi.exception.AparapiException;
@@ -62,6 +63,8 @@ import com.amd.aparapi.jni.KernelRunnerJNI;
 import com.amd.aparapi.jni.OpenCLJNI;
 import com.amd.aparapi.model.ClassModel;
 import com.amd.aparapi.model.Entrypoint;
+import com.amd.aparapi.util.ProfileInfo;
+import com.amd.aparapi.util.UnsafeWrapper;
 import com.amd.aparapi.writer.KernelWriter;
 
 /**

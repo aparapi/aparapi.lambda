@@ -1,4 +1,4 @@
-package com.amd.aparapi.print;
+package com.amd.aparapi.util;
 
 import java.util.ArrayList;
 import java.util.Collections;

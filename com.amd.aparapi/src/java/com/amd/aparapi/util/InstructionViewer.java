@@ -1,4 +1,4 @@
-package com.amd.aparapi.print;
+package com.amd.aparapi.util;
 
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
@@ -49,7 +49,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import com.amd.aparapi.Config;
+import com.amd.aparapi.config.Config;
 import com.amd.aparapi.exception.AparapiException;
 import com.amd.aparapi.exception.ClassParseException;
 import com.amd.aparapi.instruction.Instruction;
@@ -57,9 +57,9 @@ import com.amd.aparapi.instruction.InstructionSet.CompositeInstruction;
 import com.amd.aparapi.model.ClassModel;
 import com.amd.aparapi.model.Entrypoint;
 import com.amd.aparapi.model.MethodModel;
-import com.amd.aparapi.print.InstructionViewer.Form.Check;
-import com.amd.aparapi.print.InstructionViewer.Form.Template;
-import com.amd.aparapi.print.InstructionViewer.Form.Toggle;
+import com.amd.aparapi.util.InstructionViewer.Form.Check;
+import com.amd.aparapi.util.InstructionViewer.Form.Template;
+import com.amd.aparapi.util.InstructionViewer.Form.Toggle;
 
 public class InstructionViewer implements Config.InstructionListener{
 

@@ -43,8 +43,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import com.amd.aparapi.Config;
 import com.amd.aparapi.Kernel;
+import com.amd.aparapi.config.Config;
 import com.amd.aparapi.exception.CodeGenException;
 import com.amd.aparapi.instruction.Instruction;
 import com.amd.aparapi.instruction.InstructionSet;
