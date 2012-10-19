@@ -50,9 +50,13 @@ import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.logging.Logger;
 
+import com.amd.aparapi.config.Config;
 import com.amd.aparapi.exception.DeprecatedException;
 import com.amd.aparapi.jni.OpenCLJNI;
 import com.amd.aparapi.model.ClassModel.ConstantPool.MethodReferenceEntry;
+import com.amd.aparapi.util.Annotations;
+import com.amd.aparapi.util.ProfileInfo;
+import com.amd.aparapi.util.UnsafeWrapper;
 
 /**
  * A <i>kernel</i> encapsulates a data parallel algorithm that will execute either on a GPU

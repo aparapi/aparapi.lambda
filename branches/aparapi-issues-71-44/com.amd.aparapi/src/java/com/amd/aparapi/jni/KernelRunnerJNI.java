@@ -2,12 +2,12 @@ package com.amd.aparapi.jni;
 
 import java.util.List;
 
-import com.amd.aparapi.Annotations;
 import com.amd.aparapi.Kernel;
-import com.amd.aparapi.ProfileInfo;
 import com.amd.aparapi.Range;
 import com.amd.aparapi.device.OpenCLDevice;
 import com.amd.aparapi.jni.OpenCLJNI.UsedByJNICode;
+import com.amd.aparapi.util.Annotations;
+import com.amd.aparapi.util.ProfileInfo;
 
 /**
  * This class is intended to be used as a 'proxy' or 'facade' object for Java code to interact with JNI

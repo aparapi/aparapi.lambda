@@ -35,52 +35,62 @@ of EAR).  For the most current Country Group listings, or for additional informa
 under those regulations, please refer to the U.S. Bureau of Industry and Security's website at http://www.bis.doc.gov/. 
 
 */
-package com.amd.aparapi;
+package com.amd.aparapi.util;
 
-/**
- * A collection of annotations used at dev time to tag intent.
- * 
- * We should be able to remove all of these before OpenSource release. 
- * 
- * @author gfrost
- */
-public class Annotations {
+public class ProfileInfo{
+   private enum TYPE {
+      R,
+      X,
+      W
+   }; // 0 = write, 1 = execute, 2 = read
 
-   /**
-    * Use this annotation to tag stuff that needs Java Doc added. 
-    * 
-    * @author gfrost
-    */
-   public @interface DocMe {
+   TYPE type;
+
+   private String label;
+
+   private long start;
+
+   private long end;
+
+   private long submit;
+
+   private long queued;
+
+   public ProfileInfo(String _label, int _type, long _start, long _end, long _submit, long _queued) {
+      type = TYPE.values()[_type];
+      label = _label == null ? "exec()" : _label;
+      start = _start;
+      end = _end;
+      submit = _submit;
+      queued = _queued;
    }
 
-   /**
-    * Use this annotation to tag fields that we think need to be removed (method/field/var).
-    * 
-    * @author gfrost
-    */
-   public @interface RemoveMe {
+   public long getStart() {
+      return start;
    }
 
-   /**
-    * Used to tag experimental features (methods/fields).  
-    * 
-    * Do not rely on anything tagged as experimental, it will probably be retracted/refactored. 
-    * 
-    * @author gfrost
-    *
-    */
-   public @interface Experimental {
+   public long getEnd() {
+      return end;
    }
 
-   /**
-    * Used to tag unused features (methods/fields).  
-    * 
-    * Do not rely on anything tagged as unused, it will probably be retracted/refactored. 
-    * 
-    * @author gfrost
-    *
-    */
-   public @interface Unused {
+   public long getSubmit() {
+      return submit;
+   }
+
+   public long getQueued() {
+      return queued;
+   }
+
+   public String toString() {
+      return "ProfileInfo[" + type + " '" + label + "' start=" + start + ", end=" + end + ", submit=" + submit + ", queued="
+            + queued + ", duration=" + (end - start) + "]";
+   }
+
+   public String getLabel() {
+      return (label);
+   }
+
+   public TYPE getType() {
+      return (type);
    }
 }

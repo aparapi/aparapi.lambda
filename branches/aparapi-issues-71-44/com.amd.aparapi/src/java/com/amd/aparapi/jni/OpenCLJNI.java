@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.amd.aparapi.Config;
+import com.amd.aparapi.config.Config;
 import com.amd.aparapi.device.OpenCLDevice;
 import com.amd.aparapi.opencl.OpenCLArgDescriptor;
 import com.amd.aparapi.opencl.OpenCLKernel;

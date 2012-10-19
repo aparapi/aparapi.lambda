@@ -35,9 +35,8 @@ of EAR).  For the most current Country Group listings, or for additional informa
 under those regulations, please refer to the U.S. Bureau of Industry and Security's website at http://www.bis.doc.gov/. 
 
 */
-package com.amd.aparapi;
+package com.amd.aparapi.instruction;
 
-import com.amd.aparapi.instruction.Instruction;
 import com.amd.aparapi.instruction.InstructionSet.AccessArrayElement;
 import com.amd.aparapi.instruction.InstructionSet.AccessInstanceField;
 import com.amd.aparapi.instruction.InstructionSet.AccessLocalVariable;

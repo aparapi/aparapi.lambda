@@ -43,7 +43,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.amd.aparapi.Config;
+import com.amd.aparapi.config.Config;
 import com.amd.aparapi.exception.ClassParseException;
 import com.amd.aparapi.instruction.InstructionSet.AssignToLocalVariable;
 import com.amd.aparapi.instruction.InstructionSet.Branch;
