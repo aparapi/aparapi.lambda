@@ -58,11 +58,10 @@ import com.amd.aparapi.device.OpenCLDevice;
 import com.amd.aparapi.exception.AparapiException;
 import com.amd.aparapi.exception.CodeGenException;
 import com.amd.aparapi.instruction.InstructionSet.TypeSpec;
-import com.amd.aparapi.jni.KernelArgJNI;
 import com.amd.aparapi.jni.KernelRunnerJNI;
-import com.amd.aparapi.jni.OpenCLJNI;
 import com.amd.aparapi.model.ClassModel;
 import com.amd.aparapi.model.Entrypoint;
+import com.amd.aparapi.opencl.OpenCL;
 import com.amd.aparapi.util.ProfileInfo;
 import com.amd.aparapi.util.UnsafeWrapper;
 import com.amd.aparapi.writer.KernelWriter;
@@ -83,7 +82,7 @@ import com.amd.aparapi.writer.KernelWriter;
  * @author gfrost
  *
  */
-public class KernelRunner {
+public class KernelRunner extends KernelRunnerJNI {
 
    private static Logger logger = Logger.getLogger(Config.getLoggerName());
 
@@ -100,7 +99,7 @@ public class KernelRunner {
     * 
     * @param _kernel
     */
-   KernelRunner(Kernel _kernel) {
+   protected KernelRunner(Kernel _kernel) {
       kernel = _kernel;
    }
 
@@ -111,7 +110,7 @@ public class KernelRunner {
     */
    void dispose() {
       if (kernel.getExecutionMode().isOpenCL()) {
-         KernelRunnerJNI.disposeJNI(jniContextHandle);
+         disposeJNI(jniContextHandle);
       }
    }
 
@@ -127,84 +126,84 @@ public class KernelRunner {
       if (capabilitiesSet == null) {
          throw new IllegalStateException("Capabilities queried before they were initialized");
       }
-      return (capabilitiesSet.contains(OpenCLJNI.CL_KHR_FP64));
+      return (capabilitiesSet.contains(OpenCL.CL_KHR_FP64));
    }
 
    boolean hasSelectFPRoundingModeSupport() {
       if (capabilitiesSet == null) {
          throw new IllegalStateException("Capabilities queried before they were initialized");
       }
-      return capabilitiesSet.contains(OpenCLJNI.CL_KHR_SELECT_FPROUNDING_MODE);
+      return capabilitiesSet.contains(OpenCL.CL_KHR_SELECT_FPROUNDING_MODE);
    }
 
    boolean hasGlobalInt32BaseAtomicsSupport() {
       if (capabilitiesSet == null) {
          throw new IllegalStateException("Capabilities queried before they were initialized");
       }
-      return capabilitiesSet.contains(OpenCLJNI.CL_KHR_GLOBAL_INT32_BASE_ATOMICS);
+      return capabilitiesSet.contains(OpenCL.CL_KHR_GLOBAL_INT32_BASE_ATOMICS);
    }
 
    boolean hasGlobalInt32ExtendedAtomicsSupport() {
       if (capabilitiesSet == null) {
          throw new IllegalStateException("Capabilities queried before they were initialized");
       }
-      return capabilitiesSet.contains(OpenCLJNI.CL_KHR_GLOBAL_INT32_EXTENDED_ATOMICS);
+      return capabilitiesSet.contains(OpenCL.CL_KHR_GLOBAL_INT32_EXTENDED_ATOMICS);
    }
 
    boolean hasLocalInt32BaseAtomicsSupport() {
       if (capabilitiesSet == null) {
          throw new IllegalStateException("Capabilities queried before they were initialized");
       }
-      return capabilitiesSet.contains(OpenCLJNI.CL_KHR_LOCAL_INT32_BASE_ATOMICS);
+      return capabilitiesSet.contains(OpenCL.CL_KHR_LOCAL_INT32_BASE_ATOMICS);
    }
 
    boolean hasLocalInt32ExtendedAtomicsSupport() {
       if (capabilitiesSet == null) {
          throw new IllegalStateException("Capabilities queried before they were initialized");
       }
-      return capabilitiesSet.contains(OpenCLJNI.CL_KHR_LOCAL_INT32_EXTENDED_ATOMICS);
+      return capabilitiesSet.contains(OpenCL.CL_KHR_LOCAL_INT32_EXTENDED_ATOMICS);
    }
 
    boolean hasInt64BaseAtomicsSupport() {
       if (capabilitiesSet == null) {
          throw new IllegalStateException("Capabilities queried before they were initialized");
       }
-      return capabilitiesSet.contains(OpenCLJNI.CL_KHR_INT64_BASE_ATOMICS);
+      return capabilitiesSet.contains(OpenCL.CL_KHR_INT64_BASE_ATOMICS);
    }
 
    boolean hasInt64ExtendedAtomicsSupport() {
       if (capabilitiesSet == null) {
          throw new IllegalStateException("Capabilities queried before they were initialized");
       }
-      return capabilitiesSet.contains(OpenCLJNI.CL_KHR_INT64_EXTENDED_ATOMICS);
+      return capabilitiesSet.contains(OpenCL.CL_KHR_INT64_EXTENDED_ATOMICS);
    }
 
    boolean has3DImageWritesSupport() {
       if (capabilitiesSet == null) {
          throw new IllegalStateException("Capabilities queried before they were initialized");
       }
-      return capabilitiesSet.contains(OpenCLJNI.CL_KHR_3D_IMAGE_WRITES);
+      return capabilitiesSet.contains(OpenCL.CL_KHR_3D_IMAGE_WRITES);
    }
 
    boolean hasByteAddressableStoreSupport() {
       if (capabilitiesSet == null) {
          throw new IllegalStateException("Capabilities queried before they were initialized");
       }
-      return capabilitiesSet.contains(OpenCLJNI.CL_KHR_BYTE_ADDRESSABLE_SUPPORT);
+      return capabilitiesSet.contains(OpenCL.CL_KHR_BYTE_ADDRESSABLE_SUPPORT);
    }
 
    boolean hasFP16Support() {
       if (capabilitiesSet == null) {
          throw new IllegalStateException("Capabilities queried before they were initialized");
       }
-      return capabilitiesSet.contains(OpenCLJNI.CL_KHR_FP16);
+      return capabilitiesSet.contains(OpenCL.CL_KHR_FP16);
    }
 
    boolean hasGLSharingSupport() {
       if (capabilitiesSet == null) {
          throw new IllegalStateException("Capabilities queried before they were initialized");
       }
-      return capabilitiesSet.contains(OpenCLJNI.CL_KHR_GL_SHARING);
+      return capabilitiesSet.contains(OpenCL.CL_KHR_GL_SHARING);
    }
 
    /**
@@ -244,6 +243,7 @@ public class KernelRunner {
          kernelClone.localId[1] = 0;
          kernelClone.localId[2] = 0;
          kernelClone.localBarrier = new CyclicBarrier(1);
+
          for (kernelClone.passId = 0; kernelClone.passId < _passes; kernelClone.passId++) {
 
             if (_range.getDims() == 1) {
@@ -273,7 +273,6 @@ public class KernelRunner {
                }
             }
          }
-
       } else {
 
          final int threads = _range.getLocalSize(0) * _range.getLocalSize(1) * _range.getLocalSize(2);
@@ -457,19 +456,23 @@ public class KernelRunner {
                            kernelClone.groupId[1] = (globalGroupId / _range.getNumGroups(0)) % _range.getNumGroups(1);
                            kernelClone.groupId[2] = globalGroupId / (_range.getNumGroups(0) * _range.getNumGroups(1));
                         }
+
                         kernelClone.run();
 
                      }
+
                      await(joinBarrier); // This thread will rendezvous with dispatch thread here. This is effectively a join.                  
                   }
                });
+
                threadArray[threadId].setName("aparapi-" + threadId + "/" + threads);
                threadArray[threadId].start();
-
             }
+
             await(joinBarrier); // This dispatch thread waits for all worker threads here. 
          }
       } // execution mode == JTP
+
       return 0;
    }
 
@@ -485,7 +488,7 @@ public class KernelRunner {
       }
    }
 
-   private KernelArgJNI[] args = null;
+   private KernelArg[] args = null;
 
    private boolean usesOopConversion = false;
 
@@ -495,7 +498,7 @@ public class KernelRunner {
     * @return
     * @throws AparapiException
     */
-   private boolean prepareOopConversionBuffer(KernelArgJNI arg) throws AparapiException {
+   private boolean prepareOopConversionBuffer(KernelArg arg) throws AparapiException {
       usesOopConversion = true;
       final Class<?> arrayClass = arg.getField().getType();
       ClassModel c = null;
@@ -633,7 +636,7 @@ public class KernelRunner {
       return didReallocate;
    }
 
-   private void extractOopConversionBuffer(KernelArgJNI arg) throws AparapiException {
+   private void extractOopConversionBuffer(KernelArg arg) throws AparapiException {
       final Class<?> arrayClass = arg.getField().getType();
       final ClassModel c = arg.getObjArrayElementModel();
       assert c != null : "should find class for elements: " + arrayClass.getName();
@@ -740,7 +743,7 @@ public class KernelRunner {
 
    private void restoreObjects() throws AparapiException {
       for (int i = 0; i < argc; i++) {
-         final KernelArgJNI arg = args[i];
+         final KernelArg arg = args[i];
          if ((arg.getType() & KernelRunnerJNI.ARG_OBJ_ARRAY_STRUCT) != 0) {
             extractOopConversionBuffer(arg);
          }
@@ -751,7 +754,7 @@ public class KernelRunner {
       boolean needsSync = false;
 
       for (int i = 0; i < argc; i++) {
-         final KernelArgJNI arg = args[i];
+         final KernelArg arg = args[i];
          try {
             if ((arg.getType() & KernelRunnerJNI.ARG_ARRAY) != 0) {
                Object newArrayRef;
@@ -850,7 +853,7 @@ public class KernelRunner {
       }
 
       // native side will reallocate array buffers if necessary
-      if (KernelRunnerJNI.runKernelJNI(jniContextHandle, _range, needSync, _passes) != 0) {
+      if (runKernelJNI(jniContextHandle, _range, needSync, _passes) != 0) {
          logger.warning("### CL exec seems to have failed. Trying to revert to Java ###");
          kernel.setFallbackExecutionMode();
          return execute(_entrypointName, _range, _passes);
@@ -953,13 +956,13 @@ public class KernelRunner {
                   // code that requires the capabilities.
 
                   // synchronized(Kernel.class){
-                  jniContextHandle = KernelRunnerJNI.initJNI(kernel, openCLDevice, jniFlags); // openCLDevice will not be null here
+                  jniContextHandle = initJNI(kernel, openCLDevice, jniFlags); // openCLDevice will not be null here
                } // end of synchronized! issue 68
                if (jniContextHandle == 0) {
                   return warnFallBackAndExecute(_entrypointName, _range, _passes, "initJNI failed to return a valid handle");
                }
 
-               final String extensions = KernelRunnerJNI.getExtensionsJNI(jniContextHandle);
+               final String extensions = getExtensionsJNI(jniContextHandle);
                capabilitiesSet = new HashSet<String>();
                final StringTokenizer strTok = new StringTokenizer(extensions);
                while (strTok.hasMoreTokens()) {
@@ -995,7 +998,7 @@ public class KernelRunner {
                   return warnFallBackAndExecute(_entrypointName, _range, _passes, codeGenException);
                }
 
-               if (Config.isEnableShowGeneratedOpenCL()) {
+               if (Config.enableShowGeneratedOpenCL) {
                   System.out.println(openCL);
                }
                if (logger.isLoggable(Level.INFO)) {
@@ -1003,17 +1006,17 @@ public class KernelRunner {
                }
 
                // Send the string to OpenCL to compile it
-               if (KernelRunnerJNI.buildProgramJNI(jniContextHandle, openCL) == 0) {
+               if (buildProgramJNI(jniContextHandle, openCL) == 0) {
                   return warnFallBackAndExecute(_entrypointName, _range, _passes, "OpenCL compile failed");
                }
 
-               args = new KernelArgJNI[entryPoint.getReferencedFields().size()];
+               args = new KernelArg[entryPoint.getReferencedFields().size()];
                int i = 0;
 
                for (final Field field : entryPoint.getReferencedFields()) {
                   try {
                      field.setAccessible(true);
-                     args[i] = new KernelArgJNI();
+                     args[i] = new KernelArg();
                      args[i].setName(field.getName());
                      args[i].setField(field);
                      if ((field.getModifiers() & Modifier.STATIC) == Modifier.STATIC) {
@@ -1121,7 +1124,7 @@ public class KernelRunner {
 
                argc = i;
 
-               KernelRunnerJNI.setArgsJNI(jniContextHandle, args, argc);
+               setArgsJNI(jniContextHandle, args, argc);
 
                conversionTime = System.currentTimeMillis() - executeStartTime;
 
@@ -1148,7 +1151,7 @@ public class KernelRunner {
          executeJava(_range, _passes);
       }
 
-      if (Config.isEnableExecutionModeReporting()) {
+      if (Config.enableExecutionModeReporting) {
          System.out.println(kernel.getClass().getCanonicalName() + ":" + kernel.getExecutionMode());
       }
 
@@ -1181,14 +1184,14 @@ public class KernelRunner {
    protected void get(Object array) {
       if (explicit && ((kernel.getExecutionMode() == Kernel.EXECUTION_MODE.GPU) || (kernel.getExecutionMode() == Kernel.EXECUTION_MODE.CPU))) {
          // Only makes sense when we are using OpenCL
-         KernelRunnerJNI.getJNI(jniContextHandle, array);
+         getJNI(jniContextHandle, array);
       }
    }
 
    protected List<ProfileInfo> getProfileInfo() {
       if (((kernel.getExecutionMode() == Kernel.EXECUTION_MODE.GPU) || (kernel.getExecutionMode() == Kernel.EXECUTION_MODE.CPU))) {
          // Only makes sense when we are using OpenCL
-         return (KernelRunnerJNI.getProfileInfoJNI(jniContextHandle));
+         return (getProfileInfoJNI(jniContextHandle));
       } else {
          return (null);
       }
@@ -1234,7 +1237,7 @@ public class KernelRunner {
     * @return The time spent preparing the kernel for execution using GPU
     * 
     */
-   public long getConversionTime() {
+   protected long getConversionTime() {
       return conversionTime;
    }
 
@@ -1244,7 +1247,7 @@ public class KernelRunner {
     * @return The time spent executing the kernel (ms)
     * 
     */
-   public long getExecutionTime() {
+   protected long getExecutionTime() {
       return executionTime;
    }
 
@@ -1254,7 +1257,7 @@ public class KernelRunner {
     * @return The accumulated time spent executing this kernel (ms)
     * 
     */
-   public long getAccumulatedExecutionTime() {
+   protected long getAccumulatedExecutionTime() {
       return accumulatedExecutionTime;
    }
 }

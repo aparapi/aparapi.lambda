@@ -25,12 +25,12 @@ public abstract class Device {
                   return (_deviceRhs);
                }
             }
+
             if (_deviceLhs.getMaxComputeUnits() > _deviceRhs.getMaxComputeUnits()) {
                return (_deviceLhs);
             } else {
                return (_deviceRhs);
             }
-
          }
       }));
    }
@@ -117,9 +117,7 @@ public abstract class Device {
       return (Range.create3D(this, _globalWidth, _globalHeight, _globalDepth));
    }
 
-   public Range createRange3D(int _globalWidth, int _globalHeight, int _globalDepth, int _localWidth, int _localHeight,
-         int _localDepth) {
+   public Range createRange3D(int _globalWidth, int _globalHeight, int _globalDepth, int _localWidth, int _localHeight, int _localDepth) {
       return (Range.create3D(this, _globalWidth, _globalHeight, _globalDepth, _localWidth, _localHeight, _localDepth));
    }
-
 }

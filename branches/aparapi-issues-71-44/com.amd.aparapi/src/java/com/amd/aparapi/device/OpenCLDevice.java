@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.amd.aparapi.Range;
-import com.amd.aparapi.jni.OpenCLJNI;
 import com.amd.aparapi.opencl.OpenCL;
 import com.amd.aparapi.opencl.OpenCLArgDescriptor;
 import com.amd.aparapi.opencl.OpenCLKernel;
@@ -291,8 +290,8 @@ public class OpenCLDevice extends Device {
    }
 
    public <T extends OpenCL<T>> T bind(Class<T> _interface, String _source) {
-
       final Map<String, List<OpenCLArgDescriptor>> kernelNameToArgsMap = new HashMap<String, List<OpenCLArgDescriptor>>();
+
       if (_source == null) {
          final StringBuilder sourceBuilder = new StringBuilder();
          boolean interfaceIsAnnotated = false;
@@ -361,7 +360,7 @@ public class OpenCLDevice extends Device {
 
       // System.out.println("opencl{\n" + _source + "\n}opencl");
 
-      final OpenCLProgram program = createProgram(_source);
+      final OpenCLProgram program = OpenCLProgram.createProgram(this, _source);
 
       final Map<String, OpenCLKernel> map = new HashMap<String, OpenCLKernel>();
       for (final String name : kernelNameToArgsMap.keySet()) {
@@ -369,6 +368,7 @@ public class OpenCLDevice extends Device {
          if (kernel == null) {
             throw new IllegalStateException("kernel is null");
          }
+
          map.put(name, kernel);
       }
 
@@ -377,8 +377,8 @@ public class OpenCLDevice extends Device {
             _interface,
             OpenCL.class
       }, invocationHandler);
-      return instance;
 
+      return instance;
    }
 
    public interface DeviceSelector {
@@ -416,10 +416,7 @@ public class OpenCLDevice extends Device {
             }
          }
       }
-      return (device);
-   }
 
-   public OpenCLProgram createProgram(String source) {
-      return (OpenCLJNI.getInstance().createProgram(this, source));
+      return (device);
    }
 }

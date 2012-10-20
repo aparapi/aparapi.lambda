@@ -165,7 +165,7 @@ public abstract class BlockWriter {
             case DCMPG:
             case FCMPL:
             case DCMPL:
-               if (Config.isVerboseComparitor()) {
+               if (Config.verboseComparitor) {
                   write("/* bytecode=" + comparisonByteCode.getName() + " invert=" + _invert + "*/");
                }
                writeInstruction(comparison.getFirstChild());
@@ -173,7 +173,7 @@ public abstract class BlockWriter {
                writeInstruction(comparison.getLastChild());
                break;
             default:
-               if (Config.isVerboseComparitor()) {
+               if (Config.verboseComparitor) {
                   write("/* default bytecode=" + comparisonByteCode.getName() + " invert=" + _invert + "*/");
                }
                writeInstruction(comparison);
