@@ -43,8 +43,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.amd.aparapi.ClassModel.AttributePool.LocalVariableTableEntry;
-import com.amd.aparapi.ClassModel.AttributePool.LocalVariableTableEntry.LocalVariableInfo;
+import com.amd.aparapi.ClassModel.LocalVariableInfo;
+import com.amd.aparapi.ClassModel.LocalVariableTableEntry;
 import com.amd.aparapi.InstructionSet.AssignToLocalVariable;
 import com.amd.aparapi.InstructionSet.Branch;
 import com.amd.aparapi.InstructionSet.ByteCode;
@@ -755,18 +755,22 @@ class ExpressionList{
          } else {
 
             // might be end of arbitrary scope
-            LocalVariableTableEntry localVariableTable = methodModel.getMethod().getLocalVariableTableEntry();
+            LocalVariableTableEntry<LocalVariableInfo> localVariableTable = methodModel.getMethod().getLocalVariableTableEntry();
             int startPc = Short.MAX_VALUE;
-            for (LocalVariableInfo localVariableInfo : localVariableTable.getPool()) {
+            if (Config.enableAllowMissingLocalVariableTable && localVariableTable == null) {
+               logger.warning("class does not contain a LocalVariableTable - but enableAllowMissingLocalVariableTable is set so we are ignoring");
+            } else {
+               for (LocalVariableInfo localVariableInfo : localVariableTable) {
 
-               if (localVariableInfo.getEnd() == _instruction.getThisPC()) {
-                  logger.fine(localVariableInfo.getVariableName() + "  scope  " + localVariableInfo.getStart() + " ,"
-                        + localVariableInfo.getEnd());
-                  if (localVariableInfo.getStart() < startPc) {
-                     startPc = localVariableInfo.getStart();
+                  if (localVariableInfo.getEnd() == _instruction.getThisPC()) {
+                     logger.fine(localVariableInfo.getVariableName() + "  scope  " + localVariableInfo.getStart() + " ,"
+                           + localVariableInfo.getEnd());
+                     if (localVariableInfo.getStart() < startPc) {
+                        startPc = localVariableInfo.getStart();
+                     }
                   }
-               }
 
+               }
             }
             if (startPc < Short.MAX_VALUE) {
                logger.fine("Scope block from " + startPc + " to  " + (tail.getThisPC() + tail.getLength()));
