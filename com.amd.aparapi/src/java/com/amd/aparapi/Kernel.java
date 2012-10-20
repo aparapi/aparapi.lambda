@@ -52,8 +52,8 @@ import java.util.logging.Logger;
 
 import com.amd.aparapi.config.Config;
 import com.amd.aparapi.exception.DeprecatedException;
-import com.amd.aparapi.jni.OpenCLJNI;
 import com.amd.aparapi.model.ClassModel.ConstantPool.MethodReferenceEntry;
+import com.amd.aparapi.opencl.OpenCLLoader;
 import com.amd.aparapi.util.Annotations;
 import com.amd.aparapi.util.ProfileInfo;
 import com.amd.aparapi.util.UnsafeWrapper;
@@ -350,14 +350,14 @@ public abstract class Kernel implements Cloneable {
       */
 
       static EXECUTION_MODE getDefaultExecutionMode() {
-         EXECUTION_MODE defaultExecutionMode = OpenCLJNI.getInstance().isOpenCLAvailable() ? GPU : JTP;
-         final String executionMode = Config.getExecutionMode();
+         EXECUTION_MODE defaultExecutionMode = OpenCLLoader.isOpenCLAvailable() ? GPU : JTP;
+         final String executionMode = Config.executionMode;
          if (executionMode != null) {
             try {
                EXECUTION_MODE requestedExecutionMode;
                requestedExecutionMode = getExecutionModeFromString(executionMode).iterator().next();
                logger.fine("requested execution mode =");
-               if ((OpenCLJNI.getInstance().isOpenCLAvailable() && requestedExecutionMode.isOpenCL())
+               if ((OpenCLLoader.isOpenCLAvailable() && requestedExecutionMode.isOpenCL())
                      || !requestedExecutionMode.isOpenCL()) {
                   defaultExecutionMode = requestedExecutionMode;
                }
@@ -373,13 +373,13 @@ public abstract class Kernel implements Cloneable {
 
       static LinkedHashSet<EXECUTION_MODE> getDefaultExecutionModes() {
          LinkedHashSet<EXECUTION_MODE> defaultExecutionModes = new LinkedHashSet<EXECUTION_MODE>();
-         if (OpenCLJNI.getInstance().isOpenCLAvailable()) {
+         if (OpenCLLoader.isOpenCLAvailable()) {
             defaultExecutionModes.add(GPU);
             defaultExecutionModes.add(JTP);
          } else {
             defaultExecutionModes.add(JTP);
          }
-         final String executionMode = Config.getExecutionMode();
+         final String executionMode = Config.executionMode;
          if (executionMode != null) {
             try {
                LinkedHashSet<EXECUTION_MODE> requestedExecutionModes;
@@ -388,7 +388,7 @@ public abstract class Kernel implements Cloneable {
                for (final EXECUTION_MODE mode : requestedExecutionModes) {
                   logger.fine(" " + mode);
                }
-               if ((OpenCLJNI.getInstance().isOpenCLAvailable()
+               if ((OpenCLLoader.isOpenCLAvailable()
                      && EXECUTION_MODE.anyOpenCL(requestedExecutionModes))
                      || !EXECUTION_MODE.anyOpenCL(requestedExecutionModes)) {
                   defaultExecutionModes = requestedExecutionModes;
@@ -1614,7 +1614,6 @@ public abstract class Kernel implements Cloneable {
       return (1.0 / Math.sqrt(_d));
    }
 
-   @SuppressWarnings("unused")
    @OpenCLMapping(mapTo = "native_sqrt")
    private float native_sqrt(float _f) {
       int j = Float.floatToIntBits(_f);
@@ -1623,7 +1622,6 @@ public abstract class Kernel implements Cloneable {
       // could add more precision using one iteration of newton's method, use the following
    }
 
-   @SuppressWarnings("unused")
    @OpenCLMapping(mapTo = "native_rsqrt")
    private float native_rsqrt(float _f) {
       int j = Float.floatToIntBits(_f);
@@ -1650,7 +1648,7 @@ public abstract class Kernel implements Cloneable {
    @OpenCLMapping(atomic32 = true)
    protected int atomicAdd(int[] _arr, int _index, int _delta) {
 
-      if (!Config.isDisableUnsafe()) {
+      if (!Config.disableUnsafe) {
          return UnsafeWrapper.atomicAdd(_arr, _index, _delta);
       } else {
          synchronized (_arr) {

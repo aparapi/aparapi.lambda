@@ -54,24 +54,97 @@ import com.amd.aparapi.util.InstructionViewer;
  * @author gfrost
  * 
  */
-public class Config {
+public class Config extends ConfigJNI {
 
-   private static final String propPkgName = Config.class.getPackage().getName();
+   private static final Config instance = new Config();
 
    // Logging setup
    private static final String logPropName = propPkgName + ".logLevel";
 
-   private static Logger logger = Logger.getLogger(Config.getLoggerName());
-
-   private static ConfigJNI configJNI = new ConfigJNI(propPkgName);
-
-   private static final Config instance = new Config();
+   private static Logger logger = Logger.getLogger(logPropName);
 
    public static InstructionListener instructionListener = null;
 
+   /**
+    * Allows the user to disable Unsafe operations
+    * 
+    * Usage -Dcom.amd.aparapi.disableUnsafe={true|false}
+    * 
+    * @see com.amd.aparapi.Kernel.DISABLE_UNSAFE
+    */
+   public static final boolean disableUnsafe = Boolean.getBoolean(propPkgName + ".disableUnsafe");
+
+   /**
+    * Allows the user to request a specific Kernel.EXECUTION_MODE enum value for all Kernels.
+    * 
+    * Usage -Dcom.amd.aparapi.executionMode={SEQ|JTP|CPU|GPU}
+    * 
+    * @see com.amd.aparapi.Kernel.EXECUTION_MODE
+    */
+   public static final String executionMode = System.getProperty(propPkgName + ".executionMode");
+
+   /**
+    * Allows the user to request that the execution mode of each kernel invocation be reported to stdout.
+    * 
+    * Usage -Dcom.amd.aparapi.enableExecutionModeReporting={true|false}
+    * 
+    */
+   public static final boolean enableExecutionModeReporting = Boolean.getBoolean(propPkgName + ".enableExecutionModeReporting");
+
+   /**
+    * Allows the user to request that generated OpenCL code is dumped to standard out.
+    * 
+    * Usage -Dcom.amd.aparapi.enableShowGeneratedOpenCL={true|false}
+    * 
+    */
+   public static final boolean enableShowGeneratedOpenCL = Boolean.getBoolean(propPkgName + ".enableShowGeneratedOpenCL");
+
+   // Pragma/OpenCL codegen related flags
+   public static final boolean enableAtomic32 = Boolean.getBoolean(propPkgName + ".enableAtomic32");
+
+   public static final boolean enableAtomic64 = Boolean.getBoolean(propPkgName + ".enableAtomic64");
+
+   public static final boolean enableByteWrites = Boolean.getBoolean(propPkgName + ".enableByteWrites");
+
+   public static final boolean enableDoubles = Boolean.getBoolean(propPkgName + ".enableDoubles");
+
+   // Debugging related flags
+   public static final boolean verboseComparitor = Boolean.getBoolean(propPkgName + ".verboseComparitor");
+
+   public static final boolean dumpFlags = Boolean.getBoolean(propPkgName + ".dumpFlags");
+
+   // Individual bytecode support related flags
+   public static final boolean enablePUTFIELD = Boolean.getBoolean(propPkgName + ".enable.PUTFIELD");
+
+   public static final boolean enableARETURN = !Boolean.getBoolean(propPkgName + ".disable.ARETURN");
+
+   public static final boolean enablePUTSTATIC = Boolean.getBoolean(propPkgName + ".enable.PUTSTATIC");
+
+   public static final boolean enableGETSTATIC = Boolean.getBoolean(propPkgName + ".enable.GETSTATIC");
+
+   public static final boolean enableINVOKEINTERFACE = Boolean.getBoolean(propPkgName + ".enable.INVOKEINTERFACE");
+
+   public static final boolean enableMONITOR = Boolean.getBoolean(propPkgName + ".enable.MONITOR");
+
+   public static final boolean enableNEW = Boolean.getBoolean(propPkgName + ".enable.NEW");
+
+   public static final boolean enableATHROW = Boolean.getBoolean(propPkgName + ".enable.ATHROW");
+
+   public static final boolean enableMETHODARRAYPASSING = !Boolean.getBoolean(propPkgName + ".disable.METHODARRAYPASSING");
+
+   public static final boolean enableARRAYLENGTH = Boolean.getBoolean(propPkgName + ".enable.ARRAYLENGTH");
+
+   public static final boolean enableSWITCH = Boolean.getBoolean(propPkgName + ".enable.SWITCH");
+
+   // public static final int JTPLocalSizeMultiplier = Integer.getInteger(propPkgName + ".JTP.localSizeMul", 2);
+
+   public static final boolean enableInstructionDecodeViewer = Boolean.getBoolean(propPkgName + ".enableInstructionDecodeViewer");
+
+   public static String instructionListenerClassName = System.getProperty(propPkgName + ".instructionListenerClass");
+
    static {
       try {
-         final Level level = Level.parse(System.getProperty(getLoggerName(), "WARNING"));
+         final Level level = Level.parse(System.getProperty(logPropName, "WARNING"));
 
          final Handler[] handlers = Logger.getLogger("").getHandlers();
          for (final Handler handler : handlers) {
@@ -87,13 +160,13 @@ public class Config {
    }
 
    static {
-      if (configJNI.isEnableInstructionDecodeViewer() && ((configJNI.getInstructionListenerClassName() == null) || configJNI.getInstructionListenerClassName().equals(""))) {
-         configJNI.setInstructionListenerClassName(InstructionViewer.class.getName());
+      if (enableInstructionDecodeViewer && ((instructionListenerClassName == null) || instructionListenerClassName.equals(""))) {
+         instructionListenerClassName = InstructionViewer.class.getName();
       }
 
-      if ((configJNI.getInstructionListenerClassName() != null) && !configJNI.getInstructionListenerClassName().equals("")) {
+      if ((instructionListenerClassName != null) && !instructionListenerClassName.equals("")) {
          try {
-            final Class<?> instructionListenerClass = Class.forName(configJNI.getInstructionListenerClassName());
+            final Class<?> instructionListenerClass = Class.forName(instructionListenerClassName);
             instructionListener = (InstructionListener) instructionListenerClass.newInstance();
          } catch (final ClassNotFoundException e) {
             // TODO Auto-generated catch block
@@ -107,35 +180,35 @@ public class Config {
          }
       }
 
-      if (configJNI.isDumpFlags()) {
-         System.out.println(propPkgName + ".executionMode{GPU|CPU|JTP|SEQ}=" + configJNI.getExecutionMode());
+      if (dumpFlags) {
+         System.out.println(propPkgName + ".executionMode{GPU|CPU|JTP|SEQ}=" + executionMode);
          System.out.println(propPkgName + ".logLevel{OFF|FINEST|FINER|FINE|WARNING|SEVERE|ALL}=" + logger.getLevel());
-         System.out.println(propPkgName + ".enableProfiling{true|false}=" + configJNI.isEnableProfiling());
-         System.out.println(propPkgName + ".enableProfilingCSV{true|false}=" + configJNI.isEnableProfilingCSV());
-         System.out.println(propPkgName + ".enableVerboseJNI{true|false}=" + configJNI.isEnableVerboseJNI());
-         System.out.println(propPkgName + ".enableVerboseJNIOpenCLResourceTracking{true|false}=" + configJNI.isEnableVerboseJNIOpenCLResourceTracking());
-         System.out.println(propPkgName + ".enableShowGeneratedOpenCL{true|false}=" + configJNI.isEnableShowGeneratedOpenCL());
-         System.out.println(propPkgName + ".enableExecutionModeReporting{true|false}=" + configJNI.isEnableExecutionModeReporting());
-         System.out.println(propPkgName + ".enableInstructionDecodeViewer{true|false}=" + configJNI.isEnableInstructionDecodeViewer());
-         System.out.println(propPkgName + ".instructionListenerClassName{<class name which extends com.amd.aparapi.Config.InstructionListener>}=" + configJNI.getInstructionListenerClassName());
+         System.out.println(propPkgName + ".enableProfiling{true|false}=" + enableProfiling);
+         System.out.println(propPkgName + ".enableProfilingCSV{true|false}=" + enableProfilingCSV);
+         System.out.println(propPkgName + ".enableVerboseJNI{true|false}=" + enableVerboseJNI);
+         System.out.println(propPkgName + ".enableVerboseJNIOpenCLResourceTracking{true|false}=" + enableVerboseJNIOpenCLResourceTracking);
+         System.out.println(propPkgName + ".enableShowGeneratedOpenCL{true|false}=" + enableShowGeneratedOpenCL);
+         System.out.println(propPkgName + ".enableExecutionModeReporting{true|false}=" + enableExecutionModeReporting);
+         System.out.println(propPkgName + ".enableInstructionDecodeViewer{true|false}=" + enableInstructionDecodeViewer);
+         System.out.println(propPkgName + ".instructionListenerClassName{<class name which extends com.amd.aparapi.Config.InstructionListener>}=" + instructionListenerClassName);
       }
    }
 
    /**
-    * Private singleton default constructor
+    * Default constructor
     */
-   private Config() {
-
+   public Config() {
+      propPkgName = Config.class.getPackage().getName();
    }
 
-   /**
-    * Returns the singleton instance of Config
-    * 
-    * @return Singleton instance of Config
-    */
-   public static Config getInstance() {
-      return instance;
-   }
+   //   /**
+   //    * Returns the singleton instance of Config
+   //    * 
+   //    * @return Singleton instance of Config
+   //    */
+   //   public static Config getInstance() {
+   //      return instance;
+   //   }
 
    public interface InstructionListener {
       public void showAndTell(String message, Instruction _start, Instruction _instruction);
@@ -149,176 +222,5 @@ public class Config {
     */
    public static String getLoggerName() {
       return logPropName;
-   }
-
-   /**
-    * A pass-through method for JNI property accessor
-    * 
-    * @return boolean
-    */
-   public static boolean isDisableUnsafe() {
-      return configJNI.isDisableUnsafe();
-   }
-
-   /**
-    * A pass-through method for JNI property accessor
-    * 
-    * @return String
-    */
-   public static String getExecutionMode() {
-      return configJNI.getExecutionMode();
-   }
-
-   /**
-    * A pass-through method for JNI property accessor
-    * 
-    * @return boolean
-    */
-   public static boolean isEnableExecutionModeReporting() {
-      return configJNI.isEnableExecutionModeReporting();
-   }
-
-   /**
-    * A pass-through method for JNI property accessor
-    * 
-    * @return boolean
-    */
-   public static boolean isEnableShowGeneratedOpenCL() {
-      return configJNI.isEnableShowGeneratedOpenCL();
-   }
-
-   /**
-    * A pass-through method for JNI property accessor
-    * 
-    * @return boolean
-    */
-   public static boolean isVerboseComparitor() {
-      return configJNI.isVerboseComparitor();
-   }
-
-   /**
-    * A pass-through method for JNI property accessor
-    * 
-    * @return boolean
-    */
-   public static boolean isEnableByteWrites() {
-      return configJNI.isEnableByteWrites();
-   }
-
-   /**
-    * A pass-through method for JNI property accessor
-    * 
-    * @return boolean
-    */
-   public static boolean isEnableAtomic32() {
-      return configJNI.isEnableAtomic32();
-   }
-
-   /**
-    * A pass-through method for JNI property accessor
-    * 
-    * @return boolean
-    */
-   public static boolean isEnableAtomic64() {
-      return configJNI.isEnableAtomic64();
-   }
-
-   /**
-    * A pass-through method for JNI property accessor
-    * 
-    * @return boolean
-    */
-   public static boolean isEnableDoubles() {
-      return configJNI.isEnableDoubles();
-   }
-
-   /**
-    * A pass-through method for JNI property accessor
-    * 
-    * @return boolean
-    */
-   public static boolean isEnablePUTFIELD() {
-      return configJNI.isEnablePUTFIELD();
-   }
-
-   /**
-    * A pass-through method for JNI property accessor
-    * 
-    * @return boolean
-    */
-   public static boolean isEnableARETURN() {
-      return configJNI.isEnableARETURN();
-   }
-
-   /**
-    * A pass-through method for JNI property accessor
-    * 
-    * @return boolean
-    */
-   public static boolean isEnablePUTSTATIC() {
-      return configJNI.isEnablePUTSTATIC();
-   }
-
-   /**
-    * A pass-through method for JNI property accessor
-    * 
-    * @return boolean
-    */
-   public static boolean isEnableINVOKEINTERFACE() {
-      return configJNI.isEnableINVOKEINTERFACE();
-   }
-
-   /**
-    * A pass-through method for JNI property accessor
-    * 
-    * @return boolean
-    */
-   public static boolean isEnableGETSTATIC() {
-      return configJNI.isEnableGETSTATIC();
-   }
-
-   /**
-    * A pass-through method for JNI property accessor
-    * 
-    * @return boolean
-    */
-   public static boolean isEnableATHROW() {
-      return configJNI.isEnableATHROW();
-   }
-
-   /**
-    * A pass-through method for JNI property accessor
-    * 
-    * @return boolean
-    */
-   public static boolean isEnableMONITOR() {
-      return configJNI.isEnableMONITOR();
-   }
-
-   /**
-    * A pass-through method for JNI property accessor
-    * 
-    * @return boolean
-    */
-   public static boolean isEnableNEW() {
-      return configJNI.isEnableNEW();
-   }
-
-   /**
-    * A pass-through method for JNI property accessor
-    * 
-    * @return boolean
-    */
-   public static boolean isEnableSWITCH() {
-      return configJNI.isEnableSWITCH();
-   }
-
-   /**
-    * A pass-through method for JNI property accessor
-    * 
-    * @return boolean
-    */
-   public static boolean isEnableMETHODARRAYPASSING() {
-      return configJNI.isEnableMETHODARRAYPASSING();
    }
 }

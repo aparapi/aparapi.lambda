@@ -40,11 +40,16 @@ package com.amd.aparapi.util;
 /**
  * A collection of annotations used at dev time to tag intent.
  * 
- * We should be able to remove all of these before OpenSource release. 
- * 
  * @author gfrost
  */
 public class Annotations {
+
+   /**
+    * Be careful changing the name/type of this field as it is referenced from JNI code.
+    */
+   public @interface UsedByJNICode {
+
+   }
 
    /**
     * Use this annotation to tag stuff that needs Java Doc added. 

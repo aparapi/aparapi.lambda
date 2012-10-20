@@ -380,7 +380,7 @@ public abstract class KernelWriter extends BlockWriter {
          }
       }
 
-      if (Config.isEnableByteWrites() || _entryPoint.requiresByteAddressableStorePragma()) {
+      if (Config.enableByteWrites || _entryPoint.requiresByteAddressableStorePragma()) {
          // Starting with OpenCL 1.1 (which is as far back as we support)
          // this feature is part of the core, so we no longer need this pragma
          if (false) {
@@ -390,7 +390,7 @@ public abstract class KernelWriter extends BlockWriter {
       }
 
       boolean usesAtomics = false;
-      if (Config.isEnableAtomic32() || _entryPoint.requiresAtomic32Pragma()) {
+      if (Config.enableAtomic32 || _entryPoint.requiresAtomic32Pragma()) {
          usesAtomics = true;
          writePragma("cl_khr_global_int32_base_atomics", true);
          writePragma("cl_khr_global_int32_extended_atomics", true);
@@ -398,7 +398,7 @@ public abstract class KernelWriter extends BlockWriter {
          writePragma("cl_khr_local_int32_extended_atomics", true);
       }
 
-      if (Config.isEnableAtomic64() || _entryPoint.requiresAtomic64Pragma()) {
+      if (Config.enableAtomic64 || _entryPoint.requiresAtomic64Pragma()) {
          usesAtomics = true;
          writePragma("cl_khr_int64_base_atomics", true);
          writePragma("cl_khr_int64_extended_atomics", true);
@@ -418,7 +418,7 @@ public abstract class KernelWriter extends BlockWriter {
          newLine();
       }
 
-      if (Config.isEnableDoubles() || _entryPoint.requiresDoublePragma()) {
+      if (Config.enableDoubles || _entryPoint.requiresDoublePragma()) {
          writePragma("cl_khr_fp64", true);
          newLine();
       }

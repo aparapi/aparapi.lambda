@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.amd.aparapi.jni.OpenCLJNI;
 
-public class OpenCLKernel {
+public class OpenCLKernel extends OpenCLJNI {
 
    private final OpenCLArgDescriptor[] args;
 
@@ -19,6 +19,7 @@ public class OpenCLKernel {
       program = _program;
       name = _name;
       args = _args.toArray(new OpenCLArgDescriptor[0]);
+
       for (final OpenCLArgDescriptor arg : args) {
          arg.kernel = this;
       }
@@ -29,6 +30,6 @@ public class OpenCLKernel {
    }
 
    public void invoke(Object[] _args) {
-      OpenCLJNI.getInstance().invoke(this, _args);
+      invoke(this, _args);
    }
 }

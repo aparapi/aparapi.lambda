@@ -644,7 +644,7 @@ public class Entrypoint {
                      updateObjectMemberFieldAccesses(className, field);
                   } else {
 
-                     if ((!Config.isEnablePUTFIELD()) && methodModel.methodUsesPutfield() && !methodModel.isSetter()) {
+                     if ((!Config.enablePUTFIELD) && methodModel.methodUsesPutfield() && !methodModel.isSetter()) {
                         throw new ClassParseException(ClassParseException.TYPE.ACCESSEDOBJECTONLYSUPPORTSSIMPLEPUTFIELD);
                      }
 

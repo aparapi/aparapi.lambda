@@ -6,17 +6,17 @@ import java.util.List;
 import com.amd.aparapi.device.OpenCLDevice;
 import com.amd.aparapi.jni.OpenCLJNI;
 
-public class OpenCLPlatform{
+public class OpenCLPlatform extends OpenCLJNI {
 
-   private long platformId;
+   private final long platformId;
 
-   private String version;
+   private final String version;
 
-   private String vendor;
+   private final String vendor;
 
-   private String name;
+   private final String name;
 
-   private List<OpenCLDevice> devices = new ArrayList<OpenCLDevice>();
+   private final List<OpenCLDevice> devices = new ArrayList<OpenCLDevice>();
 
    OpenCLPlatform(long _platformId, String _version, String _vendor, String _name) {
       platformId = _platformId;
@@ -25,11 +25,12 @@ public class OpenCLPlatform{
       name = _name;
    }
 
+   @Override
    public String toString() {
       return ("PlatformId " + platformId + "\nName:" + vendor + "\nVersion:" + version);
    }
 
-   public void add(OpenCLDevice device) {
+   public void addDevice(OpenCLDevice device) {
       devices.add(device);
    }
 
@@ -38,12 +39,11 @@ public class OpenCLPlatform{
    }
 
    public static List<OpenCLPlatform> getPlatforms() {
-      if (OpenCLJNI.getInstance().isOpenCLAvailable()) {
-         return (OpenCLJNI.getInstance().getPlatforms());
+      if (OpenCLLoader.isOpenCLAvailable()) {
+         return (getPlatforms());
       } else {
          return (new ArrayList<OpenCLPlatform>());
       }
-
    }
 
    public String getName() {
@@ -57,5 +57,4 @@ public class OpenCLPlatform{
    public String getVendor() {
       return (vendor);
    }
-
 }

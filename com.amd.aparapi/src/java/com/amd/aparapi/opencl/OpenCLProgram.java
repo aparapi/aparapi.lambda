@@ -7,7 +7,8 @@ import java.util.Map;
 import com.amd.aparapi.device.OpenCLDevice;
 import com.amd.aparapi.jni.OpenCLJNI;
 
-public class OpenCLProgram {
+public class OpenCLProgram extends OpenCLJNI {
+
    private final long programId;
 
    private final long queueId;
@@ -29,12 +30,16 @@ public class OpenCLProgram {
       log = _log;
    }
 
+   public static OpenCLProgram createProgram(OpenCLDevice context, String openCLSource) {
+      return createProgram(context, openCLSource);
+   }
+
    public OpenCLDevice getDevice() {
       return device;
    }
 
    public OpenCLKernel createKernel(String _kernelName, List<OpenCLArgDescriptor> args) {
-      return (OpenCLJNI.getInstance().createKernel(this, _kernelName, args));
+      return (createKernel(this, _kernelName, args));
    }
 
    private final Map<Object, OpenCLMem> instanceToMem = new HashMap<Object, OpenCLMem>();
@@ -48,7 +53,7 @@ public class OpenCLProgram {
          mem = addressToMem.get(_instance);
          if (mem != null) {
             System.out.println("object has been moved, we need to remap the buffer");
-            OpenCLJNI.getInstance().remap(this, mem, _address);
+            remap(this, mem, _address);
          }
       }
 
