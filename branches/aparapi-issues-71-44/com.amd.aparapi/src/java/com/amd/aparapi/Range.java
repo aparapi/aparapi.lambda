@@ -47,21 +47,39 @@ import com.amd.aparapi.jni.RangeJNI;
  *  Range.create3D(width, height, depth, groupWidth, groupHeight, groupDepth);
  * </pre></blockquote>
  */
-public class Range {
+public class Range extends RangeJNI {
 
-   private final RangeJNI rangeJNI = new RangeJNI();
+   public static final int THREADS_PER_CORE = 16;
+
+   public static final int MAX_OPENCL_GROUP_SIZE = 256;
+
+   public static final int MAX_GROUP_SIZE = Math.max(Runtime.getRuntime().availableProcessors() * THREADS_PER_CORE, MAX_OPENCL_GROUP_SIZE);
 
    private Device device = null;
 
+   private int maxWorkGroupSize;
+
+   private int[] maxWorkItemSize = new int[] {
+         MAX_GROUP_SIZE,
+         MAX_GROUP_SIZE,
+         MAX_GROUP_SIZE
+   };
+
+   /**
+    * Minimal constructor
+    * 
+    * @param _device
+    * @param _dims
+    */
    public Range(Device _device, int _dims) {
       device = _device;
-      rangeJNI.setDims(_dims);
+      dims = _dims;
 
       if (device != null) {
-         rangeJNI.setMaxWorkItemSize(device.getMaxWorkItemSize());
-         rangeJNI.setMaxWorkGroupSize(device.getMaxWorkGroupSize());
+         maxWorkItemSize = device.getMaxWorkItemSize();
+         maxWorkGroupSize = device.getMaxWorkGroupSize();
       } else {
-         rangeJNI.setMaxWorkGroupSize(RangeJNI.MAX_GROUP_SIZE);
+         maxWorkGroupSize = MAX_GROUP_SIZE;
       }
    }
 
@@ -76,13 +94,12 @@ public class Range {
     */
    public static Range create(Device _device, int _globalWidth, int _localWidth) {
       final Range range = new Range(_device, 1);
-      final RangeJNI rangeJNI = range.getRangeJNI();
 
-      rangeJNI.setGlobalSize_0(_globalWidth);
-      rangeJNI.setLocalSize_0(_localWidth);
+      range.setGlobalSize_0(_globalWidth);
+      range.setLocalSize_0(_localWidth);
 
-      rangeJNI.setValid((rangeJNI.getLocalSize_0() > 0) && (rangeJNI.getLocalSize_0() <= rangeJNI.getMaxWorkItemSize()[0])
-            && (rangeJNI.getLocalSize_0() <= rangeJNI.getMaxWorkGroupSize()) && ((rangeJNI.getGlobalSize_0() % rangeJNI.getLocalSize_0()) == 0));
+      range.setValid((range.getLocalSize_0() > 0) && (range.getLocalSize_0() <= range.getMaxWorkItemSize()[0])
+            && (range.getLocalSize_0() <= range.getMaxWorkGroupSize()) && ((range.getGlobalSize_0() % range.getLocalSize_0()) == 0));
 
       return (range);
    }
@@ -95,7 +112,7 @@ public class Range {
     */
 
    private static int[] getFactors(int _value, int _max) {
-      final int factors[] = new int[RangeJNI.MAX_GROUP_SIZE];
+      final int factors[] = new int[MAX_GROUP_SIZE];
       int factorIdx = 0;
 
       for (int possibleFactor = 1; possibleFactor <= _max; possibleFactor++) {
@@ -121,17 +138,16 @@ public class Range {
     */
    public static Range create(Device _device, int _globalWidth) {
       final Range withoutLocal = create(_device, _globalWidth, 1);
-      final RangeJNI withoutLocalJNI = withoutLocal.getRangeJNI();
 
-      if (withoutLocalJNI.isValid()) {
-         withoutLocalJNI.setLocalIsDerived(true);
-         final int[] factors = getFactors(withoutLocalJNI.getGlobalSize_0(), withoutLocalJNI.getMaxWorkItemSize()[0]);
+      if (withoutLocal.isValid()) {
+         withoutLocal.setLocalIsDerived(true);
+         final int[] factors = getFactors(withoutLocal.getGlobalSize_0(), withoutLocal.getMaxWorkItemSize()[0]);
 
-         withoutLocalJNI.setLocalSize_0(factors[factors.length - 1]);
+         withoutLocal.setLocalSize_0(factors[factors.length - 1]);
 
-         withoutLocalJNI.setValid((withoutLocalJNI.getLocalSize_0() > 0) && (withoutLocalJNI.getLocalSize_0() <= withoutLocalJNI.getMaxWorkItemSize()[0])
-               && (withoutLocalJNI.getLocalSize_0() <= withoutLocalJNI.getMaxWorkGroupSize())
-               && ((withoutLocalJNI.getGlobalSize_0() % withoutLocalJNI.getLocalSize_0()) == 0));
+         withoutLocal.setValid((withoutLocal.getLocalSize_0() > 0) && (withoutLocal.getLocalSize_0() <= withoutLocal.getMaxWorkItemSize()[0])
+               && (withoutLocal.getLocalSize_0() <= withoutLocal.getMaxWorkGroupSize())
+               && ((withoutLocal.getGlobalSize_0() % withoutLocal.getLocalSize_0()) == 0));
       }
 
       return (withoutLocal);
@@ -159,16 +175,15 @@ public class Range {
     */
    public static Range create2D(Device _device, int _globalWidth, int _globalHeight, int _localWidth, int _localHeight) {
       final Range range = new Range(_device, 2);
-      final RangeJNI rangeJNI = range.getRangeJNI();
 
-      rangeJNI.setGlobalSize_0(_globalWidth);
-      rangeJNI.setLocalSize_0(_localWidth);
-      rangeJNI.setGlobalSize_1(_globalHeight);
-      rangeJNI.setLocalSize_1(_localHeight);
+      range.setGlobalSize_0(_globalWidth);
+      range.setLocalSize_0(_localWidth);
+      range.setGlobalSize_1(_globalHeight);
+      range.setLocalSize_1(_localHeight);
 
-      rangeJNI.setValid((rangeJNI.getLocalSize_0() > 0) && (rangeJNI.getLocalSize_1() > 0) && (rangeJNI.getLocalSize_0() <= rangeJNI.getMaxWorkItemSize()[0])
-            && (rangeJNI.getLocalSize_1() <= rangeJNI.getMaxWorkItemSize()[1]) && ((rangeJNI.getLocalSize_0() * rangeJNI.getLocalSize_1()) <= rangeJNI.getMaxWorkGroupSize())
-            && ((rangeJNI.getGlobalSize_0() % rangeJNI.getLocalSize_0()) == 0) && ((rangeJNI.getGlobalSize_1() % rangeJNI.getLocalSize_1()) == 0));
+      range.setValid((range.getLocalSize_0() > 0) && (range.getLocalSize_1() > 0) && (range.getLocalSize_0() <= range.getMaxWorkItemSize()[0])
+            && (range.getLocalSize_1() <= range.getMaxWorkItemSize()[1]) && ((range.getLocalSize_0() * range.getLocalSize_1()) <= range.getMaxWorkGroupSize())
+            && ((range.getGlobalSize_0() % range.getLocalSize_0()) == 0) && ((range.getGlobalSize_1() % range.getLocalSize_1()) == 0));
 
       return (range);
    }
@@ -190,47 +205,46 @@ public class Range {
     */
    public static Range create2D(Device _device, int _globalWidth, int _globalHeight) {
       final Range withoutLocal = create2D(_device, _globalWidth, _globalHeight, 1, 1);
-      final RangeJNI withoutLocalJNI = withoutLocal.getRangeJNI();
 
-      if (withoutLocalJNI.isValid()) {
-         withoutLocalJNI.setLocalIsDerived(true);
-         final int[] widthFactors = getFactors(_globalWidth, withoutLocalJNI.getMaxWorkItemSize()[0]);
-         final int[] heightFactors = getFactors(_globalHeight, withoutLocalJNI.getMaxWorkItemSize()[1]);
+      if (withoutLocal.isValid()) {
+         withoutLocal.setLocalIsDerived(true);
+         final int[] widthFactors = getFactors(_globalWidth, withoutLocal.getMaxWorkItemSize()[0]);
+         final int[] heightFactors = getFactors(_globalHeight, withoutLocal.getMaxWorkItemSize()[1]);
 
-         withoutLocalJNI.setLocalSize_0(1);
-         withoutLocalJNI.setLocalSize_1(1);
+         withoutLocal.setLocalSize_0(1);
+         withoutLocal.setLocalSize_1(1);
          int max = 1;
          int perimeter = 0;
 
          for (final int w : widthFactors) {
             for (final int h : heightFactors) {
                final int size = w * h;
-               if (size > withoutLocalJNI.getMaxWorkGroupSize()) {
+               if (size > withoutLocal.getMaxWorkGroupSize()) {
                   break;
                }
 
                if (size > max) {
                   max = size;
                   perimeter = w + h;
-                  withoutLocalJNI.setLocalSize_0(w);
-                  withoutLocalJNI.setLocalSize_1(h);
+                  withoutLocal.setLocalSize_0(w);
+                  withoutLocal.setLocalSize_1(h);
                } else if (size == max) {
                   final int localPerimeter = w + h;
                   if (localPerimeter < perimeter) {// is this the shortest perimeter so far
                      perimeter = localPerimeter;
-                     withoutLocalJNI.setLocalSize_0(w);
-                     withoutLocalJNI.setLocalSize_1(h);
+                     withoutLocal.setLocalSize_0(w);
+                     withoutLocal.setLocalSize_1(h);
                   }
                }
             }
          }
 
-         withoutLocalJNI.setValid((withoutLocalJNI.getLocalSize_0() > 0) && (withoutLocalJNI.getLocalSize_1() > 0)
-               && (withoutLocalJNI.getLocalSize_0() <= withoutLocalJNI.getMaxWorkItemSize()[0])
-               && (withoutLocalJNI.getLocalSize_1() <= withoutLocalJNI.getMaxWorkItemSize()[1])
-               && ((withoutLocalJNI.getLocalSize_0() * withoutLocalJNI.getLocalSize_1()) <= withoutLocalJNI.getMaxWorkGroupSize())
-               && ((withoutLocalJNI.getGlobalSize_0() % withoutLocalJNI.getLocalSize_0()) == 0)
-               && ((withoutLocalJNI.getGlobalSize_1() % withoutLocalJNI.getLocalSize_1()) == 0));
+         withoutLocal.setValid((withoutLocal.getLocalSize_0() > 0) && (withoutLocal.getLocalSize_1() > 0)
+               && (withoutLocal.getLocalSize_0() <= withoutLocal.getMaxWorkItemSize()[0])
+               && (withoutLocal.getLocalSize_1() <= withoutLocal.getMaxWorkItemSize()[1])
+               && ((withoutLocal.getLocalSize_0() * withoutLocal.getLocalSize_1()) <= withoutLocal.getMaxWorkGroupSize())
+               && ((withoutLocal.getGlobalSize_0() % withoutLocal.getLocalSize_0()) == 0)
+               && ((withoutLocal.getGlobalSize_1() % withoutLocal.getLocalSize_1()) == 0));
       }
 
       return (withoutLocal);
@@ -264,19 +278,18 @@ public class Range {
     */
    public static Range create3D(Device _device, int _globalWidth, int _globalHeight, int _globalDepth, int _localWidth, int _localHeight, int _localDepth) {
       final Range range = new Range(_device, 3);
-      final RangeJNI rangeJNI = range.getRangeJNI();
 
-      rangeJNI.setGlobalSize_0(_globalWidth);
-      rangeJNI.setLocalSize_0(_localWidth);
-      rangeJNI.setGlobalSize_1(_globalHeight);
-      rangeJNI.setLocalSize_1(_localHeight);
-      rangeJNI.setGlobalSize_2(_globalDepth);
-      rangeJNI.setLocalSize_2(_localDepth);
-      rangeJNI.setValid((rangeJNI.getLocalSize_0() > 0) && (rangeJNI.getLocalSize_1() > 0) && (rangeJNI.getLocalSize_2() > 0)
-            && ((rangeJNI.getLocalSize_0() * rangeJNI.getLocalSize_1() * rangeJNI.getLocalSize_2()) <= rangeJNI.getMaxWorkGroupSize())
-            && (rangeJNI.getLocalSize_0() <= rangeJNI.getMaxWorkItemSize()[0]) && (rangeJNI.getLocalSize_1() <= rangeJNI.getMaxWorkItemSize()[1])
-            && (rangeJNI.getLocalSize_2() <= rangeJNI.getMaxWorkItemSize()[2]) && ((rangeJNI.getGlobalSize_0() % rangeJNI.getLocalSize_0()) == 0)
-            && ((rangeJNI.getGlobalSize_1() % rangeJNI.getLocalSize_1()) == 0) && ((rangeJNI.getGlobalSize_2() % rangeJNI.getLocalSize_2()) == 0));
+      range.setGlobalSize_0(_globalWidth);
+      range.setLocalSize_0(_localWidth);
+      range.setGlobalSize_1(_globalHeight);
+      range.setLocalSize_1(_localHeight);
+      range.setGlobalSize_2(_globalDepth);
+      range.setLocalSize_2(_localDepth);
+      range.setValid((range.getLocalSize_0() > 0) && (range.getLocalSize_1() > 0) && (range.getLocalSize_2() > 0)
+            && ((range.getLocalSize_0() * range.getLocalSize_1() * range.getLocalSize_2()) <= range.getMaxWorkGroupSize())
+            && (range.getLocalSize_0() <= range.getMaxWorkItemSize()[0]) && (range.getLocalSize_1() <= range.getMaxWorkItemSize()[1])
+            && (range.getLocalSize_2() <= range.getMaxWorkItemSize()[2]) && ((range.getGlobalSize_0() % range.getLocalSize_0()) == 0)
+            && ((range.getGlobalSize_1() % range.getLocalSize_1()) == 0) && ((range.getGlobalSize_2() % range.getLocalSize_2()) == 0));
 
       return (range);
    }
@@ -301,18 +314,18 @@ public class Range {
     */
    public static Range create3D(Device _device, int _globalWidth, int _globalHeight, int _globalDepth) {
       final Range withoutLocal = create3D(_device, _globalWidth, _globalHeight, _globalDepth, 1, 1, 1);
-      final RangeJNI withoutLocalJNI = withoutLocal.getRangeJNI();
 
-      if (withoutLocalJNI.isValid()) {
-         withoutLocalJNI.setLocalIsDerived(true);
+      if (withoutLocal.isValid()) {
+         withoutLocal.setLocalIsDerived(true);
 
-         final int[] widthFactors = getFactors(_globalWidth, withoutLocalJNI.getMaxWorkItemSize()[0]);
-         final int[] heightFactors = getFactors(_globalHeight, withoutLocalJNI.getMaxWorkItemSize()[1]);
-         final int[] depthFactors = getFactors(_globalDepth, withoutLocalJNI.getMaxWorkItemSize()[2]);
+         final int[] widthFactors = getFactors(_globalWidth, withoutLocal.getMaxWorkItemSize()[0]);
+         final int[] heightFactors = getFactors(_globalHeight, withoutLocal.getMaxWorkItemSize()[1]);
+         final int[] depthFactors = getFactors(_globalDepth, withoutLocal.getMaxWorkItemSize()[2]);
 
-         withoutLocalJNI.setLocalSize_0(1);
-         withoutLocalJNI.setLocalSize_1(1);
-         withoutLocalJNI.setLocalSize_2(1);
+         withoutLocal.setLocalSize_0(1);
+         withoutLocal.setLocalSize_1(1);
+         withoutLocal.setLocalSize_2(1);
+
          int max = 1;
          int perimeter = 0;
 
@@ -320,37 +333,37 @@ public class Range {
             for (final int h : heightFactors) {
                for (final int d : depthFactors) {
                   final int size = w * h * d;
-                  if (size > withoutLocalJNI.getMaxWorkGroupSize()) {
+                  if (size > withoutLocal.getMaxWorkGroupSize()) {
                      break;
                   }
 
                   if (size > max) {
                      max = size;
                      perimeter = w + h + d;
-                     withoutLocalJNI.setLocalSize_0(w);
-                     withoutLocalJNI.setLocalSize_1(h);
-                     withoutLocalJNI.setLocalSize_2(d);
+                     withoutLocal.setLocalSize_0(w);
+                     withoutLocal.setLocalSize_1(h);
+                     withoutLocal.setLocalSize_2(d);
                   } else if (size == max) {
                      final int localPerimeter = w + h + d;
                      if (localPerimeter < perimeter) { // is this the shortest perimeter so far
                         perimeter = localPerimeter;
-                        withoutLocalJNI.setLocalSize_0(w);
-                        withoutLocalJNI.setLocalSize_1(w);
-                        withoutLocalJNI.setLocalSize_2(d);
+                        withoutLocal.setLocalSize_0(w);
+                        withoutLocal.setLocalSize_1(w);
+                        withoutLocal.setLocalSize_2(d);
                      }
                   }
                }
             }
          }
 
-         withoutLocalJNI.setValid((withoutLocalJNI.getLocalSize_0() > 0) && (withoutLocalJNI.getLocalSize_1() > 0) && (withoutLocalJNI.getLocalSize_2() > 0)
-               && ((withoutLocalJNI.getLocalSize_0() * withoutLocalJNI.getLocalSize_1() * withoutLocalJNI.getLocalSize_2()) <= withoutLocalJNI.getMaxWorkGroupSize())
-               && (withoutLocalJNI.getLocalSize_0() <= withoutLocalJNI.getMaxWorkItemSize()[0])
-               && (withoutLocalJNI.getLocalSize_1() <= withoutLocalJNI.getMaxWorkItemSize()[1])
-               && (withoutLocalJNI.getLocalSize_2() <= withoutLocalJNI.getMaxWorkItemSize()[2])
-               && ((withoutLocalJNI.getGlobalSize_0() % withoutLocalJNI.getLocalSize_0()) == 0)
-               && ((withoutLocalJNI.getGlobalSize_1() % withoutLocalJNI.getLocalSize_1()) == 0)
-               && ((withoutLocalJNI.getGlobalSize_2() % withoutLocalJNI.getLocalSize_2()) == 0));
+         withoutLocal.setValid((withoutLocal.getLocalSize_0() > 0) && (withoutLocal.getLocalSize_1() > 0) && (withoutLocal.getLocalSize_2() > 0)
+               && ((withoutLocal.getLocalSize_0() * withoutLocal.getLocalSize_1() * withoutLocal.getLocalSize_2()) <= withoutLocal.getMaxWorkGroupSize())
+               && (withoutLocal.getLocalSize_0() <= withoutLocal.getMaxWorkItemSize()[0])
+               && (withoutLocal.getLocalSize_1() <= withoutLocal.getMaxWorkItemSize()[1])
+               && (withoutLocal.getLocalSize_2() <= withoutLocal.getMaxWorkItemSize()[2])
+               && ((withoutLocal.getGlobalSize_0() % withoutLocal.getLocalSize_0()) == 0)
+               && ((withoutLocal.getGlobalSize_1() % withoutLocal.getLocalSize_1()) == 0)
+               && ((withoutLocal.getGlobalSize_2() % withoutLocal.getLocalSize_2()) == 0));
       }
 
       return (withoutLocal);
@@ -374,18 +387,18 @@ public class Range {
    public String toString() {
       final StringBuilder sb = new StringBuilder();
 
-      switch (rangeJNI.getDims()) {
+      switch (dims) {
          case 1:
-            sb.append("global:" + rangeJNI.getGlobalSize_0() + " local:" + (rangeJNI.isLocalIsDerived() ? "(derived)" : "") + rangeJNI.getLocalSize_0());
+            sb.append("global:" + globalSize_0 + " local:" + (localIsDerived ? "(derived)" : "") + localSize_0);
             break;
          case 2:
-            sb.append("2D(global:" + rangeJNI.getGlobalSize_0() + "x" + rangeJNI.getGlobalSize_1() + " local:" + (rangeJNI.isLocalIsDerived() ? "(derived)" : "")
-                  + rangeJNI.getLocalSize_0() + "x" + rangeJNI.getLocalSize_1() + ")");
+            sb.append("2D(global:" + globalSize_0 + "x" + globalSize_1 + " local:" + (localIsDerived ? "(derived)" : "")
+                  + localSize_0 + "x" + localSize_1 + ")");
             break;
          case 3:
-            sb.append("3D(global:" + rangeJNI.getGlobalSize_0() + "x" + rangeJNI.getGlobalSize_1() + "x" + rangeJNI.getGlobalSize_2() + " local:"
-                  + (rangeJNI.isLocalIsDerived() ? "(derived)" : "") + rangeJNI.getLocalSize_0() + "x" + rangeJNI.getLocalSize_1() + "x"
-                  + rangeJNI.getLocalSize_0() + ")");
+            sb.append("3D(global:" + globalSize_0 + "x" + globalSize_1 + "x" + globalSize_2 + " local:"
+                  + (localIsDerived ? "(derived)" : "") + localSize_0 + "x" + localSize_1 + "x"
+                  + localSize_0 + ")");
             break;
       }
 
@@ -398,8 +411,8 @@ public class Range {
     * @param _dim 0=width, 1=height, 2=depth
     * @return The size of the group give the requested dimension
     */
-   public int getLocalSize(int _dim) {
-      return (_dim == 0 ? rangeJNI.getLocalSize_0() : (_dim == 1 ? rangeJNI.getLocalSize_1() : rangeJNI.getLocalSize_2()));
+   protected int getLocalSize(int _dim) {
+      return (_dim == 0 ? localSize_0 : (_dim == 1 ? localSize_1 : localSize_2));
    }
 
    /**
@@ -408,8 +421,8 @@ public class Range {
     * @param _dim 0=width, 1=height, 2=depth
     * @return The size of the group give the requested dimension
     */
-   public int getGlobalSize(int _dim) {
-      return (_dim == 0 ? rangeJNI.getGlobalSize_0() : (_dim == 1 ? rangeJNI.getGlobalSize_1() : rangeJNI.getGlobalSize_2()));
+   protected int getGlobalSize(int _dim) {
+      return (_dim == 0 ? globalSize_0 : (_dim == 1 ? globalSize_1 : globalSize_2));
    }
 
    /**
@@ -420,28 +433,110 @@ public class Range {
     * @param _dim The dim we are interested in 0, 1 or 2
     * @return the number of groups for the given dimension. 
     */
-
-   public int getNumGroups(int _dim) {
-      return (_dim == 0 ? (rangeJNI.getGlobalSize_0() / rangeJNI.getLocalSize_0()) : (_dim == 1 ? (rangeJNI.getGlobalSize_1() / rangeJNI.getLocalSize_1()) : (rangeJNI.getGlobalSize_2() / rangeJNI.getLocalSize_2())));
+   protected int getNumGroups(int _dim) {
+      return (_dim == 0 ? (globalSize_0 / localSize_0) : (_dim == 1 ? (globalSize_1 / localSize_1) : (globalSize_2 / localSize_2)));
    }
 
    /**
     * 
     * @return The product of all valid localSize dimensions
     */
-   public int getWorkGroupSize() {
-      return rangeJNI.getLocalSize_0() * rangeJNI.getLocalSize_1() * rangeJNI.getLocalSize_2();
+   protected int getWorkGroupSize() {
+      return localSize_0 * localSize_1 * localSize_2;
    }
 
-   public Device getDevice() {
+   protected Device getDevice() {
       return (device);
    }
 
    /**
-    * @return the rangeJNI
+    * @return the globalSize_0
     */
-   protected RangeJNI getRangeJNI() {
-      return rangeJNI;
+   protected int getGlobalSize_0() {
+      return globalSize_0;
+   }
+
+   /**
+    * @param globalSize_0
+    *          the globalSize_0 to set
+    */
+   protected void setGlobalSize_0(int globalSize_0) {
+      this.globalSize_0 = globalSize_0;
+   }
+
+   /**
+    * @return the localSize_0
+    */
+   protected int getLocalSize_0() {
+      return localSize_0;
+   }
+
+   /**
+    * @param localSize_0
+    *          the localSize_0 to set
+    */
+   protected void setLocalSize_0(int localSize_0) {
+      this.localSize_0 = localSize_0;
+   }
+
+   /**
+    * @return the globalSize_1
+    */
+   protected int getGlobalSize_1() {
+      return globalSize_1;
+   }
+
+   /**
+    * @param globalSize_1
+    *          the globalSize_1 to set
+    */
+   protected void setGlobalSize_1(int globalSize_1) {
+      this.globalSize_1 = globalSize_1;
+   }
+
+   /**
+    * @return the localSize_1
+    */
+   protected int getLocalSize_1() {
+      return localSize_1;
+   }
+
+   /**
+    * @param localSize_1
+    *          the localSize_1 to set
+    */
+   protected void setLocalSize_1(int localSize_1) {
+      this.localSize_1 = localSize_1;
+   }
+
+   /**
+    * @return the globalSize_2
+    */
+   protected int getGlobalSize_2() {
+      return globalSize_2;
+   }
+
+   /**
+    * @param globalSize_2
+    *          the globalSize_2 to set
+    */
+   protected void setGlobalSize_2(int globalSize_2) {
+      this.globalSize_2 = globalSize_2;
+   }
+
+   /**
+    * @return the localSize_2
+    */
+   protected int getLocalSize_2() {
+      return localSize_2;
+   }
+
+   /**
+    * @param localSize_2
+    *          the localSize_2 to set
+    */
+   protected void setLocalSize_2(int localSize_2) {
+      this.localSize_2 = localSize_2;
    }
 
    /**
@@ -449,7 +544,75 @@ public class Range {
     * 
     * @return 0, 1 or 2 for one dimensional, two dimensional and three dimensional range respectively.
     */
-   public int getDims() {
-      return rangeJNI.getDims();
+   protected int getDims() {
+      return dims;
+   }
+
+   /**
+    * @param dims
+    *          the dims to set
+    */
+   protected void setDims(int dims) {
+      this.dims = dims;
+   }
+
+   /**
+    * @return the valid
+    */
+   protected boolean isValid() {
+      return valid;
+   }
+
+   /**
+    * @param valid
+    *          the valid to set
+    */
+   protected void setValid(boolean valid) {
+      this.valid = valid;
+   }
+
+   /**
+    * @return the localIsDerived
+    */
+   protected boolean isLocalIsDerived() {
+      return localIsDerived;
+   }
+
+   /**
+    * @param localIsDerived
+    *          the localIsDerived to set
+    */
+   protected void setLocalIsDerived(boolean localIsDerived) {
+      this.localIsDerived = localIsDerived;
+   }
+
+   /**
+    * @return the maxWorkGroupSize
+    */
+   protected int getMaxWorkGroupSize() {
+      return maxWorkGroupSize;
+   }
+
+   /**
+    * @param maxWorkGroupSize
+    *          the maxWorkGroupSize to set
+    */
+   protected void setMaxWorkGroupSize(int maxWorkGroupSize) {
+      this.maxWorkGroupSize = maxWorkGroupSize;
+   }
+
+   /**
+    * @return the maxWorkItemSize
+    */
+   protected int[] getMaxWorkItemSize() {
+      return maxWorkItemSize;
+   }
+
+   /**
+    * @param maxWorkItemSize
+    *          the maxWorkItemSize to set
+    */
+   protected void setMaxWorkItemSize(int[] maxWorkItemSize) {
+      this.maxWorkItemSize = maxWorkItemSize;
    }
 }
