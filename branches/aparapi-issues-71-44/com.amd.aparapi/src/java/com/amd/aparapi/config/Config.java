@@ -201,14 +201,14 @@ public class Config extends ConfigJNI {
       propPkgName = Config.class.getPackage().getName();
    }
 
-   //   /**
-   //    * Returns the singleton instance of Config
-   //    * 
-   //    * @return Singleton instance of Config
-   //    */
-   //   public static Config getInstance() {
-   //      return instance;
-   //   }
+   /**
+    * Returns the singleton instance of Config
+    * 
+    * @return Singleton instance of Config
+    */
+   protected static Config getInstance() {
+      return instance;
+   }
 
    public interface InstructionListener {
       public void showAndTell(String message, Instruction _start, Instruction _instruction);
