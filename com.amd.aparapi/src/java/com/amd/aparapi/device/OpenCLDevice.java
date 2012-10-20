@@ -391,8 +391,8 @@ public class OpenCLDevice extends Device {
 
    public static OpenCLDevice select(DeviceSelector _deviceSelector) {
       OpenCLDevice device = null;
-      for (final OpenCLPlatform p : OpenCLPlatform.getPlatforms()) {
-         for (final OpenCLDevice d : p.getDevices()) {
+      for (final OpenCLPlatform p : OpenCLPlatform.getOpenCLPlatforms()) {
+         for (final OpenCLDevice d : p.getOpenCLDevices()) {
             device = _deviceSelector.select(d);
             if (device != null) {
                break;
@@ -407,8 +407,8 @@ public class OpenCLDevice extends Device {
 
    public static OpenCLDevice select(DeviceComparitor _deviceComparitor) {
       OpenCLDevice device = null;
-      for (final OpenCLPlatform p : OpenCLPlatform.getPlatforms()) {
-         for (final OpenCLDevice d : p.getDevices()) {
+      for (final OpenCLPlatform p : OpenCLPlatform.getOpenCLPlatforms()) {
+         for (final OpenCLDevice d : p.getOpenCLDevices()) {
             if (device == null) {
                device = d;
             } else {

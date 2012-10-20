@@ -30,15 +30,15 @@ public class OpenCLPlatform extends OpenCLJNI {
       return ("PlatformId " + platformId + "\nName:" + vendor + "\nVersion:" + version);
    }
 
-   public void addDevice(OpenCLDevice device) {
+   public void addOpenCLDevice(OpenCLDevice device) {
       devices.add(device);
    }
 
-   public List<OpenCLDevice> getDevices() {
+   public List<OpenCLDevice> getOpenCLDevices() {
       return (devices);
    }
 
-   public static List<OpenCLPlatform> getPlatforms() {
+   public static List<OpenCLPlatform> getOpenCLPlatforms() {
       if (OpenCLLoader.isOpenCLAvailable()) {
          return (getPlatforms());
       } else {
