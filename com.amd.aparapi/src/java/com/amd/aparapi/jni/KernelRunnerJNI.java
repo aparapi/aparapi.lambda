@@ -4,9 +4,10 @@ import java.util.List;
 
 import com.amd.aparapi.Kernel;
 import com.amd.aparapi.Range;
+import com.amd.aparapi.annotation.DocMe;
+import com.amd.aparapi.annotation.Experimental;
+import com.amd.aparapi.annotation.UsedByJNICode;
 import com.amd.aparapi.device.OpenCLDevice;
-import com.amd.aparapi.util.Annotations;
-import com.amd.aparapi.util.Annotations.UsedByJNICode;
 import com.amd.aparapi.util.ProfileInfo;
 
 /**
@@ -159,7 +160,7 @@ public abstract class KernelRunnerJNI {
     * 
     * @author gfrost
     */
-   @Annotations.Experimental
+   @Experimental
    @UsedByJNICode
    protected static final int ARG_LOCAL = 1 << 11;
 
@@ -173,7 +174,7 @@ public abstract class KernelRunnerJNI {
     * 
     * @author gfrost
     */
-   @Annotations.Experimental
+   @Experimental
    @UsedByJNICode
    protected static final int ARG_GLOBAL = 1 << 12;
 
@@ -187,7 +188,7 @@ public abstract class KernelRunnerJNI {
     * 
     * @author gfrost
     */
-   @Annotations.Experimental
+   @Experimental
    @UsedByJNICode
    protected static final int ARG_CONSTANT = 1 << 13;
 
@@ -360,7 +361,7 @@ public abstract class KernelRunnerJNI {
     * @param maxJTPLocalSize
     * @return
     */
-   @Annotations.DocMe
+   @DocMe
    protected native synchronized long initJNI(Kernel _kernel, OpenCLDevice device, int _flags);
 
    protected native int getJNI(long _jniContextHandle, Object _array);

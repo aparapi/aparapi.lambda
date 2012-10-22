@@ -45,6 +45,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.amd.aparapi.Kernel;
+import com.amd.aparapi.annotation.DocMe;
 import com.amd.aparapi.config.Config;
 import com.amd.aparapi.exception.AparapiException;
 import com.amd.aparapi.exception.ClassParseException;
@@ -54,7 +55,6 @@ import com.amd.aparapi.model.ClassModel.AttributePool.LocalVariableTableEntry;
 import com.amd.aparapi.model.ClassModel.ConstantPool.FieldEntry;
 import com.amd.aparapi.model.ClassModel.ConstantPool.MethodEntry;
 import com.amd.aparapi.reader.ByteReader;
-import com.amd.aparapi.util.Annotations;
 
 /**
  * Class represents a ClassFile (MyClass.class).
@@ -170,7 +170,7 @@ public class ClassModel {
       return superClazz;
    }
 
-   @Annotations.DocMe
+   @DocMe
    public void replaceSuperClazz(ClassModel c) {
       if (superClazz != null) {
          assert c.isSuperClass(getClassWeAreModelling()) == true : "not my super";
