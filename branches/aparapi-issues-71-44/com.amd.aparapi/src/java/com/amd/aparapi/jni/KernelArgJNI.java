@@ -2,7 +2,7 @@ package com.amd.aparapi.jni;
 
 import java.lang.reflect.Field;
 
-import com.amd.aparapi.util.Annotations.UsedByJNICode;
+import com.amd.aparapi.annotation.UsedByJNICode;
 
 /**
  * This class is intended to be used as a 'proxy' or 'facade' object for Java code to interact with JNI

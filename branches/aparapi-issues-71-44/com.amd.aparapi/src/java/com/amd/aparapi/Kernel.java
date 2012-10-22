@@ -50,11 +50,11 @@ import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.logging.Logger;
 
+import com.amd.aparapi.annotation.Experimental;
 import com.amd.aparapi.config.Config;
 import com.amd.aparapi.exception.DeprecatedException;
 import com.amd.aparapi.model.ClassModel.ConstantPool.MethodReferenceEntry;
 import com.amd.aparapi.opencl.OpenCLLoader;
-import com.amd.aparapi.util.Annotations;
 import com.amd.aparapi.util.ProfileInfo;
 import com.amd.aparapi.util.UnsafeWrapper;
 
@@ -1664,9 +1664,8 @@ public abstract class Kernel implements Cloneable {
     * 
     * @annotion Experimental
     */
-
    @OpenCLDelegate
-   @Annotations.Experimental
+   @Experimental
    protected final void localBarrier() {
       try {
          localBarrier.await();
@@ -1688,9 +1687,8 @@ public abstract class Kernel implements Cloneable {
     * @annotion Experimental
     * @deprecated
     */
-
    @OpenCLDelegate
-   @Annotations.Experimental
+   @Experimental
    @Deprecated()
    protected final void globalBarrier() throws DeprecatedException {
       throw new DeprecatedException(
