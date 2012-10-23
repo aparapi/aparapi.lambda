@@ -63,7 +63,7 @@ import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 
 import com.amd.aparapi.Kernel;
-import com.amd.aparapi.ProfileInfo;
+import com.amd.aparapi.util.ProfileInfo;
 import com.amd.aparapi.Range;
 import com.jogamp.opengl.util.FPSAnimator;
 import com.jogamp.opengl.util.texture.Texture;

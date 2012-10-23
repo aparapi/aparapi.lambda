@@ -54,7 +54,7 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 
 import com.amd.aparapi.Kernel;
-import com.amd.aparapi.ProfileInfo;
+import com.amd.aparapi.util.ProfileInfo;
 import com.amd.aparapi.Range;
 
 /**
