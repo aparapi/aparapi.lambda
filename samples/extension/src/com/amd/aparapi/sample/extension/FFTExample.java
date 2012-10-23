@@ -6,6 +6,7 @@ import com.amd.aparapi.Range;
 import com.amd.aparapi.device.Device;
 import com.amd.aparapi.device.OpenCLDevice;
 import com.amd.aparapi.opencl.OpenCL;
+import com.amd.aparapi.sample.extension.StopWatch;
 
 public class FFTExample{
    @OpenCL.Resource("com/amd/aparapi/sample/extension/fft.cl") interface FFT extends OpenCL<FFT>{
