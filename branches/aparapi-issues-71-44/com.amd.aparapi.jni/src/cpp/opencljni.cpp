@@ -627,7 +627,7 @@ JNI_JAVA(void, OpenCLJNI, invoke)
    }
 
 JNI_JAVA(jobject, OpenCLJNI, getPlatforms)
-   (JNIEnv *jenv, jobject jobj) {
+   (JNIEnv *jenv, jclass clazz) {
       jobject platformListInstance = JNIHelper::createInstance(jenv, ArrayListClass, VoidReturn);
       cl_int status = CL_SUCCESS;
       cl_uint platformc;
@@ -702,7 +702,7 @@ JNI_JAVA(jobject, OpenCLJNI, getPlatforms)
                               platformInstance, 
                               (jlong)deviceIds[deviceIdx],
                               deviceTypeEnumInstance);
-                        JNIHelper::callVoid(jenv, platformInstance, "add", ArgsVoidReturn( OpenCLDeviceClassArg ), deviceInstance);
+                        JNIHelper::callVoid(jenv, platformInstance, "addOpenCLDevice", ArgsVoidReturn( OpenCLDeviceClassArg ), deviceInstance);
 
 
                         cl_uint maxComputeUnits;
