@@ -3,7 +3,7 @@
  */
 package com.amd.aparapi.opencl;
 
-public class OpenCLArgDescriptor{
+public class OpenCLArgDescriptor {
 
    public final static int ARG_BYTE_BIT = 1 << 0x000;
 
@@ -37,20 +37,21 @@ public class OpenCLArgDescriptor{
 
    public OpenCLMem memVal;
 
-   private String name;
+   private final String name;
 
    public long bits;
 
    public OpenCLKernel kernel;
 
    public OpenCLArgDescriptor(String _name, long _bits) {
-
       name = _name;
       bits = _bits;
    }
 
+   @Override
    public String toString() {
-      StringBuilder argBuilder = new StringBuilder();
+      final StringBuilder argBuilder = new StringBuilder();
+
       if ((bits & ARG_GLOBAL_BIT) == ARG_GLOBAL_BIT) {
          argBuilder.append("__global ");
       } else if ((bits & ARG_LOCAL_BIT) == ARG_LOCAL_BIT) {
@@ -78,7 +79,9 @@ public class OpenCLArgDescriptor{
       if ((bits & ARG_ARRAY_BIT) == ARG_ARRAY_BIT) {
          argBuilder.append("*");
       }
+
       argBuilder.append(name);
+
       if ((bits & ARG_READONLY_BIT) == ARG_READONLY_BIT) {
          argBuilder.append(" /* readonly */");
       } else if ((bits & ARG_WRITEONLY_BIT) == ARG_WRITEONLY_BIT) {
@@ -86,7 +89,7 @@ public class OpenCLArgDescriptor{
       } else if ((bits & ARG_READWRITE_BIT) == ARG_READWRITE_BIT) {
          argBuilder.append(" /* readwrite */");
       }
+
       return (argBuilder.toString());
    }
-
 }

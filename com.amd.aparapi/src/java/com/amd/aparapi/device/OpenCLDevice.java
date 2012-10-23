@@ -34,6 +34,13 @@ public class OpenCLDevice extends Device {
 
    private long maxMemAllocSize;
 
+   /**
+    * Minimal constructor
+    * 
+    * @param _platform
+    * @param _deviceId
+    * @param _type
+    */
    public OpenCLDevice(OpenCLPlatform _platform, long _deviceId, TYPE _type) {
       platform = _platform;
       deviceId = _deviceId;
@@ -272,12 +279,14 @@ public class OpenCLDevice extends Device {
          }
 
       }
+
       try {
          _inputStream.close();
       } catch (final IOException e) {
          // TODO Auto-generated catch block
          e.printStackTrace();
       }
+
       return (sourceBuilder.toString());
    }
 
@@ -360,11 +369,11 @@ public class OpenCLDevice extends Device {
 
       // System.out.println("opencl{\n" + _source + "\n}opencl");
 
-      final OpenCLProgram program = OpenCLProgram.createProgram(this, _source);
+      final OpenCLProgram program = new OpenCLProgram(this, _source);
 
       final Map<String, OpenCLKernel> map = new HashMap<String, OpenCLKernel>();
       for (final String name : kernelNameToArgsMap.keySet()) {
-         final OpenCLKernel kernel = program.createKernel(name, kernelNameToArgsMap.get(name));
+         final OpenCLKernel kernel = new OpenCLKernel(program, name, kernelNameToArgsMap.get(name)).createKernel();
          if (kernel == null) {
             throw new IllegalStateException("kernel is null");
          }
@@ -391,7 +400,9 @@ public class OpenCLDevice extends Device {
 
    public static OpenCLDevice select(DeviceSelector _deviceSelector) {
       OpenCLDevice device = null;
-      for (final OpenCLPlatform p : OpenCLPlatform.getOpenCLPlatforms()) {
+      final OpenCLPlatform platform = new OpenCLPlatform(null, null, null);
+
+      for (final OpenCLPlatform p : platform.getOpenCLPlatforms()) {
          for (final OpenCLDevice d : p.getOpenCLDevices()) {
             device = _deviceSelector.select(d);
             if (device != null) {
@@ -402,12 +413,15 @@ public class OpenCLDevice extends Device {
             break;
          }
       }
+
       return (device);
    }
 
    public static OpenCLDevice select(DeviceComparitor _deviceComparitor) {
       OpenCLDevice device = null;
-      for (final OpenCLPlatform p : OpenCLPlatform.getOpenCLPlatforms()) {
+      final OpenCLPlatform platform = new OpenCLPlatform(null, null, null);
+
+      for (final OpenCLPlatform p : platform.getOpenCLPlatforms()) {
          for (final OpenCLDevice d : p.getOpenCLDevices()) {
             if (device == null) {
                device = d;

@@ -6,27 +6,37 @@ import com.amd.aparapi.jni.OpenCLJNI;
 
 public class OpenCLKernel extends OpenCLJNI {
 
-   private final OpenCLArgDescriptor[] args;
-
-   private final long kernelId;
+   private final List<OpenCLArgDescriptor> args;
 
    private final OpenCLProgram program;
 
-   private final String name;
+   private final String kernelName;
 
-   OpenCLKernel(long _kernelId, OpenCLProgram _program, String _name, List<OpenCLArgDescriptor> _args) {
-      kernelId = _kernelId;
+   /**
+    * Minimal constructor
+    * 
+    * @param _program
+    * @param _kernelName
+    * @param _args
+    */
+   public OpenCLKernel(OpenCLProgram _program, String _kernelName, List<OpenCLArgDescriptor> _args) {
       program = _program;
-      name = _name;
-      args = _args.toArray(new OpenCLArgDescriptor[0]);
+      kernelName = _kernelName;
+      //      args = _args.toArray(new OpenCLArgDescriptor[0]);
 
-      for (final OpenCLArgDescriptor arg : args) {
+      for (final OpenCLArgDescriptor arg : _args) {
          arg.kernel = this;
       }
+
+      args = _args;
+   }
+
+   public OpenCLKernel createKernel() {
+      return createKernel(program, kernelName, args);
    }
 
    public String getName() {
-      return name;
+      return kernelName;
    }
 
    public void invoke(Object[] _args) {

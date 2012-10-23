@@ -14,9 +14,9 @@ import com.amd.aparapi.opencl.OpenCLProgram;
  */
 public abstract class OpenCLJNI {
 
-   protected static native List<OpenCLPlatform> getPlatforms();
+   protected native List<OpenCLPlatform> getPlatforms();
 
-   protected static native OpenCLProgram createProgram(OpenCLDevice context, String openCLSource);
+   protected native OpenCLProgram createProgram(OpenCLDevice context, String openCLSource);
 
    protected native OpenCLKernel createKernel(OpenCLProgram program, String kernelName, List<OpenCLArgDescriptor> args);
 
