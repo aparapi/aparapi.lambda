@@ -1,6 +1,6 @@
 package com.amd.aparapi.opencl;
 
-public class OpenCLMem{
+public class OpenCLMem {
 
    public final static int MEM_DIRTY_BIT = 1 << 0x00F;
 
@@ -8,15 +8,4 @@ public class OpenCLMem{
 
    public final static int MEM_ENQUEUED_BIT = 1 << 0x011;
 
-   long bits; // dirty, copy, enqueued
-
-   int sizeInBytes;
-
-   long memId;
-
-   long address;
-
-   Object instance;
-
-   OpenCLProgram program;
 }

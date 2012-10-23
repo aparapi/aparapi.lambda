@@ -8,8 +8,6 @@ import com.amd.aparapi.jni.OpenCLJNI;
 
 public class OpenCLPlatform extends OpenCLJNI {
 
-   private final long platformId;
-
    private final String version;
 
    private final String vendor;
@@ -18,16 +16,18 @@ public class OpenCLPlatform extends OpenCLJNI {
 
    private final List<OpenCLDevice> devices = new ArrayList<OpenCLDevice>();
 
-   OpenCLPlatform(long _platformId, String _version, String _vendor, String _name) {
-      platformId = _platformId;
+   /**
+    * Minimal constructor
+    * 
+    * @param _platformId
+    * @param _version
+    * @param _vendor
+    * @param _name
+    */
+   public OpenCLPlatform(String _version, String _vendor, String _name) {
       version = _version;
       vendor = _vendor;
       name = _name;
-   }
-
-   @Override
-   public String toString() {
-      return ("PlatformId " + platformId + "\nName:" + vendor + "\nVersion:" + version);
    }
 
    public void addOpenCLDevice(OpenCLDevice device) {
@@ -38,7 +38,7 @@ public class OpenCLPlatform extends OpenCLJNI {
       return (devices);
    }
 
-   public static List<OpenCLPlatform> getOpenCLPlatforms() {
+   public List<OpenCLPlatform> getOpenCLPlatforms() {
       if (OpenCLLoader.isOpenCLAvailable()) {
          return (getPlatforms());
       } else {
@@ -56,5 +56,17 @@ public class OpenCLPlatform extends OpenCLJNI {
 
    public String getVendor() {
       return (vendor);
+   }
+
+   @Override
+   public String toString() {
+      final StringBuilder sb = new StringBuilder();
+      sb.append("PlatformId ");
+      sb.append("\nName:");
+      sb.append(vendor);
+      sb.append("\nVersion:");
+      sb.append(version);
+
+      return sb.toString();
    }
 }
