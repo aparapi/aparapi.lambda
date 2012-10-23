@@ -411,7 +411,7 @@ public class Range extends RangeJNI {
     * @param _dim 0=width, 1=height, 2=depth
     * @return The size of the group give the requested dimension
     */
-   protected int getLocalSize(int _dim) {
+   public int getLocalSize(int _dim) {
       return (_dim == 0 ? localSize_0 : (_dim == 1 ? localSize_1 : localSize_2));
    }
 
@@ -421,7 +421,7 @@ public class Range extends RangeJNI {
     * @param _dim 0=width, 1=height, 2=depth
     * @return The size of the group give the requested dimension
     */
-   protected int getGlobalSize(int _dim) {
+   public int getGlobalSize(int _dim) {
       return (_dim == 0 ? globalSize_0 : (_dim == 1 ? globalSize_1 : globalSize_2));
    }
 

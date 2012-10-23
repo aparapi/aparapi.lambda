@@ -488,13 +488,13 @@ First consider editing the properties in build.properties
    <target name="javah">
       <mkdir dir="include" />
       <javah classpath="..\com.amd.aparapi\dist\aparapi.jar" destdir="include" force="true">
-      	 <class name="com.amd.aparapi.jni.ConfigJNI" />
-      	 <class name="com.amd.aparapi.jni.KernelArgJNI" />
+         <class name="com.amd.aparapi.jni.ConfigJNI" />
+         <class name="com.amd.aparapi.jni.KernelArgJNI" />
          <class name="com.amd.aparapi.jni.KernelRunnerJNI" />
          <class name="com.amd.aparapi.jni.OpenCLJNI" />
          <class name="com.amd.aparapi.jni.RangeJNI" />
          <!-- Non-Native Classes -->
-         <class name="com.amd.aparapi.Config" />
+         <class name="com.amd.aparapi.config.Config" />
          <class name="com.amd.aparapi.Kernel"/>
          <class name="com.amd.aparapi.KernelRunner"/>
          <class name="com.amd.aparapi.Range"/>
@@ -504,6 +504,8 @@ First consider editing the properties in build.properties
          <class name="com.amd.aparapi.opencl.OpenCLMem" />
       </javah>
    </target>
+
+	
 
    <target name="gcc" if="use.gcc">
       <mkdir dir="${basedir}/dist"/>

@@ -1301,7 +1301,7 @@ JNI_JAVA(jint, KernelRunnerJNI, runKernelJNI)
 
 // we return the JNIContext from here 
 JNI_JAVA(jlong, KernelRunnerJNI, initJNI)
-   (JNIEnv *jenv, jclass clazz, jobject kernelObject, jobject openCLDeviceObject, jint flags) {
+   (JNIEnv *jenv, jobject jobj, jobject kernelObject, jobject openCLDeviceObject, jint flags) {
       if (openCLDeviceObject == NULL){
          fprintf(stderr, "no device object!\n");
       }
