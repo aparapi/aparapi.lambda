@@ -371,7 +371,7 @@ public class OpenCLDevice extends Device {
 
       // System.out.println("opencl{\n" + _source + "\n}opencl");
 
-      final OpenCLProgram program = new OpenCLProgram(this, _source);
+      final OpenCLProgram program = new OpenCLProgram(0, 0, 0, this, _source);
 
       final Map<String, OpenCLKernel> map = new HashMap<String, OpenCLKernel>();
       for (final String name : kernelNameToArgsMap.keySet()) {
@@ -402,7 +402,7 @@ public class OpenCLDevice extends Device {
 
    public static OpenCLDevice select(DeviceSelector _deviceSelector) {
       OpenCLDevice device = null;
-      final OpenCLPlatform platform = new OpenCLPlatform(null, null, null);
+      final OpenCLPlatform platform = new OpenCLPlatform(0, null, null, null);
 
       for (final OpenCLPlatform p : platform.getOpenCLPlatforms()) {
          for (final OpenCLDevice d : p.getOpenCLDevices()) {
@@ -421,7 +421,7 @@ public class OpenCLDevice extends Device {
 
    public static OpenCLDevice select(DeviceComparitor _deviceComparitor) {
       OpenCLDevice device = null;
-      final OpenCLPlatform platform = new OpenCLPlatform(null, null, null);
+      final OpenCLPlatform platform = new OpenCLPlatform(0, null, null, null);
 
       for (final OpenCLPlatform p : platform.getOpenCLPlatforms()) {
          for (final OpenCLDevice d : p.getOpenCLDevices()) {
