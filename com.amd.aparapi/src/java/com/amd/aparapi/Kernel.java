@@ -52,7 +52,7 @@ import com.amd.aparapi.annotation.Experimental;
 import com.amd.aparapi.annotation.OpenCLDelegate;
 import com.amd.aparapi.annotation.OpenCLMapping;
 import com.amd.aparapi.config.Config;
-import com.amd.aparapi.internal.exception.DeprecatedException;
+import com.amd.aparapi.exception.DeprecatedException;
 import com.amd.aparapi.internal.kernel.KernelRunner;
 import com.amd.aparapi.internal.model.ClassModel.ConstantPool.MethodReferenceEntry;
 import com.amd.aparapi.internal.opencl.OpenCLLoader;
