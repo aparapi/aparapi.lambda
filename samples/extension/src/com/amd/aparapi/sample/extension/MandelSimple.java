@@ -57,9 +57,12 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import com.amd.aparapi.Range;
+import com.amd.aparapi.annotation.Arg;
+import com.amd.aparapi.annotation.GlobalWriteOnly;
+import com.amd.aparapi.annotation.Resource;
 import com.amd.aparapi.device.Device;
 import com.amd.aparapi.device.OpenCLDevice;
-import com.amd.aparapi.opencl.OpenCL;
+import com.amd.aparapi.internal.opencl.OpenCL;
 
 /**
  * An example Aparapi application which displays a view of the Mandelbrot set and lets the user zoom in to a particular point. 
@@ -72,27 +75,28 @@ import com.amd.aparapi.opencl.OpenCL;
  *
  */
 
-@OpenCL.Resource("com/amd/aparapi/sample/extension/mandel2.cl") interface Mandel extends OpenCL<Mandel>{
+@Resource("com/amd/aparapi/sample/extension/mandel2.cl")
+interface Mandel extends OpenCL<Mandel> {
    Mandel createMandleBrot(//
          Range range,//
          @Arg("scale") float scale, //
          @Arg("offsetx") float offsetx, //
          @Arg("offsety") float offsety, //
          @GlobalWriteOnly("rgb") int[] rgb
-
-   );
+         );
 }
 
-public class MandelSimple{
+public class MandelSimple {
 
    /** User selected zoom-in point on the Mandelbrot view. */
    public static volatile Point to = null;
 
    public static Mandel mandelBrot = null;
 
-   @SuppressWarnings("serial") public static void main(String[] _args) {
+   @SuppressWarnings("serial")
+   public static void main(String[] _args) {
 
-      JFrame frame = new JFrame("MandelBrot");
+      final JFrame frame = new JFrame("MandelBrot");
 
       /** Width of Mandelbrot view. */
       final int width = 768;
@@ -106,8 +110,9 @@ public class MandelSimple{
       final BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 
       final Object framePaintedDoorBell = new Object();
-      JComponent viewer = new JComponent(){
-         @Override public void paintComponent(Graphics g) {
+      final JComponent viewer = new JComponent() {
+         @Override
+         public void paintComponent(Graphics g) {
 
             g.drawImage(image, 0, 0, width, height, this);
             synchronized (framePaintedDoorBell) {
@@ -122,8 +127,9 @@ public class MandelSimple{
       final Object userClickDoorBell = new Object();
 
       // Mouse listener which reads the user clicked zoom-in point on the Mandelbrot view 
-      viewer.addMouseListener(new MouseAdapter(){
-         @Override public void mouseClicked(MouseEvent e) {
+      viewer.addMouseListener(new MouseAdapter() {
+         @Override
+         public void mouseClicked(MouseEvent e) {
             to = e.getPoint();
             synchronized (userClickDoorBell) {
                userClickDoorBell.notify();
@@ -131,7 +137,7 @@ public class MandelSimple{
          }
       });
 
-      JPanel controlPanel = new JPanel(new FlowLayout());
+      final JPanel controlPanel = new JPanel(new FlowLayout());
 
       controlPanel.add(new JLabel("FPS"));
       final JTextField framesPerSecondTextField = new JTextField("0", 5);
@@ -156,15 +162,15 @@ public class MandelSimple{
       float offsetx = .0f;
 
       float offsety = .0f;
-      Device device = Device.best();
+      final Device device = Device.best();
       if (device instanceof OpenCLDevice) {
-         OpenCLDevice openclDevice = (OpenCLDevice) device;
+         final OpenCLDevice openclDevice = (OpenCLDevice) device;
 
          System.out.println("max memory = " + openclDevice.getGlobalMemSize());
          System.out.println("max mem alloc size = " + openclDevice.getMaxMemAllocSize());
          mandelBrot = openclDevice.bind(Mandel.class);
 
-         float defaultScale = 3f;
+         final float defaultScale = 3f;
          scale = defaultScale;
          offsetx = -1f;
          offsety = 0f;
@@ -173,7 +179,8 @@ public class MandelSimple{
          viewer.repaint();
 
          // Window listener to dispose Kernel resources on user exit.
-         frame.addWindowListener(new WindowAdapter(){
+         frame.addWindowListener(new WindowAdapter() {
+            @Override
             public void windowClosing(WindowEvent _windowEvent) {
                // mandelBrot.dispose();
                System.exit(0);
@@ -186,7 +193,7 @@ public class MandelSimple{
                synchronized (userClickDoorBell) {
                   try {
                      userClickDoorBell.wait();
-                  } catch (InterruptedException ie) {
+                  } catch (final InterruptedException ie) {
                      ie.getStackTrace();
                   }
                }
@@ -194,18 +201,18 @@ public class MandelSimple{
 
             float x = -1f;
             float y = 0f;
-            float tox = (float) (to.x - width / 2) / width * scale;
-            float toy = (float) (to.y - height / 2) / height * scale;
+            final float tox = ((float) (to.x - (width / 2)) / width) * scale;
+            final float toy = ((float) (to.y - (height / 2)) / height) * scale;
 
             // This is how many frames we will display as we zoom in and out.
-            int frames = 128;
+            final int frames = 128;
             long startMillis = System.currentTimeMillis();
             int frameCount = 0;
             for (int sign = -1; sign < 2; sign += 2) {
-               for (int i = 0; i < frames - 4; i++) {
-                  scale = scale + sign * defaultScale / frames;
-                  x = x - sign * (tox / frames);
-                  y = y - sign * (toy / frames);
+               for (int i = 0; i < (frames - 4); i++) {
+                  scale = scale + ((sign * defaultScale) / frames);
+                  x = x - (sign * (tox / frames));
+                  y = y - (sign * (toy / frames));
                   offsetx = x;
                   offsety = y;
                   mandelBrot.createMandleBrot(range, scale, offsetx, offsety, imageRgb);
@@ -213,15 +220,15 @@ public class MandelSimple{
                   synchronized (framePaintedDoorBell) {
                      try {
                         framePaintedDoorBell.wait();
-                     } catch (InterruptedException ie) {
+                     } catch (final InterruptedException ie) {
                         ie.getStackTrace();
                      }
                   }
                   frameCount++;
-                  long endMillis = System.currentTimeMillis();
-                  long elapsedMillis = endMillis - startMillis;
+                  final long endMillis = System.currentTimeMillis();
+                  final long elapsedMillis = endMillis - startMillis;
                   if (elapsedMillis > 1000) {
-                     framesPerSecondTextField.setText("" + frameCount * 1000 / elapsedMillis);
+                     framesPerSecondTextField.setText("" + ((frameCount * 1000) / elapsedMillis));
                      frameCount = 0;
                      startMillis = endMillis;
                   }

@@ -1,18 +1,21 @@
 package com.amd.aparapi.sample.extension;
 
 import com.amd.aparapi.Range;
+import com.amd.aparapi.annotation.GlobalReadWrite;
+import com.amd.aparapi.annotation.Kernel;
 import com.amd.aparapi.device.Device;
 import com.amd.aparapi.device.OpenCLDevice;
-import com.amd.aparapi.opencl.OpenCL;
+import com.amd.aparapi.internal.opencl.OpenCL;
 
-public class SwapExample{
+public class SwapExample {
 
-   interface Swapper extends OpenCL<Swapper>{
+   interface Swapper extends OpenCL<Swapper> {
       @Kernel("{\n"//
             + "  const size_t id = get_global_id(0);\n"//
             + "  float temp=lhs[id];" + "  lhs[id] = rhs[id];\n"//
             + "  rhs[id] = temp;\n"//
-            + "}\n")//
+            + "}\n")
+      //
       public Swapper swap(//
             Range _range,//
             @GlobalReadWrite("lhs") float[] lhs,//
@@ -21,20 +24,20 @@ public class SwapExample{
 
    public static void main(String[] args) {
 
-      int size = 32;
-      float[] lhs = new float[size];
+      final int size = 32;
+      final float[] lhs = new float[size];
       for (int i = 0; i < size; i++) {
          lhs[i] = i;
       }
-      float[] rhs = new float[size];
-      Range range = Range.create(size);
+      final float[] rhs = new float[size];
+      final Range range = Range.create(size);
 
-      Device device = Device.best();
+      final Device device = Device.best();
 
       if (device instanceof OpenCLDevice) {
-         OpenCLDevice openclDevice = (OpenCLDevice) device;
+         final OpenCLDevice openclDevice = (OpenCLDevice) device;
 
-         Swapper swapper = openclDevice.bind(Swapper.class);
+         final Swapper swapper = openclDevice.bind(Swapper.class);
          for (int i = 0; i < size; i++) {
             System.out.println(lhs[i] + " " + rhs[i]);
          }

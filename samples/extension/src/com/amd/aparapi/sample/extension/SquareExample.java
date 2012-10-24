@@ -1,25 +1,33 @@
 package com.amd.aparapi.sample.extension;
 
 import com.amd.aparapi.Range;
+import com.amd.aparapi.annotation.GlobalReadOnly;
+import com.amd.aparapi.annotation.GlobalReadWrite;
+import com.amd.aparapi.annotation.GlobalWriteOnly;
+import com.amd.aparapi.annotation.Kernel;
+import com.amd.aparapi.annotation.Resource;
+import com.amd.aparapi.annotation.Source;
 import com.amd.aparapi.device.Device;
 import com.amd.aparapi.device.OpenCLDevice;
-import com.amd.aparapi.opencl.OpenCL;
+import com.amd.aparapi.internal.opencl.OpenCL;
 
-public class SquareExample{
+public class SquareExample {
 
-   interface Squarer extends OpenCL<Squarer>{
+   interface Squarer extends OpenCL<Squarer> {
       @Kernel("{\n"//
             + "  const size_t id = get_global_id(0);\n"//
             + "  out[id] = in[id]*in[id];\n"//
-            + "}\n")//
+            + "}\n")
+      //
       public Squarer square(//
             Range _range,//
             @GlobalReadWrite("in") float[] in,//
             @GlobalReadWrite("out") float[] out);
    }
 
-   @OpenCL.Resource("com/amd/aparapi/sample/extension/squarer.cl") interface SquarerWithResource extends
-         OpenCL<SquarerWithResource>{
+   @Resource("com/amd/aparapi/sample/extension/squarer.cl")
+   interface SquarerWithResource extends
+         OpenCL<SquarerWithResource> {
 
       public SquarerWithResource square(//
             Range _range,//
@@ -27,13 +35,14 @@ public class SquareExample{
             @GlobalReadWrite("out") float[] out);
    }
 
-   @OpenCL.Source("\n"//
+   @Source("\n"//
          + "__kernel void square (\n" //
          + "   __global float *in,\n"//
          + "   __global float *out\n" + "){\n"//
          + "   const size_t id = get_global_id(0);\n"//
          + "   out[id] = in[id]*in[id];\n"//
-         + "}\n") interface SquarerWithSource extends OpenCL<SquarerWithSource>{
+         + "}\n")
+   interface SquarerWithSource extends OpenCL<SquarerWithSource> {
 
       public SquarerWithSource square(//
             Range _range,//
@@ -43,21 +52,21 @@ public class SquareExample{
 
    public static void main(String[] args) {
 
-      int size = 32;
-      float[] in = new float[size];
+      final int size = 32;
+      final float[] in = new float[size];
       for (int i = 0; i < size; i++) {
          in[i] = i;
       }
-      float[] squares = new float[size];
-      float[] quads = new float[size];
-      Range range = Range.create(size);
+      final float[] squares = new float[size];
+      final float[] quads = new float[size];
+      final Range range = Range.create(size);
 
-      Device device = Device.best();
+      final Device device = Device.best();
 
       if (device instanceof OpenCLDevice) {
-         OpenCLDevice openclDevice = (OpenCLDevice) device;
+         final OpenCLDevice openclDevice = (OpenCLDevice) device;
 
-         SquarerWithResource squarer = openclDevice.bind(SquarerWithResource.class);
+         final SquarerWithResource squarer = openclDevice.bind(SquarerWithResource.class);
          squarer.square(range, in, squares);
 
          for (int i = 0; i < size; i++) {
