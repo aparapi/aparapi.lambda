@@ -41,13 +41,10 @@ package com.amd.aparapi.sample.convolution;
 import java.io.File;
 
 import com.amd.aparapi.Range;
-import com.amd.aparapi.annotation.Arg;
-import com.amd.aparapi.annotation.GlobalReadOnly;
-import com.amd.aparapi.annotation.GlobalWriteOnly;
-import com.amd.aparapi.annotation.Resource;
 import com.amd.aparapi.device.Device;
 import com.amd.aparapi.device.OpenCLDevice;
-import com.amd.aparapi.internal.opencl.OpenCL;
+import com.amd.aparapi.opencl.OpenCL;
+import com.amd.aparapi.opencl.OpenCL.Resource;
 
 public class ConvolutionOpenCL {
 
@@ -84,15 +81,13 @@ public class ConvolutionOpenCL {
          Range range = null;
 
          @Override
-         protected void applyConvolution(float[] _convMatrix3x3, byte[] _inBytes, byte[] _outBytes, int _width,
-               int _height) {
+         protected void applyConvolution(float[] _convMatrix3x3, byte[] _inBytes, byte[] _outBytes, int _width, int _height) {
             if (range == null) {
                range = openclDevice.createRange(_width * _height * 3);
             }
+
             convolution.applyConvolution(range, _convMatrix3x3, _inBytes, _outBytes, _width, _height);
          }
       };
-
    }
-
 }
