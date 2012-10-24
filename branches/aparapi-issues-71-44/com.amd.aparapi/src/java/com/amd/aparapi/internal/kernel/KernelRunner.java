@@ -52,6 +52,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.amd.aparapi.Kernel;
+import com.amd.aparapi.ProfileInfo;
 import com.amd.aparapi.Kernel.EXECUTION_MODE;
 import com.amd.aparapi.Kernel.KernelState;
 import com.amd.aparapi.Range;
@@ -67,7 +68,6 @@ import com.amd.aparapi.internal.jni.KernelRunnerJNI;
 import com.amd.aparapi.internal.model.ClassModel;
 import com.amd.aparapi.internal.model.Entrypoint;
 import com.amd.aparapi.internal.opencl.OpenCL;
-import com.amd.aparapi.internal.util.ProfileInfo;
 import com.amd.aparapi.internal.util.UnsafeWrapper;
 import com.amd.aparapi.internal.writer.KernelWriter;
 

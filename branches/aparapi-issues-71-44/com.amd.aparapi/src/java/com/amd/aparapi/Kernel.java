@@ -56,7 +56,6 @@ import com.amd.aparapi.exception.DeprecatedException;
 import com.amd.aparapi.internal.kernel.KernelRunner;
 import com.amd.aparapi.internal.model.ClassModel.ConstantPool.MethodReferenceEntry;
 import com.amd.aparapi.internal.opencl.OpenCLLoader;
-import com.amd.aparapi.internal.util.ProfileInfo;
 import com.amd.aparapi.internal.util.UnsafeWrapper;
 
 /**
