@@ -2,14 +2,10 @@ package com.amd.aparapi.sample.extension;
 
 import com.amd.aparapi.Kernel;
 import com.amd.aparapi.Range;
-import com.amd.aparapi.annotation.Arg;
-import com.amd.aparapi.annotation.GlobalReadOnly;
-import com.amd.aparapi.annotation.GlobalWriteOnly;
-import com.amd.aparapi.annotation.Local;
-import com.amd.aparapi.annotation.Resource;
 import com.amd.aparapi.device.Device;
 import com.amd.aparapi.device.OpenCLDevice;
-import com.amd.aparapi.internal.opencl.OpenCL;
+import com.amd.aparapi.opencl.OpenCL;
+import com.amd.aparapi.opencl.OpenCL.Resource;
 
 public class Histogram {
 

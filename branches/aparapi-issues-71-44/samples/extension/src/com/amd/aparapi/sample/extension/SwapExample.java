@@ -1,11 +1,9 @@
 package com.amd.aparapi.sample.extension;
 
 import com.amd.aparapi.Range;
-import com.amd.aparapi.annotation.GlobalReadWrite;
-import com.amd.aparapi.annotation.Kernel;
 import com.amd.aparapi.device.Device;
 import com.amd.aparapi.device.OpenCLDevice;
-import com.amd.aparapi.internal.opencl.OpenCL;
+import com.amd.aparapi.opencl.OpenCL;
 
 public class SwapExample {
 
