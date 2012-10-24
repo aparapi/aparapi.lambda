@@ -8,6 +8,12 @@ import com.amd.aparapi.internal.jni.OpenCLJNI;
 
 public class OpenCLProgram extends OpenCLJNI {
 
+   private final long programId;
+
+   private final long queueId;
+
+   private final long contextId;
+   
    private final OpenCLDevice device;
 
    private final String source;
@@ -25,7 +31,10 @@ public class OpenCLProgram extends OpenCLJNI {
     * @param _device
     * @param _source
     */
-   public OpenCLProgram(OpenCLDevice _device, String _source) {
+   public OpenCLProgram(long _programId, long _queueId, long _contextId, OpenCLDevice _device, String _source) {
+      programId = _programId;
+      queueId = _queueId;
+      contextId = _contextId;
       device = _device;
       source = _source;
    }

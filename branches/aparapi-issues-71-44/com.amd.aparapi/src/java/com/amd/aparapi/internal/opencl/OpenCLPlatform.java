@@ -8,6 +8,8 @@ import com.amd.aparapi.internal.jni.OpenCLJNI;
 
 public class OpenCLPlatform extends OpenCLJNI {
 
+   private long platformId;
+   
    private final String version;
 
    private final String vendor;
@@ -24,7 +26,8 @@ public class OpenCLPlatform extends OpenCLJNI {
     * @param _vendor
     * @param _name
     */
-   public OpenCLPlatform(String _version, String _vendor, String _name) {
+   public OpenCLPlatform(long _platformId, String _version, String _vendor, String _name) {
+      platformId = _platformId;
       version = _version;
       vendor = _vendor;
       name = _name;
