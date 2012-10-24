@@ -1,15 +1,11 @@
 package com.amd.aparapi.sample.extension;
 
 import com.amd.aparapi.Range;
-import com.amd.aparapi.annotation.GlobalReadOnly;
-import com.amd.aparapi.annotation.GlobalReadWrite;
-import com.amd.aparapi.annotation.GlobalWriteOnly;
-import com.amd.aparapi.annotation.Kernel;
-import com.amd.aparapi.annotation.Resource;
-import com.amd.aparapi.annotation.Source;
 import com.amd.aparapi.device.Device;
 import com.amd.aparapi.device.OpenCLDevice;
-import com.amd.aparapi.internal.opencl.OpenCL;
+import com.amd.aparapi.opencl.OpenCL;
+import com.amd.aparapi.opencl.OpenCL.Resource;
+import com.amd.aparapi.opencl.OpenCL.Source;
 
 public class SquareExample {
 
@@ -26,9 +22,7 @@ public class SquareExample {
    }
 
    @Resource("com/amd/aparapi/sample/extension/squarer.cl")
-   interface SquarerWithResource extends
-         OpenCL<SquarerWithResource> {
-
+   interface SquarerWithResource extends OpenCL<SquarerWithResource> {
       public SquarerWithResource square(//
             Range _range,//
             @GlobalReadWrite("in") float[] in,//
@@ -43,7 +37,6 @@ public class SquareExample {
          + "   out[id] = in[id]*in[id];\n"//
          + "}\n")
    interface SquarerWithSource extends OpenCL<SquarerWithSource> {
-
       public SquarerWithSource square(//
             Range _range,//
             @GlobalReadOnly("in") float[] in,//
@@ -51,12 +44,13 @@ public class SquareExample {
    }
 
    public static void main(String[] args) {
-
       final int size = 32;
       final float[] in = new float[size];
+
       for (int i = 0; i < size; i++) {
          in[i] = i;
       }
+
       final float[] squares = new float[size];
       final float[] quads = new float[size];
       final Range range = Range.create(size);
@@ -80,5 +74,4 @@ public class SquareExample {
          }
       }
    }
-
 }

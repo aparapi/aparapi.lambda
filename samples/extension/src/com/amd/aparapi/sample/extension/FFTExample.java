@@ -3,12 +3,10 @@ package com.amd.aparapi.sample.extension;
 import java.util.Arrays;
 
 import com.amd.aparapi.Range;
-import com.amd.aparapi.annotation.GlobalReadWrite;
-import com.amd.aparapi.annotation.Resource;
 import com.amd.aparapi.device.Device;
 import com.amd.aparapi.device.OpenCLDevice;
-import com.amd.aparapi.internal.opencl.OpenCL;
-import com.amd.aparapi.sample.extension.StopWatch;
+import com.amd.aparapi.opencl.OpenCL;
+import com.amd.aparapi.opencl.OpenCL.Resource;
 
 public class FFTExample {
 
