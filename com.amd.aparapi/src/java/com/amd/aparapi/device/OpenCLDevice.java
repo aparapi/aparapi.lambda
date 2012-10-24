@@ -31,6 +31,8 @@ import com.amd.aparapi.internal.opencl.OpenCLProgram;
 
 public class OpenCLDevice extends Device {
 
+   private final OpenCLPlatform platform;
+
    private final long deviceId;
 
    private int maxComputeUnits;
@@ -49,8 +51,13 @@ public class OpenCLDevice extends Device {
     * @param _type
     */
    public OpenCLDevice(OpenCLPlatform _platform, long _deviceId, TYPE _type) {
+      platform = _platform;
       deviceId = _deviceId;
       type = _type;
+   }
+
+   public OpenCLPlatform getOpenCLPlatform() {
+      return platform;
    }
 
    public int getMaxComputeUnits() {
@@ -83,24 +90,6 @@ public class OpenCLDevice extends Device {
 
    public void setGlobalMemSize(long _globalMemSize) {
       globalMemSize = _globalMemSize;
-   }
-
-   @Override
-   public String toString() {
-      final StringBuilder s = new StringBuilder("{");
-      boolean first = true;
-      for (final int workItemSize : maxWorkItemSize) {
-         if (first) {
-            first = false;
-         } else {
-            s.append(", ");
-         }
-         s.append(workItemSize);
-      }
-      s.append("}");
-      return ("Device " + deviceId + "\n  type:" + type + "\n  maxComputeUnits=" + maxComputeUnits + "\n  maxWorkItemDimensions="
-            + maxWorkItemDimensions + "\n  maxWorkItemSizes=" + s + "\n  maxWorkWorkGroupSize=" + maxWorkGroupSize
-            + "\n  globalMemSize=" + globalMemSize + "\n  localMemSize=" + localMemSize);
    }
 
    void setMaxWorkItemSize(int _dim, int _value) {
@@ -434,5 +423,26 @@ public class OpenCLDevice extends Device {
       }
 
       return (device);
+   }
+
+   @Override
+   public String toString() {
+      final StringBuilder s = new StringBuilder("{");
+      boolean first = true;
+      for (final int workItemSize : maxWorkItemSize) {
+         if (first) {
+            first = false;
+         } else {
+            s.append(", ");
+         }
+
+         s.append(workItemSize);
+      }
+
+      s.append("}");
+
+      return ("Device " + deviceId + "\n  type:" + type + "\n  maxComputeUnits=" + maxComputeUnits + "\n  maxWorkItemDimensions="
+            + maxWorkItemDimensions + "\n  maxWorkItemSizes=" + s + "\n  maxWorkWorkGroupSize=" + maxWorkGroupSize
+            + "\n  globalMemSize=" + globalMemSize + "\n  localMemSize=" + localMemSize);
    }
 }
