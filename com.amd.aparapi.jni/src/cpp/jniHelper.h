@@ -43,9 +43,9 @@
 #define JavaLangPackage(name) "java/lang/" name
 #define JavaUtilPackage(name) "java/util/" name
 #define AparapiPackage(name) "com/amd/aparapi/" name
-#define AparapiOpenCLPackage(name) "com/amd/aparapi/opencl/" name
 #define AparapiDevicePackage(name) "com/amd/aparapi/device/" name
-#define AparapiUtilPackage(name) "com/amd/aparapi/device/" name
+#define AparapiOpenCLPackage(name) "com/amd/aparapi/internal/opencl/" name
+#define AparapiUtilPackage(name) "com/amd/aparapi/internal/util/" name
 
 #define ProfileInfoClass AparapiUtilPackage("ProfileInfo")
 #define OpenCLKernelClass AparapiOpenCLPackage("OpenCLKernel")

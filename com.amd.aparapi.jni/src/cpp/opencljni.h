@@ -43,16 +43,16 @@
 #include "jniHelper.h"
 #include "clHelper.h"
 
-#include "com_amd_aparapi_opencl_OpenCLArgDescriptor.h"
-#include "com_amd_aparapi_opencl_OpenCLMem.h"
+#include "com_amd_aparapi_internal_opencl_OpenCLArgDescriptor.h"
+#include "com_amd_aparapi_internal_opencl_OpenCLMem.h"
 
-#define argisset(bits, token) (((bits) & com_amd_aparapi_opencl_OpenCLArgDescriptor_ARG_##token##_BIT) ==com_amd_aparapi_opencl_OpenCLArgDescriptor_ARG_##token##_BIT)
-#define argset(bits, token) (bits) |= com_amd_aparapi_opencl_OpenCLArgDescriptor_ARG_##token##_BIT
-#define argreset(bits, token) (bits) &= ~com_amd_aparapi_opencl_OpenCLArgDescriptor_ARG_##token##_BIT
+#define argisset(bits, token) (((bits) & com_amd_aparapi_internal_opencl_OpenCLArgDescriptor_ARG_##token##_BIT) ==com_amd_aparapi_internal_opencl_OpenCLArgDescriptor_ARG_##token##_BIT)
+#define argset(bits, token) (bits) |= com_amd_aparapi_internal_opencl_OpenCLArgDescriptor_ARG_##token##_BIT
+#define argreset(bits, token) (bits) &= ~com_amd_aparapi_internal_opencl_OpenCLArgDescriptor_ARG_##token##_BIT
 
-#define memisset(bits, token) (((bits) & com_amd_aparapi_opencl_OpenCLMem_MEM_##token##_BIT) ==com_amd_aparapi_opencl_OpenCLMem_MEM_##token##_BIT)
-#define memset(bits, token) (bits) |= com_amd_aparapi_opencl_OpenCLMem_MEM_##token##_BIT
-#define memreset(bits, token) (bits) &= ~com_amd_aparapi_opencl_OpenCLMem_MEM_##token##_BIT
+#define memisset(bits, token) (((bits) & com_amd_aparapi_internal_opencl_OpenCLMem_MEM_##token##_BIT) ==com_amd_aparapi_internal_opencl_OpenCLMem_MEM_##token##_BIT)
+#define memset(bits, token) (bits) |= com_amd_aparapi_internal_opencl_OpenCLMem_MEM_##token##_BIT
+#define memreset(bits, token) (bits) &= ~com_amd_aparapi_internal_opencl_OpenCLMem_MEM_##token##_BIT
 
 class OpenCLDevice{
    public:
