@@ -3,7 +3,7 @@ package com.amd.aparapi;
 import java.util.Arrays;
 
 import com.amd.aparapi.device.Device;
-import com.amd.aparapi.jni.RangeJNI;
+import com.amd.aparapi.internal.jni.RangeJNI;
 
 /**
  * 
@@ -433,7 +433,7 @@ public class Range extends RangeJNI {
     * @param _dim The dim we are interested in 0, 1 or 2
     * @return the number of groups for the given dimension. 
     */
-   protected int getNumGroups(int _dim) {
+   public int getNumGroups(int _dim) {
       return (_dim == 0 ? (globalSize_0 / localSize_0) : (_dim == 1 ? (globalSize_1 / localSize_1) : (globalSize_2 / localSize_2)));
    }
 
@@ -441,18 +441,18 @@ public class Range extends RangeJNI {
     * 
     * @return The product of all valid localSize dimensions
     */
-   protected int getWorkGroupSize() {
+   public int getWorkGroupSize() {
       return localSize_0 * localSize_1 * localSize_2;
    }
 
-   protected Device getDevice() {
+   public Device getDevice() {
       return (device);
    }
 
    /**
     * @return the globalSize_0
     */
-   protected int getGlobalSize_0() {
+   public int getGlobalSize_0() {
       return globalSize_0;
    }
 
@@ -460,14 +460,14 @@ public class Range extends RangeJNI {
     * @param globalSize_0
     *          the globalSize_0 to set
     */
-   protected void setGlobalSize_0(int globalSize_0) {
+   public void setGlobalSize_0(int globalSize_0) {
       this.globalSize_0 = globalSize_0;
    }
 
    /**
     * @return the localSize_0
     */
-   protected int getLocalSize_0() {
+   public int getLocalSize_0() {
       return localSize_0;
    }
 
@@ -475,14 +475,14 @@ public class Range extends RangeJNI {
     * @param localSize_0
     *          the localSize_0 to set
     */
-   protected void setLocalSize_0(int localSize_0) {
+   public void setLocalSize_0(int localSize_0) {
       this.localSize_0 = localSize_0;
    }
 
    /**
     * @return the globalSize_1
     */
-   protected int getGlobalSize_1() {
+   public int getGlobalSize_1() {
       return globalSize_1;
    }
 
@@ -490,14 +490,14 @@ public class Range extends RangeJNI {
     * @param globalSize_1
     *          the globalSize_1 to set
     */
-   protected void setGlobalSize_1(int globalSize_1) {
+   public void setGlobalSize_1(int globalSize_1) {
       this.globalSize_1 = globalSize_1;
    }
 
    /**
     * @return the localSize_1
     */
-   protected int getLocalSize_1() {
+   public int getLocalSize_1() {
       return localSize_1;
    }
 
@@ -505,14 +505,14 @@ public class Range extends RangeJNI {
     * @param localSize_1
     *          the localSize_1 to set
     */
-   protected void setLocalSize_1(int localSize_1) {
+   public void setLocalSize_1(int localSize_1) {
       this.localSize_1 = localSize_1;
    }
 
    /**
     * @return the globalSize_2
     */
-   protected int getGlobalSize_2() {
+   public int getGlobalSize_2() {
       return globalSize_2;
    }
 
@@ -520,14 +520,14 @@ public class Range extends RangeJNI {
     * @param globalSize_2
     *          the globalSize_2 to set
     */
-   protected void setGlobalSize_2(int globalSize_2) {
+   public void setGlobalSize_2(int globalSize_2) {
       this.globalSize_2 = globalSize_2;
    }
 
    /**
     * @return the localSize_2
     */
-   protected int getLocalSize_2() {
+   public int getLocalSize_2() {
       return localSize_2;
    }
 
@@ -535,7 +535,7 @@ public class Range extends RangeJNI {
     * @param localSize_2
     *          the localSize_2 to set
     */
-   protected void setLocalSize_2(int localSize_2) {
+   public void setLocalSize_2(int localSize_2) {
       this.localSize_2 = localSize_2;
    }
 
@@ -544,7 +544,7 @@ public class Range extends RangeJNI {
     * 
     * @return 0, 1 or 2 for one dimensional, two dimensional and three dimensional range respectively.
     */
-   protected int getDims() {
+   public int getDims() {
       return dims;
    }
 
@@ -552,14 +552,14 @@ public class Range extends RangeJNI {
     * @param dims
     *          the dims to set
     */
-   protected void setDims(int dims) {
+   public void setDims(int dims) {
       this.dims = dims;
    }
 
    /**
     * @return the valid
     */
-   protected boolean isValid() {
+   public boolean isValid() {
       return valid;
    }
 
@@ -567,14 +567,14 @@ public class Range extends RangeJNI {
     * @param valid
     *          the valid to set
     */
-   protected void setValid(boolean valid) {
+   public void setValid(boolean valid) {
       this.valid = valid;
    }
 
    /**
     * @return the localIsDerived
     */
-   protected boolean isLocalIsDerived() {
+   public boolean isLocalIsDerived() {
       return localIsDerived;
    }
 
@@ -582,14 +582,14 @@ public class Range extends RangeJNI {
     * @param localIsDerived
     *          the localIsDerived to set
     */
-   protected void setLocalIsDerived(boolean localIsDerived) {
+   public void setLocalIsDerived(boolean localIsDerived) {
       this.localIsDerived = localIsDerived;
    }
 
    /**
     * @return the maxWorkGroupSize
     */
-   protected int getMaxWorkGroupSize() {
+   public int getMaxWorkGroupSize() {
       return maxWorkGroupSize;
    }
 
@@ -597,14 +597,14 @@ public class Range extends RangeJNI {
     * @param maxWorkGroupSize
     *          the maxWorkGroupSize to set
     */
-   protected void setMaxWorkGroupSize(int maxWorkGroupSize) {
+   public void setMaxWorkGroupSize(int maxWorkGroupSize) {
       this.maxWorkGroupSize = maxWorkGroupSize;
    }
 
    /**
     * @return the maxWorkItemSize
     */
-   protected int[] getMaxWorkItemSize() {
+   public int[] getMaxWorkItemSize() {
       return maxWorkItemSize;
    }
 
@@ -612,7 +612,7 @@ public class Range extends RangeJNI {
     * @param maxWorkItemSize
     *          the maxWorkItemSize to set
     */
-   protected void setMaxWorkItemSize(int[] maxWorkItemSize) {
+   public void setMaxWorkItemSize(int[] maxWorkItemSize) {
       this.maxWorkItemSize = maxWorkItemSize;
    }
 }

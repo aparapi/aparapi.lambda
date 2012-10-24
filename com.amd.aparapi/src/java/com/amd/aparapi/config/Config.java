@@ -41,9 +41,9 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.amd.aparapi.instruction.Instruction;
-import com.amd.aparapi.jni.ConfigJNI;
-import com.amd.aparapi.util.InstructionViewer;
+import com.amd.aparapi.internal.instruction.Instruction;
+import com.amd.aparapi.internal.jni.ConfigJNI;
+import com.amd.aparapi.internal.tool.InstructionViewer;
 
 /**
  * A central location for holding all runtime configurable properties as well as logging configuration.
