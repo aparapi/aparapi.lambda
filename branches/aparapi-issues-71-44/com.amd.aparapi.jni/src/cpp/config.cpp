@@ -45,7 +45,7 @@ jboolean Config::getBoolean(JNIEnv *jenv, char *fieldName){
 
 Config::Config(JNIEnv *jenv){
    enableVerboseJNI = false;
-   configClass = jenv->FindClass("com/amd/aparapi/jni/ConfigJNI");
+   configClass = jenv->FindClass("com/amd/aparapi/internal/jni/ConfigJNI");
    if (configClass == NULL ||  jenv->ExceptionCheck()) {
       jenv->ExceptionDescribe(); 
       jenv->ExceptionClear();
