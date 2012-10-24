@@ -85,7 +85,7 @@
 
 #define VoidReturn  ArgsVoidReturn("")
 
-#define JNI_JAVA(type, className, methodName) JNIEXPORT type JNICALL Java_com_amd_aparapi_jni_##className##_##methodName
+#define JNI_JAVA(type, className, methodName) JNIEXPORT type JNICALL Java_com_amd_aparapi_internal_jni_##className##_##methodName
 
 class JNIHelper{
    public:
