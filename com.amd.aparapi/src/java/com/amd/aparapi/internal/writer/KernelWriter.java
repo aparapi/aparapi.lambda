@@ -44,8 +44,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.amd.aparapi.Kernel;
-import com.amd.aparapi.annotation.Constant;
-import com.amd.aparapi.annotation.Local;
 import com.amd.aparapi.config.Config;
 import com.amd.aparapi.internal.exception.CodeGenException;
 import com.amd.aparapi.internal.instruction.Instruction;
@@ -72,6 +70,8 @@ import com.amd.aparapi.internal.model.ClassModel.ConstantPool.FieldEntry;
 import com.amd.aparapi.internal.model.ClassModel.ConstantPool.MethodEntry;
 import com.amd.aparapi.internal.model.Entrypoint;
 import com.amd.aparapi.internal.model.MethodModel;
+import com.amd.aparapi.opencl.OpenCL.Constant;
+import com.amd.aparapi.opencl.OpenCL.Local;
 
 public abstract class KernelWriter extends BlockWriter {
 

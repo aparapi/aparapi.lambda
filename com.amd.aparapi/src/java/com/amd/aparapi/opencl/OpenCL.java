@@ -1,5 +1,9 @@
-package com.amd.aparapi.internal.opencl;
+package com.amd.aparapi.opencl;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 public interface OpenCL<T> {
 
@@ -26,6 +30,70 @@ public interface OpenCL<T> {
    public static final String CL_KHR_FP16 = "cl_khr_fp16";
 
    public static final String CL_KHR_GL_SHARING = "cl_khr_gl_sharing";
+
+   @Target(ElementType.PARAMETER)
+   @Retention(RetentionPolicy.RUNTIME)
+   public @interface Put {
+   }
+
+   @Target(ElementType.PARAMETER)
+   @Retention(RetentionPolicy.RUNTIME)
+   public @interface Get {
+   }
+
+   @Target(ElementType.TYPE)
+   @Retention(RetentionPolicy.RUNTIME)
+   public @interface Source {
+      String value();
+   }
+
+   @Target(ElementType.TYPE)
+   @Retention(RetentionPolicy.RUNTIME)
+   public @interface Resource {
+      String value();
+   }
+
+   @Target(ElementType.METHOD)
+   @Retention(RetentionPolicy.RUNTIME)
+   public @interface Kernel {
+      String value();
+   }
+
+   @Target(ElementType.PARAMETER)
+   @Retention(RetentionPolicy.RUNTIME)
+   public @interface Arg {
+      String value();
+   }
+
+   @Target(ElementType.PARAMETER)
+   @Retention(RetentionPolicy.RUNTIME)
+   public @interface GlobalReadWrite {
+      String value();
+   }
+
+   @Target(ElementType.PARAMETER)
+   @Retention(RetentionPolicy.RUNTIME)
+   public @interface GlobalReadOnly {
+      String value();
+   }
+
+   @Target(ElementType.PARAMETER)
+   @Retention(RetentionPolicy.RUNTIME)
+   public @interface GlobalWriteOnly {
+      String value();
+   }
+
+   @Target(ElementType.PARAMETER)
+   @Retention(RetentionPolicy.RUNTIME)
+   public @interface Local {
+      String value();
+   }
+
+   @Target(ElementType.PARAMETER)
+   @Retention(RetentionPolicy.RUNTIME)
+   public @interface Constant {
+      String value();
+   }
 
    public T put(float[] array);
 

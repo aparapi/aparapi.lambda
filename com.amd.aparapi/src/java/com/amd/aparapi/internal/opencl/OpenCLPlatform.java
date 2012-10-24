@@ -9,7 +9,7 @@ import com.amd.aparapi.internal.jni.OpenCLJNI;
 public class OpenCLPlatform extends OpenCLJNI {
 
    private long platformId;
-   
+
    private final String version;
 
    private final String vendor;
@@ -19,7 +19,16 @@ public class OpenCLPlatform extends OpenCLJNI {
    private final List<OpenCLDevice> devices = new ArrayList<OpenCLDevice>();
 
    /**
-    * Minimal constructor
+    * Default constructor
+    */
+   public OpenCLPlatform() {
+      version = "";
+      vendor = "";
+      name = "";
+   }
+
+   /**
+    * Full constructor
     * 
     * @param _platformId
     * @param _version
