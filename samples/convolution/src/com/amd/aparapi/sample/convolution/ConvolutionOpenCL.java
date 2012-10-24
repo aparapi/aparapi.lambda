@@ -1,4 +1,3 @@
-
 /*
 Copyright (c) 2010-2011, Advanced Micro Devices, Inc.
 All rights reserved.
@@ -42,13 +41,18 @@ package com.amd.aparapi.sample.convolution;
 import java.io.File;
 
 import com.amd.aparapi.Range;
+import com.amd.aparapi.annotation.Arg;
+import com.amd.aparapi.annotation.GlobalReadOnly;
+import com.amd.aparapi.annotation.GlobalWriteOnly;
+import com.amd.aparapi.annotation.Resource;
 import com.amd.aparapi.device.Device;
 import com.amd.aparapi.device.OpenCLDevice;
-import com.amd.aparapi.opencl.OpenCL;
+import com.amd.aparapi.internal.opencl.OpenCL;
 
-public class ConvolutionOpenCL{
+public class ConvolutionOpenCL {
 
-   @OpenCL.Resource("com/amd/aparapi/sample/convolution/convolution.cl") interface Convolution extends OpenCL<Convolution>{
+   @Resource("com/amd/aparapi/sample/convolution/convolution.cl")
+   interface Convolution extends OpenCL<Convolution> {
       Convolution applyConvolution(//
             Range range, //
             @GlobalReadOnly("_convMatrix3x3") float[] _convMatrix3x3,//// only read from kernel 
@@ -59,12 +63,12 @@ public class ConvolutionOpenCL{
    }
 
    public static void main(final String[] _args) {
-      File file = new File(_args.length == 1 ? _args[0] : "testcard.jpg");
+      final File file = new File(_args.length == 1 ? _args[0] : "testcard.jpg");
 
       final OpenCLDevice openclDevice = (OpenCLDevice) Device.best();
 
       final Convolution convolution = openclDevice.bind(Convolution.class);
-      float convMatrix3x3[] = new float[] {
+      final float convMatrix3x3[] = new float[] {
             0f,
             -10f,
             0f,
@@ -76,10 +80,11 @@ public class ConvolutionOpenCL{
             0f,
       };
 
-      new ConvolutionViewer(file, convMatrix3x3){
+      new ConvolutionViewer(file, convMatrix3x3) {
          Range range = null;
 
-         @Override protected void applyConvolution(float[] _convMatrix3x3, byte[] _inBytes, byte[] _outBytes, int _width,
+         @Override
+         protected void applyConvolution(float[] _convMatrix3x3, byte[] _inBytes, byte[] _outBytes, int _width,
                int _height) {
             if (range == null) {
                range = openclDevice.createRange(_width * _height * 3);
