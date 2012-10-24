@@ -54,7 +54,7 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 
 import com.amd.aparapi.Kernel;
-import com.amd.aparapi.util.ProfileInfo;
+import com.amd.aparapi.ProfileInfo;
 import com.amd.aparapi.Range;
 
 /**
@@ -68,7 +68,7 @@ import com.amd.aparapi.Range;
  *
  */
 
-public class Main{
+public class Main {
 
    /**
     * An Aparapi Kernel implementation for creating a scaled view of the mandelbrot set.
@@ -77,7 +77,7 @@ public class Main{
     *
     */
 
-   public static class MandelKernel extends Kernel{
+   public static class MandelKernel extends Kernel {
 
       /** RGB buffer used to store the Mandelbrot image. This buffer holds (width * height) RGB values. */
       final private int rgb[];
@@ -92,7 +92,8 @@ public class Main{
       final private int maxIterations = 64;
 
       /** Palette which maps iteration values to RGB values. */
-      @Constant final private int pallette[] = new int[maxIterations + 1];
+      @Constant
+      final private int pallette[] = new int[maxIterations + 1];
 
       /** Mutable values of scale, offsetx and offsety so that we can modify the zoom level and position of a view. */
       private float scale = .0f;
@@ -112,8 +113,8 @@ public class Main{
       public MandelKernel(int _width, int _height, int[] _rgb) {
          //Initialize palette values
          for (int i = 0; i < maxIterations; i++) {
-            float h = i / (float) maxIterations;
-            float b = 1.0f - h * h;
+            final float h = i / (float) maxIterations;
+            final float b = 1.0f - (h * h);
             pallette[i] = Color.HSBtoRGB(h, 1f, b);
          }
 
@@ -123,15 +124,16 @@ public class Main{
 
       }
 
-      @Override public void run() {
+      @Override
+      public void run() {
 
          /** Determine which RGB value we are going to process (0..RGB.length). */
-         int gid = getGlobalId();
+         final int gid = getGlobalId();
 
          /** Translate the gid into an x an y value. */
-         float x = (((gid % width * scale) - ((scale / 2) * width)) / width) + offsetx;
+         final float x = ((((gid % width) * scale) - ((scale / 2) * width)) / width) + offsetx;
 
-         float y = (((gid / height * scale) - ((scale / 2) * height)) / height) + offsety;
+         final float y = ((((gid / height) * scale) - ((scale / 2) * height)) / height) + offsety;
 
          int count = 0;
 
@@ -140,9 +142,9 @@ public class Main{
          float new_zx = 0f;
 
          // Iterate until the algorithm converges or until maxIterations are reached.
-         while (count < maxIterations && zx * zx + zy * zy < 8) {
-            new_zx = zx * zx - zy * zy + x;
-            zy = 2 * zx * zy + y;
+         while ((count < maxIterations) && (((zx * zx) + (zy * zy)) < 8)) {
+            new_zx = ((zx * zx) - (zy * zy)) + x;
+            zy = (2 * zx * zy) + y;
             zx = new_zx;
             count++;
          }
@@ -162,9 +164,10 @@ public class Main{
    /** User selected zoom-in point on the Mandelbrot view. */
    public static volatile Point to = null;
 
-   @SuppressWarnings("serial") public static void main(String[] _args) {
+   @SuppressWarnings("serial")
+   public static void main(String[] _args) {
 
-      JFrame frame = new JFrame("MandelBrot");
+      final JFrame frame = new JFrame("MandelBrot");
 
       /** Width of Mandelbrot view. */
       final int width = 768;
@@ -179,8 +182,9 @@ public class Main{
       final BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
       final BufferedImage offscreen = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
       // Draw Mandelbrot image
-      JComponent viewer = new JComponent(){
-         @Override public void paintComponent(Graphics g) {
+      final JComponent viewer = new JComponent() {
+         @Override
+         public void paintComponent(Graphics g) {
 
             g.drawImage(image, 0, 0, width, height, this);
          }
@@ -192,8 +196,9 @@ public class Main{
       final Object doorBell = new Object();
 
       // Mouse listener which reads the user clicked zoom-in point on the Mandelbrot view 
-      viewer.addMouseListener(new MouseAdapter(){
-         @Override public void mouseClicked(MouseEvent e) {
+      viewer.addMouseListener(new MouseAdapter() {
+         @Override
+         public void mouseClicked(MouseEvent e) {
             to = e.getPoint();
             synchronized (doorBell) {
                doorBell.notify();
@@ -214,7 +219,7 @@ public class Main{
       // Create a Kernel passing the size, RGB buffer and the palette.
       final MandelKernel kernel = new MandelKernel(width, height, rgb);
 
-      float defaultScale = 3f;
+      final float defaultScale = 3f;
 
       // Set the default scale and offset, execute the kernel and force a repaint of the viewer.
       kernel.setScaleAndOffset(defaultScale, -1f, 0f);
@@ -227,7 +232,8 @@ public class Main{
       System.out.println("Execution mode=" + kernel.getExecutionMode());
 
       // Window listener to dispose Kernel resources on user exit.
-      frame.addWindowListener(new WindowAdapter(){
+      frame.addWindowListener(new WindowAdapter() {
+         @Override
          public void windowClosing(WindowEvent _windowEvent) {
             kernel.dispose();
             System.exit(0);
@@ -242,7 +248,7 @@ public class Main{
             synchronized (doorBell) {
                try {
                   doorBell.wait();
-               } catch (InterruptedException ie) {
+               } catch (final InterruptedException ie) {
                   ie.getStackTrace();
                }
             }
@@ -251,26 +257,26 @@ public class Main{
          float x = -1f;
          float y = 0f;
          float scale = defaultScale;
-         float tox = (float) (to.x - width / 2) / width * scale;
-         float toy = (float) (to.y - height / 2) / height * scale;
+         final float tox = ((float) (to.x - (width / 2)) / width) * scale;
+         final float toy = ((float) (to.y - (height / 2)) / height) * scale;
 
          // This is how many frames we will display as we zoom in and out.
-         int frames = 128;
-         long startMillis = System.currentTimeMillis();
+         final int frames = 128;
+         final long startMillis = System.currentTimeMillis();
          for (int sign = -1; sign < 2; sign += 2) {
-            for (int i = 0; i < frames - 4; i++) {
-               scale = scale + sign * defaultScale / frames;
-               x = x - sign * (tox / frames);
-               y = y - sign * (toy / frames);
+            for (int i = 0; i < (frames - 4); i++) {
+               scale = scale + ((sign * defaultScale) / frames);
+               x = x - (sign * (tox / frames));
+               y = y - (sign * (toy / frames));
 
                // Set the scale and offset, execute the kernel and force a repaint of the viewer.
                kernel.setScaleAndOffset(scale, x, y);
                kernel.execute(range);
-               List<ProfileInfo> profileInfo = kernel.getProfileInfo();
-               if (profileInfo != null && profileInfo.size() > 0) {
-                  for (ProfileInfo p : profileInfo) {
+               final List<ProfileInfo> profileInfo = kernel.getProfileInfo();
+               if ((profileInfo != null) && (profileInfo.size() > 0)) {
+                  for (final ProfileInfo p : profileInfo) {
                      System.out.print(" " + p.getType() + " " + p.getLabel() + " " + (p.getStart() / 1000) + " .. "
-                           + (p.getEnd() / 1000) + " " + (p.getEnd() - p.getStart()) / 1000 + "us");
+                           + (p.getEnd() / 1000) + " " + ((p.getEnd() - p.getStart()) / 1000) + "us");
                   }
                   System.out.println();
                }
@@ -280,8 +286,8 @@ public class Main{
             }
          }
 
-         long elapsedMillis = System.currentTimeMillis() - startMillis;
-         System.out.println("FPS = " + frames * 1000 / elapsedMillis);
+         final long elapsedMillis = System.currentTimeMillis() - startMillis;
+         System.out.println("FPS = " + ((frames * 1000) / elapsedMillis));
 
          // Reset zoom-in point.
          to = null;
