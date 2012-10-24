@@ -39,10 +39,10 @@ package com.amd.aparapi;
 
 import static org.junit.Assert.assertTrue;
 
-import com.amd.aparapi.exception.AparapiException;
-import com.amd.aparapi.model.ClassModel;
-import com.amd.aparapi.model.Entrypoint;
-import com.amd.aparapi.writer.KernelWriter;
+import com.amd.aparapi.internal.exception.AparapiException;
+import com.amd.aparapi.internal.model.ClassModel;
+import com.amd.aparapi.internal.model.Entrypoint;
+import com.amd.aparapi.internal.writer.KernelWriter;
 
 public class CodeGenJUnitBase{
 

@@ -37,20 +37,21 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 */
 package com.amd.aparapi;
 
+
 // contains some things that only tests would use
 // but in the com.amd.aparapi package for convenience
 
-public class KernelHelper{
-   public KernelHelper(Kernel kernel) {
-      this.kernel = kernel;
-      this.kernelRunner = kernel.getKernelRunner();
-   }
-
-   public boolean hasFP64Support() {
-      return kernelRunner.hasFP64Support();
-   }
-
-   Kernel kernel;
-
-   KernelRunner kernelRunner;
+public class KernelHelper {
+   //   public KernelHelper(Kernel kernel) {
+   //      this.kernel = kernel;
+   //      this.kernelRunner = kernel.getKernelRunner();
+   //   }
+   //
+   //   public boolean hasFP64Support() {
+   //      return kernelRunner.hasFP64Support();
+   //   }
+   //
+   //   Kernel kernel;
+   //
+   //   KernelRunner kernelRunner;
 }
