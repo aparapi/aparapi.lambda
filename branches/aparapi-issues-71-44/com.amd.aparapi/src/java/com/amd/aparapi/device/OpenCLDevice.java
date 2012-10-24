@@ -14,15 +14,22 @@ import java.util.List;
 import java.util.Map;
 
 import com.amd.aparapi.Range;
-import com.amd.aparapi.opencl.OpenCL;
-import com.amd.aparapi.opencl.OpenCLArgDescriptor;
-import com.amd.aparapi.opencl.OpenCLKernel;
-import com.amd.aparapi.opencl.OpenCLPlatform;
-import com.amd.aparapi.opencl.OpenCLProgram;
+import com.amd.aparapi.annotation.Arg;
+import com.amd.aparapi.annotation.Constant;
+import com.amd.aparapi.annotation.GlobalReadOnly;
+import com.amd.aparapi.annotation.GlobalReadWrite;
+import com.amd.aparapi.annotation.GlobalWriteOnly;
+import com.amd.aparapi.annotation.Kernel;
+import com.amd.aparapi.annotation.Local;
+import com.amd.aparapi.annotation.Resource;
+import com.amd.aparapi.annotation.Source;
+import com.amd.aparapi.internal.opencl.OpenCL;
+import com.amd.aparapi.internal.opencl.OpenCLArgDescriptor;
+import com.amd.aparapi.internal.opencl.OpenCLKernel;
+import com.amd.aparapi.internal.opencl.OpenCLPlatform;
+import com.amd.aparapi.internal.opencl.OpenCLProgram;
 
 public class OpenCLDevice extends Device {
-
-   private final OpenCLPlatform platform;
 
    private final long deviceId;
 
@@ -42,7 +49,6 @@ public class OpenCLDevice extends Device {
     * @param _type
     */
    public OpenCLDevice(OpenCLPlatform _platform, long _deviceId, TYPE _type) {
-      platform = _platform;
       deviceId = _deviceId;
       type = _type;
    }
@@ -103,10 +109,6 @@ public class OpenCLDevice extends Device {
 
    public long getDeviceId() {
       return (deviceId);
-   }
-
-   public OpenCLPlatform getPlatform() {
-      return (platform);
    }
 
    public static class OpenCLInvocationHandler<T extends OpenCL<T>> implements InvocationHandler {
@@ -193,23 +195,23 @@ public class OpenCLDevice extends Device {
             long bits = 0L;
             String name = null;
             for (final Annotation pa : parameterAnnotations[arg]) {
-               if (pa instanceof OpenCL.GlobalReadOnly) {
-                  name = ((OpenCL.GlobalReadOnly) pa).value();
+               if (pa instanceof GlobalReadOnly) {
+                  name = ((GlobalReadOnly) pa).value();
                   bits |= OpenCLArgDescriptor.ARG_GLOBAL_BIT | OpenCLArgDescriptor.ARG_READONLY_BIT;
-               } else if (pa instanceof OpenCL.GlobalWriteOnly) {
-                  name = ((OpenCL.GlobalWriteOnly) pa).value();
+               } else if (pa instanceof GlobalWriteOnly) {
+                  name = ((GlobalWriteOnly) pa).value();
                   bits |= OpenCLArgDescriptor.ARG_GLOBAL_BIT | OpenCLArgDescriptor.ARG_WRITEONLY_BIT;
-               } else if (pa instanceof OpenCL.GlobalReadWrite) {
-                  name = ((OpenCL.GlobalReadWrite) pa).value();
+               } else if (pa instanceof GlobalReadWrite) {
+                  name = ((GlobalReadWrite) pa).value();
                   bits |= OpenCLArgDescriptor.ARG_GLOBAL_BIT | OpenCLArgDescriptor.ARG_READWRITE_BIT;
-               } else if (pa instanceof OpenCL.Local) {
-                  name = ((OpenCL.Local) pa).value();
+               } else if (pa instanceof Local) {
+                  name = ((Local) pa).value();
                   bits |= OpenCLArgDescriptor.ARG_LOCAL_BIT;
-               } else if (pa instanceof OpenCL.Constant) {
-                  name = ((OpenCL.Constant) pa).value();
+               } else if (pa instanceof Constant) {
+                  name = ((Constant) pa).value();
                   bits |= OpenCLArgDescriptor.ARG_CONST_BIT | OpenCLArgDescriptor.ARG_READONLY_BIT;
-               } else if (pa instanceof OpenCL.Arg) {
-                  name = ((OpenCL.Arg) pa).value();
+               } else if (pa instanceof Arg) {
+                  name = ((Arg) pa).value();
                   bits |= OpenCLArgDescriptor.ARG_ISARG_BIT;
                }
 
@@ -305,12 +307,12 @@ public class OpenCLDevice extends Device {
          final StringBuilder sourceBuilder = new StringBuilder();
          boolean interfaceIsAnnotated = false;
          for (final Annotation a : _interface.getAnnotations()) {
-            if (a instanceof OpenCL.Source) {
-               final OpenCL.Source source = (OpenCL.Source) a;
+            if (a instanceof Source) {
+               final Source source = (Source) a;
                sourceBuilder.append(source.value()).append("\n");
                interfaceIsAnnotated = true;
-            } else if (a instanceof OpenCL.Resource) {
-               final OpenCL.Resource sourceResource = (OpenCL.Resource) a;
+            } else if (a instanceof Resource) {
+               final Resource sourceResource = (Resource) a;
                final InputStream stream = _interface.getClassLoader().getResourceAsStream(sourceResource.value());
                sourceBuilder.append(streamToString(stream));
                interfaceIsAnnotated = true;
@@ -332,7 +334,7 @@ public class OpenCLDevice extends Device {
                   for (final Annotation a : m.getAnnotations()) {
                      //  System.out.println("   annotation "+a);
                      // System.out.println("   annotation type " + a.annotationType());
-                     if (a instanceof OpenCL.Kernel) {
+                     if (a instanceof Kernel) {
                         sourceBuilder.append("__kernel void " + m.getName() + "(");
                         final List<OpenCLArgDescriptor> args = getArgs(m);
 
@@ -347,7 +349,7 @@ public class OpenCLDevice extends Device {
                         }
 
                         sourceBuilder.append(")");
-                        final OpenCL.Kernel kernel = (OpenCL.Kernel) a;
+                        final Kernel kernel = (Kernel) a;
                         sourceBuilder.append(kernel.value());
                         kernelNameToArgsMap.put(m.getName(), args);
 
