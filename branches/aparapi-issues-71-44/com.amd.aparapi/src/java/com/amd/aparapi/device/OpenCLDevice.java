@@ -14,20 +14,20 @@ import java.util.List;
 import java.util.Map;
 
 import com.amd.aparapi.Range;
-import com.amd.aparapi.annotation.Arg;
-import com.amd.aparapi.annotation.Constant;
-import com.amd.aparapi.annotation.GlobalReadOnly;
-import com.amd.aparapi.annotation.GlobalReadWrite;
-import com.amd.aparapi.annotation.GlobalWriteOnly;
-import com.amd.aparapi.annotation.Kernel;
-import com.amd.aparapi.annotation.Local;
-import com.amd.aparapi.annotation.Resource;
-import com.amd.aparapi.annotation.Source;
-import com.amd.aparapi.internal.opencl.OpenCL;
 import com.amd.aparapi.internal.opencl.OpenCLArgDescriptor;
 import com.amd.aparapi.internal.opencl.OpenCLKernel;
 import com.amd.aparapi.internal.opencl.OpenCLPlatform;
 import com.amd.aparapi.internal.opencl.OpenCLProgram;
+import com.amd.aparapi.opencl.OpenCL;
+import com.amd.aparapi.opencl.OpenCL.Arg;
+import com.amd.aparapi.opencl.OpenCL.Constant;
+import com.amd.aparapi.opencl.OpenCL.GlobalReadOnly;
+import com.amd.aparapi.opencl.OpenCL.GlobalReadWrite;
+import com.amd.aparapi.opencl.OpenCL.GlobalWriteOnly;
+import com.amd.aparapi.opencl.OpenCL.Kernel;
+import com.amd.aparapi.opencl.OpenCL.Local;
+import com.amd.aparapi.opencl.OpenCL.Resource;
+import com.amd.aparapi.opencl.OpenCL.Source;
 
 public class OpenCLDevice extends Device {
 
@@ -360,7 +360,7 @@ public class OpenCLDevice extends Device {
 
       // System.out.println("opencl{\n" + _source + "\n}opencl");
 
-      final OpenCLProgram program = new OpenCLProgram(0, 0, 0, this, _source);
+      final OpenCLProgram program = new OpenCLProgram(this, _source);
 
       final Map<String, OpenCLKernel> map = new HashMap<String, OpenCLKernel>();
       for (final String name : kernelNameToArgsMap.keySet()) {

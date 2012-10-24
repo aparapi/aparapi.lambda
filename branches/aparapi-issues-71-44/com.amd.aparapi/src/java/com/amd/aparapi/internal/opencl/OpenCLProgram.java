@@ -13,7 +13,7 @@ public class OpenCLProgram extends OpenCLJNI {
    private final long queueId;
 
    private final long contextId;
-   
+
    private final OpenCLDevice device;
 
    private final String source;
@@ -27,7 +27,21 @@ public class OpenCLProgram extends OpenCLJNI {
 
    /**
     * Minimal constructor
+    */
+   public OpenCLProgram(OpenCLDevice _device, String _source) {
+      programId = 0;
+      queueId = 0;
+      contextId = 0;
+      device = _device;
+      source = _source;
+   }
+
+   /**
+    * Full constructor
     * 
+    * @param _programId
+    * @param _queueId
+    * @param _contextId
     * @param _device
     * @param _source
     */

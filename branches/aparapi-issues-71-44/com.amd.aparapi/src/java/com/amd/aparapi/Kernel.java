@@ -37,6 +37,8 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 */
 package com.amd.aparapi;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -49,8 +51,6 @@ import java.util.concurrent.CyclicBarrier;
 import java.util.logging.Logger;
 
 import com.amd.aparapi.annotation.Experimental;
-import com.amd.aparapi.annotation.OpenCLDelegate;
-import com.amd.aparapi.annotation.OpenCLMapping;
 import com.amd.aparapi.config.Config;
 import com.amd.aparapi.exception.DeprecatedException;
 import com.amd.aparapi.internal.kernel.KernelRunner;
@@ -149,6 +149,48 @@ public abstract class Kernel implements Cloneable {
    private static Logger logger = Logger.getLogger(Config.getLoggerName());
 
    /**
+    *  We can use this Annotation to 'tag' intended local buffers. 
+    *  
+    *  So we can either annotate the buffer
+    *  <pre><code>
+    *  &#64Local int[] buffer = new int[1024];
+    *  </code></pre>
+    *   Or use a special suffix 
+    *  <pre><code>
+    *  int[] buffer_$local$ = new int[1024];
+    *  </code></pre>
+    *  
+    *  @see LOCAL_SUFFIX
+    * 
+    * 
+    */
+   @Retention(RetentionPolicy.RUNTIME)
+   public @interface Local {
+
+   }
+
+   /**
+    *  We can use this Annotation to 'tag' intended constant buffers. 
+    *  
+    *  So we can either annotate the buffer
+    *  <pre><code>
+    *  &#64Constant int[] buffer = new int[1024];
+    *  </code></pre>
+    *   Or use a special suffix 
+    *  <pre><code>
+    *  int[] buffer_$constant$ = new int[1024];
+    *  </code></pre>
+    *  
+    *  @see LOCAL_SUFFIX
+    * 
+    * 
+    */
+   @Retention(RetentionPolicy.RUNTIME)
+   public @interface Constant {
+
+   }
+
+   /**
     *  We can use this suffix to 'tag' intended local buffers. 
     *  
     *  
@@ -161,7 +203,6 @@ public abstract class Kernel implements Cloneable {
     *  &#64Local int[] buffer = new int[1024];
     *  </code></pre>
     */
-
    public final static String LOCAL_SUFFIX = "_$local$";
 
    /**
@@ -177,8 +218,27 @@ public abstract class Kernel implements Cloneable {
     *  &#64Constant int[] buffer = new int[1024];
     *  </code></pre>
     */
-
    public final static String CONSTANT_SUFFIX = "_$constant$";
+
+   /**
+    * This annotation is for internal use only
+    */
+   @Retention(RetentionPolicy.RUNTIME)
+   protected @interface OpenCLDelegate {
+
+   }
+
+   /**
+    * This annotation is for internal use only
+    */
+   @Retention(RetentionPolicy.RUNTIME)
+   protected @interface OpenCLMapping {
+      String mapTo() default "";
+
+      boolean atomic32() default false;
+
+      boolean atomic64() default false;
+   }
 
    public abstract class Entry {
       public abstract void run();

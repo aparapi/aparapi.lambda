@@ -19,8 +19,7 @@ public abstract class KernelRunnerJNI {
     * This 'bit' indicates that a particular <code>KernelArg</code> represents a <code>boolean</code> type (array or primitive).
     * 
     * 
-    * @see com.amd.aparapi.internal.annotation.annotations.UsedByJNICode
-    * @see com.amd.aparapi.KernelRunner.KernelArg
+    * @see com.amd.aparapi.internal.annotation.UsedByJNICode
     * 
     * @author gfrost
     */
@@ -31,8 +30,7 @@ public abstract class KernelRunnerJNI {
     * This 'bit' indicates that a particular <code>KernelArg</code> represents a <code>byte</code> type (array or primitive).
     * 
     * 
-    * @see com.amd.aparapi.internal.annotation.annotations.UsedByJNICode
-    * @see com.amd.aparapi.KernelRunner.KernelArg
+    * @see com.amd.aparapi.internal.annotation.UsedByJNICode
     * 
     * @author gfrost
     */
@@ -43,8 +41,7 @@ public abstract class KernelRunnerJNI {
     * This 'bit' indicates that a particular <code>KernelArg</code> represents a <code>float</code> type (array or primitive).
     * 
     * 
-    * @see com.amd.aparapi.internal.annotation.annotations.UsedByJNICode
-    * @see com.amd.aparapi.KernelRunner.KernelArg
+    * @see com.amd.aparapi.internal.annotation.UsedByJNICode
     * 
     * @author gfrost
     */
@@ -55,8 +52,7 @@ public abstract class KernelRunnerJNI {
     * This 'bit' indicates that a particular <code>KernelArg</code> represents a <code>int</code> type (array or primitive).
     * 
     * 
-    * @see com.amd.aparapi.internal.annotation.annotations.UsedByJNICode
-    * @see com.amd.aparapi.KernelRunner.KernelArg
+    * @see com.amd.aparapi.internal.annotation.UsedByJNICode
     * 
     * @author gfrost
     */
@@ -67,8 +63,7 @@ public abstract class KernelRunnerJNI {
     * This 'bit' indicates that a particular <code>KernelArg</code> represents a <code>double</code> type (array or primitive).
     * 
     * 
-    * @see com.amd.aparapi.internal.annotation.annotations.UsedByJNICode
-    * @see com.amd.aparapi.KernelRunner.KernelArg
+    * @see com.amd.aparapi.internal.annotation.UsedByJNICode
     * 
     * @author gfrost
     */
@@ -79,8 +74,7 @@ public abstract class KernelRunnerJNI {
     * This 'bit' indicates that a particular <code>KernelArg</code> represents a <code>long</code> type (array or primitive).
     * 
     * 
-    * @see com.amd.aparapi.internal.annotation.annotations.UsedByJNICode
-    * @see com.amd.aparapi.KernelRunner.KernelArg
+    * @see com.amd.aparapi.internal.annotation.UsedByJNICode
     * 
     * @author gfrost
     */
@@ -90,8 +84,7 @@ public abstract class KernelRunnerJNI {
    /**
     * TODO:
     * 
-    * @see com.amd.aparapi.internal.annotation.annotations.UsedByJNICode
-    * @see com.amd.aparapi.KernelRunner.KernelArg
+    * @see com.amd.aparapi.internal.annotation.UsedByJNICode
     * 
     * @author gfrost
     */
@@ -103,8 +96,7 @@ public abstract class KernelRunnerJNI {
     * So <code>ARG_ARRAY|ARG_INT</code> tells us this arg is an array of <code>int</code>.
     * 
     * 
-    * @see com.amd.aparapi.internal.annotation.annotations.UsedByJNICode
-    * @see com.amd.aparapi.KernelRunner.KernelArg
+    * @see com.amd.aparapi.internal.annotation.UsedByJNICode
     * 
     * @author gfrost
     */
@@ -116,8 +108,7 @@ public abstract class KernelRunnerJNI {
     * So <code>ARG_PRIMITIVE|ARG_INT</code> tells us this arg is a primitive <code>int</code>.
     * 
     * 
-    * @see com.amd.aparapi.internal.annotation.annotations.UsedByJNICode
-    * @see com.amd.aparapi.KernelRunner.KernelArg
+    * @see com.amd.aparapi.internal.annotation.UsedByJNICode
     * 
     * @author gfrost
     */
@@ -129,8 +120,7 @@ public abstract class KernelRunnerJNI {
     * So <code>ARG_ARRAY|ARG_INT|ARG_READ</code> tells us this arg is an array of int's that are read by the kernel.
     * 
     * 
-    * @see com.amd.aparapi.internal.annotation.annotations.UsedByJNICode
-    * @see com.amd.aparapi.KernelRunner.KernelArg
+    * @see com.amd.aparapi.internal.annotation.UsedByJNICode
     * 
     * @author gfrost
     */
@@ -142,8 +132,7 @@ public abstract class KernelRunnerJNI {
     * So <code>ARG_ARRAY|ARG_INT|ARG_WRITE</code> tells us this arg is an array of int's that we expect the kernel to mutate.
     * 
     * 
-    * @see com.amd.aparapi.internal.annotation.annotations.UsedByJNICode
-    * @see com.amd.aparapi.KernelRunner.KernelArg
+    * @see com.amd.aparapi.internal.annotation.UsedByJNICode
     * 
     * @author gfrost
     */
@@ -154,9 +143,8 @@ public abstract class KernelRunnerJNI {
     * This 'bit' indicates that a particular <code>KernelArg</code> resides in local memory in the generated OpenCL code.<br/>
     * 
     * 
-    * @see com.amd.aparapi.internal.annotation.annotations.UsedByJNICode
-    * @see com.amd.aparapi.annotation.annotations.Experimental
-    * @see com.amd.aparapi.KernelRunner.KernelArg
+    * @see com.amd.aparapi.internal.annotation.UsedByJNICode
+    * @see com.amd.aparapi.annotation.Experimental
     * 
     * @author gfrost
     */
@@ -168,9 +156,8 @@ public abstract class KernelRunnerJNI {
     * This 'bit' indicates that a particular <code>KernelArg</code> resides in global memory in the generated OpenCL code.<br/>
     * 
     * 
-    * @see com.amd.aparapi.internal.annotation.annotations.UsedByJNICode
-    * @see com.amd.aparapi.annotation.annotations.Experimental
-    * @see com.amd.aparapi.KernelRunner.KernelArg
+    * @see com.amd.aparapi.internal.annotation.UsedByJNICode
+    * @see com.amd.aparapi.annotation.Experimental
     * 
     * @author gfrost
     */
@@ -182,9 +169,8 @@ public abstract class KernelRunnerJNI {
     * This 'bit' indicates that a particular <code>KernelArg</code> resides in constant memory in the generated OpenCL code.<br/>
     * 
     * 
-    * @see com.amd.aparapi.internal.annotation.annotations.UsedByJNICode
-    * @see com.amd.aparapi.annotation.annotations.Experimental
-    * @see com.amd.aparapi.KernelRunner.KernelArg
+    * @see com.amd.aparapi.internal.annotation.UsedByJNICode
+    * @see com.amd.aparapi.annotation.Experimental
     * 
     * @author gfrost
     */
@@ -196,8 +182,7 @@ public abstract class KernelRunnerJNI {
     * This 'bit' indicates that a particular <code>KernelArg</code> has it's length reference, in which case a synthetic arg is passed (name mangled) to the OpenCL kernel.<br/>
     * 
     * 
-    * @see com.amd.aparapi.internal.annotation.annotations.UsedByJNICode
-    * @see com.amd.aparapi.KernelRunner.KernelArg
+    * @see com.amd.aparapi.internal.annotation.UsedByJNICode
     * 
     * @author gfrost
     */
@@ -207,8 +192,7 @@ public abstract class KernelRunnerJNI {
    /**
     * TODO:
     * 
-    * @see com.amd.aparapi.internal.annotation.annotations.UsedByJNICode
-    * @see com.amd.aparapi.KernelRunner.KernelArg
+    * @see com.amd.aparapi.internal.annotation.UsedByJNICode
     * 
     * @author gfrost
     */
@@ -218,8 +202,7 @@ public abstract class KernelRunnerJNI {
    /**
     * This 'bit' indicates that the arg has been explicitly marked for reading
     * 
-    * @see com.amd.aparapi.internal.annotation.annotations.UsedByJNICode
-    * @see com.amd.aparapi.KernelRunner.KernelArg
+    * @see com.amd.aparapi.internal.annotation.UsedByJNICode
     * 
     * @author gfrost
     */
@@ -229,8 +212,7 @@ public abstract class KernelRunnerJNI {
    /**
     * This 'bit' indicates that the arg has been explicitly marked for writing
     * 
-    * @see com.amd.aparapi.internal.annotation.annotations.UsedByJNICode
-    * @see com.amd.aparapi.KernelRunner.KernelArg
+    * @see com.amd.aparapi.internal.annotation.UsedByJNICode
     * 
     * @author gfrost
     */
@@ -240,8 +222,7 @@ public abstract class KernelRunnerJNI {
    /**
     * TODO:
     * 
-    * @see com.amd.aparapi.internal.annotation.annotations.UsedByJNICode
-    * @see com.amd.aparapi.KernelRunner.KernelArg
+    * @see com.amd.aparapi.internal.annotation.UsedByJNICode
     * 
     * @author gfrost
     */
@@ -252,7 +233,6 @@ public abstract class KernelRunnerJNI {
     * TODO:
     * 
     * @see com.amd.aparapi.annotations.UsedByJNICode
-    * @see com.amd.aparapi.KernelRunner.KernelArg
     * 
     * @author gfrost
     */
@@ -262,7 +242,6 @@ public abstract class KernelRunnerJNI {
     * TODO:
     * 
     * @see com.amd.aparapi.annotations.UsedByJNICode
-    * @see com.amd.aparapi.KernelRunner.KernelArg
     * 
     * @author gfrost
     */
@@ -272,8 +251,7 @@ public abstract class KernelRunnerJNI {
     * This 'bit' indicates that a particular <code>KernelArg</code> represents a <code>char</code> type (array or primitive).
     * 
     * 
-    * @see com.amd.aparapi.internal.annotation.annotations.UsedByJNICode
-    * @see com.amd.aparapi.KernelRunner.KernelArg
+    * @see com.amd.aparapi.internal.annotation.UsedByJNICode
     * 
     * @author rlamothe
     */
@@ -284,8 +262,7 @@ public abstract class KernelRunnerJNI {
     * This 'bit' indicates that a particular <code>KernelArg</code> represents a <code>static</code> field (array or primitive).
     * 
     * 
-    * @see com.amd.aparapi.internal.annotation.annotations.UsedByJNICode
-    * @see com.amd.aparapi.KernelRunner.KernelArg
+    * @see com.amd.aparapi.internal.annotation.UsedByJNICode
     * 
     * @author gfrost
     */
@@ -294,7 +271,6 @@ public abstract class KernelRunnerJNI {
 
    /**
     * This 'bit' indicates that we wish to enable profiling from the JNI code.
-    * 
     * 
     * @see com.amd.aparapi.annotations.UsedByJNICode
     * 
@@ -305,7 +281,6 @@ public abstract class KernelRunnerJNI {
    /**
     * This 'bit' indicates that we wish to store profiling information in a CSV file from JNI code.
     * 
-    * 
     * @see com.amd.aparapi.annotations.UsedByJNICode
     * 
     * @author gfrost
@@ -315,11 +290,9 @@ public abstract class KernelRunnerJNI {
    /**
     * This 'bit' indicates that we want to execute on the GPU.
     * 
-    * 
     * Be careful changing final constants starting with JNI.<br/>
     * 
-    * 
-    * @see com.amd.aparapi.internal.annotation.annotations.UsedByJNICode
+    * @see com.amd.aparapi.internal.annotation.UsedByJNICode
     * 
     * @author gfrost
     */
@@ -330,7 +303,6 @@ public abstract class KernelRunnerJNI {
     * This 'bit' indicates that we wish to enable verbose JNI layer messages to stderr.<br/>
     * 
     * @see com.amd.aparapi.annotations.UsedByJNICode
-    * @see com.amd.aparapi.annotations.Experimental
     * 
     * @author gfrost
     */

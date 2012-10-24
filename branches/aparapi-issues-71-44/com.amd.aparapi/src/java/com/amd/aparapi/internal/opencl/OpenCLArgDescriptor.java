@@ -43,6 +43,12 @@ public class OpenCLArgDescriptor {
 
    public OpenCLKernel kernel;
 
+   /**
+    * Full constructor
+    * 
+    * @param _name
+    * @param _bits
+    */
    public OpenCLArgDescriptor(String _name, long _bits) {
       name = _name;
       bits = _bits;
