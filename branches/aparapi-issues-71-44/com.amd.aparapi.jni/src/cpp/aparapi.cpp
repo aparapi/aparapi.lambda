@@ -42,7 +42,7 @@
 #include "clHelper.h"
 #define APARAPI_SOURCE
 #include "aparapi.h"
-#include "com_amd_aparapi_jni_KernelRunnerJNI.h"
+#include "com_amd_aparapi_internal_jni_KernelRunnerJNI.h"
 #include "opencljni.h"
 
 class Range{
@@ -180,64 +180,64 @@ class KernelArg{
       }
 
       int isArray(){
-         return(type&com_amd_aparapi_jni_KernelRunnerJNI_ARG_ARRAY);
+         return(type&com_amd_aparapi_internal_jni_KernelRunnerJNI_ARG_ARRAY);
       }
       int isReadByKernel(){
-         return(type&com_amd_aparapi_jni_KernelRunnerJNI_ARG_READ);
+         return(type&com_amd_aparapi_internal_jni_KernelRunnerJNI_ARG_READ);
       }
       int isMutableByKernel(){
-         return(type&com_amd_aparapi_jni_KernelRunnerJNI_ARG_WRITE);
+         return(type&com_amd_aparapi_internal_jni_KernelRunnerJNI_ARG_WRITE);
       }
       int isExplicit(){
-         return(type&com_amd_aparapi_jni_KernelRunnerJNI_ARG_EXPLICIT);
+         return(type&com_amd_aparapi_internal_jni_KernelRunnerJNI_ARG_EXPLICIT);
       }
       int usesArrayLength(){
-         return(type&com_amd_aparapi_jni_KernelRunnerJNI_ARG_ARRAYLENGTH);
+         return(type&com_amd_aparapi_internal_jni_KernelRunnerJNI_ARG_ARRAYLENGTH);
       }
       int isExplicitWrite(){
-         return(type&com_amd_aparapi_jni_KernelRunnerJNI_ARG_EXPLICIT_WRITE);
+         return(type&com_amd_aparapi_internal_jni_KernelRunnerJNI_ARG_EXPLICIT_WRITE);
       }
       int isImplicit(){
          return(!isExplicit());
       }
       int isPrimitive(){
-         return(type&com_amd_aparapi_jni_KernelRunnerJNI_ARG_PRIMITIVE);
+         return(type&com_amd_aparapi_internal_jni_KernelRunnerJNI_ARG_PRIMITIVE);
       }
       int isGlobal(){
-         return(type&com_amd_aparapi_jni_KernelRunnerJNI_ARG_GLOBAL);
+         return(type&com_amd_aparapi_internal_jni_KernelRunnerJNI_ARG_GLOBAL);
       }
       int isFloat(){
-         return(type&com_amd_aparapi_jni_KernelRunnerJNI_ARG_FLOAT);
+         return(type&com_amd_aparapi_internal_jni_KernelRunnerJNI_ARG_FLOAT);
       }
       int isLong(){
-         return (type&com_amd_aparapi_jni_KernelRunnerJNI_ARG_LONG);
+         return (type&com_amd_aparapi_internal_jni_KernelRunnerJNI_ARG_LONG);
       }
       int isInt(){
-         return (type&com_amd_aparapi_jni_KernelRunnerJNI_ARG_INT);
+         return (type&com_amd_aparapi_internal_jni_KernelRunnerJNI_ARG_INT);
       }
       int isDouble(){
-         return (type&com_amd_aparapi_jni_KernelRunnerJNI_ARG_DOUBLE);
+         return (type&com_amd_aparapi_internal_jni_KernelRunnerJNI_ARG_DOUBLE);
       }
       int isBoolean(){
-         return (type&com_amd_aparapi_jni_KernelRunnerJNI_ARG_BOOLEAN);
+         return (type&com_amd_aparapi_internal_jni_KernelRunnerJNI_ARG_BOOLEAN);
       }
       int isByte(){
-         return (type&com_amd_aparapi_jni_KernelRunnerJNI_ARG_BYTE);
+         return (type&com_amd_aparapi_internal_jni_KernelRunnerJNI_ARG_BYTE);
       }
       int isShort(){
-         return (type&com_amd_aparapi_jni_KernelRunnerJNI_ARG_SHORT);
+         return (type&com_amd_aparapi_internal_jni_KernelRunnerJNI_ARG_SHORT);
       }
       int isLocal(){
-         return (type&com_amd_aparapi_jni_KernelRunnerJNI_ARG_LOCAL);
+         return (type&com_amd_aparapi_internal_jni_KernelRunnerJNI_ARG_LOCAL);
       }
       int isStatic(){
-         return (type&com_amd_aparapi_jni_KernelRunnerJNI_ARG_STATIC);
+         return (type&com_amd_aparapi_internal_jni_KernelRunnerJNI_ARG_STATIC);
       }
       int isConstant(){
-         return (type&com_amd_aparapi_jni_KernelRunnerJNI_ARG_CONSTANT);
+         return (type&com_amd_aparapi_internal_jni_KernelRunnerJNI_ARG_CONSTANT);
       }
       int isAparapiBuf(){
-         return (type&com_amd_aparapi_jni_KernelRunnerJNI_ARG_APARAPI_BUF);
+         return (type&com_amd_aparapi_internal_jni_KernelRunnerJNI_ARG_APARAPI_BUF);
       }
       int isBackedByArray(){
          return ( (isArray() && (isGlobal() || isConstant())));
@@ -258,7 +258,7 @@ class KernelArg{
          arrayBuffer->length = jenv->GetIntField(javaArg, numElementsFieldID);
       }
       void clearExplicitBufferBit(JNIEnv* jenv){
-         type &= ~com_amd_aparapi_jni_KernelRunnerJNI_ARG_EXPLICIT_WRITE;
+         type &= ~com_amd_aparapi_internal_jni_KernelRunnerJNI_ARG_EXPLICIT_WRITE;
          jenv->SetIntField(javaArg, typeFieldID,type );
       }
 
@@ -313,7 +313,7 @@ class JNIContext{
          profileBaseTime(0),
          passes(0),
          exec(NULL),
-         deviceType(((flags&com_amd_aparapi_jni_KernelRunnerJNI_JNI_FLAG_USE_GPU)==com_amd_aparapi_jni_KernelRunnerJNI_JNI_FLAG_USE_GPU)?CL_DEVICE_TYPE_GPU:CL_DEVICE_TYPE_CPU),
+         deviceType(((flags&com_amd_aparapi_internal_jni_KernelRunnerJNI_JNI_FLAG_USE_GPU)==com_amd_aparapi_internal_jni_KernelRunnerJNI_JNI_FLAG_USE_GPU)?CL_DEVICE_TYPE_GPU:CL_DEVICE_TYPE_CPU),
          profileFile(NULL), 
          valid(JNI_FALSE){
             cl_int status = CL_SUCCESS;
@@ -338,7 +338,7 @@ class JNIContext{
          return(valid);
       }
       jboolean isUsingGPU(){
-         return((flags&com_amd_aparapi_jni_KernelRunnerJNI_JNI_FLAG_USE_GPU)==com_amd_aparapi_jni_KernelRunnerJNI_JNI_FLAG_USE_GPU?JNI_TRUE:JNI_FALSE);
+         return((flags&com_amd_aparapi_internal_jni_KernelRunnerJNI_JNI_FLAG_USE_GPU)==com_amd_aparapi_internal_jni_KernelRunnerJNI_JNI_FLAG_USE_GPU?JNI_TRUE:JNI_FALSE);
       }
       ~JNIContext(){
       }

@@ -488,20 +488,20 @@ First consider editing the properties in build.properties
    <target name="javah">
       <mkdir dir="include" />
       <javah classpath="..\com.amd.aparapi\dist\aparapi.jar" destdir="include" force="true">
-         <class name="com.amd.aparapi.jni.ConfigJNI" />
-         <class name="com.amd.aparapi.jni.KernelArgJNI" />
-         <class name="com.amd.aparapi.jni.KernelRunnerJNI" />
-         <class name="com.amd.aparapi.jni.OpenCLJNI" />
-         <class name="com.amd.aparapi.jni.RangeJNI" />
+         <class name="com.amd.aparapi.internal.jni.ConfigJNI" />
+         <class name="com.amd.aparapi.internal.jni.KernelArgJNI" />
+         <class name="com.amd.aparapi.internal.jni.KernelRunnerJNI" />
+         <class name="com.amd.aparapi.internal.jni.OpenCLJNI" />
+         <class name="com.amd.aparapi.internal.jni.RangeJNI" />
          <!-- Non-Native Classes -->
-         <class name="com.amd.aparapi.config.Config" />
          <class name="com.amd.aparapi.Kernel"/>
-         <class name="com.amd.aparapi.KernelRunner"/>
          <class name="com.amd.aparapi.Range"/>
+         <class name="com.amd.aparapi.config.Config" />
          <class name="com.amd.aparapi.device.Device" />
          <class name="com.amd.aparapi.device.OpenCLDevice" />
-         <class name="com.amd.aparapi.opencl.OpenCLArgDescriptor" />
-         <class name="com.amd.aparapi.opencl.OpenCLMem" />
+         <class name="com.amd.aparapi.internal.kernel.KernelRunner"/>
+         <class name="com.amd.aparapi.internal.opencl.OpenCLArgDescriptor" />
+         <class name="com.amd.aparapi.internal.opencl.OpenCLMem" />
       </javah>
    </target>
 

@@ -39,7 +39,7 @@
 #define OPENCLJNI_SOURCE
 #include "opencljni.h"
 
-#include "com_amd_aparapi_jni_OpenCLJNI.h"
+#include "com_amd_aparapi_internal_jni_OpenCLJNI.h"
 
 void OpenCLArgDescriptor::describeBits(JNIEnv *jenv, jlong bits){
    fprintf(stderr, " %lx ", bits);
@@ -627,7 +627,7 @@ JNI_JAVA(void, OpenCLJNI, invoke)
    }
 
 JNI_JAVA(jobject, OpenCLJNI, getPlatforms)
-   (JNIEnv *jenv, jclass clazz) {
+   (JNIEnv *jenv, jobject jobj) {
       jobject platformListInstance = JNIHelper::createInstance(jenv, ArrayListClass, VoidReturn);
       cl_int status = CL_SUCCESS;
       cl_uint platformc;
@@ -719,6 +719,7 @@ JNI_JAVA(jobject, OpenCLJNI, getPlatforms)
 
                         size_t *maxWorkItemSizes = new size_t[maxWorkItemDimensions];
                         status = clGetDeviceInfo(deviceIds[deviceIdx], CL_DEVICE_MAX_WORK_ITEM_SIZES,  sizeof(size_t)*maxWorkItemDimensions, maxWorkItemSizes, NULL);
+
                         for (unsigned dimIdx=0; dimIdx<maxWorkItemDimensions; dimIdx++){
                            //fprintf(stderr, "device[%d] dim[%d] = %d\n", deviceIdx, dimIdx, maxWorkItemSizes[dimIdx]);
                            JNIHelper::callVoid(jenv, deviceInstance, "setMaxWorkItemSize", ArgsVoidReturn(IntArg IntArg), dimIdx,maxWorkItemSizes[dimIdx]);
@@ -739,8 +740,6 @@ JNI_JAVA(jobject, OpenCLJNI, getPlatforms)
                         //fprintf(stderr, "device[%d] CL_DEVICE_GLOBAL_MEM_SIZE = %lu\n", deviceIdx, globalMemSize);
                         JNIHelper::callVoid(jenv, deviceInstance, "setGlobalMemSize", ArgsVoidReturn(LongArg),  globalMemSize);
 
-
-
                         cl_ulong localMemSize;
                         status = clGetDeviceInfo(deviceIds[deviceIdx], CL_DEVICE_LOCAL_MEM_SIZE,  sizeof(localMemSize), &localMemSize, NULL);
                         //fprintf(stderr, "device[%d] CL_DEVICE_LOCAL_MEM_SIZE = %lu\n", deviceIdx, localMemSize);
@@ -750,9 +749,8 @@ JNI_JAVA(jobject, OpenCLJNI, getPlatforms)
                   }
                }
             }
-
          }
       }
+
       return (platformListInstance);
    }
-
