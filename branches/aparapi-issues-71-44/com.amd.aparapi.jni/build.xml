@@ -487,7 +487,7 @@ First consider editing the properties in build.properties
 
    <target name="javah">
       <mkdir dir="include" />
-      <javah classpath="..\com.amd.aparapi\dist\aparapi.jar" destdir="include" force="true">
+      <javah classpath="..\com.amd.aparapi\classes" destdir="include" force="true">
          <class name="com.amd.aparapi.internal.jni.ConfigJNI" />
          <class name="com.amd.aparapi.internal.jni.KernelArgJNI" />
          <class name="com.amd.aparapi.internal.jni.KernelRunnerJNI" />
