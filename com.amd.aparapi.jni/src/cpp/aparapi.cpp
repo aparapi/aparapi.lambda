@@ -59,7 +59,7 @@ int enqueueMarker(cl_command_queue commandQueue, cl_event* firstEvent) {
     return clEnqueueMarkerWithWaitList(commandQueue, 0, NULL, firstEvent);
 #else
     // this was deprecated in 1.1
-    return clEnqueueMarker(commandQueue, &firstEvent);
+    return clEnqueueMarker(commandQueue, firstEvent);
 #endif
 }
 
@@ -126,10 +126,10 @@ jint writeProfileInfo(JNIContext* jniContext){
          fprintf(jniContext->profileFile, "%d write %s,", pos++, arg->name);
 
          fprintf(jniContext->profileFile, "%lu,%lu,%lu,%lu,",  
-               (arg->arrayBuffer->write.queued - currSampleBaseTime)/1000, 
-               (arg->arrayBuffer->write.submit - currSampleBaseTime)/1000, 
-               (arg->arrayBuffer->write.start - currSampleBaseTime)/1000, 
-               (arg->arrayBuffer->write.end - currSampleBaseTime)/1000);
+        	(unsigned long)(arg->arrayBuffer->write.queued - currSampleBaseTime)/1000,
+        	(unsigned long)(arg->arrayBuffer->write.submit - currSampleBaseTime)/1000,
+        	(unsigned long)(arg->arrayBuffer->write.start - currSampleBaseTime)/1000,
+        	(unsigned long)(arg->arrayBuffer->write.end - currSampleBaseTime)/1000);
       }
    }
 
@@ -144,10 +144,10 @@ jint writeProfileInfo(JNIContext* jniContext){
       fprintf(jniContext->profileFile, "%d exec[%d],", pos++, pass);
 
       fprintf(jniContext->profileFile, "%lu,%lu,%lu,%lu,",  
-            (jniContext->exec[pass].queued - currSampleBaseTime)/1000, 
-            (jniContext->exec[pass].submit - currSampleBaseTime)/1000, 
-            (jniContext->exec[pass].start - currSampleBaseTime)/1000, 
-            (jniContext->exec[pass].end - currSampleBaseTime)/1000);
+            (unsigned long)(jniContext->exec[pass].queued - currSampleBaseTime)/1000,
+            (unsigned long)(jniContext->exec[pass].submit - currSampleBaseTime)/1000,
+            (unsigned long)(jniContext->exec[pass].start - currSampleBaseTime)/1000,
+            (unsigned long)(jniContext->exec[pass].end - currSampleBaseTime)/1000);
    }
 
    // 
@@ -166,10 +166,10 @@ jint writeProfileInfo(JNIContext* jniContext){
             fprintf(jniContext->profileFile, "%d read %s,", pos++, arg->name);
 
             fprintf(jniContext->profileFile, "%lu,%lu,%lu,%lu,",  
-                  (arg->arrayBuffer->read.queued - currSampleBaseTime)/1000, 
-                  (arg->arrayBuffer->read.submit - currSampleBaseTime)/1000, 
-                  (arg->arrayBuffer->read.start - currSampleBaseTime)/1000, 
-                  (arg->arrayBuffer->read.end - currSampleBaseTime)/1000);
+            	(unsigned long)(arg->arrayBuffer->read.queued - currSampleBaseTime)/1000,
+            	(unsigned long)(arg->arrayBuffer->read.submit - currSampleBaseTime)/1000,
+            	(unsigned long)(arg->arrayBuffer->read.start - currSampleBaseTime)/1000,
+            	(unsigned long)(arg->arrayBuffer->read.end - currSampleBaseTime)/1000);
          }
       }
    }
