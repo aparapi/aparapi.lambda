@@ -114,11 +114,14 @@ public class Main {
          imageData = ((DataBufferInt) _image.getRaster().getDataBuffer()).getData();
          width = _width;
          height = _height;
-         if (System.getProperty("com.amd.aparapi.executionMode").equals("JTP")) {
+
+         final String executionMode = System.getProperty("com.amd.aparapi.executionMode");
+         if ((executionMode != null) && executionMode.equals("JTP")) {
             range = Range.create(width * height, 4);
          } else {
             range = Range.create(width * height);
          }
+
          System.out.println("range = " + range);
          fromBase = height * width;
          toBase = 0;
@@ -130,7 +133,6 @@ public class Main {
          }
 
          put(imageData); // Because we are using explicit buffer management we must put the imageData array
-
       }
 
       public void processPixel(int gid) {
