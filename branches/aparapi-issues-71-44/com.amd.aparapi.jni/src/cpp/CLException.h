@@ -5,12 +5,15 @@
 #include <stdio.h>
 #include <exception>
 
-class CLException : std::exception {
+class CLException : public std::exception {
 private:
    int _status;
    std::string _message;
 
 public:
+
+   ~CLException() throw ();
+
    CLException(int status, std::string message) {
       _status = status;
       _message = message;
