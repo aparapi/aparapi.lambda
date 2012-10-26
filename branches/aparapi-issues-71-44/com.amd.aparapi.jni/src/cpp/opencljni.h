@@ -51,7 +51,7 @@
 #define argreset(bits, token) (bits) &= ~com_amd_aparapi_internal_opencl_OpenCLArgDescriptor_ARG_##token##_BIT
 
 #define memisset(bits, token) (((bits) & com_amd_aparapi_internal_opencl_OpenCLMem_MEM_##token##_BIT) ==com_amd_aparapi_internal_opencl_OpenCLMem_MEM_##token##_BIT)
-#define memset(bits, token) (bits) |= com_amd_aparapi_internal_opencl_OpenCLMem_MEM_##token##_BIT
+#define memadd(bits, token) (bits) |= com_amd_aparapi_internal_opencl_OpenCLMem_MEM_##token##_BIT
 #define memreset(bits, token) (bits) &= ~com_amd_aparapi_internal_opencl_OpenCLMem_MEM_##token##_BIT
 
 class OpenCLDevice{

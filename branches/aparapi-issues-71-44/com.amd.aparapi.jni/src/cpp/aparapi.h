@@ -39,4 +39,91 @@
 #ifndef APARAPI_H
 #define APARAPI_H
 
+
+#include "common.h"
+#include "config.h"
+#include "profileInfo.h"
+#include "arrayBuffer.h"
+#include "clHelper.h"
+#include "aparapi.h"
+#include "com_amd_aparapi_internal_jni_KernelRunnerJNI.h"
+#include "opencljni.h"
+#include "CLException.h"
+#include "Range.h"
+#include "KernelArg.h"
+#include "JNIContext.h"
+
+//compiler dependant code
+int enqueueMarker(cl_command_queue commandQueue, cl_event* firstEvent);
+jint getProcess();
+
+
+
+JNI_JAVA(jint, KernelRunnerJNI, disposeJNI)
+   (JNIEnv *jenv, jobject jobj, jlong jniContextHandle);
+
+void idump(char *str, void *ptr, int size);
+
+void fdump(char *str, void *ptr, int size);
+
+jint writeProfileInfo(JNIContext* jniContext);
+
+cl_int profile(ProfileInfo *profileInfo, cl_event *event, jint type, char* name, cl_ulong profileBaseTime);
+
+jint updateNonPrimitiveReferences(JNIEnv *jenv, jobject jobj, JNIContext* jniContext) throw(CLException);
+
+void profileFirstRun(JNIContext* jniContext) throw(CLException);
+
+void updateObject(JNIEnv* jenv, JNIContext* jniContext, KernelArg* arg, int& argPos, int argIdx)
+     throw(CLException);
+
+void processObject(JNIEnv* jenv, JNIContext* jniContext, KernelArg* arg, int& argPos, int argIdx)
+     throw(CLException);
+
+void updateWriteEvents(JNIEnv* jenv, JNIContext* jniContext, KernelArg* arg, int argIdx, int& writeEventCount)
+     throw(CLException);
+
+void processLocal(JNIEnv* jenv, JNIContext* jniContext, KernelArg* arg, int& argPos, int argIdx)
+     throw(CLException);
+
+int processArgs(JNIEnv* jenv, JNIContext* jniContext, int& argPos, int& writeEventCount)
+    throw(CLException);
+
+void enqueueKernel(JNIContext* jniContext, Range& range, int passes, int argPos, int writeEventCount)
+     throw(CLException);
+
+int getReadEvents(JNIContext* jniContext) throw(CLException);
+
+void waitForReadEvents(JNIContext* jniContext, int readEventCount, int passes) throw(CLException);
+
+void checkEvents(JNIEnv* jenv, JNIContext* jniContext, int writeEventCount) throw(CLException);
+
+JNI_JAVA(jint, KernelRunnerJNI, runKernelJNI)
+   (JNIEnv *jenv, jobject jobj, jlong jniContextHandle, jobject _range, jboolean needSync, jint passes);
+
+JNI_JAVA(jlong, KernelRunnerJNI, initJNI)
+   (JNIEnv *jenv, jobject jobj, jobject kernelObject, jobject openCLDeviceObject, jint flags);
+
+void writeProfile(JNIEnv* jenv, JNIContext* jniContext);
+
+JNI_JAVA(jlong, KernelRunnerJNI, buildProgramJNI)
+   (JNIEnv *jenv, jobject jobj, jlong jniContextHandle, jstring source);
+
+JNI_JAVA(jint, KernelRunnerJNI, setArgsJNI)
+   (JNIEnv *jenv, jobject jobj, jlong jniContextHandle, jobjectArray argArray, jint argc);
+
+
+JNI_JAVA(jstring, KernelRunnerJNI, getExtensionsJNI)
+   (JNIEnv *jenv, jobject jobj, jlong jniContextHandle);
+
+KernelArg* getArgForBuffer(JNIEnv* jenv, JNIContext* jniContext, jobject buffer);
+
+JNI_JAVA(jint, KernelRunnerJNI, getJNI)
+   (JNIEnv *jenv, jobject jobj, jlong jniContextHandle, jobject buffer);
+
+JNI_JAVA(jobject, KernelRunnerJNI, getProfileInfoJNI)
+   (JNIEnv *jenv, jobject jobj, jlong jniContextHandle);
+
+
+
 #endif // APARAPI_H

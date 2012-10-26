@@ -214,7 +214,7 @@ void *OpenCLMem::pin(JNIEnv *jenv, jarray array, jlong *memBits){
    if (memBits != NULL){
       if(0){OpenCLMem::describeBits(jenv, *memBits);fprintf(stderr, " before  \n");}
       if (isCopy){
-         memset(*memBits, COPY);
+         memadd(*memBits, COPY);
       }else{
          memreset(*memBits, COPY);
       }
@@ -290,7 +290,7 @@ void OpenCLMem::setMem(JNIEnv *jenv, jobject memInstance, cl_mem mem){
 void OpenCLMem::describe(JNIEnv *jenv, jobject memInstance){
    jlong memBits = OpenCLMem::getBits(jenv, memInstance);
    OpenCLMem::describeBits(jenv, memBits);
-   fprintf(stderr, "\n");
+   //fprintf(stderr, "\n");
 }
 
 
@@ -310,7 +310,7 @@ void OpenCLArgDescriptor::describe(JNIEnv *jenv, jobject argDef, jint argIndex){
    jlong argBits = OpenCLArgDescriptor::getBits(jenv, argDef);
    fprintf(stderr, " %d ", argIndex);
    OpenCLArgDescriptor::describeBits(jenv, argBits);
-   fprintf(stderr, "\n");
+   //fprintf(stderr, "\n");
 }
 jint OpenCLRange::getDims(JNIEnv *jenv, jobject rangeInstance){
    return(JNIHelper::getInstanceFieldInt(jenv, rangeInstance, "dims"));
@@ -427,7 +427,7 @@ void putArg(JNIEnv *jenv, cl_context context, cl_kernel kernel, cl_command_queue
          void *ptr= OpenCLMem::getAddress(jenv, memInstance);
          size_t sizeInBytes= OpenCLMem::getSizeInBytes(jenv, memInstance);
          jlong memBits = OpenCLMem::getBits(jenv, memInstance);
-         memset(memBits, ENQUEUED);
+         memadd(memBits, ENQUEUED);
          OpenCLMem::setBits(jenv, memInstance, memBits);
         // fprintf(stderr, "enqueuing write of arg ");
         // OpenCLArgDescriptor::describe(jenv, argDef, argIndex);
