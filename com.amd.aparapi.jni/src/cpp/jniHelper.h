@@ -47,7 +47,7 @@
 #define AparapiOpenCLPackage(name) "com/amd/aparapi/internal/opencl/" name
 #define AparapiUtilPackage(name) "com/amd/aparapi/internal/util/" name
 
-#define ProfileInfoClass AparapiUtilPackage("ProfileInfo")
+#define ProfileInfoClass AparapiPackage("ProfileInfo")
 #define OpenCLKernelClass AparapiOpenCLPackage("OpenCLKernel")
 #define OpenCLPlatformClass AparapiOpenCLPackage("OpenCLPlatform")
 #define OpenCLDeviceClass AparapiDevicePackage("OpenCLDevice")
