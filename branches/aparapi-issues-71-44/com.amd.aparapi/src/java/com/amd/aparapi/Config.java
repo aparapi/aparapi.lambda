@@ -35,7 +35,7 @@ of EAR).  For the most current Country Group listings, or for additional informa
 under those regulations, please refer to the U.S. Bureau of Industry and Security's website at http://www.bis.doc.gov/. 
 
  */
-package com.amd.aparapi.config;
+package com.amd.aparapi;
 
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -56,46 +56,38 @@ import com.amd.aparapi.internal.tool.InstructionViewer;
  */
 public class Config extends ConfigJNI {
 
-   private static final Config instance = new Config();
-
    // Logging setup
    private static final String logPropName = propPkgName + ".logLevel";
 
-   private static Logger logger = Logger.getLogger(logPropName);
-
-   public static InstructionListener instructionListener = null;
+   private static final Logger logger = Logger.getLogger(Config.getLoggerName());
 
    /**
-    * Allows the user to disable Unsafe operations
-    * 
-    * Usage -Dcom.amd.aparapi.disableUnsafe={true|false}
-    * 
-    * @see com.amd.aparapi.Kernel.DISABLE_UNSAFE
+    * Disable Unsafe
     */
    public static final boolean disableUnsafe = Boolean.getBoolean(propPkgName + ".disableUnsafe");
 
    /**
     * Allows the user to request a specific Kernel.EXECUTION_MODE enum value for all Kernels.
-    * 
-    * Usage -Dcom.amd.aparapi.executionMode={SEQ|JTP|CPU|GPU}
-    * 
-    * @see com.amd.aparapi.Kernel.EXECUTION_MODE
+    *
+    *  Usage -Dcom.amd.aparapi.executionMode={SEQ|JTP|CPU|GPU}
+    *  
+    *  @see com.amd.aparapi.Kernel.EXECUTION_MODE
     */
    public static final String executionMode = System.getProperty(propPkgName + ".executionMode");
 
    /**
     * Allows the user to request that the execution mode of each kernel invocation be reported to stdout.
-    * 
-    * Usage -Dcom.amd.aparapi.enableExecutionModeReporting={true|false}
-    * 
+    *
+    *  Usage -Dcom.amd.aparapi.enableExecutionModeReporting={true|false}
+    *  
     */
    public static final boolean enableExecutionModeReporting = Boolean.getBoolean(propPkgName + ".enableExecutionModeReporting");
 
    /**
     * Allows the user to request that generated OpenCL code is dumped to standard out.
-    * 
-    * Usage -Dcom.amd.aparapi.enableShowGeneratedOpenCL={true|false}
-    * 
+    *
+    *  Usage -Dcom.amd.aparapi.enableShowGeneratedOpenCL={true|false}
+    *  
     */
    public static final boolean enableShowGeneratedOpenCL = Boolean.getBoolean(propPkgName + ".enableShowGeneratedOpenCL");
 
@@ -136,15 +128,21 @@ public class Config extends ConfigJNI {
 
    public static final boolean enableSWITCH = Boolean.getBoolean(propPkgName + ".enable.SWITCH");
 
-   // public static final int JTPLocalSizeMultiplier = Integer.getInteger(propPkgName + ".JTP.localSizeMul", 2);
+   public static boolean enableShowFakeLocalVariableTable = Boolean.getBoolean(propPkgName + ".enableShowFakeLocalVariableTable");
 
    public static final boolean enableInstructionDecodeViewer = Boolean.getBoolean(propPkgName + ".enableInstructionDecodeViewer");
 
    public static String instructionListenerClassName = System.getProperty(propPkgName + ".instructionListenerClass");
 
+   public static InstructionListener instructionListener = null;
+
+   public interface InstructionListener {
+      void showAndTell(String message, Instruction _start, Instruction _instruction);
+   }
+
    static {
       try {
-         final Level level = Level.parse(System.getProperty(logPropName, "WARNING"));
+         final Level level = Level.parse(System.getProperty(getLoggerName(), "WARNING"));
 
          final Handler[] handlers = Logger.getLogger("").getHandlers();
          for (final Handler handler : handlers) {
@@ -152,12 +150,11 @@ public class Config extends ConfigJNI {
          }
 
          logger.setLevel(level);
-
       } catch (final Exception e) {
-         System.out.println("Exception " + e + " in Aparapi logging setup.");
+         System.out.println("Exception " + e + " in Aparapi logging setup");
          e.printStackTrace();
       }
-   }
+   };
 
    static {
       if (enableInstructionDecodeViewer && ((instructionListenerClassName == null) || instructionListenerClassName.equals(""))) {
@@ -190,36 +187,12 @@ public class Config extends ConfigJNI {
          System.out.println(propPkgName + ".enableShowGeneratedOpenCL{true|false}=" + enableShowGeneratedOpenCL);
          System.out.println(propPkgName + ".enableExecutionModeReporting{true|false}=" + enableExecutionModeReporting);
          System.out.println(propPkgName + ".enableInstructionDecodeViewer{true|false}=" + enableInstructionDecodeViewer);
-         System.out.println(propPkgName + ".instructionListenerClassName{<class name which extends com.amd.aparapi.Config.InstructionListener>}=" + instructionListenerClassName);
+         System.out.println(propPkgName
+               + ".instructionListenerClassName{<class name which extends com.amd.aparapi.Config.InstructionListener>}="
+               + instructionListenerClassName);
       }
    }
 
-   /**
-    * Default constructor
-    */
-   public Config() {
-      propPkgName = Config.class.getPackage().getName();
-   }
-
-   /**
-    * Returns the singleton instance of Config
-    * 
-    * @return Singleton instance of Config
-    */
-   protected static Config getInstance() {
-      return instance;
-   }
-
-   public interface InstructionListener {
-      public void showAndTell(String message, Instruction _start, Instruction _instruction);
-   }
-
-   /**
-    * Retrieves the currently configured Logger Name
-    * 
-    * @return
-    *    The currently configured Logger Name
-    */
    public static String getLoggerName() {
       return logPropName;
    }

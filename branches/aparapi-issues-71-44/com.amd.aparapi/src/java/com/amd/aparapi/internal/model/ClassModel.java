@@ -44,8 +44,8 @@ import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.amd.aparapi.Config;
 import com.amd.aparapi.Kernel;
-import com.amd.aparapi.config.Config;
 import com.amd.aparapi.internal.annotation.DocMe;
 import com.amd.aparapi.internal.exception.AparapiException;
 import com.amd.aparapi.internal.exception.ClassParseException;
