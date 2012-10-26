@@ -51,7 +51,6 @@ import java.util.concurrent.CyclicBarrier;
 import java.util.logging.Logger;
 
 import com.amd.aparapi.annotation.Experimental;
-import com.amd.aparapi.config.Config;
 import com.amd.aparapi.exception.DeprecatedException;
 import com.amd.aparapi.internal.kernel.KernelRunner;
 import com.amd.aparapi.internal.model.ClassModel.ConstantPool.MethodReferenceEntry;

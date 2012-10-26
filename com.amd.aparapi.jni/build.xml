@@ -496,7 +496,7 @@ First consider editing the properties in build.properties
          <!-- Non-Native Classes -->
          <class name="com.amd.aparapi.Kernel"/>
          <class name="com.amd.aparapi.Range"/>
-         <class name="com.amd.aparapi.config.Config" />
+         <class name="com.amd.aparapi.Config" />
          <class name="com.amd.aparapi.device.Device" />
          <class name="com.amd.aparapi.device.OpenCLDevice" />
          <class name="com.amd.aparapi.internal.kernel.KernelRunner"/>

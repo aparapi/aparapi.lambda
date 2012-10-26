@@ -3,7 +3,7 @@ package com.amd.aparapi.internal.opencl;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.amd.aparapi.config.Config;
+import com.amd.aparapi.Config;
 import com.amd.aparapi.internal.jni.OpenCLJNI;
 
 /**

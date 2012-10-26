@@ -1,5 +1,6 @@
 package com.amd.aparapi.internal.jni;
 
+import com.amd.aparapi.Config;
 import com.amd.aparapi.internal.annotation.UsedByJNICode;
 
 /**
@@ -10,7 +11,7 @@ public abstract class ConfigJNI {
    /**
     * Value defaults to com.amd.aparapi.config if not overridden by extending classes
     */
-   protected static String propPkgName = "com.amd.aparapi.config";
+   protected static String propPkgName = Config.class.getPackage().getName();
 
    /**
     * Allows the user to turn on OpenCL profiling for the JNI/OpenCL layer.

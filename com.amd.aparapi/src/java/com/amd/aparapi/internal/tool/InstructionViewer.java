@@ -49,7 +49,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import com.amd.aparapi.config.Config;
+import com.amd.aparapi.Config;
 import com.amd.aparapi.internal.exception.AparapiException;
 import com.amd.aparapi.internal.exception.ClassParseException;
 import com.amd.aparapi.internal.instruction.Instruction;

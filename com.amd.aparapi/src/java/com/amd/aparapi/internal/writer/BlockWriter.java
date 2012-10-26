@@ -39,7 +39,7 @@ package com.amd.aparapi.internal.writer;
 
 import java.util.Stack;
 
-import com.amd.aparapi.config.Config;
+import com.amd.aparapi.Config;
 import com.amd.aparapi.internal.exception.CodeGenException;
 import com.amd.aparapi.internal.instruction.BranchSet;
 import com.amd.aparapi.internal.instruction.Instruction;
