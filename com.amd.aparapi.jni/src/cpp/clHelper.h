@@ -33,7 +33,7 @@
    direct product is subject to national security controls as identified on the Commerce Control List (currently 
    found in Supplement 1 to Part 774 of EAR).  For the most current Country Group listings, or for additional 
    information about the EAR or your obligations under those regulations, please refer to the U.S. Bureau of Industry
-   and Security’s website at http://www.bis.doc.gov/. 
+   and Securityï¿½s website at http://www.bis.doc.gov/. 
    */
 
 #ifndef CLHELPER_H
@@ -126,14 +126,14 @@ template <typename  T> void List<T>::remove(T _value, int _line, char *_fileName
          return;
       }
    }
-   fprintf(stderr, "FILE %s LINE %d failed to find %s to remove %0lx\n", _fileName, _line, name, _value);
+   fprintf(stderr, "FILE %s LINE %d failed to find %s to remove %0lx\n", _fileName, _line, name, (unsigned long)_value);
 }
 
 template <typename  T> void List<T>::report(FILE *stream){
    if (head != NULL){
       fprintf(stream, "Resource report %d resources of type %s still in play ", count, name);
       for (Ref<T> *ptr = head; ptr != NULL; ptr = ptr->next){
-         fprintf(stream, " %0lx(%d)", ptr->value, ptr->line);
+         fprintf(stream, " %0lx(%d)", (unsigned long)ptr->value, ptr->line);
       }
       fprintf(stream, "\n");
    }
