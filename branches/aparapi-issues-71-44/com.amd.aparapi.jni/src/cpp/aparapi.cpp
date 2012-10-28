@@ -180,9 +180,9 @@ jint writeProfileInfo(JNIContext* jniContext){
 // Should failed profiling abort the run and return early?
 cl_int profile(ProfileInfo *profileInfo, cl_event *event, jint type, char* name, cl_ulong profileBaseTime ) {
 
-   try {
-      cl_int status = CL_SUCCESS;
+   cl_int status = CL_SUCCESS;
 
+   try {
       status = clGetEventProfilingInfo(*event, CL_PROFILING_COMMAND_QUEUED, sizeof(profileInfo->queued), &(profileInfo->queued), NULL);
       if(status != CL_SUCCESS) throw CLException(status, "clGetEventProfiliningInfo() QUEUED");
 
@@ -207,6 +207,7 @@ cl_int profile(ProfileInfo *profileInfo, cl_event *event, jint type, char* name,
    profileInfo->type = type;
    profileInfo->name = name;
    profileInfo->valid = true;
+
    return status;
 }
 
@@ -251,7 +252,7 @@ jint updateNonPrimitiveReferences(JNIEnv *jenv, jobject jobj, JNIContext* jniCon
                   }
                   status = clReleaseMemObject((cl_mem)arg->arrayBuffer->mem);
                   //fprintf(stderr, "<--releaseMemObject[%d]\n", i);
-                  if(statuc != CL_SUCCESS) throw CLException("clReleaseMemObject()");
+                  if(status != CL_SUCCESS) throw CLException(status, "clReleaseMemObject()");
                   arg->arrayBuffer->mem = (cl_mem)0;
                }
 
@@ -304,7 +305,7 @@ void profileFirstRun(JNIContext* jniContext) throw(CLException) {
    if (status != CL_SUCCESS) throw CLException(status, "clReleaseEvent() read event");
 
    if (config->isVerbose()) {
-      fprintf(stderr, "profileBaseTime %lu \n", jniContext->profileBaseTime);
+      fprintf(stderr, "profileBaseTime %lu \n", (unsigned long)jniContext->profileBaseTime);
    }
 }
 
@@ -337,7 +338,7 @@ void updateObject(JNIEnv* jenv, JNIContext* jniContext, KernelArg* arg, int& arg
       if (mask & CL_MEM_WRITE_ONLY) strcat(arg->arrayBuffer->memSpec,"|CL_MEM_WRITE_ONLY");
 
       fprintf(stderr, "%s %d clCreateBuffer(context, %s, size=%08x bytes, address=%08x, &status)\n", arg->name, 
-            argIdx, arg->arrayBuffer->memSpec, arg->arrayBuffer->lengthInBytes, arg->arrayBuffer->addr);
+            argIdx, arg->arrayBuffer->memSpec, (unsigned long)arg->arrayBuffer->lengthInBytes, (unsigned long)arg->arrayBuffer->addr);
    }
 
    arg->arrayBuffer->mem = clCreateBuffer(jniContext->context, arg->arrayBuffer->memMask, 
@@ -1128,7 +1129,7 @@ JNI_JAVA(jint, KernelRunnerJNI, getJNI)
             status = clEnqueueReadBuffer(jniContext->commandQueue, arg->arrayBuffer->mem, CL_FALSE, 0, 
                   arg->arrayBuffer->lengthInBytes,arg->arrayBuffer->addr , 0, NULL, &jniContext->readEvents[0]);
             if (config->isVerbose()){
-               fprintf(stderr, "explicitly read %s ptr=%lx len=%d\n", arg->name, arg->arrayBuffer->addr,arg->arrayBuffer->lengthInBytes );
+               fprintf(stderr, "explicitly read %s ptr=%lx len=%d\n", arg->name, (unsigned long)arg->arrayBuffer->addr,arg->arrayBuffer->lengthInBytes );
             }
             if (status != CL_SUCCESS) {
                PRINT_CL_ERR(status, "clEnqueueReadBuffer()");

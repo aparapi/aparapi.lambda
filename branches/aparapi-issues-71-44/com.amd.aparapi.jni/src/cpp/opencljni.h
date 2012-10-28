@@ -59,10 +59,12 @@ class OpenCLDevice{
       static jobject getPlatformInstance(JNIEnv *jenv, jobject deviceInstance);
       static cl_device_id getDeviceId(JNIEnv *jenv, jobject deviceInstance);
 };
+
 class OpenCLPlatform{
    public:
       static cl_platform_id getPlatformId(JNIEnv *jenv, jobject platformInstance);
 };
+
 class OpenCLProgram{
    public:
       static jobject create(JNIEnv *jenv, cl_program program, cl_command_queue queue, cl_context context, jobject deviceInstance, jstring source, jstring log);
@@ -70,6 +72,7 @@ class OpenCLProgram{
       static cl_program getProgram(JNIEnv *jenv, jobject programInstance);
       static cl_command_queue getCommandQueue(JNIEnv *jenv, jobject programInstance);
 };
+
 class OpenCLKernel{
    public:
       static jobject create(JNIEnv *jenv, cl_kernel kernel, jobject programInstance, jstring name, jobject args);
@@ -110,11 +113,11 @@ class OpenCLArgDescriptor{
       static void describeBits(JNIEnv *jenv, jlong bits);
       static void describe(JNIEnv *jenv, jobject argDef, jint argIndex);
 };
+
 class OpenCLRange{
    public:
       static jint getDims(JNIEnv *jenv, jobject rangeInstance);
       static void fill(JNIEnv *jenv, jobject rangeInstance, jint dims, size_t* offsets, size_t* globalDims, size_t* localDims);
 };
-
 
 #endif // OPENCLJNI_H

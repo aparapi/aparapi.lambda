@@ -42,7 +42,7 @@
 #include "com_amd_aparapi_internal_jni_OpenCLJNI.h"
 
 void OpenCLArgDescriptor::describeBits(JNIEnv *jenv, jlong bits){
-   fprintf(stderr, " %lx ", bits);
+   fprintf(stderr, " %lx ", (unsigned long)bits);
    if (argisset(bits, READONLY)){
       fprintf(stderr, "readonly ");
    }
@@ -88,7 +88,7 @@ void OpenCLArgDescriptor::describeBits(JNIEnv *jenv, jlong bits){
 }
 
 void OpenCLMem::describeBits(JNIEnv *jenv, jlong bits){
-   fprintf(stderr, " %lx ", bits);
+   fprintf(stderr, " %lx ", (unsigned long)bits);
    if (memisset(bits, COPY)){
       fprintf(stderr, "copy ");
    }
@@ -343,7 +343,7 @@ JNI_JAVA(jobject, OpenCLJNI, createProgram)
       cl_int status = CL_SUCCESS;
       cl_device_type deviceType;
       clGetDeviceInfo(deviceId, CL_DEVICE_TYPE,  sizeof(deviceType), &deviceType, NULL);
-      if(0)fprintf(stderr, "device[%d] CL_DEVICE_TYPE = %x\n", deviceId, deviceType);
+      if(0)fprintf(stderr, "device[%d] CL_DEVICE_TYPE = %x\n", (long)deviceId, (unsigned int)deviceType);
 
 
       cl_context_properties cps[3] = { CL_CONTEXT_PLATFORM, (cl_context_properties)platformId, 0 };
@@ -413,7 +413,7 @@ void putArg(JNIEnv *jenv, cl_context context, cl_kernel kernel, cl_command_queue
          void *ptr  =  OpenCLMem::pin(jenv, (jarray)arg,&argBits); 
          void *oldPtr = OpenCLMem::getAddress(jenv, memInstance);
          if (ptr !=oldPtr){
-            if(0)fprintf(stderr, "ptr moved from %lx to %lx\n", oldPtr, ptr);
+            if(0)fprintf(stderr, "ptr moved from %lx to %lx\n", (unsigned long)oldPtr, (unsigned long)ptr);
             cl_mem mem = OpenCLMem::getMem(jenv, memInstance);
             status = clReleaseMemObject(mem); 
             memInstance = OpenCLMem::create(jenv, context, argBits, (jarray)arg);
@@ -479,9 +479,9 @@ void putArg(JNIEnv *jenv, cl_context context, cl_kernel kernel, cl_command_queue
          cl_long value = JNIHelper::getInstanceFieldLong(jenv, arg, "value");
          status = clSetKernelArg(kernel, argIndex, sizeof(value), (void *)&(value));          
          if (status != CL_SUCCESS) {
-            fprintf(stderr, "error setting int arg %d %d %s!\n",  argIndex, value, CLHelper::errString(status));
+            fprintf(stderr, "error setting int arg %d %d %s!\n",  argIndex, (int)value, CLHelper::errString(status));
          }else{
-            if(0)fprintf(stderr, "set arg  = %d to %d!\n", argIndex, value);
+            if(0)fprintf(stderr, "set arg  = %d to %d!\n", argIndex, (int)value);
          }
 
       }else if (argisset(argBits, DOUBLE)){

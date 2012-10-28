@@ -6,6 +6,7 @@
 #include <exception>
 
 class CLException : public std::exception {
+
 private:
    int _status;
    std::string _message;
