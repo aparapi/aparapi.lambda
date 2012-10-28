@@ -226,7 +226,6 @@ public class KernelRunner extends KernelRunnerJNI {
       }
 
       if (kernel.getExecutionMode().equals(EXECUTION_MODE.SEQ)) {
-
          /**
           * SEQ mode is useful for testing trivial logic, but kernels which use SEQ mode cannot be used if the
           * product of localSize(0..3) is >1.  So we can use multi-dim ranges but only if the local size is 1 in all dimensions. 
@@ -251,9 +250,9 @@ public class KernelRunner extends KernelRunnerJNI {
          kernelState.setLocalId(2, 0);
          kernelState.setLocalBarrier(new CyclicBarrier(1));
 
-         int passId;
+         for (int passId = 0; passId < _passes; passId++) {
+            kernelState.setPassId(passId);
 
-         for (passId = 0; passId < _passes; passId++) {
             if (_range.getDims() == 1) {
                for (int id = 0; id < _range.getGlobalSize(0); id++) {
                   kernelState.setGlobalId(0, id);
@@ -285,10 +284,7 @@ public class KernelRunner extends KernelRunnerJNI {
                }
             }
          }
-
-         kernelState.setPassId(passId);
       } else {
-
          final int threads = _range.getLocalSize(0) * _range.getLocalSize(1) * _range.getLocalSize(2);
          final int globalGroups = _range.getNumGroups(0) * _range.getNumGroups(1) * _range.getNumGroups(2);
          final Thread threadArray[] = new Thread[threads];
@@ -310,8 +306,8 @@ public class KernelRunner extends KernelRunnerJNI {
           * This barrier is threadCount wide.  We never hit the barrier from the dispatch thread.
           */
          final CyclicBarrier localBarrier = new CyclicBarrier(threads);
-         for (int passId = 0; passId < _passes; passId++) {
 
+         for (int passId = 0; passId < _passes; passId++) {
             /**
               * Note that we emulate OpenCL by creating one thread per localId (across the group).
               * 
@@ -341,7 +337,6 @@ public class KernelRunner extends KernelRunnerJNI {
               * So even JTP mode use of local buffers will need to use barriers. Not for the same reason as OpenCL but to keep groups in lockstep.
               * 
               **/
-
             for (int id = 0; id < threads; id++) {
                final int threadId = id;
 
