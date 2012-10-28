@@ -51,10 +51,10 @@ import java.util.concurrent.CyclicBarrier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.amd.aparapi.Config;
 import com.amd.aparapi.Kernel;
 import com.amd.aparapi.Kernel.EXECUTION_MODE;
 import com.amd.aparapi.Kernel.KernelState;
-import com.amd.aparapi.Config;
 import com.amd.aparapi.ProfileInfo;
 import com.amd.aparapi.Range;
 import com.amd.aparapi.device.Device;
@@ -251,8 +251,9 @@ public class KernelRunner extends KernelRunnerJNI {
          kernelState.setLocalId(2, 0);
          kernelState.setLocalBarrier(new CyclicBarrier(1));
 
-         for (kernelState.setPassId(0); kernelState.getPassId() < _passes; kernelState.setPassId(kernelState.getPassId() + 1)) {
+         int passId;
 
+         for (passId = 0; passId < _passes; passId++) {
             if (_range.getDims() == 1) {
                for (int id = 0; id < _range.getGlobalSize(0); id++) {
                   kernelState.setGlobalId(0, id);
@@ -261,6 +262,7 @@ public class KernelRunner extends KernelRunnerJNI {
             } else if (_range.getDims() == 2) {
                for (int x = 0; x < _range.getGlobalSize(0); x++) {
                   kernelState.setGlobalId(0, x);
+
                   for (int y = 0; y < _range.getGlobalSize(1); y++) {
                      kernelState.setGlobalId(1, y);
                      kernelClone.run();
@@ -269,17 +271,22 @@ public class KernelRunner extends KernelRunnerJNI {
             } else if (_range.getDims() == 3) {
                for (int x = 0; x < _range.getGlobalSize(0); x++) {
                   kernelState.setGlobalId(0, x);
+
                   for (int y = 0; y < _range.getGlobalSize(1); y++) {
                      kernelState.setGlobalId(1, y);
+
                      for (int z = 0; z < _range.getGlobalSize(2); z++) {
                         kernelState.setGlobalId(2, z);
                         kernelClone.run();
                      }
+
                      kernelClone.run();
                   }
                }
             }
          }
+
+         kernelState.setPassId(passId);
       } else {
 
          final int threads = _range.getLocalSize(0) * _range.getLocalSize(1) * _range.getLocalSize(2);
