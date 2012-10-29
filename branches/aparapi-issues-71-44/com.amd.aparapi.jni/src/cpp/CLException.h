@@ -13,7 +13,8 @@ private:
 
 public:
 
-   ~CLException() throw ();
+   ~CLException() throw () {
+   }
 
    CLException(int status, std::string message) {
       _status = status;
