@@ -38,9 +38,11 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 package com.amd.aparapi;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -56,6 +58,7 @@ import com.amd.aparapi.ClassModel.ConstantPool.MethodReferenceEntry;
 import com.amd.aparapi.ClassModel.ConstantPool.MethodReferenceEntry.Arg;
 import com.amd.aparapi.ClassModel.LocalVariableInfo;
 import com.amd.aparapi.ClassModel.LocalVariableTableEntry;
+import com.amd.aparapi.ClassModel.MethodDescription;
 import com.amd.aparapi.InstructionPattern.InstructionMatch;
 import com.amd.aparapi.InstructionSet.AccessArrayElement;
 import com.amd.aparapi.InstructionSet.AccessField;
@@ -96,6 +99,7 @@ import com.amd.aparapi.InstructionSet.MethodCall;
 import com.amd.aparapi.InstructionSet.MultiAssignInstruction;
 import com.amd.aparapi.InstructionSet.New;
 import com.amd.aparapi.InstructionSet.Return;
+import com.amd.aparapi.InstructionSet.StoreSpec;
 
 class MethodModel{
    static Logger logger = Logger.getLogger(Config.getLoggerName());
@@ -219,7 +223,7 @@ class MethodModel{
     * @return Map<Integer, Instruction> the returned pc to Instruction map
     */
    Map<Integer, Instruction> createListOfInstructions() throws ClassParseException {
-      Map<Integer, Instruction> pcMap = new HashMap<Integer, Instruction>();
+      Map<Integer, Instruction> pcMap = new LinkedHashMap<Integer, Instruction>();
       byte[] code = method.getCode();
 
       // We create a byteReader for reading the bytes from the code array
@@ -1452,6 +1456,177 @@ class MethodModel{
       init(_method);
    }
 
+   public static class FakeLocalVariableTableEntry implements LocalVariableTableEntry<LocalVariableInfo>{
+
+      class Var implements LocalVariableInfo{
+
+         int startPc = 0;
+
+         int endPc = 0;
+
+         String name = null;
+
+         boolean arg;
+
+         String descriptor = "";
+
+         int slotIndex;
+
+         Var(StoreSpec _storeSpec, int _slotIndex, int _startPc, boolean _arg) {
+            slotIndex = _slotIndex;
+            arg = _arg;
+            startPc = _startPc;
+            if (_storeSpec.equals(StoreSpec.A)) {
+               name = "arr_" + _slotIndex;
+               descriptor = "/* arg */";
+            } else {
+               name = _storeSpec.toString().toLowerCase() + "_" + _slotIndex;
+               descriptor = _storeSpec.toString();
+
+            }
+         }
+
+         Var() {
+            name = "NONE";
+         }
+
+         @Override public boolean equals(Object object) {
+            return (object instanceof Var && ((object == this) || ((Var) object).name.equals(name)));
+         }
+
+         public String toString() {
+            return (name + "[" + startPc + "-" + endPc + "]");
+         }
+
+         @Override public int getStart() {
+            return startPc;
+         }
+
+         @Override public boolean isArray() {
+            return name.startsWith("arr");
+         }
+
+         @Override public int getEnd() {
+            return endPc;
+         }
+
+         @Override public int getLength() {
+            return endPc - startPc;
+         }
+
+         @Override public String getVariableName() {
+            return (name);
+         }
+
+         @Override public String getVariableDescriptor() {
+            return (descriptor);
+         }
+
+         @Override public int getVariableIndex() {
+            return (slotIndex);
+         }
+      }
+
+      List<LocalVariableInfo> list = new ArrayList<LocalVariableInfo>();
+
+      public FakeLocalVariableTableEntry(Map<Integer, Instruction> _pcMap, ClassModelMethod _method) {
+         int numberOfSlots = _method.getCodeEntry().getMaxLocals();
+
+         MethodDescription description = ClassModel.getMethodDescription(_method.getDescriptor());
+
+         String[] args = description.getArgs();
+
+         int thisOffset = _method.isStatic() ? 0 : 1;
+
+         Var[] vars = new Var[numberOfSlots + thisOffset];
+         StoreSpec[] argsAsStoreSpecs = new StoreSpec[args.length + thisOffset];
+         if (thisOffset == 1) {
+            argsAsStoreSpecs[0] = StoreSpec.O;
+            vars[0] = new Var(argsAsStoreSpecs[0], 0, 0, true);
+            list.add(vars[0]);
+
+         }
+         for (int i = 0; i < args.length; i++) {
+            if (args[i].startsWith("[")) {
+               argsAsStoreSpecs[i + thisOffset] = StoreSpec.A;
+            } else {
+               argsAsStoreSpecs[i + thisOffset] = StoreSpec.valueOf(args[i].substring(0, 1));
+            }
+            vars[i + thisOffset] = new Var(argsAsStoreSpecs[i + thisOffset], i + thisOffset, 0, true);
+            list.add(vars[i + thisOffset]);
+         }
+         for (int i = args.length + thisOffset; i < numberOfSlots + thisOffset; i++) {
+            vars[i] = new Var();
+         }
+
+         int pc = 0;
+         Instruction instruction = null;
+         for (Entry<Integer, Instruction> entry : _pcMap.entrySet()) {
+            pc = entry.getKey();
+            instruction = entry.getValue();
+            StoreSpec storeSpec = instruction.getByteCode().getStore();
+            if (storeSpec != StoreSpec.NONE) {
+               int slotIndex = ((InstructionSet.LocalVariableTableIndexAccessor) instruction).getLocalVariableTableIndex();
+               Var prevVar = vars[slotIndex];
+               Var var = new Var(storeSpec, slotIndex, pc + instruction.getLength(), false); // will get collected pretty soon if this is not the same as the previous in this slot
+               if (!prevVar.equals(var)) {
+                  prevVar.endPc = pc;
+                  vars[slotIndex] = var;
+                  list.add(vars[slotIndex]);
+               }
+            }
+         }
+         for (int i = 0; i < numberOfSlots + thisOffset; i++) {
+            vars[i].endPc = pc + instruction.getLength();
+         }
+         Collections.sort(list, new Comparator<LocalVariableInfo>(){
+            @Override public int compare(LocalVariableInfo o1, LocalVariableInfo o2) {
+               return o1.getStart() - o2.getStart();
+            }
+         });
+         if (Config.enableShowFakeLocalVariableTable) {
+            System.out.println("FakeLocalVariableTable:");
+            System.out.println(" Start  Length  Slot    Name   Signature");
+            for (LocalVariableInfo lvi : list) {
+               Var var = (Var) lvi;
+               System.out.println(String.format(" %5d   %5d  %4d  %8s     %s", var.startPc, var.getLength(), var.slotIndex,
+                     var.name, var.descriptor));
+            }
+         }
+
+      }
+
+      @Override public LocalVariableInfo getVariable(int _pc, int _index) {
+         LocalVariableInfo returnValue = null;
+         //  System.out.println("pc = " + _pc + " index = " + _index);
+         for (LocalVariableInfo localVariableInfo : list) {
+            // System.out.println("   start=" + localVariableInfo.getStart() + " length=" + localVariableInfo.getLength()
+            // + " varidx=" + localVariableInfo.getVariableIndex());
+            if (_pc >= localVariableInfo.getStart() - 1 && _pc <= (localVariableInfo.getStart() + localVariableInfo.getLength())
+                  && _index == localVariableInfo.getVariableIndex()) {
+               returnValue = localVariableInfo;
+               break;
+            }
+         }
+         return (returnValue);
+      }
+
+      String getVariableName(int _pc, int _index) {
+         String returnValue = "unknown";
+         LocalVariableInfo localVariableInfo = (LocalVariableInfo) getVariable(_pc, _index);
+         if (localVariableInfo != null) {
+            returnValue = ((Var) localVariableInfo).name;
+         }
+         // System.out.println("returning " + returnValue);
+         return (returnValue);
+      }
+
+      @Override public Iterator<LocalVariableInfo> iterator() {
+         return list.iterator();
+      }
+
+   }
+
    private void init(ClassModelMethod _method) throws AparapiException {
       try {
          method = _method;
@@ -1474,20 +1649,15 @@ class MethodModel{
          Map<Integer, Instruction> pcMap = createListOfInstructions();
 
          LocalVariableTableEntry<LocalVariableInfo> localVariableTableEntry = method.getLocalVariableTableEntry();
-         if (Config.enableAllowMissingLocalVariableTable && localVariableTableEntry == null) {
-            logger.warning("class does not contain a LocalVariableTable - but enableAllowMissingLocalVariableTable is set so we are ignoring");
-         } else {
-            if (localVariableTableEntry == null) {
-               System.out.println("create local variable table");
-               throw new ClassParseException(ClassParseException.TYPE.MISSINGLOCALVARIABLETABLE);
-            }
-            for (LocalVariableInfo localVariableInfo : localVariableTableEntry) {
-               // TODO: What was the thinking here?
-               final boolean DISALLOWARRAYLOCALVAR = false;
-               if (DISALLOWARRAYLOCALVAR && localVariableInfo.isArray()) {
-                  throw new ClassParseException(ClassParseException.TYPE.ARRAYLOCALVARIABLE);
-               }
-            }
+
+         if (localVariableTableEntry == null) {
+            localVariableTableEntry = new FakeLocalVariableTableEntry(pcMap, method);
+
+            method.setLocalVariableTableEntry(localVariableTableEntry);
+            logger.warning("Method "
+                  + method.getName()
+                  + method.getDescriptor()
+                  + " does not contain a LocalVariableTable entry (source not compiled with -g) aparapi will attempt to create a synthetic table based on bytecode. This is experimental!!");
          }
 
          // pass #2 build branch graph

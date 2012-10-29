@@ -79,6 +79,8 @@ class ClassModel{
 
       int getVariableIndex();
 
+      int getLength();
+
    }
 
    interface LocalVariableTableEntry<T extends LocalVariableInfo> extends Iterable<T>{
@@ -548,7 +550,8 @@ class ClassModel{
       METHODHANDLE, //15
       METHODTYPE, //16
       UNUSED17,
-      INVOKEDYNAMIC//18
+      INVOKEDYNAMIC
+      //18
    };
 
    enum Access {
@@ -1752,7 +1755,7 @@ class ClassModel{
                return (descriptorIndex);
             }
 
-            int getLength() {
+            public int getLength() {
                return (usageLength);
             }
 
@@ -1903,7 +1906,7 @@ class ClassModel{
          }
       }
 
-       class LocalVariableTypeTableEntry extends AttributePoolEntry{
+      class LocalVariableTypeTableEntry extends AttributePoolEntry{
          private byte[] bytes;
 
          LocalVariableTypeTableEntry(ByteReader _byteReader, int _nameIndex, int _length) {
@@ -1919,7 +1922,6 @@ class ClassModel{
             return (new String(bytes));
          }
       }
-
 
       class SourceFileEntry extends AttributePoolEntry{
          private int sourceFileIndex;
@@ -2384,6 +2386,10 @@ class ClassModel{
 
       LocalVariableTableEntry getLocalVariableTableEntry() {
          return (getAttributePool().codeEntry.codeEntryAttributePool.localVariableTableEntry);
+      }
+
+      void setLocalVariableTableEntry(LocalVariableTableEntry _localVariableTableEntry) {
+         getAttributePool().codeEntry.codeEntryAttributePool.localVariableTableEntry = _localVariableTableEntry;
       }
 
       LocalVariableInfo getLocalVariable(int _pc, int _index) {
