@@ -218,7 +218,6 @@ public class Main {
                      System.out.print(" " + p.getType() + " " + p.getLabel() + " " + (p.getStart() / 1000) + " .. "
                            + (p.getEnd() / 1000) + " " + ((p.getEnd() - p.getStart()) / 1000) + "us");
                   }
-                  System.out.println();
                }
             }
             // We copy one half of the offscreen buffer to the viewer, we copy the half that we just mutated.
