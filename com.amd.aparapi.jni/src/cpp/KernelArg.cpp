@@ -122,16 +122,14 @@ cl_int KernelArg::setPrimitiveArg(JNIEnv *jenv, int argIdx, int argPos){
          jfieldID fieldID = jenv->GetStaticFieldID(jniContext->kernelClass, name, "J");
          jlong j = jenv->GetStaticLongField(jniContext->kernelClass, fieldID);
          if (config->isVerbose()){
-            fprintf(stderr, "clSetKernelArg static primitive long '%s' index=%d pos=%d value=%ld\n",
-                 name, argIdx, argPos, j); 
+            fprintf(stderr, "clSetKernelArg static primitive long '%s' index=%d pos=%d value=%ld\n", name, argIdx, argPos, (long)j);
          }
          status = clSetKernelArg(jniContext->kernel, argPos, sizeof(jlong), &j);
       }else{
          jfieldID fieldID = jenv->GetFieldID(jniContext->kernelClass, name, "J");
          jlong j = jenv->GetLongField(jniContext->kernelObject, fieldID);
          if (config->isVerbose()){
-            fprintf(stderr, "clSetKernelArg primitive long '%s' index=%d pos=%d value=%ld\n",
-                 name, argIdx, argPos, j); 
+            fprintf(stderr, "clSetKernelArg primitive long '%s' index=%d pos=%d value=%ld\n", name, argIdx, argPos, (long)j); 
          }
          status = clSetKernelArg(jniContext->kernel, argPos, sizeof(jlong), &j);
       }
