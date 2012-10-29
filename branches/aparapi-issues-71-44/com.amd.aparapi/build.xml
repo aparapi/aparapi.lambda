@@ -84,7 +84,37 @@
        	      <attribute name="Implementation-Title" value="Aparapi"/>
        	      <!-- <attribute name="Implementation-Version" value="1.0.0"/> -->
        	      <!-- Sealed -->
-       	      <section name="com/amd/aparapi/internal/">
+       	      <section name="com/amd/aparapi/internal/annotation/">
+       	        <attribute name="Sealed" value="true"/>
+       	      </section>
+       	      <section name="com/amd/aparapi/internal/exception/">
+       	        <attribute name="Sealed" value="true"/>
+       	      </section>
+       	      <section name="com/amd/aparapi/internal/instruction/">
+       	        <attribute name="Sealed" value="true"/>
+       	      </section>
+       	      <section name="com/amd/aparapi/internal/jni/">
+       	        <attribute name="Sealed" value="true"/>
+       	      </section>
+       	      <section name="com/amd/aparapi/internal/kernel/">
+       	        <attribute name="Sealed" value="true"/>
+       	      </section>
+       	      <section name="com/amd/aparapi/internal/model/">
+       	        <attribute name="Sealed" value="true"/>
+       	      </section>
+       	      <section name="com/amd/aparapi/internal/opencl/">
+       	        <attribute name="Sealed" value="true"/>
+       	      </section>
+       	      <section name="com/amd/aparapi/internal/reader/">
+       	        <attribute name="Sealed" value="true"/>
+       	      </section>
+       	      <section name="com/amd/aparapi/internal/tool/">
+       	        <attribute name="Sealed" value="true"/>
+       	      </section>
+       	      <section name="com/amd/aparapi/internal/util/">
+       	        <attribute name="Sealed" value="true"/>
+       	      </section>
+       	      <section name="com/amd/aparapi/internal/writer/">
        	        <attribute name="Sealed" value="true"/>
        	      </section>
        	    </manifest>
