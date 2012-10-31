@@ -50,7 +50,6 @@ public:
        return std::string("!!!!!!! " + _message + " failed " + CLHelper::errString(status()) + " \n").c_str();
    }
 
-
 };
 
 #endif // CL_EXCEPTION_H

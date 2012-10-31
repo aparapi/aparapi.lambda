@@ -131,7 +131,7 @@ void JNIHelper::setInstanceFieldInt(JNIEnv* jenv, jobject instance, char *fieldN
       fprintf(stderr, "bummer! getting class from instance\n");
       return;
    }
-   jfieldID fieldId= jenv->GetFieldID(theClass,fieldName,"I");
+   jfieldID fieldId = jenv->GetFieldID(theClass,fieldName,"I");
    if (fieldId == NULL || jenv->ExceptionCheck()) {
       jenv->ExceptionDescribe(); 
       jenv->ExceptionClear();
@@ -226,7 +226,7 @@ jobject JNIHelper::getStaticFieldObject(JNIEnv *jenv, char *className, char *fie
       fprintf(stderr, "bummer! getting '%s'\n", className);
       return(NULL);
    }
-   jfieldID fieldId= jenv->GetStaticFieldID(theClass,fieldName,signature);
+   jfieldID fieldId = jenv->GetStaticFieldID(theClass,fieldName,signature);
    if (fieldId == NULL || jenv->ExceptionCheck()) {
       jenv->ExceptionDescribe(); 
       jenv->ExceptionClear();
@@ -271,6 +271,7 @@ jobject JNIHelper::createInstance(JNIEnv *jenv, char* className, char *signature
    va_end(argp);
    return(instance);
 } 
+
 
 jint JNIHelper::getInstanceFieldInt(JNIEnv *jenv, jobject instance, char *fieldName){
    jclass theClass = jenv->GetObjectClass(instance);

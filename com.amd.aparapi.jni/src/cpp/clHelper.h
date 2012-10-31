@@ -139,6 +139,7 @@ template <typename  T> void List<T>::report(FILE *stream){
    }
 }
 
+
 #ifdef CLHELPER_SOURCE
 List<cl_command_queue> commandQueueList("cl_command_queue");
 List<cl_mem> memList("cl_mem");

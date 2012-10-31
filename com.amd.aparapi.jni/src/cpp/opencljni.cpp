@@ -36,10 +36,14 @@
    and Security�s website at http://www.bis.doc.gov/. 
    */
 
+/** @opencljni.cpp */
+
 #define OPENCLJNI_SOURCE
 #include "opencljni.h"
 
 #include "com_amd_aparapi_internal_jni_OpenCLJNI.h"
+
+
 
 void OpenCLArgDescriptor::describeBits(JNIEnv *jenv, jlong bits){
    fprintf(stderr, " %lx ", (unsigned long)bits);
@@ -238,7 +242,7 @@ jobject OpenCLMem::create(JNIEnv *jenv, cl_context context, jlong argBits, jarra
 
    cl_int status = CL_SUCCESS;
    void *ptr = OpenCLMem::pin(jenv, array, &memBits); 
-   cl_mem mem=clCreateBuffer(context, bitsToOpenCLMask(argBits),  sizeInBytes, ptr, &status);
+   cl_mem mem = clCreateBuffer(context, bitsToOpenCLMask(argBits),  sizeInBytes, ptr, &status);
    if (status != CL_SUCCESS){
       fprintf(stderr, "buffer creation failed!\n");
    }
@@ -390,8 +394,8 @@ JNI_JAVA(jobject, OpenCLJNI, createKernel)
 
    }
 
-
-
+/**
+ */
 void putArg(JNIEnv *jenv, cl_context context, cl_kernel kernel, cl_command_queue commandQueue, cl_event *events, jint *eventc, jint argIndex, jobject argDef, jobject arg){
    if(0){
       fprintf(stderr, "putArg ");
@@ -425,7 +429,7 @@ void putArg(JNIEnv *jenv, cl_context context, cl_kernel kernel, cl_command_queue
       cl_int status = CL_SUCCESS;
       if (argisset(argBits, READONLY)|argisset(argBits, READWRITE)){ // kernel reads this so enqueue a write
          void *ptr= OpenCLMem::getAddress(jenv, memInstance);
-         size_t sizeInBytes= OpenCLMem::getSizeInBytes(jenv, memInstance);
+         size_t sizeInBytes = OpenCLMem::getSizeInBytes(jenv, memInstance);
          jlong memBits = OpenCLMem::getBits(jenv, memInstance);
          memadd(memBits, ENQUEUED);
          OpenCLMem::setBits(jenv, memInstance, memBits);
@@ -497,9 +501,8 @@ void putArg(JNIEnv *jenv, cl_context context, cl_kernel kernel, cl_command_queue
    }
 }
 
-
-
-
+/**
+ */
 void getArg(JNIEnv *jenv, cl_context context, cl_command_queue commandQueue, cl_event *events, jint *eventc, jint argIndex, jobject argDef, jobject arg){
    if (0){
       fprintf(stderr, "post ");
@@ -518,7 +521,7 @@ void getArg(JNIEnv *jenv, cl_context context, cl_command_queue commandQueue, cl_
 
          cl_mem mem = OpenCLMem::getMem(jenv, memInstance);
 
-         size_t sizeInBytes= OpenCLMem::getSizeInBytes(jenv, memInstance);
+         size_t sizeInBytes = OpenCLMem::getSizeInBytes(jenv, memInstance);
          if (0){
             fprintf(stderr, "about to enqueu read eventc = %d!\n", *eventc);
          }
@@ -544,13 +547,15 @@ void getArg(JNIEnv *jenv, cl_context context, cl_command_queue commandQueue, cl_
    }
 }
 
+/**
+ */
 JNI_JAVA(void, OpenCLJNI, invoke)
    (JNIEnv *jenv, jobject jobj, jobject kernelInstance, jobjectArray argArray) {
       cl_kernel kernel = OpenCLKernel::getKernel(jenv, kernelInstance);
       jobject programInstance = OpenCLKernel::getProgramInstance(jenv, kernelInstance);
       jobjectArray argDefsArray = OpenCLKernel::getArgsArray(jenv, kernelInstance);
 
-      cl_context context =OpenCLProgram::getContext(jenv, programInstance);
+      cl_context context = OpenCLProgram::getContext(jenv, programInstance);
       cl_command_queue commandQueue = OpenCLProgram::getCommandQueue(jenv, programInstance);
 
 
@@ -559,9 +564,9 @@ JNI_JAVA(void, OpenCLJNI, invoke)
       // note that argArray[0] is the range then 1,2,3 etc matches argDefsArray[0,1,2]
       jsize argc = jenv->GetArrayLength(argDefsArray);
       if (0) fprintf(stderr, "argc = %d\n", argc);
-      jint reads=0;
-      jint writes=0;
-      for (jsize argIndex=0; argIndex<argc; argIndex++){
+      jint reads = 0;
+      jint writes = 0;
+      for (jsize argIndex = 0; argIndex<argc; argIndex++){
          jobject argDef = jenv->GetObjectArrayElement(argDefsArray, argIndex);
          jlong argBits = OpenCLArgDescriptor::getBits(jenv, argDef);
          if (argisset(argBits, READONLY)){
@@ -581,7 +586,7 @@ JNI_JAVA(void, OpenCLJNI, invoke)
 
       jint eventc =0;
 
-      for (jsize argIndex=0; argIndex<argc; argIndex++){
+      for (jsize argIndex = 0; argIndex < argc; argIndex++){
          jobject argDef = jenv->GetObjectArrayElement(argDefsArray, argIndex);
          jobject arg = jenv->GetObjectArrayElement(argArray, argIndex+1);
          putArg(jenv, context, kernel, commandQueue, events, &eventc, argIndex, argDef, arg);
@@ -615,7 +620,7 @@ JNI_JAVA(void, OpenCLJNI, invoke)
       }
       eventc++;
 
-      for (jsize argIndex=0; argIndex<argc; argIndex++){
+      for (jsize argIndex = 0; argIndex < argc; argIndex++){
          jobject argDef = jenv->GetObjectArrayElement(argDefsArray, argIndex);
          jobject arg = jenv->GetObjectArrayElement(argArray, argIndex+1);
          getArg(jenv, context, commandQueue, events, &eventc, argIndex, argDef, arg);
@@ -666,11 +671,11 @@ JNI_JAVA(jobject, OpenCLJNI, getPlatforms)
                cl_uint deviceIdc;
                cl_device_type requestedDeviceType =CL_DEVICE_TYPE_CPU |CL_DEVICE_TYPE_GPU ;
                status = clGetDeviceIDs(platformIds[platformIdx], requestedDeviceType, 0, NULL, &deviceIdc);
-               if (status == CL_SUCCESS && deviceIdc >0 ){
+               if (status == CL_SUCCESS && deviceIdc > 0 ){
                   cl_device_id* deviceIds = new cl_device_id[deviceIdc];
                   status = clGetDeviceIDs(platformIds[platformIdx], requestedDeviceType, deviceIdc, deviceIds, NULL);
                   if (status == CL_SUCCESS){
-                     for (unsigned deviceIdx=0; deviceIdx<deviceIdc; deviceIdx++){
+                     for (unsigned deviceIdx = 0; deviceIdx < deviceIdc; deviceIdx++){
 
                         cl_device_type deviceType;
                         status = clGetDeviceInfo(deviceIds[deviceIdx], CL_DEVICE_TYPE,  sizeof(deviceType), &deviceType, NULL);
@@ -720,7 +725,7 @@ JNI_JAVA(jobject, OpenCLJNI, getPlatforms)
                         size_t *maxWorkItemSizes = new size_t[maxWorkItemDimensions];
                         status = clGetDeviceInfo(deviceIds[deviceIdx], CL_DEVICE_MAX_WORK_ITEM_SIZES,  sizeof(size_t)*maxWorkItemDimensions, maxWorkItemSizes, NULL);
 
-                        for (unsigned dimIdx=0; dimIdx<maxWorkItemDimensions; dimIdx++){
+                        for (unsigned dimIdx = 0; dimIdx < maxWorkItemDimensions; dimIdx++){
                            //fprintf(stderr, "device[%d] dim[%d] = %d\n", deviceIdx, dimIdx, maxWorkItemSizes[dimIdx]);
                            JNIHelper::callVoid(jenv, deviceInstance, "setMaxWorkItemSize", ArgsVoidReturn(IntArg IntArg), dimIdx,maxWorkItemSizes[dimIdx]);
                         }
@@ -754,3 +759,4 @@ JNI_JAVA(jobject, OpenCLJNI, getPlatforms)
 
       return (platformListInstance);
    }
+
