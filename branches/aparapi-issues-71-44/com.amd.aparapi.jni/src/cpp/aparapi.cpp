@@ -56,10 +56,10 @@
  */
 int enqueueMarker(cl_command_queue commandQueue, cl_event* firstEvent) {
 #ifdef CL_VERSION_1_2
-    return clEnqueueMarkerWithWaitList(commandQueue, 0, NULL, firstEvent);
+   return clEnqueueMarkerWithWaitList(commandQueue, 0, NULL, firstEvent);
 #else
-    // this was deprecated in 1.1
-    return clEnqueueMarker(commandQueue, firstEvent);
+   // this was deprecated in 1.1
+   return clEnqueueMarker(commandQueue, firstEvent);
 #endif
 }
 
@@ -69,9 +69,9 @@ int enqueueMarker(cl_command_queue commandQueue, cl_event* firstEvent) {
  */
 jint getProcess() {
 #if defined (_WIN32)
-         return GetCurrentProcessId();
+   return GetCurrentProcessId();
 #else
-         return (jint)getpid();
+   return (jint)getpid();
 #endif
 }
 
@@ -538,7 +538,7 @@ int processArgs(JNIEnv* jenv, JNIContext* jniContext, int& argPos, int& writeEve
    // argPos is used to keep track of the kernel arg position, it can 
    // differ from "argIdx" due to insertion of javaArrayLength args which are not
    // fields read from the kernel object.
-   for (int argIdx=0; argIdx < jniContext->argc; argIdx++, argPos++) {
+   for (int argIdx = 0; argIdx < jniContext->argc; argIdx++, argPos++) {
 
       KernelArg *arg = jniContext->args[argIdx];
 
@@ -842,7 +842,7 @@ void checkEvents(JNIEnv* jenv, JNIContext* jniContext, int writeEventCount) thro
 
 JNI_JAVA(jint, KernelRunnerJNI, runKernelJNI)
    (JNIEnv *jenv, jobject jobj, jlong jniContextHandle, jobject _range, jboolean needSync, jint passes) {
-      if (config== NULL){
+      if (config == NULL){
          config = new Config(jenv);
       }
 
@@ -984,7 +984,7 @@ JNI_JAVA(jlong, KernelRunnerJNI, buildProgramJNI)
             queue_props |= CL_QUEUE_PROFILING_ENABLE;
          }
 
-         jniContext->commandQueue= clCreateCommandQueue(jniContext->context, (cl_device_id)jniContext->deviceId,
+         jniContext->commandQueue = clCreateCommandQueue(jniContext->context, (cl_device_id)jniContext->deviceId,
                queue_props,
                &status);
          if(status != CL_SUCCESS) throw CLException(status,"clCreateCommandQueue()");
@@ -1018,7 +1018,7 @@ JNI_JAVA(jint, KernelRunnerJNI, setArgsJNI)
          jniContext->firstRun = true;
 
          // Step through the array of KernelArg's to capture the type data for the Kernel's data members.
-         for (jint i=0; i<jniContext->argc; i++){ 
+         for (jint i = 0; i < jniContext->argc; i++){ 
             jobject argObj = jenv->GetObjectArrayElement(argArray, i);
             KernelArg* arg = jniContext->args[i] = new KernelArg(jenv, jniContext, argObj);
             if (config->isVerbose()){
@@ -1068,7 +1068,7 @@ JNI_JAVA(jint, KernelRunnerJNI, setArgsJNI)
 
 JNI_JAVA(jstring, KernelRunnerJNI, getExtensionsJNI)
    (JNIEnv *jenv, jobject jobj, jlong jniContextHandle) {
-      if (config== NULL){
+      if (config == NULL){
          config = new Config(jenv);
       }
       jstring jextensions = NULL;
@@ -1082,11 +1082,11 @@ JNI_JAVA(jstring, KernelRunnerJNI, getExtensionsJNI)
 
 KernelArg* getArgForBuffer(JNIEnv* jenv, JNIContext* jniContext, jobject buffer) {
    cl_int status = CL_SUCCESS;
-   KernelArg *returnArg= NULL;
+   KernelArg *returnArg = NULL;
 
    if (jniContext != NULL){
-      for (jint i=0; returnArg == NULL && i<jniContext->argc; i++){ 
-         KernelArg *arg= jniContext->args[i];
+      for (jint i = 0; returnArg == NULL && i < jniContext->argc; i++){ 
+         KernelArg *arg = jniContext->args[i];
          if (arg->isArray()){
             jboolean isSame = jenv->IsSameObject(buffer, arg->arrayBuffer->javaArray);
             if (isSame){
@@ -1101,7 +1101,7 @@ KernelArg* getArgForBuffer(JNIEnv* jenv, JNIContext* jniContext, jobject buffer)
             }
          }
       }
-      if (returnArg==NULL){
+      if (returnArg == NULL){
          if (config->isVerbose()){
             fprintf(stderr, "attempt to get arg for buffer that does not appear to be referenced from kernel\n");
          }
@@ -1113,13 +1113,13 @@ KernelArg* getArgForBuffer(JNIEnv* jenv, JNIContext* jniContext, jobject buffer)
 // Called as a result of Kernel.get(someArray)
 JNI_JAVA(jint, KernelRunnerJNI, getJNI)
    (JNIEnv *jenv, jobject jobj, jlong jniContextHandle, jobject buffer) {
-      if (config== NULL){
+      if (config == NULL){
          config = new Config(jenv);
       }
       cl_int status = CL_SUCCESS;
       JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);
       if (jniContext != NULL){
-         KernelArg *arg= getArgForBuffer(jenv, jniContext, buffer);
+         KernelArg *arg = getArgForBuffer(jenv, jniContext, buffer);
          if (arg != NULL){
             if (config->isVerbose()){
                fprintf(stderr, "explicitly reading buffer %s\n", arg->name);
@@ -1167,7 +1167,7 @@ JNI_JAVA(jint, KernelRunnerJNI, getJNI)
 
 JNI_JAVA(jobject, KernelRunnerJNI, getProfileInfoJNI)
    (JNIEnv *jenv, jobject jobj, jlong jniContextHandle) {
-      if (config== NULL){
+      if (config == NULL){
          config = new Config(jenv);
       }
       cl_int status = CL_SUCCESS;
@@ -1177,8 +1177,8 @@ JNI_JAVA(jobject, KernelRunnerJNI, getProfileInfoJNI)
          returnList = JNIHelper::createInstance(jenv, ArrayListClass, VoidReturn );
          if (config->isProfilingEnabled()){
 
-            for (jint i=0; i<jniContext->argc; i++){ 
-               KernelArg *arg= jniContext->args[i];
+            for (jint i = 0; i < jniContext->argc; i++){ 
+               KernelArg *arg = jniContext->args[i];
                if (arg->isArray()){
                   if (arg->isMutableByKernel() && arg->arrayBuffer->write.valid){
                      jobject writeProfileInfo = arg->arrayBuffer->write.createProfileInfoInstance(jenv);
@@ -1187,13 +1187,13 @@ JNI_JAVA(jobject, KernelRunnerJNI, getProfileInfoJNI)
                }
             }
 
-            for (jint pass=0; pass<jniContext->passes; pass++){
+            for (jint pass = 0; pass < jniContext->passes; pass++){
                jobject executeProfileInfo = jniContext->exec[pass].createProfileInfoInstance(jenv);
                JNIHelper::callVoid(jenv, returnList, "add", ArgsBooleanReturn(ObjectClassArg), executeProfileInfo);
             }
 
-            for (jint i=0; i<jniContext->argc; i++){ 
-               KernelArg *arg= jniContext->args[i];
+            for (jint i = 0; i < jniContext->argc; i++){ 
+               KernelArg *arg = jniContext->args[i];
                if (arg->isArray()){
                   if (arg->isReadByKernel() && arg->arrayBuffer->read.valid){
                      jobject readProfileInfo = arg->arrayBuffer->read.createProfileInfoInstance(jenv);
@@ -1205,3 +1205,4 @@ JNI_JAVA(jobject, KernelRunnerJNI, getProfileInfoJNI)
       }
       return returnList;
    }
+

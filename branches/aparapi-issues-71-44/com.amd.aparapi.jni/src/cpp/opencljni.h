@@ -39,6 +39,8 @@
 #ifndef OPENCLJNI_H
 #define OPENCLJNI_H
 
+/** @opencljni.h */
+
 #include "common.h"
 #include "jniHelper.h"
 #include "clHelper.h"

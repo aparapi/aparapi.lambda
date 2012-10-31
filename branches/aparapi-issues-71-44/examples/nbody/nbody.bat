@@ -1,7 +1,8 @@
 @echo off
 
+  REM -Djava.library.path=..\..\com.amd.aparapi.jni\dist;jogamp ^
 java ^
-  -Djava.library.path=..\..\com.amd.aparapi.jni\dist;jogamp ^
+  -Djava.library.path=jogamp ^
   -Dcom.amd.aparapi.executionMode=%1 ^
   -Dcom.amd.aparapi.enableProfiling=false ^
   -Dbodies=%2 ^
