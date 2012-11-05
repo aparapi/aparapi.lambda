@@ -409,13 +409,13 @@ public abstract class Kernel implements Cloneable {
 
    private KernelRunner kernelRunner = null;
 
-   protected final KernelState kernelState = new KernelState();
+   private KernelState kernelState = new KernelState();
 
    /**
     * This class is for internal Kernel state management<p>
     * NOT INTENDED FOR USE BY USERS
     */
-   public class KernelState {
+   public final class KernelState {
 
       private int[] globalIds = new int[] {
             0,
@@ -446,6 +446,20 @@ public abstract class Kernel implements Cloneable {
        */
       protected KernelState() {
 
+      }
+
+      /**
+       * Copy constructor
+       * 
+       * @param KernelState
+       */
+      protected KernelState(KernelState kernelState) {
+         globalIds = kernelState.getGlobalIds();
+         localIds = kernelState.getLocalIds();
+         groupIds = kernelState.getGroupIds();
+         range = kernelState.getRange();
+         passId = kernelState.getPassId();
+         localBarrier = kernelState.getLocalBarrier();
       }
 
       /**
@@ -877,6 +891,9 @@ public abstract class Kernel implements Cloneable {
    public Object clone() {
       try {
          final Kernel worker = (Kernel) super.clone();
+
+         // We need to be careful to also clone the KernelState
+         worker.kernelState = worker.new KernelState(kernelState); // Qualified copy constructor
 
          worker.kernelState.setGroupIds(new int[] {
                0,
