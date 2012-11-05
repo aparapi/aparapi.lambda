@@ -1,6 +1,6 @@
 package com.amd.aparapi.samples;
 // http://cr.openjdk.java.net/~briangoetz/lambda/lambda-translation.html
-public class WheresMyLambdaByteCode{
+public class WheresMyLambdaBytecode{
    interface SAM{
       void run();
    }
