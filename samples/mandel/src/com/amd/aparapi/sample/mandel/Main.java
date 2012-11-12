@@ -57,7 +57,7 @@ import javax.swing.JFrame;
 
 
 class MandelbrotCoordinate {
-   public static List<MandelbrotCoordinate> allCoordinates;
+   public static MandelbrotCoordinate[] allCoordinates;
    public static int rgb[];
 
    int pos;
@@ -135,8 +135,118 @@ public class Main{
 
 
    static int[]	getNextImage(float x, float y, float scale) {
-      Arrays.parallel(MandelbrotCoordinate.allCoordinates.toArray(new MandelbrotCoordinate[1])).
-      forEach(p -> {
+      
+// Here is some explanation of the sequence of calls to implement the parallel forEach
+//      
+//       Arrays.parallel delegates to  public Stream<E> parallel() { return Streams.parallel(a); }
+//        
+//           public static <T> Stream<T> parallel(T[] source, int offset, int length) {
+//               return new ValuePipeline<>(new ArraySpliterator<>(source, offset, length),
+//                                    StreamOpFlags.IS_SIZED | StreamOpFlags.IS_ORDERED | StreamOpFlags.IS_PARALLEL);
+//           }
+//       
+//           calls
+//            
+//           public<S> ValuePipeline(Spliterator<S> spliterator, int sourceFlags) {
+//              super(spliterator, sourceFlags, StreamShape.VALUE);
+//           }
+//       
+//        calls
+//        
+//        protected AbstractPipeline(Spliterator<?> spliterator, int sourceFlags, StreamShape shape);
+//        
+//      so now we have a ValuePipeline stream which is the reciever for forEach
+//      
+//           @Override
+//           public void forEach(Block<? super U> block) {
+//               pipeline(ForEachOp.make(block));
+//           }
+//      
+//      creates a ForEachOp for the Block (the block is the code in the statement lambda)
+//      
+//      public static<T> ForEachOp<T> make(final Block<? super T> block)
+//         ...
+//         return new ForEachOp<>(new TerminalSink<T, Void>() {
+//
+//
+//              public<V> Stream<V> pipeline(IntermediateOp<U, V> op) {
+//                 // @@@ delegate to shape to do instantiation
+//                 return new ValuePipeline<>(this, op);
+//              }
+//              
+//         using 
+//         
+//              public ValuePipeline(AbstractPipeline<?, T> upstream, IntermediateOp<T, U> op) {
+//                 super(upstream, op);
+//              }
+//      
+//         ForEachOp is a subclass of TerminalOp
+//            
+//         share/classes/java/util/streams/AbstractPipeline.java:
+      
+//              public<R> R pipeline(TerminalOp<E_OUT, R> terminal) {
+//                 assert getShape() == terminal.inputShape();
+//                 return evaluate(terminal);
+//              }
+         
+//      This stream is parallel, remember parallel flag was set back in Arrays.parallel:
+//      
+//      protected<R> R evaluate(TerminalOp<E_OUT, R> terminal) {
+//         // @@@ NYI If the source size estimate is small, don't bother going parallel
+//         if (StreamOpFlags.PARALLEL.isKnown(sourceFlags)) {
+//             return evaluateParallel(terminal);
+//         }   
+//         else
+//             return evaluateSequential(terminal);
+//     }
+      
+      
+//      private <R> R evaluateParallel(Node<?> node,
+//            Spliterator<?> spliterator,
+//            int sourceFlags,
+//            int[] opsFlags,
+//            IntermediateOp[] ops, int from, int upTo,
+//            StreamOp<?, R> terminal) {
+//         return (R) terminal.evaluateParallel(new ParallelImplPipelineHelper(node, spliterator, sourceFlags,
+//                                                     opsFlags, ops, from, upTo));
+//      }  
+//      
+//      Note ParallelImplPipelineHelper is an inner class in AbstractPipeline
+//      terminal is the ForEachOp
+//      
+//      Back to ForEachOp:
+//         
+//              @Override
+//              public <S> Void evaluateParallel(ParallelPipelineHelper<S, T> helper) {
+//                  OpUtils.parallelForEach(helper, helper.wrapSink(sink));
+//                  return null;
+//              }
+//
+//      share/classes/java/util/streams/ops/OpUtils.java:
+//         
+//      82     public static<P_IN, P_OUT> void parallelForEach(ParallelPipelineHelper<P_IN, P_OUT> helper, Sink<P_IN> sink) {
+//         83         helper.invoke(new ForEachTask<>(helper, sink));
+//         84     }
+//      
+//
+//      Note ForEachTask is a inner class in OpUtils
+//      ForEachTask is a subclass of "AbstractTask extends CountedCompleter" which 
+//      is a j.u.c.ForkJoinTask
+//      share/classes/java/util/streams/ops/AbstractTask.java
+//      
+//      ParallelImplPipelineHelper.invoke(ForkJoinTask<FJ_R> task) {
+//                   return task.invoke();
+//      }
+//     
+//      Now we are in java.util.concurrent running a ForkJoinTask waiting for completion on the main thread
+//      
+      
+      Arrays.parallel(MandelbrotCoordinate.allCoordinates).forEach(p -> {
+         
+         
+         
+         
+         
          /** Determine which RGB value we are going to process (0..RGB.length). */
          int gid = p.getPos();
 
@@ -149,7 +259,7 @@ public class Main{
          // Pull the value out of the palette for this iteration count.
          p.rgb[gid] = pallette[count];
       });
-      return MandelbrotCoordinate.allCoordinates.get(0).rgb;
+      return MandelbrotCoordinate.rgb;
    }
 
 
@@ -210,9 +320,9 @@ public class Main{
 
       // Used to find the index in the rgb array when processing 
       // each element in the lambda  
-      MandelbrotCoordinate.allCoordinates = new ArrayList<MandelbrotCoordinate>(width*height);
+      MandelbrotCoordinate.allCoordinates = new MandelbrotCoordinate[width*height];
       for(int i=0; i<width*height; i++) {
-         MandelbrotCoordinate.allCoordinates.add(new MandelbrotCoordinate(i));
+         MandelbrotCoordinate.allCoordinates[i] = new MandelbrotCoordinate(i);
       }
       MandelbrotCoordinate.rgb = rgb;
 
