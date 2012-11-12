@@ -888,7 +888,7 @@ public abstract class Kernel implements Cloneable {
     * If you choose to override <code>clone()</code> you are responsible for delegating to <code>super.clone();</code>
     */
    @Override
-   public Object clone() {
+   public Kernel clone() {
       try {
          final Kernel worker = (Kernel) super.clone();
 
