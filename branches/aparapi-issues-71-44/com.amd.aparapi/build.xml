@@ -5,7 +5,7 @@
 	<!-- 
 			USER CONFIGURABLE PROPERTIES 
 	-->	
-	<property name="findbugs.zip.version" value="2.0.0"/>
+	<property name="findbugs.zip.version" value="2.0.1"/>
 	<property name="findbugs.zip.name" value="findbugs-${findbugs.zip.version}.zip"/>
 	<property name="findbugs.root" value="${basedir}/.libs"/>
 	<property name="findbugs.home" value="${findbugs.root}/findbugs-${findbugs.zip.version}"/>
@@ -18,9 +18,9 @@
 	<echo>OS Version: ${os.version}</echo>
 	<echo>OS Arch:    ${os.arch}</echo>
 
-	<property name="build.compiler" value="javac1.6"/>
+	<!-- <property name="build.compiler" value="javac1.6"/>
 	<property name="ant.build.javac.source" value="1.6"/>
-	<property name="ant.build.javac.target" value="1.6"/>
+	<property name="ant.build.javac.target" value="1.6"/> -->
 
 	<available property="findbugs.installed" file="${findbugs.home}"/>
 
