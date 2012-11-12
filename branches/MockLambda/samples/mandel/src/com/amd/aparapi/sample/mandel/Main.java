@@ -200,7 +200,6 @@ public class Main{
 //             return evaluateSequential(terminal);
 //     }
       
-      
 //      private <R> R evaluateParallel(Node<?> node,
 //            Spliterator<?> spliterator,
 //            int sourceFlags,
@@ -224,9 +223,9 @@ public class Main{
 //
 //      share/classes/java/util/streams/ops/OpUtils.java:
 //         
-//      82     public static<P_IN, P_OUT> void parallelForEach(ParallelPipelineHelper<P_IN, P_OUT> helper, Sink<P_IN> sink) {
-//         83         helper.invoke(new ForEachTask<>(helper, sink));
-//         84     }
+//           public static<P_IN, P_OUT> void parallelForEach(ParallelPipelineHelper<P_IN, P_OUT> helper, Sink<P_IN> sink) {
+//              helper.invoke(new ForEachTask<>(helper, sink));
+//           }
 //      
 //
 //      Note ForEachTask is a inner class in OpUtils
@@ -239,13 +238,80 @@ public class Main{
 //      }
 //     
 //      Now we are in java.util.concurrent running a ForkJoinTask waiting for completion on the main thread
+//      So the java stack trace at that point is:
 //      
+//      "main" #1 prio=5 os_prio=0 tid=0x00007fdab4009000 nid=0x39d1 in Object.wait() [0x00007fdabd771000]
+//            java.lang.Thread.State: WAITING (on object monitor)
+//           at java.lang.Object.wait(Native Method)
+//           - waiting on <0x00000007c3676b48> (a java.util.streams.ops.OpUtils$ForEachTask)
+//           at java.lang.Object.wait(Object.java:502)
+//           at java.util.concurrent.ForkJoinTask.externalAwaitDone(ForkJoinTask.java:296)
+//           - locked <0x00000007c3676b48> (a java.util.streams.ops.OpUtils$ForEachTask)
+//           at java.util.concurrent.ForkJoinTask.doInvoke(ForkJoinTask.java:362)
+//           at java.util.concurrent.ForkJoinTask.invoke(ForkJoinTask.java:668)
+//           at java.util.streams.AbstractPipeline$ParallelImplPipelineHelper.invoke(AbstractPipeline.java:396)
+//           at java.util.streams.ops.OpUtils.parallelForEach(OpUtils.java:83)
+//           at java.util.streams.ops.ForEachOp.evaluateParallel(ForEachOp.java:74)
+//           at java.util.streams.ops.ForEachOp.evaluateParallel(ForEachOp.java:37)
+//           at java.util.streams.AbstractPipeline.evaluateParallel(AbstractPipeline.java:189)
+//           at java.util.streams.AbstractPipeline.evaluateParallel(AbstractPipeline.java:177)
+//           at java.util.streams.AbstractPipeline.evaluate(AbstractPipeline.java:131)
+//           at java.util.streams.AbstractPipeline.pipeline(AbstractPipeline.java:487)
+//           at java.util.streams.ValuePipeline.forEach(ValuePipeline.java:89)
+//           at com.amd.aparapi.sample.mandel.Main.getNextImage(Main.java:244)
+//
       
       Arrays.parallel(MandelbrotCoordinate.allCoordinates).forEach(p -> {
          
+//         The Block that gets executed here becomes:
+//         
+//         private static void lambda$0(float, float, float, com.amd.aparapi.sample.mandel.MandelbrotCoordinate);
+//         Signature: (FFFLcom/amd/aparapi/sample/mandel/MandelbrotCoordinate;)V
+//         flags: ACC_PRIVATE, ACC_STATIC, ACC_SYNTHETIC
+//
+//         The stack of a thread doing the lambda is:
+//            
+//         "ForkJoinPool.commonPool-worker-13" #28 daemon prio=5 os_prio=0 tid=0x00007fdab4246800 nid=0x3a12 runnable [0x00007fda9fafb000]
+//               java.lang.Thread.State: RUNNABLE
+//               at com.amd.aparapi.sample.mandel.Main.lambda$0(Main.java:261)
+//               at com.amd.aparapi.sample.mandel.Main$$Lambda$1.apply(Unknown Source)
+//               at java.util.streams.ops.ForEachOp$1.accept(ForEachOp.java:52)
+//               at java.util.streams.Sink.apply(Sink.java:58)
+//               at java.util.streams.ops.ForEachOp$1.apply(ForEachOp.java)
+//         
+//     Now we are getting closer to doing some work:    
+//         
+//      ArraySpliterator.forEach(Block<? super T> block) {
+//            traversing = true;
+//            for (int i= curOffset; i<endOffset; i++) {
+//                block.apply(elements[i]);
+//            }   
+//            // update only once; reduce heap write traffic
+//            curOffset = endOffset;
+//        }   
+//          
+//               at java.util.streams.Streams$ArraySpliterator.forEach(Streams.java:550)
          
+// The public interface Spliterator<T> is used to break data structures into chunks that
+// can be processed independently.
          
+//               at java.util.streams.ops.OpUtils.intoWrapped(OpUtils.java:78)
+//               at java.util.streams.ops.OpUtils$ForEachTask.doLeaf(OpUtils.java:107)
+
+//   Each task can be a leaf, actually calling the user lambda block, or a task further 
+//   splitting the work and forking new tasks which may further split or be leaves.
          
+//               at java.util.streams.ops.OpUtils$ForEachTask.doLeaf(OpUtils.java:86)
+//               at java.util.streams.ops.AbstractTask.compute(AbstractTask.java:90)
+//               at java.util.streams.ops.AbstractTask.compute(AbstractTask.java:110)
+//               at java.util.concurrent.CountedCompleter.exec(CountedCompleter.java:484)
+//               at java.util.concurrent.ForkJoinTask.doExec(ForkJoinTask.java:260)
+//               at java.util.concurrent.ForkJoinPool$WorkQueue.runTask(ForkJoinPool.java:1055)
+//               at java.util.concurrent.ForkJoinPool.runWorker(ForkJoinPool.java:1708)
+//               at java.util.concurrent.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:104)
+//
+//     The thread pool is not named like the lambda's class -- seems like  
+//     that would be helpful for debugging.
          
          /** Determine which RGB value we are going to process (0..RGB.length). */
          int gid = p.getPos();
