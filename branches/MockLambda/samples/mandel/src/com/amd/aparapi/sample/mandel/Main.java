@@ -269,7 +269,7 @@ public class Main{
 //         Signature: (FFFLcom/amd/aparapi/sample/mandel/MandelbrotCoordinate;)V
 //         flags: ACC_PRIVATE, ACC_STATIC, ACC_SYNTHETIC
 //
-//         The stack of a thread doing the lambda is:
+//         The stack of a thread in the pool doing the lambda is:
 //            
 //         "ForkJoinPool.commonPool-worker-13" #28 daemon prio=5 os_prio=0 tid=0x00007fdab4246800 nid=0x3a12 runnable [0x00007fda9fafb000]
 //               java.lang.Thread.State: RUNNABLE
@@ -347,9 +347,36 @@ public class Main{
    static void zoomInAndOut(Point to, int[] rgb, int[] imageRgb) {
       float tox = (float) (to.x - width / 2) / width * defaultScale;
       float toy = (float) (to.y - height / 2) / height * defaultScale;
-
+      
       // This cannot be parallel lambda or you will get a headache!!
+      // It will zoom in on the clicked point, then zoom out back to the start position
       Arrays.stream(ZoomDirection.values()).forEach( e -> {
+
+//     Here is the stack at this point of running the lambda
+//         
+//         at com.amd.aparapi.sample.mandel.Main.doZoom(Main.java:277)
+//         at com.amd.aparapi.sample.mandel.Main.lambda$1(Main.java:291)
+//         at com.amd.aparapi.sample.mandel.Main$$Lambda$2.apply(Unknown Source)
+//         at java.util.streams.ops.ForEachOp$1.accept(ForEachOp.java:52)
+//         at java.util.streams.Sink.apply(Sink.java:58)
+//         at java.util.streams.ops.ForEachOp$1.apply(ForEachOp.java)
+//         at java.util.streams.Streams$ArraySpliterator.forEach(Streams.java:550)
+//         at java.util.streams.AbstractPipeline$AbstractPipelineHelper.into(AbstractPipeline.java:256)
+//         at java.util.streams.AbstractPipeline$SequentialImplPipelineHelper.into(AbstractPipeline.java:321)
+
+//     Note there are SequentialImplPipelineHelper here and ParallelImplPipelineHelper
+//     in the parallel case above.
+         
+//         at java.util.streams.ops.ForEachOp.evaluateSequential(ForEachOp.java:69)
+//         at java.util.streams.ops.ForEachOp.evaluateSequential(ForEachOp.java:37)
+//         at java.util.streams.AbstractPipeline.evaluateSequential(AbstractPipeline.java:206)
+//         at java.util.streams.AbstractPipeline.evaluate(AbstractPipeline.java:134)
+//         at java.util.streams.AbstractPipeline.pipeline(AbstractPipeline.java:487)
+//         at java.util.streams.ValuePipeline.forEach(ValuePipeline.java:89)
+//         at com.amd.aparapi.sample.mandel.Main.zoomInAndOut(Main.java:290)
+//         at com.amd.aparapi.sample.mandel.Main.main(Main.java:361)
+         
+         
          doZoom(e.getSign(), tox, toy); 
          System.out.println("inner done, sign=" + e.getSign() );          
       } );
