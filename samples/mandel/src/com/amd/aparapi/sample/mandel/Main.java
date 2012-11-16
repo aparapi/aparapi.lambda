@@ -58,7 +58,7 @@ import javax.swing.JFrame;
 
 class MandelbrotCoordinate {
    public static MandelbrotCoordinate[] allCoordinates;
-   public static int rgb[];
+   //public static int rgb[];
 
    int pos;
    public MandelbrotCoordinate(int p) { pos = p; }
@@ -78,15 +78,15 @@ public class Main{
    static final BufferedImage offscreen = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 
    // Extract the underlying RGB buffer from the image.
-   static final int[] rgb = ((DataBufferInt) offscreen.getRaster().getDataBuffer()).getData();
-   static final int[] imageRgb = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
+   final int[] rgb = ((DataBufferInt) offscreen.getRaster().getDataBuffer()).getData();
+   final int[] imageRgb = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
 
-   static float defaultScale = 3f;
+   float defaultScale = 3f;
    /** Maximum iterations for Mandelbrot. */
-   static final private int maxIterations = 64;
+   final private int maxIterations = 64;
 
    /** Palette which maps iteration values to RGB values. */
-   static final int pallette[] = new int[maxIterations + 1];
+   final int pallette[] = new int[maxIterations + 1];
 
    /** User selected zoom-in point on the Mandelbrot view. */
    public static volatile Point to = null;
@@ -94,10 +94,10 @@ public class Main{
    // This is how many frames we will display as we zoom in and out.
    static final int frames = 128;
 
-   // These are static so zoom out continues from where zoom in stopped
-   static float scale = defaultScale;
-   static float x = -1f;
-   static float y = 0f;
+   // These are members so zoom out continues from where zoom in stopped
+   float scale = defaultScale;
+   float x = -1f;
+   float y = 0f;
 
    // Draw Mandelbrot image
    static JComponent viewer = new JComponent(){
@@ -117,7 +117,7 @@ public class Main{
    }
 
 
-   public static int getCount(float x, float y){
+   public int getCount(float x, float y){
       int count =0;
       float zx = x;
       float zy = y;
@@ -134,7 +134,8 @@ public class Main{
    }
 
 
-   static int[]	getNextImage(float x, float y, float scale) {
+   //static int[] getNextImage(float x, float y, float scale, int rgb[]) {
+   void getNextImage(float x, float y, float scale) {
       
 // Here is some explanation of the sequence of calls to implement the parallel forEach
 //      
@@ -323,28 +324,25 @@ public class Main{
          int count = getCount(lx,ly);
 
          // Pull the value out of the palette for this iteration count.
-         p.rgb[gid] = pallette[count];
+         rgb[gid] = pallette[count];
       });
-      return MandelbrotCoordinate.rgb;
    }
 
 
-   static void doZoom(int sign, float tox, float toy) {
+   void doZoom(int sign, float tox, float toy) {
       // Zoom in or out per iteration 
       for (int i = 0; i < frames - 4; i++) {
          scale = scale + sign * defaultScale / frames;
          x = x - sign * (tox / frames);
          y = y - sign * (toy / frames);
-
          getNextImage(x, y, scale);
-
          System.arraycopy(rgb, 0, imageRgb, 0, rgb.length);
          viewer.repaint();
       }
    }
 
 
-   static void zoomInAndOut(Point to, int[] rgb, int[] imageRgb) {
+   void zoomInAndOut(Point to, int[] rgb, int[] imageRgb) {
       float tox = (float) (to.x - width / 2) / width * defaultScale;
       float toy = (float) (to.y - height / 2) / height * defaultScale;
       
@@ -382,8 +380,7 @@ public class Main{
       } );
    }
 
-
-   public static void main(String[] _args) {
+   void doIt() {
       JFrame frame = new JFrame("MandelBrot");
       // Set the size of JComponent which displays Mandelbrot image
       viewer.setPreferredSize(new Dimension(width, height));
@@ -417,7 +414,6 @@ public class Main{
       for(int i=0; i<width*height; i++) {
          MandelbrotCoordinate.allCoordinates[i] = new MandelbrotCoordinate(i);
       }
-      MandelbrotCoordinate.rgb = rgb;
 
       getNextImage(x, y, scale);
 
@@ -455,5 +451,10 @@ public class Main{
          // Reset zoom-in point.
          to = null;
       }
+      
+   }
+
+   public static void main(String[] _args) {
+      (new Main()).doIt();
    }
 }
