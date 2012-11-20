@@ -40,6 +40,8 @@
 #define JNIHELPER_H
 
 #include <jni.h>
+#include <string>
+#include "CLException.h"
 #define JavaLangPackage(name) "java/lang/" name
 #define JavaUtilPackage(name) "java/util/" name
 #define AparapiPackage(name) "com/amd/aparapi/" name
@@ -88,6 +90,72 @@
 #define JNI_JAVA(type, className, methodName) JNIEXPORT type JNICALL Java_com_amd_aparapi_internal_jni_##className##_##methodName
 
 class JNIHelper{
+
+
+      static void setField(JNIEnv* jenv, jobject instance, jfieldID fieldId, jint* value) {
+         jenv->SetIntField(instance, fieldId, *value);
+      }
+      static void setField(JNIEnv* jenv, jobject instance, jfieldID fieldId, jfloat* value) {
+         jenv->SetFloatField(instance, fieldId, *value);
+      }
+      static void setField(JNIEnv* jenv, jobject instance, jfieldID fieldId, jdouble* value) {
+         jenv->SetDoubleField(instance, fieldId, *value);
+      }
+      static void setField(JNIEnv* jenv, jobject instance, jfieldID fieldId, jshort* value) {
+         jenv->SetShortField(instance, fieldId, *value);
+      }
+      static void setField(JNIEnv* jenv, jobject instance, jfieldID fieldId, jlong* value) {
+         jenv->SetLongField(instance, fieldId, *value);
+      }
+      static void setField(JNIEnv* jenv, jobject instance, jfieldID fieldId, jobject* value) {
+         jenv->SetObjectField(instance, fieldId, *value);
+      }
+      static void setField(JNIEnv* jenv, jobject instance, jfieldID fieldId, jboolean* value) {
+         jenv->SetBooleanField(instance, fieldId, *value);
+      }
+
+      static void getField(JNIEnv* jenv, jobject instance, jfieldID fieldId, jint* value) {
+         *value = jenv->GetIntField(instance, fieldId);
+      }
+      static void getField(JNIEnv* jenv, jobject instance, jfieldID fieldId, jfloat* value) {
+         *value = jenv->GetFloatField(instance, fieldId);
+      }
+      static void getField(JNIEnv* jenv, jobject instance, jfieldID fieldId, jdouble* value) {
+         *value = jenv->GetDoubleField(instance, fieldId);
+      }
+      static void getField(JNIEnv* jenv, jobject instance, jfieldID fieldId, jshort* value) {
+         *value = jenv->GetShortField(instance, fieldId);
+      }
+      static void getField(JNIEnv* jenv, jobject instance, jfieldID fieldId, jlong* value) {
+         *value = jenv->GetLongField(instance, fieldId);
+      }
+      static void getField(JNIEnv* jenv, jobject instance, jfieldID fieldId, jobject* value) {
+         *value = jenv->GetObjectField(instance, fieldId);
+      }
+      static void getField(JNIEnv* jenv, jobject instance, jfieldID fieldId, jboolean* value) {
+         *value = jenv->GetBooleanField(instance, fieldId);
+      }
+
+      static const char* getSignature(jint value) {
+         return "I";
+      }
+      static const char* getSignature(jfloat value) {
+         return "F";
+      }
+      static const char* getSignature(jdouble value) {
+         return "D";
+      }
+      static const char* getSignature(jshort value) {
+         return "H";
+      }
+      static const char* getSignature(jlong value) {
+         return "J";
+      }
+      static const char* getSignature(jboolean value) {
+         return "Z";
+      }
+
+
    public:
       static void callVoid(JNIEnv *jenv, jobject instance, char *methodName, char *methodSignature, ...);
       static jlong callLong(JNIEnv *jenv, jobject instance, char *methodName, char *methodSignature, ...);
@@ -97,53 +165,91 @@ class JNIHelper{
 
       static jobject getStaticFieldObject(JNIEnv *jenv, char *className, char *fieldName, char *signature);
 
-      static jint getInstanceFieldInt(JNIEnv *jenv, jobject instance, char *fieldName);
-      static jfloat getInstanceFieldFloat(JNIEnv *jenv, jobject instance, char *fieldName);
-      static jdouble getInstanceFieldDouble(JNIEnv *jenv, jobject instance, char *fieldName);
-      static jshort getInstanceFieldShort(JNIEnv *jenv, jobject instance, char *fieldName);
-      static jlong getInstanceFieldLong(JNIEnv *jenv, jobject instance, char *fieldName);
-      static jboolean getInstanceFieldBoolean(JNIEnv *jenv, jobject instance, char *fieldName);
-      static jobject getInstanceFieldObject(JNIEnv *jenv, jobject instance, char *fieldName, char *signature);
+      static std::string getType(jint value) {
+         return "int";
+      }
+      static std::string getType(jfloat value) {
+         return "float";
+      }
+      static std::string getType(jdouble value) {
+         return "double";
+      }
+      static std::string getType(jshort value) {
+         return "short";
+      }
+      static std::string getType(jlong value) {
+         return "long";
+      }
+      static std::string getType(jobject value) {
+         return "object";
+      }
+      static std::string getType(jboolean value) {
+         return "boolean";
+      }
 
-      static void setInstanceFieldInt(JNIEnv* jenv, jobject instance, char *fieldName, jint value);
-      static void setInstanceFieldLong(JNIEnv* jenv, jobject instance, char *fieldName, jlong value);
-      static void setInstanceFieldBoolean(JNIEnv* jenv, jobject instance, char *fieldName, jboolean value);
-      static void setInstanceFieldObject(JNIEnv* jenv, jobject instance, char *fieldName, char *signature, jobject value);
+      //these have to go here, because they're templated
+
+      template<typename jT>
+      static void setInstanceField(JNIEnv* jenv, jobject instance, const char *fieldName, jT value) {
+          return setInstanceField<jT>(jenv, instance, fieldName, getSignature(value), value);
+      }
+
+      template<typename jT>
+      static void setInstanceField(JNIEnv* jenv, jobject instance, const char *fieldName, const char* signature, jT value) {
+         try {
+            jclass theClass = jenv->GetObjectClass(instance);
+            if (theClass == NULL ||  jenv->ExceptionCheck())
+               throw "bummer! getting class from instance\n";
+            jfieldID fieldId = jenv->GetFieldID(theClass,fieldName,"I");
+            if (fieldId == NULL || jenv->ExceptionCheck())
+               throw "bummer getting "+ getType(value) + "field '" + fieldName + "' \n";
+            setField(jenv, instance, fieldId, &value);
+            if (jenv->ExceptionCheck())
+               throw "bummer setting "+ getType(value) + "field '" + fieldName + "' \n";
+         } catch(std::string& se) {
+            jenv->ExceptionDescribe(); 
+            jenv->ExceptionClear();
+            fprintf(stderr,"%s",se.c_str());
+         }
+      }
+
+      template<typename jT>
+      static jT getInstanceField(JNIEnv *jenv, jobject instance, const char *fieldName) {
+          return getInstanceField<jT>(jenv, instance, fieldName, getSignature((jT)0));
+      }
+
+      template<typename jT>
+      static jT getInstanceField(JNIEnv *jenv, jobject instance, const char *fieldName, const char *signature) {
+         jT value = (jT)0;
+         try {
+            jclass theClass = jenv->GetObjectClass(instance);
+            if (theClass == NULL ||  jenv->ExceptionCheck()) 
+               throw "bummer! getting class from instance\n";
+            jfieldID fieldId = jenv->GetFieldID(theClass,fieldName, signature);
+            if (fieldId == NULL || jenv->ExceptionCheck())
+               throw "bummer getting "+ getType(value) + "field '" + fieldName + "' \n";
+            getField(jenv, instance, fieldId, &value);
+            if (jenv->ExceptionCheck())
+               throw "bummer getting "+ getType(value) + "field '" + fieldName + "' \n";
+         } catch(std::string& se) {
+            jenv->ExceptionDescribe(); 
+            jenv->ExceptionClear();
+            fprintf(stderr,"%s",se.c_str());
+            return NULL;
+         }
+         return(value);
+      }
+
+
+      static jfieldID GetFieldID(JNIEnv* jenv, jclass c, const char* name, const char* type) {
+         jfieldID field = jenv->GetFieldID(c, name, type);
+         if(field == 0) {
+            fprintf(stderr, "!!!!!!! no such field as %s: failed !!!!!!!\n", name);\
+         }
+         return field;
+      }
+
 };
-
-#define JNIExceptionChecker(){\
-   fprintf(stderr, "line %d\n", __LINE__);\
-   if ((jenv)->ExceptionOccurred()) {\
-      (jenv)->ExceptionDescribe(); /* write to console */\
-      (jenv)->ExceptionClear();\
-   }\
-}
-
-#define CHECK_NO_RETURN(condition, msg) if(condition){\
-   fprintf(stderr, "!!!!!!! %s failed !!!!!!!\n", msg);\
-}
-
-#define CHECK_RETURN(condition, msg, val) if(condition){\
-   fprintf(stderr, "!!!!!!! %s failed !!!!!!!\n", msg);\
-   return val;\
-}
-
-#define CHECK(condition, msg) CHECK_RETURN(condition, msg, 0)
-
-#define ASSERT_CL_NO_RETURN(msg) if (status != CL_SUCCESS){\
-   fprintf(stderr, "!!!!!!! %s failed: %s\n", msg, CLHelper::errString(status));\
-}
-
-#define ASSERT_CL_RETURN(msg, val) if (status != CL_SUCCESS){\
-   ASSERT_CL_NO_RETURN(msg)\
-   return val;\
-}
-
-#define ASSERT_CL(msg) ASSERT_CL_RETURN(msg, 0)
-
-#define PRINT_CL_ERR(status, msg) fprintf(stderr, "!!!!!!! %s failed %s\n", msg, CLHelper::errString(status));
-
-#define ASSERT_FIELD(id) CHECK_NO_RETURN(id##FieldID == 0, "No such field as " #id)
 
 #endif // JNIHELPER_H
 

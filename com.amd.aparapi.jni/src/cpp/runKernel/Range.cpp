@@ -19,14 +19,14 @@ Range::Range(JNIEnv *jenv, jobject range):
          localDims(NULL){
    if (rangeClazz ==NULL){
       jclass rangeClazz = jenv->GetObjectClass(range); 
-      globalSize_0_FieldID = jenv->GetFieldID(rangeClazz, "globalSize_0", "I"); ASSERT_FIELD(globalSize_0_);
-      globalSize_1_FieldID = jenv->GetFieldID(rangeClazz, "globalSize_1", "I"); ASSERT_FIELD(globalSize_1_);
-      globalSize_2_FieldID = jenv->GetFieldID(rangeClazz, "globalSize_2", "I"); ASSERT_FIELD(globalSize_2_);
-      localSize_0_FieldID = jenv->GetFieldID(rangeClazz, "localSize_0", "I"); ASSERT_FIELD(localSize_0_);
-      localSize_1_FieldID = jenv->GetFieldID(rangeClazz, "localSize_1", "I"); ASSERT_FIELD(localSize_1_);
-      localSize_2_FieldID = jenv->GetFieldID(rangeClazz, "localSize_2", "I"); ASSERT_FIELD(localSize_2_);
-      dimsFieldID = jenv->GetFieldID(rangeClazz, "dims", "I"); ASSERT_FIELD(dims);
-      localIsDerivedFieldID = jenv->GetFieldID(rangeClazz, "localIsDerived", "Z"); ASSERT_FIELD(localIsDerived);
+      globalSize_0_FieldID = JNIHelper::GetFieldID(jenv, rangeClazz, "globalSize_0", "I");
+      globalSize_1_FieldID = JNIHelper::GetFieldID(jenv, rangeClazz, "globalSize_1", "I");
+      globalSize_2_FieldID = JNIHelper::GetFieldID(jenv, rangeClazz, "globalSize_2", "I");
+      localSize_0_FieldID = JNIHelper::GetFieldID(jenv, rangeClazz, "localSize_0", "I");
+      localSize_1_FieldID = JNIHelper::GetFieldID(jenv, rangeClazz, "localSize_1", "I");
+      localSize_2_FieldID = JNIHelper::GetFieldID(jenv, rangeClazz, "localSize_2", "I");
+      dimsFieldID = JNIHelper::GetFieldID(jenv, rangeClazz, "dims", "I");
+      localIsDerivedFieldID = JNIHelper::GetFieldID(jenv, rangeClazz, "localIsDerived", "Z");
    }
    dims = jenv->GetIntField(range, dimsFieldID);
    localIsDerived = jenv->GetBooleanField(range, localIsDerivedFieldID);

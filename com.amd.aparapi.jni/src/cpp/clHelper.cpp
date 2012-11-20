@@ -40,6 +40,7 @@
 
 #define CLHELPER_SOURCE
 #include "clHelper.h"
+#include "List.h"
 
 const char *CLHelper::errString(cl_int status){
    static struct { cl_int code; const char *msg; } error_table[] = {
