@@ -54,11 +54,11 @@ public:
    ~JNIContext(){
    }
 
-   void dispose(JNIEnv *jenv);
+   void dispose(JNIEnv *jenv, Config* config);
 
-   /*
-      Release JNI critical pinned arrays before returning to java code
-      */
+   /**
+    * Release JNI critical pinned arrays before returning to java code
+    */
    void unpinAll(JNIEnv* jenv);
 };
 

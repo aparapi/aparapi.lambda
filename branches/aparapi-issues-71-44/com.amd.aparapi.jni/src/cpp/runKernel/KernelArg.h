@@ -8,6 +8,10 @@
 #include "com_amd_aparapi_internal_jni_KernelRunnerJNI.h"
 #include "config.h"
 
+#ifdef _WIN32
+#define strdup _strdup
+#endif
+
 class JNIContext;
 
 class KernelArg{
@@ -17,6 +21,52 @@ class KernelArg{
       static jfieldID typeFieldID; 
       static jfieldID sizeInBytesFieldID;
       static jfieldID numElementsFieldID;
+
+      const char* getTypeName();
+
+      //all of these use JNIContext so they can't be inlined
+
+      //get the value of a primitive arguement
+      void getPrimitiveValue(JNIEnv *jenv, jfloat *value);
+      void getPrimitiveValue(JNIEnv *jenv, jint *value);
+      void getPrimitiveValue(JNIEnv *jenv, jboolean *value);
+      void getPrimitiveValue(JNIEnv *jenv, jbyte *value);
+      void getPrimitiveValue(JNIEnv *jenv, jlong *value);
+      void getPrimitiveValue(JNIEnv *jenv, jdouble *value);
+
+      //get the value of a static primitive arguement
+      void getStaticPrimitiveValue(JNIEnv *jenv, jfloat *value);
+      void getStaticPrimitiveValue(JNIEnv *jenv, jint *value);
+      void getStaticPrimitiveValue(JNIEnv *jenv, jboolean *value);
+      void getStaticPrimitiveValue(JNIEnv *jenv, jbyte *value);
+      void getStaticPrimitiveValue(JNIEnv *jenv, jlong *value);
+      void getStaticPrimitiveValue(JNIEnv *jenv, jdouble *value);
+
+      template<typename T> 
+      void getPrimitive(JNIEnv *jenv, int argIdx, int argPos, bool verbose, T* value) {
+         if(isStatic()) {
+            getStaticPrimitiveValue(jenv, value);
+         }
+         else {
+            getPrimitiveValue(jenv, value);
+         }
+         if (verbose) {
+            if(isLong()) {
+               fprintf(stderr, "clSetKernelArg %s '%s' index=%d pos=%d value=%ld\n",
+                       getTypeName(), name, argIdx, argPos, *value);
+            }
+            else if(isFloat() || isDouble()) {
+               fprintf(stderr, "clSetKernelArg %s '%s' index=%d pos=%d value=%f\n",
+                       getTypeName(), name, argIdx, argPos, *value);
+            }
+            else {
+               fprintf(stderr, "clSetKernelArg %s '%s' index=%d pos=%d value=%d\n",
+                       getTypeName(), name, argIdx, argPos, *value);
+            }
+         }
+      }
+
+
    public:
       static jfieldID javaArrayFieldID; 
    public:
@@ -28,7 +78,8 @@ class KernelArg{
 
       ArrayBuffer *arrayBuffer;
 
-      KernelArg(JNIEnv *jenv, JNIContext *jniContext, jobject argObj); // Uses JNIContext so cant inline here see below
+      // Uses JNIContext so cant inline here see below
+      KernelArg(JNIEnv *jenv, JNIContext *jniContext, jobject argObj);
 
       ~KernelArg(){
       }
@@ -140,9 +191,13 @@ class KernelArg{
          jenv->SetIntField(javaArg, typeFieldID,type );
       }
 
-      void syncValue(JNIEnv *jenv); // Uses JNIContext so can't inline here we below.  
-      cl_int setLocalBufferArg(JNIEnv *jenv, int argIdx, int argPos); // Uses JNIContext so can't inline here we below.  
-      cl_int setPrimitiveArg(JNIEnv *jenv, int argIdx, int argPos ); // Uses JNIContext so can't inline here we below.  
+      // Uses JNIContext so can't inline here we below.  
+      void syncValue(JNIEnv *jenv);
+
+      // Uses JNIContext so can't inline here we below.  
+      cl_int setLocalBufferArg(JNIEnv *jenv, int argIdx, int argPos, bool verbose);
+      // Uses JNIContext so can't inline here we below.  
+      cl_int setPrimitiveArg(JNIEnv *jenv, int argIdx, int argPos, bool verbose);
 };
 
 

@@ -4,6 +4,7 @@
 #include <string>
 #include <stdio.h>
 #include <exception>
+#include "CLHelper.h"
 
 class CLException : public std::exception {
 
@@ -50,6 +51,12 @@ public:
        return std::string("!!!!!!! " + _message + " failed " + CLHelper::errString(status()) + " \n").c_str();
    }
 
+   static void checkCLError(cl_int status, std::string error) {
+      if(status != CL_SUCCESS) {
+         CLException(status, error).printError();
+      }
+   }
 };
+
 
 #endif // CL_EXCEPTION_H

@@ -1,8 +1,6 @@
-
 #include "JNIContext.h"
 #include "opencljni.h"
-
-
+#include "List.h"
 
 JNIContext::JNIContext(JNIEnv *jenv, jobject _kernelObject, jobject _openCLDeviceObject, jint _flags): 
       kernelObject(jenv->NewGlobalRef(_kernelObject)),
@@ -27,13 +25,13 @@ JNIContext::JNIContext(JNIEnv *jenv, jobject _kernelObject, jobject _openCLDevic
    cl_context_properties cps[3] = { CL_CONTEXT_PLATFORM, (cl_context_properties)platformId, 0 };
    cl_context_properties* cprops = (NULL == platformId) ? NULL : cps;
    context = clCreateContextFromType( cprops, returnedDeviceType, NULL, NULL, &status); 
-   ASSERT_CL_NO_RETURN("clCreateContextFromType()");
+   CLException::checkCLError(status, "clCreateContextFromType()");
    if (status == CL_SUCCESS){
       valid = JNI_TRUE;
    }
 }
 
-void JNIContext::dispose(JNIEnv *jenv){
+void JNIContext::dispose(JNIEnv *jenv, Config* config) {
    //fprintf(stdout, "dispose()\n");
    cl_int status = CL_SUCCESS;
    jenv->DeleteGlobalRef(kernelObject);
@@ -41,7 +39,7 @@ void JNIContext::dispose(JNIEnv *jenv){
    if (context != 0){
       status = clReleaseContext(context);
       //fprintf(stdout, "dispose context %0lx\n", context);
-      ASSERT_CL_NO_RETURN("clReleaseContext()");
+      CLException::checkCLError(status, "clReleaseContext()");
       context = (cl_context)0;
    }
    if (commandQueue != 0){
@@ -50,19 +48,19 @@ void JNIContext::dispose(JNIEnv *jenv){
       }
       status = clReleaseCommandQueue((cl_command_queue)commandQueue);
       //fprintf(stdout, "dispose commandQueue %0lx\n", commandQueue);
-      ASSERT_CL_NO_RETURN("clReleaseCommandQueue()");
+      CLException::checkCLError(status, "clReleaseCommandQueue()");
       commandQueue = (cl_command_queue)0;
    }
    if (program != 0){
       status = clReleaseProgram((cl_program)program);
       //fprintf(stdout, "dispose program %0lx\n", program);
-      ASSERT_CL_NO_RETURN("clReleaseProgram()");
+      CLException::checkCLError(status, "clReleaseProgram()");
       program = (cl_program)0;
    }
    if (kernel != 0){
       status = clReleaseKernel((cl_kernel)kernel);
       //fprintf(stdout, "dispose kernel %0lx\n", kernel);
-      ASSERT_CL_NO_RETURN("clReleaseKernel()");
+      CLException::checkCLError(status, "clReleaseKernel()");
       kernel = (cl_kernel)0;
    }
    if (argc > 0){
@@ -76,7 +74,7 @@ void JNIContext::dispose(JNIEnv *jenv){
                   }
                   status = clReleaseMemObject((cl_mem)arg->arrayBuffer->mem);
                   //fprintf(stdout, "dispose arg %d %0lx\n", i, arg->arrayBuffer->mem);
-                  ASSERT_CL_NO_RETURN("clReleaseMemObject()");
+                  CLException::checkCLError(status, "clReleaseMemObject()");
                   arg->arrayBuffer->mem = (cl_mem)0;
                }
                if (arg->arrayBuffer->javaArray != NULL)  {
@@ -97,9 +95,9 @@ void JNIContext::dispose(JNIEnv *jenv){
       delete[] args; args=NULL;
 
       // do we need to call clReleaseEvent on any of these that are still retained....
-      delete []readEvents; readEvents = NULL;
-      delete []writeEvents; writeEvents = NULL;
-      delete []executeEvents; executeEvents = NULL;
+      delete[] readEvents; readEvents = NULL;
+      delete[] writeEvents; writeEvents = NULL;
+      delete[] executeEvents; executeEvents = NULL;
 
       if (config->isProfilingEnabled()) {
          if (config->isProfilingCSVEnabled()) {

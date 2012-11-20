@@ -35,19 +35,16 @@
    information about the EAR or your obligations under those regulations, please refer to the U.S. Bureau of Industry
    and Security?s website at http://www.bis.doc.gov/. 
    */
-#include "common.h"
+
+#define APARAPI_SOURCE
+
+#include "aparapi.h"
 #include "config.h"
 #include "profileInfo.h"
 #include "arrayBuffer.h"
 #include "clHelper.h"
-#define APARAPI_SOURCE
-#include "aparapi.h"
-#include "com_amd_aparapi_internal_jni_KernelRunnerJNI.h"
-#include "opencljni.h"
-#include "CLException.h"
-#include "Range.h"
-#include "KernelArg.h"
-#include "JNIContext.h"
+#include "List.h"
+
 
 //compiler dependant code
 /**
@@ -84,7 +81,7 @@ JNI_JAVA(jint, KernelRunnerJNI, disposeJNI)
       cl_int status = CL_SUCCESS;
       JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);
       if (jniContext != NULL){
-         jniContext->dispose(jenv);
+         jniContext->dispose(jenv, config);
          delete jniContext;
          jniContext = NULL;
       }
@@ -195,7 +192,7 @@ cl_int profile(ProfileInfo *profileInfo, cl_event *event, jint type, char* name,
       status = clGetEventProfilingInfo(*event, CL_PROFILING_COMMAND_END, sizeof(profileInfo->end), &(profileInfo->end), NULL);
       if(status != CL_SUCCESS) throw CLException(status, "clGetEventProfiliningInfo() END");
 
-   } catch(CLException cle) {
+   } catch(CLException& cle) {
      cle.printError();
      return cle.status();
    }
@@ -428,7 +425,7 @@ void processObject(JNIEnv* jenv, JNIContext* jniContext, KernelArg* arg, int& ar
          //fprintf(stdout, "dispose arg %d %0lx\n", i, arg->arrayBuffer->mem);
 
          //this needs to be reported, but we can still keep going
-         if(status != CL_SUCCESS) PRINT_CL_ERR(status, "clReleaseMemObject()");
+         CLException::checkCLError(status, "clReleaseMemObject()");
 
          arg->arrayBuffer->mem = (cl_mem)0;
       }
@@ -498,7 +495,7 @@ void processLocal(JNIEnv* jenv, JNIContext* jniContext, KernelArg* arg, int& arg
    cl_int status = CL_SUCCESS;
    // what if local buffer size has changed?  We need a check for resize here.
    if (jniContext->firstRun) {
-      status = arg->setLocalBufferArg(jenv, argIdx, argPos);
+      status = arg->setLocalBufferArg(jenv, argIdx, argPos, config->isVerbose());
       if(status != CL_SUCCESS) throw CLException(status,"clSetKernelArg() (local)");
 
       // Add the array length if needed
@@ -568,7 +565,7 @@ int processArgs(JNIEnv* jenv, JNIContext* jniContext, int& argPos, int& writeEve
       } else if (arg->isLocal()) {
           processLocal(jenv, jniContext, arg, argPos, argIdx);
       } else {  // primitive arguments
-         status = arg->setPrimitiveArg(jenv, argIdx, argPos);
+         status = arg->setPrimitiveArg(jenv, argIdx, argPos, config->isVerbose());
          if(status != CL_SUCCESS) throw CLException(status,"clSetKernelArg()");
       }
 
@@ -855,7 +852,7 @@ JNI_JAVA(jint, KernelRunnerJNI, runKernelJNI)
       if (jniContext->firstRun && config->isProfilingEnabled()){
          try {
             profileFirstRun(jniContext);
-         } catch(CLException cle) {
+         } catch(CLException& cle) {
             cle.printError();
             return 0L;
          }
@@ -866,8 +863,8 @@ JNI_JAVA(jint, KernelRunnerJNI, runKernelJNI)
       // Need to capture array refs
       if (jniContext->firstRun || needSync) {
          try {
-         updateNonPrimitiveReferences(jenv, jobj, jniContext);
-         } catch (CLException cle) {
+            updateNonPrimitiveReferences(jenv, jobj, jniContext);
+         } catch (CLException& cle) {
              cle.printError();
          }
          if (config->isVerbose()){
@@ -884,7 +881,7 @@ JNI_JAVA(jint, KernelRunnerJNI, runKernelJNI)
          waitForReadEvents(jniContext, readEventCount, passes);
          checkEvents(jenv, jniContext, writeEventCount);
       }
-      catch(CLException cle) {
+      catch(CLException& cle) {
          cle.printError();
          jniContext->unpinAll(jenv);
          return cle.status();
@@ -994,7 +991,7 @@ JNI_JAVA(jlong, KernelRunnerJNI, buildProgramJNI)
          if (config->isProfilingCSVEnabled()) {
             writeProfile(jenv, jniContext);
          }
-      } catch(CLException cle) {
+      } catch(CLException& cle) {
          cle.printError();
          return 0;
       }
@@ -1126,35 +1123,40 @@ JNI_JAVA(jint, KernelRunnerJNI, getJNI)
             }
             arg->pin(jenv);
 
-            status = clEnqueueReadBuffer(jniContext->commandQueue, arg->arrayBuffer->mem, CL_FALSE, 0, 
-                  arg->arrayBuffer->lengthInBytes,arg->arrayBuffer->addr , 0, NULL, &jniContext->readEvents[0]);
-            if (config->isVerbose()){
-               fprintf(stderr, "explicitly read %s ptr=%lx len=%d\n", arg->name, (unsigned long)arg->arrayBuffer->addr,arg->arrayBuffer->lengthInBytes );
-            }
-            if (status != CL_SUCCESS) {
-               PRINT_CL_ERR(status, "clEnqueueReadBuffer()");
-               return status;
-            }
-            status = clWaitForEvents(1, jniContext->readEvents);
-            if (status != CL_SUCCESS) {
-               PRINT_CL_ERR(status, "clWaitForEvents");
-               return status;
-            }
-            if (config->isProfilingEnabled()){
-               status = profile(&arg->arrayBuffer->read, &jniContext->readEvents[0], 0,arg->name, jniContext->profileBaseTime);
-               if (status != CL_SUCCESS) {
-                  PRINT_CL_ERR(status, "profile ");
-                  return status;
+            try {
+               status = clEnqueueReadBuffer(jniContext->commandQueue, arg->arrayBuffer->mem, 
+                                            CL_FALSE, 0, 
+                                            arg->arrayBuffer->lengthInBytes,
+                                            arg->arrayBuffer->addr , 0, NULL, 
+                                            &jniContext->readEvents[0]);
+               if (config->isVerbose()){
+                  fprintf(stderr, "explicitly read %s ptr=%lx len=%d\n", 
+                          arg->name, (unsigned long)arg->arrayBuffer->addr, 
+                          arg->arrayBuffer->lengthInBytes );
                }
-            }
+               if (status != CL_SUCCESS) throw CLException(status, "clEnqueueReadBuffer()");
 
-            clReleaseEvent(jniContext->readEvents[0]);
-            if (status != CL_SUCCESS) {
-               PRINT_CL_ERR(status, "clReleaseEvent() read event");
+               status = clWaitForEvents(1, jniContext->readEvents);
+               if (status != CL_SUCCESS) throw CLException(status, "clWaitForEvents");
+
+               if (config->isProfilingEnabled()) {
+                  status = profile(&arg->arrayBuffer->read, &jniContext->readEvents[0], 0,
+                                   arg->name, jniContext->profileBaseTime);
+                  if (status != CL_SUCCESS) throw CLException(status, "profile "); 
+               }
+
+               clReleaseEvent(jniContext->readEvents[0]);
+               if (status != CL_SUCCESS) throw CLException(status, "clReleaseEvent() read event");
+
+               // since this is an explicit buffer get, 
+               // we expect the buffer to have changed so we commit
+               arg->unpin(jenv); // was unpinCommit
+
+            //something went wrong print the error and exit
+            } catch(CLException& cle) {
+               cle.printError();
                return status;
             }
-            // since this is an explicit buffer get, we expect the buffer to have changed so we commit
-            arg->unpin(jenv); // was unpinCommit
 
          }else{
             if (config->isVerbose()){
