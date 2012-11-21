@@ -1141,18 +1141,18 @@ public class KernelRunner extends KernelRunnerJNI {
                } else {
                   warnFallBackAndExecute(_entrypointName, _range, _passes, "failed to locate entrypoint");
                }
-            } else {
-               try {
-                  executeOpenCL(_entrypointName, _range, _passes);
-               } catch (final AparapiException e) {
-
-                  warnFallBackAndExecute(_entrypointName, _range, _passes, e);
-               }
             }
          } else {
-            executeJava(_range, _passes);
+            try {
+               executeOpenCL(_entrypointName, _range, _passes);
+            } catch (final AparapiException e) {
+               warnFallBackAndExecute(_entrypointName, _range, _passes, e);
+            }
          }
+      } else {
+         executeJava(_range, _passes);
       }
+
 
       if (Config.enableExecutionModeReporting) {
          System.out.println(kernel.getClass().getCanonicalName() + ":" + kernel.getExecutionMode());
