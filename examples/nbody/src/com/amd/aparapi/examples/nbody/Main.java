@@ -65,9 +65,6 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 
-import com.amd.aparapi.Kernel;
-import com.amd.aparapi.ProfileInfo;
-import com.amd.aparapi.Range;
 import com.jogamp.opengl.util.FPSAnimator;
 import com.jogamp.opengl.util.texture.Texture;
 import com.jogamp.opengl.util.texture.TextureIO;
@@ -87,13 +84,11 @@ import com.jogamp.opengl.util.texture.TextureIO;
  */
 public class Main {
 
-  public static class NBodyKernel extends Kernel {
     protected final float delT = .005f;
     protected final float espSqr = 1.0f;
     protected final float mass = 5f;
 
-    private final Range range;
-    //private final Body[] bodies;
+    int range;
     public static ArrayList<Body> bodies;
     
     /**
@@ -101,12 +96,12 @@ public class Main {
      * 
      * @param _bodies
      */
-    public NBodyKernel(Range _range) {
+    public Main(int _range) {
       range = _range;
-      bodies = new ArrayList<Body>(range.getGlobalSize(0));
+      bodies = new ArrayList<Body>(range);
       
       final float maxDist = 20f;
-      for (int body = 0; body < range.getGlobalSize(0); body ++) {
+      for (int body = 0; body < range; body ++) {
         final float theta = (float) (Math.random() * Math.PI * 2);
         final float phi = (float) (Math.random() * Math.PI * 2);
         final float radius = (float) (Math.random() * maxDist);
@@ -122,53 +117,12 @@ public class Main {
         } else {
           x -= maxDist * 1.5;
         }
-        //bodies[body] = new Body(x,y,z, 5f);
         bodies.add(new Body(x,y,z, 5f));
       }
 
       Body.allBodies = bodies;
-      //setExplicit(true);
     }
 
-    /**
-     * Here is the kernel entrypoint. Here is where we calculate the position of each body
-     */
-    @Override
-    public void run() {
-/*    	
-      final int body = getGlobalId();
-      final int count = getGlobalSize(0);
-      final int globalId = body;
-
-      float accx = 0.f;
-      float accy = 0.f;
-      float accz = 0.f;
-
-      final float myPosx = bodies[body].getX();
-      final float myPosy = bodies[body].getY();
-      final float myPosz = bodies[body].getZ();
-      for (int i = 0; i < count; i ++) {
-        final float dx = bodies[i].getX() - myPosx;
-        final float dy = bodies[i].getY() - myPosy;
-        final float dz = bodies[i].getZ() - myPosz;
-        final float invDist = rsqrt((dx * dx) + (dy * dy) + (dz * dz) + espSqr);
-        final float s = mass * invDist * invDist * invDist;
-        accx = accx + (s * dx);
-        accy = accy + (s * dy);
-        accz = accz + (s * dz);
-      }
-      accx = accx * delT;
-      accy = accy * delT;
-      accz = accz * delT;
-      bodies[body].setX(myPosx + (bodies[body].getVx() * delT) + (accx * .5f * delT));
-      bodies[body].setY(myPosy + (bodies[body].getVy() * delT) + (accy * .5f * delT));
-      bodies[body].setZ(myPosz + (bodies[body].getVz() * delT) + (accz * .5f * delT));
-
-      bodies[body].setVx(bodies[body].getVx() + accx);
-      bodies[body].setVy(bodies[body].getVy() + accy);
-      bodies[body].setVz(bodies[body].getVz() + accz);
-*/      
-    }
 
     /**
      * Render all particles to the OpenGL context
@@ -178,8 +132,8 @@ public class Main {
 
     protected void render(GL2 gl) {
       gl.glBegin(GL2.GL_QUADS);
-      int sz = range.getGlobalSize(0);
-      for (int i = 0; i < range.getGlobalSize(0); i++) {
+      int sz = range;
+      for (int i = 0; i < range; i++) {
     	  
           if (i < (sz / 2)) {
               gl.glColor3f(1f, 0f, 0f);
@@ -189,16 +143,7 @@ public class Main {
               gl.glColor3f(0f, 0f, 1f);
            }   
     	  
-/*    	  
-        gl.glTexCoord2f(0, 1);
-        gl.glVertex3f(bodies[i].getX(), bodies[i].getY() + 1, bodies[i].getZ());
-        gl.glTexCoord2f(0, 0);
-        gl.glVertex3f(bodies[i].getX(), bodies[i].getY(), bodies[i].getZ());
-        gl.glTexCoord2f(1, 0);
-        gl.glVertex3f(bodies[i].getX() + 1, bodies[i].getY(), bodies[i].getZ());
-        gl.glTexCoord2f(1, 1);
-        gl.glVertex3f(bodies[i].getX() + 1, bodies[i].getY() + 1, bodies[i].getZ());
-*/
+
           gl.glTexCoord2f(0, 1);
           gl.glVertex3f(bodies.get(i).getX(), bodies.get(i).getY() + 1, bodies.get(i).getZ());
           gl.glTexCoord2f(0, 0);
@@ -212,7 +157,6 @@ public class Main {
       gl.glEnd();
     }
 
-  }
 
   public static int width;
 
@@ -221,8 +165,9 @@ public class Main {
   public static boolean running;
 
   public static void main(String _args[]) {
+	int bodyCount = Integer.getInteger("bodies", 8192);
 
-    final NBodyKernel kernel = new NBodyKernel(Range.create(Integer.getInteger("bodies", 8192)));
+    final Main kernel = new Main(bodyCount);
 
     final JFrame frame = new JFrame("NBody");
 
@@ -240,10 +185,10 @@ public class Main {
       }
     });
     controlPanel.add(startButton);
-    controlPanel.add(new JLabel(kernel.getExecutionMode().toString()));
+    //controlPanel.add(new JLabel(kernel.getExecutionMode().toString()));
 
     controlPanel.add(new JLabel("   Particles"));
-    controlPanel.add(new JTextField("" + kernel.range.getGlobalSize(0), 5));
+    controlPanel.add(new JTextField("" + bodyCount , 5));
 
     controlPanel.add(new JLabel("FPS"));
     final JTextField framesPerSecondTextField = new JTextField("0", 5);
@@ -307,19 +252,7 @@ public class Main {
 
         glu.gluLookAt(xeye, yeye, zeye * zoomFactor, xat, yat, zat, 0f, 1f, 0f);
         if (running) {
-          //kernel.execute(kernel.range);
-          Arrays.parallel(NBodyKernel.bodies.toArray(new Body[1])).forEach(b -> {b.nextMove();});
-          //NBodyKernel.bodies.stream().forEach(b -> {b.nextMove();});
-          //if (kernel.isExplicit()) {
-          //  kernel.get(kernel.xyz);
-          //}
-          final List<ProfileInfo> profileInfo = kernel.getProfileInfo();
-          if ((profileInfo != null) && (profileInfo.size() > 0)) {
-            for (final ProfileInfo p : profileInfo) {
-              System.out.print(" " + p.getType() + " " + p.getLabel() + ((p.getEnd() - p.getStart()) / 1000) + "us");
-            }
-            System.out.println();
-          }
+          Arrays.parallel(bodies.toArray(new Body[1])).forEach(b -> {b.nextMove();});
         }
         kernel.render(gl);
 
@@ -330,8 +263,7 @@ public class Main {
         if (time > 1000) { // We update the frames/sec every second
           if (running) {
             final float framesPerSecond = (frames * 1000.0f) / time;
-            final int updatesPerMicroSecond = (int) ((framesPerSecond * kernel.range.getGlobalSize(0) * kernel.range
-                .getGlobalSize(0)) / 1000000);
+            final int updatesPerMicroSecond = (int) ((framesPerSecond * bodyCount * bodyCount) / 1000000);
             framesPerSecondTextField.setText(String.format("%5.2f", framesPerSecond));
             positionUpdatesPerMicroSecondTextField.setText(String.format("%4d", updatesPerMicroSecond));
           }
