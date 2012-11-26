@@ -209,15 +209,27 @@ cl_int profile(ProfileInfo *profileInfo, cl_event *event, jint type, char* name,
 }
 
 
-//Step through all non-primitive (array of primitive or array object references) and determine if the field has changed
-//The field may have been re-assigned by the Java code to NULL or another instance. 
-//If we detect a change then we discard the previous cl_mem buffer, the caller will detect that the buffers are null and will create new cl_mem buffers. 
-jint updateNonPrimitiveReferences(JNIEnv *jenv, jobject jobj, JNIContext* jniContext) throw(CLException) {
+/**
+ * Step through all non-primitive (arrays) args
+ * and determine if the field has changed
+ * The field may have been re-assigned by the Java code to NULL or another instance. 
+ * If we detect a change then we discard the previous cl_mem buffer,
+ * the caller will detect that the buffers are null and will create new cl_mem buffers. 
+ * @param jenv the java environment
+ * @param jobj the object we might be updating
+ * @param jniContext the context we're working in
+ *
+ * @throws CLException
+ */
+jint updateNonPrimitiveReferences(JNIEnv *jenv, jobject jobj, JNIContext* jniContext) {
    cl_int status = CL_SUCCESS;
    if (jniContext != NULL){
       for (jint i = 0; i < jniContext->argc; i++){ 
          KernelArg *arg = jniContext->args[i];
-         arg->syncType(jenv); // make sure that the JNI arg reflects the latest type info from the instance.  For example if the buffer is tagged as explicit and needs to be pushed
+
+         // make sure that the JNI arg reflects the latest type info from the instance.
+         // For example if the buffer is tagged as explicit and needs to be pushed
+         arg->syncType(jenv);
 
          if (config->isVerbose()){
             fprintf(stderr, "got type for %s: %08x\n", arg->name, arg->type);
@@ -284,8 +296,10 @@ jint updateNonPrimitiveReferences(JNIEnv *jenv, jobject jobj, JNIContext* jniCon
  * if we are profiling events the test a first event, and report profiling info.
  *
  * @param jniContest the context holding the information we got form Java
+ *
+ * @throws CLException
  */
-void profileFirstRun(JNIContext* jniContext) throw(CLException) {
+void profileFirstRun(JNIContext* jniContext) {
    cl_event firstEvent;
    int status = CL_SUCCESS;
 
@@ -315,9 +329,10 @@ void profileFirstRun(JNIContext* jniContext) throw(CLException) {
  * @param arg the argument we're passing to opencl
  * @param argPos out: the position of arg in the opencl argument list
  * @param argIdx the position of arg in the argument array
+ *
+ * @throws CLException
  */
-void updateObject(JNIEnv* jenv, JNIContext* jniContext, KernelArg* arg, int& argPos, int argIdx) 
-     throw(CLException) {
+void updateObject(JNIEnv* jenv, JNIContext* jniContext, KernelArg* arg, int& argPos, int argIdx) {
 
    cl_int status = CL_SUCCESS;
    // if either this is the first run or user changed input array
@@ -373,9 +388,10 @@ void updateObject(JNIEnv* jenv, JNIContext* jniContext, KernelArg* arg, int& arg
  * @param arg the argument we're processing
  * @param argPos out: the position of arg in the opencl argument list
  * @param argIdx the position of arg in the argument array
+ *
+ * @throws CLException
  */
-void processObject(JNIEnv* jenv, JNIContext* jniContext, KernelArg* arg, int& argPos, int argIdx)
-     throw(CLException) {
+void processObject(JNIEnv* jenv, JNIContext* jniContext, KernelArg* arg, int& argPos, int argIdx) {
 
    cl_int status = CL_SUCCESS;
 
@@ -450,9 +466,10 @@ void processObject(JNIEnv* jenv, JNIContext* jniContext, KernelArg* arg, int& ar
  * @param arg the KernelArg to create a write event for
  * @param argIdx the position of arg in the argument array
  * @param writeEventCount out: the number of write events we've created so far
+ *
+ * @throws CLException
  */
-void updateWriteEvents(JNIEnv* jenv, JNIContext* jniContext, KernelArg* arg, int argIdx, int& writeEventCount) 
-     throw(CLException) {
+void updateWriteEvents(JNIEnv* jenv, JNIContext* jniContext, KernelArg* arg, int argIdx, int& writeEventCount) {
 
    cl_int status = CL_SUCCESS;
 
@@ -488,9 +505,10 @@ void updateWriteEvents(JNIEnv* jenv, JNIContext* jniContext, KernelArg* arg, int
  * @param arg the KernelArg to create a write event for
  * @param argPos out: the position of arg in the opencl argument list
  * @param argIdx the position of arg in the argument array
+ *
+ * @throws CLException
  */
-void processLocal(JNIEnv* jenv, JNIContext* jniContext, KernelArg* arg, int& argPos, int argIdx)
-     throw(CLException) {
+void processLocal(JNIEnv* jenv, JNIContext* jniContext, KernelArg* arg, int& argPos, int argIdx) {
 
    cl_int status = CL_SUCCESS;
    // what if local buffer size has changed?  We need a check for resize here.
@@ -527,8 +545,10 @@ void processLocal(JNIEnv* jenv, JNIContext* jniContext, KernelArg* arg, int& arg
  * @param jniContext the context with the arguements
  * @param writeEventCount out: the number of arguements that could be written to
  * @param argPos out: the absolute position of the last argument
+ *
+ * @throws CLException
  */
-int processArgs(JNIEnv* jenv, JNIContext* jniContext, int& argPos, int& writeEventCount) throw(CLException) {
+int processArgs(JNIEnv* jenv, JNIContext* jniContext, int& argPos, int& writeEventCount) {
 
    cl_int status = CL_SUCCESS;
 
@@ -581,9 +601,10 @@ int processArgs(JNIEnv* jenv, JNIContext* jniContext, int& argPos, int& writeEve
  * @param passes the number of passes for the kernel
  * @param argPos the number of arguments we passed to the kernel
  * @param writeEventCount the number of arguement that will be updated
+ *
+ * @throws CLException
  */
-void enqueueKernel(JNIContext* jniContext, Range& range, int passes, int argPos, int writeEventCount) 
-    throw(CLException){
+void enqueueKernel(JNIContext* jniContext, Range& range, int passes, int argPos, int writeEventCount){
    // We will need to revisit the execution of multiple devices.  
    // POssibly cloning the range per device and mutating each to handle a unique subrange (of global) and
    // maybe even pushing the offset into the range class.
@@ -703,8 +724,10 @@ void enqueueKernel(JNIContext* jniContext, Range& range, int passes, int argPos,
  *
  * @return number of reads. 
  * It will never be > jniContext->argc which is the size of readEvents[] and readEventArgs[]
+ *
+ * @throws CLException
  */
-int getReadEvents(JNIContext* jniContext) throw(CLException) {
+int getReadEvents(JNIContext* jniContext) {
 
    int readEventCount = 0; 
 
@@ -742,8 +765,10 @@ int getReadEvents(JNIContext* jniContext) throw(CLException) {
  * @param jniContext the context we got from Java
  * @param readEventCount the number of read events to wait for
  * @param passes the number of passes for the kernel
+ *
+ * @throws CLException
  */
-void waitForReadEvents(JNIContext* jniContext, int readEventCount, int passes) throw(CLException) {
+void waitForReadEvents(JNIContext* jniContext, int readEventCount, int passes) {
 
    // don't change the order here
    // We wait for the reads which each depend on the execution, which depends on the writes ;)
@@ -792,8 +817,10 @@ void waitForReadEvents(JNIContext* jniContext, int readEventCount, int passes) t
  * @param jenv the java environment
  * @param jniContext the context we got from Java
  * @param writeEventCount the number of write events to wait for
+ *
+ * @throws CLException
  */
-void checkEvents(JNIEnv* jenv, JNIContext* jniContext, int writeEventCount) throw(CLException) {
+void checkEvents(JNIEnv* jenv, JNIContext* jniContext, int writeEventCount) {
    // extract the execution status from the executeEvent
    cl_int status;
    cl_int executeStatus;
@@ -901,7 +928,7 @@ JNI_JAVA(jlong, KernelRunnerJNI, initJNI)
       if (openCLDeviceObject == NULL){
          fprintf(stderr, "no device object!\n");
       }
-      if (config== NULL){
+      if (config == NULL){
          fprintf(stderr, "no config !\n");
          config = new Config(jenv);
          fprintf(stderr, "created config !\n");
@@ -910,10 +937,10 @@ JNI_JAVA(jlong, KernelRunnerJNI, initJNI)
       JNIContext* jniContext = new JNIContext(jenv, kernelObject, openCLDeviceObject, flags);
          fprintf(stderr, "created JNIContext !\n");
 
-      if (jniContext->isValid()){
+      if (jniContext->isValid()) {
 
          return((jlong)jniContext);
-      }else{
+      } else {
          return(0L);
       }
    }
@@ -1004,7 +1031,7 @@ JNI_JAVA(jlong, KernelRunnerJNI, buildProgramJNI)
 // this is called once when the arg list is first determined for this kernel
 JNI_JAVA(jint, KernelRunnerJNI, setArgsJNI)
    (JNIEnv *jenv, jobject jobj, jlong jniContextHandle, jobjectArray argArray, jint argc) {
-      if (config== NULL){
+      if (config == NULL) {
          config = new Config(jenv);
       }
       JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);
@@ -1077,8 +1104,16 @@ JNI_JAVA(jstring, KernelRunnerJNI, getExtensionsJNI)
       return jextensions;
    }
 
+/**
+ * find the arguement in our list of KernelArgs that matches the array the user asked for
+ *
+ * @param jenv the java environment
+ * @param jniContext the context we're working in
+ * @param buffer the array we're looking for
+ *
+ * @return the KernelArg representing the array
+ */
 KernelArg* getArgForBuffer(JNIEnv* jenv, JNIContext* jniContext, jobject buffer) {
-   cl_int status = CL_SUCCESS;
    KernelArg *returnArg = NULL;
 
    if (jniContext != NULL){
@@ -1145,7 +1180,7 @@ JNI_JAVA(jint, KernelRunnerJNI, getJNI)
                   if (status != CL_SUCCESS) throw CLException(status, "profile "); 
                }
 
-               clReleaseEvent(jniContext->readEvents[0]);
+               status = clReleaseEvent(jniContext->readEvents[0]);
                if (status != CL_SUCCESS) throw CLException(status, "clReleaseEvent() read event");
 
                // since this is an explicit buffer get, 
