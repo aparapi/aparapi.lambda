@@ -1,16 +1,7 @@
 #!/bin/sh
 set -x
 
-rm -rf classes
-mkdir classes
-
-cd src
-
-javac -d ../classes com/amd/aparapi/sample/mandel/Main.java
-
-cd ..
-
-#java -ea -XX:+UnlockDiagnosticVMOptions -XX:+PrintInlining -XX:+PrintCompilation \
+#java -ea -Xrunhprof:cpu=samples,thread=y,depth=16,file=mandel.$$.hprof.txt  -XX:+UnlockDiagnosticVMOptions -XX:+PrintInlining -XX:+PrintCompilation -XX:CICompilerCount=1 \
 java -ea  \
- -classpath classes \
+ -classpath mandel.jar \
  com.amd.aparapi.sample.mandel.Main
