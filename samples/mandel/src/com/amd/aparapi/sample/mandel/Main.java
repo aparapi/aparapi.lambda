@@ -51,19 +51,12 @@ import java.awt.image.DataBufferInt;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.primitive.IntStream;
+import java.util.stream.primitive.Primitives;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 
-
-class MandelbrotCoordinate {
-   public static MandelbrotCoordinate[] allCoordinates;
-   //public static int rgb[];
-
-   int pos;
-   public MandelbrotCoordinate(int p) { pos = p; }
-   public int getPos() { return pos; }
-}
 
 public class Main{
 
@@ -99,6 +92,8 @@ public class Main{
    float x = -1f;
    float y = 0f;
 
+   static int[]	phonyGid = new int[width*height];
+   
    // Draw Mandelbrot image
    static JComponent viewer = new JComponent(){
       @Override public void paintComponent(Graphics g) {
@@ -117,24 +112,23 @@ public class Main{
    }
 
 
-   public int getCount(float x, float y){
-      int count =0;
-      float zx = x;
-      float zy = y;
-      float new_zx = 0f;
+//   public int getCount(float x, float y){
+//      int count =0;
+//      float zx = x;
+//      float zy = y;
+//      float new_zx = 0f;
+//
+//      // Iterate until the algorithm converges or until maxIterations are reached.
+//      while (count < maxIterations && zx * zx + zy * zy < 8) {
+//         new_zx = zx * zx - zy * zy + x;
+//         zy = 2 * zx * zy + y;
+//         zx = new_zx;
+//         count++;
+//      }
+//      return(count);
+//   }
 
-      // Iterate until the algorithm converges or until maxIterations are reached.
-      while (count < maxIterations && zx * zx + zy * zy < 8) {
-         new_zx = zx * zx - zy * zy + x;
-         zy = 2 * zx * zy + y;
-         zx = new_zx;
-         count++;
-      }
-      return(count);
-   }
 
-
-   //static int[] getNextImage(float x, float y, float scale, int rgb[]) {
    void getNextImage(float x, float y, float scale) {
       
 // Here is some explanation of the sequence of calls to implement the parallel forEach
@@ -261,14 +255,13 @@ public class Main{
 //           at java.util.streams.ValuePipeline.forEach(ValuePipeline.java:89)
 //           at com.amd.aparapi.sample.mandel.Main.getNextImage(Main.java:244)
 //
-      
-      Arrays.parallel(MandelbrotCoordinate.allCoordinates).forEach(p -> {
+      IntStream str = Primitives.parallel(phonyGid);
+      //Primitives.parallel(phonyGid).forEach(p -> {
+         str.forEach(p -> {
          
 //         The Block that gets executed here becomes:
 //         
-//         private static void lambda$0(float, float, float, com.amd.aparapi.sample.mandel.MandelbrotCoordinate);
-//         Signature: (FFFLcom/amd/aparapi/sample/mandel/MandelbrotCoordinate;)V
-//         flags: ACC_PRIVATE, ACC_STATIC, ACC_SYNTHETIC
+//         private void lambda$0(float, float, float, int);
 //
 //         The stack of a thread in the pool doing the lambda is:
 //            
@@ -315,14 +308,27 @@ public class Main{
 //     that would be helpful for debugging.
          
          /** Determine which RGB value we are going to process (0..RGB.length). */
-         int gid = p.getPos();
+         int gid = p;
 
          /** Translate the gid into an x an y value. */
          float lx = (((gid % width * scale) - ((scale / 2) * width)) / width) + x;
          float ly = (((gid / width * scale) - ((scale / 2) * height)) / height) + y;
 
-         int count = getCount(lx,ly);
+         //int count = getCount(lx,ly);
+         int count = 0;
+         {
+            float zx = lx;
+            float zy = ly;
+            float new_zx = 0f;
 
+            // Iterate until the algorithm converges or until maxIterations are reached.
+            while (count < maxIterations && zx * zx + zy * zy < 8) {
+               new_zx = zx * zx - zy * zy + lx;
+               zy = 2 * zx * zy + ly;
+               zx = new_zx;
+               count++;
+            }
+         }
          // Pull the value out of the palette for this iteration count.
          rgb[gid] = pallette[count];
       });
@@ -374,7 +380,6 @@ public class Main{
 //         at com.amd.aparapi.sample.mandel.Main.zoomInAndOut(Main.java:290)
 //         at com.amd.aparapi.sample.mandel.Main.main(Main.java:361)
          
-         
          doZoom(e.getSign(), tox, toy); 
          System.out.println("inner done, sign=" + e.getSign() );          
       } );
@@ -410,9 +415,8 @@ public class Main{
 
       // Used to find the index in the rgb array when processing 
       // each element in the lambda  
-      MandelbrotCoordinate.allCoordinates = new MandelbrotCoordinate[width*height];
       for(int i=0; i<width*height; i++) {
-         MandelbrotCoordinate.allCoordinates[i] = new MandelbrotCoordinate(i);
+    	 phonyGid[i] = i;
       }
 
       getNextImage(x, y, scale);
