@@ -1,0 +1,75 @@
+\hypertarget{class_open_c_l_program}{\section{Open\-C\-L\-Program Class Reference}
+\label{class_open_c_l_program}\index{Open\-C\-L\-Program@{Open\-C\-L\-Program}}
+}
+
+
+{\ttfamily \#include $<$Open\-C\-L\-Program.\-h$>$}
+
+\subsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+static jobject \hyperlink{class_open_c_l_program_a702ecb5ce21e3653caf9bdb944370d1e}{create} (J\-N\-I\-Env $\ast$\hyperlink{aparapi_8cpp_a31595c73e9a3750524b2ff61b5a14f96}{jenv}, cl\-\_\-program \hyperlink{aparapi_8cpp_ac70709e80332d58701f9623a803c8541}{program}, cl\-\_\-command\-\_\-queue queue, cl\-\_\-context context, jobject \hyperlink{opencljni_8cpp_a67943048eade3746c8f1743e78343337}{device\-Instance}, jstring \hyperlink{aparapi_8cpp_ab6f02de0fea282662dc1f6ac445ec5f3}{source}, jstring log)
+\item 
+static cl\-\_\-context \hyperlink{class_open_c_l_program_a26221e4b0762f6f4089194d63fcacc36}{get\-Context} (J\-N\-I\-Env $\ast$\hyperlink{aparapi_8cpp_a31595c73e9a3750524b2ff61b5a14f96}{jenv}, jobject program\-Instance)
+\item 
+static cl\-\_\-program \hyperlink{class_open_c_l_program_a90852781e4b5ce9c5ad20f388201a274}{get\-Program} (J\-N\-I\-Env $\ast$\hyperlink{aparapi_8cpp_a31595c73e9a3750524b2ff61b5a14f96}{jenv}, jobject program\-Instance)
+\item 
+static cl\-\_\-command\-\_\-queue \hyperlink{class_open_c_l_program_a66ef9d6495c4a62aeb0cac558abce381}{get\-Command\-Queue} (J\-N\-I\-Env $\ast$\hyperlink{aparapi_8cpp_a31595c73e9a3750524b2ff61b5a14f96}{jenv}, jobject program\-Instance)
+\end{DoxyCompactItemize}
+
+
+\subsection{Member Function Documentation}
+\hypertarget{class_open_c_l_program_a702ecb5ce21e3653caf9bdb944370d1e}{\index{Open\-C\-L\-Program@{Open\-C\-L\-Program}!create@{create}}
+\index{create@{create}!OpenCLProgram@{Open\-C\-L\-Program}}
+\subsubsection[{create}]{\setlength{\rightskip}{0pt plus 5cm}static jobject Open\-C\-L\-Program\-::create (
+\begin{DoxyParamCaption}
+\item[{J\-N\-I\-Env $\ast$}]{jenv, }
+\item[{cl\-\_\-program}]{program, }
+\item[{cl\-\_\-command\-\_\-queue}]{queue, }
+\item[{cl\-\_\-context}]{context, }
+\item[{jobject}]{device\-Instance, }
+\item[{jstring}]{source, }
+\item[{jstring}]{log}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}}\label{class_open_c_l_program_a702ecb5ce21e3653caf9bdb944370d1e}
+
+
+Here is the call graph for this function\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{class_open_c_l_program_a702ecb5ce21e3653caf9bdb944370d1e_cgraph}
+\end{center}
+\end{figure}
+
+
+\hypertarget{class_open_c_l_program_a66ef9d6495c4a62aeb0cac558abce381}{\index{Open\-C\-L\-Program@{Open\-C\-L\-Program}!get\-Command\-Queue@{get\-Command\-Queue}}
+\index{get\-Command\-Queue@{get\-Command\-Queue}!OpenCLProgram@{Open\-C\-L\-Program}}
+\subsubsection[{get\-Command\-Queue}]{\setlength{\rightskip}{0pt plus 5cm}static cl\-\_\-command\-\_\-queue Open\-C\-L\-Program\-::get\-Command\-Queue (
+\begin{DoxyParamCaption}
+\item[{J\-N\-I\-Env $\ast$}]{jenv, }
+\item[{jobject}]{program\-Instance}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}}\label{class_open_c_l_program_a66ef9d6495c4a62aeb0cac558abce381}
+\hypertarget{class_open_c_l_program_a26221e4b0762f6f4089194d63fcacc36}{\index{Open\-C\-L\-Program@{Open\-C\-L\-Program}!get\-Context@{get\-Context}}
+\index{get\-Context@{get\-Context}!OpenCLProgram@{Open\-C\-L\-Program}}
+\subsubsection[{get\-Context}]{\setlength{\rightskip}{0pt plus 5cm}static cl\-\_\-context Open\-C\-L\-Program\-::get\-Context (
+\begin{DoxyParamCaption}
+\item[{J\-N\-I\-Env $\ast$}]{jenv, }
+\item[{jobject}]{program\-Instance}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}}\label{class_open_c_l_program_a26221e4b0762f6f4089194d63fcacc36}
+\hypertarget{class_open_c_l_program_a90852781e4b5ce9c5ad20f388201a274}{\index{Open\-C\-L\-Program@{Open\-C\-L\-Program}!get\-Program@{get\-Program}}
+\index{get\-Program@{get\-Program}!OpenCLProgram@{Open\-C\-L\-Program}}
+\subsubsection[{get\-Program}]{\setlength{\rightskip}{0pt plus 5cm}static cl\-\_\-program Open\-C\-L\-Program\-::get\-Program (
+\begin{DoxyParamCaption}
+\item[{J\-N\-I\-Env $\ast$}]{jenv, }
+\item[{jobject}]{program\-Instance}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}}\label{class_open_c_l_program_a90852781e4b5ce9c5ad20f388201a274}
+
+
+The documentation for this class was generated from the following file\-:\begin{DoxyCompactItemize}
+\item 
+src/cpp/invoke/\hyperlink{_open_c_l_program_8h}{Open\-C\-L\-Program.\-h}\end{DoxyCompactItemize}

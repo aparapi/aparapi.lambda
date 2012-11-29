@@ -1,0 +1,286 @@
+\hypertarget{class_j_n_i_context}{\section{J\-N\-I\-Context Class Reference}
+\label{class_j_n_i_context}\index{J\-N\-I\-Context@{J\-N\-I\-Context}}
+}
+
+
+{\ttfamily \#include $<$J\-N\-I\-Context.\-h$>$}
+
+
+
+Collaboration diagram for J\-N\-I\-Context\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=232pt]{class_j_n_i_context__coll__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{class_j_n_i_context_ae7bcb26fc659539d13b21a17e5522477}{J\-N\-I\-Context} (J\-N\-I\-Env $\ast$\hyperlink{aparapi_8cpp_a31595c73e9a3750524b2ff61b5a14f96}{jenv}, jobject \-\_\-kernel\-Object, jobject \-\_\-open\-C\-L\-Device\-Object, jint \-\_\-flags)
+\item 
+jboolean \hyperlink{class_j_n_i_context_a3d99cd3ef6a15a5f14d765e9c7f471ba}{is\-Valid} ()
+\item 
+jboolean \hyperlink{class_j_n_i_context_a007f2b45dc1812fc4e3b6c34994d33ec}{is\-Using\-G\-P\-U} ()
+\item 
+\hyperlink{class_j_n_i_context_adf5347ad76e5f447974741af8b407181}{$\sim$\-J\-N\-I\-Context} ()
+\item 
+void \hyperlink{class_j_n_i_context_ae0906906c3fe4d7b5c468724bf338903}{dispose} (J\-N\-I\-Env $\ast$\hyperlink{aparapi_8cpp_a31595c73e9a3750524b2ff61b5a14f96}{jenv}, \hyperlink{class_config}{Config} $\ast$\hyperlink{config_8h_a6a44a77efe9d36d03240f900d00dad80}{config})
+\item 
+void \hyperlink{class_j_n_i_context_a06ec119ce96e3c59c52159976203cbee}{unpin\-All} (J\-N\-I\-Env $\ast$\hyperlink{aparapi_8cpp_a31595c73e9a3750524b2ff61b5a14f96}{jenv})
+\end{DoxyCompactItemize}
+\subsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+static \hyperlink{class_j_n_i_context}{J\-N\-I\-Context} $\ast$ \hyperlink{class_j_n_i_context_acfd6efcf587c0e51bdcc672666a23ed4}{get\-J\-N\-I\-Context} (jlong \hyperlink{aparapi_8cpp_a0040273c7bfca0b191a4ad266d28545d}{jni\-Context\-Handle})
+\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+jobject \hyperlink{class_j_n_i_context_a27e7d5b89e4e4859d15cfc9735e9fdcc}{kernel\-Object}
+\item 
+jobject \hyperlink{class_j_n_i_context_aecb814e1a3214de3d8f1fc09d93422d6}{open\-C\-L\-Device\-Object}
+\item 
+jclass \hyperlink{class_j_n_i_context_af91be73a2ebe19dfc194ab58cd9575a9}{kernel\-Class}
+\item 
+cl\-\_\-device\-\_\-id \hyperlink{class_j_n_i_context_ac9637e5eb4a4de90a76b7a05f1c31882}{device\-Id}
+\item 
+cl\-\_\-int \hyperlink{class_j_n_i_context_a81fbc7bacb606c79e64a1e03344eb6f3}{device\-Type}
+\item 
+cl\-\_\-context \hyperlink{class_j_n_i_context_ad405fe75428f606a24260f22a30a4914}{context}
+\item 
+cl\-\_\-command\-\_\-queue \hyperlink{class_j_n_i_context_af052389a1503633d129ba0a98a8ac94b}{command\-Queue}
+\item 
+cl\-\_\-program \hyperlink{class_j_n_i_context_a118c4c5f280cb563e4f11727a5fd5664}{program}
+\item 
+cl\-\_\-kernel \hyperlink{class_j_n_i_context_a845480606129985917deb32c968c5fcd}{kernel}
+\item 
+jint \hyperlink{class_j_n_i_context_a2a7cb340b07bdc6e1ec3dbee96632747}{argc}
+\item 
+\hyperlink{class_kernel_arg}{Kernel\-Arg} $\ast$$\ast$ \hyperlink{class_j_n_i_context_ab0dac9ea15c8025e6da69390ee70622c}{args}
+\item 
+cl\-\_\-event $\ast$ \hyperlink{class_j_n_i_context_aa38ade97cd8becec5edb404d961c6df9}{execute\-Events}
+\item 
+cl\-\_\-event $\ast$ \hyperlink{class_j_n_i_context_aca766d06dbc6f5deb9086aa12ad3a57e}{read\-Events}
+\item 
+cl\-\_\-ulong \hyperlink{class_j_n_i_context_ab2562d5b3b5c591b0b8d963306a37cb2}{profile\-Base\-Time}
+\item 
+jint $\ast$ \hyperlink{class_j_n_i_context_a705ae5bcda4857c3fe95e6781732f8c0}{read\-Event\-Args}
+\item 
+cl\-\_\-event $\ast$ \hyperlink{class_j_n_i_context_a4b7bcfab666ec64a24ddc5c389fbc3c0}{write\-Events}
+\item 
+jint $\ast$ \hyperlink{class_j_n_i_context_aabad08832385c27215438477ec4a9429}{write\-Event\-Args}
+\item 
+jboolean \hyperlink{class_j_n_i_context_a9857a274e84b4de2cd562cd74574b358}{first\-Run}
+\item 
+jint \hyperlink{class_j_n_i_context_a16c08c772ff54b4cd60524c46f64cafe}{passes}
+\item 
+\hyperlink{class_profile_info}{Profile\-Info} $\ast$ \hyperlink{class_j_n_i_context_a333bf60d240b3c488933758a3a532857}{exec}
+\item 
+F\-I\-L\-E $\ast$ \hyperlink{class_j_n_i_context_a88394b796ba1814adc83af940111050b}{profile\-File}
+\end{DoxyCompactItemize}
+\subsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+jint \hyperlink{class_j_n_i_context_a60e21993115f613bef0ab315ae9862e4}{flags}
+\item 
+jboolean \hyperlink{class_j_n_i_context_a09f80fadd22c3cf5ea45ed979814c1df}{valid}
+\end{DoxyCompactItemize}
+
+
+\subsection{Constructor \& Destructor Documentation}
+\hypertarget{class_j_n_i_context_ae7bcb26fc659539d13b21a17e5522477}{\index{J\-N\-I\-Context@{J\-N\-I\-Context}!J\-N\-I\-Context@{J\-N\-I\-Context}}
+\index{J\-N\-I\-Context@{J\-N\-I\-Context}!JNIContext@{J\-N\-I\-Context}}
+\subsubsection[{J\-N\-I\-Context}]{\setlength{\rightskip}{0pt plus 5cm}J\-N\-I\-Context\-::\-J\-N\-I\-Context (
+\begin{DoxyParamCaption}
+\item[{J\-N\-I\-Env $\ast$}]{jenv, }
+\item[{jobject}]{\-\_\-kernel\-Object, }
+\item[{jobject}]{\-\_\-open\-C\-L\-Device\-Object, }
+\item[{jint}]{\-\_\-flags}
+\end{DoxyParamCaption}
+)}}\label{class_j_n_i_context_ae7bcb26fc659539d13b21a17e5522477}
+
+
+Here is the call graph for this function\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{class_j_n_i_context_ae7bcb26fc659539d13b21a17e5522477_cgraph}
+\end{center}
+\end{figure}
+
+
+\hypertarget{class_j_n_i_context_adf5347ad76e5f447974741af8b407181}{\index{J\-N\-I\-Context@{J\-N\-I\-Context}!$\sim$\-J\-N\-I\-Context@{$\sim$\-J\-N\-I\-Context}}
+\index{$\sim$\-J\-N\-I\-Context@{$\sim$\-J\-N\-I\-Context}!JNIContext@{J\-N\-I\-Context}}
+\subsubsection[{$\sim$\-J\-N\-I\-Context}]{\setlength{\rightskip}{0pt plus 5cm}J\-N\-I\-Context\-::$\sim$\-J\-N\-I\-Context (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{class_j_n_i_context_adf5347ad76e5f447974741af8b407181}
+
+
+\subsection{Member Function Documentation}
+\hypertarget{class_j_n_i_context_ae0906906c3fe4d7b5c468724bf338903}{\index{J\-N\-I\-Context@{J\-N\-I\-Context}!dispose@{dispose}}
+\index{dispose@{dispose}!JNIContext@{J\-N\-I\-Context}}
+\subsubsection[{dispose}]{\setlength{\rightskip}{0pt plus 5cm}void J\-N\-I\-Context\-::dispose (
+\begin{DoxyParamCaption}
+\item[{J\-N\-I\-Env $\ast$}]{jenv, }
+\item[{{\bf Config} $\ast$}]{config}
+\end{DoxyParamCaption}
+)}}\label{class_j_n_i_context_ae0906906c3fe4d7b5c468724bf338903}
+
+
+Here is the call graph for this function\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{class_j_n_i_context_ae0906906c3fe4d7b5c468724bf338903_cgraph}
+\end{center}
+\end{figure}
+
+
+
+
+Here is the caller graph for this function\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=250pt]{class_j_n_i_context_ae0906906c3fe4d7b5c468724bf338903_icgraph}
+\end{center}
+\end{figure}
+
+
+\hypertarget{class_j_n_i_context_acfd6efcf587c0e51bdcc672666a23ed4}{\index{J\-N\-I\-Context@{J\-N\-I\-Context}!get\-J\-N\-I\-Context@{get\-J\-N\-I\-Context}}
+\index{get\-J\-N\-I\-Context@{get\-J\-N\-I\-Context}!JNIContext@{J\-N\-I\-Context}}
+\subsubsection[{get\-J\-N\-I\-Context}]{\setlength{\rightskip}{0pt plus 5cm}static {\bf J\-N\-I\-Context}$\ast$ J\-N\-I\-Context\-::get\-J\-N\-I\-Context (
+\begin{DoxyParamCaption}
+\item[{jlong}]{jni\-Context\-Handle}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}}\label{class_j_n_i_context_acfd6efcf587c0e51bdcc672666a23ed4}
+\hypertarget{class_j_n_i_context_a007f2b45dc1812fc4e3b6c34994d33ec}{\index{J\-N\-I\-Context@{J\-N\-I\-Context}!is\-Using\-G\-P\-U@{is\-Using\-G\-P\-U}}
+\index{is\-Using\-G\-P\-U@{is\-Using\-G\-P\-U}!JNIContext@{J\-N\-I\-Context}}
+\subsubsection[{is\-Using\-G\-P\-U}]{\setlength{\rightskip}{0pt plus 5cm}jboolean J\-N\-I\-Context\-::is\-Using\-G\-P\-U (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{class_j_n_i_context_a007f2b45dc1812fc4e3b6c34994d33ec}
+\hypertarget{class_j_n_i_context_a3d99cd3ef6a15a5f14d765e9c7f471ba}{\index{J\-N\-I\-Context@{J\-N\-I\-Context}!is\-Valid@{is\-Valid}}
+\index{is\-Valid@{is\-Valid}!JNIContext@{J\-N\-I\-Context}}
+\subsubsection[{is\-Valid}]{\setlength{\rightskip}{0pt plus 5cm}jboolean J\-N\-I\-Context\-::is\-Valid (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{class_j_n_i_context_a3d99cd3ef6a15a5f14d765e9c7f471ba}
+\hypertarget{class_j_n_i_context_a06ec119ce96e3c59c52159976203cbee}{\index{J\-N\-I\-Context@{J\-N\-I\-Context}!unpin\-All@{unpin\-All}}
+\index{unpin\-All@{unpin\-All}!JNIContext@{J\-N\-I\-Context}}
+\subsubsection[{unpin\-All}]{\setlength{\rightskip}{0pt plus 5cm}void J\-N\-I\-Context\-::unpin\-All (
+\begin{DoxyParamCaption}
+\item[{J\-N\-I\-Env $\ast$}]{jenv}
+\end{DoxyParamCaption}
+)}}\label{class_j_n_i_context_a06ec119ce96e3c59c52159976203cbee}
+Release J\-N\-I critical pinned arrays before returning to java code 
+
+Here is the call graph for this function\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{class_j_n_i_context_a06ec119ce96e3c59c52159976203cbee_cgraph}
+\end{center}
+\end{figure}
+
+
+
+
+Here is the caller graph for this function\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=292pt]{class_j_n_i_context_a06ec119ce96e3c59c52159976203cbee_icgraph}
+\end{center}
+\end{figure}
+
+
+
+
+\subsection{Member Data Documentation}
+\hypertarget{class_j_n_i_context_a2a7cb340b07bdc6e1ec3dbee96632747}{\index{J\-N\-I\-Context@{J\-N\-I\-Context}!argc@{argc}}
+\index{argc@{argc}!JNIContext@{J\-N\-I\-Context}}
+\subsubsection[{argc}]{\setlength{\rightskip}{0pt plus 5cm}jint J\-N\-I\-Context\-::argc}}\label{class_j_n_i_context_a2a7cb340b07bdc6e1ec3dbee96632747}
+\hypertarget{class_j_n_i_context_ab0dac9ea15c8025e6da69390ee70622c}{\index{J\-N\-I\-Context@{J\-N\-I\-Context}!args@{args}}
+\index{args@{args}!JNIContext@{J\-N\-I\-Context}}
+\subsubsection[{args}]{\setlength{\rightskip}{0pt plus 5cm}{\bf Kernel\-Arg}$\ast$$\ast$ J\-N\-I\-Context\-::args}}\label{class_j_n_i_context_ab0dac9ea15c8025e6da69390ee70622c}
+\hypertarget{class_j_n_i_context_af052389a1503633d129ba0a98a8ac94b}{\index{J\-N\-I\-Context@{J\-N\-I\-Context}!command\-Queue@{command\-Queue}}
+\index{command\-Queue@{command\-Queue}!JNIContext@{J\-N\-I\-Context}}
+\subsubsection[{command\-Queue}]{\setlength{\rightskip}{0pt plus 5cm}cl\-\_\-command\-\_\-queue J\-N\-I\-Context\-::command\-Queue}}\label{class_j_n_i_context_af052389a1503633d129ba0a98a8ac94b}
+\hypertarget{class_j_n_i_context_ad405fe75428f606a24260f22a30a4914}{\index{J\-N\-I\-Context@{J\-N\-I\-Context}!context@{context}}
+\index{context@{context}!JNIContext@{J\-N\-I\-Context}}
+\subsubsection[{context}]{\setlength{\rightskip}{0pt plus 5cm}cl\-\_\-context J\-N\-I\-Context\-::context}}\label{class_j_n_i_context_ad405fe75428f606a24260f22a30a4914}
+\hypertarget{class_j_n_i_context_ac9637e5eb4a4de90a76b7a05f1c31882}{\index{J\-N\-I\-Context@{J\-N\-I\-Context}!device\-Id@{device\-Id}}
+\index{device\-Id@{device\-Id}!JNIContext@{J\-N\-I\-Context}}
+\subsubsection[{device\-Id}]{\setlength{\rightskip}{0pt plus 5cm}cl\-\_\-device\-\_\-id J\-N\-I\-Context\-::device\-Id}}\label{class_j_n_i_context_ac9637e5eb4a4de90a76b7a05f1c31882}
+\hypertarget{class_j_n_i_context_a81fbc7bacb606c79e64a1e03344eb6f3}{\index{J\-N\-I\-Context@{J\-N\-I\-Context}!device\-Type@{device\-Type}}
+\index{device\-Type@{device\-Type}!JNIContext@{J\-N\-I\-Context}}
+\subsubsection[{device\-Type}]{\setlength{\rightskip}{0pt plus 5cm}cl\-\_\-int J\-N\-I\-Context\-::device\-Type}}\label{class_j_n_i_context_a81fbc7bacb606c79e64a1e03344eb6f3}
+\hypertarget{class_j_n_i_context_a333bf60d240b3c488933758a3a532857}{\index{J\-N\-I\-Context@{J\-N\-I\-Context}!exec@{exec}}
+\index{exec@{exec}!JNIContext@{J\-N\-I\-Context}}
+\subsubsection[{exec}]{\setlength{\rightskip}{0pt plus 5cm}{\bf Profile\-Info}$\ast$ J\-N\-I\-Context\-::exec}}\label{class_j_n_i_context_a333bf60d240b3c488933758a3a532857}
+\hypertarget{class_j_n_i_context_aa38ade97cd8becec5edb404d961c6df9}{\index{J\-N\-I\-Context@{J\-N\-I\-Context}!execute\-Events@{execute\-Events}}
+\index{execute\-Events@{execute\-Events}!JNIContext@{J\-N\-I\-Context}}
+\subsubsection[{execute\-Events}]{\setlength{\rightskip}{0pt plus 5cm}cl\-\_\-event$\ast$ J\-N\-I\-Context\-::execute\-Events}}\label{class_j_n_i_context_aa38ade97cd8becec5edb404d961c6df9}
+\hypertarget{class_j_n_i_context_a9857a274e84b4de2cd562cd74574b358}{\index{J\-N\-I\-Context@{J\-N\-I\-Context}!first\-Run@{first\-Run}}
+\index{first\-Run@{first\-Run}!JNIContext@{J\-N\-I\-Context}}
+\subsubsection[{first\-Run}]{\setlength{\rightskip}{0pt plus 5cm}jboolean J\-N\-I\-Context\-::first\-Run}}\label{class_j_n_i_context_a9857a274e84b4de2cd562cd74574b358}
+\hypertarget{class_j_n_i_context_a60e21993115f613bef0ab315ae9862e4}{\index{J\-N\-I\-Context@{J\-N\-I\-Context}!flags@{flags}}
+\index{flags@{flags}!JNIContext@{J\-N\-I\-Context}}
+\subsubsection[{flags}]{\setlength{\rightskip}{0pt plus 5cm}jint J\-N\-I\-Context\-::flags\hspace{0.3cm}{\ttfamily [private]}}}\label{class_j_n_i_context_a60e21993115f613bef0ab315ae9862e4}
+\hypertarget{class_j_n_i_context_a845480606129985917deb32c968c5fcd}{\index{J\-N\-I\-Context@{J\-N\-I\-Context}!kernel@{kernel}}
+\index{kernel@{kernel}!JNIContext@{J\-N\-I\-Context}}
+\subsubsection[{kernel}]{\setlength{\rightskip}{0pt plus 5cm}cl\-\_\-kernel J\-N\-I\-Context\-::kernel}}\label{class_j_n_i_context_a845480606129985917deb32c968c5fcd}
+\hypertarget{class_j_n_i_context_af91be73a2ebe19dfc194ab58cd9575a9}{\index{J\-N\-I\-Context@{J\-N\-I\-Context}!kernel\-Class@{kernel\-Class}}
+\index{kernel\-Class@{kernel\-Class}!JNIContext@{J\-N\-I\-Context}}
+\subsubsection[{kernel\-Class}]{\setlength{\rightskip}{0pt plus 5cm}jclass J\-N\-I\-Context\-::kernel\-Class}}\label{class_j_n_i_context_af91be73a2ebe19dfc194ab58cd9575a9}
+\hypertarget{class_j_n_i_context_a27e7d5b89e4e4859d15cfc9735e9fdcc}{\index{J\-N\-I\-Context@{J\-N\-I\-Context}!kernel\-Object@{kernel\-Object}}
+\index{kernel\-Object@{kernel\-Object}!JNIContext@{J\-N\-I\-Context}}
+\subsubsection[{kernel\-Object}]{\setlength{\rightskip}{0pt plus 5cm}jobject J\-N\-I\-Context\-::kernel\-Object}}\label{class_j_n_i_context_a27e7d5b89e4e4859d15cfc9735e9fdcc}
+\hypertarget{class_j_n_i_context_aecb814e1a3214de3d8f1fc09d93422d6}{\index{J\-N\-I\-Context@{J\-N\-I\-Context}!open\-C\-L\-Device\-Object@{open\-C\-L\-Device\-Object}}
+\index{open\-C\-L\-Device\-Object@{open\-C\-L\-Device\-Object}!JNIContext@{J\-N\-I\-Context}}
+\subsubsection[{open\-C\-L\-Device\-Object}]{\setlength{\rightskip}{0pt plus 5cm}jobject J\-N\-I\-Context\-::open\-C\-L\-Device\-Object}}\label{class_j_n_i_context_aecb814e1a3214de3d8f1fc09d93422d6}
+\hypertarget{class_j_n_i_context_a16c08c772ff54b4cd60524c46f64cafe}{\index{J\-N\-I\-Context@{J\-N\-I\-Context}!passes@{passes}}
+\index{passes@{passes}!JNIContext@{J\-N\-I\-Context}}
+\subsubsection[{passes}]{\setlength{\rightskip}{0pt plus 5cm}jint J\-N\-I\-Context\-::passes}}\label{class_j_n_i_context_a16c08c772ff54b4cd60524c46f64cafe}
+\hypertarget{class_j_n_i_context_ab2562d5b3b5c591b0b8d963306a37cb2}{\index{J\-N\-I\-Context@{J\-N\-I\-Context}!profile\-Base\-Time@{profile\-Base\-Time}}
+\index{profile\-Base\-Time@{profile\-Base\-Time}!JNIContext@{J\-N\-I\-Context}}
+\subsubsection[{profile\-Base\-Time}]{\setlength{\rightskip}{0pt plus 5cm}cl\-\_\-ulong J\-N\-I\-Context\-::profile\-Base\-Time}}\label{class_j_n_i_context_ab2562d5b3b5c591b0b8d963306a37cb2}
+\hypertarget{class_j_n_i_context_a88394b796ba1814adc83af940111050b}{\index{J\-N\-I\-Context@{J\-N\-I\-Context}!profile\-File@{profile\-File}}
+\index{profile\-File@{profile\-File}!JNIContext@{J\-N\-I\-Context}}
+\subsubsection[{profile\-File}]{\setlength{\rightskip}{0pt plus 5cm}F\-I\-L\-E$\ast$ J\-N\-I\-Context\-::profile\-File}}\label{class_j_n_i_context_a88394b796ba1814adc83af940111050b}
+\hypertarget{class_j_n_i_context_a118c4c5f280cb563e4f11727a5fd5664}{\index{J\-N\-I\-Context@{J\-N\-I\-Context}!program@{program}}
+\index{program@{program}!JNIContext@{J\-N\-I\-Context}}
+\subsubsection[{program}]{\setlength{\rightskip}{0pt plus 5cm}cl\-\_\-program J\-N\-I\-Context\-::program}}\label{class_j_n_i_context_a118c4c5f280cb563e4f11727a5fd5664}
+\hypertarget{class_j_n_i_context_a705ae5bcda4857c3fe95e6781732f8c0}{\index{J\-N\-I\-Context@{J\-N\-I\-Context}!read\-Event\-Args@{read\-Event\-Args}}
+\index{read\-Event\-Args@{read\-Event\-Args}!JNIContext@{J\-N\-I\-Context}}
+\subsubsection[{read\-Event\-Args}]{\setlength{\rightskip}{0pt plus 5cm}jint$\ast$ J\-N\-I\-Context\-::read\-Event\-Args}}\label{class_j_n_i_context_a705ae5bcda4857c3fe95e6781732f8c0}
+\hypertarget{class_j_n_i_context_aca766d06dbc6f5deb9086aa12ad3a57e}{\index{J\-N\-I\-Context@{J\-N\-I\-Context}!read\-Events@{read\-Events}}
+\index{read\-Events@{read\-Events}!JNIContext@{J\-N\-I\-Context}}
+\subsubsection[{read\-Events}]{\setlength{\rightskip}{0pt plus 5cm}cl\-\_\-event$\ast$ J\-N\-I\-Context\-::read\-Events}}\label{class_j_n_i_context_aca766d06dbc6f5deb9086aa12ad3a57e}
+\hypertarget{class_j_n_i_context_a09f80fadd22c3cf5ea45ed979814c1df}{\index{J\-N\-I\-Context@{J\-N\-I\-Context}!valid@{valid}}
+\index{valid@{valid}!JNIContext@{J\-N\-I\-Context}}
+\subsubsection[{valid}]{\setlength{\rightskip}{0pt plus 5cm}jboolean J\-N\-I\-Context\-::valid\hspace{0.3cm}{\ttfamily [private]}}}\label{class_j_n_i_context_a09f80fadd22c3cf5ea45ed979814c1df}
+\hypertarget{class_j_n_i_context_aabad08832385c27215438477ec4a9429}{\index{J\-N\-I\-Context@{J\-N\-I\-Context}!write\-Event\-Args@{write\-Event\-Args}}
+\index{write\-Event\-Args@{write\-Event\-Args}!JNIContext@{J\-N\-I\-Context}}
+\subsubsection[{write\-Event\-Args}]{\setlength{\rightskip}{0pt plus 5cm}jint$\ast$ J\-N\-I\-Context\-::write\-Event\-Args}}\label{class_j_n_i_context_aabad08832385c27215438477ec4a9429}
+\hypertarget{class_j_n_i_context_a4b7bcfab666ec64a24ddc5c389fbc3c0}{\index{J\-N\-I\-Context@{J\-N\-I\-Context}!write\-Events@{write\-Events}}
+\index{write\-Events@{write\-Events}!JNIContext@{J\-N\-I\-Context}}
+\subsubsection[{write\-Events}]{\setlength{\rightskip}{0pt plus 5cm}cl\-\_\-event$\ast$ J\-N\-I\-Context\-::write\-Events}}\label{class_j_n_i_context_a4b7bcfab666ec64a24ddc5c389fbc3c0}
+
+
+The documentation for this class was generated from the following files\-:\begin{DoxyCompactItemize}
+\item 
+src/cpp/run\-Kernel/\hyperlink{_j_n_i_context_8h}{J\-N\-I\-Context.\-h}\item 
+src/cpp/run\-Kernel/\hyperlink{_j_n_i_context_8cpp}{J\-N\-I\-Context.\-cpp}\end{DoxyCompactItemize}

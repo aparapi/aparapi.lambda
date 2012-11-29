@@ -1,0 +1,26 @@
+<map id="src/cpp/clHelper.h" name="src/cpp/clHelper.h">
+<area shape="rect" id="node3" href="$_c_l_exception_8h.html" title="src/cpp/CLException.h" alt="" coords="769,80,924,107"/>
+<area shape="rect" id="node13" href="$opencljni_8h.html" title="src/cpp/invoke/opencljni.h" alt="" coords="1737,237,1908,264"/>
+<area shape="rect" id="node36" href="$aparapi_8cpp.html" title="src/cpp/runKernel/aparapi.cpp" alt="" coords="153,667,348,693"/>
+<area shape="rect" id="node63" href="$cl_helper_8cpp.html" title="src/cpp/clHelper.cpp" alt="" coords="999,80,1140,107"/>
+<area shape="rect" id="node5" href="$jni_helper_8h.html" title="src/cpp/jniHelper.h" alt="" coords="788,155,919,181"/>
+<area shape="rect" id="node34" href="$aparapi_8h.html" title="src/cpp/runKernel/aparapi.h" alt="" coords="96,584,277,611"/>
+<area shape="rect" id="node7" href="$_open_c_l_arg_descriptor_8h.html" title="src/cpp/invoke/OpenCLArg\lDescriptor.h" alt="" coords="1068,230,1244,271"/>
+<area shape="rect" id="node18" href="$_open_c_l_kernel_8h.html" title="src/cpp/invoke/OpenCLKernel.h" alt="" coords="1269,237,1472,264"/>
+<area shape="rect" id="node21" href="$_open_c_l_mem_8h.html" title="src/cpp/invoke/OpenCLMem.h" alt="" coords="823,237,1019,264"/>
+<area shape="rect" id="node27" href="$_open_c_l_program_8h.html" title="src/cpp/invoke/OpenCLProgram.h" alt="" coords="1497,237,1713,264"/>
+<area shape="rect" id="node30" href="$jni_helper_8cpp.html" title="src/cpp/jniHelper.cpp" alt="" coords="604,237,748,264"/>
+<area shape="rect" id="node32" href="$_range_8h.html" title="src/cpp/runKernel/Range.h" alt="" coords="152,237,328,264"/>
+<area shape="rect" id="node40" href="$_kernel_arg_8h.html" title="src/cpp/runKernel/Kernel\lArg.h" alt="" coords="592,411,757,453"/>
+<area shape="rect" id="node50" href="$profile_info_8h.html" title="src/cpp/runKernel/profile\lInfo.h" alt="" coords="417,230,580,271"/>
+<area shape="rect" id="node9" href="$_open_c_l_arg_descriptor_8cpp.html" title="src/cpp/invoke/OpenCLArg\lDescriptor.cpp" alt="" coords="1159,321,1335,362"/>
+<area shape="rect" id="node11" href="$opencljni_8cpp.html" title="src/cpp/invoke/opencljni.cpp" alt="" coords="1359,328,1544,355"/>
+<area shape="rect" id="node16" href="$_j_n_i_context_8cpp.html" title="src/cpp/runKernel/JNIContext.cpp" alt="" coords="1259,584,1475,611"/>
+<area shape="rect" id="node25" href="$_open_c_l_mem_8cpp.html" title="src/cpp/invoke/OpenCLMem.cpp" alt="" coords="924,328,1135,355"/>
+<area shape="rect" id="node38" href="$_range_8cpp.html" title="src/cpp/runKernel/Range.cpp" alt="" coords="145,328,335,355"/>
+<area shape="rect" id="node43" href="$_j_n_i_context_8h.html" title="src/cpp/runKernel/JNIContext.h" alt="" coords="647,501,849,528"/>
+<area shape="rect" id="node47" href="$_kernel_arg_8cpp.html" title="src/cpp/runKernel/Kernel\lArg.cpp" alt="" coords="596,577,761,618"/>
+<area shape="rect" id="node52" href="$array_buffer_8h.html" title="src/cpp/runKernel/arrayBuffer.h" alt="" coords="359,328,560,355"/>
+<area shape="rect" id="node60" href="$profile_info_8cpp.html" title="src/cpp/runKernel/profile\lInfo.cpp" alt="" coords="585,321,748,362"/>
+<area shape="rect" id="node56" href="$array_buffer_8cpp.html" title="src/cpp/runKernel/arrayBuffer.cpp" alt="" coords="353,419,567,445"/>
+</map>

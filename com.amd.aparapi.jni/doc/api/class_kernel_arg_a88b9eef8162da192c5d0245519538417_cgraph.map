@@ -1,0 +1,9 @@
+<map id="KernelArg::getTypeName" name="KernelArg::getTypeName">
+<area shape="rect" id="node3" href="$class_kernel_arg.html#aae70fdc4496f4c2f3847dc01e3acf97d" title="KernelArg::isStatic" alt="" coords="228,5,359,32"/>
+<area shape="rect" id="node5" href="$class_kernel_arg.html#a80c129f34138199a1d6495e509a769f1" title="KernelArg::isFloat" alt="" coords="230,56,357,83"/>
+<area shape="rect" id="node7" href="$class_kernel_arg.html#adcf1efdd8a1c804db121c7f466472716" title="KernelArg::isInt" alt="" coords="238,107,349,133"/>
+<area shape="rect" id="node9" href="$class_kernel_arg.html#a6eea48cf98d46f8d50ee53a1edcc195f" title="KernelArg::isBoolean" alt="" coords="221,157,365,184"/>
+<area shape="rect" id="node11" href="$class_kernel_arg.html#ac4905b9b405fc2a93d05127516d6777f" title="KernelArg::isByte" alt="" coords="231,208,355,235"/>
+<area shape="rect" id="node13" href="$class_kernel_arg.html#a92b487c069a5e65ba49d56ab867329a3" title="KernelArg::isLong" alt="" coords="231,259,356,285"/>
+<area shape="rect" id="node15" href="$class_kernel_arg.html#ac8b08f0b2210d4217dac92f27389f330" title="KernelArg::isDouble" alt="" coords="225,309,362,336"/>
+</map>

@@ -1,0 +1,14 @@
+<map id="KernelArg::setPrimitiveArg" name="KernelArg::setPrimitiveArg">
+<area shape="rect" id="node3" href="$class_kernel_arg.html#a80c129f34138199a1d6495e509a769f1" title="KernelArg::isFloat" alt="" coords="678,309,805,336"/>
+<area shape="rect" id="node5" href="$class_kernel_arg.html#a051e9470c1ffcf16b8116fb29f6e0a94" title="KernelArg::getPrimitive" alt="" coords="229,284,384,311"/>
+<area shape="rect" id="node13" href="$class_kernel_arg.html#a92b487c069a5e65ba49d56ab867329a3" title="KernelArg::isLong" alt="" coords="679,5,804,32"/>
+<area shape="rect" id="node21" href="$class_kernel_arg.html#adcf1efdd8a1c804db121c7f466472716" title="KernelArg::isInt" alt="" coords="686,484,797,511"/>
+<area shape="rect" id="node23" href="$class_kernel_arg.html#a6eea48cf98d46f8d50ee53a1edcc195f" title="KernelArg::isBoolean" alt="" coords="669,560,813,587"/>
+<area shape="rect" id="node25" href="$class_kernel_arg.html#ac4905b9b405fc2a93d05127516d6777f" title="KernelArg::isByte" alt="" coords="679,623,803,649"/>
+<area shape="rect" id="node28" href="$class_kernel_arg.html#ac8b08f0b2210d4217dac92f27389f330" title="KernelArg::isDouble" alt="" coords="673,107,810,133"/>
+<area shape="rect" id="node7" href="$class_kernel_arg.html#aae70fdc4496f4c2f3847dc01e3acf97d" title="KernelArg::isStatic" alt="" coords="676,375,807,401"/>
+<area shape="rect" id="node9" href="$class_kernel_arg.html#ac545f1203b8ba8ab301b8e3ce60357eb" title="KernelArg::getStaticPrimitive\lValue" alt="" coords="433,411,621,453"/>
+<area shape="rect" id="node11" href="$class_kernel_arg.html#a8552d2619bff1029fb9808f97177e7b7" title="KernelArg::getPrimitiveValue" alt="" coords="433,208,620,235"/>
+<area shape="rect" id="node15" href="$aparapi_8cpp.html#a1f43c10ec7294e85290cc69a2f0919db" title="fprintf" alt="" coords="500,259,553,285"/>
+<area shape="rect" id="node17" href="$class_kernel_arg.html#a88b9eef8162da192c5d0245519538417" title="KernelArg::getTypeName" alt="" coords="443,477,610,504"/>
+</map>

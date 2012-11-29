@@ -1,0 +1,9 @@
+<map id="writeProfileInfo" name="writeProfileInfo">
+<area shape="rect" id="node3" href="$aparapi_8cpp.html#a1f43c10ec7294e85290cc69a2f0919db" title="fprintf" alt="" coords="232,5,285,32"/>
+<area shape="rect" id="node5" href="$class_kernel_arg.html#a8e5e4bf1b90efaf6a805028f831968da" title="KernelArg::isBackedByArray" alt="" coords="165,56,353,83"/>
+<area shape="rect" id="node13" href="$class_kernel_arg.html#a164df3cf2ae35d7b53f5796e46c01fe5" title="KernelArg::isReadByKernel" alt="" coords="169,107,349,133"/>
+<area shape="rect" id="node15" href="$class_kernel_arg.html#aa1002b4a71aaa86b3089beee7f84d325" title="KernelArg::isMutableByKernel" alt="" coords="161,157,357,184"/>
+<area shape="rect" id="node7" href="$class_kernel_arg.html#a5d1c17442e6f96aa1aeb834a82ed6950" title="KernelArg::isArray" alt="" coords="416,5,544,32"/>
+<area shape="rect" id="node9" href="$class_kernel_arg.html#ae38da6f0073ce862e16c2f21ef451d0b" title="KernelArg::isGlobal" alt="" coords="413,56,547,83"/>
+<area shape="rect" id="node11" href="$class_kernel_arg.html#a266bef2508f3aa4c1f2e670b7658f05e" title="KernelArg::isConstant" alt="" coords="405,107,555,133"/>
+</map>

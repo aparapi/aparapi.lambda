@@ -1,0 +1,8 @@
+<map id="include/com_amd_aparapi_internal_jni_KernelRunnerJNI.h" name="include/com_amd_aparapi_internal_jni_KernelRunnerJNI.h">
+<area shape="rect" id="node3" href="$aparapi_8h.html" title="src/cpp/runKernel/aparapi.h" alt="" coords="12,269,193,296"/>
+<area shape="rect" id="node7" href="$_kernel_arg_8h.html" title="src/cpp/runKernel/Kernel\lArg.h" alt="" coords="119,97,284,138"/>
+<area shape="rect" id="node10" href="$_j_n_i_context_8h.html" title="src/cpp/runKernel/JNIContext.h" alt="" coords="220,187,423,213"/>
+<area shape="rect" id="node5" href="$aparapi_8cpp.html" title="src/cpp/runKernel/aparapi.cpp" alt="" coords="5,352,200,379"/>
+<area shape="rect" id="node15" href="$_kernel_arg_8cpp.html" title="src/cpp/runKernel/Kernel\lArg.cpp" alt="" coords="217,262,383,303"/>
+<area shape="rect" id="node13" href="$_j_n_i_context_8cpp.html" title="src/cpp/runKernel/JNIContext.cpp" alt="" coords="407,269,623,296"/>
+</map>

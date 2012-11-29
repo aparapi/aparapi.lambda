@@ -1,0 +1,251 @@
+\hypertarget{class_c_l_exception}{\section{C\-L\-Exception Class Reference}
+\label{class_c_l_exception}\index{C\-L\-Exception@{C\-L\-Exception}}
+}
+
+
+{\ttfamily \#include $<$C\-L\-Exception.\-h$>$}
+
+
+
+Inheritance diagram for C\-L\-Exception\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=158pt]{class_c_l_exception__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for C\-L\-Exception\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=253pt]{class_c_l_exception__coll__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{class_c_l_exception_a22033255f193444c7038dd3ed1314c3e}{$\sim$\-C\-L\-Exception} ()  throw ()
+\item 
+\hyperlink{class_c_l_exception_a24089a34df64c03ae5b90818dd8598ec}{C\-L\-Exception} (int \hyperlink{class_c_l_exception_a08feb7c76971320d736c4137a03013bb}{status}, std\-::string \hyperlink{class_c_l_exception_afaeb1a33cb858c0faa74fa6538a97dc5}{message})
+\item 
+\hyperlink{class_c_l_exception_a89c27aa8b28775ffd8e52c708bcc6fa0}{C\-L\-Exception} (const \hyperlink{class_c_l_exception}{C\-L\-Exception} \&cle)
+\item 
+\hyperlink{class_c_l_exception}{C\-L\-Exception} \& \hyperlink{class_c_l_exception_a735f300c25668ba7c00e1a83c0c0dca3}{operator=} (const \hyperlink{class_c_l_exception}{C\-L\-Exception} \&cle)
+\item 
+int \hyperlink{class_c_l_exception_a08feb7c76971320d736c4137a03013bb}{status} ()
+\item 
+const char $\ast$ \hyperlink{class_c_l_exception_afaeb1a33cb858c0faa74fa6538a97dc5}{message} ()
+\item 
+void \hyperlink{class_c_l_exception_a0c1d6917db38876465e60f1404e589d3}{print\-Error} ()
+\item 
+const char $\ast$ \hyperlink{class_c_l_exception_a8275eb0a5a0ac4ab0de4bad4b0130d0e}{what} ()
+\end{DoxyCompactItemize}
+\subsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+static void \hyperlink{class_c_l_exception_a499ceca093813dcd2e731f542b1e078e}{check\-C\-L\-Error} (cl\-\_\-int \hyperlink{class_c_l_exception_a08feb7c76971320d736c4137a03013bb}{status}, std\-::string error)
+\end{DoxyCompactItemize}
+\subsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{class_c_l_exception_aa8b72fb16bc1bbd38c28bc2bbc4fee28}{\-\_\-status}
+\item 
+std\-::string \hyperlink{class_c_l_exception_a05349664de93edb8e6379f67fe63a9e2}{\-\_\-message}
+\end{DoxyCompactItemize}
+
+
+\subsection{Constructor \& Destructor Documentation}
+\hypertarget{class_c_l_exception_a22033255f193444c7038dd3ed1314c3e}{\index{C\-L\-Exception@{C\-L\-Exception}!$\sim$\-C\-L\-Exception@{$\sim$\-C\-L\-Exception}}
+\index{$\sim$\-C\-L\-Exception@{$\sim$\-C\-L\-Exception}!CLException@{C\-L\-Exception}}
+\subsubsection[{$\sim$\-C\-L\-Exception}]{\setlength{\rightskip}{0pt plus 5cm}C\-L\-Exception\-::$\sim$\-C\-L\-Exception (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)  throw ()\hspace{0.3cm}{\ttfamily [inline]}}}\label{class_c_l_exception_a22033255f193444c7038dd3ed1314c3e}
+\hypertarget{class_c_l_exception_a24089a34df64c03ae5b90818dd8598ec}{\index{C\-L\-Exception@{C\-L\-Exception}!C\-L\-Exception@{C\-L\-Exception}}
+\index{C\-L\-Exception@{C\-L\-Exception}!CLException@{C\-L\-Exception}}
+\subsubsection[{C\-L\-Exception}]{\setlength{\rightskip}{0pt plus 5cm}C\-L\-Exception\-::\-C\-L\-Exception (
+\begin{DoxyParamCaption}
+\item[{int}]{status, }
+\item[{std\-::string}]{message}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{class_c_l_exception_a24089a34df64c03ae5b90818dd8598ec}
+
+
+Here is the call graph for this function\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{class_c_l_exception_a24089a34df64c03ae5b90818dd8598ec_cgraph}
+\end{center}
+\end{figure}
+
+
+
+
+Here is the caller graph for this function\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{class_c_l_exception_a24089a34df64c03ae5b90818dd8598ec_icgraph}
+\end{center}
+\end{figure}
+
+
+\hypertarget{class_c_l_exception_a89c27aa8b28775ffd8e52c708bcc6fa0}{\index{C\-L\-Exception@{C\-L\-Exception}!C\-L\-Exception@{C\-L\-Exception}}
+\index{C\-L\-Exception@{C\-L\-Exception}!CLException@{C\-L\-Exception}}
+\subsubsection[{C\-L\-Exception}]{\setlength{\rightskip}{0pt plus 5cm}C\-L\-Exception\-::\-C\-L\-Exception (
+\begin{DoxyParamCaption}
+\item[{const {\bf C\-L\-Exception} \&}]{cle}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{class_c_l_exception_a89c27aa8b28775ffd8e52c708bcc6fa0}
+
+
+\subsection{Member Function Documentation}
+\hypertarget{class_c_l_exception_a499ceca093813dcd2e731f542b1e078e}{\index{C\-L\-Exception@{C\-L\-Exception}!check\-C\-L\-Error@{check\-C\-L\-Error}}
+\index{check\-C\-L\-Error@{check\-C\-L\-Error}!CLException@{C\-L\-Exception}}
+\subsubsection[{check\-C\-L\-Error}]{\setlength{\rightskip}{0pt plus 5cm}static void C\-L\-Exception\-::check\-C\-L\-Error (
+\begin{DoxyParamCaption}
+\item[{cl\-\_\-int}]{status, }
+\item[{std\-::string}]{error}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}}\label{class_c_l_exception_a499ceca093813dcd2e731f542b1e078e}
+
+
+Here is the call graph for this function\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{class_c_l_exception_a499ceca093813dcd2e731f542b1e078e_cgraph}
+\end{center}
+\end{figure}
+
+
+
+
+Here is the caller graph for this function\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{class_c_l_exception_a499ceca093813dcd2e731f542b1e078e_icgraph}
+\end{center}
+\end{figure}
+
+
+\hypertarget{class_c_l_exception_afaeb1a33cb858c0faa74fa6538a97dc5}{\index{C\-L\-Exception@{C\-L\-Exception}!message@{message}}
+\index{message@{message}!CLException@{C\-L\-Exception}}
+\subsubsection[{message}]{\setlength{\rightskip}{0pt plus 5cm}const char$\ast$ C\-L\-Exception\-::message (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{class_c_l_exception_afaeb1a33cb858c0faa74fa6538a97dc5}
+
+
+Here is the caller graph for this function\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{class_c_l_exception_afaeb1a33cb858c0faa74fa6538a97dc5_icgraph}
+\end{center}
+\end{figure}
+
+
+\hypertarget{class_c_l_exception_a735f300c25668ba7c00e1a83c0c0dca3}{\index{C\-L\-Exception@{C\-L\-Exception}!operator=@{operator=}}
+\index{operator=@{operator=}!CLException@{C\-L\-Exception}}
+\subsubsection[{operator=}]{\setlength{\rightskip}{0pt plus 5cm}{\bf C\-L\-Exception}\& C\-L\-Exception\-::operator= (
+\begin{DoxyParamCaption}
+\item[{const {\bf C\-L\-Exception} \&}]{cle}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{class_c_l_exception_a735f300c25668ba7c00e1a83c0c0dca3}
+\hypertarget{class_c_l_exception_a0c1d6917db38876465e60f1404e589d3}{\index{C\-L\-Exception@{C\-L\-Exception}!print\-Error@{print\-Error}}
+\index{print\-Error@{print\-Error}!CLException@{C\-L\-Exception}}
+\subsubsection[{print\-Error}]{\setlength{\rightskip}{0pt plus 5cm}void C\-L\-Exception\-::print\-Error (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{class_c_l_exception_a0c1d6917db38876465e60f1404e589d3}
+
+
+Here is the call graph for this function\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{class_c_l_exception_a0c1d6917db38876465e60f1404e589d3_cgraph}
+\end{center}
+\end{figure}
+
+
+
+
+Here is the caller graph for this function\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{class_c_l_exception_a0c1d6917db38876465e60f1404e589d3_icgraph}
+\end{center}
+\end{figure}
+
+
+\hypertarget{class_c_l_exception_a08feb7c76971320d736c4137a03013bb}{\index{C\-L\-Exception@{C\-L\-Exception}!status@{status}}
+\index{status@{status}!CLException@{C\-L\-Exception}}
+\subsubsection[{status}]{\setlength{\rightskip}{0pt plus 5cm}int C\-L\-Exception\-::status (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{class_c_l_exception_a08feb7c76971320d736c4137a03013bb}
+
+
+Here is the caller graph for this function\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{class_c_l_exception_a08feb7c76971320d736c4137a03013bb_icgraph}
+\end{center}
+\end{figure}
+
+
+\hypertarget{class_c_l_exception_a8275eb0a5a0ac4ab0de4bad4b0130d0e}{\index{C\-L\-Exception@{C\-L\-Exception}!what@{what}}
+\index{what@{what}!CLException@{C\-L\-Exception}}
+\subsubsection[{what}]{\setlength{\rightskip}{0pt plus 5cm}const char$\ast$ C\-L\-Exception\-::what (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{class_c_l_exception_a8275eb0a5a0ac4ab0de4bad4b0130d0e}
+
+
+Here is the call graph for this function\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=320pt]{class_c_l_exception_a8275eb0a5a0ac4ab0de4bad4b0130d0e_cgraph}
+\end{center}
+\end{figure}
+
+
+
+
+\subsection{Member Data Documentation}
+\hypertarget{class_c_l_exception_a05349664de93edb8e6379f67fe63a9e2}{\index{C\-L\-Exception@{C\-L\-Exception}!\-\_\-message@{\-\_\-message}}
+\index{\-\_\-message@{\-\_\-message}!CLException@{C\-L\-Exception}}
+\subsubsection[{\-\_\-message}]{\setlength{\rightskip}{0pt plus 5cm}std\-::string C\-L\-Exception\-::\-\_\-message\hspace{0.3cm}{\ttfamily [private]}}}\label{class_c_l_exception_a05349664de93edb8e6379f67fe63a9e2}
+\hypertarget{class_c_l_exception_aa8b72fb16bc1bbd38c28bc2bbc4fee28}{\index{C\-L\-Exception@{C\-L\-Exception}!\-\_\-status@{\-\_\-status}}
+\index{\-\_\-status@{\-\_\-status}!CLException@{C\-L\-Exception}}
+\subsubsection[{\-\_\-status}]{\setlength{\rightskip}{0pt plus 5cm}int C\-L\-Exception\-::\-\_\-status\hspace{0.3cm}{\ttfamily [private]}}}\label{class_c_l_exception_aa8b72fb16bc1bbd38c28bc2bbc4fee28}
+
+
+The documentation for this class was generated from the following file\-:\begin{DoxyCompactItemize}
+\item 
+src/cpp/\hyperlink{_c_l_exception_8h}{C\-L\-Exception.\-h}\end{DoxyCompactItemize}

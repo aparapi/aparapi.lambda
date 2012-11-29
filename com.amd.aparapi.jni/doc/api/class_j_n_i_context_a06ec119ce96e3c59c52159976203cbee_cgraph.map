@@ -1,0 +1,12 @@
+<map id="JNIContext::unpinAll" name="JNIContext::unpinAll">
+<area shape="rect" id="node3" href="$class_kernel_arg.html#a8e5e4bf1b90efaf6a805028f831968da" title="KernelArg::isBackedByArray" alt="" coords="193,81,381,108"/>
+<area shape="rect" id="node11" href="$class_kernel_arg.html#ad3d62d6f3e6cc7891c0a871900dc7ee1" title="KernelArg::unpin" alt="" coords="227,183,346,209"/>
+<area shape="rect" id="node5" href="$class_kernel_arg.html#a5d1c17442e6f96aa1aeb834a82ed6950" title="KernelArg::isArray" alt="" coords="464,5,592,32"/>
+<area shape="rect" id="node7" href="$class_kernel_arg.html#ae38da6f0073ce862e16c2f21ef451d0b" title="KernelArg::isGlobal" alt="" coords="461,56,595,83"/>
+<area shape="rect" id="node9" href="$class_kernel_arg.html#a266bef2508f3aa4c1f2e670b7658f05e" title="KernelArg::isConstant" alt="" coords="453,107,603,133"/>
+<area shape="rect" id="node13" href="$class_kernel_arg.html#aa1002b4a71aaa86b3089beee7f84d325" title="KernelArg::isMutableByKernel" alt="" coords="430,157,626,184"/>
+<area shape="rect" id="node15" href="$class_kernel_arg.html#ac9b362583f7bfd45579728b64ef07c9a" title="KernelArg::unpinCommit" alt="" coords="447,208,609,235"/>
+<area shape="rect" id="node19" href="$class_kernel_arg.html#ab48f5be29c51a426b9b76353c593c47f" title="KernelArg::unpinAbort" alt="" coords="453,259,603,285"/>
+<area shape="rect" id="node17" href="$class_array_buffer.html#a112827b6241d6f9029e993e4ab419bd2" title="ArrayBuffer::unpinCommit" alt="" coords="675,208,845,235"/>
+<area shape="rect" id="node21" href="$class_array_buffer.html#a76231eefe415da5bba1754f3cc2045f9" title="ArrayBuffer::unpinAbort" alt="" coords="682,259,838,285"/>
+</map>

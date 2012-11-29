@@ -1,0 +1,14 @@
+<map id="src/cpp/runKernel/JNIContext.cpp" name="src/cpp/runKernel/JNIContext.cpp">
+<area shape="rect" id="node3" href="$_j_n_i_context_8h.html" title="JNIContext.h" alt="" coords="351,80,447,107"/>
+<area shape="rect" id="node58" href="$opencljni_8h.html" title="opencljni.h" alt="" coords="5,320,88,347"/>
+<area shape="rect" id="node63" href="$_list_8h.html" title="List.h" alt="" coords="471,80,525,107"/>
+<area shape="rect" id="node5" href="$common_8h.html" title="common.h" alt="" coords="420,619,503,645"/>
+<area shape="rect" id="node25" href="$_kernel_arg_8h.html" title="KernelArg.h" alt="" coords="461,155,552,181"/>
+<area shape="rect" id="node45" href="$profile_info_8h.html" title="profileInfo.h" alt="" coords="398,320,484,347"/>
+<area shape="rect" id="node49" href="$com__amd__aparapi__internal__jni___kernel_runner_j_n_i_8h.html" title="com_amd_aparapi_internal\l_jni_KernelRunnerJNI.h" alt="" coords="702,230,879,271"/>
+<area shape="rect" id="node52" href="$config_8h.html" title="config.h" alt="" coords="611,237,677,264"/>
+<area shape="rect" id="node28" href="$jni_helper_8h.html" title="jniHelper.h" alt="" coords="335,395,417,421"/>
+<area shape="rect" id="node42" href="$array_buffer_8h.html" title="arrayBuffer.h" alt="" coords="441,237,535,264"/>
+<area shape="rect" id="node33" href="$_c_l_exception_8h.html" title="CLException.h" alt="" coords="263,469,369,496"/>
+<area shape="rect" id="node39" href="$cl_helper_8h.html" title="CLHelper.h" alt="" coords="114,544,200,571"/>
+</map>

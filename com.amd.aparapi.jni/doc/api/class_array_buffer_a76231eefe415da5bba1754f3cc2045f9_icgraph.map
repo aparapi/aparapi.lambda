@@ -1,0 +1,7 @@
+<map id="ArrayBuffer::unpinAbort" name="ArrayBuffer::unpinAbort">
+<area shape="rect" id="node3" href="$class_kernel_arg.html#ab48f5be29c51a426b9b76353c593c47f" title="KernelArg::unpinAbort" alt="" coords="211,31,360,57"/>
+<area shape="rect" id="node5" href="$class_kernel_arg.html#ad3d62d6f3e6cc7891c0a871900dc7ee1" title="KernelArg::unpin" alt="" coords="409,31,527,57"/>
+<area shape="rect" id="node7" href="$class_j_n_i_context.html#a06ec119ce96e3c59c52159976203cbee" title="JNIContext::unpinAll" alt="" coords="576,31,715,57"/>
+<area shape="rect" id="node9" href="$aparapi_8h.html#a024365e33462d5eeb5d60287c170a609" title="checkEvents" alt="" coords="763,5,859,32"/>
+<area shape="rect" id="node11" href="$aparapi_8cpp.html#a931acedf5f2f33e3ed68316b3a95fe8a" title="catch" alt="" coords="783,56,838,83"/>
+</map>

@@ -1,0 +1,11 @@
+<map id="JNIContext::dispose" name="JNIContext::dispose">
+<area shape="rect" id="node3" href="$class_c_l_exception.html#a499ceca093813dcd2e731f542b1e078e" title="CLException::checkCLError" alt="" coords="218,31,401,57"/>
+<area shape="rect" id="node11" href="$class_config.html#a7a2cfa5be8d976099dedb684e9c32ca0" title="Config::isTrackingOpenCLResources" alt="" coords="192,81,427,108"/>
+<area shape="rect" id="node13" href="$class_kernel_arg.html#a11ed28ef2892d605343092d77570c859" title="KernelArg::isPrimitive" alt="" coords="236,132,383,159"/>
+<area shape="rect" id="node15" href="$class_config.html#ac91f68d97d5ca75b787d6ea9cba882e4" title="Config::isProfilingEnabled" alt="" coords="225,183,394,209"/>
+<area shape="rect" id="node17" href="$class_config.html#a6038fb1fbd5089d24afa3b71fd6c0220" title="Config::isProfilingCSVEnabled" alt="" coords="211,233,407,260"/>
+<area shape="rect" id="node19" href="$aparapi_8cpp.html#a1f43c10ec7294e85290cc69a2f0919db" title="fprintf" alt="" coords="283,284,336,311"/>
+<area shape="rect" id="node5" href="$class_c_l_exception.html#a24089a34df64c03ae5b90818dd8598ec" title="CLException::CLException" alt="" coords="475,31,653,57"/>
+<area shape="rect" id="node7" href="$class_c_l_exception.html#a08feb7c76971320d736c4137a03013bb" title="CLException::status" alt="" coords="710,5,850,32"/>
+<area shape="rect" id="node9" href="$class_c_l_exception.html#afaeb1a33cb858c0faa74fa6538a97dc5" title="CLException::message" alt="" coords="701,56,859,83"/>
+</map>
