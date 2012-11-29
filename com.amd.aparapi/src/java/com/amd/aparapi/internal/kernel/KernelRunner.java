@@ -1141,13 +1141,15 @@ public class KernelRunner extends KernelRunnerJNI {
                } else {
                   warnFallBackAndExecute(_entrypointName, _range, _passes, "failed to locate entrypoint");
                }
+            } else {
+               try {
+                  executeOpenCL(_entrypointName, _range, _passes);
+               } catch (final AparapiException e) {
+                  warnFallBackAndExecute(_entrypointName, _range, _passes, e);
+               }
             }
          } else {
-            try {
-               executeOpenCL(_entrypointName, _range, _passes);
-            } catch (final AparapiException e) {
-               warnFallBackAndExecute(_entrypointName, _range, _passes, e);
-            }
+              warnFallBackAndExecute(_entrypointName, _range, _passes, "OpenCL was requested but Device supplied was not an OpenCLDevice");
          }
       } else {
          executeJava(_range, _passes);
