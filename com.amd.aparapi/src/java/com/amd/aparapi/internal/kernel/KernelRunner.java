@@ -917,13 +917,13 @@ public class KernelRunner extends KernelRunnerJNI {
       }
 
       /* for backward compatibility reasons we still honor execution mode, but only if the Range *does not* contain a device specification */
-      final Device device = _range.getDevice();
-
       if (kernel.getExecutionMode().isOpenCL()) {
+         // System.out.println("OpenCL");
+
+         // See if user supplied a Device
+         Device device = _range.getDevice();
+            
          if ((device == null) || (device instanceof OpenCLDevice)) {
-
-            // System.out.println("OpenCL");
-
             if (entryPoint == null) {
                try {
                   final ClassModel classModel = new ClassModel(kernel.getClass());
