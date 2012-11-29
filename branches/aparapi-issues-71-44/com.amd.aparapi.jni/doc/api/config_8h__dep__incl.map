@@ -1,9 +1,0 @@
-<map id="src/cpp/runKernel/config.h" name="src/cpp/runKernel/config.h">
-<area shape="rect" id="node3" href="$_kernel_arg_8h.html" title="src/cpp/runKernel/Kernel\lArg.h" alt="" coords="79,81,244,122"/>
-<area shape="rect" id="node7" href="$aparapi_8cpp.html" title="src/cpp/runKernel/aparapi.cpp" alt="" coords="47,336,242,363"/>
-<area shape="rect" id="node9" href="$_j_n_i_context_8h.html" title="src/cpp/runKernel/JNIContext.h" alt="" coords="199,171,402,197"/>
-<area shape="rect" id="node19" href="$config_8cpp.html" title="src/cpp/runKernel/config.cpp" alt="" coords="319,88,506,115"/>
-<area shape="rect" id="node5" href="$aparapi_8h.html" title="src/cpp/runKernel/aparapi.h" alt="" coords="212,253,394,280"/>
-<area shape="rect" id="node14" href="$_kernel_arg_8cpp.html" title="src/cpp/runKernel/Kernel\lArg.cpp" alt="" coords="23,246,188,287"/>
-<area shape="rect" id="node12" href="$_j_n_i_context_8cpp.html" title="src/cpp/runKernel/JNIContext.cpp" alt="" coords="418,253,634,280"/>
-</map>

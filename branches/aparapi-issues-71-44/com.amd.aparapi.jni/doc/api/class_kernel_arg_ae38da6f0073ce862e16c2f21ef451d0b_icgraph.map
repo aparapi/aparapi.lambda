@@ -1,9 +1,0 @@
-<map id="KernelArg::isGlobal" name="KernelArg::isGlobal">
-<area shape="rect" id="node3" href="$class_kernel_arg.html#a8e5e4bf1b90efaf6a805028f831968da" title="KernelArg::isBackedByArray" alt="" coords="201,56,389,83"/>
-<area shape="rect" id="node14" href="$class_kernel_arg.html#a789786a4bb65c3ac76299474ee371c87" title="KernelArg::needToEnqueueRead" alt="" coords="189,107,400,133"/>
-<area shape="rect" id="node5" href="$aparapi_8h.html#a11be8947a864da8ad1fd6f6ae7743058" title="writeProfileInfo" alt="" coords="465,5,570,32"/>
-<area shape="rect" id="node9" href="$class_j_n_i_context.html#a06ec119ce96e3c59c52159976203cbee" title="JNIContext::unpinAll" alt="" coords="448,56,587,83"/>
-<area shape="rect" id="node7" href="$aparapi_8h.html#a024365e33462d5eeb5d60287c170a609" title="checkEvents" alt="" coords="635,5,731,32"/>
-<area shape="rect" id="node12" href="$aparapi_8cpp.html#a931acedf5f2f33e3ed68316b3a95fe8a" title="catch" alt="" coords="655,56,710,83"/>
-<area shape="rect" id="node16" href="$aparapi_8h.html#af090b212eed21c1433dd2930b2de2e85" title="getReadEvents" alt="" coords="463,107,572,133"/>
-</map>

@@ -1,7 +1,0 @@
-<map id="JNIHelper::createInstance" name="JNIHelper::createInstance">
-<area shape="rect" id="node3" href="$class_open_c_l_kernel.html#ac7f0985d28b9b2fa8ca6826ac946c99e" title="OpenCLKernel::create" alt="" coords="230,5,381,32"/>
-<area shape="rect" id="node5" href="$class_open_c_l_mem.html#a2fe75bec65fef0e519a0ece50aacb708" title="OpenCLMem::create" alt="" coords="234,56,377,83"/>
-<area shape="rect" id="node9" href="$class_open_c_l_program.html#a702ecb5ce21e3653caf9bdb944370d1e" title="OpenCLProgram::create" alt="" coords="224,107,387,133"/>
-<area shape="rect" id="node11" href="$class_profile_info.html#a66532ff4363c63368eef793608d58769" title="ProfileInfo::createProfile\lInfoInstance" alt="" coords="226,158,385,199"/>
-<area shape="rect" id="node7" href="$class_open_c_l_mem.html#adad92d2ccc634bed1b32a4f97052567e" title="OpenCLMem::create" alt="" coords="435,56,578,83"/>
-</map>

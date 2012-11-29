@@ -1,7 +1,0 @@
-<map id="ArrayBuffer::unpinCommit" name="ArrayBuffer::unpinCommit">
-<area shape="rect" id="node3" href="$class_kernel_arg.html#ac9b362583f7bfd45579728b64ef07c9a" title="KernelArg::unpinCommit" alt="" coords="224,31,387,57"/>
-<area shape="rect" id="node5" href="$class_kernel_arg.html#ad3d62d6f3e6cc7891c0a871900dc7ee1" title="KernelArg::unpin" alt="" coords="435,31,554,57"/>
-<area shape="rect" id="node7" href="$class_j_n_i_context.html#a06ec119ce96e3c59c52159976203cbee" title="JNIContext::unpinAll" alt="" coords="603,31,741,57"/>
-<area shape="rect" id="node9" href="$aparapi_8h.html#a024365e33462d5eeb5d60287c170a609" title="checkEvents" alt="" coords="789,5,885,32"/>
-<area shape="rect" id="node11" href="$aparapi_8cpp.html#a931acedf5f2f33e3ed68316b3a95fe8a" title="catch" alt="" coords="810,56,865,83"/>
-</map>

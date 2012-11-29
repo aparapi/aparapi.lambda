@@ -1,8 +1,0 @@
-<map id="KernelArg::needToEnqueueRead" name="KernelArg::needToEnqueueRead">
-<area shape="rect" id="node3" href="$class_kernel_arg.html#a5d1c17442e6f96aa1aeb834a82ed6950" title="KernelArg::isArray" alt="" coords="299,5,427,32"/>
-<area shape="rect" id="node5" href="$class_kernel_arg.html#ae38da6f0073ce862e16c2f21ef451d0b" title="KernelArg::isGlobal" alt="" coords="295,56,430,83"/>
-<area shape="rect" id="node7" href="$class_kernel_arg.html#a49be011b2c8ee9f85d507521854fb4f8" title="KernelArg::isAparapiBuf" alt="" coords="283,107,443,133"/>
-<area shape="rect" id="node9" href="$class_kernel_arg.html#ab8a775d67ecb9bf9c8ad4654fe7c3f58" title="KernelArg::isImplicit" alt="" coords="293,157,432,184"/>
-<area shape="rect" id="node13" href="$class_kernel_arg.html#aa1002b4a71aaa86b3089beee7f84d325" title="KernelArg::isMutableByKernel" alt="" coords="265,208,461,235"/>
-<area shape="rect" id="node11" href="$class_kernel_arg.html#a14a83444c553bc8b8458223af8339e3d" title="KernelArg::isExplicit" alt="" coords="510,157,650,184"/>
-</map>

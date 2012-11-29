@@ -1,9 +1,0 @@
-<map id="updateWriteEvents" name="updateWriteEvents">
-<area shape="rect" id="node3" href="$class_config.html#ac91f68d97d5ca75b787d6ea9cba882e4" title="Config::isProfilingEnabled" alt="" coords="217,5,386,32"/>
-<area shape="rect" id="node5" href="$class_config.html#a7a2cfa5be8d976099dedb684e9c32ca0" title="Config::isTrackingOpenCLResources" alt="" coords="184,56,419,83"/>
-<area shape="rect" id="node7" href="$class_kernel_arg.html#a14a83444c553bc8b8458223af8339e3d" title="KernelArg::isExplicit" alt="" coords="231,107,371,133"/>
-<area shape="rect" id="node9" href="$class_kernel_arg.html#a080a2a1cae98156eec8dff6409b3c5f2" title="KernelArg::isExplicitWrite" alt="" coords="216,157,387,184"/>
-<area shape="rect" id="node11" href="$class_config.html#a03234dbe1adbe1c8fdde649df372926c" title="Config::isVerbose" alt="" coords="239,208,363,235"/>
-<area shape="rect" id="node13" href="$aparapi_8cpp.html#a1f43c10ec7294e85290cc69a2f0919db" title="fprintf" alt="" coords="275,259,328,285"/>
-<area shape="rect" id="node15" href="$class_kernel_arg.html#ae5df1dec0f6ec684d58b2adf23dd1845" title="KernelArg::clearExplicit\lBufferBit" alt="" coords="222,310,381,351"/>
-</map>

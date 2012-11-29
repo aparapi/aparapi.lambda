@@ -1,6 +1,0 @@
-<map id="KernelArg::unpinCommit" name="KernelArg::unpinCommit">
-<area shape="rect" id="node3" href="$class_kernel_arg.html#ad3d62d6f3e6cc7891c0a871900dc7ee1" title="KernelArg::unpin" alt="" coords="217,31,335,57"/>
-<area shape="rect" id="node5" href="$class_j_n_i_context.html#a06ec119ce96e3c59c52159976203cbee" title="JNIContext::unpinAll" alt="" coords="384,31,523,57"/>
-<area shape="rect" id="node7" href="$aparapi_8h.html#a024365e33462d5eeb5d60287c170a609" title="checkEvents" alt="" coords="571,5,667,32"/>
-<area shape="rect" id="node9" href="$aparapi_8cpp.html#a931acedf5f2f33e3ed68316b3a95fe8a" title="catch" alt="" coords="591,56,646,83"/>
-</map>
