@@ -1,0 +1,10 @@
+<map id="enqueueKernel" name="enqueueKernel">
+<area shape="rect" id="node3" href="$class_config.html#a7a2cfa5be8d976099dedb684e9c32ca0" title="Config::isTrackingOpenCLResources" alt="" coords="163,5,397,32"/>
+<area shape="rect" id="node5" href="$class_config.html#ac91f68d97d5ca75b787d6ea9cba882e4" title="Config::isProfilingEnabled" alt="" coords="195,56,365,83"/>
+<area shape="rect" id="node7" href="$aparapi_8cpp.html#a8c22a6de737718752b69db8940967580" title="profile" alt="" coords="252,107,308,133"/>
+<area shape="rect" id="node11" href="$aparapi_8cpp.html#a1f43c10ec7294e85290cc69a2f0919db" title="fprintf" alt="" coords="703,176,756,203"/>
+<area shape="rect" id="node9" href="$class_c_l_exception.html#a0c1d6917db38876465e60f1404e589d3" title="CLException::printError" alt="" coords="445,107,603,133"/>
+<area shape="rect" id="node17" href="$class_c_l_exception.html#a08feb7c76971320d736c4137a03013bb" title="CLException::status" alt="" coords="659,24,799,51"/>
+<area shape="rect" id="node13" href="$class_c_l_exception.html#afaeb1a33cb858c0faa74fa6538a97dc5" title="CLException::message" alt="" coords="651,125,808,152"/>
+<area shape="rect" id="node15" href="$class_c_l_helper.html#acdb10aebef4162371ac53e6fb6835c67" title="CLHelper::errString" alt="" coords="663,75,795,101"/>
+</map>

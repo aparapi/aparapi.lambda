@@ -1,0 +1,772 @@
+\hypertarget{aparapi_8h}{\section{src/cpp/run\-Kernel/aparapi.h File Reference}
+\label{aparapi_8h}\index{src/cpp/run\-Kernel/aparapi.\-h@{src/cpp/run\-Kernel/aparapi.\-h}}
+}
+{\ttfamily \#include \char`\"{}common.\-h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}com\-\_\-amd\-\_\-aparapi\-\_\-internal\-\_\-jni\-\_\-\-Kernel\-Runner\-J\-N\-I.\-h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}C\-L\-Exception.\-h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}Range.\-h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}Kernel\-Arg.\-h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}J\-N\-I\-Context.\-h\char`\"{}}\\*
+Include dependency graph for aparapi.\-h\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{aparapi_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=226pt]{aparapi_8h__dep__incl}
+\end{center}
+\end{figure}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{aparapi_8h_a784d04e1847a4dbe23eec5c18a02ddd4}{enqueue\-Marker} (cl\-\_\-command\-\_\-queue \hyperlink{aparapi_8cpp_a8fac250f453efccd21a25d8f9e3950e5}{command\-Queue}, cl\-\_\-event $\ast$first\-Event)
+\item 
+jint \hyperlink{aparapi_8h_a42616a201cc14c207302c091cb2fd88f}{get\-Process} ()
+\item 
+void \hyperlink{aparapi_8h_a1ba60fdc6ef5e8701db96bdd27d80915}{idump} (char $\ast$str, void $\ast$ptr, int size)
+\item 
+void \hyperlink{aparapi_8h_a05fe828844eae7072a79e40290f14273}{fdump} (char $\ast$str, void $\ast$ptr, int size)
+\item 
+jint \hyperlink{aparapi_8h_a11be8947a864da8ad1fd6f6ae7743058}{write\-Profile\-Info} (\hyperlink{class_j_n_i_context}{J\-N\-I\-Context} $\ast$\hyperlink{aparapi_8cpp_a1e384ab6268d5004e8838dde78bcae71}{jni\-Context})
+\item 
+cl\-\_\-int \hyperlink{aparapi_8h_a8c22a6de737718752b69db8940967580}{profile} (\hyperlink{class_profile_info}{Profile\-Info} $\ast$profile\-Info, cl\-\_\-event $\ast$event, jint type, char $\ast$name, cl\-\_\-ulong profile\-Base\-Time)
+\item 
+jint \hyperlink{aparapi_8h_a8b1c84b9a707a9fc337cd9419dba23a4}{update\-Non\-Primitive\-References} (J\-N\-I\-Env $\ast$\hyperlink{aparapi_8cpp_a31595c73e9a3750524b2ff61b5a14f96}{jenv}, jobject \hyperlink{aparapi_8cpp_a0aaa3f4072acab033b7a4bf9fa144338}{jobj}, \hyperlink{class_j_n_i_context}{J\-N\-I\-Context} $\ast$\hyperlink{aparapi_8cpp_a1e384ab6268d5004e8838dde78bcae71}{jni\-Context})
+\item 
+void \hyperlink{aparapi_8h_a9663634f279c2dbd7bfd5352826088ca}{profile\-First\-Run} (\hyperlink{class_j_n_i_context}{J\-N\-I\-Context} $\ast$\hyperlink{aparapi_8cpp_a1e384ab6268d5004e8838dde78bcae71}{jni\-Context})
+\item 
+void \hyperlink{aparapi_8h_a3bc98ac01f7f40bdff288d4c2b45a5e6}{update\-Object} (J\-N\-I\-Env $\ast$\hyperlink{aparapi_8cpp_a31595c73e9a3750524b2ff61b5a14f96}{jenv}, \hyperlink{class_j_n_i_context}{J\-N\-I\-Context} $\ast$\hyperlink{aparapi_8cpp_a1e384ab6268d5004e8838dde78bcae71}{jni\-Context}, \hyperlink{class_kernel_arg}{Kernel\-Arg} $\ast$\hyperlink{_java_args_8h_a4a05302f502dcc918ac147408d5a9b10}{arg}, int \&\hyperlink{aparapi_8cpp_ab860a017c322839deee8d7bff5f0e180}{arg\-Pos}, int arg\-Idx)
+\item 
+void \hyperlink{aparapi_8h_a3049780475281b299fd62c130183bbd7}{process\-Object} (J\-N\-I\-Env $\ast$\hyperlink{aparapi_8cpp_a31595c73e9a3750524b2ff61b5a14f96}{jenv}, \hyperlink{class_j_n_i_context}{J\-N\-I\-Context} $\ast$\hyperlink{aparapi_8cpp_a1e384ab6268d5004e8838dde78bcae71}{jni\-Context}, \hyperlink{class_kernel_arg}{Kernel\-Arg} $\ast$\hyperlink{_java_args_8h_a4a05302f502dcc918ac147408d5a9b10}{arg}, int \&\hyperlink{aparapi_8cpp_ab860a017c322839deee8d7bff5f0e180}{arg\-Pos}, int arg\-Idx)
+\item 
+void \hyperlink{aparapi_8h_aa4bb1b9a93867ecc1381a0950c4ea8e2}{update\-Write\-Events} (J\-N\-I\-Env $\ast$\hyperlink{aparapi_8cpp_a31595c73e9a3750524b2ff61b5a14f96}{jenv}, \hyperlink{class_j_n_i_context}{J\-N\-I\-Context} $\ast$\hyperlink{aparapi_8cpp_a1e384ab6268d5004e8838dde78bcae71}{jni\-Context}, \hyperlink{class_kernel_arg}{Kernel\-Arg} $\ast$\hyperlink{_java_args_8h_a4a05302f502dcc918ac147408d5a9b10}{arg}, int arg\-Idx, int \&write\-Event\-Count)
+\item 
+void \hyperlink{aparapi_8h_a79611304e8373a2b35816530087cdfcb}{process\-Local} (J\-N\-I\-Env $\ast$\hyperlink{aparapi_8cpp_a31595c73e9a3750524b2ff61b5a14f96}{jenv}, \hyperlink{class_j_n_i_context}{J\-N\-I\-Context} $\ast$\hyperlink{aparapi_8cpp_a1e384ab6268d5004e8838dde78bcae71}{jni\-Context}, \hyperlink{class_kernel_arg}{Kernel\-Arg} $\ast$\hyperlink{_java_args_8h_a4a05302f502dcc918ac147408d5a9b10}{arg}, int \&\hyperlink{aparapi_8cpp_ab860a017c322839deee8d7bff5f0e180}{arg\-Pos}, int arg\-Idx)
+\item 
+int \hyperlink{aparapi_8h_a256a7acb49479315cd84c747c6d82885}{process\-Args} (J\-N\-I\-Env $\ast$\hyperlink{aparapi_8cpp_a31595c73e9a3750524b2ff61b5a14f96}{jenv}, \hyperlink{class_j_n_i_context}{J\-N\-I\-Context} $\ast$\hyperlink{aparapi_8cpp_a1e384ab6268d5004e8838dde78bcae71}{jni\-Context}, int \&\hyperlink{aparapi_8cpp_ab860a017c322839deee8d7bff5f0e180}{arg\-Pos}, int \&write\-Event\-Count)
+\item 
+void \hyperlink{aparapi_8h_adeb5b4a7da640723df27716d3ca7865e}{enqueue\-Kernel} (\hyperlink{class_j_n_i_context}{J\-N\-I\-Context} $\ast$\hyperlink{aparapi_8cpp_a1e384ab6268d5004e8838dde78bcae71}{jni\-Context}, \hyperlink{class_range}{Range} \&range, int \hyperlink{aparapi_8cpp_a14071ab169612a6760e54b9bd8aae526}{passes}, int \hyperlink{aparapi_8cpp_ab860a017c322839deee8d7bff5f0e180}{arg\-Pos}, int write\-Event\-Count)
+\item 
+int \hyperlink{aparapi_8h_af090b212eed21c1433dd2930b2de2e85}{get\-Read\-Events} (\hyperlink{class_j_n_i_context}{J\-N\-I\-Context} $\ast$\hyperlink{aparapi_8cpp_a1e384ab6268d5004e8838dde78bcae71}{jni\-Context})
+\item 
+void \hyperlink{aparapi_8h_a38fde54021631891c75c41ee1c8bffdb}{wait\-For\-Read\-Events} (\hyperlink{class_j_n_i_context}{J\-N\-I\-Context} $\ast$\hyperlink{aparapi_8cpp_a1e384ab6268d5004e8838dde78bcae71}{jni\-Context}, int \hyperlink{aparapi_8cpp_a327f29c7cc7cdcbc46459d8108f5a0e5}{read\-Event\-Count}, int \hyperlink{aparapi_8cpp_a14071ab169612a6760e54b9bd8aae526}{passes})
+\item 
+void \hyperlink{aparapi_8h_a024365e33462d5eeb5d60287c170a609}{check\-Events} (J\-N\-I\-Env $\ast$\hyperlink{aparapi_8cpp_a31595c73e9a3750524b2ff61b5a14f96}{jenv}, \hyperlink{class_j_n_i_context}{J\-N\-I\-Context} $\ast$\hyperlink{aparapi_8cpp_a1e384ab6268d5004e8838dde78bcae71}{jni\-Context}, int write\-Event\-Count)
+\item 
+void \hyperlink{aparapi_8h_a4c39a66ac30c82bae9149ce5a8f438d8}{write\-Profile} (J\-N\-I\-Env $\ast$\hyperlink{aparapi_8cpp_a31595c73e9a3750524b2ff61b5a14f96}{jenv}, \hyperlink{class_j_n_i_context}{J\-N\-I\-Context} $\ast$\hyperlink{aparapi_8cpp_a1e384ab6268d5004e8838dde78bcae71}{jni\-Context})
+\item 
+\hyperlink{class_kernel_arg}{Kernel\-Arg} $\ast$ \hyperlink{aparapi_8h_ac64ada2a8799d5f5bc7974c63f9ea4bb}{get\-Arg\-For\-Buffer} (J\-N\-I\-Env $\ast$\hyperlink{aparapi_8cpp_a31595c73e9a3750524b2ff61b5a14f96}{jenv}, \hyperlink{class_j_n_i_context}{J\-N\-I\-Context} $\ast$\hyperlink{aparapi_8cpp_a1e384ab6268d5004e8838dde78bcae71}{jni\-Context}, jobject \hyperlink{aparapi_8cpp_a316d09eb0a4ac8348052a05e91cb856d}{buffer})
+\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\hypertarget{aparapi_8h_a024365e33462d5eeb5d60287c170a609}{\index{aparapi.\-h@{aparapi.\-h}!check\-Events@{check\-Events}}
+\index{check\-Events@{check\-Events}!aparapi.h@{aparapi.\-h}}
+\subsubsection[{check\-Events}]{\setlength{\rightskip}{0pt plus 5cm}void check\-Events (
+\begin{DoxyParamCaption}
+\item[{J\-N\-I\-Env $\ast$}]{jenv, }
+\item[{{\bf J\-N\-I\-Context} $\ast$}]{jni\-Context, }
+\item[{int}]{write\-Event\-Count}
+\end{DoxyParamCaption}
+)}}\label{aparapi_8h_a024365e33462d5eeb5d60287c170a609}
+check to make sure opencl exited correctly and update java memory.
+
+
+\begin{DoxyParams}{Parameters}
+{\em jenv} & the java environment \\
+\hline
+{\em jni\-Context} & the context we got from Java \\
+\hline
+{\em write\-Event\-Count} & the number of write events to wait for\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em \hyperlink{class_c_l_exception}{C\-L\-Exception}} & \\
+\hline
+\end{DoxyExceptions}
+
+
+Here is the call graph for this function\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{aparapi_8h_a024365e33462d5eeb5d60287c170a609_cgraph}
+\end{center}
+\end{figure}
+
+
+\hypertarget{aparapi_8h_adeb5b4a7da640723df27716d3ca7865e}{\index{aparapi.\-h@{aparapi.\-h}!enqueue\-Kernel@{enqueue\-Kernel}}
+\index{enqueue\-Kernel@{enqueue\-Kernel}!aparapi.h@{aparapi.\-h}}
+\subsubsection[{enqueue\-Kernel}]{\setlength{\rightskip}{0pt plus 5cm}void enqueue\-Kernel (
+\begin{DoxyParamCaption}
+\item[{{\bf J\-N\-I\-Context} $\ast$}]{jni\-Context, }
+\item[{{\bf Range} \&}]{range, }
+\item[{int}]{passes, }
+\item[{int}]{arg\-Pos, }
+\item[{int}]{write\-Event\-Count}
+\end{DoxyParamCaption}
+)}}\label{aparapi_8h_adeb5b4a7da640723df27716d3ca7865e}
+enqueus the current kernel to run on opencl
+
+
+\begin{DoxyParams}{Parameters}
+{\em jni\-Context} & the context with the arguements \\
+\hline
+{\em range} & the range that the kernel is running over \\
+\hline
+{\em passes} & the number of passes for the kernel \\
+\hline
+{\em arg\-Pos} & the number of arguments we passed to the kernel \\
+\hline
+{\em write\-Event\-Count} & the number of arguement that will be updated\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em \hyperlink{class_c_l_exception}{C\-L\-Exception}} & \\
+\hline
+\end{DoxyExceptions}
+
+
+Here is the call graph for this function\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{aparapi_8h_adeb5b4a7da640723df27716d3ca7865e_cgraph}
+\end{center}
+\end{figure}
+
+
+\hypertarget{aparapi_8h_a784d04e1847a4dbe23eec5c18a02ddd4}{\index{aparapi.\-h@{aparapi.\-h}!enqueue\-Marker@{enqueue\-Marker}}
+\index{enqueue\-Marker@{enqueue\-Marker}!aparapi.h@{aparapi.\-h}}
+\subsubsection[{enqueue\-Marker}]{\setlength{\rightskip}{0pt plus 5cm}int enqueue\-Marker (
+\begin{DoxyParamCaption}
+\item[{cl\-\_\-command\-\_\-queue}]{command\-Queue, }
+\item[{cl\-\_\-event $\ast$}]{first\-Event}
+\end{DoxyParamCaption}
+)}}\label{aparapi_8h_a784d04e1847a4dbe23eec5c18a02ddd4}
+calls either cl\-Enqueue\-Marker or cl\-Enqueue\-Marker\-With\-Wait\-List depending on the version of Open\-C\-L installed. conveiniece function so we don't have to have \#ifdefs all over the code 
+
+Here is the caller graph for this function\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=346pt]{aparapi_8h_a784d04e1847a4dbe23eec5c18a02ddd4_icgraph}
+\end{center}
+\end{figure}
+
+
+\hypertarget{aparapi_8h_a05fe828844eae7072a79e40290f14273}{\index{aparapi.\-h@{aparapi.\-h}!fdump@{fdump}}
+\index{fdump@{fdump}!aparapi.h@{aparapi.\-h}}
+\subsubsection[{fdump}]{\setlength{\rightskip}{0pt plus 5cm}void fdump (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{str, }
+\item[{void $\ast$}]{ptr, }
+\item[{int}]{size}
+\end{DoxyParamCaption}
+)}}\label{aparapi_8h_a05fe828844eae7072a79e40290f14273}
+
+
+Here is the call graph for this function\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=200pt]{aparapi_8h_a05fe828844eae7072a79e40290f14273_cgraph}
+\end{center}
+\end{figure}
+
+
+\hypertarget{aparapi_8h_ac64ada2a8799d5f5bc7974c63f9ea4bb}{\index{aparapi.\-h@{aparapi.\-h}!get\-Arg\-For\-Buffer@{get\-Arg\-For\-Buffer}}
+\index{get\-Arg\-For\-Buffer@{get\-Arg\-For\-Buffer}!aparapi.h@{aparapi.\-h}}
+\subsubsection[{get\-Arg\-For\-Buffer}]{\setlength{\rightskip}{0pt plus 5cm}{\bf Kernel\-Arg}$\ast$ get\-Arg\-For\-Buffer (
+\begin{DoxyParamCaption}
+\item[{J\-N\-I\-Env $\ast$}]{jenv, }
+\item[{{\bf J\-N\-I\-Context} $\ast$}]{jni\-Context, }
+\item[{jobject}]{buffer}
+\end{DoxyParamCaption}
+)}}\label{aparapi_8h_ac64ada2a8799d5f5bc7974c63f9ea4bb}
+find the arguement in our list of Kernel\-Args that matches the array the user asked for
+
+
+\begin{DoxyParams}{Parameters}
+{\em jenv} & the java environment \\
+\hline
+{\em jni\-Context} & the context we're working in \\
+\hline
+{\em buffer} & the array we're looking for\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+the \hyperlink{class_kernel_arg}{Kernel\-Arg} representing the array 
+\end{DoxyReturn}
+
+
+Here is the call graph for this function\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=296pt]{aparapi_8h_ac64ada2a8799d5f5bc7974c63f9ea4bb_cgraph}
+\end{center}
+\end{figure}
+
+
+\hypertarget{aparapi_8h_a42616a201cc14c207302c091cb2fd88f}{\index{aparapi.\-h@{aparapi.\-h}!get\-Process@{get\-Process}}
+\index{get\-Process@{get\-Process}!aparapi.h@{aparapi.\-h}}
+\subsubsection[{get\-Process}]{\setlength{\rightskip}{0pt plus 5cm}jint get\-Process (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{aparapi_8h_a42616a201cc14c207302c091cb2fd88f}
+calls either Get\-Current\-Process\-Id or getpid depending on if we're on W\-I\-N32 or any other system conveiniece function so we don't have to have \#ifdefs all over the code 
+
+Here is the caller graph for this function\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=246pt]{aparapi_8h_a42616a201cc14c207302c091cb2fd88f_icgraph}
+\end{center}
+\end{figure}
+
+
+\hypertarget{aparapi_8h_af090b212eed21c1433dd2930b2de2e85}{\index{aparapi.\-h@{aparapi.\-h}!get\-Read\-Events@{get\-Read\-Events}}
+\index{get\-Read\-Events@{get\-Read\-Events}!aparapi.h@{aparapi.\-h}}
+\subsubsection[{get\-Read\-Events}]{\setlength{\rightskip}{0pt plus 5cm}int get\-Read\-Events (
+\begin{DoxyParamCaption}
+\item[{{\bf J\-N\-I\-Context} $\ast$}]{jni\-Context}
+\end{DoxyParamCaption}
+)}}\label{aparapi_8h_af090b212eed21c1433dd2930b2de2e85}
+set read\-Events and read\-Arg\-Events read\-Events\mbox{[}\mbox{]} will be populated with the event's that we will wait on below. read\-Arg\-Events\mbox{[}\mbox{]} will map the read\-Event to the arg that originated it So if we had arg\mbox{[}0\mbox{]} read\-\_\-write array arg\mbox{[}1\mbox{]} read array arg\mbox{[}2\mbox{]} write array arg\mbox{[}3\mbox{]} primitive arg\mbox{[}4\mbox{]} read array At the end of the call read\-Count=3 read\-Event\mbox{[}0\mbox{]} = new read event for arg0 read\-Arg\-Event\mbox{[}0\mbox{]} = 0 read\-Event\mbox{[}1\mbox{]} = new read event for arg1 read\-Arg\-Event\mbox{[}1\mbox{]} = 1 read\-Event\mbox{[}2\mbox{]} = new read event for arg4 read\-Arg\-Event\mbox{[}2\mbox{]} = 4
+
+
+\begin{DoxyParams}{Parameters}
+{\em jni\-Context} & the context we got from Java\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+number of reads. It will never be $>$ jni\-Context-\/$>$argc which is the size of read\-Events\mbox{[}\mbox{]} and read\-Event\-Args\mbox{[}\mbox{]}
+\end{DoxyReturn}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em \hyperlink{class_c_l_exception}{C\-L\-Exception}} & \\
+\hline
+\end{DoxyExceptions}
+
+
+Here is the call graph for this function\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{aparapi_8h_af090b212eed21c1433dd2930b2de2e85_cgraph}
+\end{center}
+\end{figure}
+
+
+\hypertarget{aparapi_8h_a1ba60fdc6ef5e8701db96bdd27d80915}{\index{aparapi.\-h@{aparapi.\-h}!idump@{idump}}
+\index{idump@{idump}!aparapi.h@{aparapi.\-h}}
+\subsubsection[{idump}]{\setlength{\rightskip}{0pt plus 5cm}void idump (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{str, }
+\item[{void $\ast$}]{ptr, }
+\item[{int}]{size}
+\end{DoxyParamCaption}
+)}}\label{aparapi_8h_a1ba60fdc6ef5e8701db96bdd27d80915}
+
+
+Here is the call graph for this function\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=200pt]{aparapi_8h_a1ba60fdc6ef5e8701db96bdd27d80915_cgraph}
+\end{center}
+\end{figure}
+
+
+\hypertarget{aparapi_8h_a256a7acb49479315cd84c747c6d82885}{\index{aparapi.\-h@{aparapi.\-h}!process\-Args@{process\-Args}}
+\index{process\-Args@{process\-Args}!aparapi.h@{aparapi.\-h}}
+\subsubsection[{process\-Args}]{\setlength{\rightskip}{0pt plus 5cm}int process\-Args (
+\begin{DoxyParamCaption}
+\item[{J\-N\-I\-Env $\ast$}]{jenv, }
+\item[{{\bf J\-N\-I\-Context} $\ast$}]{jni\-Context, }
+\item[{int \&}]{arg\-Pos, }
+\item[{int \&}]{write\-Event\-Count}
+\end{DoxyParamCaption}
+)}}\label{aparapi_8h_a256a7acb49479315cd84c747c6d82885}
+processes all of the arguments for the Open\-C\-L Kernel that we got from the \hyperlink{class_j_n_i_context}{J\-N\-I\-Context}
+
+
+\begin{DoxyParams}{Parameters}
+{\em jenv} & the java environment \\
+\hline
+{\em jni\-Context} & the context with the arguements \\
+\hline
+{\em write\-Event\-Count} & out\-: the number of arguements that could be written to \\
+\hline
+{\em arg\-Pos} & out\-: the absolute position of the last argument\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em \hyperlink{class_c_l_exception}{C\-L\-Exception}} & \\
+\hline
+\end{DoxyExceptions}
+
+
+Here is the call graph for this function\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=550pt]{aparapi_8h_a256a7acb49479315cd84c747c6d82885_cgraph}
+\end{center}
+\end{figure}
+
+
+\hypertarget{aparapi_8h_a79611304e8373a2b35816530087cdfcb}{\index{aparapi.\-h@{aparapi.\-h}!process\-Local@{process\-Local}}
+\index{process\-Local@{process\-Local}!aparapi.h@{aparapi.\-h}}
+\subsubsection[{process\-Local}]{\setlength{\rightskip}{0pt plus 5cm}void process\-Local (
+\begin{DoxyParamCaption}
+\item[{J\-N\-I\-Env $\ast$}]{jenv, }
+\item[{{\bf J\-N\-I\-Context} $\ast$}]{jni\-Context, }
+\item[{{\bf Kernel\-Arg} $\ast$}]{arg, }
+\item[{int \&}]{arg\-Pos, }
+\item[{int}]{arg\-Idx}
+\end{DoxyParamCaption}
+)}}\label{aparapi_8h_a79611304e8373a2b35816530087cdfcb}
+sets the opencl kernel arguement for local args.
+
+
+\begin{DoxyParams}{Parameters}
+{\em jenv} & the java envrionment \\
+\hline
+{\em jni\-Context} & the context we got from java \\
+\hline
+{\em arg} & the \hyperlink{class_kernel_arg}{Kernel\-Arg} to create a write event for \\
+\hline
+{\em arg\-Pos} & out\-: the position of arg in the opencl argument list \\
+\hline
+{\em arg\-Idx} & the position of arg in the argument array\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em \hyperlink{class_c_l_exception}{C\-L\-Exception}} & \\
+\hline
+\end{DoxyExceptions}
+
+
+Here is the call graph for this function\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{aparapi_8h_a79611304e8373a2b35816530087cdfcb_cgraph}
+\end{center}
+\end{figure}
+
+
+
+
+Here is the caller graph for this function\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=262pt]{aparapi_8h_a79611304e8373a2b35816530087cdfcb_icgraph}
+\end{center}
+\end{figure}
+
+
+\hypertarget{aparapi_8h_a3049780475281b299fd62c130183bbd7}{\index{aparapi.\-h@{aparapi.\-h}!process\-Object@{process\-Object}}
+\index{process\-Object@{process\-Object}!aparapi.h@{aparapi.\-h}}
+\subsubsection[{process\-Object}]{\setlength{\rightskip}{0pt plus 5cm}void process\-Object (
+\begin{DoxyParamCaption}
+\item[{J\-N\-I\-Env $\ast$}]{jenv, }
+\item[{{\bf J\-N\-I\-Context} $\ast$}]{jni\-Context, }
+\item[{{\bf Kernel\-Arg} $\ast$}]{arg, }
+\item[{int \&}]{arg\-Pos, }
+\item[{int}]{arg\-Idx}
+\end{DoxyParamCaption}
+)}}\label{aparapi_8h_a3049780475281b299fd62c130183bbd7}
+manages the memory of Kernel\-Args that are object. i.\-e. handels pinning, and moved objects. currently the only objects supported are arrays.
+
+
+\begin{DoxyParams}{Parameters}
+{\em jenv} & the java environment \\
+\hline
+{\em jni\-Context} & the context we got from java \\
+\hline
+{\em arg} & the argument we're processing \\
+\hline
+{\em arg\-Pos} & out\-: the position of arg in the opencl argument list \\
+\hline
+{\em arg\-Idx} & the position of arg in the argument array\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em \hyperlink{class_c_l_exception}{C\-L\-Exception}} & \\
+\hline
+\end{DoxyExceptions}
+
+
+Here is the call graph for this function\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{aparapi_8h_a3049780475281b299fd62c130183bbd7_cgraph}
+\end{center}
+\end{figure}
+
+
+
+
+Here is the caller graph for this function\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=268pt]{aparapi_8h_a3049780475281b299fd62c130183bbd7_icgraph}
+\end{center}
+\end{figure}
+
+
+\hypertarget{aparapi_8h_a8c22a6de737718752b69db8940967580}{\index{aparapi.\-h@{aparapi.\-h}!profile@{profile}}
+\index{profile@{profile}!aparapi.h@{aparapi.\-h}}
+\subsubsection[{profile}]{\setlength{\rightskip}{0pt plus 5cm}cl\-\_\-int profile (
+\begin{DoxyParamCaption}
+\item[{{\bf Profile\-Info} $\ast$}]{profile\-Info, }
+\item[{cl\-\_\-event $\ast$}]{event, }
+\item[{jint}]{type, }
+\item[{char $\ast$}]{name, }
+\item[{cl\-\_\-ulong}]{profile\-Base\-Time}
+\end{DoxyParamCaption}
+)}}\label{aparapi_8h_a8c22a6de737718752b69db8940967580}
+
+
+Here is the call graph for this function\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{aparapi_8h_a8c22a6de737718752b69db8940967580_cgraph}
+\end{center}
+\end{figure}
+
+
+
+
+Here is the caller graph for this function\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=258pt]{aparapi_8h_a8c22a6de737718752b69db8940967580_icgraph}
+\end{center}
+\end{figure}
+
+
+\hypertarget{aparapi_8h_a9663634f279c2dbd7bfd5352826088ca}{\index{aparapi.\-h@{aparapi.\-h}!profile\-First\-Run@{profile\-First\-Run}}
+\index{profile\-First\-Run@{profile\-First\-Run}!aparapi.h@{aparapi.\-h}}
+\subsubsection[{profile\-First\-Run}]{\setlength{\rightskip}{0pt plus 5cm}void profile\-First\-Run (
+\begin{DoxyParamCaption}
+\item[{{\bf J\-N\-I\-Context} $\ast$}]{jni\-Context}
+\end{DoxyParamCaption}
+)}}\label{aparapi_8h_a9663634f279c2dbd7bfd5352826088ca}
+if we are profiling events the test a first event, and report profiling info.
+
+
+\begin{DoxyParams}{Parameters}
+{\em jni\-Contest} & the context holding the information we got form Java\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em \hyperlink{class_c_l_exception}{C\-L\-Exception}} & \\
+\hline
+\end{DoxyExceptions}
+
+
+Here is the call graph for this function\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=290pt]{aparapi_8h_a9663634f279c2dbd7bfd5352826088ca_cgraph}
+\end{center}
+\end{figure}
+
+
+
+
+Here is the caller graph for this function\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=226pt]{aparapi_8h_a9663634f279c2dbd7bfd5352826088ca_icgraph}
+\end{center}
+\end{figure}
+
+
+\hypertarget{aparapi_8h_a8b1c84b9a707a9fc337cd9419dba23a4}{\index{aparapi.\-h@{aparapi.\-h}!update\-Non\-Primitive\-References@{update\-Non\-Primitive\-References}}
+\index{update\-Non\-Primitive\-References@{update\-Non\-Primitive\-References}!aparapi.h@{aparapi.\-h}}
+\subsubsection[{update\-Non\-Primitive\-References}]{\setlength{\rightskip}{0pt plus 5cm}jint update\-Non\-Primitive\-References (
+\begin{DoxyParamCaption}
+\item[{J\-N\-I\-Env $\ast$}]{jenv, }
+\item[{jobject}]{jobj, }
+\item[{{\bf J\-N\-I\-Context} $\ast$}]{jni\-Context}
+\end{DoxyParamCaption}
+)}}\label{aparapi_8h_a8b1c84b9a707a9fc337cd9419dba23a4}
+Step through all non-\/primitive (arrays) args and determine if the field has changed The field may have been re-\/assigned by the Java code to N\-U\-L\-L or another instance. If we detect a change then we discard the previous cl\-\_\-mem buffer, the caller will detect that the buffers are null and will create new cl\-\_\-mem buffers. 
+\begin{DoxyParams}{Parameters}
+{\em jenv} & the java environment \\
+\hline
+{\em jobj} & the object we might be updating \\
+\hline
+{\em jni\-Context} & the context we're working in\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em \hyperlink{class_c_l_exception}{C\-L\-Exception}} & \\
+\hline
+\end{DoxyExceptions}
+
+
+Here is the call graph for this function\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{aparapi_8h_a8b1c84b9a707a9fc337cd9419dba23a4_cgraph}
+\end{center}
+\end{figure}
+
+
+
+
+Here is the caller graph for this function\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=296pt]{aparapi_8h_a8b1c84b9a707a9fc337cd9419dba23a4_icgraph}
+\end{center}
+\end{figure}
+
+
+\hypertarget{aparapi_8h_a3bc98ac01f7f40bdff288d4c2b45a5e6}{\index{aparapi.\-h@{aparapi.\-h}!update\-Object@{update\-Object}}
+\index{update\-Object@{update\-Object}!aparapi.h@{aparapi.\-h}}
+\subsubsection[{update\-Object}]{\setlength{\rightskip}{0pt plus 5cm}void update\-Object (
+\begin{DoxyParamCaption}
+\item[{J\-N\-I\-Env $\ast$}]{jenv, }
+\item[{{\bf J\-N\-I\-Context} $\ast$}]{jni\-Context, }
+\item[{{\bf Kernel\-Arg} $\ast$}]{arg, }
+\item[{int \&}]{arg\-Pos, }
+\item[{int}]{arg\-Idx}
+\end{DoxyParamCaption}
+)}}\label{aparapi_8h_a3bc98ac01f7f40bdff288d4c2b45a5e6}
+create a new variable in Open\-C\-L for the object, and sets the kernel arguement. currently the only objects supported are arrays.
+
+
+\begin{DoxyParams}{Parameters}
+{\em jenv} & the java environment \\
+\hline
+{\em jni\-Context} & the context we got from java \\
+\hline
+{\em arg} & the argument we're passing to opencl \\
+\hline
+{\em arg\-Pos} & out\-: the position of arg in the opencl argument list \\
+\hline
+{\em arg\-Idx} & the position of arg in the argument array\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em \hyperlink{class_c_l_exception}{C\-L\-Exception}} & \\
+\hline
+\end{DoxyExceptions}
+
+
+Here is the call graph for this function\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{aparapi_8h_a3bc98ac01f7f40bdff288d4c2b45a5e6_cgraph}
+\end{center}
+\end{figure}
+
+
+
+
+Here is the caller graph for this function\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{aparapi_8h_a3bc98ac01f7f40bdff288d4c2b45a5e6_icgraph}
+\end{center}
+\end{figure}
+
+
+\hypertarget{aparapi_8h_aa4bb1b9a93867ecc1381a0950c4ea8e2}{\index{aparapi.\-h@{aparapi.\-h}!update\-Write\-Events@{update\-Write\-Events}}
+\index{update\-Write\-Events@{update\-Write\-Events}!aparapi.h@{aparapi.\-h}}
+\subsubsection[{update\-Write\-Events}]{\setlength{\rightskip}{0pt plus 5cm}void update\-Write\-Events (
+\begin{DoxyParamCaption}
+\item[{J\-N\-I\-Env $\ast$}]{jenv, }
+\item[{{\bf J\-N\-I\-Context} $\ast$}]{jni\-Context, }
+\item[{{\bf Kernel\-Arg} $\ast$}]{arg, }
+\item[{int}]{arg\-Idx, }
+\item[{int \&}]{write\-Event\-Count}
+\end{DoxyParamCaption}
+)}}\label{aparapi_8h_aa4bb1b9a93867ecc1381a0950c4ea8e2}
+keeps track of write events for Kernel\-Args.
+
+
+\begin{DoxyParams}{Parameters}
+{\em jenv} & the java envrionment \\
+\hline
+{\em jni\-Context} & the context we got from java \\
+\hline
+{\em arg} & the \hyperlink{class_kernel_arg}{Kernel\-Arg} to create a write event for \\
+\hline
+{\em arg\-Idx} & the position of arg in the argument array \\
+\hline
+{\em write\-Event\-Count} & out\-: the number of write events we've created so far\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em \hyperlink{class_c_l_exception}{C\-L\-Exception}} & \\
+\hline
+\end{DoxyExceptions}
+
+
+Here is the call graph for this function\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{aparapi_8h_aa4bb1b9a93867ecc1381a0950c4ea8e2_cgraph}
+\end{center}
+\end{figure}
+
+
+
+
+Here is the caller graph for this function\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=286pt]{aparapi_8h_aa4bb1b9a93867ecc1381a0950c4ea8e2_icgraph}
+\end{center}
+\end{figure}
+
+
+\hypertarget{aparapi_8h_a38fde54021631891c75c41ee1c8bffdb}{\index{aparapi.\-h@{aparapi.\-h}!wait\-For\-Read\-Events@{wait\-For\-Read\-Events}}
+\index{wait\-For\-Read\-Events@{wait\-For\-Read\-Events}!aparapi.h@{aparapi.\-h}}
+\subsubsection[{wait\-For\-Read\-Events}]{\setlength{\rightskip}{0pt plus 5cm}void wait\-For\-Read\-Events (
+\begin{DoxyParamCaption}
+\item[{{\bf J\-N\-I\-Context} $\ast$}]{jni\-Context, }
+\item[{int}]{read\-Event\-Count, }
+\item[{int}]{passes}
+\end{DoxyParamCaption}
+)}}\label{aparapi_8h_a38fde54021631891c75c41ee1c8bffdb}
+wait for and release all the read events
+
+
+\begin{DoxyParams}{Parameters}
+{\em jni\-Context} & the context we got from Java \\
+\hline
+{\em read\-Event\-Count} & the number of read events to wait for \\
+\hline
+{\em passes} & the number of passes for the kernel\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em \hyperlink{class_c_l_exception}{C\-L\-Exception}} & \\
+\hline
+\end{DoxyExceptions}
+
+
+Here is the call graph for this function\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{aparapi_8h_a38fde54021631891c75c41ee1c8bffdb_cgraph}
+\end{center}
+\end{figure}
+
+
+\hypertarget{aparapi_8h_a4c39a66ac30c82bae9149ce5a8f438d8}{\index{aparapi.\-h@{aparapi.\-h}!write\-Profile@{write\-Profile}}
+\index{write\-Profile@{write\-Profile}!aparapi.h@{aparapi.\-h}}
+\subsubsection[{write\-Profile}]{\setlength{\rightskip}{0pt plus 5cm}void write\-Profile (
+\begin{DoxyParamCaption}
+\item[{J\-N\-I\-Env $\ast$}]{jenv, }
+\item[{{\bf J\-N\-I\-Context} $\ast$}]{jni\-Context}
+\end{DoxyParamCaption}
+)}}\label{aparapi_8h_a4c39a66ac30c82bae9149ce5a8f438d8}
+
+
+Here is the call graph for this function\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=246pt]{aparapi_8h_a4c39a66ac30c82bae9149ce5a8f438d8_cgraph}
+\end{center}
+\end{figure}
+
+
+\hypertarget{aparapi_8h_a11be8947a864da8ad1fd6f6ae7743058}{\index{aparapi.\-h@{aparapi.\-h}!write\-Profile\-Info@{write\-Profile\-Info}}
+\index{write\-Profile\-Info@{write\-Profile\-Info}!aparapi.h@{aparapi.\-h}}
+\subsubsection[{write\-Profile\-Info}]{\setlength{\rightskip}{0pt plus 5cm}jint write\-Profile\-Info (
+\begin{DoxyParamCaption}
+\item[{{\bf J\-N\-I\-Context} $\ast$}]{jni\-Context}
+\end{DoxyParamCaption}
+)}}\label{aparapi_8h_a11be8947a864da8ad1fd6f6ae7743058}
+
+
+Here is the call graph for this function\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{aparapi_8h_a11be8947a864da8ad1fd6f6ae7743058_cgraph}
+\end{center}
+\end{figure}
+
+
+
+
+Here is the caller graph for this function\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=268pt]{aparapi_8h_a11be8947a864da8ad1fd6f6ae7743058_icgraph}
+\end{center}
+\end{figure}
+
+

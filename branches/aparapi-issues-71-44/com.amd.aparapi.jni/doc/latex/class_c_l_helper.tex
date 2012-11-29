@@ -1,0 +1,126 @@
+\hypertarget{class_c_l_helper}{\section{C\-L\-Helper Class Reference}
+\label{class_c_l_helper}\index{C\-L\-Helper@{C\-L\-Helper}}
+}
+
+
+{\ttfamily \#include $<$cl\-Helper.\-h$>$}
+
+\subsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+static const char $\ast$ \hyperlink{class_c_l_helper_acdb10aebef4162371ac53e6fb6835c67}{err\-String} (cl\-\_\-int \hyperlink{aparapi_8cpp_a8d29973874cd2ac670823237b281069e}{status})
+\item 
+static void \hyperlink{class_c_l_helper_a701cbf42de8d2a5426cbee1d022f74ac}{get\-Build\-Err} (J\-N\-I\-Env $\ast$\hyperlink{aparapi_8cpp_a31595c73e9a3750524b2ff61b5a14f96}{jenv}, cl\-\_\-device\-\_\-id \hyperlink{opencljni_8cpp_aee8691126c8634ec30bfe4f704b3fd7a}{device\-Id}, cl\-\_\-program \hyperlink{aparapi_8cpp_ac70709e80332d58701f9623a803c8541}{program}, jstring $\ast$log)
+\item 
+static cl\-\_\-program \hyperlink{class_c_l_helper_a14600eb913779f2122461e3293c600dd}{compile} (J\-N\-I\-Env $\ast$\hyperlink{aparapi_8cpp_a31595c73e9a3750524b2ff61b5a14f96}{jenv}, cl\-\_\-context context, size\-\_\-t device\-Count, cl\-\_\-device\-\_\-id $\ast$\hyperlink{opencljni_8cpp_aee8691126c8634ec30bfe4f704b3fd7a}{device\-Id}, jstring \hyperlink{aparapi_8cpp_ab6f02de0fea282662dc1f6ac445ec5f3}{source}, jstring $\ast$log, cl\-\_\-int $\ast$\hyperlink{aparapi_8cpp_a8d29973874cd2ac670823237b281069e}{status})
+\item 
+static jstring \hyperlink{class_c_l_helper_a76a419374af4d200ee68c537d7c882e5}{get\-Extensions} (J\-N\-I\-Env $\ast$\hyperlink{aparapi_8cpp_a31595c73e9a3750524b2ff61b5a14f96}{jenv}, cl\-\_\-device\-\_\-id \hyperlink{opencljni_8cpp_aee8691126c8634ec30bfe4f704b3fd7a}{device\-Id}, cl\-\_\-int $\ast$\hyperlink{aparapi_8cpp_a8d29973874cd2ac670823237b281069e}{status})
+\end{DoxyCompactItemize}
+
+
+\subsection{Member Function Documentation}
+\hypertarget{class_c_l_helper_a14600eb913779f2122461e3293c600dd}{\index{C\-L\-Helper@{C\-L\-Helper}!compile@{compile}}
+\index{compile@{compile}!CLHelper@{C\-L\-Helper}}
+\subsubsection[{compile}]{\setlength{\rightskip}{0pt plus 5cm}cl\-\_\-program C\-L\-Helper\-::compile (
+\begin{DoxyParamCaption}
+\item[{J\-N\-I\-Env $\ast$}]{jenv, }
+\item[{cl\-\_\-context}]{context, }
+\item[{size\-\_\-t}]{device\-Count, }
+\item[{cl\-\_\-device\-\_\-id $\ast$}]{device\-Id, }
+\item[{jstring}]{source, }
+\item[{jstring $\ast$}]{log, }
+\item[{cl\-\_\-int $\ast$}]{status}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [static]}}}\label{class_c_l_helper_a14600eb913779f2122461e3293c600dd}
+
+
+Here is the call graph for this function\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{class_c_l_helper_a14600eb913779f2122461e3293c600dd_cgraph}
+\end{center}
+\end{figure}
+
+
+\hypertarget{class_c_l_helper_acdb10aebef4162371ac53e6fb6835c67}{\index{C\-L\-Helper@{C\-L\-Helper}!err\-String@{err\-String}}
+\index{err\-String@{err\-String}!CLHelper@{C\-L\-Helper}}
+\subsubsection[{err\-String}]{\setlength{\rightskip}{0pt plus 5cm}const char $\ast$ C\-L\-Helper\-::err\-String (
+\begin{DoxyParamCaption}
+\item[{cl\-\_\-int}]{status}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [static]}}}\label{class_c_l_helper_acdb10aebef4162371ac53e6fb6835c67}
+
+
+Here is the caller graph for this function\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{class_c_l_helper_acdb10aebef4162371ac53e6fb6835c67_icgraph}
+\end{center}
+\end{figure}
+
+
+\hypertarget{class_c_l_helper_a701cbf42de8d2a5426cbee1d022f74ac}{\index{C\-L\-Helper@{C\-L\-Helper}!get\-Build\-Err@{get\-Build\-Err}}
+\index{get\-Build\-Err@{get\-Build\-Err}!CLHelper@{C\-L\-Helper}}
+\subsubsection[{get\-Build\-Err}]{\setlength{\rightskip}{0pt plus 5cm}void C\-L\-Helper\-::get\-Build\-Err (
+\begin{DoxyParamCaption}
+\item[{J\-N\-I\-Env $\ast$}]{jenv, }
+\item[{cl\-\_\-device\-\_\-id}]{device\-Id, }
+\item[{cl\-\_\-program}]{program, }
+\item[{jstring $\ast$}]{log}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [static]}}}\label{class_c_l_helper_a701cbf42de8d2a5426cbee1d022f74ac}
+
+
+Here is the call graph for this function\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=266pt]{class_c_l_helper_a701cbf42de8d2a5426cbee1d022f74ac_cgraph}
+\end{center}
+\end{figure}
+
+
+
+
+Here is the caller graph for this function\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=322pt]{class_c_l_helper_a701cbf42de8d2a5426cbee1d022f74ac_icgraph}
+\end{center}
+\end{figure}
+
+
+\hypertarget{class_c_l_helper_a76a419374af4d200ee68c537d7c882e5}{\index{C\-L\-Helper@{C\-L\-Helper}!get\-Extensions@{get\-Extensions}}
+\index{get\-Extensions@{get\-Extensions}!CLHelper@{C\-L\-Helper}}
+\subsubsection[{get\-Extensions}]{\setlength{\rightskip}{0pt plus 5cm}jstring C\-L\-Helper\-::get\-Extensions (
+\begin{DoxyParamCaption}
+\item[{J\-N\-I\-Env $\ast$}]{jenv, }
+\item[{cl\-\_\-device\-\_\-id}]{device\-Id, }
+\item[{cl\-\_\-int $\ast$}]{status}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [static]}}}\label{class_c_l_helper_a76a419374af4d200ee68c537d7c882e5}
+
+
+Here is the call graph for this function\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=326pt]{class_c_l_helper_a76a419374af4d200ee68c537d7c882e5_cgraph}
+\end{center}
+\end{figure}
+
+
+
+
+The documentation for this class was generated from the following files\-:\begin{DoxyCompactItemize}
+\item 
+src/cpp/\hyperlink{cl_helper_8h}{cl\-Helper.\-h}\item 
+src/cpp/\hyperlink{cl_helper_8cpp}{cl\-Helper.\-cpp}\end{DoxyCompactItemize}

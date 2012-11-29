@@ -1,0 +1,9 @@
+<map id="CLException::printError" name="CLException::printError">
+<area shape="rect" id="node3" href="$aparapi_8h.html#a8c22a6de737718752b69db8940967580" title="profile" alt="" coords="211,81,267,108"/>
+<area shape="rect" id="node13" href="$aparapi_8cpp.html#aeea354575793d10cdac0a7ffa9fac333" title="if" alt="" coords="219,132,258,159"/>
+<area shape="rect" id="node15" href="$aparapi_8cpp.html#a931acedf5f2f33e3ed68316b3a95fe8a" title="catch" alt="" coords="211,183,266,209"/>
+<area shape="rect" id="node5" href="$cltest_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627" title="main" alt="" coords="356,5,407,32"/>
+<area shape="rect" id="node7" href="$aparapi_8h.html#adeb5b4a7da640723df27716d3ca7865e" title="enqueueKernel" alt="" coords="327,56,435,83"/>
+<area shape="rect" id="node9" href="$aparapi_8h.html#a38fde54021631891c75c41ee1c8bffdb" title="waitForReadEvents" alt="" coords="315,107,448,133"/>
+<area shape="rect" id="node11" href="$aparapi_8h.html#a024365e33462d5eeb5d60287c170a609" title="checkEvents" alt="" coords="333,157,429,184"/>
+</map>

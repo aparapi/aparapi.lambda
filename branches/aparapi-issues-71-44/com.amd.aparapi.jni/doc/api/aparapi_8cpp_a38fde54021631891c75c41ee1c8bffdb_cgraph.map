@@ -1,0 +1,10 @@
+<map id="waitForReadEvents" name="waitForReadEvents">
+<area shape="rect" id="node3" href="$class_config.html#ac91f68d97d5ca75b787d6ea9cba882e4" title="Config::isProfilingEnabled" alt="" coords="219,81,389,108"/>
+<area shape="rect" id="node5" href="$aparapi_8cpp.html#a8c22a6de737718752b69db8940967580" title="profile" alt="" coords="276,132,332,159"/>
+<area shape="rect" id="node18" href="$class_config.html#a7a2cfa5be8d976099dedb684e9c32ca0" title="Config::isTrackingOpenCLResources" alt="" coords="187,183,421,209"/>
+<area shape="rect" id="node7" href="$class_c_l_exception.html#a0c1d6917db38876465e60f1404e589d3" title="CLException::printError" alt="" coords="469,107,627,133"/>
+<area shape="rect" id="node15" href="$class_c_l_exception.html#a08feb7c76971320d736c4137a03013bb" title="CLException::status" alt="" coords="683,157,823,184"/>
+<area shape="rect" id="node9" href="$aparapi_8cpp.html#a1f43c10ec7294e85290cc69a2f0919db" title="fprintf" alt="" coords="727,5,780,32"/>
+<area shape="rect" id="node11" href="$class_c_l_exception.html#afaeb1a33cb858c0faa74fa6538a97dc5" title="CLException::message" alt="" coords="675,56,832,83"/>
+<area shape="rect" id="node13" href="$class_c_l_helper.html#acdb10aebef4162371ac53e6fb6835c67" title="CLHelper::errString" alt="" coords="687,107,819,133"/>
+</map>
