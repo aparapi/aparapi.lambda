@@ -1,6 +1,0 @@
-<map id="KernelArg::needToEnqueueWrite" name="KernelArg::needToEnqueueWrite">
-<area shape="rect" id="node3" href="$class_kernel_arg.html#ab8a775d67ecb9bf9c8ad4654fe7c3f58" title="KernelArg::isImplicit" alt="" coords="256,5,395,32"/>
-<area shape="rect" id="node5" href="$class_kernel_arg.html#a14a83444c553bc8b8458223af8339e3d" title="KernelArg::isExplicit" alt="" coords="465,31,605,57"/>
-<area shape="rect" id="node7" href="$class_kernel_arg.html#a164df3cf2ae35d7b53f5796e46c01fe5" title="KernelArg::isReadByKernel" alt="" coords="235,107,415,133"/>
-<area shape="rect" id="node10" href="$class_kernel_arg.html#a080a2a1cae98156eec8dff6409b3c5f2" title="KernelArg::isExplicitWrite" alt="" coords="240,157,411,184"/>
-</map>

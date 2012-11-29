@@ -1,6 +1,0 @@
-<map id="KernelArg::isExplicitWrite" name="KernelArg::isExplicitWrite">
-<area shape="rect" id="node3" href="$aparapi_8h.html#a3049780475281b299fd62c130183bbd7" title="processObject" alt="" coords="261,5,368,32"/>
-<area shape="rect" id="node7" href="$aparapi_8h.html#aa4bb1b9a93867ecc1381a0950c4ea8e2" title="updateWriteEvents" alt="" coords="249,56,380,83"/>
-<area shape="rect" id="node10" href="$class_kernel_arg.html#a42f6eead7b43c2e0839aae776c09bcb3" title="KernelArg::needToEnqueue\lWrite" alt="" coords="225,107,405,149"/>
-<area shape="rect" id="node5" href="$aparapi_8h.html#a256a7acb49479315cd84c747c6d82885" title="processArgs" alt="" coords="454,56,549,83"/>
-</map>

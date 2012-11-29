@@ -1,8 +1,0 @@
-<map id="CLException::CLException" name="CLException::CLException">
-<area shape="rect" id="node3" href="$class_c_l_exception.html#a499ceca093813dcd2e731f542b1e078e" title="CLException::checkCLError" alt="" coords="233,56,415,83"/>
-<area shape="rect" id="node5" href="$aparapi_8h.html#a3049780475281b299fd62c130183bbd7" title="processObject" alt="" coords="489,5,596,32"/>
-<area shape="rect" id="node9" href="$class_j_n_i_context.html#ae7bcb26fc659539d13b21a17e5522477" title="JNIContext::JNIContext" alt="" coords="465,56,621,83"/>
-<area shape="rect" id="node11" href="$class_j_n_i_context.html#ae0906906c3fe4d7b5c468724bf338903" title="JNIContext::dispose" alt="" coords="473,107,612,133"/>
-<area shape="rect" id="node7" href="$aparapi_8h.html#a256a7acb49479315cd84c747c6d82885" title="processArgs" alt="" coords="670,5,765,32"/>
-<area shape="rect" id="node13" href="$aparapi_8cpp.html#afe649292c7e44d6e821bc5267a700dd1" title="if" alt="" coords="698,107,737,133"/>
-</map>

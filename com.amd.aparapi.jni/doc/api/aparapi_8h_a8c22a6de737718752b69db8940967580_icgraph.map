@@ -1,6 +1,0 @@
-<map id="profile" name="profile">
-<area shape="rect" id="node3" href="$cltest_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627" title="main" alt="" coords="151,5,201,32"/>
-<area shape="rect" id="node5" href="$aparapi_8h.html#adeb5b4a7da640723df27716d3ca7865e" title="enqueueKernel" alt="" coords="122,56,230,83"/>
-<area shape="rect" id="node7" href="$aparapi_8h.html#a38fde54021631891c75c41ee1c8bffdb" title="waitForReadEvents" alt="" coords="109,107,243,133"/>
-<area shape="rect" id="node9" href="$aparapi_8h.html#a024365e33462d5eeb5d60287c170a609" title="checkEvents" alt="" coords="128,157,224,184"/>
-</map>
