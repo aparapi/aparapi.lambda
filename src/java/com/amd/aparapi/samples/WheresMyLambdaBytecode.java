@@ -10,7 +10,9 @@ public class WheresMyLambdaBytecode{
    }
 
    public static void main(String[] _args) {
-      run(()->{ System.out.println("here I am"); });
+      for (int i=0; i<10000; i++){
+         run(()->{ System.out.println("here I am"); });
+      }
    }
 
 }
