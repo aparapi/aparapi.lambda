@@ -48,11 +48,10 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
-import java.util.ArrayList;
+//import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
+//import java.util.List;
 import java.util.stream.primitive.IntStream;
-import java.util.stream.primitive.Primitives;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -110,23 +109,6 @@ public class Main{
       private ZoomDirection(int c) { sign = c; }
       public int getSign()         {  return sign; }
    }
-
-
-//   public int getCount(float x, float y){
-//      int count =0;
-//      float zx = x;
-//      float zy = y;
-//      float new_zx = 0f;
-//
-//      // Iterate until the algorithm converges or until maxIterations are reached.
-//      while (count < maxIterations && zx * zx + zy * zy < 8) {
-//         new_zx = zx * zx - zy * zy + x;
-//         zy = 2 * zx * zy + y;
-//         zx = new_zx;
-//         count++;
-//      }
-//      return(count);
-//   }
 
 
    void getNextImage(float x, float y, float scale) {
@@ -255,7 +237,7 @@ public class Main{
 //           at java.util.streams.ValuePipeline.forEach(ValuePipeline.java:89)
 //           at com.amd.aparapi.sample.mandel.Main.getNextImage(Main.java:244)
 //
-      IntStream str = Primitives.parallel(phonyGid);
+      IntStream str = Arrays.parallel(phonyGid);
       //Primitives.parallel(phonyGid).forEach(p -> {
          str.forEach(p -> {
          
