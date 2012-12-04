@@ -4,7 +4,7 @@
 
 #include "common.h"
 #include "KernelArg.h"
-#include "ProfileInfo.h"
+#include "profileInfo.h"
 #include "com_amd_aparapi_internal_jni_KernelRunnerJNI.h"
 #include "config.h"
 
