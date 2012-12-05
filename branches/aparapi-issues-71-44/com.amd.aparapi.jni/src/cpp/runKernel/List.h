@@ -45,46 +45,46 @@ template <typename  T> class Ref{
    private:
       T value;
       int line;
-      char *fileName;
+      const char *fileName;
       Ref<T> *next;
       friend class List<T>;
    public:
-      Ref(T _value, int _line, char* _fileName);
+      Ref(T _value, int _line, const char* _fileName);
 };
 
 template <typename  T> class List{
    private:
-      char *name;
+      const char *name;
       Ref<T> *head;
       int count;
    public:
-      List(char *_name);
-      void add(T _value, int _line, char *_fileName);
-      void remove(T _value, int _line, char *_fileName);
+      List(const char *_name);
+      void add(T _value, int _line, const char *_fileName);
+      void remove(T _value, int _line, const char *_fileName);
       void report(FILE *stream);
 };
 
-template <typename  T> Ref<T>::Ref(T _value, int _line, char* _fileName):
+template <typename  T> Ref<T>::Ref(T _value, int _line, const char* _fileName):
    value(_value),
    line(_line),
    fileName(_fileName),
    next(NULL){
    }
 
-template <typename  T> List<T>::List(char *_name): 
+template <typename  T> List<T>::List(const char *_name): 
    head(NULL),
    count(0),
    name(_name){
    }
 
-template <typename  T> void List<T>::add(T _value, int _line, char *_fileName){
+template <typename  T> void List<T>::add(T _value, int _line, const char *_fileName){
    Ref<T> *handle = new Ref<T>(_value, _line, _fileName);
    handle->next = head; 
    head = handle;
    count++;
 }
 
-template <typename  T> void List<T>::remove(T _value, int _line, char *_fileName){
+template <typename  T> void List<T>::remove(T _value, int _line, const char *_fileName){
    for (Ref<T> *ptr = head, *last=NULL; ptr != NULL; last=ptr, ptr = ptr->next){
       if (ptr->value == _value){
          if (last == NULL){ // head 
