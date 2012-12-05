@@ -44,11 +44,11 @@ void JNIHelper::callVoid(JNIEnv *jenv, jobject instance, const char *methodName,
    try {
       jclass theClass = jenv->GetObjectClass(instance);
       if (theClass == NULL ||  jenv->ExceptionCheck())
-         throw std::string("bummer! getting class from instance\n");
+         throw std::string("bummer! getting class from instance");
 
       jmethodID methodId= jenv->GetMethodID(theClass,methodName,methodSignature);
       if (methodId == NULL || jenv->ExceptionCheck())
-         throw std::string("bummer getting method '") + methodName + "', '" + methodSignature + "' from instance \n";
+         throw std::string("bummer getting method '") + methodName + "', '" + methodSignature + "' from instance";
 
       va_list argp;
       va_start(argp, methodSignature);
@@ -56,12 +56,12 @@ void JNIHelper::callVoid(JNIEnv *jenv, jobject instance, const char *methodName,
       va_end(argp);
 
       if (jenv->ExceptionCheck())
-         throw std::string("bummer calling '") + methodName + "' '" + methodSignature + "' \n";
+         throw std::string("bummer calling '") + methodName + "' '" + methodSignature;
 
    } catch(std::string& s) {
       jenv->ExceptionDescribe(); /* write to console */
       jenv->ExceptionClear();
-      fprintf(stderr, s.c_str());
+      fprintf(stderr, "%s\n", s.c_str());
    }
 }
 
@@ -70,11 +70,11 @@ jobject JNIHelper::callObject(JNIEnv *jenv, jobject instance, const char *method
    try {
       jclass theClass = jenv->GetObjectClass(instance);
       if (theClass == NULL ||  jenv->ExceptionCheck())
-         throw std::string("bummer! getting class from instance\n");
+         throw std::string("bummer! getting class from instance");
 
       jmethodID methodId= jenv->GetMethodID(theClass,methodName,methodSignature);
       if (methodId == NULL || jenv->ExceptionCheck())
-         throw std::string("bummer getting method '") + methodName + "', '" + methodSignature + "' from instance \n";
+         throw std::string("bummer getting method '") + methodName + "', '" + methodSignature + "' from instance";
 
       va_list argp;
       va_start(argp, methodSignature);
@@ -82,12 +82,12 @@ jobject JNIHelper::callObject(JNIEnv *jenv, jobject instance, const char *method
       va_end(argp);
 
       if (jenv->ExceptionCheck())
-         throw std::string("bummer calling '") + methodName + "' '" + methodSignature + "' \n";
+         throw std::string("bummer calling '") + methodName + "' '" + methodSignature;
 
    } catch(std::string& s) {
       jenv->ExceptionDescribe(); /* write to console */
       jenv->ExceptionClear();
-      fprintf(stderr, s.c_str());
+      fprintf(stderr, "%s\n", s.c_str());
       return 0L;
    }
 
@@ -99,11 +99,11 @@ jlong JNIHelper::callLong(JNIEnv *jenv, jobject instance, const char *methodName
    try {
       jclass theClass = jenv->GetObjectClass(instance);
       if (theClass == NULL ||  jenv->ExceptionCheck())
-         throw std::string("bummer! getting class from instance\n");
+         throw std::string("bummer! getting class from instance");
 
       jmethodID methodId = jenv->GetMethodID(theClass,methodName,methodSignature);
       if (methodId == NULL || jenv->ExceptionCheck())
-         throw std::string("bummer getting method '") + methodName + "', '" + methodSignature + "' from instance \n";
+         throw std::string("bummer getting method '") + methodName + "', '" + methodSignature + "' from instance";
 
       va_list argp;
       va_start(argp, methodSignature);
@@ -111,12 +111,12 @@ jlong JNIHelper::callLong(JNIEnv *jenv, jobject instance, const char *methodName
       va_end(argp);
 
       if (jenv->ExceptionCheck())
-         throw std::string("bummer calling '") + methodName + "' '" + methodSignature + "' \n";
+         throw std::string("bummer calling '") + methodName + "' '" + methodSignature;
 
    } catch(std::string& s) {
       jenv->ExceptionDescribe(); /* write to console */
       jenv->ExceptionClear();
-      fprintf(stderr, s.c_str());
+      fprintf(stderr, "%s\n", s.c_str());
       return 0L;
    }
    return value;
@@ -127,20 +127,20 @@ jobject JNIHelper::getStaticFieldObject(JNIEnv *jenv, const char *className, con
    try {
       jclass theClass = jenv->FindClass(className);
       if (theClass == NULL ||  jenv->ExceptionCheck())
-         throw std::string("bummer! getting '") + className + "'\n";
+         throw std::string("bummer! getting '") + className;
 
       jfieldID fieldId = jenv->GetStaticFieldID(theClass,fieldName,signature);
       if (fieldId == NULL || jenv->ExceptionCheck())
-         throw std::string("bummer getting static field '") + fieldName + "' from '" + className + "' with signature! '" + signature + "' \n";
+         throw std::string("bummer getting static field '") + fieldName + "' from '" + className + "' with signature! '" + signature;
 
       jobject value = jenv->GetStaticObjectField(NULL, fieldId);
       if (value == NULL || jenv->ExceptionCheck())
-         throw std::string("bummer getting static field  value '") + fieldName + "' from '" + className + "' with signature! '" + signature + "' \n";
+         throw std::string("bummer getting static field  value '") + fieldName + "' from '" + className + "' with signature! '" + signature;
 
    } catch(std::string& s) {
       jenv->ExceptionDescribe(); 
       jenv->ExceptionClear();
-      fprintf(stderr, s.c_str());
+      fprintf(stderr, "%s\n", s.c_str());
       return(NULL);
    }
 
@@ -152,11 +152,11 @@ jobject JNIHelper::createInstance(JNIEnv *jenv, const char* className, const cha
    try {
       jclass theClass = jenv->FindClass(className);
       if (theClass == NULL || jenv->ExceptionCheck())
-         throw std::string("bummer! getting '") + className + "'\n";
+         throw std::string("bummer! getting '") + className;
 
       jmethodID constructor = jenv->GetMethodID(theClass,"<init>",signature);
       if (constructor == NULL || jenv->ExceptionCheck())
-         throw std::string("bummer getting constructor from '") + className + "' with signature! '" + signature + "' \n";
+         throw std::string("bummer getting constructor from '") + className + "' with signature! '" + signature;
 
       va_list argp;
       va_start(argp, signature);
@@ -164,12 +164,12 @@ jobject JNIHelper::createInstance(JNIEnv *jenv, const char* className, const cha
       va_end(argp);
 
       if (instance == NULL || jenv->ExceptionCheck())
-         throw std::string("bummer invoking constructor from '") + className + "' with signature! '" + signature + "' \n";
+         throw std::string("bummer invoking constructor from '") + className + "' with signature! '" + signature;
 
    } catch(std::string& s) {
       jenv->ExceptionDescribe();
       jenv->ExceptionClear();
-      fprintf(stderr, s.c_str());
+      fprintf(stderr, "%s\n", s.c_str());
       return(NULL);
    }
    return(instance);
