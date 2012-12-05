@@ -12,7 +12,7 @@ class OpenCLArgDescriptor{
       static void setBits(JNIEnv *jenv, jobject argInstance, jlong bits){
          JNIHelper::setInstanceField<jlong>(jenv, argInstance, "bits", bits);
       }
-      static jobject OpenCLArgDescriptor::getMemInstance(JNIEnv *jenv, jobject argInstance){
+      static jobject getMemInstance(JNIEnv *jenv, jobject argInstance){
          return(JNIHelper::getInstanceField<jobject>(jenv, argInstance, "memVal", OpenCLMemClassArg));
       }
       static void setMemInstance(JNIEnv *jenv, jobject argInstance, jobject memInstance){

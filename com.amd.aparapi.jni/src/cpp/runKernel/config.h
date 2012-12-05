@@ -48,7 +48,7 @@ class Config{
       jboolean enableProfiling;
       jboolean enableProfilingCSV;
 
-      jboolean getBoolean(JNIEnv *jenv, char *fieldName);
+      jboolean getBoolean(JNIEnv *jenv, const char *fieldName);
       Config(JNIEnv *jenv);
       jboolean isVerbose();
       jboolean isProfilingCSVEnabled();

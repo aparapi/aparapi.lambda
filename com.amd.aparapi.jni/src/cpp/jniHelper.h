@@ -157,13 +157,13 @@ class JNIHelper{
 
 
    public:
-      static void callVoid(JNIEnv *jenv, jobject instance, char *methodName, char *methodSignature, ...);
-      static jlong callLong(JNIEnv *jenv, jobject instance, char *methodName, char *methodSignature, ...);
-      static jobject callObject(JNIEnv *jenv, jobject instance, char *methodName, char *methodSignature, ...);
+      static void callVoid(JNIEnv *jenv, jobject instance, const char *methodName, const char *methodSignature, ...);
+      static jlong callLong(JNIEnv *jenv, jobject instance, const char *methodName, const char *methodSignature, ...);
+      static jobject callObject(JNIEnv *jenv, jobject instance, const char *methodName, const char *methodSignature, ...);
 
-      static jobject createInstance(JNIEnv *jenv, char *className, char *signature, ... );
+      static jobject createInstance(JNIEnv *jenv, const char *className, const char *signature, ... );
 
-      static jobject getStaticFieldObject(JNIEnv *jenv, char *className, char *fieldName, char *signature);
+      static jobject getStaticFieldObject(JNIEnv *jenv, const char *className, const char *fieldName, const char *signature);
 
       static std::string getType(jint value) {
          return "int";

@@ -40,7 +40,7 @@
 #define JNI_SOURCE
 #include "jniHelper.h"
 
-void JNIHelper::callVoid(JNIEnv *jenv, jobject instance, char *methodName, char *methodSignature, ...){
+void JNIHelper::callVoid(JNIEnv *jenv, jobject instance, const char *methodName, const char *methodSignature, ...){
    try {
       jclass theClass = jenv->GetObjectClass(instance);
       if (theClass == NULL ||  jenv->ExceptionCheck())
@@ -65,7 +65,7 @@ void JNIHelper::callVoid(JNIEnv *jenv, jobject instance, char *methodName, char 
    }
 }
 
-jobject JNIHelper::callObject(JNIEnv *jenv, jobject instance, char *methodName, char *methodSignature, ...){
+jobject JNIHelper::callObject(JNIEnv *jenv, jobject instance, const char *methodName, const char *methodSignature, ...){
    jobject value = NULL;
    try {
       jclass theClass = jenv->GetObjectClass(instance);
@@ -94,7 +94,7 @@ jobject JNIHelper::callObject(JNIEnv *jenv, jobject instance, char *methodName, 
    return value;
 }
 
-jlong JNIHelper::callLong(JNIEnv *jenv, jobject instance, char *methodName, char *methodSignature, ...){
+jlong JNIHelper::callLong(JNIEnv *jenv, jobject instance, const char *methodName, const char *methodSignature, ...){
    jlong value = 0L;
    try {
       jclass theClass = jenv->GetObjectClass(instance);
@@ -122,7 +122,7 @@ jlong JNIHelper::callLong(JNIEnv *jenv, jobject instance, char *methodName, char
    return value;
 }
 
-jobject JNIHelper::getStaticFieldObject(JNIEnv *jenv, char *className, char *fieldName, char *signature){
+jobject JNIHelper::getStaticFieldObject(JNIEnv *jenv, const char *className, const char *fieldName, const char *signature){
    jobject value = NULL;
    try {
       jclass theClass = jenv->FindClass(className);
@@ -147,7 +147,7 @@ jobject JNIHelper::getStaticFieldObject(JNIEnv *jenv, char *className, char *fie
    return(value);
 }
 
-jobject JNIHelper::createInstance(JNIEnv *jenv, char* className, char *signature, ... ){
+jobject JNIHelper::createInstance(JNIEnv *jenv, const char* className, const char *signature, ... ){
    jobject instance;
    try {
       jclass theClass = jenv->FindClass(className);

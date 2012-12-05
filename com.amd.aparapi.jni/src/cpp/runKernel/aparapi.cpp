@@ -88,19 +88,21 @@ JNI_JAVA(jint, KernelRunnerJNI, disposeJNI)
       return(status);
    }
 
-void idump(char *str, void *ptr, int size){
+/*
+void idump(const char *str, void *ptr, int size){
    int * iptr = (int *)ptr;
    for (unsigned i=0; i<size/sizeof(int); i++){
       fprintf(stderr, "%s%4d %d\n", str, i, iptr[i]);
    }
 }
 
-void fdump(char *str, void *ptr, int size){
+void fdump(const char *str, void *ptr, int size){
    float * fptr = (float *)ptr;
    for (unsigned i=0; i<size/sizeof(float); i++){
       fprintf(stderr, "%s%4d %6.2f\n", str, i, fptr[i]);
    }
 }
+*/
 
 
 jint writeProfileInfo(JNIContext* jniContext){

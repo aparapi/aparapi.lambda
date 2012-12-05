@@ -38,7 +38,7 @@
 #define CONFIG_SOURCE
 #include "config.h"
 
-jboolean Config::getBoolean(JNIEnv *jenv, char *fieldName){
+jboolean Config::getBoolean(JNIEnv *jenv, const char *fieldName){
    jfieldID fieldID = jenv->GetStaticFieldID(configClass, fieldName, "Z");
    return(jenv->GetStaticBooleanField(configClass, fieldID));
 }

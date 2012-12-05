@@ -51,9 +51,11 @@
 int enqueueMarker(cl_command_queue commandQueue, cl_event* firstEvent);
 jint getProcess();
 
-void idump(char *str, void *ptr, int size);
+/*
+void idump(const char *str, void *ptr, int size);
 
-void fdump(char *str, void *ptr, int size);
+void fdump(const char *str, void *ptr, int size);
+*/
 
 jint writeProfileInfo(JNIContext* jniContext);
 
