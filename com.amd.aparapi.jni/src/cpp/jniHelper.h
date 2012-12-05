@@ -89,8 +89,7 @@
 
 #define JNI_JAVA(type, className, methodName) JNIEXPORT type JNICALL Java_com_amd_aparapi_internal_jni_##className##_##methodName
 
-class JNIHelper{
-
+class JNIHelper {
 
       static void setField(JNIEnv* jenv, jobject instance, jfieldID fieldId, jint* value) {
          jenv->SetIntField(instance, fieldId, *value);
@@ -165,25 +164,25 @@ class JNIHelper{
 
       static jobject getStaticFieldObject(JNIEnv *jenv, const char *className, const char *fieldName, const char *signature);
 
-      static std::string getType(jint value) {
+      static const char *getType(jint value) {
          return "int";
       }
-      static std::string getType(jfloat value) {
+      static const char *getType(jfloat value) {
          return "float";
       }
-      static std::string getType(jdouble value) {
+      static const char *getType(jdouble value) {
          return "double";
       }
-      static std::string getType(jshort value) {
+      static const char *getType(jshort value) {
          return "short";
       }
-      static std::string getType(jlong value) {
+      static const char *getType(jlong value) {
          return "long";
       }
-      static std::string getType(jobject value) {
+      static const char *getType(jobject value) {
          return "object";
       }
-      static std::string getType(jboolean value) {
+      static const char *getType(jboolean value) {
          return "boolean";
       }
 
@@ -202,10 +201,10 @@ class JNIHelper{
                throw "bummer! getting class from instance\n";
             jfieldID fieldId = jenv->GetFieldID(theClass,fieldName,"I");
             if (fieldId == NULL || jenv->ExceptionCheck())
-               throw "bummer getting "+ getType(value) + "field '" + fieldName + "' \n";
+               throw std::string("bummer getting ") + getType(value) + "field '" + fieldName + "' \n";
             setField(jenv, instance, fieldId, &value);
             if (jenv->ExceptionCheck())
-               throw "bummer setting "+ getType(value) + "field '" + fieldName + "' \n";
+               throw std::string("bummer setting ") + getType(value) + "field '" + fieldName + "' \n";
          } catch(std::string& se) {
             jenv->ExceptionDescribe(); 
             jenv->ExceptionClear();
@@ -227,10 +226,10 @@ class JNIHelper{
                throw "bummer! getting class from instance\n";
             jfieldID fieldId = jenv->GetFieldID(theClass,fieldName, signature);
             if (fieldId == NULL || jenv->ExceptionCheck())
-               throw "bummer getting "+ getType(value) + "field '" + fieldName + "' \n";
+               throw std::string("bummer getting ") + getType(value) + "field '" + fieldName + "' \n";
             getField(jenv, instance, fieldId, &value);
             if (jenv->ExceptionCheck())
-               throw "bummer getting "+ getType(value) + "field '" + fieldName + "' \n";
+               throw std::string("bummer getting ") + getType(value) + "field '" + fieldName + "' \n";
          } catch(std::string& se) {
             jenv->ExceptionDescribe(); 
             jenv->ExceptionClear();
