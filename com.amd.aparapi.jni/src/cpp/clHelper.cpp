@@ -36,10 +36,8 @@
    and Security’s website at http://www.bis.doc.gov/. 
    */
 
-#include "common.h"
-
 #define CLHELPER_SOURCE
-#include "clHelper.h"
+#include "CLHelper.h"
 #include "List.h"
 #include <map>
 

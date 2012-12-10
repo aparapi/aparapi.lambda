@@ -37,8 +37,8 @@
    */
 #ifndef PROFILEINFO_H
 #define PROFILEINFO_H
-#include "common.h"
-#include "jniHelper.h"
+#include "Common.h"
+#include "JNIHelper.h"
 
 class ProfileInfo{
    public:

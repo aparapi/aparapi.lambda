@@ -36,7 +36,7 @@
    and Security?s website at http://www.bis.doc.gov/. 
    */
 #define CONFIG_SOURCE
-#include "config.h"
+#include "Config.h"
 
 jboolean Config::getBoolean(JNIEnv *jenv, const char *fieldName){
    jfieldID fieldID = jenv->GetStaticFieldID(configClass, fieldName, "Z");

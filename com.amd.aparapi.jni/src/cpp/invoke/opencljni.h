@@ -41,9 +41,9 @@
 
 /** @opencljni.h */
 
-#include "common.h"
-#include "jniHelper.h"
-#include "clHelper.h"
+#include "Common.h"
+#include "JNIHelper.h"
+#include "CLHelper.h"
 
 
 class OpenCLDevice{

@@ -36,7 +36,7 @@
    and Security?s website at http://www.bis.doc.gov/. 
    */
 #define ARRAYBUFFER_SOURCE
-#include "arrayBuffer.h"
+#include "ArrayBuffer.h"
 
 ArrayBuffer::ArrayBuffer():
    javaArray((jobject) 0),

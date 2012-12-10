@@ -37,7 +37,7 @@
    */
 #ifndef CONFIG_H
 #define CONFIG_H
-#include "common.h"
+#include "Common.h"
 
 class Config{
    public: 

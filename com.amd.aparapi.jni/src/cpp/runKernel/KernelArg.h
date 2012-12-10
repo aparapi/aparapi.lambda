@@ -2,11 +2,11 @@
 #ifndef KERNEL_ARG_H
 #define KERNEL_ARG_H
 
-#include "common.h"
-#include "jniHelper.h"
-#include "arrayBuffer.h"
+#include "Common.h"
+#include "JNIHelper.h"
+#include "ArrayBuffer.h"
 #include "com_amd_aparapi_internal_jni_KernelRunnerJNI.h"
-#include "config.h"
+#include "Config.h"
 
 #ifdef _WIN32
 #define strdup _strdup

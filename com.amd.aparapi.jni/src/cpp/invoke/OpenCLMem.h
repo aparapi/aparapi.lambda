@@ -1,9 +1,8 @@
 #ifndef OPEN_CL_MEM_H
 #define OPEN_CL_MEM_H
 
-#include "jniHelper.h"
-#include "common.h"
-#include "OpenCLMem.h"
+#include "JNIHelper.h"
+#include "Common.h"
 
 class OpenCLMem {
    public:

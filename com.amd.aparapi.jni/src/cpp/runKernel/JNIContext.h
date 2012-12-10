@@ -2,11 +2,11 @@
 #define JNI_CONTEXT_H
 
 
-#include "common.h"
+#include "Common.h"
 #include "KernelArg.h"
-#include "profileInfo.h"
+#include "ProfileInfo.h"
 #include "com_amd_aparapi_internal_jni_KernelRunnerJNI.h"
-#include "config.h"
+#include "Config.h"
 
 class JNIContext {
 private: 
