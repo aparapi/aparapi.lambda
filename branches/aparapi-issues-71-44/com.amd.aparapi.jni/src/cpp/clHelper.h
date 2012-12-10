@@ -39,7 +39,7 @@
 #ifndef CLHELPER_H
 #define CLHELPER_H
 
-#include "common.h"
+#include "Common.h"
 
 class CLHelper{
    public:

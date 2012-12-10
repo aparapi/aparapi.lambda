@@ -38,8 +38,8 @@
 
 #ifndef ARRAYBUFFER_H
 #define ARRAYBUFFER_H
-#include "common.h"
-#include "profileInfo.h"
+#include "Common.h"
+#include "ProfileInfo.h"
 
 class ArrayBuffer{
    public:

@@ -38,11 +38,11 @@
 
 #define APARAPI_SOURCE
 
-#include "aparapi.h"
-#include "config.h"
-#include "profileInfo.h"
-#include "arrayBuffer.h"
-#include "clHelper.h"
+#include "Aparapi.h"
+#include "Config.h"
+#include "ProfileInfo.h"
+#include "ArrayBuffer.h"
+#include "CLHelper.h"
 #include "List.h"
 
 

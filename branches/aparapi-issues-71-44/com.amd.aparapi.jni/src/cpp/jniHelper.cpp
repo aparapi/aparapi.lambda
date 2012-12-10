@@ -36,9 +36,9 @@
    and Security’s website at http://www.bis.doc.gov/. 
    */
 
-#include "common.h"
+#include "Common.h"
 #define JNI_SOURCE
-#include "jniHelper.h"
+#include "JNIHelper.h"
 
 void JNIHelper::callVoid(JNIEnv *jenv, jobject instance, const char *methodName, const char *methodSignature, ...){
    try {

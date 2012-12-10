@@ -40,7 +40,7 @@
 #define APARAPI_H
 
 
-#include "common.h"
+#include "Common.h"
 #include "com_amd_aparapi_internal_jni_KernelRunnerJNI.h"
 #include "CLException.h"
 #include "Range.h"

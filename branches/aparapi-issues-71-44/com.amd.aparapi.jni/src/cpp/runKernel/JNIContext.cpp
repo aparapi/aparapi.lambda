@@ -1,5 +1,5 @@
 #include "JNIContext.h"
-#include "opencljni.h"
+#include "OpenCLJNI.h"
 #include "List.h"
 
 JNIContext::JNIContext(JNIEnv *jenv, jobject _kernelObject, jobject _openCLDeviceObject, jint _flags): 

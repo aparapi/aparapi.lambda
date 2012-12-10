@@ -39,7 +39,7 @@
 /** @opencljni.cpp */
 
 #define OPENCLJNI_SOURCE
-#include "opencljni.h"
+#include "OpenCLJNI.h"
 #include "OpenCLArgDescriptor.h"
 #include "OpenCLKernel.h"
 #include "OpenCLMem.h"

@@ -2,7 +2,7 @@
 #ifndef OPEN_CL_PROGRAM_H
 #define OPEN_CL_PROGRAM_H
 
-#include "jniHelper.h"
+#include "JNIHelper.h"
 
 class OpenCLProgram{
    public:

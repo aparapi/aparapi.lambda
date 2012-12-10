@@ -36,7 +36,7 @@
    and Security?s website at http://www.bis.doc.gov/. 
    */
 #define PROFILEINFO_SOURCE
-#include "profileInfo.h"
+#include "ProfileInfo.h"
 
 ProfileInfo::ProfileInfo():
    valid(false),

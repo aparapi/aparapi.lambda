@@ -4,7 +4,7 @@
 #include <string>
 #include <stdio.h>
 #include <exception>
-#include "clHelper.h"
+#include "CLHelper.h"
 
 class CLException : public std::exception {
 

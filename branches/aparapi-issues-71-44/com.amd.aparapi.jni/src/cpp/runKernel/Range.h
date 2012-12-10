@@ -1,8 +1,8 @@
 #ifndef RANGE_H
 #define RANGE_H
 
-#include "common.h"
-#include "jniHelper.h"
+#include "Common.h"
+#include "JNIHelper.h"
 
 class Range{
    public:

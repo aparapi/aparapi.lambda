@@ -1,7 +1,7 @@
 #ifndef OPEN_CL_ARG_DESCRIPTOR_H
 #define OPEN_CL_ARG_DESCRIPTOR_H
 
-#include "jniHelper.h"
+#include "JNIHelper.h"
 
 class OpenCLArgDescriptor{
    public:
