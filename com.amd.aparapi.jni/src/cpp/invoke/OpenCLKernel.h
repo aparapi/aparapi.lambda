@@ -1,8 +1,8 @@
 #ifndef OPEN_CL_KERNEL_H
 #define OPEN_CL_KERNEL_H
 
-#include "common.h"
-#include "jniHelper.h"
+#include "Common.h"
+#include "JNIHelper.h"
 
 class OpenCLKernel{
    public:
