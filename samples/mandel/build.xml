@@ -3,7 +3,7 @@
 <project name="mandel" default="build" basedir=".">
    <target name="build" depends="clean">
       <mkdir dir="classes"/>
-      <javac srcdir="src" destdir="classes" debug="on" includeantruntime="false" >
+      <javac srcdir="src" destdir="classes" debug="off" includeantruntime="false" >
          <classpath>
             <pathelement path="../../com.amd.aparapi/dist/aparapi.jar"/>
          </classpath>
