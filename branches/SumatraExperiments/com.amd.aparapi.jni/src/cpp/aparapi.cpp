@@ -139,11 +139,13 @@ class KernelArg{
       static jfieldID typeFieldID; 
       static jfieldID sizeInBytesFieldID;
       static jfieldID numElementsFieldID;
+      static jfieldID fieldHolderFieldID;
    public:
       static jfieldID javaArrayFieldID; 
    public:
       JNIContext *jniContext;  
       jobject argObj;    // the Java KernelRunner.KernelArg object that we are mirroring.
+      jobject fieldHolder;	// The java Object to pull this field from (for lambda it could be block, KernelRunner or lambda's this)
       jobject javaArg;   // global reference to the corresponding java KernelArg object we grabbed our own global reference so that the object won't be collected until we dispose!
       char *name;        // used for debugging printfs
       jint type;         // a bit mask determining the type of this arg
@@ -273,6 +275,7 @@ jfieldID KernelArg::typeFieldID=0;
 jfieldID KernelArg::javaArrayFieldID=0; 
 jfieldID KernelArg::sizeInBytesFieldID=0;
 jfieldID KernelArg::numElementsFieldID=0; 
+jfieldID KernelArg::fieldHolderFieldID=0;
 
 class JNIContext{
    private: 
@@ -454,6 +457,7 @@ KernelArg::KernelArg(JNIEnv *jenv, JNIContext *jniContext, jobject argObj):
       if (argClazz == 0){
          jclass c = jenv->GetObjectClass(argObj); 
          nameFieldID = jenv->GetFieldID(c, "name", "Ljava/lang/String;"); ASSERT_FIELD(name);
+         fieldHolderFieldID = jenv->GetFieldID(c, "fieldHolder", "Ljava/lang/Object;"); ASSERT_FIELD(name);
          typeFieldID = jenv->GetFieldID(c, "type", "I"); ASSERT_FIELD(type);
          javaArrayFieldID = jenv->GetFieldID(c, "javaArray", "Ljava/lang/Object;"); ASSERT_FIELD(javaArray);
          sizeInBytesFieldID = jenv->GetFieldID(c, "sizeInBytes", "I"); ASSERT_FIELD(sizeInBytes);
@@ -461,6 +465,9 @@ KernelArg::KernelArg(JNIEnv *jenv, JNIContext *jniContext, jobject argObj):
          argClazz  = c;
       }
       type = jenv->GetIntField(argObj, typeFieldID);
+
+      // Need to delete this
+      fieldHolder = jenv->NewGlobalRef( jenv->GetObjectField(argObj, fieldHolderFieldID) );
       jstring nameString  = (jstring)jenv->GetObjectField(argObj, nameFieldID);
       const char *nameChars = jenv->GetStringUTFChars(nameString, NULL);
 #ifdef _WIN32
@@ -482,18 +489,22 @@ cl_int KernelArg::setLocalBufferArg(JNIEnv *jenv, int argIdx, int argPos){
 }
 cl_int KernelArg::setPrimitiveArg(JNIEnv *jenv, int argIdx, int argPos){
    cl_int status = CL_SUCCESS;
+
+   // Get the class of the object holding this field
+   jclass fieldHolderClass = jenv->GetObjectClass(fieldHolder);
+
    if (isFloat()){
       if (isStatic()){
-         jfieldID fieldID = jenv->GetStaticFieldID(jniContext->kernelClass, name, "F");
-         jfloat f = jenv->GetStaticFloatField(jniContext->kernelClass, fieldID);
+         jfieldID fieldID = jenv->GetStaticFieldID(fieldHolderClass, name, "F");
+         jfloat f = jenv->GetStaticFloatField(fieldHolderClass, fieldID);
          if (config->isVerbose()){
             fprintf(stderr, "clSetKernelArg static primitive float '%s' index=%d pos=%d value=%f\n",
                  name, argIdx, argPos, f); 
          }
          status = clSetKernelArg(jniContext->kernel, argPos, sizeof(jfloat), &f);
       }else{
-         jfieldID fieldID = jenv->GetFieldID(jniContext->kernelClass, name, "F");
-         jfloat f = jenv->GetFloatField(jniContext->kernelObject, fieldID);
+         jfieldID fieldID = jenv->GetFieldID(fieldHolderClass, name, "F");
+         jfloat f = jenv->GetFloatField(fieldHolder, fieldID);
          if (config->isVerbose()){
             fprintf(stderr, "clSetKernelArg primitive float '%s' index=%d pos=%d value=%f\n",
                  name, argIdx, argPos, f); 
@@ -502,16 +513,16 @@ cl_int KernelArg::setPrimitiveArg(JNIEnv *jenv, int argIdx, int argPos){
       }
    }else if (isInt()){
       if (isStatic()){
-         jfieldID fieldID = jenv->GetStaticFieldID(jniContext->kernelClass, name, "I");
-         jint i = jenv->GetStaticIntField(jniContext->kernelClass, fieldID);
+         jfieldID fieldID = jenv->GetStaticFieldID(fieldHolderClass, name, "I");
+         jint i = jenv->GetStaticIntField(fieldHolderClass, fieldID);
          if (config->isVerbose()){
             fprintf(stderr, "clSetKernelArg static primitive int '%s' index=%d pos=%d value=%d\n",
                  name, argIdx, argPos, i); 
          }
          status = clSetKernelArg(jniContext->kernel, argPos, sizeof(jint), &i);
       }else{
-         jfieldID fieldID = jenv->GetFieldID(jniContext->kernelClass, name, "I");
-         jint i = jenv->GetIntField(jniContext->kernelObject, fieldID);
+         jfieldID fieldID = jenv->GetFieldID(fieldHolderClass, name, "I");
+         jint i = jenv->GetIntField(fieldHolder, fieldID);
          if (config->isVerbose()){
             fprintf(stderr, "clSetKernelArg primitive int '%s' index=%d pos=%d value=%d\n",
                  name, argIdx, argPos, i); 
@@ -520,16 +531,16 @@ cl_int KernelArg::setPrimitiveArg(JNIEnv *jenv, int argIdx, int argPos){
       }
    }else if (isBoolean()){
       if (isStatic()){
-         jfieldID fieldID = jenv->GetStaticFieldID(jniContext->kernelClass, name, "Z");
-         jboolean z = jenv->GetStaticBooleanField(jniContext->kernelClass, fieldID);
+         jfieldID fieldID = jenv->GetStaticFieldID(fieldHolderClass, name, "Z");
+         jboolean z = jenv->GetStaticBooleanField(fieldHolderClass, fieldID);
          if (config->isVerbose()){
             fprintf(stderr, "clSetKernelArg static primitive boolean '%s' index=%d pos=%d value=%d\n",
                  name, argIdx, argPos, z); 
          }
          status = clSetKernelArg(jniContext->kernel, argPos, sizeof(jboolean), &z);
       }else{
-         jfieldID fieldID = jenv->GetFieldID(jniContext->kernelClass, name, "Z");
-         jboolean z = jenv->GetBooleanField(jniContext->kernelObject, fieldID);
+         jfieldID fieldID = jenv->GetFieldID(fieldHolderClass, name, "Z");
+         jboolean z = jenv->GetBooleanField(fieldHolder, fieldID);
          if (config->isVerbose()){
             fprintf(stderr, "clSetKernelArg primitive boolean '%s' index=%d pos=%d value=%d\n",
                  name, argIdx, argPos, z); 
@@ -538,16 +549,16 @@ cl_int KernelArg::setPrimitiveArg(JNIEnv *jenv, int argIdx, int argPos){
       }
    }else if (isByte()){
       if (isStatic()){
-         jfieldID fieldID = jenv->GetStaticFieldID(jniContext->kernelClass, name, "B");
-         jbyte b = jenv->GetStaticByteField(jniContext->kernelClass, fieldID);
+         jfieldID fieldID = jenv->GetStaticFieldID(fieldHolderClass, name, "B");
+         jbyte b = jenv->GetStaticByteField(fieldHolderClass, fieldID);
          if (config->isVerbose()){
             fprintf(stderr, "clSetKernelArg static primitive byte '%s' index=%d pos=%d value=%d\n",
                  name, argIdx, argPos, b); 
          }
          status = clSetKernelArg(jniContext->kernel, argPos, sizeof(jbyte), &b);
       }else{
-         jfieldID fieldID = jenv->GetFieldID(jniContext->kernelClass, name, "B");
-         jbyte b = jenv->GetByteField(jniContext->kernelObject, fieldID);
+         jfieldID fieldID = jenv->GetFieldID(fieldHolderClass, name, "B");
+         jbyte b = jenv->GetByteField(fieldHolder, fieldID);
          if (config->isVerbose()){
             fprintf(stderr, "clSetKernelArg primitive byte '%s' index=%d pos=%d value=%d\n",
                  name, argIdx, argPos, b); 
@@ -556,16 +567,16 @@ cl_int KernelArg::setPrimitiveArg(JNIEnv *jenv, int argIdx, int argPos){
       }
    }else if (isLong()){
       if (isStatic()){
-         jfieldID fieldID = jenv->GetStaticFieldID(jniContext->kernelClass, name, "J");
-         jlong j = jenv->GetStaticLongField(jniContext->kernelClass, fieldID);
+         jfieldID fieldID = jenv->GetStaticFieldID(fieldHolderClass, name, "J");
+         jlong j = jenv->GetStaticLongField(fieldHolderClass, fieldID);
          if (config->isVerbose()){
             fprintf(stderr, "clSetKernelArg static primitive long '%s' index=%d pos=%d value=%ld\n",
                  name, argIdx, argPos, j); 
          }
          status = clSetKernelArg(jniContext->kernel, argPos, sizeof(jlong), &j);
       }else{
-         jfieldID fieldID = jenv->GetFieldID(jniContext->kernelClass, name, "J");
-         jlong j = jenv->GetLongField(jniContext->kernelObject, fieldID);
+         jfieldID fieldID = jenv->GetFieldID(fieldHolderClass, name, "J");
+         jlong j = jenv->GetLongField(fieldHolder, fieldID);
          if (config->isVerbose()){
             fprintf(stderr, "clSetKernelArg primitive long '%s' index=%d pos=%d value=%ld\n",
                  name, argIdx, argPos, j); 
@@ -574,16 +585,16 @@ cl_int KernelArg::setPrimitiveArg(JNIEnv *jenv, int argIdx, int argPos){
       }
    }else if (isDouble()){
       if (isStatic()){
-         jfieldID fieldID = jenv->GetStaticFieldID(jniContext->kernelClass, name, "D");
-         jdouble d  = jenv->GetStaticDoubleField(jniContext->kernelClass, fieldID);
+         jfieldID fieldID = jenv->GetStaticFieldID(fieldHolderClass, name, "D");
+         jdouble d  = jenv->GetStaticDoubleField(fieldHolderClass, fieldID);
          if (config->isVerbose()){
             fprintf(stderr, "clSetKernelArg static primitive long '%s' index=%d pos=%d value=%lf\n",
                  name, argIdx, argPos, d); 
          }
          status = clSetKernelArg(jniContext->kernel, argPos, sizeof(jdouble), &d);
       }else{
-         jfieldID fieldID = jenv->GetFieldID(jniContext->kernelClass, name, "D");
-         jdouble d = jenv->GetDoubleField(jniContext->kernelObject, fieldID);
+         jfieldID fieldID = jenv->GetFieldID(fieldHolderClass, name, "D");
+         jdouble d = jenv->GetDoubleField(fieldHolder, fieldID);
          if (config->isVerbose()){
             fprintf(stderr, "clSetKernelArg primitive long '%s' index=%d pos=%d value=%lf\n",
                  name, argIdx, argPos, d); 
@@ -790,6 +801,21 @@ jint updateNonPrimitiveReferences(JNIEnv *jenv, jobject jobj, JNIContext* jniCon
 }
 
 
+
+JNI_JAVA(jint, KernelRunner, updateLambdaBlockJNI)
+   (JNIEnv *jenv, jobject jobj, jlong jniContextHandle, jobject newHolder, jint argc) {
+
+	JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);
+
+	for(int argIdx=0; argIdx<argc; argIdx++) {
+		// out with the old
+		jenv->DeleteGlobalRef(jniContext->args[argIdx]->fieldHolder);
+		// in with the new!
+        jniContext->args[argIdx]->fieldHolder = jenv->NewGlobalRef(newHolder);
+	}
+
+	return 0;
+}
 
 JNI_JAVA(jint, KernelRunner, runKernelJNI)
    (JNIEnv *jenv, jobject jobj, jlong jniContextHandle, jobject _range, jboolean needSync, jint passes) {
