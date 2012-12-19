@@ -37,19 +37,35 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 */
 package com.amd.aparapi;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.lang.invoke.InnerClassLambdaMetafactory;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
+import java.util.function.IntBlock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.function.IntBlock;
+
+import com.amd.aparapi.ClassModel.ConstantPool.MethodEntry;
+import com.amd.aparapi.InstructionSet.AccessField;
+import com.amd.aparapi.InstructionSet.MethodCall;
+import com.amd.aparapi.InstructionSet.VirtualMethodCall;
 
 import com.amd.aparapi.InstructionSet.TypeSpec;
 import com.amd.aparapi.Kernel.EXECUTION_MODE;
@@ -484,9 +500,17 @@ class KernelRunner{
       @UsedByJNICode public Object array;
 
       /**
-       * Field in Kernel class corresponding to this arg
+       * Field in fieldHolder object corresponding to this arg
        */
       @UsedByJNICode public Field field;
+      
+      /**
+       * Field in fieldHolder object corresponding to this arg
+       * For lambda use, args come from Block, KernelRunner and the 
+       * lambda's own object
+       */
+      @UsedByJNICode public Object fieldHolder;
+      
 
       /**
        * The byte array for obj conversion passed to opencl
@@ -515,6 +539,125 @@ class KernelRunner{
        */
       int primitiveSize;
    }
+   
+   
+   class LambaKernelCall {
+      IntBlock block;
+      String   lambdaKernelSource;
+      String   lambdaMethodName;
+      Field[] lambdaCapturedFields;
+      Object[] lambdaCapturedArgs;
+      String lambdaMethodSignature;
+      
+      
+      public String     getLambdaKernelSource()    { return lambdaKernelSource; }
+      public Object     getLambdaKernelThis()      { return lambdaCapturedArgs[0]; }
+      public String     getLambdaMethodName()      { return lambdaMethodName; }
+      public String     getLambdaMethodSignature()      { return lambdaMethodSignature; }
+      //public Object[]   getLambdaCapturedArgs()    { return lambdaCapturedArgs; }
+      //public Object[]   getLambdaReferenceArgs()   { return lambdaReferencedFields; }
+      
+      public String toString() { return getLambdaKernelThis().getClass().getName() + " " +
+            getLambdaMethodName() + " " + getLambdaMethodSignature() + " from block: " +
+            block;
+      }
+      
+      public Field[]   getLambdaCapturedFields()    { return lambdaCapturedFields; }
+      
+      public LambaKernelCall(IntBlock _block) throws AparapiException { 
+         block = _block;
+         
+         // Try to do reflection on the block
+         Class bc = block.getClass();
+         System.out.println("# block class:" + bc);
+         
+         // The first field is "this" for the lambda call if the lambda
+         // is not static, the later fields are captured values which will 
+         // become lambda call parameters
+         Field[] bcf = bc.getDeclaredFields();
+         lambdaCapturedArgs = new Object[bcf.length];
+
+         Field[] allBlockClassFields = block.getClass().getDeclaredFields();
+         
+         Field[] capturedFieldsWithoutThis = new Field[ allBlockClassFields.length - 1 ];
+         for(int i=1; i<allBlockClassFields.length; i++) {
+            capturedFieldsWithoutThis[i-1] = allBlockClassFields[i];
+         }
+         
+         lambdaCapturedFields = capturedFieldsWithoutThis;
+
+         
+         try {
+            for (int i=0; i<bcf.length; i++) {
+               
+               // Since Block members are private have to use Unsafe here
+               Class currFieldType = bcf[i].getType();
+               long offset = UnsafeWrapper.objectFieldOffset(bcf[i]);
+
+               if (currFieldType.isPrimitive() == false) {
+                  lambdaCapturedArgs[i] = UnsafeWrapper.getObject(block, offset);
+               } else if (currFieldType.getName().equals("float")) {
+                  lambdaCapturedArgs[i] = UnsafeWrapper.getFloat(block, offset);
+               } else if (currFieldType.getName().equals("int")) {
+                  lambdaCapturedArgs[i] = UnsafeWrapper.getInt(block, offset);
+               } else if (currFieldType.getName().equals("long")) {
+                  lambdaCapturedArgs[i] = UnsafeWrapper.getLong(block, offset);
+
+                  // No getDouble ??   
+                  //} else if (currFieldType.getName().equals("double")) {
+                  //   lambdaArgs[i] = UnsafeWrapper.getDouble(block, offset);
+               }
+
+               System.out.println("# Lambda arg type: " + currFieldType + "  " + bcf[i].getName() + " = " + lambdaCapturedArgs[i]);            
+            }
+         } catch (Exception e) {
+            System.out.println("Problem getting Block args");
+            e.printStackTrace();
+         }
+         
+         
+//         Method[] bcm = bc.getDeclaredMethods();
+//         for (Method m : bcm) {
+//            System.out.println("# block class method:" + m);
+//         }
+
+         // This is the Class containing the lambda method        
+         Class lc = getLambdaKernelThis().getClass();
+         //Method[] lcm = lc.getDeclaredMethods();
+         //for (Method x : lcm) {
+         //   System.out.println("# lambda class method:" + x);
+         //}
+
+         // The class name is created with the "/" style delimiters
+         String bcNameWithSlashes = bc.getName().replace('.', '/');
+         ByteArrayInputStream blockClassStream = new ByteArrayInputStream(InnerClassLambdaMetafactory.getBytesForClassName(bcNameWithSlashes));
+         ClassModel blockModel = new ClassModel(blockClassStream);
+
+         // We know we are calling an IntBlock lambda with signature "(I)V"
+         MethodModel acceptModel = blockModel.getMethodModel("accept", "(I)V");
+
+         List<MethodCall> acceptCallSites = acceptModel.getMethodCalls();
+         assert acceptCallSites.size() == 1 : "Should only have one call site in this method";
+
+         
+         //VirtualMethodCall vCall = (VirtualMethodCall) acceptCallSites.get(0);
+         MethodCall vCall = acceptCallSites.get(0);
+         MethodEntry lambdaCallTarget = vCall.getConstantPoolMethodEntry();
+         lambdaMethodName = lambdaCallTarget.getNameAndTypeEntry().getNameUTF8Entry().getUTF8();
+         lambdaMethodSignature = lambdaCallTarget.getNameAndTypeEntry().getDescriptorUTF8Entry().getUTF8();
+
+         System.out.println("call target = " + 
+             lambdaCallTarget.getClassEntry().getNameUTF8Entry().getUTF8() + 
+             " " + lambdaMethodName + " " + lambdaMethodSignature);
+
+         String lcNameWithSlashes = lc.getName().replace('.', '/');
+         assert lcNameWithSlashes.equals(lambdaCallTarget.getClassEntry().getNameUTF8Entry().getUTF8()) : 
+            "lambda target class name does not match arg in block object";
+         
+      }
+   }
+
+   private LambaKernelCall lambdaKernelCall;  
 
    private long jniContextHandle = 0;
 
@@ -534,6 +677,18 @@ class KernelRunner{
 
    }
 
+   KernelRunner() {
+      kernel = null;
+   }
+
+   KernelRunner(IntBlock block) throws AparapiException {
+      kernel = null;
+      lambdaKernelCall = new LambaKernelCall(block);
+      if (logger.isLoggable(Level.INFO)) {
+         logger.info("New lambda call is = " + lambdaKernelCall);
+      }
+   }
+   
    /**
     * <code>Kernel.dispose()</code> delegates to <code>KernelRunner.dispose()</code> which delegates to <code>disposeJNI()</code> to actually close JNI data structures.<br/>
     * 
@@ -556,11 +711,13 @@ class KernelRunner{
     * @param maxJTPLocalSize
     * @return
     */
-   @Annotations.DocMe private native static synchronized long initJNI(Kernel _kernel, OpenCLDevice device, int _flags);
+   @Annotations.DocMe private native static synchronized long initJNI(Object _kernel, OpenCLDevice device, int _flags);
 
    private native long buildProgramJNI(long _jniContextHandle, String _source);
 
    private native int setArgsJNI(long _jniContextHandle, KernelArg[] _args, int argc);
+
+   private native int updateLambdaBlockJNI(long _jniContextHandle, Object newHolder, int argc);
 
    private native int runKernelJNI(long _jniContextHandle, Range _range, boolean _needSync, int _passes);
 
@@ -1209,7 +1366,7 @@ class KernelRunner{
       }
    }
 
-   private boolean updateKernelArrayRefs() throws AparapiException {
+   private boolean updateKernelArrayRefs(Object lambdaObject) throws AparapiException {
       boolean needsSync = false;
 
       for (int i = 0; i < argc; i++) {
@@ -1217,7 +1374,7 @@ class KernelRunner{
          try {
             if ((arg.type & ARG_ARRAY) != 0) {
                Object newArrayRef;
-               newArrayRef = arg.field.get(kernel);
+               newArrayRef = arg.field.get(lambdaObject);
 
                if (newArrayRef == null) {
                   throw new IllegalStateException("Cannot send null refs to kernel, reverting to java");
@@ -1256,62 +1413,40 @@ class KernelRunner{
       return needsSync;
    }
 
-   // private int numAvailableProcessors = Runtime.getRuntime().availableProcessors();
-
-   private Kernel executeOpenCL(final String _entrypointName, final Range _range, final int _passes) throws AparapiException {
-      /*
-      if (_range.getDims() > getMaxWorkItemDimensionsJNI(jniContextHandle)) {
-         throw new RangeException("Range dim size " + _range.getDims() + " > device "
-               + getMaxWorkItemDimensionsJNI(jniContextHandle));
-      }
-      if (_range.getWorkGroupSize() > getMaxWorkGroupSizeJNI(jniContextHandle)) {
-         throw new RangeException("Range workgroup size " + _range.getWorkGroupSize() + " > device "
-               + getMaxWorkGroupSizeJNI(jniContextHandle));
-      }
       
-            if (_range.getGlobalSize(0) > getMaxWorkItemSizeJNI(jniContextHandle, 0)) {
-               throw new RangeException("Range globalsize 0 " + _range.getGlobalSize(0) + " > device "
-                     + getMaxWorkItemSizeJNI(jniContextHandle, 0));
-            }
-            if (_range.getDims() > 1) {
-               if (_range.getGlobalSize(1) > getMaxWorkItemSizeJNI(jniContextHandle, 1)) {
-                  throw new RangeException("Range globalsize 1 " + _range.getGlobalSize(1) + " > device "
-                        + getMaxWorkItemSizeJNI(jniContextHandle, 1));
-               }
-               if (_range.getDims() > 2) {
-                  if (_range.getGlobalSize(2) > getMaxWorkItemSizeJNI(jniContextHandle, 2)) {
-                     throw new RangeException("Range globalsize 2 " + _range.getGlobalSize(2) + " > device "
-                           + getMaxWorkItemSizeJNI(jniContextHandle, 2));
-                  }
-               }
-            }
-      
+//   /**
+//    * There is a new Block for each invocation of the lambda
+//    * @param callerBlock
+//    */
+//   private void updateCallerBlockParams(Object callerBlock) {
+//      currentCallerBlock = callerBlock;
+//      for(int i=0; i<argc; i++) {
+//         if (args[i].fieldHolder instanceof IntBlock) {
+//            if (logger.isLoggable(Level.FINE)) {
+//               logger.fine("Updated Block for " + args[i].name + " old: " + args[i].fieldHolder + " new: " + callerBlock);
+//            }
+//            args[i].fieldHolder = callerBlock;
+//         }
+//      }
+//   }
 
-      if (logger.isLoggable(Level.FINE)) {
-         logger.fine("maxComputeUnits=" + this.getMaxComputeUnitsJNI(jniContextHandle));
-         logger.fine("maxWorkGroupSize=" + this.getMaxWorkGroupSizeJNI(jniContextHandle));
-         logger.fine("maxWorkItemDimensions=" + this.getMaxWorkItemDimensionsJNI(jniContextHandle));
-         logger.fine("maxWorkItemSize(0)=" + getMaxWorkItemSizeJNI(jniContextHandle, 0));
-         if (_range.getDims() > 1) {
-            logger.fine("maxWorkItemSize(1)=" + getMaxWorkItemSizeJNI(jniContextHandle, 1));
-            if (_range.getDims() > 2) {
-               logger.fine("maxWorkItemSize(2)=" + getMaxWorkItemSizeJNI(jniContextHandle, 2));
-            }
-         }
-      }
-      */
+   private KernelRunner executeOpenCL(Object lambdaObject, Object callerBlock, final Range _range, final int _passes) throws AparapiException {
+       assert args != null : "args should not be null";
+
       // Read the array refs after kernel may have changed them
       // We need to do this as input to computing the localSize
-      assert args != null : "args should not be null";
-      boolean needSync = updateKernelArrayRefs();
+      boolean needSync = updateKernelArrayRefs(lambdaObject);
       if (needSync && logger.isLoggable(Level.FINE)) {
-         logger.fine("Need to resync arrays on " + kernel.getClass().getName());
+         logger.fine("Need to resync arrays on " + lambdaObject.getClass().getName());
       }
+      
+      // This will need work for captured array refs?
+      updateLambdaBlockJNI(jniContextHandle, callerBlock, lambdaKernelCall.getLambdaCapturedFields().length);
+      
       // native side will reallocate array buffers if necessary
       if (runKernelJNI(jniContextHandle, _range, needSync, _passes) != 0) {
          logger.warning("### CL exec seems to have failed. Trying to revert to Java ###");
-         kernel.setFallbackExecutionMode();
-         return execute(_entrypointName, _range, _passes);
+         throw new AparapiException ("CL exec seems to have failed. Trying to revert to Java");         
       }
 
       if (usesOopConversion == true) {
@@ -1321,39 +1456,150 @@ class KernelRunner{
       if (logger.isLoggable(Level.FINE)) {
          logger.fine("executeOpenCL completed. " + _range);
       }
-      return kernel;
+      return this;
    }
+   
+   /**
+    * This is simply used to pass the iteration variable to the kernel
+    * This can be removed with better lambda codegen
+    */
+   final int iterationVariable = 0;
+   
+   
+   KernelArg prepareOneArg(Field field, Object holder) {
+      KernelArg   currArg = new KernelArg();
 
-   synchronized Kernel execute(Kernel.Entry entry, final Range _range, final int _passes) {
-      System.out.println("execute(Kernel.Entry, size) not implemented");
-      return (kernel);
-   }
-
-   synchronized private Kernel fallBackAndExecute(String _entrypointName, final Range _range, final int _passes) {
-      if (kernel.hasNextExecutionMode()) {
-         kernel.tryNextExecutionMode();
-      } else {
-         kernel.setFallbackExecutionMode();
+      currArg.fieldHolder = holder;
+      currArg.name = field.getName();
+      currArg.field = field;
+      if ((field.getModifiers() & Modifier.STATIC) == Modifier.STATIC) {
+         currArg.type |= ARG_STATIC;
       }
 
-      return execute(_entrypointName, _range, _passes);
-   }
+      Class<?> type = field.getType();
+      if (type.isArray()) {
+         if (field.getAnnotation(com.amd.aparapi.Kernel.Local.class) != null
+               || currArg.name.endsWith(Kernel.LOCAL_SUFFIX)) {
+            currArg.type |= ARG_LOCAL;
+         } else if (field.getAnnotation(com.amd.aparapi.Kernel.Constant.class) != null
+               || currArg.name.endsWith(Kernel.CONSTANT_SUFFIX)) {
+            currArg.type |= ARG_CONSTANT;
+         } else {
+            currArg.type |= ARG_GLOBAL;
+         }
 
-   synchronized private Kernel warnFallBackAndExecute(String _entrypointName, final Range _range, final int _passes,
-         Exception _exception) {
-      if (logger.isLoggable(Level.WARNING)) {
-         logger.warning("Reverting to Java Thread Pool (JTP) for " + kernel.getClass() + ": " + _exception.getMessage());
-         _exception.printStackTrace();
+         currArg.array = null; // will get updated in updateKernelArrayRefs
+         currArg.type |= ARG_ARRAY;
+
+         if (isExplicit()) {
+            currArg.type |= ARG_EXPLICIT;
+         }
+
+         // for now, treat all write arrays as read-write, see bugzilla issue 4859
+         // we might come up with a better solution later
+         currArg.type |= entryPoint.getArrayFieldAssignments().contains(field.getName()) ? (ARG_WRITE | ARG_READ)
+               : 0;
+         currArg.type |= entryPoint.getArrayFieldAccesses().contains(field.getName()) ? ARG_READ : 0;
+         // currArg.type |= ARG_GLOBAL;
+         currArg.type |= type.isAssignableFrom(float[].class) ? ARG_FLOAT : 0;
+
+         currArg.type |= type.isAssignableFrom(int[].class) ? ARG_INT : 0;
+
+         currArg.type |= type.isAssignableFrom(boolean[].class) ? ARG_BOOLEAN : 0;
+
+         currArg.type |= type.isAssignableFrom(byte[].class) ? ARG_BYTE : 0;
+
+         currArg.type |= type.isAssignableFrom(char[].class) ? ARG_CHAR : 0;
+
+         currArg.type |= type.isAssignableFrom(double[].class) ? ARG_DOUBLE : 0;
+
+         currArg.type |= type.isAssignableFrom(long[].class) ? ARG_LONG : 0;
+
+         currArg.type |= type.isAssignableFrom(short[].class) ? ARG_SHORT : 0;
+
+         // arrays whose length is used will have an int arg holding
+         // the length as a kernel param
+         if (entryPoint.getArrayFieldArrayLengthUsed().contains(currArg.name)) {
+            currArg.type |= ARG_ARRAYLENGTH;
+         }
+
+         if (type.getName().startsWith("[L")) {
+            currArg.type |= (ARG_OBJ_ARRAY_STRUCT | ARG_WRITE | ARG_READ);
+            if (logger.isLoggable(Level.FINE)) {
+               logger.fine("tagging " + currArg.name + " as (ARG_OBJ_ARRAY_STRUCT | ARG_WRITE | ARG_READ)");
+            }
+         }
+      } else if (type.isAssignableFrom(float.class)) {
+         currArg.type |= ARG_PRIMITIVE;
+         currArg.type |= ARG_FLOAT;
+      } else if (type.isAssignableFrom(int.class)) {
+         currArg.type |= ARG_PRIMITIVE;
+         currArg.type |= ARG_INT;
+      } else if (type.isAssignableFrom(double.class)) {
+         currArg.type |= ARG_PRIMITIVE;
+         currArg.type |= ARG_DOUBLE;
+      } else if (type.isAssignableFrom(long.class)) {
+         currArg.type |= ARG_PRIMITIVE;
+         currArg.type |= ARG_LONG;
+      } else if (type.isAssignableFrom(boolean.class)) {
+         currArg.type |= ARG_PRIMITIVE;
+         currArg.type |= ARG_BOOLEAN;
+      } else if (type.isAssignableFrom(byte.class)) {
+         currArg.type |= ARG_PRIMITIVE;
+         currArg.type |= ARG_BYTE;
+      } else if (type.isAssignableFrom(char.class)) {
+         currArg.type |= ARG_PRIMITIVE;
+         currArg.type |= ARG_CHAR;
+      } else if (type.isAssignableFrom(short.class)) {
+         currArg.type |= ARG_PRIMITIVE;
+         currArg.type |= ARG_SHORT;
       }
-      return fallBackAndExecute(_entrypointName, _range, _passes);
+      // System.out.printf("in execute, arg %d %s %08x\n", i,currArg.name,currArg.type );
+
+      currArg.primitiveSize = ((currArg.type & ARG_FLOAT) != 0 ? 4 : (currArg.type & ARG_INT) != 0 ? 4
+            : (currArg.type & ARG_BYTE) != 0 ? 1 : (currArg.type & ARG_CHAR) != 0 ? 2
+                  : (currArg.type & ARG_BOOLEAN) != 0 ? 1 : (currArg.type & ARG_SHORT) != 0 ? 2
+                        : (currArg.type & ARG_LONG) != 0 ? 8 : (currArg.type & ARG_DOUBLE) != 0 ? 8 : 0);
+
+      if (logger.isLoggable(Level.INFO)) {
+         logger.info("prepareOneArg : " + currArg.name + ", type=" + Integer.toHexString(currArg.type)
+               + ", primitiveSize=" + currArg.primitiveSize);
+      }
+
+      return currArg;
+   }
+   
+   
+   KernelArg[] prepareLambdaArgs(Object lambdaObject, Object callerBlock, Field[] callerCapturedFields) {
+      List<KernelArg> argsList = new ArrayList<KernelArg>();
+
+      // Add fields in this order: 
+      // 1. captured args from block, 
+      // 2. iteration variable,
+      // 3. references from lambda's object
+      try {
+         
+         for (Field field : callerCapturedFields) {
+            field.setAccessible(true);
+            argsList.add(prepareOneArg(field, callerBlock));            
+         }
+
+         argsList.add(prepareOneArg(this.getClass().getDeclaredField("iterationVariable"), this));
+
+         for (Field field : entryPoint.getReferencedFields()) {
+            field.setAccessible(true);
+            argsList.add(prepareOneArg(field, lambdaObject));            
+         }
+
+      } catch (Exception e) {
+         e.printStackTrace();
+         return null;
+      }
+      return argsList.toArray(new KernelArg[0]);
    }
 
-   synchronized private Kernel warnFallBackAndExecute(String _entrypointName, final Range _range, final int _passes, String _excuse) {
-      logger.warning("Reverting to Java Thread Pool (JTP) for " + kernel.getClass() + ": " + _excuse);
-      return fallBackAndExecute(_entrypointName, _range, _passes);
-   }
 
-   synchronized Kernel execute(String _entrypointName, final Range _range, final int _passes) {
+   synchronized boolean execute(Object callerBlock, final Range _range, final int _passes) throws AparapiException {
 
       long executeStartTime = System.currentTimeMillis();
       
@@ -1361,21 +1607,20 @@ class KernelRunner{
          throw new IllegalStateException("range can't be null");
       }
       
-      /* for backward compatibility reasons we still honor execution mode */
-      if (kernel.getExecutionMode().isOpenCL()) {
-         // System.out.println("OpenCL");
-
+      if (true) {
          // See if user supplied a Device
          Device device = _range.getDevice();
-            
+
          if ((device == null) || (device instanceof OpenCLDevice)) {
             if (entryPoint == null) {
-               try {
-                  ClassModel classModel = new ClassModel(kernel.getClass());
-                  entryPoint = classModel.getEntrypoint(_entrypointName, kernel);
-               } catch (Exception exception) {
-                  return warnFallBackAndExecute(_entrypointName, _range, _passes, exception);
-               }
+               //try {
+                  assert lambdaKernelCall != null : "Should not be null";
+                  assert lambdaKernelCall.getLambdaKernelThis() != null : "Lambda This should not be null";
+                  Class lambdaClass = lambdaKernelCall.getLambdaKernelThis().getClass();
+                  ClassModel classModel = new ClassModel(lambdaClass);
+                  
+                  entryPoint = classModel.getEntrypoint(lambdaKernelCall.getLambdaMethodName(), 
+                        lambdaKernelCall.getLambdaMethodSignature(), lambdaKernelCall.getLambdaKernelThis());
                
                if ((entryPoint != null) && !entryPoint.shouldFallback()) {
                   synchronized (Kernel.class) { // This seems to be needed because of a race condition uncovered with issue #68 http://code.google.com/p/aparapi/issues/detail?id=68
@@ -1387,7 +1632,7 @@ class KernelRunner{
    
                      int jniFlags = 0;
                      if (openCLDevice == null) {
-                        if (kernel.getExecutionMode().equals(EXECUTION_MODE.GPU)) {
+                        if (true) {
                            // We used to treat as before by getting first GPU device
                            // now we get the best GPU
                            openCLDevice = (OpenCLDevice) OpenCLDevice.best();
@@ -1396,8 +1641,9 @@ class KernelRunner{
                            // We fetch the first CPU device 
                            openCLDevice = (OpenCLDevice) OpenCLDevice.firstCPU();
                            if (openCLDevice == null) {
-                              return warnFallBackAndExecute(_entrypointName, _range, _passes,
-                                    "CPU request can't be honored not CPU device");
+//                              return warnFallBackAndExecute(lambdaObject, _entrypointName, _entrypointSignature, capturedArgs, _range, _passes,
+//                                    "CPU request can't be honored not CPU device");
+                              throw new AparapiException ("CPU request can't be honored not CPU device");
                            }
                         }
                      } else {
@@ -1405,21 +1651,13 @@ class KernelRunner{
                            jniFlags |= JNI_FLAG_USE_GPU; // this flag might be redundant now. 
                         }
                      }
-   
-                     //  jniFlags |= (Config.enableProfiling ? JNI_FLAG_ENABLE_PROFILING : 0);
-                     //  jniFlags |= (Config.enableProfilingCSV ? JNI_FLAG_ENABLE_PROFILING_CSV | JNI_FLAG_ENABLE_PROFILING : 0);
-                     //  jniFlags |= (Config.enableVerboseJNI ? JNI_FLAG_ENABLE_VERBOSE_JNI : 0);
-                     // jniFlags |= (Config.enableVerboseJNIOpenCLResourceTracking ? JNI_FLAG_ENABLE_VERBOSE_JNI_OPENCL_RESOURCE_TRACKING :0);
-                     // jniFlags |= (kernel.getExecutionMode().equals(EXECUTION_MODE.GPU) ? JNI_FLAG_USE_GPU : 0);
-                     // Init the device to check capabilities before emitting the
-                     // code that requires the capabilities.
-   
+      
                      // synchronized(Kernel.class){
-                     jniContextHandle = initJNI(kernel, openCLDevice, jniFlags); // openCLDevice will not be null here
+                     jniContextHandle = initJNI(lambdaKernelCall.getLambdaKernelThis(), openCLDevice, jniFlags); // openCLDevice will not be null here
                   } // end of synchronized! issue 68
                   
                   if (jniContextHandle == 0) {
-                     return warnFallBackAndExecute(_entrypointName, _range, _passes, "initJNI failed to return a valid handle");
+                     throw new AparapiException ("Can't create JNI context");
                   }
    
                   String extensions = getExtensionsJNI(jniContextHandle);
@@ -1435,28 +1673,26 @@ class KernelRunner{
                   }
    
                   if (entryPoint.requiresDoublePragma() && !hasFP64Support()) {
-                     return warnFallBackAndExecute(_entrypointName, _range, _passes, "FP64 required but not supported");
+                           throw new AparapiException ("FP64 required but not supported");
                   }
    
                   if (entryPoint.requiresByteAddressableStorePragma() && !hasByteAddressableStoreSupport()) {
-                     return warnFallBackAndExecute(_entrypointName, _range, _passes,
-                           "Byte addressable stores required but not supported");
+                           throw new AparapiException("Byte addressable stores required but not supported");
                   }
    
                   boolean all32AtomicsAvailable = hasGlobalInt32BaseAtomicsSupport() && hasGlobalInt32ExtendedAtomicsSupport()
                         && hasLocalInt32BaseAtomicsSupport() && hasLocalInt32ExtendedAtomicsSupport();
    
                   if (entryPoint.requiresAtomic32Pragma() && !all32AtomicsAvailable) {
-   
-                     return warnFallBackAndExecute(_entrypointName, _range, _passes, "32 bit Atomics required but not supported");
+                     throw new AparapiException("32 bit Atomics required but not supported");
                   }
    
                   String openCL = null;
-                  try {
+                  //try {
                      openCL = KernelWriter.writeToString(entryPoint);
-                  } catch (CodeGenException codeGenException) {
-                     return warnFallBackAndExecute(_entrypointName, _range, _passes, codeGenException);
-                  }
+                  //} catch (CodeGenException codeGenException) {
+                  //   return warnFallBackAndExecute(lambdaObject, _entrypointName, _entrypointSignature, capturedArgs, _range, _passes, codeGenException);
+                  //}
    
                   if (Config.enableShowGeneratedOpenCL) {
                      System.out.println(openCL);
@@ -1468,157 +1704,42 @@ class KernelRunner{
    
                   // Send the string to OpenCL to compile it
                   if (buildProgramJNI(jniContextHandle, openCL) == 0) {
-                     return warnFallBackAndExecute(_entrypointName, _range, _passes, "OpenCL compile failed");
+                     //return warnFallBackAndExecute(lambdaObject, _entrypointName, _entrypointSignature, capturedArgs, _range, _passes, 
+                     //"OpenCL compile failed");
+                     throw new AparapiException("OpenCL compile failed");
                   }
    
-                  args = new KernelArg[entryPoint.getReferencedFields().size()];
-                  int i = 0;
-   
-                  for (Field field : entryPoint.getReferencedFields()) {
-                     try {
-                        field.setAccessible(true);
-                        args[i] = new KernelArg();
-                        args[i].name = field.getName();
-                        args[i].field = field;
-                        if ((field.getModifiers() & Modifier.STATIC) == Modifier.STATIC) {
-                           args[i].type |= ARG_STATIC;
-                        }
-   
-                        Class<?> type = field.getType();
-                        if (type.isArray()) {
-                           if (field.getAnnotation(com.amd.aparapi.Kernel.Local.class) != null
-                                 || args[i].name.endsWith(Kernel.LOCAL_SUFFIX)) {
-                              args[i].type |= ARG_LOCAL;
-                           } else if (field.getAnnotation(com.amd.aparapi.Kernel.Constant.class) != null
-                                 || args[i].name.endsWith(Kernel.CONSTANT_SUFFIX)) {
-                              args[i].type |= ARG_CONSTANT;
-                           } else {
-                              args[i].type |= ARG_GLOBAL;
-                           }
-                           
-                           args[i].array = null; // will get updated in updateKernelArrayRefs
-                           args[i].type |= ARG_ARRAY;
-                           
-                           if (isExplicit()) {
-                              args[i].type |= ARG_EXPLICIT;
-                           }
-                           
-                           // for now, treat all write arrays as read-write, see bugzilla issue 4859
-                           // we might come up with a better solution later
-                           args[i].type |= entryPoint.getArrayFieldAssignments().contains(field.getName()) ? (ARG_WRITE | ARG_READ)
-                                 : 0;
-                           args[i].type |= entryPoint.getArrayFieldAccesses().contains(field.getName()) ? ARG_READ : 0;
-                           // args[i].type |= ARG_GLOBAL;
-                           args[i].type |= type.isAssignableFrom(float[].class) ? ARG_FLOAT : 0;
-   
-                           args[i].type |= type.isAssignableFrom(int[].class) ? ARG_INT : 0;
-   
-                           args[i].type |= type.isAssignableFrom(boolean[].class) ? ARG_BOOLEAN : 0;
-   
-                           args[i].type |= type.isAssignableFrom(byte[].class) ? ARG_BYTE : 0;
-   
-                           args[i].type |= type.isAssignableFrom(char[].class) ? ARG_CHAR : 0;
-   
-                           args[i].type |= type.isAssignableFrom(double[].class) ? ARG_DOUBLE : 0;
-   
-                           args[i].type |= type.isAssignableFrom(long[].class) ? ARG_LONG : 0;
-   
-                           args[i].type |= type.isAssignableFrom(short[].class) ? ARG_SHORT : 0;
-   
-                           // arrays whose length is used will have an int arg holding
-                           // the length as a kernel param
-                           if (entryPoint.getArrayFieldArrayLengthUsed().contains(args[i].name)) {
-                              args[i].type |= ARG_ARRAYLENGTH;
-                           }
-                           
-                           if (type.getName().startsWith("[L")) {
-                              args[i].type |= (ARG_OBJ_ARRAY_STRUCT | ARG_WRITE | ARG_READ);
-                              if (logger.isLoggable(Level.FINE)) {
-                                 logger.fine("tagging " + args[i].name + " as (ARG_OBJ_ARRAY_STRUCT | ARG_WRITE | ARG_READ)");
-                              }
-                           }
-                        } else if (type.isAssignableFrom(float.class)) {
-                           args[i].type |= ARG_PRIMITIVE;
-                           args[i].type |= ARG_FLOAT;
-                        } else if (type.isAssignableFrom(int.class)) {
-                           args[i].type |= ARG_PRIMITIVE;
-                           args[i].type |= ARG_INT;
-                        } else if (type.isAssignableFrom(double.class)) {
-                           args[i].type |= ARG_PRIMITIVE;
-                           args[i].type |= ARG_DOUBLE;
-                        } else if (type.isAssignableFrom(long.class)) {
-                           args[i].type |= ARG_PRIMITIVE;
-                           args[i].type |= ARG_LONG;
-                        } else if (type.isAssignableFrom(boolean.class)) {
-                           args[i].type |= ARG_PRIMITIVE;
-                           args[i].type |= ARG_BOOLEAN;
-                        } else if (type.isAssignableFrom(byte.class)) {
-                           args[i].type |= ARG_PRIMITIVE;
-                           args[i].type |= ARG_BYTE;
-                        } else if (type.isAssignableFrom(char.class)) {
-                           args[i].type |= ARG_PRIMITIVE;
-                           args[i].type |= ARG_CHAR;
-                        } else if (type.isAssignableFrom(short.class)) {
-                           args[i].type |= ARG_PRIMITIVE;
-                           args[i].type |= ARG_SHORT;
-                        }
-                        // System.out.printf("in execute, arg %d %s %08x\n", i,args[i].name,args[i].type );
-                     } catch (IllegalArgumentException e) {
-                        e.printStackTrace();
-                     }
-   
-                     args[i].primitiveSize = ((args[i].type & ARG_FLOAT) != 0 ? 4 : (args[i].type & ARG_INT) != 0 ? 4
-                           : (args[i].type & ARG_BYTE) != 0 ? 1 : (args[i].type & ARG_CHAR) != 0 ? 2
-                                 : (args[i].type & ARG_BOOLEAN) != 0 ? 1 : (args[i].type & ARG_SHORT) != 0 ? 2
-                                       : (args[i].type & ARG_LONG) != 0 ? 8 : (args[i].type & ARG_DOUBLE) != 0 ? 8 : 0);
-   
-                     if (logger.isLoggable(Level.FINE)) {
-                        logger.fine("arg " + i + ", " + args[i].name + ", type=" + Integer.toHexString(args[i].type)
-                              + ", primitiveSize=" + args[i].primitiveSize);
-                     }
-   
-                     i++;
-                  }
-   
-                  // at this point, i = the actual used number of arguments
-                  // (private buffers do not get treated as arguments)
-   
-                  argc = i;
+                  args = prepareLambdaArgs(lambdaKernelCall.getLambdaKernelThis(), callerBlock, lambdaKernelCall.getLambdaCapturedFields());
+                     
+                  argc = args.length;
    
                   setArgsJNI(jniContextHandle, args, argc);
    
                   conversionTime = System.currentTimeMillis() - executeStartTime;
    
-                  try {
-                     executeOpenCL(_entrypointName, _range, _passes);
-                  } catch (final AparapiException e) {
-                     warnFallBackAndExecute(_entrypointName, _range, _passes, e);
-                  }
+                  executeOpenCL(lambdaKernelCall.getLambdaKernelThis(), callerBlock, _range, _passes);
+
+                     if (logger.isLoggable(Level.INFO)) {
+                        logger.info("First run done. ");
+                     }
+
                } else {
-                  warnFallBackAndExecute(_entrypointName, _range, _passes, "failed to locate entrypoint");
+                  throw new AparapiException("failed to locate entrypoint");
+
                }
             } else {
-               try {
-                  executeOpenCL(_entrypointName, _range, _passes);
-               } catch (final AparapiException e) {
-                  warnFallBackAndExecute(_entrypointName, _range, _passes, e);
-               }
+               
+               executeOpenCL(lambdaKernelCall.getLambdaKernelThis(), callerBlock, _range, _passes);
             }
          } else {
-              warnFallBackAndExecute(_entrypointName, _range, _passes, "OpenCL was requested but Device supplied was not an OpenCLDevice");
+              throw new AparapiException("OpenCL was requested but Device supplied was not an OpenCLDevice");
          }
-      } else {
-         executeJava(_range, _passes);
-      }
-      
-      if (Config.enableExecutionModeReporting) {
-         System.out.println(kernel.getClass().getCanonicalName() + ":" + kernel.getExecutionMode());
       }
       
       executionTime = System.currentTimeMillis() - executeStartTime;
       accumulatedExecutionTime += executionTime;
 
-      return (kernel);
+      return true;
    }
 
    private Set<Object> puts = new HashSet<Object>();

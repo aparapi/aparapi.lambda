@@ -229,9 +229,9 @@ public abstract class Kernel implements Cloneable{
    public abstract class Entry{
       public abstract void run();
 
-      public Kernel execute(Range _range) {
-         return (Kernel.this.execute("foo", _range, 1));
-      }
+//      public Kernel execute(Range _range) {
+//         return (Kernel.this.execute("foo", _range, 1));
+//      }
    }
 
    /**
@@ -1661,119 +1661,119 @@ public abstract class Kernel implements Cloneable{
       return (kernelRunner.getConversionTime());
    }
 
-   /**
-    * Start execution of <code>_range</code> kernels.
-    * <p>
-    * When <code>kernel.execute(globalSize)</code> is invoked, Aparapi will schedule the execution of <code>globalSize</code> kernels. If the execution mode is GPU then 
-    * the kernels will execute as OpenCL code on the GPU device. Otherwise, if the mode is JTP, the kernels will execute as a pool of Java threads on the CPU. 
-    * <p>
-    * @param range The number of Kernels that we would like to initiate.
-    * @returnThe Kernel instance (this) so we can chain calls to put(arr).execute(range).get(arr)
-    * 
-    */
-   public synchronized Kernel execute(Range _range) {
-      return (execute(_range, 1));
-   }
-
-   /**
-    * Start execution of <code>_range</code> kernels.
-    * <p>
-    * When <code>kernel.execute(_range)</code> is invoked, Aparapi will schedule the execution of <code>_range</code> kernels. If the execution mode is GPU then 
-    * the kernels will execute as OpenCL code on the GPU device. Otherwise, if the mode is JTP, the kernels will execute as a pool of Java threads on the CPU. 
-    * <p>
-    * Since adding the new <code>Range class</code> this method offers backward compatibility and merely defers to <code> return (execute(Range.create(_range), 1));</code>.
-    * @param _range The number of Kernels that we would like to initiate.
-    * @returnThe Kernel instance (this) so we can chain calls to put(arr).execute(range).get(arr)
-    * 
-    */
-   public synchronized Kernel execute(int _range) {
-      return (execute(Range.create(_range), 1));
-   }
-
-   /**
-    * Start execution of <code>_passes</code> iterations of <code>_range</code> kernels.
-    * <p>
-    * When <code>kernel.execute(_range, _passes)</code> is invoked, Aparapi will schedule the execution of <code>_reange</code> kernels. If the execution mode is GPU then 
-    * the kernels will execute as OpenCL code on the GPU device. Otherwise, if the mode is JTP, the kernels will execute as a pool of Java threads on the CPU. 
-    * <p>
-    * @param _globalSize The number of Kernels that we would like to initiate.
-    * @param _passes The number of passes to make
-    * @return The Kernel instance (this) so we can chain calls to put(arr).execute(range).get(arr)
-    * 
-    */
-   public synchronized Kernel execute(Range _range, int _passes) {
-      return (execute("run", _range, _passes));
-   }
-
-   /**
-    * Start execution of <code>_passes</code> iterations over the <code>_range</code> of kernels.
-    * <p>
-    * When <code>kernel.execute(_range)</code> is invoked, Aparapi will schedule the execution of <code>_range</code> kernels. If the execution mode is GPU then 
-    * the kernels will execute as OpenCL code on the GPU device. Otherwise, if the mode is JTP, the kernels will execute as a pool of Java threads on the CPU. 
-    * <p>
-    * Since adding the new <code>Range class</code> this method offers backward compatibility and merely defers to <code> return (execute(Range.create(_range), 1));</code>.
-    * @param _range The number of Kernels that we would like to initiate.
-    * @returnThe Kernel instance (this) so we can chain calls to put(arr).execute(range).get(arr)
-    * 
-    */
-   public synchronized Kernel execute(int _range, int _passes) {
-      return (execute(Range.create(_range), _passes));
-   }
-
-   /**
-    * Start execution of <code>globalSize</code> kernels for the given entrypoint.
-    * <p>
-    * When <code>kernel.execute("entrypoint", globalSize)</code> is invoked, Aparapi will schedule the execution of <code>globalSize</code> kernels. If the execution mode is GPU then 
-    * the kernels will execute as OpenCL code on the GPU device. Otherwise, if the mode is JTP, the kernels will execute as a pool of Java threads on the CPU. 
-    * <p>
-    * @param _entrypoint is the name of the method we wish to use as the entrypoint to the kernel
-    * @param _globalSize The number of Kernels that we would like to initiate.
-    * @return The Kernel instance (this) so we can chain calls to put(arr).execute(range).get(arr)
-    * 
-    */
-   public synchronized Kernel execute(Entry _entry, Range _range) {
-      if (kernelRunner == null) {
-         kernelRunner = new KernelRunner(this);
-
-      }
-      return (kernelRunner.execute(_entry, _range, 1));
-   }
-
-   /**
-    * Start execution of <code>globalSize</code> kernels for the given entrypoint.
-    * <p>
-    * When <code>kernel.execute("entrypoint", globalSize)</code> is invoked, Aparapi will schedule the execution of <code>globalSize</code> kernels. If the execution mode is GPU then 
-    * the kernels will execute as OpenCL code on the GPU device. Otherwise, if the mode is JTP, the kernels will execute as a pool of Java threads on the CPU. 
-    * <p>
-    * @param _entrypoint is the name of the method we wish to use as the entrypoint to the kernel
-    * @param _globalSize The number of Kernels that we would like to initiate.
-    * @return The Kernel instance (this) so we can chain calls to put(arr).execute(range).get(arr)
-    * 
-    */
-   public synchronized Kernel execute(String _entrypoint, Range _range) {
-      return (execute(_entrypoint, _range, 1));
-
-   }
-
-   /**
-    * Start execution of <code>globalSize</code> kernels for the given entrypoint.
-    * <p>
-    * When <code>kernel.execute("entrypoint", globalSize)</code> is invoked, Aparapi will schedule the execution of <code>globalSize</code> kernels. If the execution mode is GPU then 
-    * the kernels will execute as OpenCL code on the GPU device. Otherwise, if the mode is JTP, the kernels will execute as a pool of Java threads on the CPU. 
-    * <p>
-    * @param _entrypoint is the name of the method we wish to use as the entrypoint to the kernel
-    * @param _globalSize The number of Kernels that we would like to initiate.
-    * @return The Kernel instance (this) so we can chain calls to put(arr).execute(range).get(arr)
-    * 
-    */
-   public synchronized Kernel execute(String _entrypoint, Range _range, int _passes) {
-      if (kernelRunner == null) {
-         kernelRunner = new KernelRunner(this);
-
-      }
-      return (kernelRunner.execute(_entrypoint, _range, _passes));
-
-   }
+//   /**
+//    * Start execution of <code>_range</code> kernels.
+//    * <p>
+//    * When <code>kernel.execute(globalSize)</code> is invoked, Aparapi will schedule the execution of <code>globalSize</code> kernels. If the execution mode is GPU then 
+//    * the kernels will execute as OpenCL code on the GPU device. Otherwise, if the mode is JTP, the kernels will execute as a pool of Java threads on the CPU. 
+//    * <p>
+//    * @param range The number of Kernels that we would like to initiate.
+//    * @returnThe Kernel instance (this) so we can chain calls to put(arr).execute(range).get(arr)
+//    * 
+//    */
+//   public synchronized Kernel execute(Range _range) {
+//      return (execute(_range, 1));
+//   }
+//
+//   /**
+//    * Start execution of <code>_range</code> kernels.
+//    * <p>
+//    * When <code>kernel.execute(_range)</code> is invoked, Aparapi will schedule the execution of <code>_range</code> kernels. If the execution mode is GPU then 
+//    * the kernels will execute as OpenCL code on the GPU device. Otherwise, if the mode is JTP, the kernels will execute as a pool of Java threads on the CPU. 
+//    * <p>
+//    * Since adding the new <code>Range class</code> this method offers backward compatibility and merely defers to <code> return (execute(Range.create(_range), 1));</code>.
+//    * @param _range The number of Kernels that we would like to initiate.
+//    * @returnThe Kernel instance (this) so we can chain calls to put(arr).execute(range).get(arr)
+//    * 
+//    */
+//   public synchronized Kernel execute(int _range) {
+//      return (execute(Range.create(_range), 1));
+//   }
+//
+//   /**
+//    * Start execution of <code>_passes</code> iterations of <code>_range</code> kernels.
+//    * <p>
+//    * When <code>kernel.execute(_range, _passes)</code> is invoked, Aparapi will schedule the execution of <code>_reange</code> kernels. If the execution mode is GPU then 
+//    * the kernels will execute as OpenCL code on the GPU device. Otherwise, if the mode is JTP, the kernels will execute as a pool of Java threads on the CPU. 
+//    * <p>
+//    * @param _globalSize The number of Kernels that we would like to initiate.
+//    * @param _passes The number of passes to make
+//    * @return The Kernel instance (this) so we can chain calls to put(arr).execute(range).get(arr)
+//    * 
+//    */
+//   public synchronized Kernel execute(Range _range, int _passes) {
+//      return (execute("run", _range, _passes));
+//   }
+//
+//   /**
+//    * Start execution of <code>_passes</code> iterations over the <code>_range</code> of kernels.
+//    * <p>
+//    * When <code>kernel.execute(_range)</code> is invoked, Aparapi will schedule the execution of <code>_range</code> kernels. If the execution mode is GPU then 
+//    * the kernels will execute as OpenCL code on the GPU device. Otherwise, if the mode is JTP, the kernels will execute as a pool of Java threads on the CPU. 
+//    * <p>
+//    * Since adding the new <code>Range class</code> this method offers backward compatibility and merely defers to <code> return (execute(Range.create(_range), 1));</code>.
+//    * @param _range The number of Kernels that we would like to initiate.
+//    * @returnThe Kernel instance (this) so we can chain calls to put(arr).execute(range).get(arr)
+//    * 
+//    */
+//   public synchronized Kernel execute(int _range, int _passes) {
+//      return (execute(Range.create(_range), _passes));
+//   }
+//
+//   /**
+//    * Start execution of <code>globalSize</code> kernels for the given entrypoint.
+//    * <p>
+//    * When <code>kernel.execute("entrypoint", globalSize)</code> is invoked, Aparapi will schedule the execution of <code>globalSize</code> kernels. If the execution mode is GPU then 
+//    * the kernels will execute as OpenCL code on the GPU device. Otherwise, if the mode is JTP, the kernels will execute as a pool of Java threads on the CPU. 
+//    * <p>
+//    * @param _entrypoint is the name of the method we wish to use as the entrypoint to the kernel
+//    * @param _globalSize The number of Kernels that we would like to initiate.
+//    * @return The Kernel instance (this) so we can chain calls to put(arr).execute(range).get(arr)
+//    * 
+//    */
+//   public synchronized Kernel execute(Entry _entry, Range _range) {
+//      if (kernelRunner == null) {
+//         kernelRunner = new KernelRunner(this);
+//
+//      }
+//      return (kernelRunner.execute(_entry, _range, 1));
+//   }
+//
+//   /**
+//    * Start execution of <code>globalSize</code> kernels for the given entrypoint.
+//    * <p>
+//    * When <code>kernel.execute("entrypoint", globalSize)</code> is invoked, Aparapi will schedule the execution of <code>globalSize</code> kernels. If the execution mode is GPU then 
+//    * the kernels will execute as OpenCL code on the GPU device. Otherwise, if the mode is JTP, the kernels will execute as a pool of Java threads on the CPU. 
+//    * <p>
+//    * @param _entrypoint is the name of the method we wish to use as the entrypoint to the kernel
+//    * @param _globalSize The number of Kernels that we would like to initiate.
+//    * @return The Kernel instance (this) so we can chain calls to put(arr).execute(range).get(arr)
+//    * 
+//    */
+//   public synchronized Kernel execute(String _entrypoint, Range _range) {
+//      return (execute(_entrypoint, _range, 1));
+//
+//   }
+//
+//   /**
+//    * Start execution of <code>globalSize</code> kernels for the given entrypoint.
+//    * <p>
+//    * When <code>kernel.execute("entrypoint", globalSize)</code> is invoked, Aparapi will schedule the execution of <code>globalSize</code> kernels. If the execution mode is GPU then 
+//    * the kernels will execute as OpenCL code on the GPU device. Otherwise, if the mode is JTP, the kernels will execute as a pool of Java threads on the CPU. 
+//    * <p>
+//    * @param _entrypoint is the name of the method we wish to use as the entrypoint to the kernel
+//    * @param _globalSize The number of Kernels that we would like to initiate.
+//    * @return The Kernel instance (this) so we can chain calls to put(arr).execute(range).get(arr)
+//    * 
+//    */
+//   public synchronized Kernel execute(String _entrypoint, Range _range, int _passes) {
+//      if (kernelRunner == null) {
+//         kernelRunner = new KernelRunner(this);
+//
+//      }
+//      return (kernelRunner.execute(_entrypoint, _range, _passes));
+//
+//   }
 
    /**
     * Release any resources associated with this Kernel.

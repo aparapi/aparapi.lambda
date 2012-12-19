@@ -2405,8 +2405,19 @@ class ClassModel{
       }
       
       public String toString() {
-    	 return getClassModel().getClassWeAreModelling().getName() + "." + 
-            getName() + " " + getDescriptor();
+         ClassModel cm = getClassModel();
+         assert cm != null : "ClassModel should not be null";
+         
+         // ecaspole 121211 - I think this is an actual bug where clazz is not set when creating 
+         // ClassModel from the stream
+         //Class theClass = cm.getClassWeAreModelling();
+         //assert theClass != null : "ClassModel should not be null";
+         
+         //System.out.println(" Hi Eric: " + ClassModel.this.getClassEntry().getNameUTF8Entry().getUTF8());
+
+         //return getClassModel().getClassWeAreModelling().getName() + "." + 
+         //   getName() + " " + getDescriptor();
+         return  getName() + " " + getDescriptor();
       }
 
    }
@@ -2453,6 +2464,12 @@ class ClassModel{
     * @throws ClassParseException
     */
    private void parse(ClassLoader _classLoader, String _className) throws ClassParseException {
+	   System.out.println("ClassLoader is: " + _classLoader);
+	   String asDotClass = _className.replace('.', '/') + ".class";
+	   System.out.println("Classname as: " + asDotClass);
+	   InputStream is = _classLoader.getResourceAsStream(asDotClass);
+	   System.out.println("stream is: " + is);
+
       parse(_classLoader.getResourceAsStream(_className.replace('.', '/') + ".class"));
 
    }
@@ -2545,6 +2562,9 @@ class ClassModel{
    }
 
    ClassModelMethod getMethod(String _name, String _descriptor) {
+      
+      //System.out.println("methods = " + methods);
+      
       for (ClassModelMethod entry : methods) {
          if (entry.getName().equals(_name) && entry.getDescriptor().equals(_descriptor)) {
             return (entry);
@@ -2602,6 +2622,10 @@ class ClassModel{
 
    MethodModel getMethodModel(String _name, String _signature) throws AparapiException {
       ClassModelMethod method = getMethod(_name, _signature);
+      
+      
+      
+      assert method != null : "ClassModelMethod should not be null";
       return new MethodModel(method);
    }
 

@@ -2233,6 +2233,9 @@ class InstructionSet{
          return (1);
       }
 
+      @Override public String toString() {
+         return super.toString() + " " + getConstantPoolFieldEntry().getNameAndTypeEntry().getNameUTF8Entry().getUTF8();
+      }
    }
 
    static class I_GETSTATIC extends Index16 implements AccessField{
@@ -3023,6 +3026,10 @@ class InstructionSet{
             child = child.getNextExpr();
          }
          return (child);
+      }
+      
+      @Override public String toString() {
+         return super.toString() + " " + method.getConstantPool().getMethodEntry(getConstantPoolMethodIndex());
       }
 
       @Override public Instruction getInstanceReference() {
