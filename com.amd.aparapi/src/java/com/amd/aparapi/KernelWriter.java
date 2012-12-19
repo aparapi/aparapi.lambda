@@ -65,27 +65,27 @@ import com.amd.aparapi.InstructionSet.VirtualMethodCall;
 
 abstract class KernelWriter extends BlockWriter{
 
-   final String cvtBooleanToChar = "char ";
+   final static String cvtBooleanToChar = "char ";
 
-   final String cvtBooleanArrayToCharStar = "char* ";
+   final static String cvtBooleanArrayToCharStar = "char* ";
 
-   final String cvtByteToChar = "char ";
+   final static String cvtByteToChar = "char ";
 
-   final String cvtByteArrayToCharStar = "char* ";
+   final static String cvtByteArrayToCharStar = "char* ";
 
-   final String cvtCharToShort = "unsigned short ";
+   final static String cvtCharToShort = "unsigned short ";
 
-   final String cvtCharArrayToShortStar = "unsigned short* ";
+   final static String cvtCharArrayToShortStar = "unsigned short* ";
 
-   final String cvtIntArrayToIntStar = "int* ";
+   final static String cvtIntArrayToIntStar = "int* ";
 
-   final String cvtFloatArrayToFloatStar = "float* ";
+   final static String cvtFloatArrayToFloatStar = "float* ";
 
-   final String cvtDoubleArrayToDoubleStar = "double* ";
+   final static String cvtDoubleArrayToDoubleStar = "double* ";
 
-   final String cvtLongArrayToLongStar = "long* ";
+   final static String cvtLongArrayToLongStar = "long* ";
 
-   final String cvtShortArrayToShortStar = "short* ";
+   final static String cvtShortArrayToShortStar = "short* ";
 
    // private static Logger logger = Logger.getLogger(Config.getLoggerName());
 
@@ -148,6 +148,10 @@ abstract class KernelWriter extends BlockWriter{
     * @return Suitably converted string, "char*", etc
     */
    @Override protected String convertType(String _typeDesc, boolean useClassModel) {
+      return KernelWriter.convertType0(_typeDesc, useClassModel);
+   }
+
+   public static String convertType0(String _typeDesc, boolean useClassModel) {
       if (_typeDesc.equals("Z") || _typeDesc.equals("boolean")) {
          return (cvtBooleanToChar);
       } else if (_typeDesc.equals("[Z") || _typeDesc.equals("boolean[]")) {
@@ -160,8 +164,12 @@ abstract class KernelWriter extends BlockWriter{
          return (cvtCharToShort);
       } else if (_typeDesc.equals("[C") || _typeDesc.equals("char[]")) {
          return (cvtCharArrayToShortStar);
+      } else if (_typeDesc.equals("I")) {
+         return ("int ");
       } else if (_typeDesc.equals("[I") || _typeDesc.equals("int[]")) {
          return (cvtIntArrayToIntStar);
+      } else if (_typeDesc.equals("F")) {
+         return ("float ");
       } else if (_typeDesc.equals("[F") || _typeDesc.equals("float[]")) {
          return (cvtFloatArrayToFloatStar);
       } else if (_typeDesc.equals("[D") || _typeDesc.equals("double[]")) {
@@ -176,9 +184,9 @@ abstract class KernelWriter extends BlockWriter{
          return (ClassModel.convert(_typeDesc, "", true));
       } else {
          return _typeDesc;
-      }
+      }   
    }
-
+   
    @Override protected void writeMethod(MethodCall _methodCall, MethodEntry _methodEntry) throws CodeGenException {
 
       // System.out.println("_methodEntry = " + _methodEntry);
@@ -279,12 +287,69 @@ abstract class KernelWriter extends BlockWriter{
 
    public final static String CONSTANT_ANNOTATION_NAME = "L" + Kernel.Constant.class.getName().replace(".", "/") + ";";
 
+   
+   static String lambdaIterationIntArgName = null;
+   String getLambdaIterationIntArgName() { return lambdaIterationIntArgName; }
+
+   
    @Override void write(Entrypoint _entryPoint) throws CodeGenException {
       List<String> thisStruct = new ArrayList<String>();
       List<String> argLines = new ArrayList<String>();
       List<String> assigns = new ArrayList<String>();
 
       entryPoint = _entryPoint;
+      
+      // Add code to collect lambda formal arguments
+      // The local variables are the java args to the method
+      {
+         MethodModel mm = entryPoint.getMethodModel();
+
+         boolean alreadyHasFirstArg = !mm.getMethod().isStatic();
+
+         int argsCount = 0;
+         LocalVariableInfo prev = null;
+         Iterator<LocalVariableInfo> lvit = mm.getLocalVariableTableEntry().iterator();
+         while (lvit.hasNext()) {
+            LocalVariableInfo lvi = lvit.next();
+            
+            StringBuilder thisStructLine = new StringBuilder();
+            StringBuilder argLine = new StringBuilder();
+            StringBuilder assignLine = new StringBuilder();
+            if ((lvi.getStart() == 0) && ((lvi.getVariableIndex() != 0) || mm.getMethod().isStatic())) { // full scope but skip this
+               String descriptor = lvi.getVariableDescriptor();
+               argLine.append(convertType(ClassModel.typeName(descriptor.charAt(0)), false));
+               thisStructLine.append(convertType(ClassModel.typeName(descriptor.charAt(0)), false));
+
+               argLine.append(" ");
+               thisStructLine.append(" ");
+
+               assignLine.append("this->");
+               assignLine.append(lvi.getVariableName());
+               assignLine.append(" = ");
+               assignLine.append(lvi.getVariableName());
+               
+               argLine.append(lvi.getVariableName());
+               
+               thisStructLine.append(lvi.getVariableName());
+               
+               assigns.add(assignLine.toString());
+               argLines.add(argLine.toString());
+               thisStruct.add(thisStructLine.toString());
+               
+               prev = lvi;
+            } else {
+               // Note the last arg is an int which should be equivalent to the opencl gid
+               if ((prev != null) && prev.getVariableDescriptor().equals("I")) {
+                  if (lambdaIterationIntArgName == null) {
+                     lambdaIterationIntArgName = prev.getVariableName();
+                     //System.out.println("## lambdaIterationIntArgName = " + lambdaIterationIntArgName);
+                  }
+
+               }
+               
+            }
+         }         
+      }
 
       for (ClassModelField field : _entryPoint.getReferencedClassModelFields()) {
          // Field field = _entryPoint.getClassModel().getField(f.getName());
@@ -475,13 +540,18 @@ abstract class KernelWriter extends BlockWriter{
          write(line);
          writeln(";");
       }
+
+      // The passid is the OpenCL gid
       write("int passid");
       out();
       writeln(";");
-      // out();
-      // newLine();
+      
+      //out();
+      //newLine();
+      
       write("}This;");
       newLine();
+      
       write("int get_pass_id(This *this){");
       in();
       {
@@ -493,6 +563,7 @@ abstract class KernelWriter extends BlockWriter{
       write("}");
       newLine();
 
+      
       for (MethodModel mm : _entryPoint.getCalledMethods()) {
          // write declaration :)
 
@@ -549,7 +620,10 @@ abstract class KernelWriter extends BlockWriter{
          newLine();
       }
 
-      write("__kernel void " + _entryPoint.getMethodModel().getSimpleName() + "(");
+      // For the purpose of a quick demo rename the lambda kernel enrtrypoint to "run"
+      // to keep in synch with JNI code
+      //write("__kernel void " + _entryPoint.getMethodModel().getSimpleName() + "(");
+      write("__kernel void run(");
 
       in();
       boolean first = true;
@@ -571,9 +645,11 @@ abstract class KernelWriter extends BlockWriter{
          write(", ");
       }
       newLine();
+      
       write("int passid");
       out();
       newLine();
+      
       write("){");
       in();
       newLine();

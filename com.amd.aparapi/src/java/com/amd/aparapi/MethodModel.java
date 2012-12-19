@@ -53,6 +53,7 @@ import java.util.logging.Logger;
 
 import com.amd.aparapi.ClassModel.ClassModelMethod;
 import com.amd.aparapi.ClassModel.ConstantPool;
+import com.amd.aparapi.ClassModel.AttributePool.CodeEntry;
 import com.amd.aparapi.ClassModel.ConstantPool.FieldEntry;
 import com.amd.aparapi.ClassModel.ConstantPool.MethodReferenceEntry;
 import com.amd.aparapi.ClassModel.ConstantPool.MethodReferenceEntry.Arg;
@@ -1408,6 +1409,11 @@ class MethodModel{
             if (prev instanceof AccessLocalVariable) {
                FieldEntry field = ((AssignToInstanceField) instruction).getConstantPoolFieldEntry();
                accessedFieldName = field.getNameAndTypeEntry().getNameUTF8Entry().getUTF8();
+               
+               if (logger.isLoggable(Level.FINE)) {
+                  logger.fine("Looking for setter variable: " + methodName + " accessedFieldName: " + accessedFieldName + ", varNameCandidateCamelCased: " + varNameCandidateCamelCased);
+               }
+               
                if (accessedFieldName.equals(varNameCandidateCamelCased)) {
 
                   // Verify field type matches setter arg type
@@ -1630,10 +1636,19 @@ class MethodModel{
    private void init(ClassModelMethod _method) throws AparapiException {
       try {
          method = _method;
+         
+         assert method != null : "method should not be null";
+         
          expressionList = new ExpressionList(this);
-
+         
+         assert expressionList != null : "expressionList should not be null";
+         
          // check if we have any exception handlers
-         int exceptionsSize = method.getCodeEntry().getExceptionPoolEntries().size();
+         CodeEntry c = method.getCodeEntry();
+         
+         assert c != null : "should not be null";
+         
+         int exceptionsSize = c.getExceptionPoolEntries().size();
          if (exceptionsSize > 0) {
             if (logger.isLoggable(Level.FINE)) {
                logger.fine("exception size for " + method + " = " + exceptionsSize);
@@ -1659,6 +1674,20 @@ class MethodModel{
                   + method.getDescriptor()
                   + " does not contain a LocalVariableTable entry (source not compiled with -g) aparapi will attempt to create a synthetic table based on bytecode. This is experimental!!");
          }
+         
+//         {
+//            // ecaspole 121211
+//            System.out.println("MethodModel.init of " + method);
+//
+//            Iterator<Instruction> instIterator = pcMap.values().iterator();
+//            while(instIterator.hasNext()) {
+//               Instruction instr = instIterator.next();
+//               System.out.println("  Inst = " + instr);
+//            }
+//            
+//         }
+         
+         
 
          // pass #2 build branch graph
          buildBranchGraphs(pcMap);
@@ -1765,6 +1794,18 @@ class MethodModel{
          }
       }
       return (methodCalls);
+   }
+
+   List<AccessField> getFieldAccesses() {
+	   List<AccessField> accessedFields = new ArrayList<AccessField>();
+
+	   for (Instruction i = getPCHead(); i != null; i = i.getNextPC()) {
+		   if (i instanceof AccessField) {
+			   AccessField accessField = (AccessField) i;
+			   accessedFields.add(accessField);
+		   }
+	   }
+	   return (accessedFields);
    }
 
    Instruction getPCHead() {

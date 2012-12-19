@@ -30,8 +30,6 @@
       <delete dir="${dist}"/>
       <delete file="${dist}.zip"/>
       <subant target="clean">
-         <fileset dir="samples" includes="*/build.xml"/>
-         <fileset dir="examples" includes="*/build.xml"/>
          <fileset dir="test" includes="*/build.xml"/>
       </subant>
       <delete dir="examples\nbody\jogamp"/> <!-- we handle the jogamp delete here, save downloading each build -->
@@ -44,19 +42,11 @@
       <!-- Build the two aparapi dirs -->
       <ant dir="com.amd.aparapi" target="build"/> 
       <ant dir="com.amd.aparapi.jni" target="build"/> 
-      <subant target="build">
-         <fileset dir="samples" includes="*/build.xml"/>
-      </subant>
    </target>
 
-   <target name="examples" depends="build">
-      <subant target="build">
-         <fileset dir="examples" includes="*/build.xml"/>
-      </subant>
-   </target>
 
-   <target name="test" depends="clean">
-      <ant dir="com.amd.aparapi" target="build"/> 
+   <target name="test" depends="build">
+      <!-- <ant dir="com.amd.aparapi" target="build"/>  -->
       <subant target="junit">
          <fileset dir="test" includes="*/build.xml"/>
       </subant>
@@ -82,13 +72,7 @@
          <fileset dir="com.amd.aparapi.jni/dist" includes="**.dll,**.so,**.dylib" />
       </copy>
 
-      <mkdir dir="${dist}/samples"/>
-      <copy todir="${dist}/samples">
-         <fileset dir="samples"/>
-      </copy>
 
-      <replace dir="${dist}/samples" includes="**/build.xml,**/*.bat,**/*.sh" token="../../com.amd.aparapi/dist/aparapi.jar" value="../../aparapi.jar"/>
-      <replace dir="${dist}/samples" includes="**/*.bat,**/*.sh" token="../../com.amd.aparapi.jni/dist" value="../.."/>
 
       <zip destfile="${dist}.zip" basedir="${dist}" />
 
