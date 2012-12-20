@@ -51,7 +51,7 @@ import java.awt.image.DataBufferInt;
 //import java.util.ArrayList;
 import java.util.Arrays;
 //import java.util.List;
-import java.util.stream.primitive.IntStream;
+//import java.util.stream.primitive.IntStream;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -341,7 +341,11 @@ public class Main{
       
       // This cannot be parallel lambda or you will get a headache!!
       // It will zoom in on the clicked point, then zoom out back to the start position
-      Arrays.stream(ZoomDirection.values()).forEach( e -> {
+
+
+	  // NOTE: in the future we will use a (non-parallel) lambda here when stream API gets into JDK8.
+	  // Arrays.stream(ZoomDirection.values()).forEach( e -> {
+      for (ZoomDirection e: ZoomDirection.values()) {
 
 //     Here is the stack at this point of running the lambda
 //         
@@ -369,7 +373,7 @@ public class Main{
          
          doZoom(e.getSign(), tox, toy); 
          System.out.println("inner done, sign=" + e.getSign() );          
-      } );
+      }  
    }
 
    void doIt() {

@@ -2,7 +2,7 @@
 set -x
 
 # Note this sample requires JDK 8
-JAVA_HOME=/home/ecaspole/views/lambda/lambda/build/linux-x86_64-normal-server-release/images/j2sdk-image/
+# JAVA_HOME=/home/ecaspole/views/lambda/lambda/build/linux-x86_64-normal-server-release/images/j2sdk-image/
 JAVA=$JAVA_HOME/bin/java
 
 
