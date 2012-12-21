@@ -199,8 +199,11 @@ class Entrypoint{
          logger.fine("looking for " + _name + " in " + mySuper.getName());
       }
 
-      // Find better way to do this check
-      while (!mySuper.getName().equals(Kernel.class.getName())) {
+      assert _clazz != null && mySuper != null : "Classes should not be null";
+      
+      // For the jambi demo, we are not operating on Kernel subclass, keep looking
+      while ((!mySuper.getName().equals(Object.class.getName())) /* && 
+            (!mySuper.getName().equals(Kernel.class.getName())) */ ) {
          try {
             field = mySuper.getDeclaredField(_name);
             int modifiers = field.getModifiers();
@@ -214,8 +217,6 @@ class Entrypoint{
                }
                throw new ClassParseException(ClassParseException.TYPE.OBJECTFIELDREFERENCE);
             } else {
-               // This should be looger fine...
-               //System.out.println("field " + _name + " not suitable: " + java.lang.reflect.Modifier.toString(modifiers));
                return null;
             }
          } catch (NoSuchFieldException nsfe) {
