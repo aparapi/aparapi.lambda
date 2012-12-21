@@ -549,7 +549,6 @@ class KernelRunner{
       Object[] lambdaCapturedArgs;
       String lambdaMethodSignature;
       
-      
       public String     getLambdaKernelSource()    { return lambdaKernelSource; }
       public Object     getLambdaKernelThis()      { return lambdaCapturedArgs[0]; }
       public String     getLambdaMethodName()      { return lambdaMethodName; }
@@ -585,7 +584,6 @@ class KernelRunner{
          }
          
          lambdaCapturedFields = capturedFieldsWithoutThis;
-
          
          try {
             for (int i=0; i<bcf.length; i++) {
@@ -615,18 +613,8 @@ class KernelRunner{
             e.printStackTrace();
          }
          
-         
-//         Method[] bcm = bc.getDeclaredMethods();
-//         for (Method m : bcm) {
-//            System.out.println("# block class method:" + m);
-//         }
-
          // This is the Class containing the lambda method        
          Class lc = getLambdaKernelThis().getClass();
-         //Method[] lcm = lc.getDeclaredMethods();
-         //for (Method x : lcm) {
-         //   System.out.println("# lambda class method:" + x);
-         //}
 
          // The class name is created with the "/" style delimiters
          String bcNameWithSlashes = bc.getName().replace('.', '/');
@@ -1613,23 +1601,23 @@ class KernelRunner{
 
          if ((device == null) || (device instanceof OpenCLDevice)) {
             if (entryPoint == null) {
-               //try {
-                  assert lambdaKernelCall != null : "Should not be null";
-                  assert lambdaKernelCall.getLambdaKernelThis() != null : "Lambda This should not be null";
-                  Class lambdaClass = lambdaKernelCall.getLambdaKernelThis().getClass();
-                  ClassModel classModel = new ClassModel(lambdaClass);
-                  
-                  entryPoint = classModel.getEntrypoint(lambdaKernelCall.getLambdaMethodName(), 
-                        lambdaKernelCall.getLambdaMethodSignature(), lambdaKernelCall.getLambdaKernelThis());
-               
+
+               assert lambdaKernelCall != null : "Should not be null";
+               assert lambdaKernelCall.getLambdaKernelThis() != null : "Lambda This should not be null";
+               Class lambdaClass = lambdaKernelCall.getLambdaKernelThis().getClass();
+               ClassModel classModel = new ClassModel(lambdaClass);
+
+               entryPoint = classModel.getEntrypoint(lambdaKernelCall.getLambdaMethodName(), 
+                     lambdaKernelCall.getLambdaMethodSignature(), lambdaKernelCall.getLambdaKernelThis());
+
                if ((entryPoint != null) && !entryPoint.shouldFallback()) {
                   synchronized (Kernel.class) { // This seems to be needed because of a race condition uncovered with issue #68 http://code.google.com/p/aparapi/issues/detail?id=68
                      if (device != null && !(device instanceof OpenCLDevice)) {
                         throw new IllegalStateException("range's device is not suitable for OpenCL ");
                      }
-                     
+
                      OpenCLDevice openCLDevice = (OpenCLDevice) device; // still might be null! 
-   
+
                      int jniFlags = 0;
                      if (openCLDevice == null) {
                         if (true) {
@@ -1641,8 +1629,6 @@ class KernelRunner{
                            // We fetch the first CPU device 
                            openCLDevice = (OpenCLDevice) OpenCLDevice.firstCPU();
                            if (openCLDevice == null) {
-//                              return warnFallBackAndExecute(lambdaObject, _entrypointName, _entrypointSignature, capturedArgs, _range, _passes,
-//                                    "CPU request can't be honored not CPU device");
                               throw new AparapiException ("CPU request can't be honored not CPU device");
                            }
                         }
@@ -1651,84 +1637,85 @@ class KernelRunner{
                            jniFlags |= JNI_FLAG_USE_GPU; // this flag might be redundant now. 
                         }
                      }
-      
+
                      // synchronized(Kernel.class){
                      jniContextHandle = initJNI(lambdaKernelCall.getLambdaKernelThis(), openCLDevice, jniFlags); // openCLDevice will not be null here
                   } // end of synchronized! issue 68
-                  
+
                   if (jniContextHandle == 0) {
                      throw new AparapiException ("Can't create JNI context");
                   }
-   
+
                   String extensions = getExtensionsJNI(jniContextHandle);
                   capabilitiesSet = new HashSet<String>();
-                  
+
                   StringTokenizer strTok = new StringTokenizer(extensions);
                   while (strTok.hasMoreTokens()) {
                      capabilitiesSet.add(strTok.nextToken());
                   }
-                  
+
                   if (logger.isLoggable(Level.FINE)) {
                      logger.fine("Capabilities initialized to :" + capabilitiesSet.toString());
                   }
-   
+
                   if (entryPoint.requiresDoublePragma() && !hasFP64Support()) {
-                           throw new AparapiException ("FP64 required but not supported");
+                     throw new AparapiException ("FP64 required but not supported");
                   }
-   
+
                   if (entryPoint.requiresByteAddressableStorePragma() && !hasByteAddressableStoreSupport()) {
-                           throw new AparapiException("Byte addressable stores required but not supported");
+                     throw new AparapiException("Byte addressable stores required but not supported");
                   }
-   
+
                   boolean all32AtomicsAvailable = hasGlobalInt32BaseAtomicsSupport() && hasGlobalInt32ExtendedAtomicsSupport()
                         && hasLocalInt32BaseAtomicsSupport() && hasLocalInt32ExtendedAtomicsSupport();
-   
+
                   if (entryPoint.requiresAtomic32Pragma() && !all32AtomicsAvailable) {
                      throw new AparapiException("32 bit Atomics required but not supported");
                   }
-   
+
+                  entryPoint.setLambdaActualParamsCount(lambdaKernelCall.getLambdaCapturedFields().length);
                   String openCL = null;
                   //try {
-                     openCL = KernelWriter.writeToString(entryPoint);
+                  openCL = KernelWriter.writeToString(entryPoint);
                   //} catch (CodeGenException codeGenException) {
                   //   return warnFallBackAndExecute(lambdaObject, _entrypointName, _entrypointSignature, capturedArgs, _range, _passes, codeGenException);
                   //}
-   
+
                   if (Config.enableShowGeneratedOpenCL) {
                      System.out.println(openCL);
                   }
-                  
+
                   if (logger.isLoggable(Level.INFO)) {
                      logger.info(openCL);
                   }
-   
+
                   // Send the string to OpenCL to compile it
                   if (buildProgramJNI(jniContextHandle, openCL) == 0) {
                      //return warnFallBackAndExecute(lambdaObject, _entrypointName, _entrypointSignature, capturedArgs, _range, _passes, 
                      //"OpenCL compile failed");
                      throw new AparapiException("OpenCL compile failed");
                   }
-   
+
                   args = prepareLambdaArgs(lambdaKernelCall.getLambdaKernelThis(), callerBlock, lambdaKernelCall.getLambdaCapturedFields());
-                     
+
                   argc = args.length;
-   
+
                   setArgsJNI(jniContextHandle, args, argc);
-   
+
                   conversionTime = System.currentTimeMillis() - executeStartTime;
-   
+
                   executeOpenCL(lambdaKernelCall.getLambdaKernelThis(), callerBlock, _range, _passes);
 
-                     if (logger.isLoggable(Level.INFO)) {
-                        logger.info("First run done. ");
-                     }
+                  if (logger.isLoggable(Level.INFO)) {
+                     logger.info("First run done. ");
+                  }
 
                } else {
                   throw new AparapiException("failed to locate entrypoint");
 
                }
             } else {
-               
+
                executeOpenCL(lambdaKernelCall.getLambdaKernelThis(), callerBlock, _range, _passes);
             }
          } else {

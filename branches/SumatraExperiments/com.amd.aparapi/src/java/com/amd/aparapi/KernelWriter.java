@@ -298,20 +298,18 @@ abstract class KernelWriter extends BlockWriter{
       List<String> assigns = new ArrayList<String>();
 
       entryPoint = _entryPoint;
-      
+
       // Add code to collect lambda formal arguments
       // The local variables are the java args to the method
       {
          MethodModel mm = entryPoint.getMethodModel();
-
+         
          boolean alreadyHasFirstArg = !mm.getMethod().isStatic();
 
-         int argsCount = 0;
-         LocalVariableInfo prev = null;
+         int argsCount = 1;
          Iterator<LocalVariableInfo> lvit = mm.getLocalVariableTableEntry().iterator();
          while (lvit.hasNext()) {
             LocalVariableInfo lvi = lvit.next();
-            
             StringBuilder thisStructLine = new StringBuilder();
             StringBuilder argLine = new StringBuilder();
             StringBuilder assignLine = new StringBuilder();
@@ -335,18 +333,18 @@ abstract class KernelWriter extends BlockWriter{
                assigns.add(assignLine.toString());
                argLines.add(argLine.toString());
                thisStruct.add(thisStructLine.toString());
-               
-               prev = lvi;
-            } else {
-               // Note the last arg is an int which should be equivalent to the opencl gid
-               if ((prev != null) && prev.getVariableDescriptor().equals("I")) {
-                  if (lambdaIterationIntArgName == null) {
-                     lambdaIterationIntArgName = prev.getVariableName();
-                     //System.out.println("## lambdaIterationIntArgName = " + lambdaIterationIntArgName);
-                  }
 
+               // Note the last arg is an int which should be equivalent to the opencl gid
+               System.out.println("## argsCount = " + argsCount + " / " + entryPoint.getLambdaActualParamsCount());
+               if (argsCount == ( entryPoint.getLambdaActualParamsCount() + 1 )) {
+                  if ((lvi != null) && lvi.getVariableDescriptor().equals("I")) {
+                     if (lambdaIterationIntArgName == null) {
+                        lambdaIterationIntArgName = lvi.getVariableName();
+                        System.out.println("## lambdaIterationIntArgName = " + lambdaIterationIntArgName);
+                     }
+                  }
                }
-               
+               argsCount++;
             }
          }         
       }

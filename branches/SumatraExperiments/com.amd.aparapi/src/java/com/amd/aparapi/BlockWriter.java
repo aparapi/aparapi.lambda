@@ -121,8 +121,6 @@ abstract class BlockWriter{
       }
    }
    
-   // Seems like this should be abstract
-   //abstract String getLambdaIterationIntArgName();
    String getLambdaIterationIntArgName() { return null; }
 
    protected void writeConditionalBranch16(ConditionalBranch16 _branch16, boolean _invert) throws CodeGenException {
@@ -376,7 +374,22 @@ abstract class BlockWriter{
       return ("(" + raw + ")");
    }
 
-   void writeInstruction(Instruction _instruction) throws CodeGenException {
+
+   String filterLambdaIterationVariable(Instruction _instruction) {
+      assert _instruction instanceof AccessLocalVariable : "Must be AccessLocalVariable";
+      AccessLocalVariable localVariableLoadInstruction = (AccessLocalVariable) _instruction;
+      LocalVariableInfo localVariable = localVariableLoadInstruction.getLocalVariableInfo();
+      String local = localVariable.getVariableName();
+      if (local.equals(this.getLambdaIterationIntArgName())) {
+         //System.out.println("## Inserting get_global_id for lambdaIterationIntArgName = " + this.getLambdaIterationIntArgName());
+         // this is the lambda iteration variable, so substitute get_global_id
+         return "get_global_id(0)";
+      }
+      return  local;
+   }
+
+
+   void writeInstruction(Instruction _instruction) throws CodeGenException {      
       if (_instruction instanceof CompositeIfElseInstruction) {
          write("(");
          Instruction lhs = writeConditional(((CompositeInstruction) _instruction).getBranchSet());
@@ -499,19 +512,9 @@ abstract class BlockWriter{
          }
 
       } else if (_instruction instanceof AccessLocalVariable) {
-         AccessLocalVariable localVariableLoadInstruction = (AccessLocalVariable) _instruction;
-         LocalVariableInfo localVariable = localVariableLoadInstruction.getLocalVariableInfo();
          
-         String local = localVariable.getVariableName();
-         if (local.equals(this.getLambdaIterationIntArgName())) {
-            System.out.println("## Inserting get_global_id for lambdaIterationIntArgName = " + this.getLambdaIterationIntArgName());
+         write(filterLambdaIterationVariable(_instruction));
 
-            // this is the lambda iteration variable, so substitute get_global_id
-            write("get_global_id(0)");
-         } else {
-            // Normal case
-            write(localVariable.getVariableName());
-         }
       } else if (_instruction instanceof I_IINC) {
          I_IINC location = (I_IINC) _instruction;
          LocalVariableInfo localVariable = location.getLocalVariableInfo();

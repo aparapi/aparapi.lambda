@@ -152,6 +152,17 @@ class Entrypoint{
    void setKernelInstance(Object _k) {
       kernelInstance = _k;
    }
+   
+   int lambdaActualParamsCount = 0;
+   
+   // This could be done by parsing the signature
+   void setLambdaActualParamsCount(int count) {
+      lambdaActualParamsCount = count;
+   }
+
+   int getLambdaActualParamsCount() {
+      return lambdaActualParamsCount;
+   }
 
    Map<String, ClassModel> getObjectArrayFieldsClasses() {
       return objectArrayFieldsClasses;
