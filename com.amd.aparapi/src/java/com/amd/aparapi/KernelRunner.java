@@ -1147,7 +1147,7 @@ class KernelRunner{
       int objArraySize = 0;
       Object newRef = null;
       try {
-         newRef = arg.field.get(kernel);
+         newRef = arg.field.get(arg.fieldHolder);
          objArraySize = Array.getLength(newRef);
       } catch (IllegalAccessException e) {
          throw new AparapiException(e);
@@ -1266,7 +1266,7 @@ class KernelRunner{
 
       int objArraySize = 0;
       try {
-         objArraySize = Array.getLength(arg.field.get(kernel));
+         objArraySize = Array.getLength(arg.field.get(arg.fieldHolder));
       } catch (IllegalAccessException e) {
          throw new AparapiException(e);
       }
