@@ -2,7 +2,7 @@ package com.amd.aparapi;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.lang.invoke.InnerClassLambdaMetafactory;
+//import java.lang.invoke.InnerClassLambdaMetafactory;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.concurrent.CyclicBarrier;
@@ -157,7 +157,7 @@ public class Aparapi{
 
          // The class name is created with the "/" style delimiters
          String bcNameWithSlashes = bc.getName().replace('.', '/');
-         ByteArrayInputStream blockClassStream = new ByteArrayInputStream(InnerClassLambdaMetafactory.getBytesForClassName(bcNameWithSlashes));
+         ByteArrayInputStream blockClassStream = new ByteArrayInputStream(AparapiAgent.getBytes(lc));
          ClassModel blockModel = new ClassModel(blockClassStream);
 
          // We know we are calling an IntBlock lambda with signature "(I)V"
