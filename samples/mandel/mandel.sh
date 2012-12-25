@@ -13,5 +13,6 @@ $JAVA -ea   \
  -Dcom.amd.aparapi.logLevel=INFO \
  -Dcom.amd.aparapi.enableShowGeneratedOpenCL=true \
  -Djava.library.path=../../com.amd.aparapi.jni/dist/ \
+ -javaagent:../../com.amd.aparapi/dist/aparapi-agent.jar \
  -classpath mandel.jar:../../com.amd.aparapi/dist/aparapi.jar \
  com.amd.aparapi.sample.mandel.Main
