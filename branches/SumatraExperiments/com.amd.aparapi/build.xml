@@ -75,6 +75,11 @@
    			 <compilerarg value="-Xlint:-path"/>
        </javac>
        <jar jarfile="${basedir}/dist/aparapi.jar" basedir="${basedir}/classes"/>
+       <jar jarfile="${basedir}/dist/aparapi-agent.jar" basedir="${basedir}/classes">
+          <manifest>
+            <attribute name="Premain-Class" value="com.amd.aparapi.AparapiAgent"/>
+          </manifest>
+       </jar>
    	</target>
 
 </project>

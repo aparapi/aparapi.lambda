@@ -39,7 +39,7 @@ package com.amd.aparapi;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.lang.invoke.InnerClassLambdaMetafactory;
+//import java.lang.invoke.InnerClassLambdaMetafactory;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Array;
@@ -60,7 +60,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.BrokenBarrierException;
-import java.util.function.IntBlock;
 
 import com.amd.aparapi.ClassModel.ConstantPool.MethodEntry;
 import com.amd.aparapi.InstructionSet.AccessField;
@@ -541,7 +540,7 @@ class KernelRunner{
    }
    
    
-   class LambaKernelCall {
+   class LambdaKernelCall {
       IntBlock block;
       String   lambdaKernelSource;
       String   lambdaMethodName;
@@ -563,7 +562,7 @@ class KernelRunner{
       
       public Field[]   getLambdaCapturedFields()    { return lambdaCapturedFields; }
       
-      public LambaKernelCall(IntBlock _block) throws AparapiException { 
+      public LambdaKernelCall(IntBlock _block) throws AparapiException { 
          block = _block;
          
          // Try to do reflection on the block
@@ -618,7 +617,7 @@ class KernelRunner{
 
          // The class name is created with the "/" style delimiters
          String bcNameWithSlashes = bc.getName().replace('.', '/');
-         ByteArrayInputStream blockClassStream = new ByteArrayInputStream(InnerClassLambdaMetafactory.getBytesForClassName(bcNameWithSlashes));
+         ByteArrayInputStream blockClassStream = new ByteArrayInputStream(AparapiAgent.getBytes(bc));
          ClassModel blockModel = new ClassModel(blockClassStream);
 
          // We know we are calling an IntBlock lambda with signature "(I)V"
@@ -645,7 +644,7 @@ class KernelRunner{
       }
    }
 
-   private LambaKernelCall lambdaKernelCall;  
+   private LambdaKernelCall lambdaKernelCall;  
 
    private long jniContextHandle = 0;
 
@@ -671,7 +670,7 @@ class KernelRunner{
 
    KernelRunner(IntBlock block) throws AparapiException {
       kernel = null;
-      lambdaKernelCall = new LambaKernelCall(block);
+      lambdaKernelCall = new LambdaKernelCall(block);
       if (logger.isLoggable(Level.INFO)) {
          logger.info("New lambda call is = " + lambdaKernelCall);
       }
