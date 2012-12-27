@@ -1,0 +1,24 @@
+#!/bin/bash
+export JAVA_HOME=${PWD}/lambda/build/linux-amd64
+export FAST_DEBUG_DIR=${JAVA_HOME}/hotspot/outputdir/linux_amd64_compiler2/fastdebug
+export LD_LIBRARY_PATH=${FAST_DEBUG_DIR}:${JAVA_HOME}/lib/amd64
+export GDB_SCRIPT=gdb_script_$$
+rm -f $GDB_SCRIPT
+cat >>$GDB_SCRIPT <<EOF
+cd ${FAST_DEBUG_DIR}
+handle SIGUSR1 nostop noprint
+handle SIGUSR2 nostop noprint
+set args # set args here!
+file ${FAST_DEBUG_DIR}/gamma
+directory ${FAST_DEBUG_DIR}
+# Get us to a point where we can set breakpoints in libjvm.so
+break InitializeJVM
+run
+# Stop in InitializeJVM
+delete 1
+# We can now set breakpoints wherever we like
+EOF
+gdb -x $GDB_SCRIPT
+rm -f $GDB_SCRIPT
+export RETVAL=$?
+exit $RETVAL
