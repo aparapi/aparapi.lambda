@@ -22,7 +22,7 @@
 					<folderInfo id="cdt.managedbuild.config.gnu.exe.debug.1129526054." name="/" resourcePath="">
 						<toolChain id="cdt.managedbuild.toolchain.gnu.exe.debug.1210274038" name="Linux GCC" superClass="cdt.managedbuild.toolchain.gnu.exe.debug">
 							<targetPlatform id="cdt.managedbuild.target.gnu.platform.exe.debug.1110564400" name="Debug Platform" superClass="cdt.managedbuild.target.gnu.platform.exe.debug"/>
-							<builder arguments="-C /home/gfrost/lambda/lambda DEBUG_NAME=fastdebug NO_DOCS=true NO_IMAGES=true DEV_ONLY=true LANG=C ZIP_DEBUGINFO_FILES=0 HOTSPOT_BUILD_JOBS=4  ALLOW_DOWNLOADS=true  HOTSPOT_BUILD_JOBS=4 PARALLEL_COMPILE_JOBS=4  NO_DOCS=true NO_IMAGES=true DEV_ONLY=true ALT_BOOTDIR=/usr/lib/jvm/java-7-openjdk-amd64 hotspot" buildPath="" command="make" enableCleanBuild="false" enabledIncrementalBuild="true" id="cdt.managedbuild.target.gnu.builder.exe.debug.1508200345" incrementalBuildTarget="" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="cdt.managedbuild.target.gnu.builder.exe.debug"/>
+							<builder arguments="-C /home/gfrost/aparapi/branches/SumatraExperiments/lambda-root/lambda DEBUG_NAME=fastdebug NO_DOCS=true NO_IMAGES=true DEV_ONLY=true LANG=C ZIP_DEBUGINFO_FILES=0 HOTSPOT_BUILD_JOBS=4  ALLOW_DOWNLOADS=true  HOTSPOT_BUILD_JOBS=4 PARALLEL_COMPILE_JOBS=4  NO_DOCS=true NO_IMAGES=true DEV_ONLY=true ALT_BOOTDIR=/usr/lib/jvm/java-7-openjdk-amd64 hotspot" buildPath="" command="make" enableCleanBuild="false" enabledIncrementalBuild="true" id="cdt.managedbuild.target.gnu.builder.exe.debug.1508200345" incrementalBuildTarget="" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="cdt.managedbuild.target.gnu.builder.exe.debug"/>
 							<tool id="cdt.managedbuild.tool.gnu.archiver.base.458349539" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.1706633910" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug">
 								<option id="gnu.cpp.compiler.exe.debug.option.optimization.level.59277476" name="Optimization Level" superClass="gnu.cpp.compiler.exe.debug.option.optimization.level" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
@@ -68,12 +68,12 @@
 									<listOptionValue builtIn="false" value="/usr/include/c++/4.7.2"/>
 									<listOptionValue builtIn="false" value="/usr/include/c++/4.7.2/tr1"/>
 									<listOptionValue builtIn="false" value="/usr/include/c++/4.7.2/tr2"/>
-									<listOptionValue builtIn="false" value="/home/gfrost/lambda/lambda/hotspot/src/cpu/x86/vm"/>
-									<listOptionValue builtIn="false" value="/home/gfrost/lambda/lambda/hotspot/src/os_cpu/linux-x86/vm"/>
-									<listOptionValue builtIn="false" value="/home/gfrost/lambda/lambda/hotspot/src/os/linux/vm"/>
-									<listOptionValue builtIn="false" value="/home/gfrost/lambda/lambda/hotspot/src/os/posix/vm"/>
-									<listOptionValue builtIn="false" value="/home/gfrost/lambda/lambda/hotspot/src/share/vm"/>
-									<listOptionValue builtIn="false" value="/home/gfrost/lambda/lambda/build/linux-amd64/hotspot/outputdir/linux_amd64_compiler2/generated"/>
+									<listOptionValue builtIn="false" value="/home/gfrost/aparapi/branches/SumatraExperiments/lambda-root/lambda/hotspot/src/cpu/x86/vm"/>
+									<listOptionValue builtIn="false" value="/home/gfrost/aparapi/branches/SumatraExperiments/lambda-root/lambda/hotspot/src/os_cpu/linux-x86/vm"/>
+									<listOptionValue builtIn="false" value="/home/gfrost/aparapi/branches/SumatraExperiments/lambda-root/lambda/hotspot/src/os/linux/vm"/>
+									<listOptionValue builtIn="false" value="/home/gfrost/aparapi/branches/SumatraExperiments/lambda-root/lambda/hotspot/src/os/posix/vm"/>
+									<listOptionValue builtIn="false" value="/home/gfrost/aparapi/branches/SumatraExperiments/lambda-root/lambda/hotspot/src/share/vm"/>
+									<listOptionValue builtIn="false" value="/home/gfrost/aparapi/branches/SumatraExperiments/lambda-root/lambda/build/linux-amd64/hotspot/outputdir/linux_amd64_compiler2/generated"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.71841076" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -88,12 +88,12 @@
 									<listOptionValue builtIn="false" value="/usr/include/c++/4.7.2"/>
 									<listOptionValue builtIn="false" value="/usr/include/c++/4.7.2/tr1"/>
 									<listOptionValue builtIn="false" value="/usr/include/c++/4.7.2/tr2"/>
-									<listOptionValue builtIn="false" value="/home/gfrost/lambda/lambda/hotspot/src/cpu/x86/vm"/>
-									<listOptionValue builtIn="false" value="/home/gfrost/lambda/lambda/hotspot/src/os_cpu/linux-x86/vm"/>
-									<listOptionValue builtIn="false" value="/home/gfrost/lambda/lambda/hotspot/src/os/linux/vm"/>
-									<listOptionValue builtIn="false" value="/home/gfrost/lambda/lambda/hotspot/src/os/posix/vm"/>
-									<listOptionValue builtIn="false" value="/home/gfrost/lambda/lambda/hotspot/src/share/vm"/>
-									<listOptionValue builtIn="false" value="/home/gfrost/lambda/lambda/build/linux-amd64/hotspot/outputdir/linux_amd64_compiler2/generated"/>
+									<listOptionValue builtIn="false" value="/home/gfrost/aparapi/branches/SumatraExperiments/lambda-root/lambda/hotspot/src/cpu/x86/vm"/>
+									<listOptionValue builtIn="false" value="/home/gfrost/aparapi/branches/SumatraExperiments/lambda-root/lambda/hotspot/src/os_cpu/linux-x86/vm"/>
+									<listOptionValue builtIn="false" value="/home/gfrost/aparapi/branches/SumatraExperiments/lambda-root/lambda/hotspot/src/os/linux/vm"/>
+									<listOptionValue builtIn="false" value="/home/gfrost/aparapi/branches/SumatraExperiments/lambda-root/lambda/hotspot/src/os/posix/vm"/>
+									<listOptionValue builtIn="false" value="/home/gfrost/aparapi/branches/SumatraExperiments/lambda-root/lambda/hotspot/src/share/vm"/>
+									<listOptionValue builtIn="false" value="/home/gfrost/aparapi/branches/SumatraExperiments/lambda-root/lambda/build/linux-amd64/hotspot/outputdir/linux_amd64_compiler2/generated"/>
 								</option>
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.790993140" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="AMD64"/>
@@ -178,8 +178,8 @@
 								<option id="gnu.cpp.compiler.exe.release.option.optimization.level.1924622644" name="Optimization Level" superClass="gnu.cpp.compiler.exe.release.option.optimization.level" value="gnu.cpp.compiler.optimization.level.most" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.exe.release.option.debugging.level.37359681" name="Debug Level" superClass="gnu.cpp.compiler.exe.release.option.debugging.level" value="gnu.cpp.compiler.debugging.level.none" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.include.paths.413883291" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="/home/gfrost/lambda/lambda/hotspot/src/cpu/x86/vm"/>
-									<listOptionValue builtIn="false" value="/home/gfrost/lambda/lambda/build/linux-amd64/hotspot/outputdir/linux_amd64_compiler2/generated"/>
+									<listOptionValue builtIn="false" value="/home/gfrost/aparapi/branches/SumatraExperiments/lambda-root/lambda/hotspot/src/cpu/x86/vm"/>
+									<listOptionValue builtIn="false" value="/home/gfrost/aparapi/branches/SumatraExperiments/lambda-root/lambda/build/linux-amd64/hotspot/outputdir/linux_amd64_compiler2/generated"/>
 									<listOptionValue builtIn="false" value="/usr/include/sys"/>
 									<listOptionValue builtIn="false" value="/usr/include/c++/4.7/x86_64-linux-gnu"/>
 								</option>
@@ -189,8 +189,8 @@
 								<option defaultValue="gnu.c.optimization.level.most" id="gnu.c.compiler.exe.release.option.optimization.level.1950332749" name="Optimization Level" superClass="gnu.c.compiler.exe.release.option.optimization.level" valueType="enumerated"/>
 								<option id="gnu.c.compiler.exe.release.option.debugging.level.527050732" name="Debug Level" superClass="gnu.c.compiler.exe.release.option.debugging.level" value="gnu.c.debugging.level.none" valueType="enumerated"/>
 								<option id="gnu.c.compiler.option.include.paths.528202654" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="/home/gfrost/lambda/lambda/hotspot/src/cpu/x86/vm"/>
-									<listOptionValue builtIn="false" value="/home/gfrost/lambda/lambda/build/linux-amd64/hotspot/outputdir/linux_amd64_compiler2/generated"/>
+									<listOptionValue builtIn="false" value="/home/gfrost/aparapi/branches/SumatraExperiments/lambda-root/lambda/hotspot/src/cpu/x86/vm"/>
+									<listOptionValue builtIn="false" value="/home/gfrost/aparapi/branches/SumatraExperiments/lambda-root/lambda/build/linux-amd64/hotspot/outputdir/linux_amd64_compiler2/generated"/>
 									<listOptionValue builtIn="false" value="/usr/include/sys"/>
 									<listOptionValue builtIn="false" value="/usr/include/c++/4.7/x86_64-linux-gnu"/>
 								</option>
@@ -205,8 +205,8 @@
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.assembler.exe.release.202522217" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.exe.release">
 								<option id="gnu.both.asm.option.include.paths.733523285" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="/home/gfrost/lambda/lambda/hotspot/src/cpu/x86/vm"/>
-									<listOptionValue builtIn="false" value="/home/gfrost/lambda/lambda/build/linux-amd64/hotspot/outputdir/linux_amd64_compiler2/generated"/>
+									<listOptionValue builtIn="false" value="/home/gfrost/aparapi/branches/SumatraExperiments/lambda-root/lambda/hotspot/src/cpu/x86/vm"/>
+									<listOptionValue builtIn="false" value="/home/gfrost/aparapi/branches/SumatraExperiments/lambda-root/lambda/build/linux-amd64/hotspot/outputdir/linux_amd64_compiler2/generated"/>
 									<listOptionValue builtIn="false" value="/usr/include/sys"/>
 									<listOptionValue builtIn="false" value="/usr/include/c++/4.7/x86_64-linux-gnu"/>
 								</option>
