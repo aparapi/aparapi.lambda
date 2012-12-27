@@ -59,7 +59,7 @@
 	<variableList>
 		<variable>
 			<name>LAMBDA_HOME</name>
-			<value>file:/home/gfrost/lambda/lambda</value>
+			<value>file:/home/gfrost/aparapi/branches/SumatraExperiments/lambda-root/lambda</value>
 		</variable>
 	</variableList>
 </projectDescription>
