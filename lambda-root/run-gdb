@@ -18,6 +18,12 @@ run
 delete 1
 # We can now set breakpoints wherever we like
 EOF
+echo ----
+echo "----[$GDB_SCRIPT]--->"
+cat $GDB_SCRIPT
+echo "----[$GDB_SCRIPT]"
+echo LD_LIBRARY_PATH=${LD_LIBRARY_PATH}
+echo ----
 gdb -x $GDB_SCRIPT
 rm -f $GDB_SCRIPT
 export RETVAL=$?
