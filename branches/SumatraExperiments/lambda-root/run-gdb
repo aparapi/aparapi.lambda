@@ -8,8 +8,11 @@ cat >>$GDB_SCRIPT <<EOF
 cd ${FAST_DEBUG_DIR}
 handle SIGUSR1 nostop noprint
 handle SIGUSR2 nostop noprint
-set args # set args here!
+set args -classpath /home/gfrost/aparapi/branches/SumatraExperiments/streamapi-examples/examples.jar twelve.Twelve
 file ${FAST_DEBUG_DIR}/gamma
+#we need to unzip libjvm_g.diz to libjvm_g.debuginfo
+#symbol-file ${FAST_DEBUG_DIR}/libjvm_g.debuginfo
+#symbol-file ${FAST_DEBUG_DIR}/libjvm.debuginfo
 directory ${FAST_DEBUG_DIR}
 # Get us to a point where we can set breakpoints in libjvm.so
 break InitializeJVM
