@@ -28,6 +28,6 @@ echo "----[$GDB_SCRIPT]"
 echo LD_LIBRARY_PATH=${LD_LIBRARY_PATH}
 echo ----
 gdb -x $GDB_SCRIPT
-rm -f $GDB_SCRIPT
+#rm -f $GDB_SCRIPT
 export RETVAL=$?
 exit $RETVAL
