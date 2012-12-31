@@ -140,7 +140,7 @@ class ClassModel{
       // Find better way to do this check
       // The java.lang.Object test is for unit test framework to succeed - should 
       // not occur in normal use
-      if ((mySuper != null) && (!mySuper.getName().equals(Kernel.class.getName()))
+      if ((mySuper != null) /* && (!mySuper.getName().equals(Kernel.class.getName())) */
             && (!mySuper.getName().equals("java.lang.Object"))) {
          superClazz = new ClassModel(mySuper);
       }

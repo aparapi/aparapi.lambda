@@ -415,7 +415,7 @@ class Entrypoint{
    ClassModelMethod resolveCalledMethod(MethodCall methodCall, ClassModel classModel) throws AparapiException {
       MethodEntry methodEntry = methodCall.getConstantPoolMethodEntry();
       int thisClassIndex = classModel.getThisClassConstantPoolIndex();//arf
-      boolean isMapped = (thisClassIndex != methodEntry.getClassIndex()) && Kernel.isMappedMethod(methodEntry);
+      boolean isMapped = (thisClassIndex != methodEntry.getClassIndex()) && KernelRunner.isMappedMethod(methodEntry);
       if (logger.isLoggable(Level.FINE)) {
          if (methodCall instanceof I_INVOKESPECIAL) {
             logger.fine("Method call to super: " + methodEntry);
@@ -676,11 +676,12 @@ class Entrypoint{
                } else if (instruction instanceof I_INVOKEVIRTUAL) {
                   I_INVOKEVIRTUAL invokeInstruction = (I_INVOKEVIRTUAL) instruction;
                   MethodEntry methodEntry = invokeInstruction.getConstantPoolMethodEntry();
-                  if (Kernel.isMappedMethod(methodEntry)) { //only do this for intrinsics
+                  if (KernelRunner.isMappedMethod(methodEntry)) { //only do this for intrinsics
 
-                     if (Kernel.usesAtomic32(methodEntry)) {
-                        setRequiresAtomics32Pragma(true);
-                     }
+                     // I forgot what atomics are for, check with Gary
+//                     if (Kernel.usesAtomic32(methodEntry)) {
+//                        setRequiresAtomics32Pragma(true);
+//                     }
 
                      Arg methodArgs[] = methodEntry.getArgs();
                      if (methodArgs.length > 0 && methodArgs[0].isArray()) { //currently array arg can only take slot 0
@@ -856,7 +857,7 @@ class Entrypoint{
     */
    MethodModel getCallTarget(MethodEntry _methodEntry, boolean _isSpecial) {
       ClassModelMethod target = getClassModel().getMethod(_methodEntry, _isSpecial);
-      boolean isMapped = Kernel.isMappedMethod(_methodEntry);
+      boolean isMapped = KernelRunner.isMappedMethod(_methodEntry);
 
       if (logger.isLoggable(Level.FINE) && target == null) {
          logger.fine("Did not find call target: " + _methodEntry + " in " + 
