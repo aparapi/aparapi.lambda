@@ -230,7 +230,7 @@ class KernelRunner{
     * 
     * @author gfrost
     */
-   @Annotations.Experimental @UsedByJNICode public static final int ARG_LOCAL = 1 << 11;
+   @UsedByJNICode public static final int ARG_LOCAL = 1 << 11;
 
    /**
     * This 'bit' indicates that a particular <code>KernelArg</code> resides in global memory in the generated OpenCL code.<br/>
@@ -242,7 +242,7 @@ class KernelRunner{
     * 
     * @author gfrost
     */
-   @Annotations.Experimental @UsedByJNICode public static final int ARG_GLOBAL = 1 << 12;
+   @UsedByJNICode public static final int ARG_GLOBAL = 1 << 12;
 
    /**
     * This 'bit' indicates that a particular <code>KernelArg</code> resides in constant memory in the generated OpenCL code.<br/>
@@ -254,7 +254,7 @@ class KernelRunner{
     * 
     * @author gfrost
     */
-   @Annotations.Experimental @UsedByJNICode public static final int ARG_CONSTANT = 1 << 13;
+   @UsedByJNICode public static final int ARG_CONSTANT = 1 << 13;
 
    /**
     * This 'bit' indicates that a particular <code>KernelArg</code> has it's length reference, in which case a synthetic arg is passed (name mangled) to the OpenCL kernel.<br/>
@@ -761,7 +761,7 @@ class KernelRunner{
     * @param maxJTPLocalSize
     * @return
     */
-   @Annotations.DocMe private native static synchronized long initJNI(Object _kernel, OpenCLDevice device, int _flags);
+   private native static synchronized long initJNI(Object _kernel, OpenCLDevice device, int _flags);
 
    private native long buildProgramJNI(long _jniContextHandle, String _source);
 
@@ -1239,8 +1239,8 @@ class KernelRunner{
          restoreObjects();
       }
 
-      if (logger.isLoggable(Level.FINE)) {
-         logger.fine("executeOpenCL completed. " + _range);
+      if (logger.isLoggable(Level.FINEST)) {
+         logger.finest("executeOpenCL completed. " + _range);
       }
       return this;
    }

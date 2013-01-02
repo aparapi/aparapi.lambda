@@ -194,7 +194,7 @@ class ClassModel{
       return superClazz;
    }
 
-   @Annotations.DocMe void replaceSuperClazz(ClassModel c) {
+   void replaceSuperClazz(ClassModel c) {
       if (this.superClazz != null) {
          assert c.isSuperClass(this.getClassWeAreModelling()) == true : "not my super";
          if (this.superClazz.getClassWeAreModelling().getName().equals(c.getClassWeAreModelling().getName())) {
