@@ -9,6 +9,8 @@ import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.function.IntBlock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.HashMap;
 import java.util.List;
 
@@ -18,6 +20,9 @@ import com.amd.aparapi.InstructionSet.MethodCall;
 import com.amd.aparapi.InstructionSet.VirtualMethodCall;
 
 public class Aparapi{
+   
+   private static Logger logger = Logger.getLogger(Config.getLoggerName());
+
    public interface KernelI {
       void run(int x);
    }
@@ -74,115 +79,6 @@ public class Aparapi{
    }
 */
    
-   static class LambaKernelCall {
-      IntBlock block;
-      String   lambdaKernelSource;
-      String   lambdaMethodName;
-      Field[] lambdaCapturedFields;
-      Object[] lambdaCapturedArgs;
-      String lambdaMethodSignature;
-      
-      public String     getLambdaKernelSource()    { return lambdaKernelSource; }
-      public Object     getLambdaKernelThis()      { return lambdaCapturedArgs[0]; }
-      public String     getLambdaMethodName()      { return lambdaMethodName; }
-      public String     getLambdaMethodSignature()      { return lambdaMethodSignature; }
-      //public Object[]   getLambdaCapturedArgs()    { return lambdaCapturedArgs; }
-      //public Object[]   getLambdaReferenceArgs()   { return lambdaReferencedFields; }
-      
-      public Field[]   getLambdaCapturedFields()    { return lambdaCapturedFields; }
-      
-      public LambaKernelCall(IntBlock _block) throws AparapiException { 
-         block = _block;
-         
-         // Try to do reflection on the block
-         Class bc = block.getClass();
-         System.out.println("# block class:" + bc);
-         
-         // The first field is "this" for the lambda call if the lambda
-         // is not static, the later fields are captured values which will 
-         // become lambda call parameters
-         Field[] bcf = bc.getDeclaredFields();
-         lambdaCapturedArgs = new Object[bcf.length];
-
-         Field[] allBlockClassFields = block.getClass().getDeclaredFields();
-         
-         Field[] capturedFieldsWithoutThis = new Field[ allBlockClassFields.length - 1 ];
-         for(int i=1; i<allBlockClassFields.length; i++) {
-            capturedFieldsWithoutThis[i-1] = allBlockClassFields[i];
-         }
-         
-         lambdaCapturedFields = capturedFieldsWithoutThis;
-
-         
-         try {
-            for (int i=0; i<bcf.length; i++) {
-            	
-               // Since Block members are private have to use Unsafe here
-               Class currFieldType = bcf[i].getType();
-               long offset = UnsafeWrapper.objectFieldOffset(bcf[i]);
-
-               if (currFieldType.isPrimitive() == false) {
-            	   lambdaCapturedArgs[i] = UnsafeWrapper.getObject(block, offset);
-               } else if (currFieldType.getName().equals("float")) {
-            	   lambdaCapturedArgs[i] = UnsafeWrapper.getFloat(block, offset);
-               } else if (currFieldType.getName().equals("int")) {
-            	   lambdaCapturedArgs[i] = UnsafeWrapper.getInt(block, offset);
-               } else if (currFieldType.getName().equals("long")) {
-            	   lambdaCapturedArgs[i] = UnsafeWrapper.getLong(block, offset);
-
-                  // No getDouble ??   
-                  //} else if (currFieldType.getName().equals("double")) {
-                  //   lambdaArgs[i] = UnsafeWrapper.getDouble(block, offset);
-               }
-
-               System.out.println("# Lambda arg type: " + currFieldType + "  " + bcf[i].getName() + " = " + lambdaCapturedArgs[i]);            
-            }
-         } catch (Exception e) {
-            System.out.println("Problem getting Block args");
-            e.printStackTrace();
-         }
-         
-         
-//         Method[] bcm = bc.getDeclaredMethods();
-//         for (Method m : bcm) {
-//            System.out.println("# block class method:" + m);
-//         }
-
-         // This is the Class containing the lambda method        
-         Class lc = getLambdaKernelThis().getClass();
-         //Method[] lcm = lc.getDeclaredMethods();
-         //for (Method x : lcm) {
-         //   System.out.println("# lambda class method:" + x);
-         //}
-
-         // The class name is created with the "/" style delimiters
-         String bcNameWithSlashes = bc.getName().replace('.', '/');
-         ByteArrayInputStream blockClassStream = new ByteArrayInputStream(AparapiAgent.getBytes(lc));
-         ClassModel blockModel = new ClassModel(blockClassStream);
-
-         // We know we are calling an IntBlock lambda with signature "(I)V"
-         MethodModel acceptModel = blockModel.getMethodModel("accept", "(I)V");
-
-         List<MethodCall> acceptCallSites = acceptModel.getMethodCalls();
-         assert acceptCallSites.size() == 1 : "Should only have one call site in this method";
-
-         
-         //VirtualMethodCall vCall = (VirtualMethodCall) acceptCallSites.get(0);
-         MethodCall vCall = acceptCallSites.get(0);
-         MethodEntry lambdaCallTarget = vCall.getConstantPoolMethodEntry();
-         lambdaMethodName = lambdaCallTarget.getNameAndTypeEntry().getNameUTF8Entry().getUTF8();
-         lambdaMethodSignature = lambdaCallTarget.getNameAndTypeEntry().getDescriptorUTF8Entry().getUTF8();
-
-         System.out.println("call target = " + 
-        		 lambdaCallTarget.getClassEntry().getNameUTF8Entry().getUTF8() + 
-        		 " " + lambdaMethodName + " " + lambdaMethodSignature);
-
-         String lcNameWithSlashes = lc.getName().replace('.', '/');
-         assert lcNameWithSlashes.equals(lambdaCallTarget.getClassEntry().getNameUTF8Entry().getUTF8()) : 
-            "lambda target class name does not match arg in block object";
-         
-      }
-   }
   
    static public void forEachJava(int jobSize, IntBlock block) {
 
@@ -210,6 +106,7 @@ public class Aparapi{
    
    
    static final ConcurrentHashMap<Class, KernelRunner> kernels = new ConcurrentHashMap<Class, KernelRunner>();
+   static final ConcurrentHashMap<Class, Boolean> haveGoodKernel = new ConcurrentHashMap<Class, Boolean>();
    
    
    static public void forEach(int jobSize, IntBlock block) {
@@ -217,40 +114,48 @@ public class Aparapi{
       // Note it is a new Block object each time
       
       KernelRunner kernelRunner = kernels.get(block.getClass());
+      Boolean haveKernel = haveGoodKernel.get(block.getClass());
       
       try {
 
-         if (kernelRunner == null) {
-            //LambaKernelCall call = new LambaKernelCall(block);
+         if ((kernelRunner == null) && (haveKernel == null)) {
             kernelRunner = new KernelRunner(block);
-            kernels.put(block.getClass(), kernelRunner);
          }
-         
-         boolean success = kernelRunner.execute(block, Range.create(jobSize), 1);
 
+         if ((kernelRunner != null) && (kernelRunner.getRunnable() == true)) {
+            boolean success = kernelRunner.execute(block, Range.create(jobSize), 1);
+            if (success == true) {
+               kernels.put(block.getClass(), kernelRunner);
+               haveGoodKernel.put(block.getClass(), true);
+            }
+            kernelRunner.setRunnable(success);
+
+         } else {
+            forEachJava(jobSize, block);
+         }
+
+         return;
+         
       } catch (AparapiException e) {
-         System.out.println(e);
+         System.err.println(e);
          e.printStackTrace();
-
-         //forEachJava(jobSize, block);
          
-         System.exit(-1);
+         if (logger.isLoggable(Level.FINE)) {
+            logger.fine("Kernel failed, try to revert to java.");
+         }
+
+         haveGoodKernel.put(block.getClass(), false);
+         
+         if (kernelRunner != null) {
+            kernelRunner.setRunnable(false);
+         }
       }
       
+      if (logger.isLoggable(Level.FINE)) {
+         logger.fine("Running java.");
+      }
       
-//      final int width = intArray.length;
-//      final int threads = Runtime.getRuntime().availableProcessors();
-//      final CyclicBarrier barrier = new CyclicBarrier(threads+1);
-//      for (int t=0; t<threads; t++){
-//         final int finalt = t;
-//         new Thread(()->{
-//            for (int x=finalt*(width/threads); x<(finalt+1)*(width/threads); x++){
-//               block.accept(intArray[x]);
-//            }   
-//            wait(barrier);
-//         }).start();
-//      }   
-//      wait(barrier);
+      forEachJava(jobSize, block);
    }
 /*
    static public void forEach(int[][] intArray, KernelIII kernel){

@@ -80,7 +80,8 @@ package com.amd.aparapi;
       ACCESSEDOBJECTSETTERARRAY("Passing array arguments to Intrinsics in expression form is not supported"), //
       MULTIDIMENSIONARRAYASSIGN("Can't assign to two dimension array"), //
       MULTIDIMENSIONARRAYACCESS("Can't access through a two dimensional array"), //
-      MISSINGLOCALVARIABLETABLE("Method does not contain a local variable table (recompile with -g?)");
+      MISSINGLOCALVARIABLETABLE("Method does not contain a local variable table (recompile with -g?)"),
+      UNHANDLEDMAPPEDMETHOD("Unhandled JDK mapped method ");
 
       private String description;
 

@@ -565,10 +565,6 @@ class KernelRunner{
    static boolean isMappedMethod(MethodReferenceEntry methodReferenceEntry) {
       boolean isMapped = false;
       for (MappedMethod mappedMethod : MappedMethod.values()) {
-//         if (logger.isLoggable(Level.FINE)) {
-//            logger.fine("Considering  " + mappedMethod.getName() + " for " + 
-//                  methodReferenceEntry.getNameAndTypeEntry().getNameUTF8Entry().getUTF8());
-//         }
          if (methodReferenceEntry.getNameAndTypeEntry().getNameUTF8Entry().getUTF8().equals(mappedMethod.getName())) {
 
             // well they have the same name ;) 
@@ -588,10 +584,6 @@ class KernelRunner{
       String mappedName = null;
       String name = _methodReferenceEntry.getNameAndTypeEntry().getNameUTF8Entry().getUTF8();
       for (MappedMethod mappedMethod : MappedMethod.values()) {
-//         if (logger.isLoggable(Level.FINE)) {
-//            logger.fine("Considering  " + mappedMethod.getName() + " for " + 
-//                  _methodReferenceEntry.getNameAndTypeEntry().getNameUTF8Entry().getUTF8());
-//         }
          if (_methodReferenceEntry.getNameAndTypeEntry().getNameUTF8Entry().getUTF8().equals(mappedMethod.getName())
                && descriptorToReturnTypeLetter(_methodReferenceEntry.getNameAndTypeEntry().getDescriptorUTF8Entry().getUTF8())
                .equals(mappedMethod.getReturnType())) {
@@ -1396,6 +1388,11 @@ class KernelRunner{
       }
       return argsList.toArray(new KernelArg[0]);
    }
+   
+   // Hope for the best!
+   boolean runnable = true;
+   public void setRunnable(boolean b) { runnable = b; }
+   public boolean getRunnable() { return runnable; }
 
 
    synchronized boolean execute(Object callerBlock, final Range _range, final int _passes) throws AparapiException {

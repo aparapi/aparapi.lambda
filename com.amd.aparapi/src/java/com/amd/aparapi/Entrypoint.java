@@ -247,6 +247,8 @@ class Entrypoint{
     * 
     * It is important to have only one ClassModel for each class used in the kernel
     * and only one MethodModel per method, so comparison operations work properly.
+    * 
+    * The className param is in dot form, not slashes
     */
    ClassModel getOrUpdateAllClassAccesses(String className) throws AparapiException {
       ClassModel memberClassModel = allFieldsClasses.get(className);
@@ -254,6 +256,11 @@ class Entrypoint{
          try {
             Class<?> memberClass = Class.forName(className);
 
+            // Quick and dirty way to bail out from unhandled Math methods etc
+            if (className.startsWith("java.lang")) {
+               throw new ClassParseException(ClassParseException.TYPE.UNHANDLEDMAPPEDMETHOD);
+            }
+            
             // Immediately add this class and all its supers if necessary
             memberClassModel = new ClassModel(memberClass);
             if (logger.isLoggable(Level.FINEST)) {
