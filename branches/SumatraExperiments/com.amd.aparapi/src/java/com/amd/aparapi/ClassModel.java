@@ -2464,9 +2464,7 @@ class ClassModel{
     * @throws ClassParseException
     */
    private void parse(ClassLoader _classLoader, String _className) throws ClassParseException {
-	   System.out.println("ClassLoader is: " + _classLoader);
 	   String asDotClass = _className.replace('.', '/') + ".class";
-	   System.out.println("Classname as: " + asDotClass);
 	   InputStream is = _classLoader.getResourceAsStream(asDotClass);
 	   System.out.println("stream is: " + is);
 
