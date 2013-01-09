@@ -22,7 +22,8 @@ public class Mandel{
 
    static void displayMandel(int width, int height, float offsetx, float offsety, float scale, int rgb[], int[] pallette, JComponent viewer, DoorBell paintedDoorBell){
 //      Aparapi.forEach(rgb, (i, value)->{
-        java.util.stream.primitive.PrimitiveStreams.parRange(0, rgb.length).forEach((i)->{
+       // java.util.stream.primitive.PrimitiveStreams.parRange(0, rgb.length).forEach((i)->{
+        java.util.stream.Streams.intRange(0, rgb.length).parallel().forEach((i)->{
          float x = ((((i%width) * scale) - ((scale / 2) * width)) / width) + offsetx;
          float y = ((((i/width) * scale) - ((scale / 2) * height)) / height) + offsety;
          int count = 0;
@@ -119,7 +120,8 @@ public class Mandel{
       // Initialize palette values
       final int[] pallette = new int[maxIterations+1];
 
-      java.util.stream.primitive.PrimitiveStreams.parRange(0, maxIterations).forEach((i)->{
+      //java.util.stream.primitive.PrimitiveStreams.parRange(0, maxIterations).forEach((i)->{
+      java.util.stream.Streams.intRange(0, maxIterations).forEach((i)->{
       //Aparapi.forEach(maxIterations, (i)->{
          float h = i / (float) maxIterations;
          float b = 1.0f - h * h;
