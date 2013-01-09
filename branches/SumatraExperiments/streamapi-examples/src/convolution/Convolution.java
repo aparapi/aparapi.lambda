@@ -32,7 +32,8 @@ public class Convolution{
       width = _width;
       height = _height;
       convMatrix3x3 = _convMatrix3x3;
-      java.util.stream.primitive.PrimitiveStreams.parRange(0, width*height*3).forEach((i)->{
+      java.util.stream.Streams.intRange(0, width*height*3).forEach((i)->{
+      //java.util.stream.primitive.PrimitiveStreams.parRange(0, width*height*3).forEach((i)->{
         int x = i % (width * 3);
         int y = i/ (width * 3);
 
