@@ -1,4 +1,4 @@
-#Aparapi libraries can now be loaded as JVMTI agents. 
+#summary Aparapi libraries can now be loaded as JVMTI agents.
 
 =What are all these check-ins referring to JVMTI agents?=
 
