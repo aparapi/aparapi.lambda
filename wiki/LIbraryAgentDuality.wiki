@@ -2,19 +2,19 @@
 
 =What are all these check-ins referring to JVMTI agents?=
 
-I had a really fun day hacking JNI code today and arranged for aparapi libraries (.dll or .so) to be also loaded as JVMTI agent.  Now (assuming library is in ${APARAPI_DIR}) we can either launch using 
+If you have been tracking Aparapi SVN checkins you will have noticed a bunch of changes to JNI code. I just finished arranging for aparapi libraries (.dll or .so) to be able to be loaded as JVMTI agent.  Now (assuming library is in ${APARAPI_DIR}) we can either launch using the traditional...
 
 {{{java –Djava.library.path=${APARAPI_DIR} –classpath ${APARAPI_DIR}/aparapi.jar;my.jar mypackage.MyClass}}}
 
-or
+or ...
 
 {{{java –agentpath=${APARAPI_DIR}/aparapi_x86_64.dll –classpath ${APARAPI_DIR}/aparapi.jar;my.jar mypackage.MyClass}}}
 
 So the dll/so is now both ‘just a library’ and a JVMTI agent.
 
-=Why do we need an agent ?=
+=When would I need an agent?=
 
-At present Aparapi loads classes that it wishes to convert to OpenCL using {{{Class.getResourceAsStream()}}} which works if we have a jar, or if the classes are on the filesystem somewhere.   This approach will not work for 'synthetically generated classes'.
+Prevously Aparapi loaded classes that it needed to convert to OpenCL using {{{java.lang.Class.getResourceAsStream()}}}. This only works if we have a jar, or if the classes are on the filesystem somewhere. This approach will not work for 'synthetically generated classes'.
 
 There are applications/frameworks which create synthetic classes (at runtime) which would not normally be useable by Aparapi. 
 
