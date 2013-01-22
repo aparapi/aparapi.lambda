@@ -74,7 +74,9 @@ extern "C" {
       const char *nameChars = jenv->GetStringUTFChars(className, NULL);
       fprintf(stdout, "inside getBytes(\"%s\")\n", nameChars);
       for (NameToBytes *ptr = head; ptr != NULL; ptr=(NameToBytes *)ptr->getNext()){
-         if (isKernel((char *)ptr->getName(), ptr->getByteBuffer())){
+         ClassInfo classInfo(ptr->getByteBuffer());
+         char *superClassName = classInfo.getSuperClassName();
+         if (!strcmp(superClassName,"com/amd/aparapi/Kernel")){
             fprintf(stdout, "%s is a kernel!\n", ptr->getName()); 
          }
          //fprintf(stdout, "testing \"%s\"==\"%s\"\n", nameChars, ptr->getName());
