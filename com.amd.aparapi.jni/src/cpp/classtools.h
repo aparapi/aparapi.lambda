@@ -343,8 +343,31 @@ class MethodInfo{
       LineNumberTableAttribute *getLineNumberTableAttribute();
 };
 
-#ifndef CLASSTOOLS_CPP
-extern bool isKernel(char *_className, ByteBuffer *_byteBuffer);
-#endif
+class ClassInfo{
+   private:
+      u4_t magic;
+      u2_t minor;
+      u2_t major;
+      u2_t constantPoolSize;
+      ConstantPoolEntry **constantPool;
+      u2_t accessFlags;
+      u2_t thisClassConstantPoolIndex;
+      u2_t superClassConstantPoolIndex;
+      u2_t interfaceCount;
+      u2_t *interfaces;
+      u2_t fieldCount;
+      FieldInfo **fields;
+      u2_t methodCount;
+      MethodInfo **methods;
+      u2_t attributeCount;
+      AttributeInfo **attributes;
+   public:
+      ClassInfo(ByteBuffer *_byteBuffer);
+      // com/amd/aparapi/Main$Kernel.run()V ==  "run", "()V"
+      MethodInfo *getMethodInfo(char *_methodName, char *_methodDescriptor); // com/amd/aparapi/Main$Kernel.run()V
+      char *getSuperClassName();
+      char *getClassName();
+};
+
 #endif
 
