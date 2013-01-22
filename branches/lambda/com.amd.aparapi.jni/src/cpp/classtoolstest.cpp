@@ -11,10 +11,10 @@
 #include <unistd.h>
 #endif
 
-#include "classtools.h"
+#include "instruction.h"
 
 int main(int argc, char **argv){
-   FILE *classFile = fopen("ClassModel.class", "rb");
+   FILE *classFile = fopen("Main.class", "rb");
    if (classFile == NULL){fputs ("OPen error",stderr); exit (1);}
    fseek(classFile, 0 , SEEK_END);
    long size = ftell(classFile);
@@ -26,16 +26,22 @@ int main(int argc, char **argv){
 
    // copy the file into the buffer:
    size_t result = fread (buffer,1,size, classFile);
+   fclose (classFile);
    if (result != size) {fputs ("Reading error",stderr); exit (3);}
 
-   fprintf(stdout, "read %d bytes\n", size);
+   fprintf(stdout, "read %ld bytes\n", size);
 
    ByteBuffer byteBuffer((byte_t*)buffer, size);
-   isKernel("ClassModel", &byteBuffer);
+
+   ClassInfo classInfo(&byteBuffer);
+   MethodInfo *methodInfo = classInfo.getMethodInfo((char*)"run", (char*)"()V");
+   CodeAttribute *codeAttribute = methodInfo->getCodeAttribute();
+   byte_t *code = codeAttribute->getCode();
+   u4_t codeLength = codeAttribute->getCodeLength();
+   
 
    /* the whole file is now loaded in the memory buffer. */
 
    // terminate
-   fclose (classFile);
 
 }

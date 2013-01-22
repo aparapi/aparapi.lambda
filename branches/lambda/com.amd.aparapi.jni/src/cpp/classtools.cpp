@@ -330,7 +330,17 @@ CodeAttribute::CodeAttribute(ByteBuffer *_byteBuffer, ConstantPoolEntry **_const
    }
 }
 
-AttributeInfo::AttributeInfo(ByteBuffer *_byteBuffer, ConstantPoolEntry **_constantPool){
+byte_t *CodeAttribute::getCode(){
+   return(code);
+}
+u4_t CodeAttribute::getCodeLength(){
+   return(code_length);
+}
+
+
+AttributeInfo::AttributeInfo(ByteBuffer *_byteBuffer, ConstantPoolEntry **_constantPool)
+   : attribute_type(UNKNOWN), codeAttribute(NULL)
+   {
    attribute_name_index = _byteBuffer->u2();
    UTF8ConstantPoolEntry *attributeName = (UTF8ConstantPoolEntry*)_constantPool[getAttributeNameIndex()];
    char *attributeNameChars = (char *)attributeName->getUTF8Bytes();
@@ -363,6 +373,19 @@ AttributeType AttributeInfo::getAttributeType(){
    return(attribute_type);
 }
 
+CodeAttribute *AttributeInfo::getCodeAttribute(){
+   return(codeAttribute);
+}
+
+LineNumberTableAttribute *AttributeInfo::getLineNumberTableAttribute(){
+   return(lineNumberTableAttribute);
+}
+
+LocalVariableTableAttribute *AttributeInfo::getLocalVariableTableAttribute(){
+   return(localVariableTableAttribute);
+}
+
+
 FieldInfo::FieldInfo(ByteBuffer *_byteBuffer, ConstantPoolEntry **_constantPool){
    access_flags = _byteBuffer->u2();
    name_index = _byteBuffer->u2();
@@ -394,6 +417,17 @@ MethodInfo::MethodInfo(ByteBuffer *_byteBuffer, ConstantPoolEntry **_constantPoo
    attributes = new AttributeInfo *[attributes_count];
    for (u2_t i=0; i< attributes_count; i++){
       attributes[i] = new AttributeInfo(_byteBuffer, _constantPool);
+      switch(attributes[i]->getAttributeType()){
+         case Code:
+            codeAttribute = attributes[i]->getCodeAttribute();
+            break;
+         case LineNumberTable:
+            lineNumberTableAttribute = attributes[i]->getLineNumberTableAttribute();
+            break;
+         case LocalVariableTable:
+            localVariableTableAttribute = attributes[i]->getLocalVariableTableAttribute();
+            break;
+      }
    }
 #ifdef SHOW
    UTF8ConstantPoolEntry *methodName = (UTF8ConstantPoolEntry*)_constantPool[getNameIndex()];
@@ -408,6 +442,16 @@ u2_t MethodInfo::getNameIndex(){
 u2_t MethodInfo::getDescriptorIndex(){
    return(descriptor_index);
 }
+CodeAttribute* MethodInfo::getCodeAttribute(){
+   return(codeAttribute);
+}
+LineNumberTableAttribute* MethodInfo::getLineNumberTableAttribute(){
+   return(lineNumberTableAttribute);
+}
+LocalVariableTableAttribute* MethodInfo::getLocalVariableTableAttribute(){
+   return(localVariableTableAttribute);
+}
+
 
 bool isKernel(char *_className, ByteBuffer *_byteBuffer){
    bool isAKernel = false;
@@ -432,106 +476,106 @@ bool isKernel(char *_className, ByteBuffer *_byteBuffer){
          ConstantPoolType constantPoolType = (ConstantPoolType)_byteBuffer->u1();
          switch (constantPoolType){
             case UTF8: //1
-                  constantPool[slot] = new UTF8ConstantPoolEntry(_byteBuffer, slot);
+               constantPool[slot] = new UTF8ConstantPoolEntry(_byteBuffer, slot);
 #ifdef SHOW
-                  fprintf(stdout, "slot %d UTF8 \"%s\"\n", slot, ((UTF8ConstantPoolEntry*)constantPool[slot])->getUTF8Bytes());
+               fprintf(stdout, "slot %d UTF8 \"%s\"\n", slot, ((UTF8ConstantPoolEntry*)constantPool[slot])->getUTF8Bytes());
 #endif
-                  slot++;
+               slot++;
                break;
             case INTEGER: //3
-                  constantPool[slot] = new IntegerConstantPoolEntry(_byteBuffer, slot);
+               constantPool[slot] = new IntegerConstantPoolEntry(_byteBuffer, slot);
 #ifdef SHOW
-                  fprintf(stdout, "slot %d INTEGER\n", slot);
+               fprintf(stdout, "slot %d INTEGER\n", slot);
 #endif
-                  slot++;
+               slot++;
                break;
             case FLOAT: //4
-                  constantPool[slot] = new FloatConstantPoolEntry(_byteBuffer, slot);
+               constantPool[slot] = new FloatConstantPoolEntry(_byteBuffer, slot);
 #ifdef SHOW
-                  fprintf(stdout, "slot %d FLOAT\n", slot);
+               fprintf(stdout, "slot %d FLOAT\n", slot);
 #endif
-                  slot++;
+               slot++;
                break;
             case LONG: //5
-                  constantPool[slot] = new LongConstantPoolEntry(_byteBuffer, slot);
+               constantPool[slot] = new LongConstantPoolEntry(_byteBuffer, slot);
 #ifdef SHOW
-                  fprintf(stdout, "slot %d LONG\n", slot);
+               fprintf(stdout, "slot %d LONG\n", slot);
 #endif
-                  slot+=2;
+               slot+=2;
                break;
             case DOUBLE: //6
-                  constantPool[slot] = new DoubleConstantPoolEntry(_byteBuffer, slot);
+               constantPool[slot] = new DoubleConstantPoolEntry(_byteBuffer, slot);
 #ifdef SHOW
-                  fprintf(stdout, "slot %d DOUBLE\n", slot);
+               fprintf(stdout, "slot %d DOUBLE\n", slot);
 #endif
-                  slot+=2;
+               slot+=2;
                break;
             case CLASS: //7
-                  constantPool[slot] = new ClassConstantPoolEntry(_byteBuffer, slot);
+               constantPool[slot] = new ClassConstantPoolEntry(_byteBuffer, slot);
 #ifdef SHOW
-                  fprintf(stdout, "slot %d CLASS\n", slot);
+               fprintf(stdout, "slot %d CLASS\n", slot);
 #endif
-                  slot+=1;
+               slot+=1;
                break;
             case STRING: //8
-                  constantPool[slot] = new StringConstantPoolEntry(_byteBuffer, slot);
+               constantPool[slot] = new StringConstantPoolEntry(_byteBuffer, slot);
 #ifdef SHOW
-                  fprintf(stdout, "slot %d STRING\n", slot);
+               fprintf(stdout, "slot %d STRING\n", slot);
 #endif
-                  slot+=1;
+               slot+=1;
                break;
             case FIELD: //9
-                  constantPool[slot] = new FieldConstantPoolEntry(_byteBuffer, slot);
+               constantPool[slot] = new FieldConstantPoolEntry(_byteBuffer, slot);
 #ifdef SHOW
-                  fprintf(stdout, "slot %d FIELD\n", slot);
+               fprintf(stdout, "slot %d FIELD\n", slot);
 #endif
-                  slot+=1;
+               slot+=1;
                break;
             case METHOD: //10
-                  constantPool[slot] = new MethodConstantPoolEntry(_byteBuffer, slot);
+               constantPool[slot] = new MethodConstantPoolEntry(_byteBuffer, slot);
 #ifdef SHOW
-                  fprintf(stdout, "slot %d METHOD\n", slot);
+               fprintf(stdout, "slot %d METHOD\n", slot);
 #endif
-                  slot+=1;
+               slot+=1;
                break;
             case INTERFACEMETHOD: //11
-                  constantPool[slot] = new InterfaceMethodConstantPoolEntry(_byteBuffer, slot);
+               constantPool[slot] = new InterfaceMethodConstantPoolEntry(_byteBuffer, slot);
 #ifdef SHOW
-                  fprintf(stdout, "slot %d INTERFACEMETHOD\n", slot);
+               fprintf(stdout, "slot %d INTERFACEMETHOD\n", slot);
 #endif
-                  slot+=1;
+               slot+=1;
                break;
             case NAMEANDTYPE: //12
-                  constantPool[slot] = new NameAndTypeConstantPoolEntry(_byteBuffer, slot);
+               constantPool[slot] = new NameAndTypeConstantPoolEntry(_byteBuffer, slot);
 #ifdef SHOW
-                  fprintf(stdout, "slot %d NAMEANDTYPE\n", slot);
+               fprintf(stdout, "slot %d NAMEANDTYPE\n", slot);
 #endif
-                  slot+=1;
+               slot+=1;
                break;
             case METHODHANDLE: //15
-                  constantPool[slot] = new MethodHandleConstantPoolEntry(_byteBuffer, slot);
+               constantPool[slot] = new MethodHandleConstantPoolEntry(_byteBuffer, slot);
 #ifdef SHOW
-                  fprintf(stdout, "slot %d METHODHANDLE\n", slot);
+               fprintf(stdout, "slot %d METHODHANDLE\n", slot);
 #endif
-                  slot+=1;
+               slot+=1;
                break;
             case METHODTYPE: //16
-                  constantPool[slot] = new MethodTypeConstantPoolEntry(_byteBuffer, slot);
+               constantPool[slot] = new MethodTypeConstantPoolEntry(_byteBuffer, slot);
 #ifdef SHOW
-                  fprintf(stdout, "slot %d METHODTYPE", slot);
+               fprintf(stdout, "slot %d METHODTYPE", slot);
 #endif
-                  slot+=1;
+               slot+=1;
                break;
             case INVOKEDYNAMIC: //18
-                  constantPool[slot] = new InvokeDynamicConstantPoolEntry(_byteBuffer, slot);
+               constantPool[slot] = new InvokeDynamicConstantPoolEntry(_byteBuffer, slot);
 #ifdef SHOW
-                  SHOW fprintf(stdout, "slot %d INVOKEDYNAMIC\n", slot);
+               SHOW fprintf(stdout, "slot %d INVOKEDYNAMIC\n", slot);
 #endif
-                  slot+=1;
+               slot+=1;
                break;
             default: 
-                  fprintf(stdout, "ERROR found UNKNOWN! %02x/%0d in slot %d\n", constantPoolType, constantPoolType, slot );
-                  exit (1);
+               fprintf(stdout, "ERROR found UNKNOWN! %02x/%0d in slot %d\n", constantPoolType, constantPoolType, slot );
+               exit (1);
          }
       }
 

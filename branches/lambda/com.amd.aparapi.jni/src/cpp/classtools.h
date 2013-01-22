@@ -280,9 +280,12 @@ class CodeAttribute{
       AttributeInfo **attributes;
    public:
       CodeAttribute(ByteBuffer *_byteBuffer, ConstantPoolEntry **_constantPool);
+      byte_t *getCode();
+      u4_t getCodeLength();
 };
 
 enum AttributeType{
+   UNKNOWN, 
    Code,
    LineNumberTable,
    LocalVariableTable
@@ -303,6 +306,9 @@ class AttributeInfo{
       AttributeInfo(ByteBuffer *_byteBuffer, ConstantPoolEntry **_constantPool);
       u2_t getAttributeNameIndex();
       AttributeType getAttributeType();
+      CodeAttribute *getCodeAttribute();
+      LineNumberTableAttribute *getLineNumberTableAttribute();
+      LocalVariableTableAttribute *getLocalVariableTableAttribute();
 };
 
 class FieldInfo{
@@ -325,10 +331,16 @@ class MethodInfo{
       u2_t descriptor_index;
       u2_t attributes_count;
       AttributeInfo **attributes;
+      CodeAttribute *codeAttribute;
+      LocalVariableTableAttribute *localVariableTableAttribute;
+      LineNumberTableAttribute *lineNumberTableAttribute;
    public:
       MethodInfo(ByteBuffer *_byteBuffer, ConstantPoolEntry **_constantPool);
       u2_t getNameIndex();
       u2_t getDescriptorIndex();
+      CodeAttribute *getCodeAttribute();
+      LocalVariableTableAttribute *getLocalVariableTableAttribute();
+      LineNumberTableAttribute *getLineNumberTableAttribute();
 };
 
 #ifndef CLASSTOOLS_CPP
