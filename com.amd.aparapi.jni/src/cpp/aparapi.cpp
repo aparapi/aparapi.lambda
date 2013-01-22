@@ -356,7 +356,7 @@ class JNIContext{
          }
          if (commandQueue != 0){
             if (config->isTrackingOpenCLResources()){
-               commandQueueList.remove((cl_command_queue)commandQueue, __LINE__, __FILE__);
+               commandQueueList.remove((cl_command_queue)commandQueue, __LINE__, (char *)__FILE__);
             }
             status = clReleaseCommandQueue((cl_command_queue)commandQueue);
             //fprintf(stdout, "dispose commandQueue %0lx\n", commandQueue);
@@ -382,7 +382,7 @@ class JNIContext{
                   if (arg->arrayBuffer != NULL){
                      if (arg->arrayBuffer->mem != 0){
                         if (config->isTrackingOpenCLResources()){
-                           memList.remove((cl_mem)arg->arrayBuffer->mem, __LINE__, __FILE__);
+                           memList.remove((cl_mem)arg->arrayBuffer->mem, __LINE__, (char *)__FILE__);
                         }
                         status = clReleaseMemObject((cl_mem)arg->arrayBuffer->mem);
                         //fprintf(stdout, "dispose arg %d %0lx\n", i, arg->arrayBuffer->mem);
@@ -560,7 +560,7 @@ cl_int KernelArg::setPrimitiveArg(JNIEnv *jenv, int argIdx, int argPos){
          jlong j = jenv->GetStaticLongField(jniContext->kernelClass, fieldID);
          if (config->isVerbose()){
             fprintf(stderr, "clSetKernelArg static primitive long '%s' index=%d pos=%d value=%ld\n",
-                 name, argIdx, argPos, j); 
+                 name, argIdx, argPos, (signed long)j); 
          }
          status = clSetKernelArg(jniContext->kernel, argPos, sizeof(jlong), &j);
       }else{
@@ -568,7 +568,7 @@ cl_int KernelArg::setPrimitiveArg(JNIEnv *jenv, int argIdx, int argPos){
          jlong j = jenv->GetLongField(jniContext->kernelObject, fieldID);
          if (config->isVerbose()){
             fprintf(stderr, "clSetKernelArg primitive long '%s' index=%d pos=%d value=%ld\n",
-                 name, argIdx, argPos, j); 
+                 name, argIdx, argPos, (signed long)j); 
          }
          status = clSetKernelArg(jniContext->kernel, argPos, sizeof(jlong), &j);
       }
@@ -644,10 +644,10 @@ jint writeProfileInfo(JNIContext* jniContext){
          fprintf(jniContext->profileFile, "%d write %s,", pos++, arg->name);
 
          fprintf(jniContext->profileFile, "%lu,%lu,%lu,%lu,",  
-               (arg->arrayBuffer->write.queued - currSampleBaseTime)/1000, 
-               (arg->arrayBuffer->write.submit - currSampleBaseTime)/1000, 
-               (arg->arrayBuffer->write.start - currSampleBaseTime)/1000, 
-               (arg->arrayBuffer->write.end - currSampleBaseTime)/1000);
+               (unsigned long)(arg->arrayBuffer->write.queued - currSampleBaseTime)/1000, 
+               (unsigned long)(arg->arrayBuffer->write.submit - currSampleBaseTime)/1000, 
+               (unsigned long)(arg->arrayBuffer->write.start - currSampleBaseTime)/1000, 
+               (unsigned long)(arg->arrayBuffer->write.end - currSampleBaseTime)/1000);
       }
    }
 
@@ -662,10 +662,10 @@ jint writeProfileInfo(JNIContext* jniContext){
       fprintf(jniContext->profileFile, "%d exec[%d],", pos++, pass);
 
       fprintf(jniContext->profileFile, "%lu,%lu,%lu,%lu,",  
-            (jniContext->exec[pass].queued - currSampleBaseTime)/1000, 
-            (jniContext->exec[pass].submit - currSampleBaseTime)/1000, 
-            (jniContext->exec[pass].start - currSampleBaseTime)/1000, 
-            (jniContext->exec[pass].end - currSampleBaseTime)/1000);
+            (unsigned long)(jniContext->exec[pass].queued - currSampleBaseTime)/1000, 
+            (unsigned long)(jniContext->exec[pass].submit - currSampleBaseTime)/1000, 
+            (unsigned long)(jniContext->exec[pass].start - currSampleBaseTime)/1000, 
+            (unsigned long)(jniContext->exec[pass].end - currSampleBaseTime)/1000);
    }
 
    // 
@@ -684,10 +684,10 @@ jint writeProfileInfo(JNIContext* jniContext){
             fprintf(jniContext->profileFile, "%d read %s,", pos++, arg->name);
 
             fprintf(jniContext->profileFile, "%lu,%lu,%lu,%lu,",  
-                  (arg->arrayBuffer->read.queued - currSampleBaseTime)/1000, 
-                  (arg->arrayBuffer->read.submit - currSampleBaseTime)/1000, 
-                  (arg->arrayBuffer->read.start - currSampleBaseTime)/1000, 
-                  (arg->arrayBuffer->read.end - currSampleBaseTime)/1000);
+                  (unsigned long)(arg->arrayBuffer->read.queued - currSampleBaseTime)/1000, 
+                  (unsigned long)(arg->arrayBuffer->read.submit - currSampleBaseTime)/1000, 
+                  (unsigned long)(arg->arrayBuffer->read.start - currSampleBaseTime)/1000, 
+                  (unsigned long)(arg->arrayBuffer->read.end - currSampleBaseTime)/1000);
          }
       }
    }
@@ -754,7 +754,7 @@ jint updateNonPrimitiveReferences(JNIEnv *jenv, jobject jobj, JNIContext* jniCon
                if (arg->arrayBuffer->mem != 0) {
                   //fprintf(stderr, "-->releaseMemObject[%d]\n", i);
                   if (config->isTrackingOpenCLResources()){
-                     memList.remove(arg->arrayBuffer->mem,__LINE__, __FILE__);
+                     memList.remove(arg->arrayBuffer->mem,__LINE__, (char *)__FILE__);
                   }
                   status = clReleaseMemObject((cl_mem)arg->arrayBuffer->mem);
                   //fprintf(stderr, "<--releaseMemObject[%d]\n", i);
@@ -826,7 +826,7 @@ JNI_JAVA(jint, KernelRunner, runKernelJNI)
             return 0L;
          }
          if (config->isVerbose()){
-            fprintf(stderr, "profileBaseTime %lu \n", jniContext->profileBaseTime);
+            fprintf(stderr, "profileBaseTime %lu \n", (unsigned long)jniContext->profileBaseTime);
          }
       }
 
@@ -893,7 +893,7 @@ JNI_JAVA(jint, KernelRunner, runKernelJNI)
                if (arg->arrayBuffer->mem != 0 && objectMoved){
                   // we need to release the old buffer 
                   if (config->isTrackingOpenCLResources()){
-                     memList.remove((cl_mem)arg->arrayBuffer->mem, __LINE__, __FILE__);
+                     memList.remove((cl_mem)arg->arrayBuffer->mem, __LINE__, (char *)__FILE__);
                   }
                   status = clReleaseMemObject((cl_mem)arg->arrayBuffer->mem);
                   //fprintf(stdout, "dispose arg %d %0lx\n", i, arg->arrayBuffer->mem);
@@ -913,8 +913,8 @@ JNI_JAVA(jint, KernelRunner, runKernelJNI)
                   if (mask & CL_MEM_READ_ONLY) strcat(arg->arrayBuffer->memSpec,"|CL_MEM_READ_ONLY");
                   if (mask & CL_MEM_WRITE_ONLY) strcat(arg->arrayBuffer->memSpec,"|CL_MEM_WRITE_ONLY");
 
-                  fprintf(stderr, "%s %d clCreateBuffer(context, %s, size=%08x bytes, address=%08x, &status)\n", arg->name, 
-                        argIdx, arg->arrayBuffer->memSpec, arg->arrayBuffer->lengthInBytes, arg->arrayBuffer->addr);
+                  fprintf(stderr, "%s %d clCreateBuffer(context, %s, size=%08x bytes, address=%08lx, &status)\n", arg->name, 
+                        argIdx, arg->arrayBuffer->memSpec, arg->arrayBuffer->lengthInBytes, (unsigned long)arg->arrayBuffer->addr);
                }
                arg->arrayBuffer->mem = clCreateBuffer(jniContext->context, arg->arrayBuffer->memMask, 
                      arg->arrayBuffer->lengthInBytes, arg->arrayBuffer->addr, &status);
@@ -925,7 +925,7 @@ JNI_JAVA(jint, KernelRunner, runKernelJNI)
                   return status;
                }
                if (config->isTrackingOpenCLResources()){
-                  memList.add(arg->arrayBuffer->mem, __LINE__, __FILE__);
+                  memList.add(arg->arrayBuffer->mem, __LINE__, (char *)__FILE__);
                }
 
                status = clSetKernelArg(jniContext->kernel, argPos, sizeof(cl_mem), (void *)&(arg->arrayBuffer->mem));                  
@@ -983,7 +983,7 @@ JNI_JAVA(jint, KernelRunner, runKernelJNI)
                   return status;
                }
                if (config->isTrackingOpenCLResources()){
-                  writeEventList.add(jniContext->writeEvents[writeEventCount],__LINE__, __FILE__);
+                  writeEventList.add(jniContext->writeEvents[writeEventCount],__LINE__, (char *)__FILE__);
                }
                writeEventCount++;
                if (arg->isExplicit() && arg->isExplicitWrite()){
@@ -1106,7 +1106,7 @@ JNI_JAVA(jint, KernelRunner, runKernelJNI)
                return status;
             }
             if (config->isTrackingOpenCLResources()){
-               executeEventList.remove(jniContext->executeEvents[0],__LINE__, __FILE__);
+               executeEventList.remove(jniContext->executeEvents[0],__LINE__, (char *)__FILE__);
             }
             status = clReleaseEvent(jniContext->executeEvents[0]);
             if (status != CL_SUCCESS) {
@@ -1148,7 +1148,7 @@ JNI_JAVA(jint, KernelRunner, runKernelJNI)
             return status;
          }
          if(config->isTrackingOpenCLResources()){
-            executeEventList.add(jniContext->executeEvents[0],__LINE__, __FILE__);
+            executeEventList.add(jniContext->executeEvents[0],__LINE__, (char *)__FILE__);
          }
        
       }
@@ -1195,7 +1195,7 @@ JNI_JAVA(jint, KernelRunner, runKernelJNI)
                return status;
             }
             if (config->isTrackingOpenCLResources()){
-               readEventList.add(jniContext->readEvents[readEventCount],__LINE__, __FILE__);
+               readEventList.add(jniContext->readEvents[readEventCount],__LINE__, (char *)__FILE__);
             }
             readEventCount++;
          }
@@ -1228,7 +1228,7 @@ JNI_JAVA(jint, KernelRunner, runKernelJNI)
                return status;
             }
             if (config->isTrackingOpenCLResources()){
-               readEventList.remove(jniContext->readEvents[i],__LINE__, __FILE__);
+               readEventList.remove(jniContext->readEvents[i],__LINE__, (char *)__FILE__);
             }
          }
       } else {
@@ -1241,7 +1241,7 @@ JNI_JAVA(jint, KernelRunner, runKernelJNI)
          }
       }
       if (config->isTrackingOpenCLResources()){
-         executeEventList.remove(jniContext->executeEvents[0],__LINE__, __FILE__);
+         executeEventList.remove(jniContext->executeEvents[0],__LINE__, (char *)__FILE__);
       }
       if (config->isProfilingEnabled()) {
          status = profile(&jniContext->exec[passes-1], &jniContext->executeEvents[0], 1, NULL, jniContext->profileBaseTime); // multi gpu ?
@@ -1282,7 +1282,7 @@ JNI_JAVA(jint, KernelRunner, runKernelJNI)
             return status;
          }
          if (config->isTrackingOpenCLResources()){
-            writeEventList.remove(jniContext->writeEvents[i],__LINE__, __FILE__);
+            writeEventList.remove(jniContext->writeEvents[i],__LINE__, (char *)__FILE__);
          }
       }
 
@@ -1354,7 +1354,7 @@ JNI_JAVA(jlong, KernelRunner, buildProgramJNI)
             &status);
       ASSERT_CL("clCreateCommandQueue()");
 
-      commandQueueList.add(jniContext->commandQueue, __LINE__, __FILE__);
+      commandQueueList.add(jniContext->commandQueue, __LINE__, (char *)__FILE__);
 
       if (config->isProfilingCSVEnabled()) {
          // compute profile filename
@@ -1529,7 +1529,7 @@ JNI_JAVA(jint, KernelRunner, getJNI)
             status = clEnqueueReadBuffer(jniContext->commandQueue, arg->arrayBuffer->mem, CL_FALSE, 0, 
                   arg->arrayBuffer->lengthInBytes,arg->arrayBuffer->addr , 0, NULL, &jniContext->readEvents[0]);
             if (config->isVerbose()){
-               fprintf(stderr, "explicitly read %s ptr=%lx len=%d\n", arg->name, arg->arrayBuffer->addr,arg->arrayBuffer->lengthInBytes );
+               fprintf(stderr, "explicitly read %s ptr=%lx len=%d\n", arg->name, (unsigned long)arg->arrayBuffer->addr,arg->arrayBuffer->lengthInBytes );
             }
             if (status != CL_SUCCESS) {
                PRINT_CL_ERR(status, "clEnqueueReadBuffer()");
@@ -1574,7 +1574,7 @@ JNI_JAVA(jobject, KernelRunner, getProfileInfoJNI)
       JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);
       jobject returnList = NULL;
       if (jniContext != NULL){
-         returnList = JNIHelper::createInstance(jenv, ArrayListClass, VoidReturn );
+         returnList = JNIHelper::createInstance(jenv, (char*)ArrayListClass, (char*)VoidReturn );
          if (config->isProfilingEnabled()){
 
             for (jint i=0; i<jniContext->argc; i++){ 
@@ -1582,14 +1582,14 @@ JNI_JAVA(jobject, KernelRunner, getProfileInfoJNI)
                if (arg->isArray()){
                   if (arg->isMutableByKernel() && arg->arrayBuffer->write.valid){
                      jobject writeProfileInfo = arg->arrayBuffer->write.createProfileInfoInstance(jenv);
-                     JNIHelper::callVoid(jenv, returnList, "add", ArgsBooleanReturn(ObjectClassArg), writeProfileInfo);
+                     JNIHelper::callVoid(jenv, returnList, (char*)"add", (char*)ArgsBooleanReturn(ObjectClassArg), writeProfileInfo);
                   }
                }
             }
 
             for (jint pass=0; pass<jniContext->passes; pass++){
                jobject executeProfileInfo = jniContext->exec[pass].createProfileInfoInstance(jenv);
-               JNIHelper::callVoid(jenv, returnList, "add", ArgsBooleanReturn(ObjectClassArg), executeProfileInfo);
+               JNIHelper::callVoid(jenv, returnList, (char*)"add", (char*)ArgsBooleanReturn(ObjectClassArg), executeProfileInfo);
             }
 
             for (jint i=0; i<jniContext->argc; i++){ 
@@ -1597,7 +1597,7 @@ JNI_JAVA(jobject, KernelRunner, getProfileInfoJNI)
                if (arg->isArray()){
                   if (arg->isReadByKernel() && arg->arrayBuffer->read.valid){
                      jobject readProfileInfo = arg->arrayBuffer->read.createProfileInfoInstance(jenv);
-                     JNIHelper::callVoid(jenv, returnList, "add", ArgsBooleanReturn(ObjectClassArg), readProfileInfo);
+                     JNIHelper::callVoid(jenv, returnList, (char*)"add", (char*)ArgsBooleanReturn(ObjectClassArg), readProfileInfo);
                   }
                }
             }
