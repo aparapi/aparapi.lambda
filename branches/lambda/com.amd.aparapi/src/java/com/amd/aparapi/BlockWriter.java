@@ -58,6 +58,7 @@ import com.amd.aparapi.InstructionSet.ByteCode;
 import com.amd.aparapi.InstructionSet.CastOperator;
 import com.amd.aparapi.InstructionSet.CloneInstruction;
 import com.amd.aparapi.InstructionSet.CompositeArbitraryScopeInstruction;
+import com.amd.aparapi.InstructionSet.CompositeDoWhileInstruction;
 import com.amd.aparapi.InstructionSet.CompositeEmptyLoopInstruction;
 import com.amd.aparapi.InstructionSet.CompositeForEclipseInstruction;
 import com.amd.aparapi.InstructionSet.CompositeForSunInstruction;
@@ -291,6 +292,17 @@ abstract class BlockWriter{
             write("}");
 
          }
+      } else if (instruction instanceof CompositeDoWhileInstruction) {
+         newLine();
+         write("do");
+         Instruction blockStart = instruction.getFirstChild();
+         Instruction blockEnd = instruction.getLastChild();
+         writeBlock(blockStart, blockEnd);
+         write("while(");
+         writeConditional(((CompositeInstruction) instruction).getBranchSet(), true);
+         write(");");
+         newLine();
+
       }
    }
 
