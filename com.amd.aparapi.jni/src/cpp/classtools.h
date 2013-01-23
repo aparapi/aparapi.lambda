@@ -73,33 +73,36 @@ class ByteBuffer{
       u8_t u8();
       f8_t f8();
       s8_t s8();
-      byte_t *getBytes(int _len);
+      char *createUTF8(int _len);
+      //byte_t *getPtrAndBump(int _len);
+      ByteBuffer *getByteBuffer(int _len);
       bool isKernel();
 };
 
 class ConstantPoolEntry{
    private:
       ConstantPoolType constantPoolType;
-      u4_t slot;
    public:
-      ConstantPoolEntry(ByteBuffer *_byteBuffer, u4_t _slot, ConstantPoolType _constantPoolType);
+      ConstantPoolEntry(ByteBuffer *_byteBuffer, ConstantPoolType _constantPoolType);
+      virtual ~ConstantPoolEntry();
       ConstantPoolType getConstantPoolType() ;
-      u4_t getSlot();
 };
 
 class EmptyConstantPoolEntry : public ConstantPoolEntry{
    public:
-      EmptyConstantPoolEntry(ByteBuffer *_byteBuffer, u4_t _slot);
+      EmptyConstantPoolEntry(ByteBuffer *_byteBuffer);
+      ~EmptyConstantPoolEntry();
 };
 
 class UTF8ConstantPoolEntry: public ConstantPoolEntry{
    private:
       size_t len; 
-      byte_t *utf8Bytes;
+      char  *utf8;   // allocated during construction!
    public:
-      UTF8ConstantPoolEntry(ByteBuffer *_byteBuffer, u4_t _slot) ;
+      UTF8ConstantPoolEntry(ByteBuffer *_byteBuffer) ;
+      ~UTF8ConstantPoolEntry() ;
       size_t getLen();
-      byte_t *getUTF8Bytes();
+      char *getUTF8();
       void write(FILE *file);
 };
 
@@ -107,7 +110,8 @@ class IntegerConstantPoolEntry : public ConstantPoolEntry{
    private:
       s4_t value;
    public:
-      IntegerConstantPoolEntry(ByteBuffer *_byteBuffer, u4_t _slot);
+      IntegerConstantPoolEntry(ByteBuffer *_byteBuffer);
+      ~IntegerConstantPoolEntry();
       s4_t getValue();
 };
 
@@ -115,7 +119,8 @@ class FloatConstantPoolEntry : public ConstantPoolEntry{
    private:
       f4_t value;
    public:
-      FloatConstantPoolEntry(ByteBuffer *_byteBuffer, u4_t  _slot);
+      FloatConstantPoolEntry(ByteBuffer *_byteBuffer);
+      ~FloatConstantPoolEntry();
       f4_t getValue();
 };
 
@@ -123,7 +128,8 @@ class DoubleConstantPoolEntry : public ConstantPoolEntry{
    private:
       f8_t value;
    public:
-      DoubleConstantPoolEntry(ByteBuffer *_byteBuffer, u4_t _slot);
+      DoubleConstantPoolEntry(ByteBuffer *_byteBuffer);
+      ~DoubleConstantPoolEntry();
       f8_t getValue();
 };
 
@@ -131,7 +137,8 @@ class LongConstantPoolEntry : public ConstantPoolEntry{
    private:
       s8_t value;
    public:
-      LongConstantPoolEntry(ByteBuffer *_byteBuffer, u4_t _slot);
+      LongConstantPoolEntry(ByteBuffer *_byteBuffer);
+      ~LongConstantPoolEntry();
       s8_t getValue();
 };
 
@@ -139,7 +146,8 @@ class ClassConstantPoolEntry : public ConstantPoolEntry{
    private:
       u2_t nameIndex;
    public:
-      ClassConstantPoolEntry(ByteBuffer *_byteBuffer, u4_t _slot);
+      ClassConstantPoolEntry(ByteBuffer *_byteBuffer);
+      ~ClassConstantPoolEntry();
       u2_t getNameIndex();
 };
 
@@ -149,28 +157,33 @@ class ReferenceConstantPoolEntry : public ConstantPoolEntry{
       u2_t referenceClassIndex;
       u2_t nameAndTypeIndex;
    public:
-      ReferenceConstantPoolEntry(ByteBuffer *_byteBuffer, u4_t _slot, ConstantPoolType _constantPoolType);
+      ReferenceConstantPoolEntry(ByteBuffer *_byteBuffer, ConstantPoolType _constantPoolType);
+      ~ReferenceConstantPoolEntry();
       u2_t getReferenceClassIndex();
       u2_t getNameAndTypeIndex();
 };
 
 class FieldConstantPoolEntry : public ReferenceConstantPoolEntry{
    public:
-      FieldConstantPoolEntry(ByteBuffer *_byteBuffer, u4_t _slot);
+      FieldConstantPoolEntry(ByteBuffer *_byteBuffer);
+      ~FieldConstantPoolEntry();
 };
 class MethodReferenceConstantPoolEntry : public ReferenceConstantPoolEntry{
    public:
-      MethodReferenceConstantPoolEntry(ByteBuffer *_byteBuffer, u4_t _slot, ConstantPoolType _constantPoolType);
+      MethodReferenceConstantPoolEntry(ByteBuffer *_byteBuffer, ConstantPoolType _constantPoolType);
+      ~MethodReferenceConstantPoolEntry();
 };
 
 class MethodConstantPoolEntry : public MethodReferenceConstantPoolEntry{
    public:
-      MethodConstantPoolEntry(ByteBuffer *_byteBuffer, u4_t _slot);
+      MethodConstantPoolEntry(ByteBuffer *_byteBuffer);
+      ~MethodConstantPoolEntry();
 };
 
 class InterfaceMethodConstantPoolEntry : public MethodReferenceConstantPoolEntry{
    public:
-      InterfaceMethodConstantPoolEntry(ByteBuffer *_byteBuffer, u4_t _slot);
+      InterfaceMethodConstantPoolEntry(ByteBuffer *_byteBuffer);
+      ~InterfaceMethodConstantPoolEntry();
 };
 
 class NameAndTypeConstantPoolEntry : public ConstantPoolEntry{
@@ -178,7 +191,8 @@ class NameAndTypeConstantPoolEntry : public ConstantPoolEntry{
       u2_t descriptorIndex;
       u2_t nameIndex;
    public:
-      NameAndTypeConstantPoolEntry(ByteBuffer *_byteBuffer, u4_t _slot);
+      NameAndTypeConstantPoolEntry(ByteBuffer *_byteBuffer);
+      ~NameAndTypeConstantPoolEntry();
       u2_t getDescriptorIndex();
       u2_t getNameIndex();
 };
@@ -189,7 +203,8 @@ class MethodTypeConstantPoolEntry : public ConstantPoolEntry{
       u2_t descriptorIndex;
 
    public:
-      MethodTypeConstantPoolEntry(ByteBuffer *_byteBuffer, u4_t _slot);
+      MethodTypeConstantPoolEntry(ByteBuffer *_byteBuffer);
+      ~MethodTypeConstantPoolEntry();
       u2_t getDescriptorIndex();
 };
 
@@ -198,7 +213,8 @@ class MethodHandleConstantPoolEntry : public ConstantPoolEntry{
       u1_t referenceKind;
       u2_t referenceIndex;
    public:
-      MethodHandleConstantPoolEntry(ByteBuffer *_byteBuffer, u4_t _slot);
+      MethodHandleConstantPoolEntry(ByteBuffer *_byteBuffer);
+      ~MethodHandleConstantPoolEntry();
       u1_t getReferenceKind();
       u2_t getReferenceIndex();
 };
@@ -208,7 +224,8 @@ class StringConstantPoolEntry : public ConstantPoolEntry{
       u2_t utf8Index;
 
    public:
-      StringConstantPoolEntry(ByteBuffer *_byteBuffer, u4_t _slot);
+      StringConstantPoolEntry(ByteBuffer *_byteBuffer);
+      ~StringConstantPoolEntry();
       u2_t getUtf8Index();
 };
 
@@ -218,7 +235,8 @@ class InvokeDynamicConstantPoolEntry : public ConstantPoolEntry{
       u2_t nameAndTypeIndex;
 
    public:
-      InvokeDynamicConstantPoolEntry(ByteBuffer *_byteBuffer, u4_t _slot);
+      InvokeDynamicConstantPoolEntry(ByteBuffer *_byteBuffer);
+      ~InvokeDynamicConstantPoolEntry();
       u2_t getBootStrapMethodAttrIndex();
       u2_t getNameAndTypeIndex();
 };
@@ -232,12 +250,14 @@ class LineNumberTableAttribute{
      u2_t line_number; 
    public:
       LineNumberTableEntry(ByteBuffer *_byteBuffer, ConstantPoolEntry **_constantPool);
+      ~LineNumberTableEntry();
    };
   private:
     u2_t line_number_table_length;
     LineNumberTableEntry **lineNumberTable;
   public:
       LineNumberTableAttribute(ByteBuffer *_byteBuffer, ConstantPoolEntry **_constantPool);
+      ~LineNumberTableAttribute();
 };
 
 class LocalVariableTableAttribute{
@@ -250,12 +270,14 @@ class LocalVariableTableAttribute{
      u2_t index; 
    public:
       LocalVariableTableEntry(ByteBuffer *_byteBuffer, ConstantPoolEntry **_constantPool);
+      ~LocalVariableTableEntry();
    };
   private:
     u2_t local_variable_table_length;
     LocalVariableTableEntry **localVariableTable;
   public:
       LocalVariableTableAttribute(ByteBuffer *_byteBuffer, ConstantPoolEntry **_constantPool);
+      ~LocalVariableTableAttribute();
 };
 
 class CodeAttribute{
@@ -268,20 +290,20 @@ class CodeAttribute{
 
    public:
       ExceptionTableEntry(ByteBuffer *_byteBuffer, ConstantPoolEntry **_constantPool);
+      ~ExceptionTableEntry();
    };
    private:
       u2_t max_stack;
       u2_t max_locals;
-      u4_t code_length;
-      byte_t *code;
+      ByteBuffer *codeByteBuffer;
       u2_t exception_table_length;
       ExceptionTableEntry **exceptionTable;
       u2_t attributes_count;
       AttributeInfo **attributes;
    public:
       CodeAttribute(ByteBuffer *_byteBuffer, ConstantPoolEntry **_constantPool);
-      byte_t *getCode();
-      u4_t getCodeLength();
+      ~CodeAttribute();
+      ByteBuffer *getCodeByteBuffer();
 };
 
 enum AttributeType{
@@ -294,8 +316,7 @@ enum AttributeType{
 class AttributeInfo{
    private:
       u2_t attribute_name_index;
-      u4_t attribute_length;
-      byte_t *info;
+      ByteBuffer *infoByteBuffer;
       AttributeType attribute_type;
       union{
          CodeAttribute *codeAttribute;
@@ -304,6 +325,7 @@ class AttributeInfo{
       };
    public:
       AttributeInfo(ByteBuffer *_byteBuffer, ConstantPoolEntry **_constantPool);
+      ~AttributeInfo();
       u2_t getAttributeNameIndex();
       AttributeType getAttributeType();
       CodeAttribute *getCodeAttribute();
@@ -320,6 +342,7 @@ class FieldInfo{
       AttributeInfo **attributes;
    public:
       FieldInfo(ByteBuffer *_byteBuffer, ConstantPoolEntry **_constantPool);
+      ~FieldInfo();
       u2_t getNameIndex();
       u2_t getDescriptorIndex();
 };
@@ -336,6 +359,7 @@ class MethodInfo{
       LineNumberTableAttribute *lineNumberTableAttribute;
    public:
       MethodInfo(ByteBuffer *_byteBuffer, ConstantPoolEntry **_constantPool);
+      ~MethodInfo();
       u2_t getNameIndex();
       u2_t getDescriptorIndex();
       CodeAttribute *getCodeAttribute();
@@ -363,6 +387,7 @@ class ClassInfo{
       AttributeInfo **attributes;
    public:
       ClassInfo(ByteBuffer *_byteBuffer);
+      ~ClassInfo();
       // com/amd/aparapi/Main$Kernel.run()V ==  "run", "()V"
       MethodInfo *getMethodInfo(char *_methodName, char *_methodDescriptor); // com/amd/aparapi/Main$Kernel.run()V
       char *getSuperClassName();
