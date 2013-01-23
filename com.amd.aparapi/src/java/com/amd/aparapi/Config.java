@@ -61,7 +61,7 @@ class Config{
     * 
     * Usage -agentpath=/full/path/to/agent.dll -Dcom.amd.aparapi.useAgent=true
     */
-    
+
    static final boolean useAgent = Boolean.getBoolean(propPkgName + ".useAgent");
 
    static final boolean disableUnsafe = Boolean.getBoolean(propPkgName + ".disableUnsafe");
@@ -147,7 +147,8 @@ class Config{
 
    static final boolean enablePUTSTATIC = Boolean.getBoolean(propPkgName + ".enable.PUTSTATIC");
 
-   static final boolean enableGETSTATIC = Boolean.getBoolean(propPkgName + ".enable.GETSTATIC");
+   // Allow static array accesses 
+   static final boolean enableGETSTATIC = true; //Boolean.getBoolean(propPkgName + ".enable.GETSTATIC");
 
    static final boolean enableINVOKEINTERFACE = Boolean.getBoolean(propPkgName + ".enable.INVOKEINTERFACE");
 
