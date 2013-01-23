@@ -11,6 +11,7 @@
 #include <unistd.h>
 #endif
 
+#include "classtools.h"
 #include "instruction.h"
 
 int main(int argc, char **argv){
@@ -36,9 +37,8 @@ int main(int argc, char **argv){
    ClassInfo classInfo(&byteBuffer);
    MethodInfo *methodInfo = classInfo.getMethodInfo((char*)"run", (char*)"()V");
    CodeAttribute *codeAttribute = methodInfo->getCodeAttribute();
-   byte_t *code = codeAttribute->getCode();
-   u4_t codeLength = codeAttribute->getCodeLength();
-   
+   ByteBuffer *codeByteBuffer = codeAttribute->getCodeByteBuffer();
+   delete methodInfo;
 
    /* the whole file is now loaded in the memory buffer. */
 

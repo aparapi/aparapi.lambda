@@ -113,7 +113,9 @@ static void JNICALL cbClassFileLoadHook(jvmtiEnv *jvmti_env, JNIEnv* jni_env,
       jint* new_class_data_len,
       unsigned char** new_class_data){
    //   fprintf(stdout, "from agent classFileLoadHook(%s)\n", name);
-   ByteBuffer *byteBuffer = new ByteBuffer((byte_t *)class_data, (size_t)class_data_len);
+   byte_t *buf = new byte_t[class_data_len];
+   memcpy((void*)buf, (void*)class_data, (size_t)class_data_len);
+   ByteBuffer *byteBuffer = new ByteBuffer(buf, (size_t)class_data_len);
    head = new NameToBytes(head, (char *)name, byteBuffer);
    //fprintf(stdout, "class \"%s\"  ", name); 
 }
