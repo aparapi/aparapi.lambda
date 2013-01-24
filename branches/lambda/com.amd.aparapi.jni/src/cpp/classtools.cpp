@@ -110,6 +110,12 @@ ByteBuffer *ByteBuffer::getByteBuffer(int _len){
    ptr+=_len;
    return new ByteBuffer(buf, _len);
 }
+size_t  ByteBuffer::getOffset(){
+   return((size_t)(ptr-bytes));
+}
+bool  ByteBuffer::empty(){
+   return(getOffset()>=len);
+}
 
 ConstantPoolEntry::ConstantPoolEntry(ByteBuffer *_byteBuffer, ConstantPoolType _constantPoolType)
    : constantPoolType(_constantPoolType) {
