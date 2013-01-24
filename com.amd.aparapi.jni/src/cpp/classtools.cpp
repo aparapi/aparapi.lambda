@@ -17,6 +17,11 @@ u2_t ByteBuffer::u2(byte_t *ptr){
    //     fprintf(stderr, "u2 %02x\n", u2);
    return (u2);
 }
+s2_t ByteBuffer::s2(byte_t *ptr){
+   u2_t u2 = (u1(ptr)<<8)|u1(ptr+1);
+   //     fprintf(stderr, "u2 %02x\n", u2);
+   return ((s2_t)u2);
+}
 u4_t ByteBuffer::u4(byte_t *ptr){
    u4_t u4 = (u2(ptr)<<16)|u2(ptr+2);
    //      fprintf(stderr, "u4 %04x\n", u4);
@@ -68,6 +73,10 @@ u1_t ByteBuffer::u1(){
 }
 u2_t ByteBuffer::u2(){
    u2_t value = u2(ptr); ptr+=2;
+   return (value);
+}
+s2_t ByteBuffer::s2(){
+   s2_t value = s2(ptr); ptr+=2;
    return (value);
 }
 u4_t ByteBuffer::u4(){

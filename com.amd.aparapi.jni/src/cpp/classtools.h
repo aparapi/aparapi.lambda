@@ -28,6 +28,7 @@ enum ConstantPoolType {
 
 typedef unsigned char  byte_t;
 typedef unsigned char  u1_t;
+typedef signed short   s2_t;
 typedef unsigned short u2_t;
 typedef signed int     s4_t;
 typedef unsigned int   u4_t;
@@ -54,6 +55,7 @@ class ByteBuffer{
       byte_t *ptr;
       u1_t u1(byte_t *ptr);
       u2_t u2(byte_t *ptr);
+      s2_t s2(byte_t *ptr);
       u4_t u4(byte_t *ptr);
       s4_t s4(byte_t *ptr);
       f4_t f4(byte_t *ptr);
@@ -67,6 +69,7 @@ class ByteBuffer{
       size_t getLen();
       u1_t u1();
       u2_t u2();
+      s2_t s2();
       u4_t u4();
       f4_t f4();
       s4_t s4();
@@ -74,7 +77,6 @@ class ByteBuffer{
       f8_t f8();
       s8_t s8();
       char *createUTF8(int _len);
-      //byte_t *getPtrAndBump(int _len);
       ByteBuffer *getByteBuffer(int _len);
       size_t  getOffset();
       bool empty();

@@ -35,20 +35,16 @@ int main(int argc, char **argv){
    ByteBuffer byteBuffer((byte_t*)buffer, size);
 
    ClassInfo classInfo(&byteBuffer);
-   MethodInfo *methodInfo = classInfo.getMethodInfo((char*)"run", (char*)"()V");
+   MethodInfo *methodInfo = classInfo.getMethodInfo((char*)"getCount", (char*)"(FF)I");
    CodeAttribute *codeAttribute = methodInfo->getCodeAttribute();
    ByteBuffer *codeByteBuffer = codeAttribute->getCodeByteBuffer();
 
    byte_t byte ;
    ByteCode byteCode;
    while (!codeByteBuffer->empty()){
-      byte= codeByteBuffer->u1();
-      byteCode = bytecode[byte];
-      fprintf(stderr, "%d %s\n", (int)codeByteBuffer->getOffset(), (char*)byteCode.name);
-      int len = 
-      break;
+      Instruction *instruction = new Instruction(codeByteBuffer);
    }
-//   delete methodInfo;
+   //   delete methodInfo;
 
    /* the whole file is now loaded in the memory buffer. */
 
