@@ -38,7 +38,17 @@ int main(int argc, char **argv){
    MethodInfo *methodInfo = classInfo.getMethodInfo((char*)"run", (char*)"()V");
    CodeAttribute *codeAttribute = methodInfo->getCodeAttribute();
    ByteBuffer *codeByteBuffer = codeAttribute->getCodeByteBuffer();
-   delete methodInfo;
+
+   byte_t byte ;
+   ByteCode byteCode;
+   while (!codeByteBuffer->empty()){
+      byte= codeByteBuffer->u1();
+      byteCode = bytecode[byte];
+      fprintf(stderr, "%d %s\n", (int)codeByteBuffer->getOffset(), (char*)byteCode.name);
+      int len = 
+      break;
+   }
+//   delete methodInfo;
 
    /* the whole file is now loaded in the memory buffer. */
 

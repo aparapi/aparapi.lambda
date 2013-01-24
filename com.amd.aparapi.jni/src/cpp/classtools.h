@@ -76,6 +76,8 @@ class ByteBuffer{
       char *createUTF8(int _len);
       //byte_t *getPtrAndBump(int _len);
       ByteBuffer *getByteBuffer(int _len);
+      size_t  getOffset();
+      bool empty();
       bool isKernel();
 };
 
