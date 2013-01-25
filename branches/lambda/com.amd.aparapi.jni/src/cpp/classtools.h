@@ -308,6 +308,8 @@ class CodeAttribute{
   CodeAttribute(ByteBuffer *_byteBuffer, ConstantPoolEntry **_constantPool);
   virtual ~CodeAttribute();
   ByteBuffer *getCodeByteBuffer();
+  u2_t getMaxStack();
+  u2_t getMaxLocals();
 };
 
 enum AttributeType{
