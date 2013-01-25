@@ -22,7 +22,7 @@ int main(int argc, char **argv){
   rewind (classFile);
 
   // allocate memory to contain the whole file:
-  char *buffer = (char*) malloc (sizeof(char)*size);
+  char *buffer = new char[size];
   if (buffer == NULL) {fputs ("Memory error",stderr); exit (2);}
 
   // copy the file into the buffer:
@@ -34,8 +34,8 @@ int main(int argc, char **argv){
 
   ByteBuffer *byteBuffer = new ByteBuffer((byte_t*)buffer, size);
 
-  ClassInfo classInfo(byteBuffer);
-  MethodInfo *methodInfo = classInfo.getMethodInfo((char*)"getCount", (char*)"(FF)I");
+  ClassInfo *classInfo = new ClassInfo(byteBuffer);
+  MethodInfo *methodInfo = classInfo->getMethodInfo((char*)"getCount", (char*)"(FF)I");
   CodeAttribute *codeAttribute = methodInfo->getCodeAttribute();
   ByteBuffer *codeByteBuffer = codeAttribute->getCodeByteBuffer();
 
@@ -54,11 +54,13 @@ int main(int argc, char **argv){
   while (!codeByteBuffer->empty()){
     Instruction *instruction = new Instruction(codeByteBuffer);
     instructions[instruction->getPC()] = instruction;
-    instruction->write(stdout, classInfo.getConstantPool());
+    instruction->write(stdout, classInfo->getConstantPool());
   }
 
-  delete methodInfo;
   delete byteBuffer;
+  delete[] buffer; 
+  delete[] stackMap;
+  delete classInfo;
 
   /* the whole file is now loaded in the memory buffer. */
 
