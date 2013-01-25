@@ -32,9 +32,6 @@ Instruction::Instruction(ByteBuffer *_codeByteBuffer){
     case ImmSpec_Sconst:
       immSpec_Sconst.value= _codeByteBuffer->u2();
       break;
-    case ImmSpec_IorForS:
-      immSpec_IorForS.i= _codeByteBuffer->u4();
-      break;
     case ImmSpec_Spc:
       immSpec_Spc.pc= _codeByteBuffer->s2() +pc;
       break;
@@ -71,30 +68,50 @@ Instruction::~Instruction(){
 
 
 void Instruction::write(FILE *_file, ConstantPoolEntry **_constantPool){
-  fprintf(stderr, "%d %s", pc, (char*)byteCode->name);
+  fprintf(_file, "%4d %-10s", pc, (char*)byteCode->name);
   switch(byteCode->immSpec){
     case ImmSpec_NONE:
       break;
     case ImmSpec_Blvti:
+        fprintf(_file, " %d", immSpec_Blvti.lvti);
       break;
     case ImmSpec_Bcpci:
+    case ImmSpec_Scpci:
       {
-        ConstantPoolEntry* constantPoolEntry = _constantPool[immSpec_Bcpci.cpci];
-        fprintf(stderr, " #%d", immSpec_Bcpci.cpci);
-        //switch (constantPoolEntry->){
-        //}
+        int cpi = 0;
+        if (byteCode->immSpec == ImmSpec_Bcpci){
+          cpi = immSpec_Bcpci.cpci;
+        }else{
+          cpi = immSpec_Scpci.cpci;
+        }
+        ConstantPoolEntry* constantPoolEntry = _constantPool[cpi];
+        switch (constantPoolEntry->getConstantPoolType()){
+            case FLOAT:
+              fprintf(_file, " FLOAT %f", ((FloatConstantPoolEntry*)constantPoolEntry)->getValue());
+              break;
+            case INTEGER:
+              fprintf(_file, " INTEGER %d", ((IntegerConstantPoolEntry*)constantPoolEntry)->getValue());
+              break;
+            case DOUBLE:
+              fprintf(_file, " DOUBLE %lf", ((DoubleConstantPoolEntry*)constantPoolEntry)->getValue());
+              break;
+            case LONG:
+              fprintf(_file, " LONG %ld", ((LongConstantPoolEntry*)constantPoolEntry)->getValue());
+              break;
+            default:
+              fprintf(_file, " constant pool #%d", immSpec_Bcpci.cpci);
+              break;
+        }
         break;
       }
-    case ImmSpec_Scpci:
-      break;
     case ImmSpec_Bconst:
+        fprintf(_file, " byte %d", immSpec_Bconst.value);
       break;
     case ImmSpec_Sconst:
-      break;
-    case ImmSpec_IorForS:
+        fprintf(_file, " short %d", immSpec_Sconst.value);
       break;
     case ImmSpec_Spc:
-      fprintf(stderr, " %d", immSpec_Spc.pc);
+      fprintf(_file, " %d", immSpec_Spc.pc);
       break;
     case ImmSpec_Scpfi:
       break;
@@ -107,13 +124,12 @@ void Instruction::write(FILE *_file, ConstantPoolEntry **_constantPool){
     case ImmSpec_ScpciBdim:
       break;
     case ImmSpec_Ipc:
-      fprintf(stderr, " %d", immSpec_Ipc.pc);
+      fprintf(_file, " %d", immSpec_Ipc.pc);
       break;
     case ImmSpec_UNKNOWN:
       break;
 
   }
-  fprintf(stderr, "\n");
 }
 
 
