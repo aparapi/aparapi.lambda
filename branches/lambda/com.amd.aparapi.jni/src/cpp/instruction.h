@@ -209,23 +209,14 @@ enum ByteCodeType{
 };
 
 
-#define BITS_B  0x1
-#define BITS_C  0x2
-#define BITS_S  0x3
-#define BITS_I  0x4
-#define BITS_F  0x5
-#define BITS_L  0x6
-#define BITS_D  0x7
-#define BITS_O  0x8
-#define BITS_A  0x9
-#define BITS_UN 0xA
-
-#define LDSpec_NONE                    0x0
-#define LDSpec_I                       BITS_I
-#define LDSpec_L                       BITS_L
-#define LDSpec_A                       BITS_A
-#define LDSpec_F                       BITS_F
-#define LDSpec_D                       BITS_D
+enum LDSpecType{
+   LDSpec_NONE, 
+   LDSpec_I, 
+   LDSpec_L,
+   LDSpec_A,
+   LDSpec_F,
+   LDSpec_D
+};
 
 enum ImmSpecType{
    ImmSpec_NONE,
@@ -245,107 +236,108 @@ enum ImmSpecType{
    ImmSpec_UNKNOWN
 };
 
-#define STSpec_NONE                    0x00
-#define STSpec_L                       BITS_L
-#define STSpec_F                       BITS_F
-#define STSpec_D                       BITS_D
-#define STSpec_I                       BITS_I
-#define STSpec_A                       BITS_A
-
-enum PushSpecType{
-PushSpec_NONE,
-PushSpec_N,
-PushSpec_I,
-PushSpec_L,
-PushSpec_F,
-PushSpec_D,
-PushSpec_O,
-PushSpec_A,
-PushSpec_RA,
-PushSpec_IorForS,
-PushSpec_LorD,
-PushSpec_II,
-PushSpec_III,
-PushSpec_IIII,
-PushSpec_IIIII,
-PushSpec_IIIIII,
-PushSpec_UNKNOWN
+enum STSpecType{
+   STSpec_NONE,
+   STSpec_L,
+   STSpec_F,
+   STSpec_D,
+   STSpec_I,
+   STSpec_A
 };
 
-#define PopSpec_NONE                   0x000
-#define PopSpec_COUNT_MASK             0x007
-#define PopSpec_A                      0x011
-#define PopSpec_AI                     0x022
-#define PopSpec_AII                    0x033
-#define PopSpec_AIL                    0x043
-#define PopSpec_AIF                    0x053
-#define PopSpec_AID                    0x063
-#define PopSpec_AIO                    0x073
-#define PopSpec_AIB                    0x083
-#define PopSpec_AIC                    0x093
-#define PopSpec_AIS                    0x0A3
-#define PopSpec_II                     0x0B2
-#define PopSpec_III                    0x0C3
-#define PopSpec_IIII                   0x0D4
-#define PopSpec_L                      0x0E1
-#define PopSpec_LI                     0x0F2
-#define PopSpec_LL                     0x102
-#define PopSpec_F                      0x111
-#define PopSpec_FF                     0x122
-#define PopSpec_OO                     0x132
-#define PopSpec_RA                     0x142
-#define PopSpec_O                      0x151
-#define PopSpec_I                      0x161
-#define PopSpec_D                      0x171
-#define PopSpec_DD                     0x182
-#define PopSpec_OUNKNOWN               0x192
-#define PopSpec_UNKNOWN                0x1A1
-#define PopSpec_ARGS                   0x1B0
-#define PopSpec_OARGS                  0x1C0
+enum PushSpecType{
+   PushSpec_NONE,
+   PushSpec_N,
+   PushSpec_I,
+   PushSpec_L,
+   PushSpec_F,
+   PushSpec_D,
+   PushSpec_O,
+   PushSpec_A,
+   PushSpec_RA,
+   PushSpec_IorForS,
+   PushSpec_LorD,
+   PushSpec_II,
+   PushSpec_III,
+   PushSpec_IIII,
+   PushSpec_IIIII,
+   PushSpec_IIIIII,
+   PushSpec_UNKNOWN
+};
 
+enum PopSpecType{
+   PopSpec_NONE,
+   PopSpec_COUNT_MASK,
+   PopSpec_A,
+   PopSpec_AI,
+   PopSpec_AII,
+   PopSpec_AIL,
+   PopSpec_AIF,
+   PopSpec_AID,
+   PopSpec_AIO,
+   PopSpec_AIB,
+   PopSpec_AIC,
+   PopSpec_AIS,
+   PopSpec_II ,
+   PopSpec_III,
+   PopSpec_IIII,
+   PopSpec_L,
+   PopSpec_LI,
+   PopSpec_LL,
+   PopSpec_F,
+   PopSpec_FF,
+   PopSpec_OO,
+   PopSpec_RA,
+   PopSpec_O,
+   PopSpec_I,
+   PopSpec_D,
+   PopSpec_DD,
+   PopSpec_OUNKNOWN,
+   PopSpec_UNKNOWN,
+   PopSpec_ARGS,
+   PopSpec_OARGS
+};
 
-#define OpSpec_NONE                    0x000
-#define OpSpec_CAST                    0x0040
-#define OpSpec_ARITHMETIC              0x0080
-#define OpSpec_BINARY                  0x0100
-#define OpSpec_UNARY                   0x0200
-#define OpSpec_BITWISE                 0x0400
-#define OpSpec_COMPARE                 0x0800
-#define OpSpec_Add                     0x0001 | OpSpec_ARITHMETIC  | OpSpec_BINARY
-#define OpSpec_Sub                     0x0002 | OpSpec_ARITHMETIC | OpSpec_BINARY
-#define OpSpec_Mul                     0x0003 | OpSpec_ARITHMETIC | OpSpec_BINARY
-#define OpSpec_Div                     0x0004 | OpSpec_ARITHMETIC | OpSpec_BINARY
-#define OpSpec_Rem                     0x0005 | OpSpec_ARITHMETIC | OpSpec_BINARY
-#define OpSpec_Neg                     0x0006 | OpSpec_ARITHMETIC | OpSpec_UNARY
-#define OpSpec_BitwiseOr               0x0007 | OpSpec_BITWISE | OpSpec_BINARY
-#define OpSpec_BitwiseAnd              0x0008 | OpSpec_BITWISE | OpSpec_BINARY
-#define OpSpec_BitwiseXor              0x0009 | OpSpec_BITWISE | OpSpec_BINARY
-#define OpSpec_LeftShift               0x000A | OpSpec_BITWISE | OpSpec_BINARY
-#define OpSpec_LogicalRightShift       0x000B | OpSpec_BITWISE | OpSpec_BINARY
-#define OpSpec_ArithmeticRightShift    0x000C | OpSpec_BITWISE | OpSpec_BINARY
-#define OpSpec_F2ICast                 0x000D | OpSpec_CAST 
-#define OpSpec_F2LCast                 0x000E | OpSpec_CAST
-#define OpSpec_F2DCast                 0x000F | OpSpec_CAST
-#define OpSpec_D2ICast                 0x0010 | OpSpec_CAST
-#define OpSpec_D2FCast                 0x0011 | OpSpec_CAST
-#define OpSpec_D2LCast                 0x0012 | OpSpec_CAST
-#define OpSpec_I2SCast                 0x0013 | OpSpec_CAST
-#define OpSpec_I2BCast                 0x0014 | OpSpec_CAST
-#define OpSpec_I2CCast                 0x0015 | OpSpec_CAST
-#define OpSpec_I2LCast                 0x0016 | OpSpec_CAST
-#define OpSpec_I2FCast                 0x0017 | OpSpec_CAST
-#define OpSpec_I2DCast                 0x0018 | OpSpec_CAST
-#define OpSpec_L2ICast                 0x0019 | OpSpec_CAST
-#define OpSpec_L2FCast                 0x001A | OpSpec_CAST
-#define OpSpec_L2DCast                 0x001B | OpSpec_CAST
-#define OpSpec_GreaterThan             0x001C | OpSpec_COMPARE | OpSpec_BINARY
-#define OpSpec_GreaterThanOrEqual      0x001E | OpSpec_COMPARE | OpSpec_BINARY
-#define OpSpec_LessThan                0x001F | OpSpec_COMPARE | OpSpec_BINARY
-#define OpSpec_LessThanOrEqual         0x0020 | OpSpec_COMPARE | OpSpec_BINARY
-#define OpSpec_Equal                   0x0021 | OpSpec_COMPARE | OpSpec_BINARY
-#define OpSpec_EqualNULL               0x0022 | OpSpec_COMPARE | OpSpec_UNARY
-#define OpSpec_NotEqual                0x0023 | OpSpec_COMPARE | OpSpec_BINARY
-#define OpSpec_NotEqualNULL            0x0024 | OpSpec_COMPARE | OpSpec_UNARY
+enum OpSpecType{
+OpSpec_NONE,
+OpSpec_Add,
+OpSpec_Sub,
+OpSpec_Mul,
+OpSpec_Div,
+OpSpec_Rem,
+OpSpec_Neg,
+OpSpec_BitwiseOr,
+OpSpec_BitwiseAnd,
+OpSpec_BitwiseXor,
+OpSpec_LeftShift,
+OpSpec_LogicalRightShift,
+OpSpec_ArithmeticRightShift,
+OpSpec_F2ICast,
+OpSpec_F2LCast,
+OpSpec_F2DCast,
+OpSpec_D2ICast,
+OpSpec_D2FCast,
+OpSpec_D2LCast,
+OpSpec_I2SCast,
+OpSpec_I2BCast,
+OpSpec_I2CCast,
+OpSpec_I2LCast,
+OpSpec_I2FCast,
+OpSpec_I2DCast,
+OpSpec_L2ICast,
+OpSpec_L2FCast,
+OpSpec_L2DCast,
+OpSpec_GreaterThan,
+OpSpec_GreaterThanOrEqual,
+OpSpec_LessThan,
+OpSpec_LessThanOrEqual,
+OpSpec_Equal,
+OpSpec_EqualNULL,
+OpSpec_NotEqual,
+OpSpec_NotEqualNULL
+};
+
+class Instruction; // forward reference
 
 struct ImmSpec_NONE_s{
 };
@@ -403,12 +395,12 @@ class ByteCode{
    public:
       ByteCodeType bytecode;
       const char *name;
-      u2_t ldSpec;
-      u2_t stSpec;
+      LDSpecType ldSpec;
+      STSpecType stSpec;
       ImmSpecType immSpec;
-      u4_t popSpec;
+      PopSpecType popSpec;
       PushSpecType pushSpec;
-      u4_t opSpec;
+      OpSpecType opSpec;
 };
 
 
@@ -567,23 +559,23 @@ ByteCode bytecode[] ={
    {I_FCMPG, "fcmpg", LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_FF, PushSpec_I, OpSpec_GreaterThan},
    {I_DCMPL, "dcmpl", LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_DD, PushSpec_I, OpSpec_LessThan},
    {I_DCMPG, "dcmpg", LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_DD, PushSpec_I, OpSpec_GreaterThan},
-   {I_IFEQ, "ifeq", LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_I, OpSpec_Equal},
-   {I_IFNE, "ifne", LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_I, OpSpec_NotEqual},
-   {I_IFLT, "iflt", LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_I, OpSpec_LessThan},
-   {I_IFGE, "ifge", LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_I, OpSpec_GreaterThanOrEqual},
-   {I_IFGT, "ifgt", LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_I, OpSpec_GreaterThan},
-   {I_IFLE, "ifle", LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_I, OpSpec_LessThanOrEqual},
-   {I_IF_ICMPEQ, "if_icmpeq", LDSpec_NONE, STSpec_NONE, ImmSpec_Sconst, PopSpec_II, OpSpec_Equal},
-   {I_IF_ICMPNE, "if_icmpne", LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_II, OpSpec_NotEqual},
-   {I_IF_ICMPLT, "if_icmplt", LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_II, OpSpec_LessThan},
-   {I_IF_ICMPGE, "if_icmpge", LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_II, OpSpec_GreaterThanOrEqual},
-   {I_IF_ICMPGT, "if_icmpgt", LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_II, OpSpec_GreaterThan},
-   {I_IF_ICMPLE, "if_icmple", LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_II, OpSpec_LessThanOrEqual},
-   {I_IF_ACMPEQ, "if_acmpeq", LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_OO, OpSpec_Equal},
-   {I_IF_ACMPNE, "if_acmpne", LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_OO, OpSpec_NotEqual},
-   {I_GOTO, "goto", LDSpec_NONE, STSpec_NONE, ImmSpec_Spc},
+   {I_IFEQ, "ifeq", LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_I, PushSpec_NONE, OpSpec_Equal},
+   {I_IFNE, "ifne", LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_I, PushSpec_NONE, OpSpec_NotEqual},
+   {I_IFLT, "iflt", LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_I, PushSpec_NONE, OpSpec_LessThan},
+   {I_IFGE, "ifge", LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_I, PushSpec_NONE, OpSpec_GreaterThanOrEqual},
+   {I_IFGT, "ifgt", LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_I, PushSpec_NONE, OpSpec_GreaterThan},
+   {I_IFLE, "ifle", LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_I, PushSpec_NONE, OpSpec_LessThanOrEqual},
+   {I_IF_ICMPEQ, "if_icmpeq", LDSpec_NONE, STSpec_NONE, ImmSpec_Sconst, PopSpec_II, PushSpec_NONE, OpSpec_Equal},
+   {I_IF_ICMPNE, "if_icmpne", LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_II, PushSpec_NONE, OpSpec_NotEqual},
+   {I_IF_ICMPLT, "if_icmplt", LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_II, PushSpec_NONE, OpSpec_LessThan},
+   {I_IF_ICMPGE, "if_icmpge", LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_II, PushSpec_NONE, OpSpec_GreaterThanOrEqual},
+   {I_IF_ICMPGT, "if_icmpgt", LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_II, PushSpec_NONE, OpSpec_GreaterThan},
+   {I_IF_ICMPLE, "if_icmple", LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_II, PushSpec_NONE, OpSpec_LessThanOrEqual},
+   {I_IF_ACMPEQ, "if_acmpeq", LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_OO, PushSpec_NONE, OpSpec_Equal},
+   {I_IF_ACMPNE, "if_acmpne", LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_OO, PushSpec_NONE, OpSpec_NotEqual},
+   {I_GOTO, "goto", LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_NONE, PushSpec_NONE, OpSpec_NONE },
    {I_JSR, "jsr", LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_NONE, PushSpec_RA, OpSpec_NONE},
-   {I_RET, "ret", LDSpec_NONE, STSpec_NONE, ImmSpec_Bconst},
+   {I_RET, "ret", LDSpec_NONE, STSpec_NONE, ImmSpec_Bconst, PopSpec_NONE, PushSpec_NONE, OpSpec_NONE},
    {I_TABLESWITCH, "tableswitch", LDSpec_NONE, STSpec_NONE, ImmSpec_UNKNOWN, PopSpec_I, PushSpec_NONE, OpSpec_NONE},
    {I_LOOKUPSWITCH, "lookupswitch", LDSpec_NONE, STSpec_NONE, ImmSpec_UNKNOWN, PopSpec_I, PushSpec_NONE, OpSpec_NONE},
    {I_IRETURN, "ireturn", LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_I, PushSpec_NONE, OpSpec_NONE},
@@ -623,7 +615,7 @@ extern ByteCode bytecode[];
 
 
 class Instruction{
-   public:
+   private:
       union  {
          ImmSpec_NONE_s immSpec_NONE;
          ImmSpec_Blvti_s immSpec_Blvti;
@@ -642,7 +634,12 @@ class Instruction{
          ImmSpec_UNKNOWN_s immSpec_UNKNOWN;
       };
       ByteCode *byteCode;
+      u4_t pc;
+   public:
       Instruction(ByteBuffer *_codeByteBuffer);
+      void write(FILE *_file, ConstantPoolEntry **constantPool);
+      u4_t getPC();
+      ByteCode *getByteCode();
 };
 
 

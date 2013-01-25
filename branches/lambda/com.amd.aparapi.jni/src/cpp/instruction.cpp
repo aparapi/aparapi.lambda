@@ -3,12 +3,18 @@
 
 #include <string.h>
 
+u4_t Instruction::getPC(){
+   return(pc);
+}
+ByteCode *Instruction::getByteCode(){
+   return(byteCode);
+}
+
 Instruction::Instruction(ByteBuffer *_codeByteBuffer){
-   int pc = _codeByteBuffer->getOffset();
+   pc = _codeByteBuffer->getOffset();
    byte_t byte= _codeByteBuffer->u1();
-   ByteCode byteCode = bytecode[byte];
-   fprintf(stderr, "%d %s", pc, (char*)byteCode.name);
-   switch(byteCode.immSpec){
+   byteCode = &bytecode[byte];
+   switch(byteCode->immSpec){
       case ImmSpec_NONE:
          break;
       case ImmSpec_Blvti:
@@ -31,7 +37,6 @@ Instruction::Instruction(ByteBuffer *_codeByteBuffer){
          break;
       case ImmSpec_Spc:
          immSpec_Spc.pc= _codeByteBuffer->s2() +pc;
-         fprintf(stderr, " %d", immSpec_Spc.pc);
          break;
       case ImmSpec_Scpfi:
          immSpec_Scpfi.cpfi= _codeByteBuffer->u2();
@@ -54,6 +59,51 @@ Instruction::Instruction(ByteBuffer *_codeByteBuffer){
          break;
       case ImmSpec_Ipc:
          immSpec_Ipc.pc= _codeByteBuffer->s4()+pc;
+         break;
+      case ImmSpec_UNKNOWN:
+         break;
+
+   }
+}
+
+
+void Instruction::write(FILE *_file, ConstantPoolEntry **_constantPool){
+   fprintf(stderr, "%d %s", pc, (char*)byteCode->name);
+   switch(byteCode->immSpec){
+      case ImmSpec_NONE:
+         break;
+      case ImmSpec_Blvti:
+         break;
+      case ImmSpec_Bcpci:
+         {
+         ConstantPoolEntry* constantPoolEntry = _constantPool[immSpec_Bcpci.cpci];
+         fprintf(stderr, " #%d", immSpec_Bcpci.cpci);
+         //switch (constantPoolEntry->){
+         //}
+         break;
+         }
+      case ImmSpec_Scpci:
+         break;
+      case ImmSpec_Bconst:
+         break;
+      case ImmSpec_Sconst:
+         break;
+      case ImmSpec_IorForS:
+         break;
+      case ImmSpec_Spc:
+         fprintf(stderr, " %d", immSpec_Spc.pc);
+         break;
+      case ImmSpec_Scpfi:
+         break;
+      case ImmSpec_ScpmiBB:
+         break;
+      case ImmSpec_BlvtiBconst:
+         break;
+      case ImmSpec_Scpmi:
+         break;
+      case ImmSpec_ScpciBdim:
+         break;
+      case ImmSpec_Ipc:
          fprintf(stderr, " %d", immSpec_Ipc.pc);
          break;
       case ImmSpec_UNKNOWN:

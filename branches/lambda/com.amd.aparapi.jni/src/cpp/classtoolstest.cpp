@@ -39,11 +39,17 @@ int main(int argc, char **argv){
    CodeAttribute *codeAttribute = methodInfo->getCodeAttribute();
    ByteBuffer *codeByteBuffer = codeAttribute->getCodeByteBuffer();
 
-   byte_t byte ;
-   ByteCode byteCode;
+   Instruction** instructions = new Instruction*[codeByteBuffer->getLen()];
+   for (unsigned i=0; i< codeByteBuffer->getLen(); i++){
+      instructions[i] = NULL;
+   }
+
    while (!codeByteBuffer->empty()){
       Instruction *instruction = new Instruction(codeByteBuffer);
+      instructions[instruction->getPC()] = instruction;
+      instruction->write(stdout, classInfo.getConstantPool());
    }
+
    //   delete methodInfo;
 
    /* the whole file is now loaded in the memory buffer. */

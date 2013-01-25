@@ -788,6 +788,10 @@ char *ClassInfo::getSuperClassName(){
    return((char*)superClassUTF8ConstantPoolEntry->getUTF8());
 }
 
+ConstantPoolEntry **ClassInfo::getConstantPool(){
+   return(constantPool);
+}
+
 
 
 
