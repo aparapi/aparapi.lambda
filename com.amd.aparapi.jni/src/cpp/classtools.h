@@ -396,6 +396,8 @@ class ClassInfo{
       MethodInfo *getMethodInfo(char *_methodName, char *_methodDescriptor); // com/amd/aparapi/Main$Kernel.run()V
       char *getSuperClassName();
       char *getClassName();
+      ConstantPoolEntry** getConstantPool();
+      
 };
 
 #endif
