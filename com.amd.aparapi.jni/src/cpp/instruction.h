@@ -225,7 +225,6 @@ enum ImmSpecType{
   ImmSpec_Scpci,
   ImmSpec_Bconst,
   ImmSpec_Sconst,
-  ImmSpec_IorForS,
   ImmSpec_Spc,
   ImmSpec_Scpfi,
   ImmSpec_ScpmiBB,
@@ -340,7 +339,6 @@ struct PushSpec_UNKNOWN_s{
 
 enum PopSpecType{
   PopSpec_NONE,
-  PopSpec_COUNT_MASK,
   PopSpec_A,
   PopSpec_AI,
   PopSpec_AII,
@@ -370,6 +368,7 @@ enum PopSpecType{
   PopSpec_ARGS,
   PopSpec_OARGS
 };
+
 
 enum OpSpecType{
   OpSpec_NONE,
@@ -428,13 +427,6 @@ struct ImmSpec_Bconst_s{
 };
 struct ImmSpec_Sconst_s{
   s2_t value;
-};
-struct ImmSpec_IorForS_s{
-  union{
-    s4_t i;
-    f4_t f;
-    s4_t s;
-  };
 };
 struct ImmSpec_Spc_s{
   u2_t pc;
@@ -696,7 +688,6 @@ class Instruction{
       ImmSpec_Scpci_s immSpec_Scpci;
       ImmSpec_Bconst_s immSpec_Bconst;
       ImmSpec_Sconst_s immSpec_Sconst;
-      ImmSpec_IorForS_s immSpec_IorForS;
       ImmSpec_Spc_s immSpec_Spc;
       ImmSpec_Scpfi_s immSpec_Scpfi;
       ImmSpec_ScpmiBB_s immSpec_ScpmiBB;
