@@ -39,6 +39,13 @@ int main(int argc, char **argv){
   CodeAttribute *codeAttribute = methodInfo->getCodeAttribute();
   ByteBuffer *codeByteBuffer = codeAttribute->getCodeByteBuffer();
 
+  u2_t maxStack = codeAttribute->getMaxStack();
+  u4_t *stackMap = new u4_t[maxStack];
+  u2_t stackSize=0;
+  for (int i=0; i<maxStack; i++){
+    stackMap[i]=-1;
+  }
+
   Instruction** instructions = new Instruction*[codeByteBuffer->getLen()];
   for (unsigned i=0; i< codeByteBuffer->getLen(); i++){
     instructions[i] = NULL;

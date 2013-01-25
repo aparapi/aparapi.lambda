@@ -265,6 +265,79 @@ enum PushSpecType{
   PushSpec_UNKNOWN
 };
 
+struct PushSpec_NONE_s{
+};
+struct PushSpec_N_s{
+  u4_t n;
+};
+struct PushSpec_I_s{
+  u4_t i;
+};
+struct PushSpec_L_s{
+  u4_t l;
+};
+struct PushSpec_F_s{
+  u4_t f;
+};
+struct PushSpec_D_s{
+  u4_t d;
+};
+struct PushSpec_O_s{
+  u4_t o;
+};
+struct PushSpec_A_s{
+  u4_t a;
+};
+struct PushSpec_RA_s{
+  u4_t r;
+  u4_t a;
+};
+struct PushSpec_IorForS_s{
+  union{
+     u4_t i;
+     u4_t f;
+     u4_t s;
+  };
+};
+struct PushSpec_LorD_s{
+  union{
+     u4_t l;
+     u4_t d;
+  };
+};
+struct PushSpec_II_s{
+  u4_t i1;
+  u4_t i2;
+};
+struct PushSpec_III_s{
+  u4_t i1;
+  u4_t i2;
+  u4_t i3;
+};
+struct PushSpec_IIII_s{
+  u4_t i1;
+  u4_t i2;
+  u4_t i3;
+  u4_t i4;
+};
+struct PushSpec_IIIII_s{
+  u4_t i1;
+  u4_t i2;
+  u4_t i3;
+  u4_t i4;
+  u4_t i5;
+};
+struct PushSpec_IIIIII_s{
+  u4_t i1;
+  u4_t i2;
+  u4_t i3;
+  u4_t i4;
+  u4_t i5;
+  u4_t i6;
+};
+struct PushSpec_UNKNOWN_s{
+};
+
 enum PopSpecType{
   PopSpec_NONE,
   PopSpec_COUNT_MASK,
@@ -632,6 +705,25 @@ class Instruction{
       ImmSpec_ScpciBdim_s immSpec_ScpciBdim;
       ImmSpec_Ipc_s immSpec_Ipc;
       ImmSpec_UNKNOWN_s immSpec_UNKNOWN;
+    };
+    union{
+       PushSpec_NONE_s pushSpec_NONE;
+       PushSpec_N_s pushSpec_N;
+       PushSpec_I_s pushSpec_I;
+       PushSpec_L_s pushSpec_L;
+       PushSpec_F_s pushSpec_F;
+       PushSpec_D_s pushSpec_D;
+       PushSpec_O_s pushSpec_O;
+       PushSpec_A_s pushSpec_A;
+       PushSpec_RA_s pushSpec_RA;
+       PushSpec_IorForS_s pushSpec_IorForS;
+       PushSpec_LorD_s pushSpec_LorD;
+       PushSpec_II_s pushSpec_II;
+       PushSpec_III_s pushSpec_III;
+       PushSpec_IIII_s pushSpec_IIII;
+       PushSpec_IIIII_s pushSpec_IIIII;
+       PushSpec_IIIIII_s pushSpec_IIIIII;
+       PushSpec_UNKNOWN_s pushSpec_UNKNOWN;
     };
     ByteCode *byteCode;
     u4_t pc;

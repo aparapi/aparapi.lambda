@@ -502,6 +502,13 @@ ByteBuffer *CodeAttribute::getCodeByteBuffer(){
   return(codeByteBuffer);
 }
 
+u2_t CodeAttribute::getMaxStack(){
+   return(max_stack);
+}
+
+u2_t CodeAttribute::getMaxLocals(){
+   return(max_locals);
+}
 
   AttributeInfo::AttributeInfo(ByteBuffer *_byteBuffer, ConstantPoolEntry **_constantPool)
 : attribute_type(UNKNOWN), codeAttribute(NULL), infoByteBuffer(NULL)
