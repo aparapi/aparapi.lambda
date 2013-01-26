@@ -35,7 +35,8 @@ int main(int argc, char **argv){
    ByteBuffer *byteBuffer = new ByteBuffer((byte_t*)buffer, size);
 
    ClassInfo *classInfo = new ClassInfo(byteBuffer);
-   MethodInfo *methodInfo = classInfo->getMethodInfo((char*)"getCount", (char*)"(FF)I");
+   //MethodInfo *methodInfo = classInfo->getMethodInfo((char*)"getCount", (char*)"(FF)I");
+   MethodInfo *methodInfo = classInfo->getMethodInfo((char*)"run", (char*)"()V");
    CodeAttribute *codeAttribute = methodInfo->getCodeAttribute();
    ByteBuffer *codeByteBuffer = codeAttribute->getCodeByteBuffer();
 
@@ -52,7 +53,7 @@ int main(int argc, char **argv){
    }
 
    while (!codeByteBuffer->empty()){
-      Instruction *instruction = new Instruction(codeByteBuffer, maxStack, stackMap, &stackSize);
+      Instruction *instruction = new Instruction(classInfo->getConstantPool(), codeByteBuffer, maxStack, stackMap, &stackSize);
       instructions[instruction->getPC()] = instruction;
       fprintf(stdout, "|");
       for (int i=0; i<maxStack; i++){

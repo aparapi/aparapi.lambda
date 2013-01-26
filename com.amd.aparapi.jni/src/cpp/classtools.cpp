@@ -246,6 +246,69 @@ MethodConstantPoolEntry::MethodConstantPoolEntry(ByteBuffer *_byteBuffer)
   }
 MethodConstantPoolEntry::~MethodConstantPoolEntry(){
 }
+u4_t MethodConstantPoolEntry::getArgCount(ConstantPoolEntry** constantPool){
+  NameAndTypeConstantPoolEntry* nameAndType = (NameAndTypeConstantPoolEntry*)constantPool[nameAndTypeIndex];
+  u2_t descriptorIndex = nameAndType->getDescriptorIndex();
+  UTF8ConstantPoolEntry* utf8 = (UTF8ConstantPoolEntry*)constantPool[descriptorIndex];
+  int argc=0;
+  char *ptr = utf8->getUTF8();
+  if (*ptr=='('){
+    ptr++;
+    while (*ptr!=')'){
+      if (*ptr == '['){
+        int dims=0;
+        while (*ptr=='['){
+          dims++;
+          ptr++;
+        }
+      }
+      if (*ptr=='L'){
+        while (*ptr!=';'){
+          ptr++;
+        }
+      }
+      argc++;
+      ptr++;
+    }
+  }
+  fprintf(stdout, "%s %d\n", utf8->getUTF8(), argc);
+  return(argc);
+}
+
+
+u4_t MethodConstantPoolEntry::getRetCount(ConstantPoolEntry** constantPool){
+  NameAndTypeConstantPoolEntry* nameAndType = (NameAndTypeConstantPoolEntry*)constantPool[nameAndTypeIndex];
+  u2_t descriptorIndex = nameAndType->getDescriptorIndex();
+  UTF8ConstantPoolEntry* utf8 = (UTF8ConstantPoolEntry*)constantPool[descriptorIndex];
+  int retc=0;
+  char *ptr = utf8->getUTF8();
+  if (*ptr=='('){
+    ptr++;
+    while (*ptr!=')'){
+      if (*ptr == '['){
+        int dims=0;
+        while (*ptr=='['){
+          dims++;
+          ptr++;
+        }
+      }
+      if (*ptr=='L'){
+        while (*ptr!=';'){
+          ptr++;
+        }
+      }
+      retc++;
+      ptr++;
+    }
+  }
+  ptr++;
+  if (*ptr!='V'){
+    retc++;
+  }
+
+  fprintf(stdout, "%s %d\n", utf8->getUTF8(), retc);
+  return(retc);
+}
 
 InterfaceMethodConstantPoolEntry::InterfaceMethodConstantPoolEntry(ByteBuffer *_byteBuffer)
   :  MethodReferenceConstantPoolEntry(_byteBuffer, INTERFACEMETHOD) {
@@ -255,8 +318,8 @@ InterfaceMethodConstantPoolEntry::~InterfaceMethodConstantPoolEntry(){
 }
 NameAndTypeConstantPoolEntry::NameAndTypeConstantPoolEntry(ByteBuffer *_byteBuffer)
   :  ConstantPoolEntry(_byteBuffer, NAMEANDTYPE) {
-    descriptorIndex = _byteBuffer->u2();
     nameIndex = _byteBuffer->u2();
+    descriptorIndex = _byteBuffer->u2();
   }
 NameAndTypeConstantPoolEntry::~NameAndTypeConstantPoolEntry(){
 }
@@ -429,11 +492,11 @@ ByteBuffer *CodeAttribute::getCodeByteBuffer(){
 }
 
 u2_t CodeAttribute::getMaxStack(){
-   return(max_stack);
+  return(max_stack);
 }
 
 u2_t CodeAttribute::getMaxLocals(){
-   return(max_locals);
+  return(max_locals);
 }
 
   AttributeInfo::AttributeInfo(ByteBuffer *_byteBuffer, ConstantPoolEntry **_constantPool)
@@ -688,7 +751,7 @@ ClassInfo::~ClassInfo(){
   if (attributes){
     for (u2_t i=0; i< attributeCount; i++){
       if (attributes[i]){
-      delete attributes[i];
+        delete attributes[i];
       }
     }
     delete[] attributes;
@@ -699,7 +762,7 @@ ClassInfo::~ClassInfo(){
   if (fields){
     for (u2_t i=0; i< fieldCount; i++){
       if (fields[i]){
-         delete fields[i];
+        delete fields[i];
       }
     }
     delete[] fields;
@@ -707,7 +770,7 @@ ClassInfo::~ClassInfo(){
   if (methods){
     for (u2_t i=0; i< methodCount; i++){
       if (methods[i]){
-         delete methods[i];
+        delete methods[i];
       }
     }
     delete[] methods;
