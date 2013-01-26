@@ -863,9 +863,9 @@ class Instruction{
       u4_t pc;
       u2_t stackBase;
    public:
-      Instruction(ByteBuffer *_codeByteBuffer, u2_t _maxStack, u4_t *_stackMap, u2_t *stackLen );
+      Instruction(ConstantPoolEntry **_constantPool, ByteBuffer *_codeByteBuffer, u2_t _maxStack, u4_t *_stackMap, u2_t *stackLen );
       ~Instruction();
-      void write(FILE *_file, ConstantPoolEntry **constantPool);
+      void write(FILE *_file, ConstantPoolEntry **_constantPool);
       u4_t getPC();
       ByteCode *getByteCode();
 };

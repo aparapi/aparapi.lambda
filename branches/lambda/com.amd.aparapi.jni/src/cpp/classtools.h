@@ -182,6 +182,8 @@ class MethodConstantPoolEntry : public MethodReferenceConstantPoolEntry{
   public:
     MethodConstantPoolEntry(ByteBuffer *_byteBuffer);
     virtual ~MethodConstantPoolEntry();
+    u4_t getArgCount(ConstantPoolEntry** constantPool);
+    u4_t getRetCount(ConstantPoolEntry** constantPool);
 };
 
 class InterfaceMethodConstantPoolEntry : public MethodReferenceConstantPoolEntry{

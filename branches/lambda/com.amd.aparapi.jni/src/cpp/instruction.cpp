@@ -10,7 +10,7 @@ ByteCode *Instruction::getByteCode(){
    return(byteCode);
 }
 
-Instruction::Instruction(ByteBuffer *_codeByteBuffer, u2_t _maxStack, u4_t *_stackMap, u2_t *_stackSize ){
+Instruction::Instruction(ConstantPoolEntry** _constantPool, ByteBuffer *_codeByteBuffer, u2_t _maxStack, u4_t *_stackMap, u2_t *_stackSize ){
    stackBase = *_stackSize;
    pc = _codeByteBuffer->getOffset();
    byte_t byte= _codeByteBuffer->u1();
@@ -134,89 +134,174 @@ Instruction::Instruction(ByteBuffer *_codeByteBuffer, u2_t _maxStack, u4_t *_sta
       case PopSpec_NONE:
          break;
       case PopSpec_A:
-         popSpec_A.a = _stackMap[--(*_stackMap)];
+         popSpec_A.a = _stackMap[--(*_stackSize)];
          _stackMap[*_stackSize] = -1;
          break;
       case PopSpec_AI:
-         (*_stackSize)-=2;
+         popSpec_AI.a = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
+         popSpec_AI.i = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
          break;
       case PopSpec_AII:
-         (*_stackSize)-=3;
+         popSpec_AII.a = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
+         popSpec_AII.i1 = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
+         popSpec_AII.i2 = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
          break;
       case PopSpec_AIL:
-         (*_stackSize)-=3;
+         popSpec_AIL.a = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
+         popSpec_AIL.i = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
+         popSpec_AIL.l = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
          break;
       case PopSpec_AIF:
-         (*_stackSize)-=3;
+         popSpec_AIF.a = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
+         popSpec_AIF.i = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
+         popSpec_AIF.f = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
          break;
       case PopSpec_AID:
-         (*_stackSize)-=3;
+         popSpec_AID.a = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
+         popSpec_AID.i = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
+         popSpec_AID.d = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
          break;
       case PopSpec_AIO:
-         (*_stackSize)-=3;
+         popSpec_AIO.a = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
+         popSpec_AIO.i = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
+         popSpec_AIO.o = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
          break;
       case PopSpec_AIB:
-         (*_stackSize)-=3;
+         popSpec_AIB.a = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
+         popSpec_AIB.i = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
+         popSpec_AIB.b = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
          break;
       case PopSpec_AIC:
-         (*_stackSize)-=3;
+         popSpec_AIC.a = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
+         popSpec_AIC.i = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
+         popSpec_AIC.c = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
          break;
       case PopSpec_AIS:
-         (*_stackSize)-=3;
+         popSpec_AIS.a = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
+         popSpec_AIS.i = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
+         popSpec_AIS.s = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
          break;
       case PopSpec_II :
-         (*_stackSize)-=2;
+         popSpec_II.i1 = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
+         popSpec_II.i2 = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
          break;
       case PopSpec_III:
-         (*_stackSize)-=3;
+         popSpec_III.i1 = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
+         popSpec_III.i2 = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
+         popSpec_III.i3 = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
          break;
       case PopSpec_IIII:
-         (*_stackSize)-=4;
+         popSpec_IIII.i1 = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
+         popSpec_IIII.i2 = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
+         popSpec_IIII.i3 = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
+         popSpec_IIII.i4 = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
          break;
       case PopSpec_L:
-         popSpec_L.l = _stackMap[--(*_stackMap)];
+         popSpec_L.l = _stackMap[--(*_stackSize)];
          _stackMap[*_stackSize] = -1;
          break;
       case PopSpec_LI:
-         (*_stackSize)-=2;
+         popSpec_LI.l = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
+         popSpec_LI.i = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
          break;
       case PopSpec_LL:
-         (*_stackSize)-=2;
+         popSpec_LL.l1 = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
+         popSpec_LL.l2 = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
          break;
       case PopSpec_F:
-         popSpec_F.f = _stackMap[--(*_stackMap)];
+         popSpec_F.f = _stackMap[--(*_stackSize)];
          _stackMap[*_stackSize] = -1;
          break;
       case PopSpec_FF:
-         (*_stackSize)-=2;
+         popSpec_FF.f1 = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
+         popSpec_FF.f2 = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
          break;
       case PopSpec_OO:
-         (*_stackSize)-=2;
+         popSpec_OO.o1 = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
+         popSpec_OO.o2 = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
          break;
       case PopSpec_RA:
-         (*_stackSize)-=2;
+         popSpec_RA.r = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
+         popSpec_RA.a = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
          break;
       case PopSpec_O:
-         (*_stackSize)--;
+         popSpec_O.o = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
          break;
       case PopSpec_I:
-         popSpec_I.i = _stackMap[--(*_stackMap)];
+         popSpec_I.i = _stackMap[--(*_stackSize)];
          _stackMap[*_stackSize] = -1;
          break;
       case PopSpec_D:
-         popSpec_D.d = _stackMap[--(*_stackMap)];
+         popSpec_D.d = _stackMap[--(*_stackSize)];
          _stackMap[*_stackSize] = -1;
          break;
       case PopSpec_DD:
-         (*_stackSize)-=2;
+         popSpec_DD.d1 = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
+         popSpec_DD.d2 = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
          break;
       case PopSpec_OUNKNOWN:
          break;
       case PopSpec_UNKNOWN:
          break;
       case PopSpec_ARGS:
+         {
+           MethodConstantPoolEntry* method = (MethodConstantPoolEntry*)_constantPool[immSpec_Scpmi.cpmi];
+           int argc = method->getArgCount(_constantPool);
+         }
          break;
       case PopSpec_OARGS:
+         {
+           MethodConstantPoolEntry* method = (MethodConstantPoolEntry*)_constantPool[immSpec_Scpmi.cpmi];
+           int argc = method->getArgCount(_constantPool);
+         }
          break;
    }
 
