@@ -261,7 +261,9 @@ enum PushSpecType{
    PushSpec_IIII,
    PushSpec_IIIII,
    PushSpec_IIIIII,
-   PushSpec_UNKNOWN
+   PushSpec_UNKNOWN,
+   PushSpec_MSIG,
+   PushSpec_FSIG
 };
 
 struct PushSpec_NONE_s{
@@ -334,6 +336,13 @@ struct PushSpec_IIIIII_s{
    u4_t i5;
    u4_t i6;
 };
+struct PushSpec_MSIG_s{
+   bool isVoid;
+   u4_t v;   // only valid if !isVoid
+};
+struct PushSpec_FSIG_s{
+   u4_t v; 
+};
 struct PushSpec_UNKNOWN_s{
 };
 
@@ -363,10 +372,11 @@ enum PopSpecType{
    PopSpec_I,
    PopSpec_D,
    PopSpec_DD,
-   PopSpec_OUNKNOWN,
+   PopSpec_OFSIG,
+   PopSpec_FSIG,
    PopSpec_UNKNOWN,
-   PopSpec_ARGS,
-   PopSpec_OARGS
+   PopSpec_MSIG,
+   PopSpec_OMSIG
 };
 struct PopSpec_NONE_s{
 };
@@ -473,11 +483,21 @@ struct PopSpec_DD_s{
 };
 struct PopSpec_UNKNOWN_s{
 };
-struct PopSpec_OUNKNOWN_s{
+struct PopSpec_FSIG_s{
+   u4_t v;
 };
-struct PopSpec_ARGS_s{
+struct PopSpec_OFSIG_s{
+   u4_t o;
+   u4_t v;
 };
-struct PopSpec_OARGS_s{
+struct PopSpec_MSIG_s{
+   u2_t argc;
+   u4_t *args;
+};
+struct PopSpec_OMSIG_s{
+   u4_t o;
+   u2_t argc;
+   u4_t *args;
 };
 
 
@@ -760,15 +780,15 @@ ByteCode bytecode[] ={
    {I_DRETURN, "dreturn", LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_D, PushSpec_NONE, OpSpec_NONE},
    {I_ARETURN, "areturn", LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_O, PushSpec_NONE, OpSpec_NONE},
    {I_RETURN, "return", LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_NONE, PushSpec_NONE, OpSpec_NONE},
-   {I_GETSTATIC, "getstatic", LDSpec_NONE, STSpec_NONE, ImmSpec_Scpfi, PopSpec_NONE, PushSpec_UNKNOWN, OpSpec_NONE},
-   {I_PUTSTATIC, "putstatic", LDSpec_NONE, STSpec_NONE, ImmSpec_Scpfi, PopSpec_UNKNOWN, PushSpec_NONE, OpSpec_NONE},
-   {I_GETFIELD, "getfield", LDSpec_NONE, STSpec_NONE, ImmSpec_Scpfi, PopSpec_O, PushSpec_UNKNOWN, OpSpec_NONE},
-   {I_PUTFIELD, "putfield", LDSpec_NONE, STSpec_NONE, ImmSpec_Scpfi, PopSpec_OUNKNOWN, PushSpec_NONE, OpSpec_NONE},
-   {I_INVOKEVIRTUAL, "invokevirtual", LDSpec_NONE, STSpec_NONE, ImmSpec_Scpmi, PopSpec_OARGS, PushSpec_UNKNOWN, OpSpec_NONE},
-   {I_INVOKESPECIAL, "invokespecial", LDSpec_NONE, STSpec_NONE, ImmSpec_Scpmi, PopSpec_OARGS, PushSpec_UNKNOWN, OpSpec_NONE},
-   {I_INVOKESTATIC, "invokestatic", LDSpec_NONE, STSpec_NONE, ImmSpec_Scpmi, PopSpec_ARGS, PushSpec_UNKNOWN, OpSpec_NONE},
-   {I_INVOKEINTERFACE, "invokeinterface", LDSpec_NONE, STSpec_NONE, ImmSpec_ScpmiBB, PopSpec_OARGS, PushSpec_UNKNOWN, OpSpec_NONE},
-   {I_INVOKEDYNAMIC, "invokedynamic", LDSpec_NONE, STSpec_NONE, ImmSpec_ScpmiBB, PopSpec_OARGS, PushSpec_UNKNOWN, OpSpec_NONE},
+   {I_GETSTATIC, "getstatic", LDSpec_NONE, STSpec_NONE, ImmSpec_Scpfi, PopSpec_NONE, PushSpec_FSIG, OpSpec_NONE},
+   {I_PUTSTATIC, "putstatic", LDSpec_NONE, STSpec_NONE, ImmSpec_Scpfi, PopSpec_FSIG, PushSpec_NONE, OpSpec_NONE},
+   {I_GETFIELD, "getfield", LDSpec_NONE, STSpec_NONE, ImmSpec_Scpfi, PopSpec_O, PushSpec_FSIG, OpSpec_NONE},
+   {I_PUTFIELD, "putfield", LDSpec_NONE, STSpec_NONE, ImmSpec_Scpfi, PopSpec_OFSIG, PushSpec_NONE, OpSpec_NONE},
+   {I_INVOKEVIRTUAL, "invokevirtual", LDSpec_NONE, STSpec_NONE, ImmSpec_Scpmi, PopSpec_OMSIG, PushSpec_MSIG, OpSpec_NONE},
+   {I_INVOKESPECIAL, "invokespecial", LDSpec_NONE, STSpec_NONE, ImmSpec_Scpmi, PopSpec_OMSIG, PushSpec_MSIG, OpSpec_NONE},
+   {I_INVOKESTATIC, "invokestatic", LDSpec_NONE, STSpec_NONE, ImmSpec_Scpmi, PopSpec_MSIG, PushSpec_MSIG, OpSpec_NONE},
+   {I_INVOKEINTERFACE, "invokeinterface", LDSpec_NONE, STSpec_NONE, ImmSpec_ScpmiBB, PopSpec_OMSIG, PushSpec_MSIG, OpSpec_NONE},
+   {I_INVOKEDYNAMIC, "invokedynamic", LDSpec_NONE, STSpec_NONE, ImmSpec_ScpmiBB, PopSpec_OMSIG, PushSpec_MSIG, OpSpec_NONE},
    {I_NEW, "new", LDSpec_NONE, STSpec_NONE, ImmSpec_Scpci, PopSpec_NONE, PushSpec_O, OpSpec_NONE},
    {I_NEWARRAY, "newarray", LDSpec_NONE, STSpec_NONE, ImmSpec_Bconst, PopSpec_I, PushSpec_A, OpSpec_NONE},
    {I_ANEWARRAY, "anewarray", LDSpec_NONE, STSpec_NONE, ImmSpec_Sconst, PopSpec_I, PushSpec_A, OpSpec_NONE},
@@ -826,6 +846,8 @@ class Instruction{
          PushSpec_IIIII_s pushSpec_IIIII;
          PushSpec_IIIIII_s pushSpec_IIIIII;
          PushSpec_UNKNOWN_s pushSpec_UNKNOWN;
+         PushSpec_MSIG_s pushSpec_MSIG;
+         PushSpec_FSIG_s pushSpec_FSIG;
       };
       union{
          PopSpec_NONE_s popSpec_NONE;
@@ -853,10 +875,11 @@ class Instruction{
          PopSpec_I_s popSpec_I;
          PopSpec_D_s popSpec_D;
          PopSpec_DD_s popSpec_DD;
-         PopSpec_OUNKNOWN_s popSpec_OUNKNOWN;
+         PopSpec_OFSIG_s popSpec_OFSIG;
+         PopSpec_FSIG_s popSpec_FSIG;
          PopSpec_UNKNOWN_s popSpec_UNKNOWN;
-         PopSpec_ARGS_s popSpec_ARGS;
-         PopSpec_OARGS_s popSpec_OARGS;
+         PopSpec_MSIG_s popSpec_MSIG;
+         PopSpec_OMSIG_s popSpec_OMSIG;
       };
 
       ByteCode *byteCode;
