@@ -69,7 +69,7 @@ int main(int argc, char **argv){
 
    Instruction *instruction = instructions[0];
    while (instruction != NULL){
-      if (instruction->getPrevPC() >=0 && instruction->getStackBase()==0 && instructions[instruction->getPrevPC()]->getStackBase()==1){
+      if (instruction->getPrevPC() >=0 && instruction->getStackBase()==0 && instructions[instruction->getPrevPC()]->getStackBase()>0){
          fprintf(stdout, "-8<-\n");
          instructions[instruction->getPrevPC()]->treeWrite(stdout, instructions, 0, classInfo->getConstantPool(), codeAttribute->getLocalVariableTableAttribute());
          fprintf(stdout, "->8-\n");
