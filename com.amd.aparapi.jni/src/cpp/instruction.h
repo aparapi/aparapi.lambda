@@ -884,11 +884,12 @@ class Instruction{
 
       ByteCode *byteCode;
       u4_t pc;
+      u4_t length;
       u2_t stackBase;
    public:
       Instruction(ConstantPoolEntry **_constantPool, ByteBuffer *_codeByteBuffer, u2_t _maxStack, u4_t *_stackMap, u2_t *stackLen );
       ~Instruction();
-      void write(FILE *_file, ConstantPoolEntry **_constantPool);
+      void write(FILE *_file, ConstantPoolEntry **_constantPool, LocalVariableTableAttribute *localVariableTableAttribute);
       u4_t getPC();
       ByteCode *getByteCode();
 };

@@ -54,13 +54,13 @@ int main(int argc, char **argv){
 
    while (!codeByteBuffer->empty()){
       Instruction *instruction = new Instruction(classInfo->getConstantPool(), codeByteBuffer, maxStack, stackMap, &stackSize);
-      instruction[instruction->getPC()] = instruction;
+      instructions[instruction->getPC()] = instruction;
       fprintf(stdout, "|");
       for (int i=0; i<maxStack; i++){
          fprintf(stdout, "%3d|", stackMap[i]);
       }
       fprintf(stdout, " : ");
-      instruction->write(stdout, classInfo->getConstantPool());
+      instruction->write(stdout, classInfo->getConstantPool(), codeAttribute->getLocalVariableTableAttribute());
       fprintf(stdout, "\n");
    }
 
