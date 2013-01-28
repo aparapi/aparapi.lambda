@@ -62,6 +62,8 @@ Instruction::Instruction(ConstantPoolEntry** _constantPool, ByteBuffer *_codeByt
          break;
 
    }
+   
+   length = _codeByteBuffer->getOffset()-pc;
 
    switch(byteCode->popSpec){
       case PopSpec_NONE:
@@ -71,97 +73,97 @@ Instruction::Instruction(ConstantPoolEntry** _constantPool, ByteBuffer *_codeByt
          _stackMap[*_stackSize] = -1;
          break;
       case PopSpec_AI:
-         popSpec_AI.a = _stackMap[--(*_stackSize)];
-         _stackMap[*_stackSize] = -1;
          popSpec_AI.i = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
+         popSpec_AI.a = _stackMap[--(*_stackSize)];
          _stackMap[*_stackSize] = -1;
          break;
       case PopSpec_AII:
-         popSpec_AII.a = _stackMap[--(*_stackSize)];
+         popSpec_AII.i2 = _stackMap[--(*_stackSize)];
          _stackMap[*_stackSize] = -1;
          popSpec_AII.i1 = _stackMap[--(*_stackSize)];
          _stackMap[*_stackSize] = -1;
-         popSpec_AII.i2 = _stackMap[--(*_stackSize)];
+         popSpec_AII.a = _stackMap[--(*_stackSize)];
          _stackMap[*_stackSize] = -1;
          break;
       case PopSpec_AIL:
-         popSpec_AIL.a = _stackMap[--(*_stackSize)];
+         popSpec_AIL.l = _stackMap[--(*_stackSize)];
          _stackMap[*_stackSize] = -1;
          popSpec_AIL.i = _stackMap[--(*_stackSize)];
          _stackMap[*_stackSize] = -1;
-         popSpec_AIL.l = _stackMap[--(*_stackSize)];
+         popSpec_AIL.a = _stackMap[--(*_stackSize)];
          _stackMap[*_stackSize] = -1;
          break;
       case PopSpec_AIF:
-         popSpec_AIF.a = _stackMap[--(*_stackSize)];
+         popSpec_AIF.f = _stackMap[--(*_stackSize)];
          _stackMap[*_stackSize] = -1;
          popSpec_AIF.i = _stackMap[--(*_stackSize)];
          _stackMap[*_stackSize] = -1;
-         popSpec_AIF.f = _stackMap[--(*_stackSize)];
+         popSpec_AIF.a = _stackMap[--(*_stackSize)];
          _stackMap[*_stackSize] = -1;
          break;
       case PopSpec_AID:
-         popSpec_AID.a = _stackMap[--(*_stackSize)];
+         popSpec_AID.d = _stackMap[--(*_stackSize)];
          _stackMap[*_stackSize] = -1;
          popSpec_AID.i = _stackMap[--(*_stackSize)];
          _stackMap[*_stackSize] = -1;
-         popSpec_AID.d = _stackMap[--(*_stackSize)];
+         popSpec_AID.a = _stackMap[--(*_stackSize)];
          _stackMap[*_stackSize] = -1;
          break;
       case PopSpec_AIO:
-         popSpec_AIO.a = _stackMap[--(*_stackSize)];
+         popSpec_AIO.o = _stackMap[--(*_stackSize)];
          _stackMap[*_stackSize] = -1;
          popSpec_AIO.i = _stackMap[--(*_stackSize)];
          _stackMap[*_stackSize] = -1;
-         popSpec_AIO.o = _stackMap[--(*_stackSize)];
+         popSpec_AIO.a = _stackMap[--(*_stackSize)];
          _stackMap[*_stackSize] = -1;
          break;
       case PopSpec_AIB:
-         popSpec_AIB.a = _stackMap[--(*_stackSize)];
+         popSpec_AIB.b = _stackMap[--(*_stackSize)];
          _stackMap[*_stackSize] = -1;
          popSpec_AIB.i = _stackMap[--(*_stackSize)];
          _stackMap[*_stackSize] = -1;
-         popSpec_AIB.b = _stackMap[--(*_stackSize)];
+         popSpec_AIB.a = _stackMap[--(*_stackSize)];
          _stackMap[*_stackSize] = -1;
          break;
       case PopSpec_AIC:
-         popSpec_AIC.a = _stackMap[--(*_stackSize)];
+         popSpec_AIC.c = _stackMap[--(*_stackSize)];
          _stackMap[*_stackSize] = -1;
          popSpec_AIC.i = _stackMap[--(*_stackSize)];
          _stackMap[*_stackSize] = -1;
-         popSpec_AIC.c = _stackMap[--(*_stackSize)];
+         popSpec_AIC.a = _stackMap[--(*_stackSize)];
          _stackMap[*_stackSize] = -1;
          break;
       case PopSpec_AIS:
-         popSpec_AIS.a = _stackMap[--(*_stackSize)];
+         popSpec_AIS.s = _stackMap[--(*_stackSize)];
          _stackMap[*_stackSize] = -1;
          popSpec_AIS.i = _stackMap[--(*_stackSize)];
          _stackMap[*_stackSize] = -1;
-         popSpec_AIS.s = _stackMap[--(*_stackSize)];
+         popSpec_AIS.a = _stackMap[--(*_stackSize)];
          _stackMap[*_stackSize] = -1;
          break;
       case PopSpec_II :
-         popSpec_II.i1 = _stackMap[--(*_stackSize)];
-         _stackMap[*_stackSize] = -1;
          popSpec_II.i2 = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
+         popSpec_II.i1 = _stackMap[--(*_stackSize)];
          _stackMap[*_stackSize] = -1;
          break;
       case PopSpec_III:
-         popSpec_III.i1 = _stackMap[--(*_stackSize)];
+         popSpec_III.i3 = _stackMap[--(*_stackSize)];
          _stackMap[*_stackSize] = -1;
          popSpec_III.i2 = _stackMap[--(*_stackSize)];
          _stackMap[*_stackSize] = -1;
-         popSpec_III.i3 = _stackMap[--(*_stackSize)];
+         popSpec_III.i1 = _stackMap[--(*_stackSize)];
          _stackMap[*_stackSize] = -1;
          break;
       case PopSpec_IIII:
-         popSpec_IIII.i1 = _stackMap[--(*_stackSize)];
-         _stackMap[*_stackSize] = -1;
-         popSpec_IIII.i2 = _stackMap[--(*_stackSize)];
+         popSpec_IIII.i4 = _stackMap[--(*_stackSize)];
          _stackMap[*_stackSize] = -1;
          popSpec_IIII.i3 = _stackMap[--(*_stackSize)];
          _stackMap[*_stackSize] = -1;
-         popSpec_IIII.i4 = _stackMap[--(*_stackSize)];
+         popSpec_IIII.i2 = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
+         popSpec_IIII.i1 = _stackMap[--(*_stackSize)];
          _stackMap[*_stackSize] = -1;
          break;
       case PopSpec_L:
@@ -169,15 +171,15 @@ Instruction::Instruction(ConstantPoolEntry** _constantPool, ByteBuffer *_codeByt
          _stackMap[*_stackSize] = -1;
          break;
       case PopSpec_LI:
-         popSpec_LI.l = _stackMap[--(*_stackSize)];
-         _stackMap[*_stackSize] = -1;
          popSpec_LI.i = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
+         popSpec_LI.l = _stackMap[--(*_stackSize)];
          _stackMap[*_stackSize] = -1;
          break;
       case PopSpec_LL:
-         popSpec_LL.l1 = _stackMap[--(*_stackSize)];
-         _stackMap[*_stackSize] = -1;
          popSpec_LL.l2 = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
+         popSpec_LL.l1 = _stackMap[--(*_stackSize)];
          _stackMap[*_stackSize] = -1;
          break;
       case PopSpec_F:
@@ -185,21 +187,21 @@ Instruction::Instruction(ConstantPoolEntry** _constantPool, ByteBuffer *_codeByt
          _stackMap[*_stackSize] = -1;
          break;
       case PopSpec_FF:
-         popSpec_FF.f1 = _stackMap[--(*_stackSize)];
-         _stackMap[*_stackSize] = -1;
          popSpec_FF.f2 = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
+         popSpec_FF.f1 = _stackMap[--(*_stackSize)];
          _stackMap[*_stackSize] = -1;
          break;
       case PopSpec_OO:
-         popSpec_OO.o1 = _stackMap[--(*_stackSize)];
-         _stackMap[*_stackSize] = -1;
          popSpec_OO.o2 = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
+         popSpec_OO.o1 = _stackMap[--(*_stackSize)];
          _stackMap[*_stackSize] = -1;
          break;
       case PopSpec_RA:
-         popSpec_RA.r = _stackMap[--(*_stackSize)];
-         _stackMap[*_stackSize] = -1;
          popSpec_RA.a = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
+         popSpec_RA.r = _stackMap[--(*_stackSize)];
          _stackMap[*_stackSize] = -1;
          break;
       case PopSpec_O:
@@ -215,15 +217,15 @@ Instruction::Instruction(ConstantPoolEntry** _constantPool, ByteBuffer *_codeByt
          _stackMap[*_stackSize] = -1;
          break;
       case PopSpec_DD:
-         popSpec_DD.d1 = _stackMap[--(*_stackSize)];
-         _stackMap[*_stackSize] = -1;
          popSpec_DD.d2 = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
+         popSpec_DD.d1 = _stackMap[--(*_stackSize)];
          _stackMap[*_stackSize] = -1;
          break;
       case PopSpec_OFSIG:
-         popSpec_OFSIG.o = _stackMap[--(*_stackSize)];
-         _stackMap[*_stackSize] = -1;
          popSpec_OFSIG.v = _stackMap[--(*_stackSize)];
+         _stackMap[*_stackSize] = -1;
+         popSpec_OFSIG.o = _stackMap[--(*_stackSize)];
          _stackMap[*_stackSize] = -1;
          break;
       case PopSpec_FSIG:
@@ -238,7 +240,7 @@ Instruction::Instruction(ConstantPoolEntry** _constantPool, ByteBuffer *_codeByt
             popSpec_MSIG.argc = method->getArgCount(_constantPool);
             if (popSpec_MSIG.argc>0){
                popSpec_MSIG.args = new u4_t[popSpec_MSIG.argc];
-               for (int i=0; i<popSpec_MSIG.argc; i++){
+               for (int i=popSpec_MSIG.argc-1; i>=0;  i--){
                   popSpec_MSIG.args[i] = _stackMap[--(*_stackSize)];
                   _stackMap[*_stackSize] = -1;
                }
@@ -250,12 +252,10 @@ Instruction::Instruction(ConstantPoolEntry** _constantPool, ByteBuffer *_codeByt
       case PopSpec_OMSIG:
          {
             MethodConstantPoolEntry* method = (MethodConstantPoolEntry*)_constantPool[immSpec_Scpmi.cpmi];
-            popSpec_OMSIG.o = _stackMap[--(*_stackSize)];
-            _stackMap[*_stackSize] = -1;
             popSpec_OMSIG.argc = method->getArgCount(_constantPool);
             if ( popSpec_OMSIG.argc>0){
                popSpec_OMSIG.args = new u4_t[popSpec_OMSIG.argc];
-               for (int i=0; i<popSpec_OMSIG.argc; i++){
+               for (int i=popSpec_OMSIG.argc-1; i>=0; i--){
                   popSpec_OMSIG.args[i] = _stackMap[--(*_stackSize)];
                   _stackMap[*_stackSize] = -1;
                }
@@ -263,6 +263,8 @@ Instruction::Instruction(ConstantPoolEntry** _constantPool, ByteBuffer *_codeByt
                popSpec_OMSIG.args = NULL;
 
             }
+            popSpec_OMSIG.o = _stackMap[--(*_stackSize)];
+            _stackMap[*_stackSize] = -1;
          }
          break;
    }
@@ -361,13 +363,21 @@ Instruction::~Instruction(){
 }
 
 
-void Instruction::write(FILE *_file, ConstantPoolEntry **_constantPool){
+void Instruction::write(FILE *_file, ConstantPoolEntry **_constantPool, LocalVariableTableAttribute *_localVariableTableAttribute){
    fprintf(_file, "%4d %-10s", pc, (char*)byteCode->name);
    switch(byteCode->immSpec){
       case ImmSpec_NONE:
          break;
       case ImmSpec_Blvti:
-         fprintf(_file, " %d", immSpec_Blvti.lvti);
+         fprintf(_file, " %d [", immSpec_Blvti.lvti);
+         if (_localVariableTableAttribute !=  NULL){
+            fprintf(_file, "length = %d\n", length);
+            char *varName = _localVariableTableAttribute->getLocalVariableName(pc +length, immSpec_Blvti.lvti, _constantPool);
+            fprintf(_file, " name = %s", varName);
+         }else{
+            fprintf(_file, " lvta == NULL ");
+         }
+         fprintf(_file, " ]");
          break;
       case ImmSpec_Bcpci:
       case ImmSpec_Scpci:

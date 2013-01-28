@@ -405,6 +405,15 @@ LocalVariableTableAttribute::LocalVariableTableEntry::LocalVariableTableEntry(By
 }
 LocalVariableTableAttribute::LocalVariableTableEntry::~LocalVariableTableEntry(){
 }
+bool LocalVariableTableAttribute::LocalVariableTableEntry::isMatch(u2_t _pc, u2_t _index){
+    return(_pc>=start_pc && _pc<(start_pc+length) && _index == index);
+}
+u2_t LocalVariableTableAttribute::LocalVariableTableEntry::getNameIndex(){
+    return(name_index);
+}
+u2_t LocalVariableTableAttribute::LocalVariableTableEntry::getDescriptorIndex(){
+    return(descriptor_index);
+}
 
    LocalVariableTableAttribute::LocalVariableTableAttribute(ByteBuffer *_byteBuffer, ConstantPoolEntry **_constantPool)
 : localVariableTable(NULL)
@@ -424,6 +433,16 @@ LocalVariableTableAttribute::~LocalVariableTableAttribute(){
    if (localVariableTable){
       delete[] localVariableTable;
    }
+}
+char* LocalVariableTableAttribute::getLocalVariableName(u4_t _pc, u2_t _slot, ConstantPoolEntry **_constantPool){
+   for (int i = 0 ; i< local_variable_table_length; i++){
+       LocalVariableTableEntry* entry = localVariableTable[i];
+       if (entry->isMatch(_pc,_slot)){
+          return((UTF8ConstantPoolEntry*)(_constantPool[entry->getNameIndex()]))->getUTF8();
+       }
+   }
+   return((char *)"?");
+   
 }
 
 CodeAttribute::ExceptionTableEntry::ExceptionTableEntry(ByteBuffer *_byteBuffer, ConstantPoolEntry **_constantPool){
@@ -456,8 +475,22 @@ CodeAttribute::ExceptionTableEntry::~ExceptionTableEntry(){
       attributes = new AttributeInfo *[attributes_count];
       for (u2_t i=0; i< attributes_count; i++){
          attributes[i] = new AttributeInfo(_byteBuffer, _constantPool);
+            switch(attributes[i]->getAttributeType()){
+               case LineNumberTable:
+                  lineNumberTableAttribute = attributes[i]->getLineNumberTableAttribute();
+                  break;
+               case LocalVariableTable:
+                  localVariableTableAttribute = attributes[i]->getLocalVariableTableAttribute();
+                  break;
+            }
       }
    }
+}
+LineNumberTableAttribute* CodeAttribute::getLineNumberTableAttribute(){
+   return(lineNumberTableAttribute);
+}
+LocalVariableTableAttribute* CodeAttribute::getLocalVariableTableAttribute(){
+   return(localVariableTableAttribute);
 }
 CodeAttribute::~CodeAttribute(){
    for (u2_t i =0; i< exception_table_length; i++){
@@ -506,7 +539,7 @@ u2_t CodeAttribute::getMaxLocals(){
    } else if (!strcmp(attributeNameChars, "LocalVariableTable")){
       localVariableTableAttribute = new LocalVariableTableAttribute(infoByteBuffer, _constantPool);
       attribute_type  = LocalVariableTable;
-   }
+   } 
 }
 AttributeInfo::~AttributeInfo(){
    if (infoByteBuffer){
@@ -594,12 +627,6 @@ MethodInfo::MethodInfo(ByteBuffer *_byteBuffer, ConstantPoolEntry **_constantPoo
                case Code:
                   codeAttribute = attributes[i]->getCodeAttribute();
                   break;
-               case LineNumberTable:
-                  lineNumberTableAttribute = attributes[i]->getLineNumberTableAttribute();
-                  break;
-               case LocalVariableTable:
-                  localVariableTableAttribute = attributes[i]->getLocalVariableTableAttribute();
-                  break;
             }
          }
       }
@@ -621,12 +648,6 @@ u2_t MethodInfo::getDescriptorIndex(){
 }
 CodeAttribute* MethodInfo::getCodeAttribute(){
    return(codeAttribute);
-}
-LineNumberTableAttribute* MethodInfo::getLineNumberTableAttribute(){
-   return(lineNumberTableAttribute);
-}
-LocalVariableTableAttribute* MethodInfo::getLocalVariableTableAttribute(){
-   return(localVariableTableAttribute);
 }
 
 

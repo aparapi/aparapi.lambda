@@ -277,6 +277,9 @@ class LocalVariableTableAttribute{
     public:
       LocalVariableTableEntry(ByteBuffer *_byteBuffer, ConstantPoolEntry **_constantPool);
       virtual ~LocalVariableTableEntry();
+      bool isMatch(u2_t _pc, u2_t _index);
+      u2_t getNameIndex();
+      u2_t getDescriptorIndex();
   };
   private:
   u2_t local_variable_table_length;
@@ -284,6 +287,7 @@ class LocalVariableTableAttribute{
   public:
   LocalVariableTableAttribute(ByteBuffer *_byteBuffer, ConstantPoolEntry **_constantPool);
   virtual ~LocalVariableTableAttribute();
+  char* getLocalVariableName(u4_t _pc, u2_t _slot, ConstantPoolEntry **_constantPool);
 };
 
 class CodeAttribute{
@@ -306,12 +310,16 @@ class CodeAttribute{
   ExceptionTableEntry **exceptionTable;
   u2_t attributes_count;
   AttributeInfo **attributes;
+    LocalVariableTableAttribute *localVariableTableAttribute;
+    LineNumberTableAttribute *lineNumberTableAttribute;
   public:
   CodeAttribute(ByteBuffer *_byteBuffer, ConstantPoolEntry **_constantPool);
   virtual ~CodeAttribute();
   ByteBuffer *getCodeByteBuffer();
   u2_t getMaxStack();
   u2_t getMaxLocals();
+    LocalVariableTableAttribute *getLocalVariableTableAttribute();
+    LineNumberTableAttribute *getLineNumberTableAttribute();
 };
 
 enum AttributeType{
@@ -363,16 +371,12 @@ class MethodInfo{
     u2_t attributes_count;
     AttributeInfo **attributes;
     CodeAttribute *codeAttribute;
-    LocalVariableTableAttribute *localVariableTableAttribute;
-    LineNumberTableAttribute *lineNumberTableAttribute;
   public:
     MethodInfo(ByteBuffer *_byteBuffer, ConstantPoolEntry **_constantPool);
     virtual ~MethodInfo();
     u2_t getNameIndex();
     u2_t getDescriptorIndex();
     CodeAttribute *getCodeAttribute();
-    LocalVariableTableAttribute *getLocalVariableTableAttribute();
-    LineNumberTableAttribute *getLineNumberTableAttribute();
 };
 
 class ClassInfo{
