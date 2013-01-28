@@ -220,6 +220,18 @@ enum LDSpecType{
 
 enum ImmSpecType{
    ImmSpec_NONE,
+   ImmSpec_NONE_const_null,
+   ImmSpec_NONE_const_m1,
+   ImmSpec_NONE_const_0,
+   ImmSpec_NONE_const_1,
+   ImmSpec_NONE_const_2,
+   ImmSpec_NONE_const_3,
+   ImmSpec_NONE_const_4,
+   ImmSpec_NONE_const_5,
+   ImmSpec_NONE_lvti_0,
+   ImmSpec_NONE_lvti_1,
+   ImmSpec_NONE_lvti_2,
+   ImmSpec_NONE_lvti_3,
    ImmSpec_Blvti,
    ImmSpec_Bcpci,
    ImmSpec_Scpci,
@@ -544,6 +556,31 @@ class Instruction; // forward reference
 
 struct ImmSpec_NONE_s{
 };
+struct ImmSpec_NONE_const_null_s{
+};
+struct ImmSpec_NONE_const_m1_s{
+};
+struct ImmSpec_NONE_const_0_s{
+};
+struct ImmSpec_NONE_const_1_s{
+};
+struct ImmSpec_NONE_const_2_s{
+};
+struct ImmSpec_NONE_const_3_s{
+};
+struct ImmSpec_NONE_const_4_s{
+};
+struct ImmSpec_NONE_const_5_s{
+};
+struct ImmSpec_NONE_lvti_0_s{
+};
+struct ImmSpec_NONE_lvti_1_s{
+};
+struct ImmSpec_NONE_lvti_2_s{
+};
+struct ImmSpec_NONE_lvti_3_s{
+};
+
 struct ImmSpec_Blvti_s{
    u1_t lvti;
 };
@@ -603,21 +640,21 @@ class ByteCode{
 #ifdef INSTRUCTION_CPP
 ByteCode bytecode[] ={
    {I_NOP, "nop", LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_NONE, PushSpec_NONE, OpSpec_NONE}, 
-   {I_ACONST_NULL, "aconst_null", LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_NONE, PushSpec_N, OpSpec_NONE},
-   {I_ICONST_M1, "iconst_m1", LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_NONE, PushSpec_I, OpSpec_NONE},
-   {I_ICONST_0, "iconst_0", LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_NONE, PushSpec_I, OpSpec_NONE},
-   {I_ICONST_1, "iconst_1", LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_NONE, PushSpec_I, OpSpec_NONE},
-   {I_ICONST_2, "iconst_2", LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_NONE, PushSpec_I, OpSpec_NONE},
-   {I_ICONST_3, "iconst_3", LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_NONE, PushSpec_I, OpSpec_NONE},
-   {I_ICONST_4, "iconst_4", LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_NONE, PushSpec_I, OpSpec_NONE},
-   {I_ICONST_5, "iconst_5", LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_NONE, PushSpec_I, OpSpec_NONE},
-   {I_LCONST_0, "lconst_0", LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_NONE, PushSpec_L, OpSpec_NONE},
-   {I_LCONST_1, "lconst_1", LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_NONE, PushSpec_L, OpSpec_NONE},
-   {I_FCONST_0, "fconst_0", LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_NONE, PushSpec_F, OpSpec_NONE},
-   {I_FCONST_1, "fconst_1", LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_NONE, PushSpec_F, OpSpec_NONE},
-   {I_FCONST_2, "fconst_2", LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_NONE, PushSpec_F, OpSpec_NONE},
-   {I_DCONST_0, "dconst_0", LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_NONE, PushSpec_D, OpSpec_NONE},
-   {I_DCONST_1, "dconst_1", LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_NONE, PushSpec_D, OpSpec_NONE},
+   {I_ACONST_NULL, "aconst_null", LDSpec_NONE, STSpec_NONE, ImmSpec_NONE_const_null, PopSpec_NONE, PushSpec_N, OpSpec_NONE},
+   {I_ICONST_M1, "iconst_m1", LDSpec_NONE, STSpec_NONE, ImmSpec_NONE_const_m1, PopSpec_NONE, PushSpec_I, OpSpec_NONE},
+   {I_ICONST_0, "iconst_0", LDSpec_NONE, STSpec_NONE, ImmSpec_NONE_const_0, PopSpec_NONE, PushSpec_I, OpSpec_NONE},
+   {I_ICONST_1, "iconst_1", LDSpec_NONE, STSpec_NONE, ImmSpec_NONE_const_1, PopSpec_NONE, PushSpec_I, OpSpec_NONE},
+   {I_ICONST_2, "iconst_2", LDSpec_NONE, STSpec_NONE, ImmSpec_NONE_const_2, PopSpec_NONE, PushSpec_I, OpSpec_NONE},
+   {I_ICONST_3, "iconst_3", LDSpec_NONE, STSpec_NONE, ImmSpec_NONE_const_3, PopSpec_NONE, PushSpec_I, OpSpec_NONE},
+   {I_ICONST_4, "iconst_4", LDSpec_NONE, STSpec_NONE, ImmSpec_NONE_const_4, PopSpec_NONE, PushSpec_I, OpSpec_NONE},
+   {I_ICONST_5, "iconst_5", LDSpec_NONE, STSpec_NONE, ImmSpec_NONE_const_5, PopSpec_NONE, PushSpec_I, OpSpec_NONE},
+   {I_LCONST_0, "lconst_0", LDSpec_NONE, STSpec_NONE, ImmSpec_NONE_const_0, PopSpec_NONE, PushSpec_L, OpSpec_NONE},
+   {I_LCONST_1, "lconst_1", LDSpec_NONE, STSpec_NONE, ImmSpec_NONE_const_1, PopSpec_NONE, PushSpec_L, OpSpec_NONE},
+   {I_FCONST_0, "fconst_0", LDSpec_NONE, STSpec_NONE, ImmSpec_NONE_const_0, PopSpec_NONE, PushSpec_F, OpSpec_NONE},
+   {I_FCONST_1, "fconst_1", LDSpec_NONE, STSpec_NONE, ImmSpec_NONE_const_1, PopSpec_NONE, PushSpec_F, OpSpec_NONE},
+   {I_FCONST_2, "fconst_2", LDSpec_NONE, STSpec_NONE, ImmSpec_NONE_const_2, PopSpec_NONE, PushSpec_F, OpSpec_NONE},
+   {I_DCONST_0, "dconst_0", LDSpec_NONE, STSpec_NONE, ImmSpec_NONE_const_0, PopSpec_NONE, PushSpec_D, OpSpec_NONE},
+   {I_DCONST_1, "dconst_1", LDSpec_NONE, STSpec_NONE, ImmSpec_NONE_const_1, PopSpec_NONE, PushSpec_D, OpSpec_NONE},
    {I_BIPUSH, "bipush", LDSpec_NONE, STSpec_NONE, ImmSpec_Bconst, PopSpec_NONE, PushSpec_I, OpSpec_NONE},
    {I_SIPUSH, "sipush", LDSpec_NONE, STSpec_NONE, ImmSpec_Sconst, PopSpec_NONE, PushSpec_I, OpSpec_NONE},
    {I_LDC, "ldc", LDSpec_NONE, STSpec_NONE, ImmSpec_Bcpci, PopSpec_NONE, PushSpec_IorForS, OpSpec_NONE},
@@ -628,26 +665,26 @@ ByteCode bytecode[] ={
    {I_FLOAD, "fload", LDSpec_F, STSpec_NONE, ImmSpec_Blvti, PopSpec_NONE, PushSpec_F, OpSpec_NONE},
    {I_DLOAD, "dload", LDSpec_F, STSpec_NONE, ImmSpec_Blvti, PopSpec_NONE, PushSpec_D, OpSpec_NONE},
    {I_ALOAD, "aload", LDSpec_A, STSpec_NONE, ImmSpec_Blvti, PopSpec_NONE, PushSpec_O, OpSpec_NONE},
-   {I_ILOAD_0, "iload_0", LDSpec_I, STSpec_NONE, ImmSpec_NONE, PopSpec_NONE, PushSpec_I, OpSpec_NONE},
-   {I_ILOAD_1, "iload_1", LDSpec_I, STSpec_NONE, ImmSpec_NONE, PopSpec_NONE, PushSpec_I, OpSpec_NONE},
-   {I_ILOAD_2, "iload_2", LDSpec_I, STSpec_NONE, ImmSpec_NONE, PopSpec_NONE, PushSpec_I, OpSpec_NONE},
-   {I_ILOAD_3, "iload_3", LDSpec_I, STSpec_NONE, ImmSpec_NONE, PopSpec_NONE, PushSpec_I, OpSpec_NONE},
-   {I_LLOAD_0, "lload_0", LDSpec_L, STSpec_NONE, ImmSpec_NONE, PopSpec_NONE, PushSpec_L, OpSpec_NONE},
-   {I_LLOAD_1, "lload_1", LDSpec_L, STSpec_NONE, ImmSpec_NONE, PopSpec_NONE, PushSpec_L, OpSpec_NONE},
-   {I_LLOAD_2, "lload_2", LDSpec_L, STSpec_NONE, ImmSpec_NONE, PopSpec_NONE, PushSpec_L, OpSpec_NONE},
-   {I_LLOAD_3, "lload_3", LDSpec_L, STSpec_NONE, ImmSpec_NONE, PopSpec_NONE, PushSpec_L, OpSpec_NONE},
-   {I_FLOAD_0, "fload_0", LDSpec_F, STSpec_NONE, ImmSpec_NONE, PopSpec_NONE, PushSpec_F, OpSpec_NONE},
-   {I_FLOAD_1, "fload_1", LDSpec_F, STSpec_NONE, ImmSpec_NONE, PopSpec_NONE, PushSpec_F, OpSpec_NONE},
-   {I_FLOAD_2, "fload_2", LDSpec_F, STSpec_NONE, ImmSpec_NONE, PopSpec_NONE, PushSpec_F, OpSpec_NONE},
-   {I_FLOAD_3, "fload_3", LDSpec_F, STSpec_NONE, ImmSpec_NONE, PopSpec_NONE, PushSpec_F, OpSpec_NONE},
-   {I_DLOAD_0, "dload_0", LDSpec_D, STSpec_NONE, ImmSpec_NONE, PopSpec_NONE, PushSpec_D, OpSpec_NONE},
-   {I_DLOAD_1, "dload_1", LDSpec_D, STSpec_NONE, ImmSpec_NONE, PopSpec_NONE, PushSpec_D, OpSpec_NONE},
-   {I_DLOAD_2, "dload_2", LDSpec_D, STSpec_NONE, ImmSpec_NONE, PopSpec_NONE, PushSpec_D, OpSpec_NONE},
-   {I_DLOAD_3, "dload_3", LDSpec_D, STSpec_NONE, ImmSpec_NONE, PopSpec_NONE, PushSpec_D, OpSpec_NONE},
-   {I_ALOAD_0, "aload_0", LDSpec_A, STSpec_NONE, ImmSpec_NONE, PopSpec_NONE, PushSpec_O, OpSpec_NONE},
-   {I_ALOAD_1, "aload_1", LDSpec_A, STSpec_NONE, ImmSpec_NONE, PopSpec_NONE, PushSpec_O, OpSpec_NONE},
-   {I_ALOAD_2, "aload_2", LDSpec_A, STSpec_NONE, ImmSpec_NONE, PopSpec_NONE, PushSpec_O, OpSpec_NONE},
-   {I_ALOAD_3, "aload_3", LDSpec_A, STSpec_NONE, ImmSpec_NONE, PopSpec_NONE, PushSpec_O, OpSpec_NONE},
+   {I_ILOAD_0, "iload_0", LDSpec_I, STSpec_NONE, ImmSpec_NONE_lvti_0, PopSpec_NONE, PushSpec_I, OpSpec_NONE},
+   {I_ILOAD_1, "iload_1", LDSpec_I, STSpec_NONE, ImmSpec_NONE_lvti_1, PopSpec_NONE, PushSpec_I, OpSpec_NONE},
+   {I_ILOAD_2, "iload_2", LDSpec_I, STSpec_NONE, ImmSpec_NONE_lvti_2, PopSpec_NONE, PushSpec_I, OpSpec_NONE},
+   {I_ILOAD_3, "iload_3", LDSpec_I, STSpec_NONE, ImmSpec_NONE_lvti_3, PopSpec_NONE, PushSpec_I, OpSpec_NONE},
+   {I_LLOAD_0, "lload_0", LDSpec_L, STSpec_NONE, ImmSpec_NONE_lvti_0, PopSpec_NONE, PushSpec_L, OpSpec_NONE},
+   {I_LLOAD_1, "lload_1", LDSpec_L, STSpec_NONE, ImmSpec_NONE_lvti_1, PopSpec_NONE, PushSpec_L, OpSpec_NONE},
+   {I_LLOAD_2, "lload_2", LDSpec_L, STSpec_NONE, ImmSpec_NONE_lvti_2, PopSpec_NONE, PushSpec_L, OpSpec_NONE},
+   {I_LLOAD_3, "lload_3", LDSpec_L, STSpec_NONE, ImmSpec_NONE_lvti_3, PopSpec_NONE, PushSpec_L, OpSpec_NONE},
+   {I_FLOAD_0, "fload_0", LDSpec_F, STSpec_NONE, ImmSpec_NONE_lvti_0, PopSpec_NONE, PushSpec_F, OpSpec_NONE},
+   {I_FLOAD_1, "fload_1", LDSpec_F, STSpec_NONE, ImmSpec_NONE_lvti_1, PopSpec_NONE, PushSpec_F, OpSpec_NONE},
+   {I_FLOAD_2, "fload_2", LDSpec_F, STSpec_NONE, ImmSpec_NONE_lvti_2, PopSpec_NONE, PushSpec_F, OpSpec_NONE},
+   {I_FLOAD_3, "fload_3", LDSpec_F, STSpec_NONE, ImmSpec_NONE_lvti_3, PopSpec_NONE, PushSpec_F, OpSpec_NONE},
+   {I_DLOAD_0, "dload_0", LDSpec_D, STSpec_NONE, ImmSpec_NONE_lvti_0, PopSpec_NONE, PushSpec_D, OpSpec_NONE},
+   {I_DLOAD_1, "dload_1", LDSpec_D, STSpec_NONE, ImmSpec_NONE_lvti_1, PopSpec_NONE, PushSpec_D, OpSpec_NONE},
+   {I_DLOAD_2, "dload_2", LDSpec_D, STSpec_NONE, ImmSpec_NONE_lvti_2, PopSpec_NONE, PushSpec_D, OpSpec_NONE},
+   {I_DLOAD_3, "dload_3", LDSpec_D, STSpec_NONE, ImmSpec_NONE_lvti_3, PopSpec_NONE, PushSpec_D, OpSpec_NONE},
+   {I_ALOAD_0, "aload_0", LDSpec_A, STSpec_NONE, ImmSpec_NONE_lvti_0, PopSpec_NONE, PushSpec_O, OpSpec_NONE},
+   {I_ALOAD_1, "aload_1", LDSpec_A, STSpec_NONE, ImmSpec_NONE_lvti_1, PopSpec_NONE, PushSpec_O, OpSpec_NONE},
+   {I_ALOAD_2, "aload_2", LDSpec_A, STSpec_NONE, ImmSpec_NONE_lvti_2, PopSpec_NONE, PushSpec_O, OpSpec_NONE},
+   {I_ALOAD_3, "aload_3", LDSpec_A, STSpec_NONE, ImmSpec_NONE_lvti_3, PopSpec_NONE, PushSpec_O, OpSpec_NONE},
    {I_IALOAD, "iaload", LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_AI, PushSpec_I, OpSpec_NONE},
    {I_LALOAD, "laload", LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_AI, PushSpec_L, OpSpec_NONE},
    {I_FALOAD, "faload", LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_AI, PushSpec_F, OpSpec_NONE},
@@ -661,26 +698,26 @@ ByteCode bytecode[] ={
    {I_FSTORE, "fstore", LDSpec_NONE, STSpec_F, ImmSpec_Blvti, PopSpec_F, PushSpec_NONE, OpSpec_NONE},
    {I_DSTORE, "dstore", LDSpec_NONE, STSpec_D, ImmSpec_Blvti, PopSpec_D, PushSpec_NONE, OpSpec_NONE},
    {I_ASTORE, "astore", LDSpec_NONE, STSpec_A, ImmSpec_Blvti, PopSpec_O, PushSpec_NONE, OpSpec_NONE},
-   {I_ISTORE_0, "istore_0", LDSpec_NONE, STSpec_I, ImmSpec_NONE, PopSpec_I, PushSpec_NONE, OpSpec_NONE},
-   {I_ISTORE_1, "istore_1", LDSpec_NONE, STSpec_I, ImmSpec_NONE, PopSpec_I, PushSpec_NONE, OpSpec_NONE},
-   {I_ISTORE_2, "istore_2", LDSpec_NONE, STSpec_I, ImmSpec_NONE, PopSpec_I, PushSpec_NONE, OpSpec_NONE},
-   {I_ISTORE_3, "istore_3", LDSpec_NONE, STSpec_I, ImmSpec_NONE, PopSpec_I, PushSpec_NONE, OpSpec_NONE},
-   {I_LSTORE_0, "lstore_0", LDSpec_NONE, STSpec_L, ImmSpec_NONE, PopSpec_L, PushSpec_NONE, OpSpec_NONE},
-   {I_LSTORE_1, "lstore_1", LDSpec_NONE, STSpec_L, ImmSpec_NONE, PopSpec_L, PushSpec_NONE, OpSpec_NONE},
-   {I_LSTORE_2, "lstore_2", LDSpec_NONE, STSpec_L, ImmSpec_NONE, PopSpec_L, PushSpec_NONE, OpSpec_NONE},
-   {I_LSTORE_3, "lstore_3", LDSpec_NONE, STSpec_L, ImmSpec_NONE, PopSpec_L, PushSpec_NONE, OpSpec_NONE},
-   {I_FSTORE_0, "fstore_0", LDSpec_NONE, STSpec_F, ImmSpec_NONE, PopSpec_F, PushSpec_NONE, OpSpec_NONE},
-   {I_FSTORE_1, "fstore_1", LDSpec_NONE, STSpec_F, ImmSpec_NONE, PopSpec_F, PushSpec_NONE, OpSpec_NONE},
-   {I_FSTORE_2, "fstore_2", LDSpec_NONE, STSpec_F, ImmSpec_NONE, PopSpec_F, PushSpec_NONE, OpSpec_NONE},
-   {I_FSTORE_3, "fstore_3", LDSpec_NONE, STSpec_F, ImmSpec_NONE, PopSpec_F, PushSpec_NONE, OpSpec_NONE},
-   {I_DSTORE_0, "dstore_0", LDSpec_NONE, STSpec_D, ImmSpec_NONE, PopSpec_D, PushSpec_NONE, OpSpec_NONE},
-   {I_DSTORE_1, "dstore_1", LDSpec_NONE, STSpec_D, ImmSpec_NONE, PopSpec_D, PushSpec_NONE, OpSpec_NONE},
-   {I_DSTORE_2, "dstore_2", LDSpec_NONE, STSpec_D, ImmSpec_NONE, PopSpec_D, PushSpec_NONE, OpSpec_NONE},
-   {I_DSTORE_3, "dstore_3", LDSpec_NONE, STSpec_D, ImmSpec_NONE, PopSpec_D, PushSpec_NONE, OpSpec_NONE},
-   {I_ASTORE_0, "astore_0", LDSpec_NONE, STSpec_A, ImmSpec_NONE, PopSpec_O, PushSpec_NONE, OpSpec_NONE},
-   {I_ASTORE_1, "astore_1", LDSpec_NONE, STSpec_A, ImmSpec_NONE, PopSpec_O, PushSpec_NONE, OpSpec_NONE},
-   {I_ASTORE_2, "astore_2", LDSpec_NONE, STSpec_A, ImmSpec_NONE, PopSpec_O, PushSpec_NONE, OpSpec_NONE},
-   {I_ASTORE_3, "astore_3", LDSpec_NONE, STSpec_A, ImmSpec_NONE, PopSpec_O, PushSpec_NONE, OpSpec_NONE},
+   {I_ISTORE_0, "istore_0", LDSpec_NONE, STSpec_I, ImmSpec_NONE_lvti_0, PopSpec_I, PushSpec_NONE, OpSpec_NONE},
+   {I_ISTORE_1, "istore_1", LDSpec_NONE, STSpec_I, ImmSpec_NONE_lvti_1, PopSpec_I, PushSpec_NONE, OpSpec_NONE},
+   {I_ISTORE_2, "istore_2", LDSpec_NONE, STSpec_I, ImmSpec_NONE_lvti_2, PopSpec_I, PushSpec_NONE, OpSpec_NONE},
+   {I_ISTORE_3, "istore_3", LDSpec_NONE, STSpec_I, ImmSpec_NONE_lvti_3, PopSpec_I, PushSpec_NONE, OpSpec_NONE},
+   {I_LSTORE_0, "lstore_0", LDSpec_NONE, STSpec_L, ImmSpec_NONE_lvti_0, PopSpec_L, PushSpec_NONE, OpSpec_NONE},
+   {I_LSTORE_1, "lstore_1", LDSpec_NONE, STSpec_L, ImmSpec_NONE_lvti_1, PopSpec_L, PushSpec_NONE, OpSpec_NONE},
+   {I_LSTORE_2, "lstore_2", LDSpec_NONE, STSpec_L, ImmSpec_NONE_lvti_2, PopSpec_L, PushSpec_NONE, OpSpec_NONE},
+   {I_LSTORE_3, "lstore_3", LDSpec_NONE, STSpec_L, ImmSpec_NONE_lvti_3, PopSpec_L, PushSpec_NONE, OpSpec_NONE},
+   {I_FSTORE_0, "fstore_0", LDSpec_NONE, STSpec_F, ImmSpec_NONE_lvti_0, PopSpec_F, PushSpec_NONE, OpSpec_NONE},
+   {I_FSTORE_1, "fstore_1", LDSpec_NONE, STSpec_F, ImmSpec_NONE_lvti_1, PopSpec_F, PushSpec_NONE, OpSpec_NONE},
+   {I_FSTORE_2, "fstore_2", LDSpec_NONE, STSpec_F, ImmSpec_NONE_lvti_2, PopSpec_F, PushSpec_NONE, OpSpec_NONE},
+   {I_FSTORE_3, "fstore_3", LDSpec_NONE, STSpec_F, ImmSpec_NONE_lvti_3, PopSpec_F, PushSpec_NONE, OpSpec_NONE},
+   {I_DSTORE_0, "dstore_0", LDSpec_NONE, STSpec_D, ImmSpec_NONE_lvti_0, PopSpec_D, PushSpec_NONE, OpSpec_NONE},
+   {I_DSTORE_1, "dstore_1", LDSpec_NONE, STSpec_D, ImmSpec_NONE_lvti_1, PopSpec_D, PushSpec_NONE, OpSpec_NONE},
+   {I_DSTORE_2, "dstore_2", LDSpec_NONE, STSpec_D, ImmSpec_NONE_lvti_2, PopSpec_D, PushSpec_NONE, OpSpec_NONE},
+   {I_DSTORE_3, "dstore_3", LDSpec_NONE, STSpec_D, ImmSpec_NONE_lvti_3, PopSpec_D, PushSpec_NONE, OpSpec_NONE},
+   {I_ASTORE_0, "astore_0", LDSpec_NONE, STSpec_A, ImmSpec_NONE_lvti_0, PopSpec_O, PushSpec_NONE, OpSpec_NONE},
+   {I_ASTORE_1, "astore_1", LDSpec_NONE, STSpec_A, ImmSpec_NONE_lvti_1, PopSpec_O, PushSpec_NONE, OpSpec_NONE},
+   {I_ASTORE_2, "astore_2", LDSpec_NONE, STSpec_A, ImmSpec_NONE_lvti_2, PopSpec_O, PushSpec_NONE, OpSpec_NONE},
+   {I_ASTORE_3, "astore_3", LDSpec_NONE, STSpec_A, ImmSpec_NONE_lvti_3, PopSpec_O, PushSpec_NONE, OpSpec_NONE},
    {I_IASTORE, "iastore", LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_AII, PushSpec_NONE, OpSpec_NONE},
    {I_LASTORE, "lastore", LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_AIL, PushSpec_NONE, OpSpec_NONE},
    {I_FASTORE, "fastore", LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_AIF, PushSpec_NONE, OpSpec_NONE},
@@ -814,6 +851,17 @@ class Instruction{
    private:
       union  {
          ImmSpec_NONE_s immSpec_NONE;
+         ImmSpec_NONE_const_null_s immSpec_NONE_const_null;
+         ImmSpec_NONE_const_m1_s immSpec_NONE_const_m1;
+         ImmSpec_NONE_const_0_s immSpec_NONE_const_0;
+         ImmSpec_NONE_const_1_s immSpec_NONE_const_1;
+         ImmSpec_NONE_const_2_s immSpec_NONE_const_2;
+         ImmSpec_NONE_const_3_s immSpec_NONE_const_3;
+         ImmSpec_NONE_const_4_s immSpec_NONE_const_4;
+         ImmSpec_NONE_lvti_0_s immSpec_NONE_lvti_0;
+         ImmSpec_NONE_lvti_1_s immSpec_NONE_lvti_1;
+         ImmSpec_NONE_lvti_2_s immSpec_NONE_lvti_2;
+         ImmSpec_NONE_lvti_3_s immSpec_NONE_lvti_3;
          ImmSpec_Blvti_s immSpec_Blvti;
          ImmSpec_Bcpci_s immSpec_Bcpci;
          ImmSpec_Scpci_s immSpec_Scpci;
@@ -884,14 +932,20 @@ class Instruction{
 
       ByteCode *byteCode;
       u4_t pc;
+      s4_t prevPc; // -1 if this is first
       u4_t length;
       u2_t stackBase;
    public:
-      Instruction(ConstantPoolEntry **_constantPool, ByteBuffer *_codeByteBuffer, u2_t _maxStack, u4_t *_stackMap, u2_t *stackLen );
+      Instruction(ConstantPoolEntry **_constantPool, ByteBuffer *_codeByteBuffer, u2_t _maxStack, u4_t *_stackMap, u2_t *stackLen, s4_t _prevPc );
       ~Instruction();
       void write(FILE *_file, ConstantPoolEntry **_constantPool, LocalVariableTableAttribute *localVariableTableAttribute);
+      void treeWrite(FILE *_file, Instruction **_instructions, int _depth, ConstantPoolEntry **_constantPool, LocalVariableTableAttribute *localVariableTableAttribute);
       u4_t getPC();
       ByteCode *getByteCode();
+      s4_t getPrevPC();
+      u4_t getNextPC();
+      u2_t getStackBase();
+      
 };
 
 

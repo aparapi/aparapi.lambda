@@ -52,9 +52,12 @@ int main(int argc, char **argv){
       instructions[i] = NULL;
    }
 
+   s4_t prevPc=-1;
+
    while (!codeByteBuffer->empty()){
-      Instruction *instruction = new Instruction(classInfo->getConstantPool(), codeByteBuffer, maxStack, stackMap, &stackSize);
-      instructions[instruction->getPC()] = instruction;
+      Instruction *instruction = new Instruction(classInfo->getConstantPool(), codeByteBuffer, maxStack, stackMap, &stackSize, prevPc);
+      prevPc = instruction->getPC();
+      instructions[prevPc] = instruction;
       fprintf(stdout, "|");
       for (int i=0; i<maxStack; i++){
          fprintf(stdout, "%3d|", stackMap[i]);
@@ -63,6 +66,26 @@ int main(int argc, char **argv){
       instruction->write(stdout, classInfo->getConstantPool(), codeAttribute->getLocalVariableTableAttribute());
       fprintf(stdout, "\n");
    }
+
+   Instruction *instruction = instructions[0];
+   while (instruction != NULL){
+      if (instruction->getPrevPC() >=0 && instruction->getStackBase()==0 && instructions[instruction->getPrevPC()]->getStackBase()==1){
+         fprintf(stdout, "-8<-\n");
+         instructions[instruction->getPrevPC()]->treeWrite(stdout, instructions, 0, classInfo->getConstantPool(), codeAttribute->getLocalVariableTableAttribute());
+         fprintf(stdout, "->8-\n");
+      }
+      fprintf(stdout, " stackBase = %2d :", instruction->getStackBase());
+      instruction->write(stdout, classInfo->getConstantPool(), codeAttribute->getLocalVariableTableAttribute());
+      fprintf(stdout, "\n");
+      u4_t nextPc = instruction->getNextPC();
+      if (nextPc < codeByteBuffer->getLen()){
+         instruction = instructions[nextPc];
+      }else{
+         instruction = NULL;
+      }
+   }
+
+
 
    delete byteBuffer;
    delete[] buffer; 
