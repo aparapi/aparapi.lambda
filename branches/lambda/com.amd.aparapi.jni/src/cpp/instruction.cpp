@@ -504,6 +504,13 @@ void Instruction::write(FILE *_file, ConstantPoolEntry **_constantPool, LocalVar
       case ImmSpec_ScpmiBB:
          break;
       case ImmSpec_BlvtiBconst:
+         fprintf(_file, " %d", immSpec_Spc.pc);
+         if (_localVariableTableAttribute !=  NULL){
+            char *varName = _localVariableTableAttribute->getLocalVariableName(pc +length, immSpec_BlvtiBconst.lvti, _constantPool);
+            fprintf(_file, " name = %s", varName);
+         }
+         fprintf(_file, " ]");
+         fprintf(_file, " %d", immSpec_BlvtiBconst.value);
          break;
       case ImmSpec_Scpmi:
          break;
@@ -522,113 +529,75 @@ void Instruction::write(FILE *_file, ConstantPoolEntry **_constantPool, LocalVar
          fprintf(_file, " <-- NONE");
          break;
       case PopSpec_A:
-         //popSpec_A.a = _stackMap[--(*_stackSize)];
+         fprintf(_file, " <-- pop ((array)%d)", popSpec_A.a);
          break;
       case PopSpec_AI:
          fprintf(_file, " <-- pop ((array)%d, (int)%d)", popSpec_AI.a, popSpec_AI.i);
-         //popSpec_AI.a = _stackMap[--(*_stackSize)];
-         //popSpec_AI.i = _stackMap[--(*_stackSize)];
          break;
       case PopSpec_AII:
          fprintf(_file, " <-- pop ((array)%d, (int)%d, (int)%d)", popSpec_AII.a, popSpec_AII.i1, popSpec_AII.i2);
-         //popSpec_AII.a = _stackMap[--(*_stackSize)];
-         //popSpec_AII.i1 = _stackMap[--(*_stackSize)];
-         //popSpec_AII.i2 = _stackMap[--(*_stackSize)];
          break;
       case PopSpec_AIL:
-         //popSpec_AIL.a = _stackMap[--(*_stackSize)];
-         //popSpec_AIL.i = _stackMap[--(*_stackSize)];
-         //popSpec_AIL.l = _stackMap[--(*_stackSize)];
+         fprintf(_file, " <-- pop ((array)%d, (int)%d, (long)%d)", popSpec_AIL.a, popSpec_AIL.i, popSpec_AIL.l);
          break;
       case PopSpec_AIF:
-         //popSpec_AIF.a = _stackMap[--(*_stackSize)];
-         //popSpec_AIF.i = _stackMap[--(*_stackSize)];
-         //popSpec_AIF.f = _stackMap[--(*_stackSize)];
+         fprintf(_file, " <-- pop ((array)%d, (int)%d, (float)%d)", popSpec_AIF.a, popSpec_AIF.i, popSpec_AIF.f);
          break;
       case PopSpec_AID:
-         //popSpec_AID.a = _stackMap[--(*_stackSize)];
-         //popSpec_AID.i = _stackMap[--(*_stackSize)];
-         //popSpec_AID.d = _stackMap[--(*_stackSize)];
+         fprintf(_file, " <-- pop ((array)%d, (int)%d, (double)%d)", popSpec_AID.a, popSpec_AID.i, popSpec_AID.d);
          break;
       case PopSpec_AIO:
-         //popSpec_AIO.a = _stackMap[--(*_stackSize)];
-         //popSpec_AIO.i = _stackMap[--(*_stackSize)];
-         //popSpec_AIO.o = _stackMap[--(*_stackSize)];
+         fprintf(_file, " <-- pop ((array)%d, (int)%d, (object)%d)", popSpec_AIO.a, popSpec_AIO.i, popSpec_AIO.o);
          break;
       case PopSpec_AIB:
-         //popSpec_AIB.a = _stackMap[--(*_stackSize)];
-         //popSpec_AIB.i = _stackMap[--(*_stackSize)];
-         //popSpec_AIB.b = _stackMap[--(*_stackSize)];
+         fprintf(_file, " <-- pop ((array)%d, (int)%d, (byte)%d)", popSpec_AIB.a, popSpec_AIB.i, popSpec_AIB.b);
          break;
       case PopSpec_AIC:
-         //popSpec_AIC.a = _stackMap[--(*_stackSize)];
-         //popSpec_AIC.i = _stackMap[--(*_stackSize)];
-         //popSpec_AIC.c = _stackMap[--(*_stackSize)];
+         fprintf(_file, " <-- pop ((array)%d, (int)%d, (char)%d)", popSpec_AIC.a, popSpec_AIC.i, popSpec_AIC.c);
          break;
       case PopSpec_AIS:
-         //popSpec_AIS.a = _stackMap[--(*_stackSize)];
-         //popSpec_AIS.i = _stackMap[--(*_stackSize)];
-         //popSpec_AIS.s = _stackMap[--(*_stackSize)];
-         break;
+         fprintf(_file, " <-- pop ((array)%d, (int)%d, (short)%d)", popSpec_AIS.a, popSpec_AIS.i, popSpec_AIS.s);
       case PopSpec_II :
          fprintf(_file, " <-- ((int)%d, (int)%d)", popSpec_II.i1, popSpec_II.i2);
-         //popSpec_II.i1 = _stackMap[--(*_stackSize)];
-         //popSpec_II.i2 = _stackMap[--(*_stackSize)];
          break;
       case PopSpec_III:
-         //popSpec_III.i1 = _stackMap[--(*_stackSize)];
-         //popSpec_III.i2 = _stackMap[--(*_stackSize)];
-         //popSpec_III.i3 = _stackMap[--(*_stackSize)];
+         fprintf(_file, " <-- ((int)%d, (int)%d, (int)%d)", popSpec_III.i1, popSpec_III.i2, popSpec_III.i3);
          break;
       case PopSpec_IIII:
-         //popSpec_IIII.i1 = _stackMap[--(*_stackSize)];
-         //popSpec_IIII.i2 = _stackMap[--(*_stackSize)];
-         //popSpec_IIII.i3 = _stackMap[--(*_stackSize)];
-         //popSpec_IIII.i4 = _stackMap[--(*_stackSize)];
+         fprintf(_file, " <-- ((int)%d, (int)%d, (int)%d, (int)%d)", popSpec_IIII.i1, popSpec_IIII.i2, popSpec_IIII.i3, popSpec_IIII.i4);
          break;
       case PopSpec_L:
-         //popSpec_L.l = _stackMap[--(*_stackSize)];
+         fprintf(_file, " <-- ((long)%d", popSpec_L.l);
          break;
       case PopSpec_LI:
-         //popSpec_LI.l = _stackMap[--(*_stackSize)];
-         //popSpec_LI.i = _stackMap[--(*_stackSize)];
+         fprintf(_file, " <-- ((long)%d, (int)%d)", popSpec_LI.l, popSpec_LI.i);
          break;
       case PopSpec_LL:
-         //popSpec_LL.l1 = _stackMap[--(*_stackSize)];
-         //popSpec_LL.l2 = _stackMap[--(*_stackSize)];
+         fprintf(_file, " <-- ((long)%d, (long)%d)", popSpec_LL.l1, popSpec_LL.l2);
          break;
       case PopSpec_F:
          fprintf(_file, " <-- ((float)%d)", popSpec_F.f);
-         //popSpec_F.f = _stackMap[--(*_stackSize)];
          break;
       case PopSpec_FF:
          fprintf(_file, " <-- ((float)%d, (float)%d)", popSpec_FF.f1, popSpec_FF.f2);
-         //popSpec_FF.f1 = _stackMap[--(*_stackSize)];
-         //popSpec_FF.f2 = _stackMap[--(*_stackSize)];
          break;
       case PopSpec_OO:
          fprintf(_file, " <-- ((object)%d, (object)%d)", popSpec_OO.o1, popSpec_OO.o2);
-         //popSpec_OO.o1 = _stackMap[--(*_stackSize)];
-         //popSpec_OO.o2 = _stackMap[--(*_stackSize)];
          break;
       case PopSpec_RA:
-         //popSpec_RA.r = _stackMap[--(*_stackSize)];
-         //popSpec_RA.a = _stackMap[--(*_stackSize)];
+         fprintf(_file, " <-- ((R)%d, (A)%d)", popSpec_RA.r, popSpec_RA.a);
          break;
       case PopSpec_O:
          fprintf(_file, " <-- ((object)%d)", popSpec_O.o);
-         //popSpec_O.o = _stackMap[--(*_stackSize)];
          break;
       case PopSpec_I:
          fprintf(_file, " <-- ((int)%d)", popSpec_I.i);
-         //popSpec_I.i = _stackMap[--(*_stackSize)];
          break;
       case PopSpec_D:
-         //popSpec_D.d = _stackMap[--(*_stackSize)];
+         fprintf(_file, " <-- ((double)%d)", popSpec_D.d);
          break;
       case PopSpec_DD:
-         //popSpec_DD.d1 = _stackMap[--(*_stackSize)];
-         //popSpec_DD.d2 = _stackMap[--(*_stackSize)];
+         fprintf(_file, " <-- ((double)%d, (double)%d)", popSpec_DD.d1, popSpec_DD.d2);
          break;
       case PopSpec_OFSIG:
          break;
@@ -652,8 +621,6 @@ void Instruction::write(FILE *_file, ConstantPoolEntry **_constantPool, LocalVar
                fprintf(_file, ")");
             }
 
-            //  popSpec_MSIG.argc = method->getArgCount(_constantPool);
-            //  popSpec_MSIG.args = new u4_t[popSpec_MSIG.argc];
          }
          break;
       case PopSpec_OMSIG:
@@ -665,9 +632,6 @@ void Instruction::write(FILE *_file, ConstantPoolEntry **_constantPool, LocalVar
                }
             }
             fprintf(_file, ")");
-            //  popSpec_OMSIG.o = _stackMap[--(*_stackSize)];
-            //  popSpec_OMSIG.argc = method->getArgCount(_constantPool);
-            //  popSpec_OMSIG.args = new u4_t[popSpec_OMSIG.argc];
          }
          break;
    }
@@ -927,6 +891,10 @@ void Instruction::treeWrite(FILE *_file, Instruction **_instructions, int _depth
                }
             }
          break;
+   }
+   if (_instructions[pc+length]->getByteCode()->pushSpec == PushSpec_NONE && _instructions[pc+length]->getByteCode()->popSpec == PopSpec_NONE){
+      fprintf(_file, " +++++++++++++++++++++++++++++++");
+      _instructions[pc+length]->treeWrite(_file, _instructions, _depth, _constantPool, _localVariableTableAttribute);
    }
 }
 
