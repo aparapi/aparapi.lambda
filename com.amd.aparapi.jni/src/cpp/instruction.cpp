@@ -10,13 +10,38 @@ ByteCode *Instruction::getByteCode(){
    return(byteCode);
 }
 
-Instruction::Instruction(ConstantPoolEntry** _constantPool, ByteBuffer *_codeByteBuffer, u2_t _maxStack, u4_t *_stackMap, u2_t *_stackSize ){
+Instruction::Instruction(ConstantPoolEntry** _constantPool, ByteBuffer *_codeByteBuffer, u2_t _maxStack, u4_t *_stackMap, u2_t *_stackSize, s4_t _prevPc ){
+   prevPc = _prevPc;
    stackBase = *_stackSize;
    pc = _codeByteBuffer->getOffset();
    byte_t byte= _codeByteBuffer->u1();
    byteCode = &bytecode[byte];
    switch(byteCode->immSpec){
       case ImmSpec_NONE:
+         break;
+      case ImmSpec_NONE_const_null:
+         break;
+      case ImmSpec_NONE_const_m1:
+         break;
+      case ImmSpec_NONE_const_0:
+         break;
+      case ImmSpec_NONE_const_1:
+         break;
+      case ImmSpec_NONE_const_2:
+         break;
+      case ImmSpec_NONE_const_3:
+         break;
+      case ImmSpec_NONE_const_4:
+         break;
+      case ImmSpec_NONE_const_5:
+         break;
+      case ImmSpec_NONE_lvti_0:
+         break;
+      case ImmSpec_NONE_lvti_1:
+         break;
+      case ImmSpec_NONE_lvti_2:
+         break;
+      case ImmSpec_NONE_lvti_3:
          break;
       case ImmSpec_Blvti:
          immSpec_Blvti.lvti=_codeByteBuffer->u1();
@@ -62,7 +87,7 @@ Instruction::Instruction(ConstantPoolEntry** _constantPool, ByteBuffer *_codeByt
          break;
 
    }
-   
+
    length = _codeByteBuffer->getOffset()-pc;
 
    switch(byteCode->popSpec){
@@ -360,6 +385,18 @@ Instruction::Instruction(ConstantPoolEntry** _constantPool, ByteBuffer *_codeByt
 }
 
 Instruction::~Instruction(){
+   switch(byteCode->pushSpec){
+      case PopSpec_MSIG:
+         if (popSpec_MSIG.argc>0){
+            delete [] popSpec_MSIG.args;
+         }
+         break;
+      case PopSpec_OMSIG:
+         if ( popSpec_OMSIG.argc>0){
+            delete [] popSpec_OMSIG.args;
+         }
+         break;
+   }
 }
 
 
@@ -368,14 +405,59 @@ void Instruction::write(FILE *_file, ConstantPoolEntry **_constantPool, LocalVar
    switch(byteCode->immSpec){
       case ImmSpec_NONE:
          break;
+      case ImmSpec_NONE_const_null:
+         fprintf(_file, " NULL");
+         break;
+      case ImmSpec_NONE_const_m1:
+         fprintf(_file, " -1");
+         break;
+      case ImmSpec_NONE_const_0:
+         fprintf(_file, " 0");
+         break;
+      case ImmSpec_NONE_const_1:
+         fprintf(_file, " 1");
+         break;
+      case ImmSpec_NONE_const_2:
+         fprintf(_file, " 2");
+         break;
+      case ImmSpec_NONE_const_3:
+         fprintf(_file, " 3");
+         break;
+      case ImmSpec_NONE_const_4:
+         fprintf(_file, " 4");
+         break;
+      case ImmSpec_NONE_const_5:
+         fprintf(_file, " 5");
+         break;
+      case ImmSpec_NONE_lvti_0:
+         if (_localVariableTableAttribute !=  NULL){
+            char *varName = _localVariableTableAttribute->getLocalVariableName(pc +length, 0, _constantPool);
+            fprintf(_file, " name = %s", varName);
+         }
+         break;
+      case ImmSpec_NONE_lvti_1:
+         if (_localVariableTableAttribute !=  NULL){
+            char *varName = _localVariableTableAttribute->getLocalVariableName(pc +length, 1, _constantPool);
+            fprintf(_file, " name = %s", varName);
+         }
+         break;
+      case ImmSpec_NONE_lvti_2:
+         if (_localVariableTableAttribute !=  NULL){
+            char *varName = _localVariableTableAttribute->getLocalVariableName(pc +length, 2, _constantPool);
+            fprintf(_file, " name = %s", varName);
+         }
+         break;
+      case ImmSpec_NONE_lvti_3:
+         if (_localVariableTableAttribute !=  NULL){
+            char *varName = _localVariableTableAttribute->getLocalVariableName(pc +length, 3, _constantPool);
+            fprintf(_file, " name = %s", varName);
+         }
+         break;
       case ImmSpec_Blvti:
          fprintf(_file, " %d [", immSpec_Blvti.lvti);
          if (_localVariableTableAttribute !=  NULL){
-            fprintf(_file, "length = %d\n", length);
             char *varName = _localVariableTableAttribute->getLocalVariableName(pc +length, immSpec_Blvti.lvti, _constantPool);
             fprintf(_file, " name = %s", varName);
-         }else{
-            fprintf(_file, " lvta == NULL ");
          }
          fprintf(_file, " ]");
          break;
@@ -569,7 +651,7 @@ void Instruction::write(FILE *_file, ConstantPoolEntry **_constantPool, LocalVar
                }
                fprintf(_file, ")");
             }
-            
+
             //  popSpec_MSIG.argc = method->getArgCount(_constantPool);
             //  popSpec_MSIG.args = new u4_t[popSpec_MSIG.argc];
          }
@@ -589,9 +671,276 @@ void Instruction::write(FILE *_file, ConstantPoolEntry **_constantPool, LocalVar
          }
          break;
    }
-
 }
 
+
+void Instruction::treeWrite(FILE *_file, Instruction **_instructions, int _depth, ConstantPoolEntry **_constantPool, LocalVariableTableAttribute *_localVariableTableAttribute){
+   for (int i=0; i<_depth; i++){
+      fprintf(_file, "   ");
+   }
+   fprintf(_file, "%4d %-10s", pc, (char*)byteCode->name);
+
+   switch(byteCode->immSpec){
+      case ImmSpec_NONE:
+         break;
+      case ImmSpec_NONE_const_null:
+         fprintf(_file, " NULL");
+         break;
+      case ImmSpec_NONE_const_m1:
+         fprintf(_file, " -1");
+         break;
+      case ImmSpec_NONE_const_0:
+         fprintf(_file, " 0");
+         break;
+      case ImmSpec_NONE_const_1:
+         fprintf(_file, " 1");
+         break;
+      case ImmSpec_NONE_const_2:
+         fprintf(_file, " 2");
+         break;
+      case ImmSpec_NONE_const_3:
+         fprintf(_file, " 3");
+         break;
+      case ImmSpec_NONE_const_4:
+         fprintf(_file, " 4");
+         break;
+      case ImmSpec_NONE_const_5:
+         fprintf(_file, " 5");
+         break;
+      case ImmSpec_NONE_lvti_0:
+         if (_localVariableTableAttribute !=  NULL){
+            char *varName = _localVariableTableAttribute->getLocalVariableName(pc +length, 0, _constantPool);
+            fprintf(_file, " %s", varName);
+         }
+         break;
+      case ImmSpec_NONE_lvti_1:
+         if (_localVariableTableAttribute !=  NULL){
+            char *varName = _localVariableTableAttribute->getLocalVariableName(pc +length, 1, _constantPool);
+            fprintf(_file, " %s", varName);
+         }
+         break;
+      case ImmSpec_NONE_lvti_2:
+         if (_localVariableTableAttribute !=  NULL){
+            char *varName = _localVariableTableAttribute->getLocalVariableName(pc +length, 2, _constantPool);
+            fprintf(_file, " %s", varName);
+         }
+         break;
+      case ImmSpec_NONE_lvti_3:
+         if (_localVariableTableAttribute !=  NULL){
+            char *varName = _localVariableTableAttribute->getLocalVariableName(pc +length, 3, _constantPool);
+            fprintf(_file, " %s", varName);
+         }
+         break;
+      case ImmSpec_Blvti:
+         if (_localVariableTableAttribute !=  NULL){
+            char *varName = _localVariableTableAttribute->getLocalVariableName(pc +length, immSpec_Blvti.lvti, _constantPool);
+            fprintf(_file, " %s", varName);
+         }
+         break;
+      case ImmSpec_Bcpci:
+      case ImmSpec_Scpci:
+         {
+            int cpi = 0;
+            if (byteCode->immSpec == ImmSpec_Bcpci){
+               cpi = immSpec_Bcpci.cpci;
+            }else{
+               cpi = immSpec_Scpci.cpci;
+            }
+            ConstantPoolEntry* constantPoolEntry = _constantPool[cpi];
+            switch (constantPoolEntry->getConstantPoolType()){
+               case FLOAT:
+                  fprintf(_file, " %f", ((FloatConstantPoolEntry*)constantPoolEntry)->getValue());
+                  break;
+               case INTEGER:
+                  fprintf(_file, " %d", ((IntegerConstantPoolEntry*)constantPoolEntry)->getValue());
+                  break;
+               case DOUBLE:
+                  fprintf(_file, " %lf", ((DoubleConstantPoolEntry*)constantPoolEntry)->getValue());
+                  break;
+               case LONG:
+                  fprintf(_file, " %ld", ((LongConstantPoolEntry*)constantPoolEntry)->getValue());
+                  break;
+               default:
+                  fprintf(_file, " constant pool #%d", immSpec_Bcpci.cpci);
+                  break;
+            }
+            break;
+         }
+      case ImmSpec_Bconst:
+         fprintf(_file, " %d", immSpec_Bconst.value);
+         break;
+      case ImmSpec_Sconst:
+         fprintf(_file, " %d", immSpec_Sconst.value);
+         break;
+      case ImmSpec_Spc:
+         fprintf(_file, " %d", immSpec_Spc.pc);
+         break;
+      case ImmSpec_Scpfi:
+         {
+            FieldConstantPoolEntry* fieldConstantPoolEntry = (FieldConstantPoolEntry*)_constantPool[immSpec_Scpfi.cpfi];
+            NameAndTypeConstantPoolEntry* nameAndTypeConstantPoolEntry = (NameAndTypeConstantPoolEntry*)_constantPool[fieldConstantPoolEntry->getNameAndTypeIndex()];
+            UTF8ConstantPoolEntry* nameConstantPoolEntry = (UTF8ConstantPoolEntry*)_constantPool[nameAndTypeConstantPoolEntry->getNameIndex()];
+
+            fprintf(_file, " %s", nameConstantPoolEntry->getUTF8());
+            break;
+         }
+      case ImmSpec_ScpmiBB:
+         break;
+      case ImmSpec_BlvtiBconst:
+         break;
+      case ImmSpec_Scpmi:
+         {
+            MethodConstantPoolEntry* methodConstantPoolEntry = (MethodConstantPoolEntry*)_constantPool[immSpec_Scpmi.cpmi];
+            NameAndTypeConstantPoolEntry* nameAndTypeConstantPoolEntry = (NameAndTypeConstantPoolEntry*)_constantPool[methodConstantPoolEntry->getNameAndTypeIndex()];
+            UTF8ConstantPoolEntry* nameConstantPoolEntry = (UTF8ConstantPoolEntry*)_constantPool[nameAndTypeConstantPoolEntry->getNameIndex()];
+            fprintf(_file, " %s", nameConstantPoolEntry->getUTF8());
+            break;
+         }
+      case ImmSpec_ScpciBdim:
+         break;
+      case ImmSpec_Ipc:
+         fprintf(_file, " %d", immSpec_Ipc.pc);
+         break;
+      case ImmSpec_UNKNOWN:
+         break;
+
+   }
+
+
+   //write(_file, _constantPool, _localVariableTableAttribute);
+   fprintf(_file, "\n");
+   switch(byteCode->popSpec){
+      case PopSpec_NONE:
+         break;
+      case PopSpec_A:
+         _instructions[popSpec_A.a]->treeWrite(_file, _instructions, _depth+1, _constantPool, _localVariableTableAttribute);
+         break;
+      case PopSpec_AI:
+         _instructions[popSpec_AI.a]->treeWrite(_file, _instructions, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_AI.i]->treeWrite(_file, _instructions, _depth+1, _constantPool, _localVariableTableAttribute);
+         break;
+      case PopSpec_AII:
+         _instructions[popSpec_AII.a]->treeWrite(_file, _instructions, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_AII.i1]->treeWrite(_file, _instructions, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_AII.i2]->treeWrite(_file, _instructions, _depth+1, _constantPool, _localVariableTableAttribute);
+         break;
+      case PopSpec_AIL:
+         _instructions[popSpec_AIL.a]->treeWrite(_file, _instructions, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_AIL.i]->treeWrite(_file, _instructions, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_AIL.l]->treeWrite(_file, _instructions, _depth+1, _constantPool, _localVariableTableAttribute);
+         break;
+      case PopSpec_AIF:
+         _instructions[popSpec_AIF.a]->treeWrite(_file, _instructions, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_AIF.i]->treeWrite(_file, _instructions, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_AIF.f]->treeWrite(_file, _instructions, _depth+1, _constantPool, _localVariableTableAttribute);
+         break;
+      case PopSpec_AID:
+         _instructions[popSpec_AID.a]->treeWrite(_file, _instructions, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_AID.i]->treeWrite(_file, _instructions, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_AID.d]->treeWrite(_file, _instructions, _depth+1, _constantPool, _localVariableTableAttribute);
+         break;
+      case PopSpec_AIO:
+         _instructions[popSpec_AIO.a]->treeWrite(_file, _instructions, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_AIO.i]->treeWrite(_file, _instructions, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_AIO.o]->treeWrite(_file, _instructions, _depth+1, _constantPool, _localVariableTableAttribute);
+         break;
+      case PopSpec_AIB:
+         _instructions[popSpec_AIB.a]->treeWrite(_file, _instructions, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_AIB.i]->treeWrite(_file, _instructions, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_AIB.b]->treeWrite(_file, _instructions, _depth+1, _constantPool, _localVariableTableAttribute);
+         break;
+      case PopSpec_AIC:
+         _instructions[popSpec_AIC.a]->treeWrite(_file, _instructions, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_AIC.i]->treeWrite(_file, _instructions, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_AIC.c]->treeWrite(_file, _instructions, _depth+1, _constantPool, _localVariableTableAttribute);
+         break;
+      case PopSpec_AIS:
+         _instructions[popSpec_AIS.a]->treeWrite(_file, _instructions, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_AIS.i]->treeWrite(_file, _instructions, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_AIS.s]->treeWrite(_file, _instructions, _depth+1, _constantPool, _localVariableTableAttribute);
+         break;
+      case PopSpec_II :
+         _instructions[popSpec_II.i1]->treeWrite(_file, _instructions, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_II.i2]->treeWrite(_file, _instructions, _depth+1, _constantPool, _localVariableTableAttribute);
+         break;
+      case PopSpec_III:
+         break;
+      case PopSpec_IIII:
+         break;
+      case PopSpec_L:
+         _instructions[popSpec_L.l]->treeWrite(_file, _instructions, _depth+1, _constantPool, _localVariableTableAttribute);
+         break;
+      case PopSpec_LI:
+         _instructions[popSpec_LI.l]->treeWrite(_file, _instructions, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_LI.i]->treeWrite(_file, _instructions, _depth+1, _constantPool, _localVariableTableAttribute);
+         break;
+      case PopSpec_LL:
+         _instructions[popSpec_LL.l1]->treeWrite(_file, _instructions, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_LL.l2]->treeWrite(_file, _instructions, _depth+1, _constantPool, _localVariableTableAttribute);
+         break;
+      case PopSpec_F:
+         _instructions[popSpec_F.f]->treeWrite(_file, _instructions, _depth+1, _constantPool, _localVariableTableAttribute);
+         break;
+      case PopSpec_FF:
+         _instructions[popSpec_FF.f1]->treeWrite(_file, _instructions, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_FF.f2]->treeWrite(_file, _instructions, _depth+1, _constantPool, _localVariableTableAttribute);
+         break;
+      case PopSpec_OO:
+         _instructions[popSpec_OO.o1]->treeWrite(_file, _instructions, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_OO.o2]->treeWrite(_file, _instructions, _depth+1, _constantPool, _localVariableTableAttribute);
+         break;
+      case PopSpec_RA:
+         _instructions[popSpec_RA.r]->treeWrite(_file, _instructions, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_RA.a]->treeWrite(_file, _instructions, _depth+1, _constantPool, _localVariableTableAttribute);
+         break;
+      case PopSpec_O:
+         _instructions[popSpec_O.o]->treeWrite(_file, _instructions, _depth+1, _constantPool, _localVariableTableAttribute);
+         break;
+      case PopSpec_I:
+         _instructions[popSpec_I.i]->treeWrite(_file, _instructions, _depth+1, _constantPool, _localVariableTableAttribute);
+         break;
+      case PopSpec_D:
+         _instructions[popSpec_D.d]->treeWrite(_file, _instructions, _depth+1, _constantPool, _localVariableTableAttribute);
+         break;
+      case PopSpec_DD:
+         _instructions[popSpec_DD.d1]->treeWrite(_file, _instructions, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_DD.d1]->treeWrite(_file, _instructions, _depth+1, _constantPool, _localVariableTableAttribute);
+         break;
+      case PopSpec_OFSIG:
+         break;
+      case PopSpec_FSIG:
+         break;
+      case PopSpec_UNKNOWN:
+         break;
+      case PopSpec_MSIG:
+            if (popSpec_MSIG.argc!=0){
+               for (int i=0; i<popSpec_MSIG.argc; i++){
+                  _instructions[popSpec_MSIG.args[i]]->treeWrite(_file, _instructions, _depth+1, _constantPool, _localVariableTableAttribute);
+               }
+            }
+         break;
+      case PopSpec_OMSIG:
+            _instructions[popSpec_OMSIG.o]->treeWrite(_file, _instructions, _depth+1, _constantPool, _localVariableTableAttribute);
+            if (popSpec_OMSIG.argc>0){
+               for (int i=0; i<popSpec_OMSIG.argc; i++){
+                  _instructions[popSpec_OMSIG.args[i]]->treeWrite(_file, _instructions, _depth+1, _constantPool, _localVariableTableAttribute);
+               }
+            }
+         break;
+   }
+}
+
+s4_t Instruction::getPrevPC(){
+   return(prevPc);
+}
+
+u4_t Instruction::getNextPC(){
+   return(pc+length);
+}
+
+u2_t Instruction::getStackBase(){
+   return(stackBase);
+}
 
 void Decoder::list(u1_t* buf, u4_t len){
    fprintf(stdout, "inside list\n");
