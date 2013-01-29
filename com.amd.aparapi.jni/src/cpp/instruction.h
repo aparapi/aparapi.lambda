@@ -3,6 +3,22 @@
 
 #include "classtools.h"
 
+class PCStack{
+   private:
+      int *values;
+      unsigned int size;
+      unsigned int index;
+   public:
+      PCStack(unsigned _size);
+      ~PCStack();
+      int  get(unsigned  _index);
+      int pop();
+      int peek();
+      void push(int _value);
+      unsigned getIndex();
+      unsigned  getSize();
+};
+
 enum ByteCodeType{
    I_NOP,
    I_ACONST_NULL,
@@ -936,10 +952,10 @@ class Instruction{
       u4_t length;
       u2_t stackBase;
    public:
-      Instruction(ConstantPoolEntry **_constantPool, ByteBuffer *_codeByteBuffer, u2_t _maxStack, u4_t *_stackMap, u2_t *stackLen, s4_t _prevPc );
+      Instruction(ConstantPoolEntry **_constantPool, ByteBuffer *_codeByteBuffer, PCStack *_pcStack,  s4_t _prevPc );
       ~Instruction();
       void write(FILE *_file, ConstantPoolEntry **_constantPool, LocalVariableTableAttribute *localVariableTableAttribute);
-      void treeWrite(FILE *_file, Instruction **_instructions, int _depth, ConstantPoolEntry **_constantPool, LocalVariableTableAttribute *localVariableTableAttribute);
+      void treeWrite(FILE *_file, Instruction **_instructions, int _codeLength, int _depth, ConstantPoolEntry **_constantPool, LocalVariableTableAttribute *localVariableTableAttribute);
       u4_t getPC();
       ByteCode *getByteCode();
       s4_t getPrevPC();
