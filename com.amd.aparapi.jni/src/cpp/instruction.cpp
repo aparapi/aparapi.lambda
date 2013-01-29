@@ -57,12 +57,18 @@ ByteCode *Instruction::getByteCode(){
    return(byteCode);
 }
 
-Instruction::Instruction(ConstantPoolEntry** _constantPool, ByteBuffer *_codeByteBuffer, PCStack *_pcStack, s4_t _prevPc ){
+Instruction::Instruction(ConstantPoolEntry** _constantPool, ByteBuffer *_codeByteBuffer, PCStack *_pcStack, s4_t _prevPc){
    prevPc = _prevPc;
    stackBase = _pcStack->getIndex();
    pc = _codeByteBuffer->getOffset();
    byte_t byte= _codeByteBuffer->u1();
    byteCode = &bytecode[byte];
+   bool wide = false;
+   if (byteCode->bytecode == I_WIDE){
+      wide = true;
+      byte_t byte= _codeByteBuffer->u1();
+      byteCode = &bytecode[byte];
+   }
    switch(byteCode->immSpec){
       case ImmSpec_NONE:
          break;
@@ -91,7 +97,11 @@ Instruction::Instruction(ConstantPoolEntry** _constantPool, ByteBuffer *_codeByt
       case ImmSpec_NONE_lvti_3:
          break;
       case ImmSpec_Blvti:
-         immSpec_Blvti.lvti=_codeByteBuffer->u1();
+         if (wide){
+            immSpec_Blvti.lvti=_codeByteBuffer->u2();
+         }else{
+            immSpec_Blvti.lvti=_codeByteBuffer->u1();
+         }
          break;
       case ImmSpec_Bcpci:
          immSpec_Bcpci.cpci=_codeByteBuffer->u1();
@@ -117,8 +127,13 @@ Instruction::Instruction(ConstantPoolEntry** _constantPool, ByteBuffer *_codeByt
          immSpec_ScpmiBB.b2= _codeByteBuffer->u1();
          break;
       case ImmSpec_BlvtiBconst:
-         immSpec_BlvtiBconst.lvti= _codeByteBuffer->u1();
-         immSpec_BlvtiBconst.value= _codeByteBuffer->u1();
+         if (wide){
+            immSpec_BlvtiBconst.lvti= _codeByteBuffer->u2();
+            immSpec_BlvtiBconst.value= _codeByteBuffer->s2();
+         }else{
+            immSpec_BlvtiBconst.lvti= _codeByteBuffer->u1();
+            immSpec_BlvtiBconst.value= _codeByteBuffer->u1(); //s1()? TODO:
+         }
          break;
       case ImmSpec_Scpmi:
          immSpec_Scpmi.cpmi= _codeByteBuffer->u2();
@@ -817,8 +832,15 @@ void Instruction::treeWrite(FILE *_file, Instruction **_instructions, int _codeL
          _instructions[popSpec_II.i2]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
          break;
       case PopSpec_III:
+         _instructions[popSpec_III.i1]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_III.i2]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_III.i3]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
          break;
       case PopSpec_IIII:
+         _instructions[popSpec_IIII.i1]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_IIII.i2]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_IIII.i3]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_IIII.i4]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
          break;
       case PopSpec_L:
          _instructions[popSpec_L.l]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
