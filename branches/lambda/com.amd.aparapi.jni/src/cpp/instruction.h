@@ -598,7 +598,7 @@ struct ImmSpec_NONE_lvti_3_s{
 };
 
 struct ImmSpec_Blvti_s{
-   u1_t lvti;
+   u2_t lvti; // would be u1_t but we account for widening
 };
 struct ImmSpec_Bcpci_s{
    u1_t cpci;
@@ -624,8 +624,8 @@ struct ImmSpec_ScpmiBB_s{
    u1_t b2;
 };
 struct ImmSpec_BlvtiBconst_s{
-   u1_t lvti;
-   u1_t value;
+   u2_t lvti; // would be u1_t but we account for widening
+   s2_t value; // would be s2_t but we accound for widening 
 };
 struct ImmSpec_Scpmi_s{
    u2_t cpmi;
@@ -824,7 +824,7 @@ ByteCode bytecode[] ={
    {I_IF_ACMPNE, "if_acmpne", LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_OO, PushSpec_NONE, OpSpec_NotEqual},
    {I_GOTO, "goto", LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_NONE, PushSpec_NONE, OpSpec_NONE },
    {I_JSR, "jsr", LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_NONE, PushSpec_RA, OpSpec_NONE},
-   {I_RET, "ret", LDSpec_NONE, STSpec_NONE, ImmSpec_Bconst, PopSpec_NONE, PushSpec_NONE, OpSpec_NONE},
+   {I_RET, "ret", LDSpec_NONE, STSpec_NONE, ImmSpec_Blvti, PopSpec_NONE, PushSpec_NONE, OpSpec_NONE},
    {I_TABLESWITCH, "tableswitch", LDSpec_NONE, STSpec_NONE, ImmSpec_UNKNOWN, PopSpec_I, PushSpec_NONE, OpSpec_NONE},
    {I_LOOKUPSWITCH, "lookupswitch", LDSpec_NONE, STSpec_NONE, ImmSpec_UNKNOWN, PopSpec_I, PushSpec_NONE, OpSpec_NONE},
    {I_IRETURN, "ireturn", LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_I, PushSpec_NONE, OpSpec_NONE},
