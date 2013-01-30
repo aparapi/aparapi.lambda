@@ -708,6 +708,24 @@ First consider editing the properties in build.properties
       </exec>
    </target>
 
+   <target name="msvc_clt" if="use.msvc">
+      <mkdir dir="${basedir}\dist"/>
+      <echo message="msvc_cltest ${os.arch}" />
+      <exec executable="${msvc.dir}\vc\bin\${optional.amd64.subdir}cl.exe">
+         <env key="PATH" path="${env.PATH};${msvc.dir}\\Common7\\IDE" />
+         <arg value="/nologo" />
+         <arg value="/TP" />
+         <arg value="/I${msvc.dir}\vc\include" />
+         <arg value="/I${msvc.sdk.dir}\include" />
+         <arg value="src\cpp\classtools.cpp" />
+         <arg value="src\cpp\instruction.cpp" />
+         <arg value="src\cpp\classtoolstest.cpp" />
+         <arg value="/link" />
+         <arg value="/libpath:${msvc.dir}\vc\lib\${optional.amd64.subdir}" />
+         <arg value="/libpath:${msvc.sdk.dir}\lib\${optional.x64.subdir}" />
+         <arg value="/out:clt.exe" />
+      </exec>
+   </target>
    <target name="cltest" depends="check,msvc_cltest,mac_cltest,gcc_cltest" />
-   <target name="clt" depends="check,gcc_clt,mac_clt" />
+   <target name="clt" depends="check,gcc_clt,mac_clt,msvc_clt" />
 </project>
