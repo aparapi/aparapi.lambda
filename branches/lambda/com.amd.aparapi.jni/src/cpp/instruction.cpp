@@ -5,11 +5,11 @@
 
 
 PCStack::PCStack(unsigned _size)
-  : index(0), size(_size+1), values(new int[_size+1]) {
-  for (int i=0; i<size; i++){
-      values[i]=-1;
-  }
-}
+   : index(0), size(_size+1), values(new int[_size+1]) {
+      for (int i=0; i<size; i++){
+         values[i]=-1;
+      }
+   }
 PCStack::~PCStack(){
    if (size){
       delete[] values;
@@ -150,7 +150,8 @@ Instruction::Instruction(ConstantPoolEntry** _constantPool, ByteBuffer *_codeByt
 
    }
 
-   length = _codeByteBuffer->getOffset()-pc;
+   nextPc = _codeByteBuffer->getOffset();
+   length = nextPc-pc;
 
    switch(byteCode->popSpec){
       case PopSpec_NONE:
@@ -637,7 +638,7 @@ void Instruction::write(FILE *_file, ConstantPoolEntry **_constantPool, LocalVar
 }
 
 
-void Instruction::treeWrite(FILE *_file, Instruction **_instructions, int _codeLength, int _depth, ConstantPoolEntry **_constantPool, LocalVariableTableAttribute *_localVariableTableAttribute){
+void Instruction::treeWrite(FILE *_file, Instruction **_instructions, int _codeLength, int _depth, ConstantPoolEntry **_constantPool, LocalVariableTableAttribute *_localVariableTableAttribute, int _rootPc){
    for (int i=0; i<_depth; i++){
       fprintf(_file, "   ");
    }
@@ -781,105 +782,105 @@ void Instruction::treeWrite(FILE *_file, Instruction **_instructions, int _codeL
       case PopSpec_NONE:
          break;
       case PopSpec_A:
-         _instructions[popSpec_A.a]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_A.a]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
          break;
       case PopSpec_AI:
-         _instructions[popSpec_AI.a]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
-         _instructions[popSpec_AI.i]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_AI.a]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
+         _instructions[popSpec_AI.i]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
          break;
       case PopSpec_AII:
-         _instructions[popSpec_AII.a]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
-         _instructions[popSpec_AII.i1]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
-         _instructions[popSpec_AII.i2]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_AII.a]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
+         _instructions[popSpec_AII.i1]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
+         _instructions[popSpec_AII.i2]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
          break;
       case PopSpec_AIL:
-         _instructions[popSpec_AIL.a]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
-         _instructions[popSpec_AIL.i]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
-         _instructions[popSpec_AIL.l]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_AIL.a]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
+         _instructions[popSpec_AIL.i]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
+         _instructions[popSpec_AIL.l]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
          break;
       case PopSpec_AIF:
-         _instructions[popSpec_AIF.a]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
-         _instructions[popSpec_AIF.i]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
-         _instructions[popSpec_AIF.f]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_AIF.a]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
+         _instructions[popSpec_AIF.i]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
+         _instructions[popSpec_AIF.f]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
          break;
       case PopSpec_AID:
-         _instructions[popSpec_AID.a]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
-         _instructions[popSpec_AID.i]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
-         _instructions[popSpec_AID.d]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_AID.a]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
+         _instructions[popSpec_AID.i]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
+         _instructions[popSpec_AID.d]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
          break;
       case PopSpec_AIO:
-         _instructions[popSpec_AIO.a]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
-         _instructions[popSpec_AIO.i]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
-         _instructions[popSpec_AIO.o]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_AIO.a]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
+         _instructions[popSpec_AIO.i]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
+         _instructions[popSpec_AIO.o]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
          break;
       case PopSpec_AIB:
-         _instructions[popSpec_AIB.a]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
-         _instructions[popSpec_AIB.i]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
-         _instructions[popSpec_AIB.b]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_AIB.a]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
+         _instructions[popSpec_AIB.i]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
+         _instructions[popSpec_AIB.b]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
          break;
       case PopSpec_AIC:
-         _instructions[popSpec_AIC.a]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
-         _instructions[popSpec_AIC.i]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
-         _instructions[popSpec_AIC.c]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_AIC.a]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
+         _instructions[popSpec_AIC.i]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
+         _instructions[popSpec_AIC.c]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
          break;
       case PopSpec_AIS:
-         _instructions[popSpec_AIS.a]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
-         _instructions[popSpec_AIS.i]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
-         _instructions[popSpec_AIS.s]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_AIS.a]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
+         _instructions[popSpec_AIS.i]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
+         _instructions[popSpec_AIS.s]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
          break;
       case PopSpec_II :
-         _instructions[popSpec_II.i1]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
-         _instructions[popSpec_II.i2]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_II.i1]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
+         _instructions[popSpec_II.i2]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
          break;
       case PopSpec_III:
-         _instructions[popSpec_III.i1]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
-         _instructions[popSpec_III.i2]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
-         _instructions[popSpec_III.i3]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_III.i1]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
+         _instructions[popSpec_III.i2]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
+         _instructions[popSpec_III.i3]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
          break;
       case PopSpec_IIII:
-         _instructions[popSpec_IIII.i1]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
-         _instructions[popSpec_IIII.i2]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
-         _instructions[popSpec_IIII.i3]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
-         _instructions[popSpec_IIII.i4]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_IIII.i1]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
+         _instructions[popSpec_IIII.i2]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
+         _instructions[popSpec_IIII.i3]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
+         _instructions[popSpec_IIII.i4]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
          break;
       case PopSpec_L:
-         _instructions[popSpec_L.l]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_L.l]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
          break;
       case PopSpec_LI:
-         _instructions[popSpec_LI.l]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
-         _instructions[popSpec_LI.i]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_LI.l]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
+         _instructions[popSpec_LI.i]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
          break;
       case PopSpec_LL:
-         _instructions[popSpec_LL.l1]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
-         _instructions[popSpec_LL.l2]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_LL.l1]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
+         _instructions[popSpec_LL.l2]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
          break;
       case PopSpec_F:
-         _instructions[popSpec_F.f]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_F.f]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
          break;
       case PopSpec_FF:
-         _instructions[popSpec_FF.f1]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
-         _instructions[popSpec_FF.f2]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_FF.f1]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
+         _instructions[popSpec_FF.f2]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
          break;
       case PopSpec_OO:
-         _instructions[popSpec_OO.o1]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
-         _instructions[popSpec_OO.o2]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_OO.o1]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
+         _instructions[popSpec_OO.o2]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
          break;
       case PopSpec_RA:
-         _instructions[popSpec_RA.r]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
-         _instructions[popSpec_RA.a]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_RA.r]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
+         _instructions[popSpec_RA.a]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
          break;
       case PopSpec_O:
-         _instructions[popSpec_O.o]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_O.o]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
          break;
       case PopSpec_I:
-         _instructions[popSpec_I.i]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_I.i]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
          break;
       case PopSpec_D:
-         _instructions[popSpec_D.d]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_D.d]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
          break;
       case PopSpec_DD:
-         _instructions[popSpec_DD.d1]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
-         _instructions[popSpec_DD.d1]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
+         _instructions[popSpec_DD.d1]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
+         _instructions[popSpec_DD.d1]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
          break;
       case PopSpec_OFSIG:
          break;
@@ -888,24 +889,34 @@ void Instruction::treeWrite(FILE *_file, Instruction **_instructions, int _codeL
       case PopSpec_UNKNOWN:
          break;
       case PopSpec_MSIG:
-            if (popSpec_MSIG.argc!=0){
-               for (int i=0; i<popSpec_MSIG.argc; i++){
-                  _instructions[popSpec_MSIG.args[i]]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
-               }
+         if (popSpec_MSIG.argc!=0){
+            for (int i=0; i<popSpec_MSIG.argc; i++){
+               _instructions[popSpec_MSIG.args[i]]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
             }
+         }
          break;
       case PopSpec_OMSIG:
-            _instructions[popSpec_OMSIG.o]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
-            if (popSpec_OMSIG.argc>0){
-               for (int i=0; i<popSpec_OMSIG.argc; i++){
-                  _instructions[popSpec_OMSIG.args[i]]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute);
-               }
+         _instructions[popSpec_OMSIG.o]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
+         if (popSpec_OMSIG.argc>0){
+            for (int i=0; i<popSpec_OMSIG.argc; i++){
+               _instructions[popSpec_OMSIG.args[i]]->treeWrite(_file, _instructions, _codeLength, _depth+1, _constantPool, _localVariableTableAttribute, _rootPc);
             }
+         }
          break;
    }
-   if (pc+length < _codeLength && _instructions[pc+length]->getByteCode()->pushSpec == PushSpec_NONE && _instructions[pc+length]->getByteCode()->popSpec == PopSpec_NONE){
-      fprintf(_file, " +++++++++++++++++++++++++++++++");
-      _instructions[pc+length]->treeWrite(_file, _instructions, _codeLength, _depth, _constantPool, _localVariableTableAttribute);
+   if (nextPc < _rootPc){
+      Instruction *nextInstruction =  _instructions[nextPc];
+      if (nextInstruction->getByteCode()->pushSpec == PushSpec_NONE && nextInstruction->getByteCode()->popSpec == PopSpec_NONE){
+         for (int i=0; i<_depth; i++){
+            fprintf(_file, "   ");
+         }
+         fprintf(_file, " (");
+         nextInstruction->treeWrite(_file, _instructions, _codeLength, _depth, _constantPool, _localVariableTableAttribute, _rootPc);
+         for (int i=0; i<_depth; i++){
+            fprintf(_file, "   ");
+         }
+         fprintf(_file, " )");
+      }
    }
 }
 
@@ -914,7 +925,7 @@ s4_t Instruction::getPrevPC(){
 }
 
 u4_t Instruction::getNextPC(){
-   return(pc+length);
+   return(nextPc);
 }
 
 u2_t Instruction::getStackBase(){

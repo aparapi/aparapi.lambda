@@ -949,13 +949,14 @@ class Instruction{
       ByteCode *byteCode;
       u4_t pc;
       s4_t prevPc; // -1 if this is first
+      u4_t nextPc; 
       u4_t length;
       u2_t stackBase;
    public:
       Instruction(ConstantPoolEntry **_constantPool, ByteBuffer *_codeByteBuffer, PCStack *_pcStack,  s4_t _prevPc );
       ~Instruction();
       void write(FILE *_file, ConstantPoolEntry **_constantPool, LocalVariableTableAttribute *localVariableTableAttribute);
-      void treeWrite(FILE *_file, Instruction **_instructions, int _codeLength, int _depth, ConstantPoolEntry **_constantPool, LocalVariableTableAttribute *localVariableTableAttribute);
+      void treeWrite(FILE *_file, Instruction **_instructions, int _codeLength, int _depth, ConstantPoolEntry **_constantPool, LocalVariableTableAttribute *localVariableTableAttribute, int _rootPc);
       u4_t getPC();
       ByteCode *getByteCode();
       s4_t getPrevPC();
