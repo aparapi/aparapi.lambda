@@ -68,7 +68,7 @@ int main(int argc, char **argv){
    for (Instruction *instruction = instructions[0]; instruction != NULL; instruction = (instruction->getNextPC()<codeByteBuffer->getLen())?instruction = instructions[instruction->getNextPC()]:NULL){
       if (instruction != instructions[0] && instruction->getStackBase()==0 && instructions[instruction->getPrevPC()]->getStackBase()>0){
          fprintf(stdout, "-8<-\n");
-         instructions[instruction->getPrevPC()]->treeWrite(stdout, instructions, codeByteBuffer->getLen(), 0, classInfo->getConstantPool(), codeAttribute->getLocalVariableTableAttribute());
+         instructions[instruction->getPrevPC()]->treeWrite(stdout, instructions, codeByteBuffer->getLen(), 0, classInfo->getConstantPool(), codeAttribute->getLocalVariableTableAttribute(), instruction->getPrevPC());
          fprintf(stdout, "->8-\n");
       }
       fprintf(stdout, " stackBase = %2d :", instruction->getStackBase());
