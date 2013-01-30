@@ -32,8 +32,13 @@ typedef signed short   s2_t;
 typedef unsigned short u2_t;
 typedef signed int     s4_t;
 typedef unsigned int   u4_t;
+#ifdef _WIN32
+typedef unsigned long long  u8_t;
+typedef signed long long    s8_t;
+#else
 typedef unsigned long  u8_t;
 typedef signed long    s8_t;
+#endif
 typedef float          f4_t;
 typedef double         f8_t;
 

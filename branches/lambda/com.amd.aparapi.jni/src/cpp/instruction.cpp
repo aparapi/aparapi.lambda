@@ -924,7 +924,3 @@ u2_t Instruction::getStackBase(){
 void Decoder::list(u1_t* buf, u4_t len){
    fprintf(stdout, "inside list\n");
 }
-
-
-
-
