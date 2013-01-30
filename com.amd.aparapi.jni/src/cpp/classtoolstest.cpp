@@ -78,6 +78,7 @@ int main(int argc, char **argv){
 
    for (unsigned i=0; i< codeByteBuffer->getLen(); i++){
       if (instructions[i] != NULL){
+         delete instructions[i];
       }
    }
    delete [] instructions;
