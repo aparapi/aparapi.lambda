@@ -76,6 +76,11 @@ int main(int argc, char **argv){
       fprintf(stdout, "\n");
    }
 
+   for (Instruction *instruction = instructions[0]; instruction != NULL; instruction = (instruction->getNextPC()<codeByteBuffer->getLen())?instruction = instructions[instruction->getNextPC()]:NULL){
+      instruction->writeRegForm(stdout, classInfo->getConstantPool(), codeAttribute->getMaxLocals(), codeAttribute->getLocalVariableTableAttribute());
+      fprintf(stdout, "\n");
+   }
+
    for (unsigned i=0; i< codeByteBuffer->getLen(); i++){
       if (instructions[i] != NULL){
          delete instructions[i];

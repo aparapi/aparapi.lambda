@@ -404,6 +404,248 @@ Instruction::~Instruction(){
 }
 
 
+void Instruction::writeRegForm(FILE *_file, ConstantPoolEntry **_constantPool, int _maxLocals, LocalVariableTableAttribute *_localVariableTableAttribute){
+   fprintf(_file, "%4d %-14s ", pc, (char*)byteCode->name);
+   switch(bytecode->ldSpec){
+      case LDSpec_I:
+         switch(byteCode->immSpec){ 
+            case ImmSpec_NONE_lvti_0:
+               fprintf(_file, "i32_0");
+               break;
+            case ImmSpec_NONE_lvti_1:
+               fprintf(_file, "i32_1");
+               break;
+            case ImmSpec_NONE_lvti_2:
+               fprintf(_file, "i32_2");
+               break;
+            case ImmSpec_NONE_lvti_3:
+               fprintf(_file, "i32_3");
+               break;
+            case ImmSpec_Blvti:
+               fprintf(_file, "i32_%d", immSpec_Blvti.lvti);
+               break;
+            default:
+               fprintf(_file, "i32_WHAT?");
+               break;
+         }
+         break;
+      case LDSpec_A:
+         switch(byteCode->immSpec){ 
+            case ImmSpec_NONE_lvti_0:
+               fprintf(_file, "obj_0");
+               break;
+            case ImmSpec_NONE_lvti_1:
+               fprintf(_file, "obj_1");
+               break;
+            case ImmSpec_NONE_lvti_2:
+               fprintf(_file, "obj_2");
+               break;
+            case ImmSpec_NONE_lvti_3:
+               fprintf(_file, "obj_3");
+               break;
+            case ImmSpec_Blvti:
+               fprintf(_file, "obj_%d", immSpec_Blvti.lvti);
+               break;
+            default:
+               fprintf(_file, "obj_WHAT?");
+               break;
+         }
+         break;
+      default:
+         fprintf(_file, "?");
+         break;
+   }
+
+   int popBase = stackBase - getPopCount(_constantPool) + _maxLocals;
+   int pushBase = popBase;
+
+   switch(byteCode->popSpec){
+      case PopSpec_NONE:
+         // fprintf(_file, " NONE");
+         break;
+      case PopSpec_A:
+         fprintf(_file, " aref_%d", popBase);
+         break;
+      case PopSpec_AI:
+         fprintf(_file, " aref_%d, i32_%d", popBase, popBase+1);
+         break;
+      case PopSpec_AII:
+         fprintf(_file, " aref_%d, i32_%d, i32_%d", popBase, popBase+1, popBase+2);
+         break;
+      case PopSpec_AIL:
+         fprintf(_file, " aref_%d, i32_%d, i64_%d", popBase, popBase+1, popBase+2);
+         break;
+      case PopSpec_AIF:
+         fprintf(_file, " aref_%d, i32_%d, f32_%d", popBase, popBase+1, popBase+2);
+         break;
+      case PopSpec_AID:
+         fprintf(_file, " aref_%d, i32_%d, f64_%d", popBase, popBase+1, popBase+2);
+         break;
+      case PopSpec_AIO:
+         fprintf(_file, " aref_%d, i32_%d, obj_%d", popBase, popBase+1, popBase+2);
+         break;
+      case PopSpec_AIB:
+         fprintf(_file, " aref_%d, i32_%d, i8_%d", popBase, popBase+1, popBase+2);
+         break;
+      case PopSpec_AIC:
+         fprintf(_file, " aref_%d, i32_%d, u16_%d", popBase, popBase+1, popBase+2);
+         break;
+      case PopSpec_AIS:
+         fprintf(_file, " aref_%d, i32_%d, s16_%d", popBase, popBase+1, popBase+2);
+         break;
+      case PopSpec_II :
+         fprintf(_file, " i32_%d, i32_%d", popBase, popBase+1);
+         break;
+      case PopSpec_III:
+         fprintf(_file, " i32_%d, i32_%d, i32_%d", popBase, popBase+1, popBase+2);
+         break;
+      case PopSpec_IIII:
+         fprintf(_file, " i32_%d, i32_%d, i32_%d, i32_%d", popBase, popBase+1, popBase+2, popBase+3);
+         break;
+      case PopSpec_L:
+         fprintf(_file, " i64_%d", popBase);
+         break;
+      case PopSpec_LI:
+         fprintf(_file, " i64_%d, i32_%d", popBase, popBase+1);
+         break;
+      case PopSpec_LL:
+         fprintf(_file, " i64_%d, i64_%d", popBase, popBase+1);
+         break;
+      case PopSpec_F:
+         fprintf(_file, " f32_%d", popBase);
+         break;
+      case PopSpec_FF:
+         fprintf(_file, " f32_%d, f32_%d", popBase, popBase+1);
+         break;
+      case PopSpec_OO:
+         fprintf(_file, " obj_%d, obj_%d", popBase, popBase+1);
+         break;
+      case PopSpec_RA:
+         fprintf(_file, " ((R)%d, (A)%d", popBase, popBase+1);
+         break;
+      case PopSpec_O:
+         fprintf(_file, " obj_%d", popBase);
+         break;
+      case PopSpec_I:
+         fprintf(_file, " i32_%d", popBase);
+         break;
+      case PopSpec_D:
+         fprintf(_file, " f64_%d", popBase);
+         break;
+      case PopSpec_DD:
+         fprintf(_file, " f64_%d, f64_%d", popBase, popBase+1);
+         break;
+      case PopSpec_OFSIG:
+         break;
+      case PopSpec_FSIG:
+         break;
+      case PopSpec_UNKNOWN:
+         break;
+      case PopSpec_MSIG:
+         {
+            if (popSpec_MSIG.argc==0){
+               fprintf(_file, "call ()");
+            }else{
+               fprintf(_file, "call (");
+               for (int i=0; i<popSpec_MSIG.argc; i++){
+                  if (i>0){
+                     fprintf(_file, " ,");
+                  }
+                  fprintf(_file, "arg_%d ", popBase+i);
+               }
+               fprintf(_file, ")");
+            }
+
+         }
+         break;
+      case PopSpec_OMSIG:
+         {
+            fprintf(_file, "call (");
+            fprintf(_file, " obj_%d", popBase);
+            if (popSpec_OMSIG.argc>0){
+               for (int i=0; i<popSpec_OMSIG.argc; i++){
+                  fprintf(_file, ", arg_%d", popBase+1+i);
+               }
+            }
+            fprintf(_file, ")");
+         }
+         break;
+   }
+   fprintf(_file, " -> ");
+
+   switch(byteCode->pushSpec){
+      case PushSpec_NONE:
+         //fprintf(_file, " NONE");
+         break;
+      case PushSpec_N:
+         fprintf(_file, " n?_%d", pushBase);
+         break;
+      case PushSpec_I:
+         fprintf(_file, " i32_%d", pushBase);
+         break;
+      case PushSpec_L:
+         fprintf(_file, " i64_%d", pushBase);
+         break;
+      case PushSpec_F:
+         fprintf(_file, " f32_%d", pushBase);
+         break;
+      case PushSpec_D:
+         fprintf(_file, " f64_%d", pushBase);
+         break;
+      case PushSpec_O:
+         fprintf(_file, " obj_%d", pushBase);
+         break;
+      case PushSpec_A:
+         fprintf(_file, " aref_%d", pushBase);
+         break;
+      case PushSpec_RA:
+         fprintf(_file, " R_%d, A_%d", pushBase, pushBase+1);
+         break;
+      case PushSpec_IorForS:
+         fprintf(_file, " (i32|f32|i16)_%d", pushBase);
+         break;
+      case PushSpec_LorD:
+         fprintf(_file, " (i64|f64)_%d", pushBase);
+         break;
+      case PushSpec_II:
+         fprintf(_file, " i32_%d, i32_%d", pushBase, pushBase+1);
+         break;
+      case PushSpec_III:
+         fprintf(_file, " i32_%d, i32_%d, i32_%d", pushBase, pushBase+1, pushBase+2);
+         break;
+      case PushSpec_IIII:
+         fprintf(_file, " i32_%d, i32_%d, i32_%d, i32_%d", pushBase, pushBase+1, pushBase+2, pushBase+3);
+         break;
+      case PushSpec_IIIII:
+         fprintf(_file, " i32_%d, i32_%d, i32_%d, i32_%d, i32_%d", pushBase, pushBase+1, pushBase+2, pushBase+3, pushBase+4);
+         break;
+      case PushSpec_IIIIII:
+         fprintf(_file, " i32_%d, i32_%d, i32_%d, i32_%d, i32_%d, i32_%d", pushBase, pushBase+1, pushBase+2, pushBase+3, pushBase+4, pushBase+5);
+         break;
+      case PushSpec_FSIG:
+         {
+            FieldConstantPoolEntry* field = (FieldConstantPoolEntry*)_constantPool[immSpec_Scpmi.cpmi];
+            fprintf(_file, " fieldType_%d", pushBase);
+         }
+
+         break;
+      case PushSpec_MSIG:
+         {
+            MethodConstantPoolEntry* method = (MethodConstantPoolEntry*)_constantPool[immSpec_Scpmi.cpmi];
+            int retc = method->getRetCount(_constantPool);
+            if (retc>0){
+               fprintf(_file, " methodRetType_%d", pushBase);
+            } else {
+            }
+         }
+
+         break;
+      case PushSpec_UNKNOWN:
+         break;
+   }
+
+}
+
 void Instruction::write(FILE *_file, ConstantPoolEntry **_constantPool, LocalVariableTableAttribute *_localVariableTableAttribute){
    fprintf(_file, "%4d %-14s ", pc, (char*)byteCode->name);
    fprintf(_file, "%4d ", stackBase);
