@@ -405,7 +405,14 @@ Instruction::~Instruction(){
 
 
 void Instruction::write(FILE *_file, ConstantPoolEntry **_constantPool, LocalVariableTableAttribute *_localVariableTableAttribute){
-   fprintf(_file, "%4d %-10s", pc, (char*)byteCode->name);
+   fprintf(_file, "%4d %-14s ", pc, (char*)byteCode->name);
+   fprintf(_file, "%4d ", stackBase);
+   int popCount = getPopCount(_constantPool);
+   fprintf(_file, "%4d ", popCount);
+   int pushCount = getPushCount(_constantPool);
+   fprintf(_file, "%4d ", pushCount);
+   fprintf(_file, "%4d ", pushCount-popCount);
+
    switch(byteCode->immSpec){
       case ImmSpec_NONE:
          break;
@@ -934,4 +941,101 @@ u2_t Instruction::getStackBase(){
 
 void Decoder::list(u1_t* buf, u4_t len){
    fprintf(stdout, "inside list\n");
+}
+
+int Instruction::getPopCount(ConstantPoolEntry **_constantPool){
+   int count = 0;
+   switch(byteCode->popSpec){
+      case PopSpec_NONE:
+      case PopSpec_UNKNOWN:
+         count = 0;
+         break;
+      case PopSpec_A:
+      case PopSpec_L:
+      case PopSpec_F:
+      case PopSpec_O:
+      case PopSpec_I:
+      case PopSpec_D:
+         count = 1;
+         break;
+      case PopSpec_AI:
+      case PopSpec_II :
+      case PopSpec_LI:
+      case PopSpec_LL:
+      case PopSpec_FF:
+      case PopSpec_OO:
+      case PopSpec_OFSIG:
+      case PopSpec_FSIG:
+      case PopSpec_RA:
+      case PopSpec_DD:
+         count = 2;
+         break;
+      case PopSpec_AII:
+      case PopSpec_AIL:
+      case PopSpec_AIF:
+      case PopSpec_AID:
+      case PopSpec_AIO:
+      case PopSpec_AIB:
+      case PopSpec_AIC:
+      case PopSpec_AIS:
+      case PopSpec_III:
+         count = 3;
+         break;
+      case PopSpec_IIII:
+         count = 4;
+         break;
+      case PopSpec_MSIG:
+         count = popSpec_MSIG.argc;
+         break;
+      case PopSpec_OMSIG:
+         count = popSpec_MSIG.argc+1;
+         break;
+   }
+   return(count);
+}
+
+int Instruction::getPushCount(ConstantPoolEntry **_constantPool){
+   int count=0;
+   switch(byteCode->pushSpec){
+      case PushSpec_UNKNOWN:
+      case PushSpec_NONE:
+         count = 0;
+         break;
+      case PushSpec_N:
+      case PushSpec_I:
+      case PushSpec_L:
+      case PushSpec_F:
+      case PushSpec_D:
+      case PushSpec_O:
+      case PushSpec_A:
+      case PushSpec_IorForS:
+      case PushSpec_LorD:
+      case PushSpec_FSIG:
+         count = 1;
+         break;
+      case PushSpec_RA:
+      case PushSpec_II:
+         count = 2;
+         break;
+      case PushSpec_III:
+         count = 3;
+         break;
+      case PushSpec_IIII:
+         count = 4;
+         break;
+      case PushSpec_IIIII:
+         count = 5;
+         break;
+      case PushSpec_IIIIII:
+         count = 6;
+         break;
+      case PushSpec_MSIG:
+         {
+            MethodConstantPoolEntry* method = (MethodConstantPoolEntry*)_constantPool[immSpec_Scpmi.cpmi];
+            count = method->getRetCount(_constantPool);
+         }
+         break;
+   }
+   return(count);
+
 }
