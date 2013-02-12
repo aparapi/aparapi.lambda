@@ -957,6 +957,7 @@ class Instruction{
       ~Instruction();
       void write(FILE *_file, ConstantPoolEntry **_constantPool, LocalVariableTableAttribute *localVariableTableAttribute);
       void treeWrite(FILE *_file, Instruction **_instructions, int _codeLength, int _depth, ConstantPoolEntry **_constantPool, LocalVariableTableAttribute *localVariableTableAttribute, int _rootPc);
+      void writeRegForm(FILE *_file, ConstantPoolEntry **_constantPool, int maxLocals, LocalVariableTableAttribute *localVariableTableAttribute);
       u4_t getPC();
       ByteCode *getByteCode();
       s4_t getPrevPC();
