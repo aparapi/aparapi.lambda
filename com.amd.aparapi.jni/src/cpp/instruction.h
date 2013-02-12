@@ -962,6 +962,8 @@ class Instruction{
       s4_t getPrevPC();
       u4_t getNextPC();
       u2_t getStackBase();
+      int getPopCount(ConstantPoolEntry **_constantPool);
+      int getPushCount(ConstantPoolEntry **_constantPool);
       
 };
 
