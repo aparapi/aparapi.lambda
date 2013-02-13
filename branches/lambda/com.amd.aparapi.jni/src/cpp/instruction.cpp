@@ -406,7 +406,7 @@ Instruction::~Instruction(){
 
 void Instruction::writeRegForm(FILE *_file, ConstantPoolEntry **_constantPool, int _maxLocals, LocalVariableTableAttribute *_localVariableTableAttribute){
    fprintf(_file, "%4d %-14s ", pc, (char*)byteCode->name);
-   switch(bytecode->ldSpec){
+   switch(byteCode->ldSpec){
       case LDSpec_I:
          switch(byteCode->immSpec){ 
             case ImmSpec_NONE_lvti_0:
@@ -426,6 +426,28 @@ void Instruction::writeRegForm(FILE *_file, ConstantPoolEntry **_constantPool, i
                break;
             default:
                fprintf(_file, "i32_WHAT?");
+               break;
+         }
+         break;
+      case LDSpec_F:
+         switch(byteCode->immSpec){ 
+            case ImmSpec_NONE_lvti_0:
+               fprintf(_file, "f32_0");
+               break;
+            case ImmSpec_NONE_lvti_1:
+               fprintf(_file, "f32_1");
+               break;
+            case ImmSpec_NONE_lvti_2:
+               fprintf(_file, "f32_2");
+               break;
+            case ImmSpec_NONE_lvti_3:
+               fprintf(_file, "f32_3");
+               break;
+            case ImmSpec_Blvti:
+               fprintf(_file, "f32_%d", immSpec_Blvti.lvti);
+               break;
+            default:
+               fprintf(_file, "f32_WHAT?");
                break;
          }
          break;
@@ -452,7 +474,7 @@ void Instruction::writeRegForm(FILE *_file, ConstantPoolEntry **_constantPool, i
          }
          break;
       default:
-         fprintf(_file, "?");
+         //fprintf(_file, "?");
          break;
    }
 
@@ -644,6 +666,77 @@ void Instruction::writeRegForm(FILE *_file, ConstantPoolEntry **_constantPool, i
          break;
    }
 
+   switch(byteCode->stSpec){
+      case STSpec_I:
+         switch(byteCode->immSpec){ 
+            case ImmSpec_NONE_lvti_0:
+               fprintf(_file, "i32_0");
+               break;
+            case ImmSpec_NONE_lvti_1:
+               fprintf(_file, "i32_1");
+               break;
+            case ImmSpec_NONE_lvti_2:
+               fprintf(_file, "i32_2");
+               break;
+            case ImmSpec_NONE_lvti_3:
+               fprintf(_file, "i32_3");
+               break;
+            case ImmSpec_Blvti:
+               fprintf(_file, "i32_%d", immSpec_Blvti.lvti);
+               break;
+            default:
+               fprintf(_file, "i32_WHAT?");
+               break;
+         }
+         break;
+      case STSpec_F:
+         switch(byteCode->immSpec){ 
+            case ImmSpec_NONE_lvti_0:
+               fprintf(_file, "f32_0");
+               break;
+            case ImmSpec_NONE_lvti_1:
+               fprintf(_file, "f32_1");
+               break;
+            case ImmSpec_NONE_lvti_2:
+               fprintf(_file, "f32_2");
+               break;
+            case ImmSpec_NONE_lvti_3:
+               fprintf(_file, "f32_3");
+               break;
+            case ImmSpec_Blvti:
+               fprintf(_file, "f32_%d", immSpec_Blvti.lvti);
+               break;
+            default:
+               fprintf(_file, "f32_WHAT?");
+               break;
+         }
+         break;
+      case STSpec_A:
+         switch(byteCode->immSpec){ 
+            case ImmSpec_NONE_lvti_0:
+               fprintf(_file, "obj_0");
+               break;
+            case ImmSpec_NONE_lvti_1:
+               fprintf(_file, "obj_1");
+               break;
+            case ImmSpec_NONE_lvti_2:
+               fprintf(_file, "obj_2");
+               break;
+            case ImmSpec_NONE_lvti_3:
+               fprintf(_file, "obj_3");
+               break;
+            case ImmSpec_Blvti:
+               fprintf(_file, "obj_%d", immSpec_Blvti.lvti);
+               break;
+            default:
+               fprintf(_file, "obj_WHAT?");
+               break;
+         }
+         break;
+      default:
+         //fprintf(_file, "?");
+         break;
+   }
 }
 
 void Instruction::write(FILE *_file, ConstantPoolEntry **_constantPool, LocalVariableTableAttribute *_localVariableTableAttribute){
