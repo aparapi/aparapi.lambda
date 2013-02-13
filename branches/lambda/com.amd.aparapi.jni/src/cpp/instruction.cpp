@@ -451,6 +451,52 @@ void Instruction::writeRegForm(FILE *_file, ConstantPoolEntry **_constantPool, i
                break;
          }
          break;
+
+      case LDSpec_D:
+         switch(byteCode->immSpec){ 
+            case ImmSpec_NONE_lvti_0:
+               fprintf(_file, "f64_0");
+               break;
+            case ImmSpec_NONE_lvti_1:
+               fprintf(_file, "f64_1");
+               break;
+            case ImmSpec_NONE_lvti_2:
+               fprintf(_file, "f64_2");
+               break;
+            case ImmSpec_NONE_lvti_3:
+               fprintf(_file, "f64_3");
+               break;
+            case ImmSpec_Blvti:
+               fprintf(_file, "f64_%d", immSpec_Blvti.lvti);
+               break;
+            default:
+               fprintf(_file, "f64_WHAT?");
+               break;
+         }
+         break;
+
+      case LDSpec_L:
+         switch(byteCode->immSpec){ 
+            case ImmSpec_NONE_lvti_0:
+               fprintf(_file, "i64_0");
+               break;
+            case ImmSpec_NONE_lvti_1:
+               fprintf(_file, "i64_1");
+               break;
+            case ImmSpec_NONE_lvti_2:
+               fprintf(_file, "i64_2");
+               break;
+            case ImmSpec_NONE_lvti_3:
+               fprintf(_file, "i64_3");
+               break;
+            case ImmSpec_Blvti:
+               fprintf(_file, "i64_%d", immSpec_Blvti.lvti);
+               break;
+            default:
+               fprintf(_file, "f64_WHAT?");
+               break;
+         }
+         break;
       case LDSpec_A:
          switch(byteCode->immSpec){ 
             case ImmSpec_NONE_lvti_0:
@@ -708,6 +754,51 @@ void Instruction::writeRegForm(FILE *_file, ConstantPoolEntry **_constantPool, i
                break;
             default:
                fprintf(_file, "f32_WHAT?");
+               break;
+         }
+         break;
+
+      case STSpec_D:
+         switch(byteCode->immSpec){ 
+            case ImmSpec_NONE_lvti_0:
+               fprintf(_file, "f64_0");
+               break;
+            case ImmSpec_NONE_lvti_1:
+               fprintf(_file, "f64_1");
+               break;
+            case ImmSpec_NONE_lvti_2:
+               fprintf(_file, "f64_2");
+               break;
+            case ImmSpec_NONE_lvti_3:
+               fprintf(_file, "f64_3");
+               break;
+            case ImmSpec_Blvti:
+               fprintf(_file, "f64_%d", immSpec_Blvti.lvti);
+               break;
+            default:
+               fprintf(_file, "f64_WHAT?");
+               break;
+         }
+         break;
+      case STSpec_L:
+         switch(byteCode->immSpec){ 
+            case ImmSpec_NONE_lvti_0:
+               fprintf(_file, "i64_0");
+               break;
+            case ImmSpec_NONE_lvti_1:
+               fprintf(_file, "i64_1");
+               break;
+            case ImmSpec_NONE_lvti_2:
+               fprintf(_file, "i64_2");
+               break;
+            case ImmSpec_NONE_lvti_3:
+               fprintf(_file, "i64_3");
+               break;
+            case ImmSpec_Blvti:
+               fprintf(_file, "i64_%d", immSpec_Blvti.lvti);
+               break;
+            default:
+               fprintf(_file, "i64_WHAT?");
                break;
          }
          break;
