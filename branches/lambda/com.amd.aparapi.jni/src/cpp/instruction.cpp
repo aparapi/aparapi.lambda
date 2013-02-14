@@ -403,434 +403,6 @@ Instruction::~Instruction(){
    }
 }
 
-/*
-   void Instruction::writeRegForm(FILE *_file, ConstantPoolEntry **_constantPool, int _maxLocals, LocalVariableTableAttribute *_localVariableTableAttribute){
-   fprintf(_file, "%4d %-14s ", pc, (char*)byteCode->name);
-   switch(byteCode->ldSpec){
-   case LDSpec_I:
-   switch(byteCode->immSpec){ 
-   case ImmSpec_NONE_lvti_0:
-   fprintf(_file, "i32_0");
-   break;
-   case ImmSpec_NONE_lvti_1:
-   fprintf(_file, "i32_1");
-   break;
-   case ImmSpec_NONE_lvti_2:
-   fprintf(_file, "i32_2");
-   break;
-   case ImmSpec_NONE_lvti_3:
-   fprintf(_file, "i32_3");
-   break;
-   case ImmSpec_Blvti:
-   fprintf(_file, "i32_%d", immSpec_Blvti.lvti);
-   break;
-   default:
-   fprintf(_file, "i32_WHAT?");
-   break;
-   }
-   break;
-   case LDSpec_F:
-   switch(byteCode->immSpec){ 
-   case ImmSpec_NONE_lvti_0:
-   fprintf(_file, "f32_0");
-   break;
-   case ImmSpec_NONE_lvti_1:
-   fprintf(_file, "f32_1");
-   break;
-   case ImmSpec_NONE_lvti_2:
-   fprintf(_file, "f32_2");
-   break;
-   case ImmSpec_NONE_lvti_3:
-   fprintf(_file, "f32_3");
-   break;
-   case ImmSpec_Blvti:
-   fprintf(_file, "f32_%d", immSpec_Blvti.lvti);
-   break;
-   default:
-   fprintf(_file, "f32_WHAT?");
-   break;
-   }
-   break;
-
-   case LDSpec_D:
-   switch(byteCode->immSpec){ 
-   case ImmSpec_NONE_lvti_0:
-   fprintf(_file, "f64_0");
-   break;
-   case ImmSpec_NONE_lvti_1:
-   fprintf(_file, "f64_1");
-   break;
-   case ImmSpec_NONE_lvti_2:
-   fprintf(_file, "f64_2");
-   break;
-   case ImmSpec_NONE_lvti_3:
-   fprintf(_file, "f64_3");
-   break;
-   case ImmSpec_Blvti:
-   fprintf(_file, "f64_%d", immSpec_Blvti.lvti);
-   break;
-   default:
-   fprintf(_file, "f64_WHAT?");
-   break;
-   }
-   break;
-
-case LDSpec_L:
-switch(byteCode->immSpec){ 
-   case ImmSpec_NONE_lvti_0:
-      fprintf(_file, "i64_0");
-      break;
-   case ImmSpec_NONE_lvti_1:
-      fprintf(_file, "i64_1");
-      break;
-   case ImmSpec_NONE_lvti_2:
-      fprintf(_file, "i64_2");
-      break;
-   case ImmSpec_NONE_lvti_3:
-      fprintf(_file, "i64_3");
-      break;
-   case ImmSpec_Blvti:
-      fprintf(_file, "i64_%d", immSpec_Blvti.lvti);
-      break;
-   default:
-      fprintf(_file, "f64_WHAT?");
-      break;
-}
-break;
-case LDSpec_A:
-switch(byteCode->immSpec){ 
-   case ImmSpec_NONE_lvti_0:
-      fprintf(_file, "obj_0");
-      break;
-   case ImmSpec_NONE_lvti_1:
-      fprintf(_file, "obj_1");
-      break;
-   case ImmSpec_NONE_lvti_2:
-      fprintf(_file, "obj_2");
-      break;
-   case ImmSpec_NONE_lvti_3:
-      fprintf(_file, "obj_3");
-      break;
-   case ImmSpec_Blvti:
-      fprintf(_file, "obj_%d", immSpec_Blvti.lvti);
-      break;
-   default:
-      fprintf(_file, "obj_WHAT?");
-      break;
-}
-break;
-default:
-//fprintf(_file, "?");
-break;
-}
-
-int popBase = stackBase - getPopCount(_constantPool) + _maxLocals;
-int pushBase = popBase;
-
-switch(byteCode->popSpec){
-   case PopSpec_NONE:
-      // fprintf(_file, " NONE");
-      break;
-   case PopSpec_A:
-      fprintf(_file, " aref_%d", popBase);
-      break;
-   case PopSpec_AI:
-      fprintf(_file, " aref_%d, i32_%d", popBase, popBase+1);
-      break;
-   case PopSpec_AII:
-      fprintf(_file, " aref_%d, i32_%d, i32_%d", popBase, popBase+1, popBase+2);
-      break;
-   case PopSpec_AIL:
-      fprintf(_file, " aref_%d, i32_%d, i64_%d", popBase, popBase+1, popBase+2);
-      break;
-   case PopSpec_AIF:
-      fprintf(_file, " aref_%d, i32_%d, f32_%d", popBase, popBase+1, popBase+2);
-      break;
-   case PopSpec_AID:
-      fprintf(_file, " aref_%d, i32_%d, f64_%d", popBase, popBase+1, popBase+2);
-      break;
-   case PopSpec_AIO:
-      fprintf(_file, " aref_%d, i32_%d, obj_%d", popBase, popBase+1, popBase+2);
-      break;
-   case PopSpec_AIB:
-      fprintf(_file, " aref_%d, i32_%d, i8_%d", popBase, popBase+1, popBase+2);
-      break;
-   case PopSpec_AIC:
-      fprintf(_file, " aref_%d, i32_%d, u16_%d", popBase, popBase+1, popBase+2);
-      break;
-   case PopSpec_AIS:
-      fprintf(_file, " aref_%d, i32_%d, s16_%d", popBase, popBase+1, popBase+2);
-      break;
-   case PopSpec_II :
-      fprintf(_file, " i32_%d, i32_%d", popBase, popBase+1);
-      break;
-   case PopSpec_III:
-      fprintf(_file, " i32_%d, i32_%d, i32_%d", popBase, popBase+1, popBase+2);
-      break;
-   case PopSpec_IIII:
-      fprintf(_file, " i32_%d, i32_%d, i32_%d, i32_%d", popBase, popBase+1, popBase+2, popBase+3);
-      break;
-   case PopSpec_L:
-      fprintf(_file, " i64_%d", popBase);
-      break;
-   case PopSpec_LI:
-      fprintf(_file, " i64_%d, i32_%d", popBase, popBase+1);
-      break;
-   case PopSpec_LL:
-      fprintf(_file, " i64_%d, i64_%d", popBase, popBase+1);
-      break;
-   case PopSpec_F:
-      fprintf(_file, " f32_%d", popBase);
-      break;
-   case PopSpec_FF:
-      fprintf(_file, " f32_%d, f32_%d", popBase, popBase+1);
-      break;
-   case PopSpec_OO:
-      fprintf(_file, " obj_%d, obj_%d", popBase, popBase+1);
-      break;
-   case PopSpec_RA:
-      fprintf(_file, " ((R)%d, (A)%d", popBase, popBase+1);
-      break;
-   case PopSpec_O:
-      fprintf(_file, " obj_%d", popBase);
-      break;
-   case PopSpec_I:
-      fprintf(_file, " i32_%d", popBase);
-      break;
-   case PopSpec_D:
-      fprintf(_file, " f64_%d", popBase);
-      break;
-   case PopSpec_DD:
-      fprintf(_file, " f64_%d, f64_%d", popBase, popBase+1);
-      break;
-   case PopSpec_OFSIG:
-      break;
-   case PopSpec_FSIG:
-      break;
-   case PopSpec_UNKNOWN:
-      break;
-   case PopSpec_MSIG:
-      {
-         if (popSpec_MSIG.argc==0){
-            fprintf(_file, "call ()");
-         }else{
-            fprintf(_file, "call (");
-            for (int i=0; i<popSpec_MSIG.argc; i++){
-               if (i>0){
-                  fprintf(_file, " ,");
-               }
-               fprintf(_file, "arg_%d ", popBase+i);
-            }
-            fprintf(_file, ")");
-         }
-
-      }
-      break;
-   case PopSpec_OMSIG:
-      {
-         fprintf(_file, "call (");
-         fprintf(_file, " obj_%d", popBase);
-         if (popSpec_OMSIG.argc>0){
-            for (int i=0; i<popSpec_OMSIG.argc; i++){
-               fprintf(_file, ", arg_%d", popBase+1+i);
-            }
-         }
-         fprintf(_file, ")");
-      }
-      break;
-}
-fprintf(_file, " -> ");
-
-switch(byteCode->pushSpec){
-   case PushSpec_NONE:
-      //fprintf(_file, " NONE");
-      break;
-   case PushSpec_N:
-      fprintf(_file, " n?_%d", pushBase);
-      break;
-   case PushSpec_I:
-      fprintf(_file, " i32_%d", pushBase);
-      break;
-   case PushSpec_L:
-      fprintf(_file, " i64_%d", pushBase);
-      break;
-   case PushSpec_F:
-      fprintf(_file, " f32_%d", pushBase);
-      break;
-   case PushSpec_D:
-      fprintf(_file, " f64_%d", pushBase);
-      break;
-   case PushSpec_O:
-      fprintf(_file, " obj_%d", pushBase);
-      break;
-   case PushSpec_A:
-      fprintf(_file, " aref_%d", pushBase);
-      break;
-   case PushSpec_RA:
-      fprintf(_file, " R_%d, A_%d", pushBase, pushBase+1);
-      break;
-   case PushSpec_IorForS:
-      fprintf(_file, " (i32|f32|i16)_%d", pushBase);
-      break;
-   case PushSpec_LorD:
-      fprintf(_file, " (i64|f64)_%d", pushBase);
-      break;
-   case PushSpec_II:
-      fprintf(_file, " i32_%d, i32_%d", pushBase, pushBase+1);
-      break;
-   case PushSpec_III:
-      fprintf(_file, " i32_%d, i32_%d, i32_%d", pushBase, pushBase+1, pushBase+2);
-      break;
-   case PushSpec_IIII:
-      fprintf(_file, " i32_%d, i32_%d, i32_%d, i32_%d", pushBase, pushBase+1, pushBase+2, pushBase+3);
-      break;
-   case PushSpec_IIIII:
-      fprintf(_file, " i32_%d, i32_%d, i32_%d, i32_%d, i32_%d", pushBase, pushBase+1, pushBase+2, pushBase+3, pushBase+4);
-      break;
-   case PushSpec_IIIIII:
-      fprintf(_file, " i32_%d, i32_%d, i32_%d, i32_%d, i32_%d, i32_%d", pushBase, pushBase+1, pushBase+2, pushBase+3, pushBase+4, pushBase+5);
-      break;
-   case PushSpec_FSIG:
-      {
-         FieldConstantPoolEntry* field = (FieldConstantPoolEntry*)_constantPool[immSpec_Scpmi.cpmi];
-         fprintf(_file, " fieldType_%d", pushBase);
-      }
-
-      break;
-   case PushSpec_MSIG:
-      {
-         MethodConstantPoolEntry* method = (MethodConstantPoolEntry*)_constantPool[immSpec_Scpmi.cpmi];
-         int retc = method->getRetCount(_constantPool);
-         if (retc>0){
-            fprintf(_file, " methodRetType_%d", pushBase);
-         } else {
-         }
-      }
-
-      break;
-   case PushSpec_UNKNOWN:
-      break;
-}
-
-switch(byteCode->stSpec){
-   case STSpec_I:
-      switch(byteCode->immSpec){ 
-         case ImmSpec_NONE_lvti_0:
-            fprintf(_file, "i32_0");
-            break;
-         case ImmSpec_NONE_lvti_1:
-            fprintf(_file, "i32_1");
-            break;
-         case ImmSpec_NONE_lvti_2:
-            fprintf(_file, "i32_2");
-            break;
-         case ImmSpec_NONE_lvti_3:
-            fprintf(_file, "i32_3");
-            break;
-         case ImmSpec_Blvti:
-            fprintf(_file, "i32_%d", immSpec_Blvti.lvti);
-            break;
-         default:
-            fprintf(_file, "i32_WHAT?");
-            break;
-      }
-      break;
-   case STSpec_F:
-      switch(byteCode->immSpec){ 
-         case ImmSpec_NONE_lvti_0:
-            fprintf(_file, "f32_0");
-            break;
-         case ImmSpec_NONE_lvti_1:
-            fprintf(_file, "f32_1");
-            break;
-         case ImmSpec_NONE_lvti_2:
-            fprintf(_file, "f32_2");
-            break;
-         case ImmSpec_NONE_lvti_3:
-            fprintf(_file, "f32_3");
-            break;
-         case ImmSpec_Blvti:
-            fprintf(_file, "f32_%d", immSpec_Blvti.lvti);
-            break;
-         default:
-            fprintf(_file, "f32_WHAT?");
-            break;
-      }
-      break;
-
-   case STSpec_D:
-      switch(byteCode->immSpec){ 
-         case ImmSpec_NONE_lvti_0:
-            fprintf(_file, "f64_0");
-            break;
-         case ImmSpec_NONE_lvti_1:
-            fprintf(_file, "f64_1");
-            break;
-         case ImmSpec_NONE_lvti_2:
-            fprintf(_file, "f64_2");
-            break;
-         case ImmSpec_NONE_lvti_3:
-            fprintf(_file, "f64_3");
-            break;
-         case ImmSpec_Blvti:
-            fprintf(_file, "f64_%d", immSpec_Blvti.lvti);
-            break;
-         default:
-            fprintf(_file, "f64_WHAT?");
-            break;
-      }
-      break;
-   case STSpec_L:
-      switch(byteCode->immSpec){ 
-         case ImmSpec_NONE_lvti_0:
-            fprintf(_file, "i64_0");
-            break;
-         case ImmSpec_NONE_lvti_1:
-            fprintf(_file, "i64_1");
-            break;
-         case ImmSpec_NONE_lvti_2:
-            fprintf(_file, "i64_2");
-            break;
-         case ImmSpec_NONE_lvti_3:
-            fprintf(_file, "i64_3");
-            break;
-         case ImmSpec_Blvti:
-            fprintf(_file, "i64_%d", immSpec_Blvti.lvti);
-            break;
-         default:
-            fprintf(_file, "i64_WHAT?");
-            break;
-      }
-      break;
-   case STSpec_A:
-      switch(byteCode->immSpec){ 
-         case ImmSpec_NONE_lvti_0:
-            fprintf(_file, "obj_0");
-            break;
-         case ImmSpec_NONE_lvti_1:
-            fprintf(_file, "obj_1");
-            break;
-         case ImmSpec_NONE_lvti_2:
-            fprintf(_file, "obj_2");
-            break;
-         case ImmSpec_NONE_lvti_3:
-            fprintf(_file, "obj_3");
-            break;
-         case ImmSpec_Blvti:
-            fprintf(_file, "obj_%d", immSpec_Blvti.lvti);
-            break;
-         default:
-            fprintf(_file, "obj_WHAT?");
-            break;
-      }
-      break;
-   default:
-      //fprintf(_file, "?");
-      break;
-}
-}
-*/
-
 void Instruction::write(FILE *_file, ConstantPoolEntry **_constantPool, LocalVariableTableAttribute *_localVariableTableAttribute){
    fprintf(_file, "%4d %-14s ", pc, (char*)byteCode->name);
    fprintf(_file, "%4d ", stackBase);
@@ -1477,262 +1049,262 @@ void Instruction::writeRegForm(FILE *_file, ConstantPoolEntry **_constantPool, i
          fprintf(_file, "nop");
          break;
       case I_ACONST_NULL: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE_const_null, PopSpec_NONE, PushSpec_N, OpSpec_NONE
-         fprintf(_file, "mov NULL -> obj_%d",pushBase);
+         fprintf(_file, "mov obj_%d <- NULL",pushBase);
          break;
       case I_ICONST_M1: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE_const_m1, PopSpec_NONE, PushSpec_I, OpSpec_NONE
-         fprintf(_file, "mov -1 -> i32_%d",pushBase);
+         fprintf(_file, "mov i32_%d <- -1",pushBase);
          break;
       case I_ICONST_0: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE_const_0, PopSpec_NONE, PushSpec_I, OpSpec_NONE
-         fprintf(_file, "mov 0 -> i32_%d",pushBase);
+         fprintf(_file, "mov i32_%d <- 0",pushBase);
          break;
       case I_ICONST_1: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE_const_1, PopSpec_NONE, PushSpec_I, OpSpec_NONE
-         fprintf(_file, "mov 1 -> i32_%d",pushBase);
+         fprintf(_file, "mov i32_%d <- 1",pushBase);
          break;
       case I_ICONST_2: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE_const_2, PopSpec_NONE, PushSpec_I, OpSpec_NONE
-         fprintf(_file, "mov 2 -> i32_%d",pushBase);
+         fprintf(_file, "mov i32_%d <- 2",pushBase);
          break;
       case I_ICONST_3: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE_const_3, PopSpec_NONE, PushSpec_I, OpSpec_NONE
-         fprintf(_file, "mov 3 -> i32_%d",pushBase);
+         fprintf(_file, "mov 3 i32_%d <- 3",pushBase);
          break;
       case I_ICONST_4: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE_const_4, PopSpec_NONE, PushSpec_I, OpSpec_NONE
-         fprintf(_file, "mov 4 -> i32_%d",pushBase);
+         fprintf(_file, "mov i32_%d <- 4",pushBase);
          break;
       case I_ICONST_5: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE_const_5, PopSpec_NONE, PushSpec_I, OpSpec_NONE
-         fprintf(_file, "mov 5 -> i32_%d",pushBase);
+         fprintf(_file, "mov i32_%d <- 5",pushBase);
          break;
       case I_LCONST_0: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE_const_0, PopSpec_NONE, PushSpec_L, OpSpec_NONE
-         fprintf(_file, "mov 0L -> i64_%d",pushBase);
+         fprintf(_file, "mov i64_%d <- 0",pushBase);
          break;
       case I_LCONST_1: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE_const_1, PopSpec_NONE, PushSpec_L, OpSpec_NONE
-         fprintf(_file, "mov 1L -> i64_%d",pushBase);
+         fprintf(_file, "mov i64_%d <- 1",pushBase);
          break;
       case I_FCONST_0: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE_const_0, PopSpec_NONE, PushSpec_F, OpSpec_NONE
-         fprintf(_file, "mov 0.0F -> f32_%d",pushBase);
+         fprintf(_file, "mov f32_%d <- 0.0",pushBase);
          break;
       case I_FCONST_1: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE_const_1, PopSpec_NONE, PushSpec_F, OpSpec_NONE
-         fprintf(_file, "mov 1.0F -> f32_%d",pushBase);
+         fprintf(_file, "mov f32_%d <- 1.0",pushBase);
          break;
       case I_FCONST_2: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE_const_2, PopSpec_NONE, PushSpec_F, OpSpec_NONE
-         fprintf(_file, "mov 2.0F -> f32_%d",pushBase);
+         fprintf(_file, "mov f32_%d <- 2.0",pushBase);
          break;
       case I_DCONST_0: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE_const_0, PopSpec_NONE, PushSpec_D, OpSpec_NONE
-         fprintf(_file, "mov 0.0D -> f64_%d",pushBase);
+         fprintf(_file, "mov f64_%d <- 0.0",pushBase);
          break;
       case I_DCONST_1: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE_const_1, PopSpec_NONE, PushSpec_D, OpSpec_NONE
-         fprintf(_file, "mov 1.0D -> f64_%d",pushBase);
+         fprintf(_file, "mov f64_%d <- 1.0",pushBase);
          break;
       case I_BIPUSH: // LDSpec_NONE, STSpec_NONE, ImmSpec_Bconst, PopSpec_NONE, PushSpec_I, OpSpec_NONE
-         fprintf(_file, "mov %d -> i32_%d",immSpec_Bconst.value, pushBase);
+         fprintf(_file, "mov i32_%d <- %d",pushBase, immSpec_Bconst.value);
          break;
       case I_SIPUSH: // LDSpec_NONE, STSpec_NONE, ImmSpec_Sconst, PopSpec_NONE, PushSpec_I, OpSpec_NONE
-         fprintf(_file, "mov %d -> i32_%d",immSpec_Sconst.value, pushBase);
+         fprintf(_file, "mov i32_%d <- %d",pushBase, immSpec_Sconst.value);
          break;
       case I_LDC: // LDSpec_NONE, STSpec_NONE, ImmSpec_Bcpci, PopSpec_NONE, PushSpec_IorForS, OpSpec_NONE
-         fprintf(_file, "LDC %d -> i??_%d",0, pushBase);
+         fprintf(_file, "LDC !!!!");
          break;
       case I_LDC_W: // LDSpec_NONE, STSpec_NONE, ImmSpec_Scpci, PopSpec_NONE, PushSpec_IorForS, OpSpec_NONE
-         fprintf(_file, "LDCW %d -> i??_%d",0, pushBase);
+         fprintf(_file, "LDCW !!!");
          break;
       case I_LDC2_W: // LDSpec_NONE, STSpec_NONE, ImmSpec_Scpci, PopSpec_NONE, PushSpec_LorD, OpSpec_NONE
-         fprintf(_file, "LDC2W %d -> i??_%d",0, pushBase);
+         fprintf(_file, "LDC2W !!!");
          break;
       case I_ILOAD: // LDSpec_I, STSpec_NONE, ImmSpec_Blvti, PopSpec_NONE, PushSpec_I, OpSpec_NONE
-         fprintf(_file, "mov i32_%d -> i32_%d",immSpec_Blvti.lvti,  pushBase);
+         fprintf(_file, "mov i32_%d <- i32_%d",pushBase, immSpec_Blvti.lvti);
          break;
       case I_LLOAD: // LDSpec_L, STSpec_NONE, ImmSpec_Blvti, PopSpec_NONE, PushSpec_L, OpSpec_NONE
-         fprintf(_file, "mov i64_%d -> i64_%d",immSpec_Blvti.lvti,  pushBase);
+         fprintf(_file, "mov i64_%d <- i64_%d",pushBase, immSpec_Blvti.lvti);
          break;
       case I_FLOAD: // LDSpec_F, STSpec_NONE, ImmSpec_Blvti, PopSpec_NONE, PushSpec_F, OpSpec_NONE
-         fprintf(_file, "mov f32_%d -> f32_%d",immSpec_Blvti.lvti,  pushBase);
+         fprintf(_file, "mov f32_%d <- f32_%d",pushBase, immSpec_Blvti.lvti);
          break;
       case I_DLOAD: // LDSpec_F, STSpec_NONE, ImmSpec_Blvti, PopSpec_NONE, PushSpec_D, OpSpec_NONE
-         fprintf(_file, "mov f64_%d -> f64_%d",immSpec_Blvti.lvti,  pushBase);
+         fprintf(_file, "mov f64_%d <- f64_%d",pushBase, immSpec_Blvti.lvti);
          break;
       case I_ALOAD: // LDSpec_A, STSpec_NONE, ImmSpec_Blvti, PopSpec_NONE, PushSpec_O, OpSpec_NONE
-         fprintf(_file, "mov obj_%d -> obj_%d",immSpec_Blvti.lvti,  pushBase);
+         fprintf(_file, "mov obj_%d <- obj_%d",pushBase, immSpec_Blvti.lvti);
          break;
       case I_ILOAD_0: // LDSpec_I, STSpec_NONE, ImmSpec_NONE_lvti_0, PopSpec_NONE, PushSpec_I, OpSpec_NONE
-         fprintf(_file, "mov i32_0 -> i32_%d",  pushBase);
+         fprintf(_file, "mov i32_%d <- i32_0",  pushBase);
          break;
       case I_ILOAD_1: // LDSpec_I, STSpec_NONE, ImmSpec_NONE_lvti_1, PopSpec_NONE, PushSpec_I, OpSpec_NONE
-         fprintf(_file, "mov i32_1 -> i32_%d",  pushBase);
+         fprintf(_file, "mov i32_%d <- i32_1",  pushBase);
          break;
       case I_ILOAD_2: // LDSpec_I, STSpec_NONE, ImmSpec_NONE_lvti_2, PopSpec_NONE, PushSpec_I, OpSpec_NONE
-         fprintf(_file, "mov i32_2 -> i32_%d",  pushBase);
+         fprintf(_file, "mov i32_%d <- i32_2",  pushBase);
          break;
       case I_ILOAD_3: // LDSpec_I, STSpec_NONE, ImmSpec_NONE_lvti_3, PopSpec_NONE, PushSpec_I, OpSpec_NONE
-         fprintf(_file, "mov i32_3 -> i32_%d",  pushBase);
+         fprintf(_file, "mov i32_%d <- i32_3",  pushBase);
          break;
       case I_LLOAD_0: // LDSpec_L, STSpec_NONE, ImmSpec_NONE_lvti_0, PopSpec_NONE, PushSpec_L, OpSpec_NONE
-         fprintf(_file, "mov i64_0 -> i64_%d",  pushBase);
+         fprintf(_file, "mov i64_%d <- i64_0",  pushBase);
          break;
       case I_LLOAD_1: // LDSpec_L, STSpec_NONE, ImmSpec_NONE_lvti_1, PopSpec_NONE, PushSpec_L, OpSpec_NONE
-         fprintf(_file, "mov i64_1 -> i64_%d",  pushBase);
+         fprintf(_file, "mov i64_%d <- i64_1",  pushBase);
          break;
       case I_LLOAD_2: // LDSpec_L, STSpec_NONE, ImmSpec_NONE_lvti_2, PopSpec_NONE, PushSpec_L, OpSpec_NONE
-         fprintf(_file, "mov i64_2 -> i64_%d",  pushBase);
+         fprintf(_file, "mov i64_%d <- i64_2",  pushBase);
          break;
       case I_LLOAD_3: // LDSpec_L, STSpec_NONE, ImmSpec_NONE_lvti_3, PopSpec_NONE, PushSpec_L, OpSpec_NONE
-         fprintf(_file, "mov i64_3 -> i64_%d",  pushBase);
+         fprintf(_file, "mov i64_%d <- i64_3",  pushBase);
          break;
       case I_FLOAD_0: // LDSpec_F, STSpec_NONE, ImmSpec_NONE_lvti_0, PopSpec_NONE, PushSpec_F, OpSpec_NONE
-         fprintf(_file, "mov f32_0 -> f32_%d",  pushBase);
+         fprintf(_file, "mov f32_%d <- f32_0",  pushBase);
          break;
       case I_FLOAD_1: // LDSpec_F, STSpec_NONE, ImmSpec_NONE_lvti_1, PopSpec_NONE, PushSpec_F, OpSpec_NONE
-         fprintf(_file, "mov f32_1 -> f32_%d",  pushBase);
+         fprintf(_file, "mov f32_%d <- f32_1",  pushBase);
          break;
       case I_FLOAD_2: // LDSpec_F, STSpec_NONE, ImmSpec_NONE_lvti_2, PopSpec_NONE, PushSpec_F, OpSpec_NONE
-         fprintf(_file, "mov f32_2 -> f32_%d",  pushBase);
+         fprintf(_file, "mov f32_%d <- f32_2",  pushBase);
          break;
       case I_FLOAD_3: // LDSpec_F, STSpec_NONE, ImmSpec_NONE_lvti_3, PopSpec_NONE, PushSpec_F, OpSpec_NONE
-         fprintf(_file, "mov f32_3 -> f32_%d",  pushBase);
+         fprintf(_file, "mov f32_%d <- f32_3",  pushBase);
          break;
       case I_DLOAD_0: // LDSpec_D, STSpec_NONE, ImmSpec_NONE_lvti_0, PopSpec_NONE, PushSpec_D, OpSpec_NONE
-         fprintf(_file, "mov f64_0 -> f64_%d",  pushBase);
+         fprintf(_file, "mov f64_%d <- f64_0",  pushBase);
          break;
       case I_DLOAD_1: // LDSpec_D, STSpec_NONE, ImmSpec_NONE_lvti_1, PopSpec_NONE, PushSpec_D, OpSpec_NONE
-         fprintf(_file, "mov f64_1 -> f64_%d",  pushBase);
+         fprintf(_file, "mov f64_%d <- f64_1",  pushBase);
          break;
       case I_DLOAD_2: // LDSpec_D, STSpec_NONE, ImmSpec_NONE_lvti_2, PopSpec_NONE, PushSpec_D, OpSpec_NONE
-         fprintf(_file, "mov f64_2 -> f64_%d",  pushBase);
+         fprintf(_file, "mov f64_%d <- f64_2",  pushBase);
          break;
       case I_DLOAD_3: // LDSpec_D, STSpec_NONE, ImmSpec_NONE_lvti_3, PopSpec_NONE, PushSpec_D, OpSpec_NONE
-         fprintf(_file, "mov f64_3 -> f64_%d",  pushBase);
+         fprintf(_file, "mov f64_%d <- f64_3",  pushBase);
          break;
       case I_ALOAD_0: // LDSpec_A, STSpec_NONE, ImmSpec_NONE_lvti_0, PopSpec_NONE, PushSpec_O, OpSpec_NONE
-         fprintf(_file, "mov obj_0 -> obj_%d",  pushBase);
+         fprintf(_file, "mov obj_%d <- obj_0",  pushBase);
          break;
       case I_ALOAD_1: // LDSpec_A, STSpec_NONE, ImmSpec_NONE_lvti_1, PopSpec_NONE, PushSpec_O, OpSpec_NONE
-         fprintf(_file, "mov obj_1 -> obj_%d",  pushBase);
+         fprintf(_file, "mov obj_%d <- obj_1",  pushBase);
          break;
       case I_ALOAD_2: // LDSpec_A, STSpec_NONE, ImmSpec_NONE_lvti_2, PopSpec_NONE, PushSpec_O, OpSpec_NONE
-         fprintf(_file, "mov obj_2 -> obj_%d",  pushBase);
+         fprintf(_file, "mov obj_%d <- obj_2",  pushBase);
          break;
       case I_ALOAD_3: // LDSpec_A, STSpec_NONE, ImmSpec_NONE_lvti_3, PopSpec_NONE, PushSpec_O, OpSpec_NONE
-         fprintf(_file, "mov obj_3 -> obj_%d",  pushBase);
+         fprintf(_file, "mov obj_%d <- obj_3",  pushBase);
          break;
       case I_IALOAD: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_AI, PushSpec_I, OpSpec_NONE
-         fprintf(_file, "mov obj_%d[i32_%d] -> i32_%d",  popBase, popBase+1, pushBase);
+         fprintf(_file, "mov i32_%d <- obj_%d[i32_%d] ",  pushBase, popBase+1, popBase);
          break;
       case I_LALOAD: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_AI, PushSpec_L, OpSpec_NONE
-         fprintf(_file, "mov obj_%d[i32_%d] -> i64_%d",  popBase, popBase+1, pushBase);
+         fprintf(_file, "mov i64_%d <- obj_%d[i32_%d]",  pushBase, popBase+1, popBase);
          break;
       case I_FALOAD: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_AI, PushSpec_F, OpSpec_NONE
-         fprintf(_file, "mov obj_%d[i32_%d] -> f32_%d",  popBase, popBase+1, pushBase);
+         fprintf(_file, "mov f32_%d <- obj_%d[i32_%d]",  pushBase, popBase+1, popBase);
          break;
       case I_DALOAD: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_AI, PushSpec_D, OpSpec_NONE
-         fprintf(_file, "mov obj_%d[i32_%d] -> f64_%d",  popBase, popBase+1, pushBase);
+         fprintf(_file, "mov f64_%d <- obj_%d[i32_%d]",  pushBase, popBase+1, popBase);
          break;
       case I_AALOAD: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_AI, PushSpec_A, OpSpec_NONE
-         fprintf(_file, "mov obj_%d[i32_%d] -> obj_%d",  popBase, popBase+1, pushBase);
+         fprintf(_file, "mov obj_%d <- obj_%d[i32_%d]",  pushBase, popBase+1, popBase);
          break;
       case I_BALOAD: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_AI, PushSpec_I, OpSpec_NONE
-         fprintf(_file, "mov obj_%d[i32_%d] -> i8_%d",  popBase, popBase+1, pushBase);
+         fprintf(_file, "mov i8_%d <- obj_%d[i32_%d]",  pushBase, popBase+1, popBase);
          break;
       case I_CALOAD: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_AI, PushSpec_I, OpSpec_NONE
-         fprintf(_file, "mov obj_%d[i32_%d] -> u16_%d",  popBase, popBase+1, pushBase);
+         fprintf(_file, "mov u16_%d <- obj_%d[i32_%d]",  pushBase, popBase+1, popBase);
          break;
       case I_SALOAD: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_AI, PushSpec_I, OpSpec_NONE
-         fprintf(_file, "mov obj_%d[i32_%d] -> i16_%d",  popBase, popBase+1, pushBase);
+         fprintf(_file, "mov i16_%d <- obj_%d[i32_%d]",  pushBase, popBase+1, popBase);
          break;
       case I_ISTORE: // LDSpec_NONE, STSpec_I, ImmSpec_Blvti, PopSpec_I, PushSpec_NONE, OpSpec_NONE
-         fprintf(_file, "mov i32_%d -> i32_%d",  popBase, immSpec_Blvti.lvti);
+         fprintf(_file, "mov i32_%d <- i32_%d",  immSpec_Blvti.lvti, popBase);
          break;
       case I_LSTORE: // LDSpec_NONE, STSpec_L, ImmSpec_Blvti, PopSpec_L, PushSpec_NONE, OpSpec_NONE
-         fprintf(_file, "mov i64_%d -> i64_%d",  popBase, immSpec_Blvti.lvti);
+         fprintf(_file, "mov i64_%d <- i64_%d",  immSpec_Blvti.lvti, popBase);
          break;
       case I_FSTORE: // LDSpec_NONE, STSpec_F, ImmSpec_Blvti, PopSpec_F, PushSpec_NONE, OpSpec_NONE
-         fprintf(_file, "mov f32_%d -> f32_%d",  popBase, immSpec_Blvti.lvti);
+         fprintf(_file, "mov f32_%d <- f32_%d",  immSpec_Blvti.lvti, popBase);
          break;
       case I_DSTORE: // LDSpec_NONE, STSpec_D, ImmSpec_Blvti, PopSpec_D, PushSpec_NONE, OpSpec_NONE
-         fprintf(_file, "mov f64_%d -> f64_%d",  popBase, immSpec_Blvti.lvti);
+         fprintf(_file, "mov f64_%d <- f64_%d",  immSpec_Blvti.lvti, popBase);
          break;
       case I_ASTORE: // LDSpec_NONE, STSpec_A, ImmSpec_Blvti, PopSpec_O, PushSpec_NONE, OpSpec_NONE
-         fprintf(_file, "mov obj_%d -> obj_%d",  popBase, immSpec_Blvti.lvti);
+         fprintf(_file, "mov obj_%d <- obj_%d",  immSpec_Blvti.lvti, popBase);
          break;
       case I_ISTORE_0: // LDSpec_NONE, STSpec_I, ImmSpec_NONE_lvti_0, PopSpec_I, PushSpec_NONE, OpSpec_NONE
-         fprintf(_file, "mov i32_%d -> i32_0", popBase  );
+         fprintf(_file, "mov i32_0 <- i32_%d", popBase  );
          break;
       case I_ISTORE_1: // LDSpec_NONE, STSpec_I, ImmSpec_NONE_lvti_1, PopSpec_I, PushSpec_NONE, OpSpec_NONE
-         fprintf(_file, "mov i32_%d -> i32_1",  popBase);
+         fprintf(_file, "mov i32_1 <- i32_%d",  popBase);
          break;
       case I_ISTORE_2: // LDSpec_NONE, STSpec_I, ImmSpec_NONE_lvti_2, PopSpec_I, PushSpec_NONE, OpSpec_NONE
-         fprintf(_file, "mov i32_%d -> i32_2",  popBase);
+         fprintf(_file, "mov i32_2 <- i32_%d",  popBase);
          break;
       case I_ISTORE_3: // LDSpec_NONE, STSpec_I, ImmSpec_NONE_lvti_3, PopSpec_I, PushSpec_NONE, OpSpec_NONE
-         fprintf(_file, "mov i32_%d -> i32_3", popBase);
+         fprintf(_file, "mov i32_3 <- i32_%d", popBase);
          break;
       case I_LSTORE_0: // LDSpec_NONE, STSpec_L, ImmSpec_NONE_lvti_0, PopSpec_L, PushSpec_NONE, OpSpec_NONE
-         fprintf(_file, "mov i64_%d -> i64_0",  popBase);
+         fprintf(_file, "mov i64_0 <- i64_%d",  popBase);
          break;
       case I_LSTORE_1: // LDSpec_NONE, STSpec_L, ImmSpec_NONE_lvti_1, PopSpec_L, PushSpec_NONE, OpSpec_NONE
-         fprintf(_file, "mov i64_%d -> i64_1",  popBase);
+         fprintf(_file, "mov i64_1 <- i64_5d",  popBase);
          break;
       case I_LSTORE_2: // LDSpec_NONE, STSpec_L, ImmSpec_NONE_lvti_2, PopSpec_L, PushSpec_NONE, OpSpec_NONE
-         fprintf(_file, "mov i64_%d -> i64_2",  popBase);
+         fprintf(_file, "mov i64_2 <- i64_%d",  popBase);
          break;
       case I_LSTORE_3: // LDSpec_NONE, STSpec_L, ImmSpec_NONE_lvti_3, PopSpec_L, PushSpec_NONE, OpSpec_NONE
-         fprintf(_file, "mov i64_%d -> i64_3",  popBase);
+         fprintf(_file, "mov i64_3 <- i64_%d",  popBase);
          break;
       case I_FSTORE_0: // LDSpec_NONE, STSpec_F, ImmSpec_NONE_lvti_0, PopSpec_F, PushSpec_NONE, OpSpec_NONE
-         fprintf(_file, "mov f32_%d -> f32_0",  popBase);
+         fprintf(_file, "mov f32_0 <- f32_%d",  popBase);
          break;
       case I_FSTORE_1: // LDSpec_NONE, STSpec_F, ImmSpec_NONE_lvti_1, PopSpec_F, PushSpec_NONE, OpSpec_NONE
-         fprintf(_file, "mov f32_%d -> f32_1",  popBase);
+         fprintf(_file, "mov f32_1 <- f32_%d",  popBase);
          break;
       case I_FSTORE_2: // LDSpec_NONE, STSpec_F, ImmSpec_NONE_lvti_2, PopSpec_F, PushSpec_NONE, OpSpec_NONE
-         fprintf(_file, "mov f32_%d -> f32_2",  popBase);
+         fprintf(_file, "mov f32_2 <- f32_%d",  popBase);
          break;
       case I_FSTORE_3: // LDSpec_NONE, STSpec_F, ImmSpec_NONE_lvti_3, PopSpec_F, PushSpec_NONE, OpSpec_NONE
-         fprintf(_file, "mov f32_%d -> f32_3",  popBase);
+         fprintf(_file, "mov f32_3 <- f32_%d",  popBase);
          break;
       case I_DSTORE_0: // LDSpec_NONE, STSpec_D, ImmSpec_NONE_lvti_0, PopSpec_D, PushSpec_NONE, OpSpec_NONE
-         fprintf(_file, "mov f64_%d -> f64_0",  popBase);
+         fprintf(_file, "mov f64_0 <- f64_%d",  popBase);
          break;
       case I_DSTORE_1: // LDSpec_NONE, STSpec_D, ImmSpec_NONE_lvti_1, PopSpec_D, PushSpec_NONE, OpSpec_NONE
-         fprintf(_file, "mov f64_%d -> f64_1",  popBase);
+         fprintf(_file, "mov f64_1 <- f64_%d",  popBase);
          break;
       case I_DSTORE_2: // LDSpec_NONE, STSpec_D, ImmSpec_NONE_lvti_2, PopSpec_D, PushSpec_NONE, OpSpec_NONE
-         fprintf(_file, "mov f64_%d -> f64_2",  popBase);
+         fprintf(_file, "mov f64_2 <- f64_%d",  popBase);
          break;
       case I_DSTORE_3: // LDSpec_NONE, STSpec_D, ImmSpec_NONE_lvti_3, PopSpec_D, PushSpec_NONE, OpSpec_NONE
-         fprintf(_file, "mov f64_%d -> f64_3",  popBase);
+         fprintf(_file, "mov f64_3 <- f64_%d",  popBase);
          break;
       case I_ASTORE_0: // LDSpec_NONE, STSpec_A, ImmSpec_NONE_lvti_0, PopSpec_O, PushSpec_NONE, OpSpec_NONE
-         fprintf(_file, "mov obj_%d -> obj_0",  popBase);
+         fprintf(_file, "mov obj_0 <- obj_%d",  popBase);
          break;
       case I_ASTORE_1: // LDSpec_NONE, STSpec_A, ImmSpec_NONE_lvti_1, PopSpec_O, PushSpec_NONE, OpSpec_NONE
-         fprintf(_file, "mov obj_%d -> obj_1",  popBase);
+         fprintf(_file, "mov obj_1 <- obj_%d",  popBase);
          break;
       case I_ASTORE_2: // LDSpec_NONE, STSpec_A, ImmSpec_NONE_lvti_2, PopSpec_O, PushSpec_NONE, OpSpec_NONE
-         fprintf(_file, "mov obj_%d -> obj_2",  popBase);
+         fprintf(_file, "mov obj_2 <- obj_%d",  popBase);
          break;
       case I_ASTORE_3: // LDSpec_NONE, STSpec_A, ImmSpec_NONE_lvti_3, PopSpec_O, PushSpec_NONE, OpSpec_NONE
-         fprintf(_file, "mov obj_%d -> obj_3",  popBase);
+         fprintf(_file, "mov obj_3 <- obj_%d",  popBase);
          break;
       case I_IASTORE: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_AII, PushSpec_NONE, OpSpec_NONE
-         fprintf(_file, "mov i32_%d -> obj_%d[i32_%d]",  popBase+2, popBase, popBase+1);
+         fprintf(_file, "mov obj_%d[i32_%d] <- mov i32_%d",  popBase, popBase+1, popBase+2);
          break;
       case I_LASTORE: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_AIL, PushSpec_NONE, OpSpec_NONE
-         fprintf(_file, "mov i64_%d -> obj_%d[i32_%d]",  popBase+2, popBase, popBase+1);
+         fprintf(_file, "mov obj_%d[i32_%d] <- i64_%d",  popBase, popBase+1, popBase+2);
          break;
       case I_FASTORE: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_AIF, PushSpec_NONE, OpSpec_NONE
-         fprintf(_file, "mov f32_%d -> obj_%d[i32_%d]",  popBase+2, popBase, popBase+1);
+         fprintf(_file, "mov obj_%d[i32_%d] <- f32_%d",  popBase, popBase+1, popBase+2);
          break;
       case I_DASTORE: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_AID, PushSpec_NONE, OpSpec_NONE
-         fprintf(_file, "mov f64_%d -> obj_%d[i32_%d]",  popBase+2, popBase, popBase+1);
+         fprintf(_file, "mov obj_%d[i32_%d] <- f64_%d ",  popBase, popBase+1, popBase+2);
          break;
       case I_AASTORE: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_AIO, PushSpec_NONE, OpSpec_NONE
-         fprintf(_file, "mov obj_%d -> obj_%d[i32_%d]",  popBase+2, popBase, popBase+1);
+         fprintf(_file, "mov obj_%d[i32_%d] <- obj_%d",  popBase, popBase+1, popBase+2);
          break;
       case I_BASTORE: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_AIB, PushSpec_NONE, OpSpec_NONE
-         fprintf(_file, "mov i8_%d -> obj_%d[i32_%d]",  popBase+2, popBase, popBase+1);
+         fprintf(_file, "mov obj_%d[i32_%d] <- i8_%d",  popBase, popBase+1, popBase+2);
          break;
       case I_CASTORE: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_AIC, PushSpec_NONE, OpSpec_NONE
-         fprintf(_file, "mov u16_%d -> obj_%d[i32_%d]",  popBase+2, popBase, popBase+1);
+         fprintf(_file, "mov obj_%d[i32_%d] <- u16_%d",  popBase, popBase+1, popBase+2);
          break;
       case I_SASTORE: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_AIS, PushSpec_NONE, OpSpec_NONE
-         fprintf(_file, "mov i16_%d -> obj_%d[i32_%d]",  popBase+2, popBase, popBase+1);
+         fprintf(_file, "mov obj_%d[i32_%d] <- i16_%d",  popBase, popBase+1, popBase+2);
          break;
       case I_POP: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_I, PushSpec_NONE, OpSpec_NONE
          fprintf(_file, "mov i32_%d -> i32_%d ; // Pop artifact essentially a NOP in register form",  popBase, popBase, popBase);
@@ -1758,37 +1330,37 @@ void Instruction::writeRegForm(FILE *_file, ConstantPoolEntry **_constantPool, i
                popBase, pushBase+2, popBase+1, pushBase, popBase+2, pushBase+1 );
          break;
       case I_IADD: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_II, PushSpec_I, OpSpec_Add
-         fprintf(_file, "add i32_%d, i32_%d -> i32_%d",  popBase, popBase+1, pushBase);
+         fprintf(_file, "add i32_%d <- i32_%d, i32_%d ",  pushBase, popBase+1, popBase);
          break;
       case I_LADD: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_LL, PushSpec_L, OpSpec_Add
-         fprintf(_file, "add i64_%d, i64_%d -> i64_%d",  popBase, popBase+1, pushBase);
+         fprintf(_file, "add i64_%d <-  i64_%d , i64_%d",  pushBase, popBase+1, popBase);
          break;
       case I_FADD: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_FF, PushSpec_F, OpSpec_Add
-         fprintf(_file, "add f32_%d, f32_%d -> f32_%d",  popBase, popBase+1, pushBase);
+         fprintf(_file, "add f32_%d <- f32_%d , f32_%d",  pushBase, popBase+1, popBase);
          break;
       case I_DADD: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_DD, PushSpec_D, OpSpec_Add
-         fprintf(_file, "add f64_%d, f64_%d -> f64_%d",  popBase, popBase+1, pushBase);
+         fprintf(_file, "add f64_%d <- f64_%d , f64_%d",  pushBase, popBase+1, popBase);
          break;
       case I_ISUB: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_II, PushSpec_I, OpSpec_Sub
-         fprintf(_file, "sub i32_%d, i32_%d -> i32_%d",  popBase, popBase+1, pushBase);
+         fprintf(_file, "sub i32_%d <-  i32_%d , i32_%d",  pushBase, popBase+1, popBase);
          break;
       case I_LSUB: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_LL, PushSpec_L, OpSpec_Sub
-         fprintf(_file, "sub i64_%d, i64_%d -> i64_%d",  popBase, popBase+1, pushBase);
+         fprintf(_file, "sub i64_%d <- i64_%d , i64_%d",  pushBase, popBase+1, popBase);
          break;
       case I_FSUB: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_FF, PushSpec_F, OpSpec_Sub
-         fprintf(_file, "sub f32_%d, f32_%d -> f32_%d",  popBase, popBase+1, pushBase);
+         fprintf(_file, "sub f32_%d <- f32_%d , f32_%d",  pushBase, popBase+1, popBase);
          break;
       case I_DSUB: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_DD, PushSpec_D, OpSpec_Sub
-         fprintf(_file, "sub f64_%d, f64_%d -> f64_%d",  popBase, popBase+1, pushBase);
+         fprintf(_file, "sub f64_%d <-  f64_%d, f64_%d",  pushBase, popBase+1, popBase);
          break;
       case I_IMUL: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_II, PushSpec_I, OpSpec_Mul
-         fprintf(_file, "mul i32_%d, i32_%d -> i32_%d",  popBase, popBase+1, pushBase);
+         fprintf(_file, "mul i32_%d <-  i32_%d, i32_%d",  pushBase, popBase+1, popBase);
          break;
       case I_LMUL: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_LL, PushSpec_L, OpSpec_Mul
-         fprintf(_file, "mul i64_%d, i64_%d -> i64_%d",  popBase, popBase+1, pushBase);
+         fprintf(_file, "mul i64_%d <- i64_%d , i64_%d",  pushBase, popBase+1, popBase);
          break;
       case I_FMUL: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_FF, PushSpec_F, OpSpec_Mul
-         fprintf(_file, "mul f32_%d, f32_%d -> f32_%d",  popBase, popBase+1, pushBase);
+         fprintf(_file, "mul f32_%d, <- f32_%d, f32_%d",  pushBase, popBase+1, popBase);
          break;
       case I_DMUL: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_DD, PushSpec_D, OpSpec_Mul
          break;
@@ -1931,6 +1503,7 @@ void Instruction::writeRegForm(FILE *_file, ConstantPoolEntry **_constantPool, i
       case I_ARETURN: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_O, PushSpec_NONE, OpSpec_NONE
          break;
       case I_RETURN: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_NONE, PushSpec_NONE, OpSpec_NONE
+         fprintf(_file, "return");
          break;
       case I_GETSTATIC: // LDSpec_NONE, STSpec_NONE, ImmSpec_Scpfi, PopSpec_NONE, PushSpec_FSIG, OpSpec_NONE
          break;
@@ -1942,21 +1515,22 @@ void Instruction::writeRegForm(FILE *_file, ConstantPoolEntry **_constantPool, i
             NameAndTypeConstantPoolEntry* nameAndType = (NameAndTypeConstantPoolEntry*)_constantPool[field->getNameAndTypeIndex()];
             UTF8ConstantPoolEntry* name = (UTF8ConstantPoolEntry*)_constantPool[nameAndType->getNameIndex()];
             UTF8ConstantPoolEntry* type = (UTF8ConstantPoolEntry*)_constantPool[nameAndType->getDescriptorIndex()];
+            fprintf(_file, "mov_field ");
             char *ptr = type->getUTF8();
-            fprintf(_file, "getfield obj_%d.%s", popBase, name->getUTF8() );
                switch (*ptr){
-                  case 'I': fprintf(_file, " -> i32_%d", pushBase);break;
-                  case 'H': fprintf(_file, " -> i16_%d", pushBase);break;
-                  case 'C': fprintf(_file, " -> u16_%d", pushBase);break;
-                  case 'B': fprintf(_file, " -> i8_%d", pushBase);break;
-                  case 'F': fprintf(_file, " -> f32_%d", pushBase);break;
-                  case 'D': fprintf(_file, " -> f64_%d", pushBase);break;
-                  case 'Z': fprintf(_file, " -> bit_%d", pushBase);break;
-                  case 'J': fprintf(_file, " -> i64_%d", pushBase);break;
-                  case 'L': fprintf(_file, " -> obj_%d", pushBase);break;
-                  case '[': fprintf(_file, " -> obj_%d", pushBase);break;
-                  default: fprintf(_file, " -> arg_%d", pushBase);break;
+                  case 'I': fprintf(_file, "i32_%d", pushBase);break;
+                  case 'H': fprintf(_file, "i16_%d", pushBase);break;
+                  case 'C': fprintf(_file, "u16_%d", pushBase);break;
+                  case 'B': fprintf(_file, "i8_%d", pushBase);break;
+                  case 'F': fprintf(_file, "f32_%d", pushBase);break;
+                  case 'D': fprintf(_file, "f64_%d", pushBase);break;
+                  case 'Z': fprintf(_file, "bit_%d", pushBase);break;
+                  case 'J': fprintf(_file, "i64_%d", pushBase);break;
+                  case 'L': fprintf(_file, "obj_%d", pushBase);break;
+                  case '[': fprintf(_file, "obj_%d", pushBase);break;
+                  default: fprintf(_file, "arg_%d", pushBase);break;
                }
+            fprintf(_file, " <- obj_%d.%s", popBase, name->getUTF8() );
             break;
          }
       case I_PUTFIELD: // LDSpec_NONE, STSpec_NONE, ImmSpec_Scpfi, PopSpec_OFSIG, PushSpec_NONE, OpSpec_NONE
@@ -1966,7 +1540,31 @@ void Instruction::writeRegForm(FILE *_file, ConstantPoolEntry **_constantPool, i
             MethodConstantPoolEntry* method = (MethodConstantPoolEntry*)_constantPool[immSpec_Scpmi.cpmi];
             NameAndTypeConstantPoolEntry* nameAndType = (NameAndTypeConstantPoolEntry*)_constantPool[method->getNameAndTypeIndex()];
             UTF8ConstantPoolEntry* name = (UTF8ConstantPoolEntry*)_constantPool[nameAndType->getNameIndex()];
-            fprintf(_file, "call_v obj_%d.%s(",popBase, name->getUTF8());
+            fprintf(_file, "call_v ");
+            int retc = method->getRetCount(_constantPool);
+            if (retc>0){
+               UTF8ConstantPoolEntry* type = (UTF8ConstantPoolEntry*)_constantPool[nameAndType->getDescriptorIndex()];
+               char *ptr = type->getUTF8();
+               while (ptr && *ptr && *ptr != ')'){
+                  ptr++;
+               }
+               ptr++;
+               switch (*ptr){
+                  case 'I': fprintf(_file, "i32_%d", pushBase);break;
+                  case 'H': fprintf(_file, "i16_%d", pushBase);break;
+                  case 'C': fprintf(_file, "u16_%d", pushBase);break;
+                  case 'B': fprintf(_file, "i8_%d", pushBase);break;
+                  case 'F': fprintf(_file, "f32_%d", pushBase);break;
+                  case 'D': fprintf(_file, "f64_%d", pushBase);break;
+                  case 'Z': fprintf(_file, "bit_%d", pushBase);break;
+                  case 'J': fprintf(_file, "i64_%d", pushBase);break;
+                  case 'L': fprintf(_file, "obj_%d", pushBase);break;
+                  case '[': fprintf(_file, "obj_%d", pushBase);break;
+                  default: fprintf(_file, "arg_%d", pushBase);break;
+               }
+               fprintf(_file, " <- ");
+            }
+            fprintf(_file, "obj_%d.%s(",popBase, name->getUTF8());
             int argc = method->getArgCount(_constantPool);
             if (argc>0){
                for (int i=0; i<argc; i++){
@@ -1977,28 +1575,6 @@ void Instruction::writeRegForm(FILE *_file, ConstantPoolEntry **_constantPool, i
                }
             }
             fprintf(_file, ")");
-            int retc = method->getRetCount(_constantPool);
-            if (retc>0){
-               UTF8ConstantPoolEntry* type = (UTF8ConstantPoolEntry*)_constantPool[nameAndType->getDescriptorIndex()];
-               char *ptr = type->getUTF8();
-               while (ptr && *ptr && *ptr != ')'){
-                  ptr++;
-               }
-               ptr++;
-               switch (*ptr){
-                  case 'I': fprintf(_file, " -> i32_%d", pushBase);break;
-                  case 'H': fprintf(_file, " -> i16_%d", pushBase);break;
-                  case 'C': fprintf(_file, " -> u16_%d", pushBase);break;
-                  case 'B': fprintf(_file, " -> i8_%d", pushBase);break;
-                  case 'F': fprintf(_file, " -> f32_%d", pushBase);break;
-                  case 'D': fprintf(_file, " -> f64_%d", pushBase);break;
-                  case 'Z': fprintf(_file, " -> bit_%d", pushBase);break;
-                  case 'J': fprintf(_file, " -> i64_%d", pushBase);break;
-                  case 'L': fprintf(_file, " -> obj_%d", pushBase);break;
-                  case '[': fprintf(_file, " -> obj_%d", pushBase);break;
-                  default: fprintf(_file, " -> arg_%d", pushBase);break;
-               }
-            }
          }
          break;
       case I_INVOKESPECIAL: // LDSpec_NONE, STSpec_NONE, ImmSpec_Scpmi, PopSpec_OMSIG, PushSpec_MSIG, OpSpec_NONE
