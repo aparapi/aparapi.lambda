@@ -64,6 +64,16 @@ int main(int argc, char **argv){
       instruction->write(stdout, classInfo->getConstantPool(), codeAttribute->getLocalVariableTableAttribute());
       fprintf(stdout, "\n");
    }
+   int label= 0;
+   for (Instruction *instruction = instructions[0]; instruction != NULL; instruction = (instruction->getNextPC()<codeByteBuffer->getLen())?instruction = instructions[instruction->getNextPC()]:NULL){
+      int targetPC;
+      if ((targetPC = instruction->isBranch())>=0){
+         instructions[targetPC]->branchFrom(instruction->getPC());
+         if (instructions[targetPC]->getLabel()<0){
+            instructions[targetPC]->setLabel(label++);
+         }
+      }
+   }
 
    for (Instruction *instruction = instructions[0]; instruction != NULL; instruction = (instruction->getNextPC()<codeByteBuffer->getLen())?instruction = instructions[instruction->getNextPC()]:NULL){
       if (instruction != instructions[0] && instruction->getStackBase()==0 && instructions[instruction->getPrevPC()]->getStackBase()>0){
@@ -77,7 +87,15 @@ int main(int argc, char **argv){
    }
 
    for (Instruction *instruction = instructions[0]; instruction != NULL; instruction = (instruction->getNextPC()<codeByteBuffer->getLen())?instruction = instructions[instruction->getNextPC()]:NULL){
+      int branch; 
+      if ((branch = instruction->getLabel())>=0){
+         fprintf(stdout, "L%d:\n", branch);
+      }
       instruction->writeRegForm(stdout, classInfo->getConstantPool(), codeAttribute->getMaxLocals(), codeAttribute->getLocalVariableTableAttribute());
+      int targetPC;
+      if ((targetPC = instruction->isBranch())>=0){
+         fprintf(stdout, " L%d", instructions[targetPC]->getLabel());
+      }
       fprintf(stdout, "\n");
    }
 
