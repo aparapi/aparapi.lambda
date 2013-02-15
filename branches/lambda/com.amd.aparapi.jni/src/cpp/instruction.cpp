@@ -1039,6 +1039,14 @@ int Instruction::getPushCount(ConstantPoolEntry **_constantPool){
 
 }
 
+void getNameAndType(MethodConstantPoolEntry *_method, ConstantPoolEntry **_constantPool, char **_name, char **_type){
+   NameAndTypeConstantPoolEntry* nameAndType = (NameAndTypeConstantPoolEntry*)_constantPool[_method->getNameAndTypeIndex()];
+   UTF8ConstantPoolEntry* name = (UTF8ConstantPoolEntry*)_constantPool[nameAndType->getNameIndex()];
+   UTF8ConstantPoolEntry* type = (UTF8ConstantPoolEntry*)_constantPool[nameAndType->getDescriptorIndex()];
+   *_name = name->getUTF8();
+   *_type = type->getUTF8();
+}
+
 void Instruction::writeRegForm(FILE *_file, ConstantPoolEntry **_constantPool, int _maxLocals, LocalVariableTableAttribute *_localVariableTableAttribute){
    int popBase = stackBase - getPopCount(_constantPool) + _maxLocals;
    int pushBase = popBase;
@@ -1517,19 +1525,19 @@ void Instruction::writeRegForm(FILE *_file, ConstantPoolEntry **_constantPool, i
             UTF8ConstantPoolEntry* type = (UTF8ConstantPoolEntry*)_constantPool[nameAndType->getDescriptorIndex()];
             fprintf(_file, "mov_field ");
             char *ptr = type->getUTF8();
-               switch (*ptr){
-                  case 'I': fprintf(_file, "i32_%d", pushBase);break;
-                  case 'H': fprintf(_file, "i16_%d", pushBase);break;
-                  case 'C': fprintf(_file, "u16_%d", pushBase);break;
-                  case 'B': fprintf(_file, "i8_%d", pushBase);break;
-                  case 'F': fprintf(_file, "f32_%d", pushBase);break;
-                  case 'D': fprintf(_file, "f64_%d", pushBase);break;
-                  case 'Z': fprintf(_file, "bit_%d", pushBase);break;
-                  case 'J': fprintf(_file, "i64_%d", pushBase);break;
-                  case 'L': fprintf(_file, "obj_%d", pushBase);break;
-                  case '[': fprintf(_file, "obj_%d", pushBase);break;
-                  default: fprintf(_file, "arg_%d", pushBase);break;
-               }
+            switch (*ptr){
+               case 'I': fprintf(_file, "i32_%d", pushBase);break;
+               case 'H': fprintf(_file, "i16_%d", pushBase);break;
+               case 'C': fprintf(_file, "u16_%d", pushBase);break;
+               case 'B': fprintf(_file, "i8_%d", pushBase);break;
+               case 'F': fprintf(_file, "f32_%d", pushBase);break;
+               case 'D': fprintf(_file, "f64_%d", pushBase);break;
+               case 'Z': fprintf(_file, "bit_%d", pushBase);break;
+               case 'J': fprintf(_file, "i64_%d", pushBase);break;
+               case 'L': fprintf(_file, "obj_%d", pushBase);break;
+               case '[': fprintf(_file, "obj_%d", pushBase);break;
+               default: fprintf(_file, "arg_%d", pushBase);break;
+            }
             fprintf(_file, " <- obj_%d.%s", popBase, name->getUTF8() );
             break;
          }
@@ -1538,13 +1546,12 @@ void Instruction::writeRegForm(FILE *_file, ConstantPoolEntry **_constantPool, i
       case I_INVOKEVIRTUAL: // LDSpec_NONE, STSpec_NONE, ImmSpec_Scpmi, PopSpec_OMSIG, PushSpec_MSIG, OpSpec_NONE
          {
             MethodConstantPoolEntry* method = (MethodConstantPoolEntry*)_constantPool[immSpec_Scpmi.cpmi];
-            NameAndTypeConstantPoolEntry* nameAndType = (NameAndTypeConstantPoolEntry*)_constantPool[method->getNameAndTypeIndex()];
-            UTF8ConstantPoolEntry* name = (UTF8ConstantPoolEntry*)_constantPool[nameAndType->getNameIndex()];
+            char *name, *type;
+            getNameAndType(method, _constantPool, &name, &type);
             fprintf(_file, "call_v ");
             int retc = method->getRetCount(_constantPool);
             if (retc>0){
-               UTF8ConstantPoolEntry* type = (UTF8ConstantPoolEntry*)_constantPool[nameAndType->getDescriptorIndex()];
-               char *ptr = type->getUTF8();
+               char *ptr = type;
                while (ptr && *ptr && *ptr != ')'){
                   ptr++;
                }
@@ -1564,7 +1571,7 @@ void Instruction::writeRegForm(FILE *_file, ConstantPoolEntry **_constantPool, i
                }
                fprintf(_file, " <- ");
             }
-            fprintf(_file, "obj_%d.%s(",popBase, name->getUTF8());
+            fprintf(_file, "obj_%d.%s(",popBase, name);
             int argc = method->getArgCount(_constantPool);
             if (argc>0){
                for (int i=0; i<argc; i++){
