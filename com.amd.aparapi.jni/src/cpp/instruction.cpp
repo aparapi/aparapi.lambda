@@ -57,7 +57,52 @@ ByteCode *Instruction::getByteCode(){
    return(byteCode);
 }
 
+int Instruction::isBranch(){
+   switch (byteCode->bytecode){
+      case I_IFEQ: // LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_I, PushSpec_NONE, OpSpec_Equal
+      case I_IFNE: // LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_I, PushSpec_NONE, OpSpec_NotEqual
+      case I_IFLT: // LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_I, PushSpec_NONE, OpSpec_LessThan
+      case I_IFGE: // LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_I, PushSpec_NONE, OpSpec_GreaterThanOrEqual
+      case I_IFGT: // LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_I, PushSpec_NONE, OpSpec_GreaterThan
+      case I_IFLE: // LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_I, PushSpec_NONE, OpSpec_LessThanOrEqual
+      case I_IF_ICMPEQ: // LDSpec_NONE, STSpec_NONE, ImmSpec_Sconst, PopSpec_II, PushSpec_NONE, OpSpec_Equal
+      case I_IF_ICMPNE: // LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_II, PushSpec_NONE, OpSpec_NotEqual
+      case I_IF_ICMPLT: // LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_II, PushSpec_NONE, OpSpec_LessThan
+      case I_IF_ICMPGE: // LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_II, PushSpec_NONE, OpSpec_GreaterThanOrEqual
+      case I_IF_ICMPGT: // LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_II, PushSpec_NONE, OpSpec_GreaterThan
+      case I_IF_ICMPLE: // LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_II, PushSpec_NONE, OpSpec_LessThanOrEqual
+      case I_IF_ACMPEQ: // LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_OO, PushSpec_NONE, OpSpec_Equal
+      case I_IF_ACMPNE: // LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_OO, PushSpec_NONE, OpSpec_NotEqual
+      case I_GOTO: // LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_NONE, PushSpec_NONE, OpSpec_NONE 
+      case I_JSR: // LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_NONE, PushSpec_RA, OpSpec_NONE
+         return(immSpec_Spc.pc);
+      default:
+         return(-1);
+   }
+}
+
+int Instruction::getLabel(){
+   return (label);
+}
+
+void Instruction::setLabel(int _label){
+   label = _label;
+}
+
+void Instruction::branchFrom(int _pc){
+  int* newTargets = new int[targetCount+1];
+  if (targetCount>0){
+     memcpy(newTargets, targets, targetCount*sizeof(int));
+     delete [] targets;
+  }
+  newTargets[targetCount++] = _pc;
+  targets = newTargets;
+}
+
 Instruction::Instruction(ConstantPoolEntry** _constantPool, ByteBuffer *_codeByteBuffer, PCStack *_pcStack, s4_t _prevPc){
+   label = -1;
+   targetCount = 0;
+   targets = NULL;
    prevPc = _prevPc;
    stackBase = _pcStack->getIndex();
    pc = _codeByteBuffer->getOffset();
@@ -400,6 +445,9 @@ Instruction::~Instruction(){
             delete [] popSpec_OMSIG.args;
          }
          break;
+   }
+   if (targetCount>0 && targets != NULL){
+      delete [] targets;
    }
 }
 
@@ -1048,6 +1096,8 @@ void getNameAndType(MethodConstantPoolEntry *_method, ConstantPoolEntry **_const
 }
 
 void Instruction::writeRegForm(FILE *_file, ConstantPoolEntry **_constantPool, int _maxLocals, LocalVariableTableAttribute *_localVariableTableAttribute){
+         fprintf(_file, "   ");
+
    int popBase = stackBase - getPopCount(_constantPool) + _maxLocals;
    int pushBase = popBase;
 
@@ -1371,30 +1421,43 @@ void Instruction::writeRegForm(FILE *_file, ConstantPoolEntry **_constantPool, i
          fprintf(_file, "mul f32_%d, <- f32_%d, f32_%d",  pushBase, popBase+1, popBase);
          break;
       case I_DMUL: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_DD, PushSpec_D, OpSpec_Mul
+         fprintf(_file, "mul f64_%d, <- f64_%d, f64_%d",  pushBase, popBase+1, popBase);
          break;
       case I_IDIV: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_II, PushSpec_I, OpSpec_Div
+         fprintf(_file, "div i32_%d <-  i32_%d, i32_%d",  pushBase, popBase+1, popBase);
          break;
       case I_LDIV: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_LL, PushSpec_L, OpSpec_Div
+         fprintf(_file, "div i64_%d <- i64_%d , i64_%d",  pushBase, popBase+1, popBase);
          break;
       case I_FDIV: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_FF, PushSpec_F, OpSpec_Div
+         fprintf(_file, "div f32_%d, <- f32_%d, f32_%d",  pushBase, popBase+1, popBase);
          break;
       case I_DDIV: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_DD, PushSpec_D, OpSpec_Div
+         fprintf(_file, "div f64_%d, <- f64_%d, f64_%d",  pushBase, popBase+1, popBase);
          break;
       case I_IREM: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_II, PushSpec_I, OpSpec_Rem
+         fprintf(_file, "rem i32_%d <-  i32_%d, i32_%d",  pushBase, popBase+1, popBase);
          break;
       case I_LREM: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_LL, PushSpec_L, OpSpec_Rem
+         fprintf(_file, "rem i64_%d <- i64_%d , i64_%d",  pushBase, popBase+1, popBase);
          break;
       case I_FREM: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_FF, PushSpec_F, OpSpec_Rem
+         fprintf(_file, "rem f32_%d, <- f32_%d, f32_%d",  pushBase, popBase+1, popBase);
          break;
       case I_DREM: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_DD, PushSpec_D, OpSpec_Rem
+         fprintf(_file, "rem f64_%d, <- f64_%d, f64_%d",  pushBase, popBase+1, popBase);
          break;
       case I_INEG: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_I, PushSpec_I, OpSpec_Neg
+         fprintf(_file, "neg i32_%d, <- i32_%d",  pushBase, popBase);
          break;
       case I_LNEG: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_L, PushSpec_L, OpSpec_Neg
+         fprintf(_file, "neg i64_%d, <- i64_%d",  pushBase, popBase);
          break;
       case I_FNEG: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_F, PushSpec_F, OpSpec_Neg
+         fprintf(_file, "neg f32_%d, <- f32_%d",  pushBase, popBase);
          break;
       case I_DNEG: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_D, PushSpec_D, OpSpec_Neg
+         fprintf(_file, "neg f64_%d, <- f64_%d",  pushBase, popBase);
          break;
       case I_ISHL: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_II, PushSpec_I, OpSpec_LeftShift
          break;
@@ -1463,16 +1526,22 @@ void Instruction::writeRegForm(FILE *_file, ConstantPoolEntry **_constantPool, i
       case I_DCMPG: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_DD, PushSpec_I, OpSpec_GreaterThan
          break;
       case I_IFEQ: // LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_I, PushSpec_NONE, OpSpec_Equal
+         fprintf(_file, "if_eq i32_%d",  popBase);//, immSpec_Spc.pc);
          break;
       case I_IFNE: // LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_I, PushSpec_NONE, OpSpec_NotEqual
+         fprintf(_file, "if_ne i32_%d",  popBase);//, immSpec_Spc.pc);
          break;
       case I_IFLT: // LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_I, PushSpec_NONE, OpSpec_LessThan
+         fprintf(_file, "if_lt i32_%d",  popBase);//, immSpec_Spc.pc);
          break;
       case I_IFGE: // LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_I, PushSpec_NONE, OpSpec_GreaterThanOrEqual
+         fprintf(_file, "if_ge i32_%d",  popBase);//, immSpec_Spc.pc);
          break;
       case I_IFGT: // LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_I, PushSpec_NONE, OpSpec_GreaterThan
+         fprintf(_file, "if_gt i32_%d",  popBase);//, immSpec_Spc.pc);
          break;
       case I_IFLE: // LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_I, PushSpec_NONE, OpSpec_LessThanOrEqual
+         fprintf(_file, "if_le i32_%d",  popBase);//, immSpec_Spc.pc);
          break;
       case I_IF_ICMPEQ: // LDSpec_NONE, STSpec_NONE, ImmSpec_Sconst, PopSpec_II, PushSpec_NONE, OpSpec_Equal
          break;
@@ -1481,6 +1550,7 @@ void Instruction::writeRegForm(FILE *_file, ConstantPoolEntry **_constantPool, i
       case I_IF_ICMPLT: // LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_II, PushSpec_NONE, OpSpec_LessThan
          break;
       case I_IF_ICMPGE: // LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_II, PushSpec_NONE, OpSpec_GreaterThanOrEqual
+         fprintf(_file, "if_icmpge f32_%d, f32_%d",  popBase, popBase+1);//, immSpec_Spc.pc);
          break;
       case I_IF_ICMPGT: // LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_II, PushSpec_NONE, OpSpec_GreaterThan
          break;
@@ -1491,6 +1561,7 @@ void Instruction::writeRegForm(FILE *_file, ConstantPoolEntry **_constantPool, i
       case I_IF_ACMPNE: // LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_OO, PushSpec_NONE, OpSpec_NotEqual
          break;
       case I_GOTO: // LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_NONE, PushSpec_NONE, OpSpec_NONE 
+         fprintf(_file, "goto");//,  immSpec_Spc.pc);
          break;
       case I_JSR: // LDSpec_NONE, STSpec_NONE, ImmSpec_Spc, PopSpec_NONE, PushSpec_RA, OpSpec_NONE
          break;
@@ -1501,14 +1572,19 @@ void Instruction::writeRegForm(FILE *_file, ConstantPoolEntry **_constantPool, i
       case I_LOOKUPSWITCH: // LDSpec_NONE, STSpec_NONE, ImmSpec_UNKNOWN, PopSpec_I, PushSpec_NONE, OpSpec_NONE
          break;
       case I_IRETURN: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_I, PushSpec_NONE, OpSpec_NONE
+         fprintf(_file, "return i32_%d", popBase);
          break;
       case I_LRETURN: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_L, PushSpec_NONE, OpSpec_NONE
+         fprintf(_file, "return i64_%d", popBase);
          break;
       case I_FRETURN: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_F, PushSpec_NONE, OpSpec_NONE
+         fprintf(_file, "return f32_%d", popBase);
          break;
       case I_DRETURN: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_D, PushSpec_NONE, OpSpec_NONE
+         fprintf(_file, "return f64_%d", popBase);
          break;
       case I_ARETURN: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_O, PushSpec_NONE, OpSpec_NONE
+         fprintf(_file, "return obj_%d", popBase);
          break;
       case I_RETURN: // LDSpec_NONE, STSpec_NONE, ImmSpec_NONE, PopSpec_NONE, PushSpec_NONE, OpSpec_NONE
          fprintf(_file, "return");

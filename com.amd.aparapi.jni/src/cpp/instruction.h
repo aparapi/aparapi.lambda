@@ -952,6 +952,9 @@ class Instruction{
       u4_t nextPc; 
       u4_t length;
       u2_t stackBase;
+      int targetCount;
+      int* targets; 
+      int label;
    public:
       Instruction(ConstantPoolEntry **_constantPool, ByteBuffer *_codeByteBuffer, PCStack *_pcStack,  s4_t _prevPc );
       ~Instruction();
@@ -965,7 +968,10 @@ class Instruction{
       u2_t getStackBase();
       int getPopCount(ConstantPoolEntry **_constantPool);
       int getPushCount(ConstantPoolEntry **_constantPool);
-      
+      void branchFrom(int _pc);
+      int isBranch();
+      void setLabel(int _label);
+      int getLabel();
 };
 
 
