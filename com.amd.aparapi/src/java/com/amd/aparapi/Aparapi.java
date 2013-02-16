@@ -2,7 +2,6 @@ package com.amd.aparapi;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-//import java.lang.invoke.InnerClassLambdaMetafactory;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.concurrent.CyclicBarrier;
@@ -46,13 +45,6 @@ public class Aparapi{
    }
 
    static public void forEachJava(int jobSize, IntFunction block) {
-
-      // Single threaded solution
-      //for (int i=0; i<jobSize; i++) {
-      //   block.accept(i);
-      //}
-      
-      
     final int width = jobSize;
     final int threads = Runtime.getRuntime().availableProcessors();
     final CyclicBarrier barrier = new CyclicBarrier(threads+1);
@@ -122,26 +114,5 @@ public class Aparapi{
       
       forEachJava(jobSize, block);
    }
-/*
-   static public void forEach(int[][] intArray, KernelIII kernel){
-      final int width = intArray.length;
-      final int threads = Runtime.getRuntime().availableProcessors();
-      final CyclicBarrier barrier = new CyclicBarrier(threads+1);
-      for (int t=0; t<threads; t++){
-         final int finalt = t;
-         new Thread(()->{
-            for (int x=finalt*(width/threads); x<(finalt+1)*(width/threads); x++){
-               int[] arr = intArray[x];
-               int arrLen = arr.length;
-               for (int y=0; y<arrLen; y++){
-                  kernel.run(x,y, arr[y]);
-               }
-            }
-            wait(barrier);
-         }).start();
-      }
-      wait(barrier);
-   }
-*/   
 }
 
