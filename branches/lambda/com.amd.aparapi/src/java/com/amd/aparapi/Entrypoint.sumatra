@@ -228,8 +228,6 @@ class Entrypoint{
                }
                throw new ClassParseException(ClassParseException.TYPE.OBJECTFIELDREFERENCE);
             } else {
-               // This should be looger fine...
-               //System.out.println("field " + _name + " not suitable: " + java.lang.reflect.Modifier.toString(modifiers));
                return null;
             }
          } catch (NoSuchFieldException nsfe) {
@@ -417,14 +415,14 @@ class Entrypoint{
          }
       }
    }
-
+   
    /*
     * Find a suitable call target in the kernel class, supers, object members or static calls
     */
    ClassModelMethod resolveCalledMethod(MethodCall methodCall, ClassModel classModel) throws AparapiException {
       MethodEntry methodEntry = methodCall.getConstantPoolMethodEntry();
       int thisClassIndex = classModel.getThisClassConstantPoolIndex();//arf
-      boolean isMapped = (thisClassIndex != methodEntry.getClassIndex()) && Kernel.isMappedMethod(methodEntry);
+      boolean isMapped = (thisClassIndex != methodEntry.getClassIndex()) && KernelRunner.isMappedMethod(methodEntry);
       if (logger.isLoggable(Level.FINE)) {
          if (methodCall instanceof I_INVOKESPECIAL) {
             logger.fine("Method call to super: " + methodEntry);
@@ -453,12 +451,12 @@ class Entrypoint{
             }
          }
       }
-
+      
       // Look for static call to some other class
       if ((m == null) && !isMapped && (methodCall instanceof I_INVOKESTATIC)) {
          String otherClassName = methodEntry.getClassEntry().getNameUTF8Entry().getUTF8().replace('/', '.');
          ClassModel otherClassModel = getOrUpdateAllClassAccesses(otherClassName);
-
+        
          //if (logger.isLoggable(Level.FINE)) {
          //   logger.fine("Looking for: " + methodEntry + " in other class " + otherClass.getName());
          //}
@@ -469,7 +467,7 @@ class Entrypoint{
       if (logger.isLoggable(Level.INFO)) {
          logger.fine("Selected method for: " + methodEntry + " is " + m);
       }
-
+      
       return m;
    }
 
@@ -505,7 +503,7 @@ class Entrypoint{
             methodMap.put(m, target);
             methodModel.getCalledMethods().add(target);
             discovered = true;
-         }
+         }         
       }
 
       // methodMap now contains a list of method called by run itself().
@@ -579,9 +577,8 @@ class Entrypoint{
                   AssignToArrayElement assignment = (AssignToArrayElement) instruction;
 
                   Instruction arrayRef = assignment.getArrayRef();
-                  // AccessField here allows instance and static array refs
-                  if (arrayRef instanceof AccessField) {
-                     AccessField getField = (AccessField) arrayRef;
+                  if (arrayRef instanceof I_GETFIELD) {
+                     I_GETFIELD getField = (I_GETFIELD) arrayRef;
                      FieldEntry field = getField.getConstantPoolFieldEntry();
                      String assignedArrayFieldName = field.getNameAndTypeEntry().getNameUTF8Entry().getUTF8();
                      arrayFieldAssignments.add(assignedArrayFieldName);
@@ -592,9 +589,8 @@ class Entrypoint{
                   AccessArrayElement access = (AccessArrayElement) instruction;
 
                   Instruction arrayRef = access.getArrayRef();
-                  // AccessField here allows instance and static array refs
-                  if (arrayRef instanceof AccessField) {
-                     AccessField getField = (AccessField) arrayRef;
+                  if (arrayRef instanceof I_GETFIELD) {
+                     I_GETFIELD getField = (I_GETFIELD) arrayRef;
                      FieldEntry field = getField.getConstantPoolFieldEntry();
                      String accessedArrayFieldName = field.getNameAndTypeEntry().getNameUTF8Entry().getUTF8();
                      arrayFieldAccesses.add(accessedArrayFieldName);
@@ -687,11 +683,12 @@ class Entrypoint{
                } else if (instruction instanceof I_INVOKEVIRTUAL) {
                   I_INVOKEVIRTUAL invokeInstruction = (I_INVOKEVIRTUAL) instruction;
                   MethodEntry methodEntry = invokeInstruction.getConstantPoolMethodEntry();
-                  if (Kernel.isMappedMethod(methodEntry)) { //only do this for intrinsics
+                  if (KernelRunner.isMappedMethod(methodEntry)) { //only do this for intrinsics
 
-                     if (Kernel.usesAtomic32(methodEntry)) {
-                        setRequiresAtomics32Pragma(true);
-                     }
+                     // I forgot what atomics are for, check with Gary
+//                     if (Kernel.usesAtomic32(methodEntry)) {
+//                        setRequiresAtomics32Pragma(true);
+//                     }
 
                      Arg methodArgs[] = methodEntry.getArgs();
                      if (methodArgs.length > 0 && methodArgs[0].isArray()) { //currently array arg can only take slot 0
@@ -867,11 +864,11 @@ class Entrypoint{
     */
    MethodModel getCallTarget(MethodEntry _methodEntry, boolean _isSpecial) {
       ClassModelMethod target = getClassModel().getMethod(_methodEntry, _isSpecial);
-      boolean isMapped = Kernel.isMappedMethod(_methodEntry);
+      boolean isMapped = KernelRunner.isMappedMethod(_methodEntry);
 
       if (logger.isLoggable(Level.FINE) && target == null) {
-         logger.fine("Did not find call target: " + _methodEntry + " in " + getClassModel().getClassWeAreModelling().getName()
-               + " isMapped=" + isMapped);
+         logger.fine("Did not find call target: " + _methodEntry + " in " + 
+            getClassModel().getClassWeAreModelling().getName() + " isMapped=" + isMapped);
       }
 
       if (target == null) {
@@ -902,17 +899,17 @@ class Entrypoint{
             }
          }
       }
-
+            
       // Search for static calls to other classes
       for (MethodModel m : calledMethods) {
          if (logger.isLoggable(Level.FINE)) {
             logger.fine("Searching for call target: " + _methodEntry + " in " + m.getName());
-         }
+         }         
          if (m.getMethod().getName().equals(_methodEntry.getNameAndTypeEntry().getNameUTF8Entry().getUTF8())
-               && m.getMethod().getDescriptor().equals(_methodEntry.getNameAndTypeEntry().getDescriptorUTF8Entry().getUTF8())) {
+                 && m.getMethod().getDescriptor().equals(_methodEntry.getNameAndTypeEntry().getDescriptorUTF8Entry().getUTF8())) {
             if (logger.isLoggable(Level.FINE)) {
-               logger.fine("Found " + m.getMethod().getClassModel().getClassWeAreModelling().getName() + "."
-                     + m.getMethod().getName() + " " + m.getMethod().getDescriptor());
+               logger.fine("Found " + m.getMethod().getClassModel().getClassWeAreModelling().getName() + 
+            		   "." + m.getMethod().getName() + " " + m.getMethod().getDescriptor());
             }
             return m;
          }
