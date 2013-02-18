@@ -1,40 +1,15 @@
 package com.amd.aparapi;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.BrokenBarrierException;
-import java.util.function.IntFunction;
+import java.util.function.IntConsumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.HashMap;
-//import java.util.List;
-
-import com.amd.aparapi.ClassModel.ConstantPool.MethodEntry;
-import com.amd.aparapi.InstructionSet.AccessField;
-import com.amd.aparapi.InstructionSet.MethodCall;
-import com.amd.aparapi.InstructionSet.VirtualMethodCall;
 
 public class Aparapi{
    
    private static Logger logger = Logger.getLogger(Config.getLoggerName());
-
-   public interface KernelI {
-      void run(int x);
-   }
-   public interface KernelII {
-      void run(int x, int y);
-   }
-   public interface KernelIII {
-      void run(int x, int y, int id);
-   }
-
-   public interface KernelSAM {
-      void run();
-   }
 
    static void wait(CyclicBarrier barrier){
       try {
@@ -44,19 +19,16 @@ public class Aparapi{
       }
    }
 
-   static public void forEachJava(int jobSize, final IntFunction _intFunctionSAM) {
-    final int width = jobSize;
+   static public void forEachJava(int jobSize, final IntConsumer _intFunctionSAM) {
     final int threads = Runtime.getRuntime().availableProcessors();
     final CyclicBarrier barrier = new CyclicBarrier(threads+1);
     for (int t=0; t<threads; t++){
-       final int finalt = t;
-       new Thread(new Runnable(){ 
-    	  public void run(){
-             for (int x=finalt*(width/threads); x<(finalt+1)*(width/threads); x++){
-        	   _intFunctionSAM.apply(x);
+       int finalt = t;
+       new Thread(()->{
+             for (int x=finalt*(jobSize/threads); x<(finalt+1)*(jobSize/threads); x++){
+        	   _intFunctionSAM.accept(x);
              }   
              Aparapi.wait(barrier);
-    	  }
        }).start();
     }   
     wait(barrier);
@@ -68,7 +40,7 @@ public class Aparapi{
    static final ConcurrentHashMap<Class, Boolean> haveGoodKernel = new ConcurrentHashMap<Class, Boolean>();
    
    
-   static public void forEach(int jobSize, IntFunction intFunctionSAM) {
+   static public void forEach(int jobSize, IntConsumer intFunctionSAM) {
       
       // Note it is a new Block object each time
       
