@@ -50,7 +50,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
-import java.util.function.IntFunction;
+import java.util.function.IntConsumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -591,7 +591,7 @@ class KernelRunner{
    
    
    class LambdaKernelCall {
-      IntFunction block;
+      IntConsumer block;
       String   lambdaKernelSource;
       String   lambdaMethodName;
       Field[] lambdaCapturedFields;
@@ -612,7 +612,7 @@ class KernelRunner{
       
       public Field[]   getLambdaCapturedFields()    { return lambdaCapturedFields; }
       
-      public LambdaKernelCall(IntFunction _block) throws AparapiException { 
+      public LambdaKernelCall(IntConsumer _block) throws AparapiException {
          block = _block;
          
          // Try to do reflection on the block
@@ -667,10 +667,10 @@ class KernelRunner{
 
          // The class name is created with the "/" style delimiters
          String bcNameWithSlashes = bc.getName().replace('.', '/');
-         ByteArrayInputStream blockClassStream = new ByteArrayInputStream(getClassBytesJNI(bcNameWithSlashes));
+         ByteArrayInputStream blockClassStream = new ByteArrayInputStream(OpenCLJNI.getJNI().getBytes(bcNameWithSlashes));
          ClassModel blockModel = new ClassModel(blockClassStream);
 
-         // We know we are calling an IntFunction lambda with signature "(I)V"
+         // We know we are calling an IntConsumer lambda with signature "(I)V"
          MethodModel acceptModel = blockModel.getMethodModel("accept", "(I)V");
 
          List<MethodCall> acceptCallSites = acceptModel.getMethodCalls();
@@ -694,13 +694,13 @@ class KernelRunner{
       }
    }
 
-   private LambdaKernelCall lambdaKernelCall;  
+   private LambdaKernelCall lambdaKernelCall;
 
    private long jniContextHandle = 0;
 
    private Kernel kernel;
    
-   private IntFunction intFunction;
+   private IntConsumer intFunction;
 
    private Entrypoint entryPoint;
 
@@ -716,14 +716,13 @@ class KernelRunner{
 
    }
    
-   /**
-    * Create a KernelRunner for a specific Kernel instance.
-    * 
-    * @param _kernel
-    */
-   KernelRunner(IntFunction _intFunction) {
-      intFunction = _intFunction;
-
+   KernelRunner(IntConsumer _intFunction) throws AparapiException {
+      //kernel = null;
+       intFunction = _intFunction;
+      lambdaKernelCall = new LambdaKernelCall(intFunction);
+      if (logger.isLoggable(Level.INFO)) {
+         logger.info("New lambda call is = " + lambdaKernelCall);
+      }
    }
 
    /**
@@ -1697,6 +1696,7 @@ class KernelRunner{
       return currArg;
    }
    
+
    KernelArg[] prepareLambdaArgs(Object lambdaObject, Object callerBlock, Field[] callerCapturedFields) {
 	      List<KernelArg> argsList = new ArrayList<KernelArg>();
 

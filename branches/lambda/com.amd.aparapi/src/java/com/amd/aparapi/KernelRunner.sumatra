@@ -601,7 +601,7 @@ class KernelRunner{
    
    
    class LambdaKernelCall {
-      IntBlock block;
+      IntConsumer block;
       String   lambdaKernelSource;
       String   lambdaMethodName;
       Field[] lambdaCapturedFields;
@@ -622,7 +622,7 @@ class KernelRunner{
       
       public Field[]   getLambdaCapturedFields()    { return lambdaCapturedFields; }
       
-      public LambdaKernelCall(IntBlock _block) throws AparapiException { 
+      public LambdaKernelCall(IntConsumer _block) throws AparapiException {
          block = _block;
          
          // Try to do reflection on the block
@@ -677,10 +677,10 @@ class KernelRunner{
 
          // The class name is created with the "/" style delimiters
          String bcNameWithSlashes = bc.getName().replace('.', '/');
-         ByteArrayInputStream blockClassStream = new ByteArrayInputStream(AparapiAgent.getBytes(bc));
+         ByteArrayInputStream blockClassStream = new ByteArrayInputStream(getClassBytesJNI(bcNameWithSlashes));
          ClassModel blockModel = new ClassModel(blockClassStream);
 
-         // We know we are calling an IntBlock lambda with signature "(I)V"
+         // We know we are calling an IntConsumer lambda with signature "(I)V"
          MethodModel acceptModel = blockModel.getMethodModel("accept", "(I)V");
 
          List<MethodCall> acceptCallSites = acceptModel.getMethodCalls();
@@ -708,7 +708,9 @@ class KernelRunner{
 
    private long jniContextHandle = 0;
 
-//   private Kernel kernel;
+   private Kernel kernel;
+
+   private IntConsumer intFunction;
 
    private Entrypoint entryPoint;
 
@@ -1394,6 +1396,13 @@ class KernelRunner{
    public void setRunnable(boolean b) { runnable = b; }
    public boolean getRunnable() { return runnable; }
 
+   public void setRunnable(boolean _runnable) {
+	   runnable = runnable;
+	   }
+
+   public boolean getRunnable() {
+	   return runnable;
+	   }
 
    synchronized boolean execute(Object callerBlock, final Range _range, final int _passes) throws AparapiException {
 
