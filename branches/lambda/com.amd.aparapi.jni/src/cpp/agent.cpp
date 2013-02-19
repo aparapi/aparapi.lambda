@@ -24,7 +24,7 @@ static void JNICALL vmInit(jvmtiEnv *_jvmtiEnv, JNIEnv* _jniEnv, jthread thread)
       _jniEnv->ExceptionDescribe();
       _jniEnv->ExceptionClear();
       }
-    */
+      */
 }
 
 class NameToBytes{
@@ -91,6 +91,7 @@ extern "C" {
       }
       if (bytes == NULL){
          fprintf(stdout, "failed to find bytes for \"%s\"\n", nameChars);
+         bytes = jenv->NewByteArray(0);
       }
       jenv->ReleaseStringUTFChars(className, nameChars);
       return (bytes);
@@ -98,8 +99,6 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
-
-
 
 
 
@@ -112,11 +111,15 @@ static void JNICALL cbClassFileLoadHook(jvmtiEnv *jvmti_env, JNIEnv* jni_env,
       const unsigned char* class_data,
       jint* new_class_data_len,
       unsigned char** new_class_data){
-   //   fprintf(stdout, "from agent classFileLoadHook(%s)\n", name);
-   byte_t *buf = new byte_t[class_data_len];
-   memcpy((void*)buf, (void*)class_data, (size_t)class_data_len);
-   ByteBuffer *byteBuffer = new ByteBuffer(buf, (size_t)class_data_len);
-   head = new NameToBytes(head, (char *)name, byteBuffer);
+   if (name != NULL){
+      //fprintf(stdout, "from agent classFileLoadHook(%s)\n", name);
+      byte_t *buf = new byte_t[class_data_len];
+      memcpy((void*)buf, (void*)class_data, (size_t)class_data_len);
+      ByteBuffer *byteBuffer = new ByteBuffer(buf, (size_t)class_data_len);
+      head = new NameToBytes(head, (char *)name, byteBuffer);
+   }else{
+      //fprintf(stdout, "from agent classFileLoadHook(NULL)\n");
+   }
    //fprintf(stdout, "class \"%s\"  ", name); 
 }
 
