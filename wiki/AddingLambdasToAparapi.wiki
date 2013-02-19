@@ -117,11 +117,31 @@ This version would allow us to carry over Aparapi's Range selection
 Device.getBestGPU().range2D(width, height).forEach(1024, rid->{lambda});
 }}}
 
-This version would allow us to mimic Kenrel.execute(range, count)
+This version would allow us to mimic {{{Kernel.execute(1024, 5)}}}
 {{{
-Device.getBestGPU().range2D(width, height).forEach(rid->{lambda});
+Device.getBestGPU().forEach(1024, 5, (id, passid)->{lambda});
 }}}
 
+We could even have the range iterated over until some other lambda determines we are done
+{{{
+Device.getBestGPU().forEachUntil(1024, id->{lambda}, ->{predicate lambda});
+}}}
+
+Explicit buffer handling could be removed in many cases by allowing the bytecode of the 'until' predicate to be snooped for buffer references. 
+{{{
+int lotsOfData[] = ...;
+boolean found[false] = new boolean[1];
+Device.getBestGPU().forEachUntil(1024, 5,
+   (id, passid)->{ /* mutate lotsOfData, found[0]=true when done */ }
+   ->{found[0]]});
+}}}
+In the above cases Aparapi can determine that between each pass it needs to ''ONLY'' copy {{{found[]}}} back from the device. 
+
+There is no reason that the range itself needs to be constant, we can use a collection/iterable.  This helps with some reductions. 
+{{{
+int range[] = new int[]{1024,512,128,64,32,16,8,4,2,1,0};
+Device.getBestGPU().forEach(range,{lambda});
+}}}
 
 
 
