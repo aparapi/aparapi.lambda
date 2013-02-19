@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 
 <project name="life" default="build" basedir=".">
+   <property name="build.compiler" value="javac1.7"/>
    <target name="build" depends="clean">
       <mkdir dir="classes"/>
       <javac srcdir="src" destdir="classes" debug="on" includeantruntime="false" >

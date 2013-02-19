@@ -1732,7 +1732,8 @@ class KernelRunner{
 	               assert lambdaKernelCall != null : "Should not be null";
 	               assert lambdaKernelCall.getLambdaKernelThis() != null : "Lambda This should not be null";
 	               Class lambdaClass = lambdaKernelCall.getLambdaKernelThis().getClass();
-	               ClassModel classModel = new ClassModel(lambdaClass, OpenCLJNI.getJNI().getBytes(lambdaClass.getName()));
+                    byte[] lambdaClassBytes =  OpenCLJNI.getJNI().getBytes(lambdaClass.getName());
+	               ClassModel classModel = new ClassModel(lambdaClass, lambdaClassBytes);
 
 	               entryPoint = classModel.getEntrypoint(lambdaKernelCall.getLambdaMethodName(), 
 	                     lambdaKernelCall.getLambdaMethodSignature(), lambdaKernelCall.getLambdaKernelThis());
