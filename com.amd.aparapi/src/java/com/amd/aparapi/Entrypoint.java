@@ -264,7 +264,7 @@ class Entrypoint{
             }
             
             // Immediately add this class and all its supers if necessary
-            memberClassModel = new ClassModel(memberClass);
+            memberClassModel = new ClassModel(memberClass, OpenCLJNI.getJNI().getBytes(memberClass.getName()));
             if (logger.isLoggable(Level.FINEST)) {
                logger.finest("adding class " + className);
             }

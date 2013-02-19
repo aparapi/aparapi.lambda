@@ -90,7 +90,7 @@ class KernelRunner{
     * This 'bit' indicates that a particular <code>KernelArg</code> represents a <code>boolean</code> type (array or primitive).
     * 
     * 
-    * @see com.amd.aparapi.annotations.UsedByJNICode
+    * @see com.amd.aparapi.Annotations.UsedByJNICode
     * @see com.amd.aparapi.KernelRunner.KernelArg
     * 
     * @author gfrost
@@ -100,8 +100,8 @@ class KernelRunner{
    /**
     * This 'bit' indicates that a particular <code>KernelArg</code> represents a <code>byte</code> type (array or primitive).
     * 
-    * 
-    * @see com.amd.aparapi.annotations.UsedByJNICode
+    *
+    * @see com.amd.aparapi.Annotations.UsedByJNICode
     * @see com.amd.aparapi.KernelRunner.KernelArg
     * 
     * @author gfrost
@@ -112,7 +112,7 @@ class KernelRunner{
     * This 'bit' indicates that a particular <code>KernelArg</code> represents a <code>float</code> type (array or primitive).
     * 
     * 
-    * @see com.amd.aparapi.annotations.UsedByJNICode
+    * @see com.amd.aparapi.Annotations.UsedByJNICode
     * @see com.amd.aparapi.KernelRunner.KernelArg
     * 
     * @author gfrost
@@ -123,7 +123,7 @@ class KernelRunner{
     * This 'bit' indicates that a particular <code>KernelArg</code> represents a <code>int</code> type (array or primitive).
     * 
     * 
-    * @see com.amd.aparapi.annotations.UsedByJNICode
+    * @see com.amd.aparapi.Annotations.UsedByJNICode
     * @see com.amd.aparapi.KernelRunner.KernelArg
     * 
     * @author gfrost
@@ -134,7 +134,7 @@ class KernelRunner{
     * This 'bit' indicates that a particular <code>KernelArg</code> represents a <code>double</code> type (array or primitive).
     * 
     * 
-    * @see com.amd.aparapi.annotations.UsedByJNICode
+    * @see com.amd.aparapi.Annotations.UsedByJNICode
     * @see com.amd.aparapi.KernelRunner.KernelArg
     * 
     * @author gfrost
@@ -145,7 +145,7 @@ class KernelRunner{
     * This 'bit' indicates that a particular <code>KernelArg</code> represents a <code>long</code> type (array or primitive).
     * 
     * 
-    * @see com.amd.aparapi.annotations.UsedByJNICode
+    * @see com.amd.aparapi.Annotations.UsedByJNICode
     * @see com.amd.aparapi.KernelRunner.KernelArg
     * 
     * @author gfrost
@@ -155,7 +155,7 @@ class KernelRunner{
    /**
     * TODO:
     * 
-    * @see com.amd.aparapi.annotations.UsedByJNICode
+    * @see com.amd.aparapi.Annotations.UsedByJNICode
     * @see com.amd.aparapi.KernelRunner.KernelArg
     * 
     * @author gfrost
@@ -167,7 +167,7 @@ class KernelRunner{
     * So <code>ARG_ARRAY|ARG_INT</code> tells us this arg is an array of <code>int</code>.
     * 
     * 
-    * @see com.amd.aparapi.annotations.UsedByJNICode
+    * @see com.amd.aparapi.Annotations.UsedByJNICode
     * @see com.amd.aparapi.KernelRunner.KernelArg
     * 
     * @author gfrost
@@ -179,7 +179,7 @@ class KernelRunner{
     * So <code>ARG_PRIMITIVE|ARG_INT</code> tells us this arg is a primitive <code>int</code>.
     * 
     * 
-    * @see com.amd.aparapi.annotations.UsedByJNICode
+    * @see com.amd.aparapi.Annotations.UsedByJNICode
     * @see com.amd.aparapi.KernelRunner.KernelArg
     * 
     * @author gfrost
@@ -191,7 +191,7 @@ class KernelRunner{
     * So <code>ARG_ARRAY|ARG_INT|ARG_READ</code> tells us this arg is an array of int's that are read by the kernel.
     * 
     * 
-    * @see com.amd.aparapi.annotations.UsedByJNICode
+    * @see com.amd.aparapi.Annotations.UsedByJNICode
     * @see com.amd.aparapi.KernelRunner.KernelArg
     * 
     * @author gfrost
@@ -203,7 +203,7 @@ class KernelRunner{
     * So <code>ARG_ARRAY|ARG_INT|ARG_WRITE</code> tells us this arg is an array of int's that we expect the kernel to mutate.
     * 
     * 
-    * @see com.amd.aparapi.annotations.UsedByJNICode
+    * @see com.amd.aparapi.Annotations.UsedByJNICode
     * @see com.amd.aparapi.KernelRunner.KernelArg
     * 
     * @author gfrost
@@ -214,8 +214,8 @@ class KernelRunner{
     * This 'bit' indicates that a particular <code>KernelArg</code> resides in local memory in the generated OpenCL code.<br/>
     * 
     * 
-    * @see com.amd.aparapi.annotations.UsedByJNICode
-    * @see com.amd.aparapi.annotations.Experimental
+    * @see com.amd.aparapi.Annotations.UsedByJNICode
+    * @see com.amd.aparapi.Annotations.Experimental
     * @see com.amd.aparapi.KernelRunner.KernelArg
     * 
     * @author gfrost
@@ -226,8 +226,8 @@ class KernelRunner{
     * This 'bit' indicates that a particular <code>KernelArg</code> resides in global memory in the generated OpenCL code.<br/>
     * 
     * 
-    * @see com.amd.aparapi.annotations.UsedByJNICode
-    * @see com.amd.aparapi.annotations.Experimental
+    * @see com.amd.aparapi.Annotations.UsedByJNICode
+    * @see com.amd.aparapi.Annotations.Experimental
     * @see com.amd.aparapi.KernelRunner.KernelArg
     * 
     * @author gfrost
@@ -238,8 +238,8 @@ class KernelRunner{
     * This 'bit' indicates that a particular <code>KernelArg</code> resides in constant memory in the generated OpenCL code.<br/>
     * 
     * 
-    * @see com.amd.aparapi.annotations.UsedByJNICode
-    * @see com.amd.aparapi.annotations.Experimental
+    * @see com.amd.aparapi.Annotations.UsedByJNICode
+    * @see com.amd.aparapi.Annotations.Experimental
     * @see com.amd.aparapi.KernelRunner.KernelArg
     * 
     * @author gfrost
@@ -250,7 +250,7 @@ class KernelRunner{
     * This 'bit' indicates that a particular <code>KernelArg</code> has it's length reference, in which case a synthetic arg is passed (name mangled) to the OpenCL kernel.<br/>
     * 
     * 
-    * @see com.amd.aparapi.annotations.UsedByJNICode
+    * @see com.amd.aparapi.Annotations.UsedByJNICode
     * @see com.amd.aparapi.KernelRunner.KernelArg
     * 
     * @author gfrost
@@ -260,7 +260,7 @@ class KernelRunner{
    /**
     * TODO:
     * 
-    * @see com.amd.aparapi.annotations.UsedByJNICode
+    * @see com.amd.aparapi.Annotations.UsedByJNICode
     * @see com.amd.aparapi.KernelRunner.KernelArg
     * 
     * @author gfrost
@@ -270,7 +270,7 @@ class KernelRunner{
    /**
     * This 'bit' indicates that the arg has been explicitly marked for reading
     * 
-    * @see com.amd.aparapi.annotations.UsedByJNICode
+    * @see com.amd.aparapi.Annotations.UsedByJNICode
     * @see com.amd.aparapi.KernelRunner.KernelArg
     * 
     * @author gfrost
@@ -280,7 +280,7 @@ class KernelRunner{
    /**
     * This 'bit' indicates that the arg has been explicitly marked for writing
     * 
-    * @see com.amd.aparapi.annotations.UsedByJNICode
+    * @see com.amd.aparapi.Annotations.UsedByJNICode
     * @see com.amd.aparapi.KernelRunner.KernelArg
     * 
     * @author gfrost
@@ -290,7 +290,7 @@ class KernelRunner{
    /**
     * TODO:
     * 
-    * @see com.amd.aparapi.annotations.UsedByJNICode
+    * @see com.amd.aparapi.Annotations.UsedByJNICode
     * @see com.amd.aparapi.KernelRunner.KernelArg
     * 
     * @author gfrost
@@ -300,7 +300,7 @@ class KernelRunner{
    /**
     * TODO:
     * 
-    * @see com.amd.aparapi.annotations.UsedByJNICode
+    * @see com.amd.aparapi.Annotations.UsedByJNICode
     * @see com.amd.aparapi.KernelRunner.KernelArg
     * 
     * @author gfrost
@@ -321,7 +321,7 @@ class KernelRunner{
     * This 'bit' indicates that a particular <code>KernelArg</code> represents a <code>char</code> type (array or primitive).
     * 
     * 
-    * @see com.amd.aparapi.annotations.UsedByJNICode
+    * @see com.amd.aparapi.Annotations.UsedByJNICode
     * @see com.amd.aparapi.KernelRunner.KernelArg
     * 
     * @author rlamothe
@@ -332,7 +332,7 @@ class KernelRunner{
     * This 'bit' indicates that a particular <code>KernelArg</code> represents a <code>static</code> field (array or primitive).
     * 
     * 
-    * @see com.amd.aparapi.annotations.UsedByJNICode
+    * @see com.amd.aparapi.Annotations.UsedByJNICode
     * @see com.amd.aparapi.KernelRunner.KernelArg
     * 
     * @author gfrost
@@ -390,7 +390,7 @@ class KernelRunner{
     * Be careful changing final constants starting with JNI.<br/>
     * 
     * 
-    * @see com.amd.aparapi.annotations.UsedByJNICode
+    * @see com.amd.aparapi.Annotations.UsedByJNICode
     * 
     * @author gfrost
     */
@@ -430,30 +430,9 @@ class KernelRunner{
    static class KernelArg{
 
       /**
-       * The type of this KernelArg. Created by oring appropriate flags
+       * The type of this KernelArg. Created by oring appropriate bits from OpenCLArgDescriptor
        * 
-       * @see ARG_BOOLEAN
-       * @see ARG_BYTE
-       * @see ARG_CHAR
-       * @see ARG_FLOAT
-       * @see ARG_INT
-       * @see ARG_DOUBLE
-       * @see ARG_LONG
-       * @see ARG_SHORT
-       * @see ARG_ARRAY
-       * @see ARG_PRIMITIVE
-       * @see ARG_READ
-       * @see ARG_WRITE
-       * @see ARG_LOCAL
-       * @see ARG_GLOBAL
-       * @see ARG_CONSTANT
-       * @see ARG_ARRAYLENGTH
-       * @see ARG_APARAPI_BUF
-       * @see ARG_EXPLICIT
-       * @see ARG_EXPLICIT_WRITE
-       * @see ARG_OBJ_ARRAY_STRUCT
-       * @see ARG_APARAPI_BUF_HAS_ARRAY
-       * @see ARG_APARAPI_BUF_IS_DIRECT
+
        */
       @UsedByJNICode public int type;
 
@@ -666,9 +645,9 @@ class KernelRunner{
          Class lc = getLambdaKernelThis().getClass();
 
          // The class name is created with the "/" style delimiters
-         String bcNameWithSlashes = bc.getName().replace('.', '/');
-         ByteArrayInputStream blockClassStream = new ByteArrayInputStream(OpenCLJNI.getJNI().getBytes(bcNameWithSlashes));
-         ClassModel blockModel = new ClassModel(blockClassStream);
+         //String bcNameWithSlashes = bc.getName().replace('.', '/');
+        // ByteArrayInputStream blockClassStream = new ByteArrayInputStream(OpenCLJNI.getJNI().getBytes(bc.getName()));
+         ClassModel blockModel = new ClassModel(bc,  OpenCLJNI.getJNI().getBytes(bc.getName()));
 
          // We know we are calling an IntConsumer lambda with signature "(I)V"
          MethodModel acceptModel = blockModel.getMethodModel("accept", "(I)V");
@@ -728,7 +707,7 @@ class KernelRunner{
    /**
     * <code>Kernel.dispose()</code> delegates to <code>KernelRunner.dispose()</code> which delegates to <code>disposeJNI()</code> to actually close JNI data structures.<br/>
     * 
-    * @see KernelRunner#disposeJNI()
+    * @see KernelRunner#disposeJNI(long)
     */
    void dispose() {
       if (kernel.getExecutionMode().isOpenCL()) {
@@ -742,12 +721,11 @@ class KernelRunner{
     * synchronized to avoid race in clGetPlatformIDs() in OpenCL lib problem should fixed in some future OpenCL version
     * 
     * @param _kernel
+    * @param _device
     * @param _flags
-    * @param numProcessors
-    * @param maxJTPLocalSize
     * @return
     */
-   private native static synchronized long initJNI(Kernel _kernel, OpenCLDevice device, int _flags);
+   private native static synchronized long initJNI(Kernel _kernel, OpenCLDevice _device, int _flags);
    private native static synchronized long initJNILambda(Object _instance, OpenCLDevice device, int _flags);
    private native static synchronized byte[] getClassBytesJNI(String _className);
    private native long buildProgramJNI(long _jniContextHandle, String _source);
@@ -867,11 +845,11 @@ class KernelRunner{
    /**
     * Execute using a Java thread pool. Either because we were explicitly asked to do so, or because we 'fall back' after discovering an OpenCL issue.
     * 
-    * @param _globalSize
-    *          The globalSize requested by the user (via <code>Kernel.execute(globalSize)</code>)
+    * @param _range
+    *          The globalSize/range requested by the user (via <code>Kernel.execute(globalSize)</code>)
     * @param _passes
     *          The # of passes requested by the user (via <code>Kernel.execute(globalSize, passes)</code>). Note this is usually defaulted to 1 via <code>Kernel.execute(globalSize)</code>.
-    * @return
+    * @return time in milliseconds
     */
    private long executeJava(final Range _range, final int _passes) {
       if (logger.isLoggable(Level.FINE)) {
@@ -1754,7 +1732,7 @@ class KernelRunner{
 	               assert lambdaKernelCall != null : "Should not be null";
 	               assert lambdaKernelCall.getLambdaKernelThis() != null : "Lambda This should not be null";
 	               Class lambdaClass = lambdaKernelCall.getLambdaKernelThis().getClass();
-	               ClassModel classModel = new ClassModel(lambdaClass);
+	               ClassModel classModel = new ClassModel(lambdaClass, OpenCLJNI.getJNI().getBytes(lambdaClass.getName()));
 
 	               entryPoint = classModel.getEntrypoint(lambdaKernelCall.getLambdaMethodName(), 
 	                     lambdaKernelCall.getLambdaMethodSignature(), lambdaKernelCall.getLambdaKernelThis());
@@ -1898,11 +1876,11 @@ class KernelRunner{
             if (entryPoint == null) {
                try {
                   ClassModel classModel = null;
-                  if (Config.useAgent) {
+                //  if (Config.useAgent) {
                      classModel = new ClassModel(kernel.getClass(), OpenCLJNI.getJNI().getBytes(kernel.getClass().getName()));
-                  } else {
-                     classModel = new ClassModel(kernel.getClass());
-                  }
+                 // } else {
+                 //    classModel = new ClassModel(kernel.getClass());
+                 // }
                   entryPoint = classModel.getEntrypoint(_entrypointName, kernel);
                } catch (Exception exception) {
                   return warnFallBackAndExecute(_entrypointName, _range, _passes, exception);

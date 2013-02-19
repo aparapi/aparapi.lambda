@@ -618,7 +618,8 @@ public class InstructionViewer implements Config.InstructionListener{
    public InstructionViewer(Color _background, String _name) {
 
       try {
-         classModel = new ClassModel(Class.forName(_name));
+          Class clazz =  Class.forName(_name);
+         classModel = new ClassModel(clazz, OpenCLJNI.getJNI().getBytes(clazz.getName()));
       } catch (ClassParseException e) {
          // TODO Auto-generated catch block
          e.printStackTrace();

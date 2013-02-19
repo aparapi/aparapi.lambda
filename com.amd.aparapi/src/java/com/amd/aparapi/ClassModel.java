@@ -133,25 +133,25 @@ class ClassModel{
     * @throws ClassParseException
     */
 
-   ClassModel(Class<?> _class) throws ClassParseException {
+   //ClassModel(Class<?> _class) throws ClassParseException {
 
-      parse(_class);
+     // parse(_class);
 
-      Class<?> mySuper = _class.getSuperclass();
+     // Class<?> mySuper = _class.getSuperclass();
       // Find better way to do this check
       // The java.lang.Object test is for unit test framework to succeed - should 
       // not occur in normal use
-      if ((mySuper != null) && (!mySuper.getName().equals(Kernel.class.getName()))
-            && (!mySuper.getName().equals("java.lang.Object"))) {
-         superClazz = new ClassModel(mySuper);
-      }
-   }
+    //  if ((mySuper != null) && (!mySuper.getName().equals(Kernel.class.getName()))
+     //       && (!mySuper.getName().equals("java.lang.Object"))) {
+    //    superClazz = new ClassModel(mySuper);
+    //  }
+  //}
 
-   ClassModel(InputStream _inputStream) throws ClassParseException {
+   //ClassModel(InputStream _inputStream) throws ClassParseException {
 
-      parse(_inputStream);
+     // parse(_inputStream);
 
-   }
+   //}
 
    ClassModel(Class<?> _clazz, byte[] _bytes) throws ClassParseException {
       clazz = _clazz;

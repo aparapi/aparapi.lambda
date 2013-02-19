@@ -1627,8 +1627,3 @@ JNI_JAVA(jobject, KernelRunner, getProfileInfoJNI)
       }
       return returnList;
    }
-
-JNI_JAVA(jbyteArray, KernelRunner, getClassBytesJNI)
-  (JNIEnv *, jclass, jstring){
-     return (NULL);
-  }

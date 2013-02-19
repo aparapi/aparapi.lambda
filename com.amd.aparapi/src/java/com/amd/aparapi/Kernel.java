@@ -2018,6 +2018,20 @@ public abstract class Kernel implements Cloneable{
       return (this);
    }
 
+    /**
+     * Tag this array so that it is explicitly enqueued before the kernel is executed
+     * @param array
+     * @return This kernel so that we can use the 'fluent' style API
+     */
+    public Kernel put(short[] array) {
+        if (kernelRunner == null) {
+            kernelRunner = new KernelRunner(this);
+
+        }
+        kernelRunner.put(array);
+        return (this);
+    }
+
    /**
     * Tag this array so that it is explicitly enqueued before the kernel is executed
     * @param array
@@ -2128,7 +2142,22 @@ public abstract class Kernel implements Cloneable{
       return (this);
    }
 
-   /**
+    /**
+     * Enqueue a request to return this buffer from the GPU. This method blocks until the array is available.
+     * @param array
+     * @return This kernel so that we can use the 'fluent' style API
+     */
+    public Kernel get(short[] array) {
+        if (kernelRunner == null) {
+            kernelRunner = new KernelRunner(this);
+
+        }
+        kernelRunner.get(array);
+        return (this);
+    }
+
+
+    /**
     * Enqueue a request to return this buffer from the GPU. This method blocks until the array is available. 
     * @param array
     * @return This kernel so that we can use the 'fluent' style API

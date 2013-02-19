@@ -83,4 +83,13 @@ class Annotations{
     */
    @interface Unused {
    }
+
+    /**
+     * Used to tag (methods/fields) which are used by JNI code.
+     *
+     * @author gfrost
+     *
+     */
+    @interface UsedByJNICode {
+    }
 }
