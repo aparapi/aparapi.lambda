@@ -143,6 +143,14 @@ int range[] = new int[]{1024,512,128,64,32,16,8,4,2,1,0};
 Device.getBestGPU().forEach(range,{lambda});
 }}}
 
+or the range can be a lambda itself, here we specify a start and end value for the range itself, and a lambda to provide each step.
+
+{{{
+Device.getBestGPU().forEach(1024, 1, r->{return(r/2);},(pass, r, id)->{lambda});
+// or
+Device.getBestGPU().forEach(1, 1024, r->{return(r*2);},(pass, r, id)->{lambda});
+}}}
+
 
 
 
