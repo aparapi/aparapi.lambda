@@ -19,7 +19,6 @@ We are slowly walking through some of the Aparapi demos and converting them.  At
 
 ----
 
-
 With Lambda enabled Aparapi we remove the need to derive from a base Kernel class, we will allow the user to express their code as a lambda using the following basic pattern
 
 {{{
@@ -94,3 +93,42 @@ java -javaagent:path/to/aparapi.jar -classpath your.jar YourClass
 }}}
 
 We would welcome comments on these proposals. Either here, or in the discussion list.  Let us know what you think.
+
+----
+
+Consequences of lambdification of Aparapi.
+
+ * No support for local memory, group size or barriers in Lambda form 
+ * Calls to Kernel base class methods (such as getGlobalId()) will not be allowed. The 'global id' will be passed as an arg to the lambda. 
+ * We will need to add support for calling static methods (of course the bytecode for the called methods cannot violate Aparapi restrictions). 
+ * We might need to drop support for multi dimension dispatch.  This is more a convergence story with Sumatra (which is unlikely to support this)
+ * Unlikely that explicit buffer management will be simple. 
+ * We can use lambda's for control as well as the kernel itself. See examples below.
+
+Alternate forms for kernel dispatch
+
+This version would allow us to carry over Aparapi's device selection
+{{{
+Device.getBestGPU().forEach(1024, i->{lambda});
+}}}
+
+This version would allow us to carry over Aparapi's Range selection
+{{{
+Device.getBestGPU().range2D(width, height).forEach(1024, rid->{lambda});
+}}}
+
+This version would allow us to mimic Kenrel.execute(range, count)
+{{{
+Device.getBestGPU().range2D(width, height).forEach(rid->{lambda});
+}}}
+
+
+
+
+
+
+
+
+
+
+    
