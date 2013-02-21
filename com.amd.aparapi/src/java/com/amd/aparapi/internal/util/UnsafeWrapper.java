@@ -52,7 +52,7 @@ import java.lang.reflect.Method;
  *
  */
 
-public class UnsafeWrapper {
+public class UnsafeWrapper{
 
    private static Object unsafe;
 

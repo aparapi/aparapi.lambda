@@ -37,8 +37,7 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 */
 package com.amd.aparapi.internal.instruction;
 
-
-public abstract class InstructionTransformer {
+public abstract class InstructionTransformer{
 
    private final String description;
 

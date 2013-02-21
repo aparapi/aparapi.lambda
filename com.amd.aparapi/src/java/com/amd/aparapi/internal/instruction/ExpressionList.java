@@ -55,8 +55,8 @@ import com.amd.aparapi.internal.instruction.InstructionSet.FakeGoto;
 import com.amd.aparapi.internal.instruction.InstructionSet.Return;
 import com.amd.aparapi.internal.instruction.InstructionSet.UnconditionalBranch;
 import com.amd.aparapi.internal.model.MethodModel;
-import com.amd.aparapi.internal.model.ClassModel.AttributePool.LocalVariableTableEntry;
-import com.amd.aparapi.internal.model.ClassModel.AttributePool.LocalVariableTableEntry.LocalVariableInfo;
+import com.amd.aparapi.internal.model.ClassModel.LocalVariableTableEntry;
+import com.amd.aparapi.internal.model.ClassModel.LocalVariableInfo;
 
 /**
  * Essentially a glorified linked list of Instructions plus some additional state to allow us to transform sequences.
@@ -66,7 +66,7 @@ import com.amd.aparapi.internal.model.ClassModel.AttributePool.LocalVariableTabl
  * @author gfrost
  *
  */
-public class ExpressionList {
+public class ExpressionList{
 
    private static Logger logger = Logger.getLogger(Config.getLoggerName());
 
@@ -434,7 +434,7 @@ public class ExpressionList {
 
                if ((tail != null) && tail.isBranch() && tail.asBranch().isReverseConditional()) {
                   /**
-                   * This looks like an eclipse style for/while loop
+                   * This looks like an eclipse style for/while loop or possibly a do{}while()
                    * <pre>
                    * eclipse for (INIT,??,DELTA){BODY} ...
                    *    [INIT] >> [BODY] [DELTA] ?? ?< ...
@@ -446,6 +446,10 @@ public class ExpressionList {
                    *     --------------->
                    *       <-----------------
                    *      
+                   * do {BODY} while(??)
+                   *    [BODY] ?? ?< ...
+                   *    <-----------
+                   *
                    * eclipse while (??){BODY} ...
                    *    >> [BODY] ?? ?< ...
                    *     -------->
@@ -489,6 +493,23 @@ public class ExpressionList {
                            }
                            addAsComposites(ByteCode.COMPOSITE_FOR_ECLIPSE, loopTop, branchSet);
                            handled = true;
+                        }
+                     }
+                     if (!handled) {
+                        // do{}while()_ do not require any previous instruction
+                        if (loopTop.getPrevExpr() == null) {
+                           throw new IllegalStateException("might be a dowhile with no provious expression");
+
+                        } else if (!(loopTop.getPrevExpr().isBranch() && loopTop.getPrevExpr().asBranch().isForwardUnconditional())) {
+                           if (doesNotContainCompositeOrBranch(branchSet.getTarget().getRootExpr(), branchSet.getFirst()
+                                 .getPrevExpr())) {
+                              loopTop = loopTop.getPrevExpr();
+                              branchSet.unhook();
+                              addAsComposites(ByteCode.COMPOSITE_DO_WHILE, loopTop, branchSet);
+                              handled = true;
+                           }
+                        } else {
+                           throw new IllegalStateException("might be mistaken for a do while!");
                         }
                      }
                   }
@@ -698,8 +719,8 @@ public class ExpressionList {
                               final Branch elseGoto = forwardUnconditionalBranches.get(i - 2);
                               final Instruction afterElseGoto = elseGoto.getNextExpr();
                               if (afterElseGoto.getStartInstruction().isConditionalBranchTarget()) {
-                                 final BranchSet elseBranchSet = afterElseGoto.getStartInstruction().getForwardConditionalBranches()
-                                       .getLast().getOrCreateBranchSet();
+                                 final BranchSet elseBranchSet = afterElseGoto.getStartInstruction()
+                                       .getForwardConditionalBranches().getLast().getOrCreateBranchSet();
                                  if (doesNotContainCompositeOrBranch(elseBranchSet.getLast().getNextExpr(), elseGoto)) {
                                     if (doesNotContainCompositeOrBranch(afterElseGoto.getNextExpr(), thisGoto)) {
                                        if (logger.isLoggable(Level.FINE)) {
@@ -712,8 +733,9 @@ public class ExpressionList {
 
                                        }
 
-                                       final CompositeInstruction composite = CompositeInstruction.create(ByteCode.COMPOSITE_IF_ELSE,
-                                             methodModel, elseBranchSet.getFirst(), thisGoto, elseBranchSet);
+                                       final CompositeInstruction composite = CompositeInstruction.create(
+                                             ByteCode.COMPOSITE_IF_ELSE, methodModel, elseBranchSet.getFirst(), thisGoto,
+                                             elseBranchSet);
                                        replaceInclusive(elseBranchSet.getFirst(), thisGoto.getPrevExpr(), composite);
 
                                        handled = true;
@@ -736,8 +758,8 @@ public class ExpressionList {
                   // here we have multiple composites ending at the same point
 
                   final Branch lastForwardUnconditional = _instruction.getForwardUnconditionalBranches().getLast();
-                  final ConditionalBranch lastForwardConditional = _instruction.getStartInstruction().getForwardConditionalBranches()
-                        .getLast();
+                  final ConditionalBranch lastForwardConditional = _instruction.getStartInstruction()
+                        .getForwardConditionalBranches().getLast();
                   // we will clip the tail and see if recursing helps
 
                   if (lastForwardConditional.getTarget().isAfter(lastForwardUnconditional)) {
@@ -759,10 +781,11 @@ public class ExpressionList {
          } else {
 
             // might be end of arbitrary scope
-            final LocalVariableTableEntry localVariableTable = methodModel.getMethod().getLocalVariableTableEntry();
+            final LocalVariableTableEntry<LocalVariableInfo> localVariableTable = methodModel.getMethod()
+                  .getLocalVariableTableEntry();
             int startPc = Short.MAX_VALUE;
-            for (final LocalVariableInfo localVariableInfo : localVariableTable.getPool()) {
 
+            for (final LocalVariableInfo localVariableInfo : localVariableTable) {
                if (localVariableInfo.getEnd() == _instruction.getThisPC()) {
                   logger.fine(localVariableInfo.getVariableName() + "  scope  " + localVariableInfo.getStart() + " ,"
                         + localVariableInfo.getEnd());
@@ -770,10 +793,10 @@ public class ExpressionList {
                      startPc = localVariableInfo.getStart();
                   }
                }
-
             }
             if (startPc < Short.MAX_VALUE) {
                logger.fine("Scope block from " + startPc + " to  " + (tail.getThisPC() + tail.getLength()));
+               System.out.println("Scope block from " + startPc + " to  " + (tail.getThisPC() + tail.getLength()));
                for (Instruction i = head; i != null; i = i.getNextPC()) {
                   if (i.getThisPC() == startPc) {
                      final Instruction startInstruction = i.getRootExpr().getPrevExpr();

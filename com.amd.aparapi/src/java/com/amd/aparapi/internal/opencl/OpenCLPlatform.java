@@ -6,7 +6,7 @@ import java.util.List;
 import com.amd.aparapi.device.OpenCLDevice;
 import com.amd.aparapi.internal.jni.OpenCLJNI;
 
-public class OpenCLPlatform extends OpenCLJNI {
+public class OpenCLPlatform extends OpenCLJNI{
 
    private long platformId;
 
@@ -70,8 +70,7 @@ public class OpenCLPlatform extends OpenCLJNI {
       return (vendor);
    }
 
-   @Override
-   public String toString() {
+   @Override public String toString() {
       final StringBuilder sb = new StringBuilder();
       sb.append("PlatformId ");
       sb.append("\nName:");

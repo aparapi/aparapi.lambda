@@ -39,8 +39,7 @@ package com.amd.aparapi.exception;
 
 import com.amd.aparapi.internal.exception.AparapiException;
 
-@SuppressWarnings("serial")
-public class DeprecatedException extends AparapiException {
+@SuppressWarnings("serial") public class DeprecatedException extends AparapiException{
 
    public DeprecatedException(String msg) {
       super(msg);

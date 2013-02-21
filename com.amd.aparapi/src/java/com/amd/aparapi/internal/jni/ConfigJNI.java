@@ -6,12 +6,12 @@ import com.amd.aparapi.internal.annotation.UsedByJNICode;
 /**
  * This class is intended to be used as a 'proxy' or 'facade' object for Java code to interact with JNI
  */
-public abstract class ConfigJNI {
+public abstract class ConfigJNI{
 
    /**
     * Value defaults to com.amd.aparapi.config if not overridden by extending classes
     */
-   protected static String propPkgName = Config.class.getPackage().getName();
+   protected static final String propPkgName = Config.class.getPackage().getName();
 
    /**
     * Allows the user to turn on OpenCL profiling for the JNI/OpenCL layer.
@@ -19,8 +19,7 @@ public abstract class ConfigJNI {
     * Usage -Dcom.amd.aparapi.enableProfiling={true|false}
     * 
     */
-   @UsedByJNICode
-   public static final boolean enableProfiling = Boolean.getBoolean(propPkgName + ".enableProfiling");
+   @UsedByJNICode public static final boolean enableProfiling = Boolean.getBoolean(propPkgName + ".enableProfiling");
 
    /**
     * Allows the user to turn on OpenCL profiling for the JNI/OpenCL layer, this information will be written to CSV file
@@ -28,8 +27,7 @@ public abstract class ConfigJNI {
     * Usage -Dcom.amd.aparapi.enableProfiling={true|false}
     * 
     */
-   @UsedByJNICode
-   public static final boolean enableProfilingCSV = Boolean.getBoolean(propPkgName + ".enableProfilingCSV");
+   @UsedByJNICode public static final boolean enableProfilingCSV = Boolean.getBoolean(propPkgName + ".enableProfilingCSV");
 
    /**
     * Allows the user to request that verbose JNI messages be dumped to stderr.
@@ -37,8 +35,7 @@ public abstract class ConfigJNI {
     * Usage -Dcom.amd.aparapi.enableVerboseJNI={true|false}
     * 
     */
-   @UsedByJNICode
-   public static final boolean enableVerboseJNI = Boolean.getBoolean(propPkgName + ".enableVerboseJNI");
+   @UsedByJNICode public static final boolean enableVerboseJNI = Boolean.getBoolean(propPkgName + ".enableVerboseJNI");
 
    /**
     * Allows the user to request tracking of opencl resources.
@@ -48,6 +45,7 @@ public abstract class ConfigJNI {
     * Usage -Dcom.amd.aparapi.enableOpenCLResourceTracking={true|false}
     * 
     */
-   @UsedByJNICode
-   public static final boolean enableVerboseJNIOpenCLResourceTracking = Boolean.getBoolean(propPkgName + ".enableVerboseJNIOpenCLResourceTracking");
+   @UsedByJNICode public static final boolean enableVerboseJNIOpenCLResourceTracking = Boolean.getBoolean(propPkgName
+         + ".enableVerboseJNIOpenCLResourceTracking");
+
 }

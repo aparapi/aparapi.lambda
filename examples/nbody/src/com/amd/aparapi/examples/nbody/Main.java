@@ -68,6 +68,7 @@ import com.amd.aparapi.ProfileInfo;
 import com.amd.aparapi.Range;
 import com.jogamp.opengl.util.FPSAnimator;
 import com.jogamp.opengl.util.texture.Texture;
+import com.jogamp.opengl.util.texture.TextureData;
 import com.jogamp.opengl.util.texture.TextureIO;
 
 /**
@@ -83,9 +84,9 @@ import com.jogamp.opengl.util.texture.TextureIO;
  * @author gfrost
  * 
  */
-public class Main {
+public class Main{
 
-   public static class NBodyKernel extends Kernel {
+   public static class NBodyKernel extends Kernel{
       protected final float delT = .005f;
 
       protected final float espSqr = 1.0f;
@@ -134,8 +135,7 @@ public class Main {
       /**
        * Here is the kernel entrypoint. Here is where we calculate the position of each body
        */
-      @Override
-      public void run() {
+      @Override public void run() {
          final int body = getGlobalId();
          final int count = getGlobalSize(0) * 3;
          final int globalId = body * 3;
@@ -199,8 +199,12 @@ public class Main {
 
    public static boolean running;
 
+   static Texture texture;
+
    public static void main(String _args[]) {
 
+      //System.load("/Library/Java/JavaVirtualMachines/jdk1.7.0_09.jdk/Contents/Home/jre/lib/libawt.dylib");
+      //System.load("/Library/Java/JavaVirtualMachines/jdk1.7.0_09.jdk/Contents/Home/jre/lib/libjawt.dylib");
       final NBodyKernel kernel = new NBodyKernel(Range.create(Integer.getInteger("bodies", 8192)));
 
       final JFrame frame = new JFrame("NBody");
@@ -211,9 +215,8 @@ public class Main {
 
       final JButton startButton = new JButton("Start");
 
-      startButton.addActionListener(new ActionListener() {
-         @Override
-         public void actionPerformed(ActionEvent e) {
+      startButton.addActionListener(new ActionListener(){
+         @Override public void actionPerformed(ActionEvent e) {
             running = true;
             startButton.setEnabled(false);
          }
@@ -246,7 +249,7 @@ public class Main {
       final Dimension dimension = new Dimension(Integer.getInteger("width", 742 - 64), Integer.getInteger("height", 742 - 64));
       canvas.setPreferredSize(dimension);
 
-      canvas.addGLEventListener(new GLEventListener() {
+      canvas.addGLEventListener(new GLEventListener(){
          private double ratio;
 
          private final float xeye = 0f;
@@ -267,16 +270,16 @@ public class Main {
 
          private long last = System.currentTimeMillis();
 
-         @Override
-         public void dispose(GLAutoDrawable drawable) {
+         @Override public void dispose(GLAutoDrawable drawable) {
 
          }
 
-         @Override
-         public void display(GLAutoDrawable drawable) {
+         @Override public void display(GLAutoDrawable drawable) {
 
             final GL2 gl = drawable.getGL().getGL2();
 
+            texture.enable(gl);
+            texture.bind(gl);
             gl.glLoadIdentity();
             gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
             gl.glColor3f(1f, 1f, 1f);
@@ -319,17 +322,28 @@ public class Main {
 
          }
 
-         @Override
-         public void init(GLAutoDrawable drawable) {
+         @Override public void init(GLAutoDrawable drawable) {
             final GL2 gl = drawable.getGL().getGL2();
 
             gl.glShadeModel(GLLightingFunc.GL_SMOOTH);
             gl.glEnable(GL.GL_BLEND);
             gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE);
+            gl.glEnable(GL.GL_TEXTURE_2D);
+            gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
+            gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST);
             try {
                final InputStream textureStream = Main.class.getResourceAsStream("particle.jpg");
-               final Texture texture = TextureIO.newTexture(textureStream, false, null);
-               texture.enable(gl);
+               TextureData data = TextureIO.newTextureData(profile, textureStream, false, "jpg");
+               texture = TextureIO.newTexture(data);
+               //final Texture texture = TextureIO.newTexture(textureStream, false, null);
+               // texture.enable(gl);
+               // texture.bind(gl);
+
+               //gl.glEnable(GL.GL_TEXTURE_2D);
+               //gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
+               //gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST);
+               //gl.glBindTexture(GL.GL_TEXTURE_2D, texture.);
+
             } catch (final IOException e) {
                e.printStackTrace();
             } catch (final GLException e) {
@@ -338,8 +352,7 @@ public class Main {
 
          }
 
-         @Override
-         public void reshape(GLAutoDrawable drawable, int x, int y, int _width, int _height) {
+         @Override public void reshape(GLAutoDrawable drawable, int x, int y, int _width, int _height) {
             width = _width;
             height = _height;
 

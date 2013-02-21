@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.amd.aparapi.internal.jni.OpenCLJNI;
 
-public class OpenCLKernel extends OpenCLJNI {
+public class OpenCLKernel extends OpenCLJNI{
 
    private final List<OpenCLArgDescriptor> args;
 

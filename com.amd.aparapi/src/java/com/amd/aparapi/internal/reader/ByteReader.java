@@ -50,7 +50,7 @@ import java.io.InputStream;
  * @author gfrost
  *
  */
-public class ByteReader {
+public class ByteReader{
 
    private final ByteBuffer byteBuffer;
 

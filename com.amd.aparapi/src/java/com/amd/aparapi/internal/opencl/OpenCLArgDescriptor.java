@@ -3,7 +3,7 @@
  */
 package com.amd.aparapi.internal.opencl;
 
-public class OpenCLArgDescriptor {
+public class OpenCLArgDescriptor{
 
    public final static int ARG_BYTE_BIT = 1 << 0x000;
 
@@ -54,8 +54,7 @@ public class OpenCLArgDescriptor {
       bits = _bits;
    }
 
-   @Override
-   public String toString() {
+   @Override public String toString() {
       final StringBuilder argBuilder = new StringBuilder();
 
       if ((bits & ARG_GLOBAL_BIT) == ARG_GLOBAL_BIT) {

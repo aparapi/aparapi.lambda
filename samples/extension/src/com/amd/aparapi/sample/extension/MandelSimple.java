@@ -73,26 +73,23 @@ import com.amd.aparapi.opencl.OpenCL.Resource;
  *
  */
 
-@Resource("com/amd/aparapi/sample/extension/mandel2.cl")
-interface Mandel extends OpenCL<Mandel> {
+@Resource("com/amd/aparapi/sample/extension/mandel2.cl") interface Mandel extends OpenCL<Mandel>{
    Mandel createMandleBrot(//
          Range range,//
          @Arg("scale") float scale, //
          @Arg("offsetx") float offsetx, //
          @Arg("offsety") float offsety, //
-         @GlobalWriteOnly("rgb") int[] rgb
-         );
+         @GlobalWriteOnly("rgb") int[] rgb);
 }
 
-public class MandelSimple {
+public class MandelSimple{
 
    /** User selected zoom-in point on the Mandelbrot view. */
    public static volatile Point to = null;
 
    public static Mandel mandelBrot = null;
 
-   @SuppressWarnings("serial")
-   public static void main(String[] _args) {
+   @SuppressWarnings("serial") public static void main(String[] _args) {
 
       final JFrame frame = new JFrame("MandelBrot");
 
@@ -108,9 +105,8 @@ public class MandelSimple {
       final BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 
       final Object framePaintedDoorBell = new Object();
-      final JComponent viewer = new JComponent() {
-         @Override
-         public void paintComponent(Graphics g) {
+      final JComponent viewer = new JComponent(){
+         @Override public void paintComponent(Graphics g) {
 
             g.drawImage(image, 0, 0, width, height, this);
             synchronized (framePaintedDoorBell) {
@@ -125,9 +121,8 @@ public class MandelSimple {
       final Object userClickDoorBell = new Object();
 
       // Mouse listener which reads the user clicked zoom-in point on the Mandelbrot view 
-      viewer.addMouseListener(new MouseAdapter() {
-         @Override
-         public void mouseClicked(MouseEvent e) {
+      viewer.addMouseListener(new MouseAdapter(){
+         @Override public void mouseClicked(MouseEvent e) {
             to = e.getPoint();
             synchronized (userClickDoorBell) {
                userClickDoorBell.notify();
@@ -177,9 +172,8 @@ public class MandelSimple {
          viewer.repaint();
 
          // Window listener to dispose Kernel resources on user exit.
-         frame.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent _windowEvent) {
+         frame.addWindowListener(new WindowAdapter(){
+            @Override public void windowClosing(WindowEvent _windowEvent) {
                // mandelBrot.dispose();
                System.exit(0);
             }

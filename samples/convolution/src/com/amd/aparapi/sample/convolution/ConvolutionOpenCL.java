@@ -46,10 +46,9 @@ import com.amd.aparapi.device.OpenCLDevice;
 import com.amd.aparapi.opencl.OpenCL;
 import com.amd.aparapi.opencl.OpenCL.Resource;
 
-public class ConvolutionOpenCL {
+public class ConvolutionOpenCL{
 
-   @Resource("com/amd/aparapi/sample/convolution/convolution.cl")
-   interface Convolution extends OpenCL<Convolution> {
+   @Resource("com/amd/aparapi/sample/convolution/convolution.cl") interface Convolution extends OpenCL<Convolution>{
       Convolution applyConvolution(//
             Range range, //
             @GlobalReadOnly("_convMatrix3x3") float[] _convMatrix3x3,//// only read from kernel 
@@ -77,11 +76,11 @@ public class ConvolutionOpenCL {
             0f,
       };
 
-      new ConvolutionViewer(file, convMatrix3x3) {
+      new ConvolutionViewer(file, convMatrix3x3){
          Range range = null;
 
-         @Override
-         protected void applyConvolution(float[] _convMatrix3x3, byte[] _inBytes, byte[] _outBytes, int _width, int _height) {
+         @Override protected void applyConvolution(float[] _convMatrix3x3, byte[] _inBytes, byte[] _outBytes, int _width,
+               int _height) {
             if (range == null) {
                range = openclDevice.createRange(_width * _height * 3);
             }

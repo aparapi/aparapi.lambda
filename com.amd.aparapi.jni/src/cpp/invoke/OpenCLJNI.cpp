@@ -45,6 +45,7 @@
 #include "OpenCLMem.h"
 #include "OpenCLProgram.h"
 #include "JavaArgs.h"
+#include <iostream>
 
 #include "com_amd_aparapi_internal_jni_OpenCLJNI.h"
 
@@ -95,7 +96,7 @@ JNI_JAVA(jobject, OpenCLJNI, createProgram)
       cl_int status = CL_SUCCESS;
       cl_device_type deviceType;
       clGetDeviceInfo(deviceId, CL_DEVICE_TYPE,  sizeof(deviceType), &deviceType, NULL);
-      if(0)fprintf(stderr, "device[%d] CL_DEVICE_TYPE = %x\n", (long)deviceId, (unsigned int)deviceType);
+      if(0)fprintf(stderr, "device[%ld] CL_DEVICE_TYPE = %lx\n", (unsigned long)deviceId, (unsigned long)deviceType);
 
 
       cl_context_properties cps[3] = { CL_CONTEXT_PLATFORM, (cl_context_properties)platformId, 0 };
@@ -148,8 +149,8 @@ void putPrimative(JNIEnv* jenv, cl_kernel kernel, jobject arg, jint argIndex) {
    cl_T value = JNIHelper::getInstanceField<jT>(jenv, arg, "value");
    cl_int status = clSetKernelArg(kernel, argIndex, sizeof(value), (void *)&(value));
    if (status != CL_SUCCESS) {
-      fprintf(stderr, "error setting %s arg %d %lf %s!\n", 
-              JNIHelper::getType((jT)0), argIndex, value, CLHelper::errString(status));
+      std::cerr << "error setting " << JNIHelper::getType((jT)0) << " arg " << argIndex 
+                << " " <<  value << " " << CLHelper::errString(status) << "!\n";
    }
 }
 
@@ -351,9 +352,9 @@ JNI_JAVA(jobject, OpenCLJNI, getPlatforms)
 
             // fix this so OpenCL 1.3 or higher will not break!
             if (   !strncmp(platformVersionName, "OpenCL 1.2", 10)
-                  || !strncmp(platformVersionName, "OpenCL 1.1", 10)
+                || !strncmp(platformVersionName, "OpenCL 1.1", 10)
 #ifdef __APPLE__
-                  || !strncmp(platformVersionName, "OpenCL 1.0", 10)
+                || !strncmp(platformVersionName, "OpenCL 1.0", 10)
 #endif
                ) { 
                char platformVendorName[512];  
@@ -385,7 +386,7 @@ JNI_JAVA(jobject, OpenCLJNI, getPlatforms)
                         //fprintf(stderr, "device[%d] CL_DEVICE_TYPE = ", deviceIdx);
                         if (deviceType & CL_DEVICE_TYPE_DEFAULT) {
                            deviceType &= ~CL_DEVICE_TYPE_DEFAULT;
-                           //  fprintf(stderr, "Default ");
+                           //fprintf(stderr, "Default ");
                         }
                         if (deviceType & CL_DEVICE_TYPE_CPU) {
                            deviceType &= ~CL_DEVICE_TYPE_CPU;
@@ -399,12 +400,13 @@ JNI_JAVA(jobject, OpenCLJNI, getPlatforms)
                         }
                         if (deviceType & CL_DEVICE_TYPE_ACCELERATOR) {
                            deviceType &= ~CL_DEVICE_TYPE_ACCELERATOR;
-                           //fprintf(stderr, "Accelerator ");
+                           fprintf(stderr, "Accelerator ");
                         }
                         //fprintf(stderr, "(0x%llx) ", deviceType);
                         //fprintf(stderr, "\n");
 
 
+                        //fprintf(stderr, "device type pointer %p", deviceTypeEnumInstance);
                         jobject deviceInstance = JNIHelper::createInstance(jenv, OpenCLDeviceClass, ArgsVoidReturn( OpenCLPlatformClassArg LongArg DeviceTypeClassArg  ),
                               platformInstance, 
                               (jlong)deviceIds[deviceIdx],

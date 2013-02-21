@@ -69,7 +69,7 @@ import com.amd.aparapi.Range;
  * @author Wiltold Bolt
  * @author Gary Frost
  */
-public class Main {
+public class Main{
 
    /**
     * LifeKernel represents the data parallel algorithm describing by Conway's game of life.
@@ -92,7 +92,7 @@ public class Main {
     *
     */
 
-   public static class LifeKernel extends Kernel {
+   public static class LifeKernel extends Kernel{
 
       private static final int ALIVE = 0xffffff;
 
@@ -165,8 +165,7 @@ public class Main {
          }
       }
 
-      @Override
-      public void run() {
+      @Override public void run() {
          final int gid = getGlobalId();
          processPixel(gid);
       }
@@ -207,9 +206,8 @@ public class Main {
       final LifeKernel lifeKernel = new LifeKernel(width, height, image);
 
       // Create a component for viewing the offsecreen image
-      @SuppressWarnings("serial") final JComponent viewer = new JComponent() {
-         @Override
-         public void paintComponent(Graphics g) {
+      @SuppressWarnings("serial") final JComponent viewer = new JComponent(){
+         @Override public void paintComponent(Graphics g) {
             if (lifeKernel.isExplicit()) {
                lifeKernel.get(lifeKernel.imageData); // We only pull the imageData when we intend to use it.
                final List<ProfileInfo> profileInfo = lifeKernel.getProfileInfo();
@@ -234,9 +232,8 @@ public class Main {
 
       final JButton startButton = new JButton("Start");
 
-      startButton.addActionListener(new ActionListener() {
-         @Override
-         public void actionPerformed(ActionEvent e) {
+      startButton.addActionListener(new ActionListener(){
+         @Override public void actionPerformed(ActionEvent e) {
             running = true;
             startButton.setEnabled(false);
          }

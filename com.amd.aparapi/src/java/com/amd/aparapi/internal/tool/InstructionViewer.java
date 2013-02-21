@@ -61,7 +61,7 @@ import com.amd.aparapi.internal.tool.InstructionViewer.Form.Check;
 import com.amd.aparapi.internal.tool.InstructionViewer.Form.Template;
 import com.amd.aparapi.internal.tool.InstructionViewer.Form.Toggle;
 
-public class InstructionViewer implements Config.InstructionListener {
+public class InstructionViewer implements Config.InstructionListener{
 
    public static abstract class Form<T extends Form.Template> {
       public @interface OneOf {
@@ -70,17 +70,15 @@ public class InstructionViewer implements Config.InstructionListener {
          String[] options();
       }
 
-      public interface Template {
+      public interface Template{
       }
 
-      @Retention(RetentionPolicy.RUNTIME)
-      public @interface List {
+      @Retention(RetentionPolicy.RUNTIME) public @interface List {
          Class<?> value();
 
       }
 
-      @Retention(RetentionPolicy.RUNTIME)
-      public @interface Toggle {
+      @Retention(RetentionPolicy.RUNTIME) public @interface Toggle {
          String label();
 
          String on();
@@ -88,8 +86,7 @@ public class InstructionViewer implements Config.InstructionListener {
          String off();
       }
 
-      @Retention(RetentionPolicy.RUNTIME)
-      public @interface Check {
+      @Retention(RetentionPolicy.RUNTIME) public @interface Check {
          String label();
       }
 
@@ -187,9 +184,8 @@ public class InstructionViewer implements Config.InstructionListener {
                   final String toggleButtonOffLabel = toggleAnnotation.off();
                   final String toggleButtonLabel = getBoolean(field) ? toggleButtonOnLabel : toggleButtonOffLabel;
                   final JToggleButton toggleButton = new JToggleButton(toggleButtonLabel, getBoolean(field));
-                  toggleButton.addActionListener(new ActionListener() {
-                     @Override
-                     public void actionPerformed(ActionEvent _actionEvent) {
+                  toggleButton.addActionListener(new ActionListener(){
+                     @Override public void actionPerformed(ActionEvent _actionEvent) {
                         final JToggleButton toggleButton = ((JToggleButton) _actionEvent.getSource());
                         //  System.out.println("toggle toggle "+toggleButton);
                         if (toggleButton.getText().equals(toggleButtonOnLabel)) {
@@ -212,10 +208,9 @@ public class InstructionViewer implements Config.InstructionListener {
                   final JCheckBox checkBox = new JCheckBox();
                   checkBox.setSelected(getBoolean(field));
 
-                  checkBox.addChangeListener(new ChangeListener() {
+                  checkBox.addChangeListener(new ChangeListener(){
 
-                     @Override
-                     public void stateChanged(ChangeEvent _changeEvent) {
+                     @Override public void stateChanged(ChangeEvent _changeEvent) {
 
                         final JCheckBox checkBox = ((JCheckBox) _changeEvent.getSource());
                         //  System.out.println("check toggle "+checkBox);
@@ -265,31 +260,25 @@ public class InstructionViewer implements Config.InstructionListener {
 
    public static final int CURVEBOW = 20;
 
-   public static class Options implements Template {
+   public static class Options implements Template{
 
-      @Toggle(label = "Fold", on = "On", off = "Off")
-      public boolean fold = true;
+      @Toggle(label = "Fold", on = "On", off = "Off") public boolean fold = true;
 
-      @Check(label = "Fan Edges")
-      public boolean edgeFan = true;
+      @Check(label = "Fan Edges") public boolean edgeFan = true;
 
-      @Check(label = "Curves")
-      public boolean edgeCurve = false;
+      @Check(label = "Curves") public boolean edgeCurve = false;
 
-      @Check(label = "PC")
-      public boolean showPc = true;
+      @Check(label = "PC") public boolean showPc = true;
 
-      @Check(label = "Bytecode Labels")
-      public boolean verboseBytecodeLabels = false;
+      @Check(label = "Bytecode Labels") public boolean verboseBytecodeLabels = false;
 
-      @Check(label = "Collapse All")
-      public boolean collapseAll = false;
+      @Check(label = "Collapse All") public boolean collapseAll = false;
 
       /* @Check(label = "Show expressions")*/public boolean showExpressions = false;
 
    }
 
-   private static class XY {
+   private static class XY{
       public XY(double _x, double _y) {
          x = _x;
          y = _y;
@@ -298,7 +287,7 @@ public class InstructionViewer implements Config.InstructionListener {
       double x, y;
    }
 
-   private static class View {
+   private static class View{
       AffineTransform offGraphicsTransform = new AffineTransform();
 
       private double scale = 1;
@@ -471,7 +460,7 @@ public class InstructionViewer implements Config.InstructionListener {
       arrowHeadIn.addPoint(0, -4);
    }
 
-   public class InstructionView {
+   public class InstructionView{
 
       private final Instruction instruction;
 
@@ -644,27 +633,24 @@ public class InstructionViewer implements Config.InstructionListener {
          // TODO Auto-generated catch block
          e.printStackTrace();
       }
-      container = new JPanel() {
+      container = new JPanel(){
          /**
           * 
           */
          private static final long serialVersionUID = 1L;
 
-         @Override
-         public void paintComponent(Graphics g) {
+         @Override public void paintComponent(Graphics g) {
             draw(g);
          }
       };
       container.setBackground(_background);
 
-      final MouseAdapter mouseAdaptor = new MouseAdapter() {
-         @Override
-         public void mouseEntered(MouseEvent e) {
+      final MouseAdapter mouseAdaptor = new MouseAdapter(){
+         @Override public void mouseEntered(MouseEvent e) {
             container.requestFocusInWindow();
          }
 
-         @Override
-         public void mouseDragged(MouseEvent e) {
+         @Override public void mouseDragged(MouseEvent e) {
             // System.out.println("dragged");
             if (dragStart != null) {
                view.x = view.translatex(e.getX()) - dragStart.x;
@@ -674,8 +660,7 @@ public class InstructionViewer implements Config.InstructionListener {
 
          }
 
-         @Override
-         public void mousePressed(MouseEvent e) {
+         @Override public void mousePressed(MouseEvent e) {
 
             if (e.getButton() == 1) {
                dragStart = new XY(view.translatex(e.getX()), view.translatey(e.getY()));
@@ -690,23 +675,20 @@ public class InstructionViewer implements Config.InstructionListener {
 
          }
 
-         @Override
-         public void mouseReleased(MouseEvent e) {
+         @Override public void mouseReleased(MouseEvent e) {
             dragStart = null;
             // container.repaint();
          }
 
-         @Override
-         public void mouseWheelMoved(MouseWheelEvent e) {
+         @Override public void mouseWheelMoved(MouseWheelEvent e) {
             view.scale += e.getWheelRotation() / 10.0;
             dirty();
          }
 
       };
 
-      final KeyAdapter keyAdaptor = new KeyAdapter() {
-         @Override
-         public void keyTyped(KeyEvent arg0) {
+      final KeyAdapter keyAdaptor = new KeyAdapter(){
+         @Override public void keyTyped(KeyEvent arg0) {
             if ((arg0.getKeyChar() == '-') || (arg0.getKeyChar() == '+')) {
                if (arg0.getKeyChar() == '-') {
                   view.scale -= .1;
@@ -737,16 +719,14 @@ public class InstructionViewer implements Config.InstructionListener {
 
       final JMenu fileMenu = new JMenu("File");
       fileMenu.setMnemonic(KeyEvent.VK_F);
-      final ActionListener closeActionListener = new ActionListener() {
-         @Override
-         public void actionPerformed(ActionEvent arg0) {
+      final ActionListener closeActionListener = new ActionListener(){
+         @Override public void actionPerformed(ActionEvent arg0) {
             System.exit(1);
          }
 
       };
-      final ActionListener nextActionListener = new ActionListener() {
-         @Override
-         public void actionPerformed(ActionEvent arg0) {
+      final ActionListener nextActionListener = new ActionListener(){
+         @Override public void actionPerformed(ActionEvent arg0) {
             doorbell.ring();
 
          }
@@ -772,27 +752,24 @@ public class InstructionViewer implements Config.InstructionListener {
 
       panel.add(BorderLayout.PAGE_START, toolBar);
 
-      container = new JPanel() {
+      container = new JPanel(){
          /**
           * 
           */
          private static final long serialVersionUID = 1L;
 
-         @Override
-         public void paintComponent(Graphics g) {
+         @Override public void paintComponent(Graphics g) {
             draw(g);
          }
       };
       container.setBackground(Color.WHITE);
 
-      final MouseAdapter mouseAdaptor = new MouseAdapter() {
-         @Override
-         public void mouseEntered(MouseEvent e) {
+      final MouseAdapter mouseAdaptor = new MouseAdapter(){
+         @Override public void mouseEntered(MouseEvent e) {
             container.requestFocusInWindow();
          }
 
-         @Override
-         public void mouseDragged(MouseEvent e) {
+         @Override public void mouseDragged(MouseEvent e) {
             // System.out.println("dragged");
             if (dragStart != null) {
                view.x = view.translatex(e.getX()) - dragStart.x;
@@ -802,8 +779,7 @@ public class InstructionViewer implements Config.InstructionListener {
 
          }
 
-         @Override
-         public void mousePressed(MouseEvent e) {
+         @Override public void mousePressed(MouseEvent e) {
 
             if (e.getButton() == 1) {
                dragStart = new XY(view.translatex(e.getX()), view.translatey(e.getY()));
@@ -818,23 +794,20 @@ public class InstructionViewer implements Config.InstructionListener {
 
          }
 
-         @Override
-         public void mouseReleased(MouseEvent e) {
+         @Override public void mouseReleased(MouseEvent e) {
             dragStart = null;
             // container.repaint();
          }
 
-         @Override
-         public void mouseWheelMoved(MouseWheelEvent e) {
+         @Override public void mouseWheelMoved(MouseWheelEvent e) {
             view.scale += e.getWheelRotation() / 10.0;
             dirty();
          }
 
       };
 
-      final KeyAdapter keyAdaptor = new KeyAdapter() {
-         @Override
-         public void keyTyped(KeyEvent arg0) {
+      final KeyAdapter keyAdaptor = new KeyAdapter(){
+         @Override public void keyTyped(KeyEvent arg0) {
             if ((arg0.getKeyChar() == '-') || (arg0.getKeyChar() == '+')) {
                if (arg0.getKeyChar() == '-') {
                   view.scale -= .1;
@@ -857,9 +830,8 @@ public class InstructionViewer implements Config.InstructionListener {
 
       final JPanel controls = new JPanel(new BorderLayout());
 
-      final Form<Options> form = new Form<Options>(config) {
-         @Override
-         public void sync() {
+      final Form<Options> form = new Form<Options>(config){
+         @Override public void sync() {
             dirty();
          }
       };
@@ -1019,8 +991,7 @@ public class InstructionViewer implements Config.InstructionListener {
 
    volatile Instruction current = null;
 
-   @Override
-   public void showAndTell(String message, Instruction head, Instruction _instruction) {
+   @Override public void showAndTell(String message, Instruction head, Instruction _instruction) {
 
       if (first == null) {
          first = head;
@@ -1031,7 +1002,7 @@ public class InstructionViewer implements Config.InstructionListener {
 
    }
 
-   public static class DoorBell {
+   public static class DoorBell{
       volatile boolean notified = false;
 
       public synchronized void snooze() {
@@ -1069,16 +1040,14 @@ public class InstructionViewer implements Config.InstructionListener {
 
       final JMenu fileMenu = new JMenu("File");
       fileMenu.setMnemonic(KeyEvent.VK_F);
-      final ActionListener closeActionListener = new ActionListener() {
-         @Override
-         public void actionPerformed(ActionEvent arg0) {
+      final ActionListener closeActionListener = new ActionListener(){
+         @Override public void actionPerformed(ActionEvent arg0) {
             System.exit(1);
          }
 
       };
-      final ActionListener nextActionListener = new ActionListener() {
-         @Override
-         public void actionPerformed(ActionEvent arg0) {
+      final ActionListener nextActionListener = new ActionListener(){
+         @Override public void actionPerformed(ActionEvent arg0) {
             doorbell.ring();
 
          }
@@ -1111,9 +1080,8 @@ public class InstructionViewer implements Config.InstructionListener {
 
       final JPanel controls = new JPanel(new BorderLayout());
 
-      final Form<Options> form = new Form<Options>(instructionViewer.config) {
-         @Override
-         public void sync() {
+      final Form<Options> form = new Form<Options>(instructionViewer.config){
+         @Override public void sync() {
             instructionViewer.dirty();
          }
       };
@@ -1127,10 +1095,9 @@ public class InstructionViewer implements Config.InstructionListener {
       frame.pack();
       frame.setVisible(true);
 
-      (new Thread(new Runnable() {
+      (new Thread(new Runnable(){
 
-         @Override
-         public void run() {
+         @Override public void run() {
 
             Entrypoint entrypoint;
             try {

@@ -37,8 +37,7 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 */
 package com.amd.aparapi.internal.exception;
 
-@SuppressWarnings("serial")
-public class CodeGenException extends AparapiException {
+@SuppressWarnings("serial") public class CodeGenException extends AparapiException{
 
    public CodeGenException(String msg) {
       super(msg);

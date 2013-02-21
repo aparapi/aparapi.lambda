@@ -6,10 +6,9 @@ import com.amd.aparapi.device.OpenCLDevice;
 import com.amd.aparapi.opencl.OpenCL;
 import com.amd.aparapi.opencl.OpenCL.Resource;
 
-public class Pow4Example {
+public class Pow4Example{
 
-   @Resource("com/amd/aparapi/sample/extension/squarer.cl")
-   interface Squarer extends OpenCL<Squarer> {
+   @Resource("com/amd/aparapi/sample/extension/squarer.cl") interface Squarer extends OpenCL<Squarer>{
 
       public Squarer square(//
             Range _range,//

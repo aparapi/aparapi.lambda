@@ -42,14 +42,34 @@ import java.lang.reflect.InvocationTargetException;
 
 import com.amd.aparapi.internal.model.MethodModel;
 import com.amd.aparapi.internal.model.ClassModel.ConstantPool;
-import com.amd.aparapi.internal.model.ClassModel.AttributePool.LocalVariableTableEntry;
-import com.amd.aparapi.internal.model.ClassModel.AttributePool.LocalVariableTableEntry.LocalVariableInfo;
 import com.amd.aparapi.internal.model.ClassModel.ConstantPool.Entry;
 import com.amd.aparapi.internal.model.ClassModel.ConstantPool.FieldEntry;
 import com.amd.aparapi.internal.model.ClassModel.ConstantPool.MethodEntry;
+import com.amd.aparapi.internal.model.ClassModel.LocalVariableTableEntry;
+import com.amd.aparapi.internal.model.ClassModel.LocalVariableInfo;
 import com.amd.aparapi.internal.reader.ByteReader;
 
-public class InstructionSet {
+public class InstructionSet{
+
+   public static enum LoadSpec {
+      NONE, //
+      F, // Float
+      D, // Double
+      I, // Integer
+      L, // Long
+      A, // Array
+      O, // Object
+   }
+
+   public static enum StoreSpec {
+      NONE, //
+      F, // Float
+      D, // Double
+      I, // Integer
+      L, // Long
+      A, // Array
+      O, // Object
+   }
 
    public static enum TypeSpec {
       NONE("none", "none", 0, 0), //
@@ -313,7 +333,7 @@ public class InstructionSet {
 
    public static enum ByteCode {
       // name, operation type, immediateOperands, pop operands, push operands
-      NOP(null, ImmediateSpec.NONE, PopSpec.NONE, PushSpec.NONE, Operator.NONE), //
+      NOP(null, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.NONE, PopSpec.NONE, PushSpec.NONE, Operator.NONE), //
       ACONST_NULL(I_ACONST_NULL.class, PushSpec.N), //
       ICONST_M1(I_ICONST_M1.class, PushSpec.I), //
       ICONST_0(I_ICONST_0.class, PushSpec.I), // 
@@ -334,31 +354,31 @@ public class InstructionSet {
       LDC(I_LDC.class, ImmediateSpec.Bcpci, PushSpec.IorForS), //
       LDC_W(I_LDC_W.class, ImmediateSpec.Scpci, PushSpec.IorForS), //
       LDC2_W(I_LDC2_W.class, ImmediateSpec.Scpci, PushSpec.LorD), //
-      ILOAD(I_ILOAD.class, ImmediateSpec.Blvti, PushSpec.I), //
-      LLOAD(I_LLOAD.class, ImmediateSpec.Blvti, PushSpec.L), //
-      FLOAD(I_FLOAD.class, ImmediateSpec.Blvti, PushSpec.F), //
-      DLOAD(I_DLOAD.class, ImmediateSpec.Blvti, PushSpec.D), //
-      ALOAD(I_ALOAD.class, ImmediateSpec.Blvti, PushSpec.O), //
-      ILOAD_0(I_ILOAD_0.class, PushSpec.I), //
-      ILOAD_1(I_ILOAD_1.class, PushSpec.I), //
-      ILOAD_2(I_ILOAD_2.class, PushSpec.I), //
-      ILOAD_3(I_ILOAD_3.class, PushSpec.I), //
-      LLOAD_0(I_LLOAD_0.class, PushSpec.L), //
-      LLOAD_1(I_LLOAD_1.class, PushSpec.L), //
-      LLOAD_2(I_LLOAD_2.class, PushSpec.L), //
-      LLOAD_3(I_LLOAD_3.class, PushSpec.L), //
-      FLOAD_0(I_FLOAD_0.class, PushSpec.F), //
-      FLOAD_1(I_FLOAD_1.class, PushSpec.F), //
-      FLOAD_2(I_FLOAD_2.class, PushSpec.F), //
-      FLOAD_3(I_FLOAD_3.class, PushSpec.F), //
-      DLOAD_0(I_DLOAD_0.class, PushSpec.D), //
-      DLOAD_1(I_DLOAD_1.class, PushSpec.D), //
-      DLOAD_2(I_DLOAD_2.class, PushSpec.D), //
-      DLOAD_3(I_DLOAD_3.class, PushSpec.D), //
-      ALOAD_0(I_ALOAD_0.class, PushSpec.O), //
-      ALOAD_1(I_ALOAD_1.class, PushSpec.O), //
-      ALOAD_2(I_ALOAD_2.class, PushSpec.O), //
-      ALOAD_3(I_ALOAD_3.class, PushSpec.O), //
+      ILOAD(I_ILOAD.class, LoadSpec.I, ImmediateSpec.Blvti, PushSpec.I), //
+      LLOAD(I_LLOAD.class, LoadSpec.L, ImmediateSpec.Blvti, PushSpec.L), //
+      FLOAD(I_FLOAD.class, LoadSpec.F, ImmediateSpec.Blvti, PushSpec.F), //
+      DLOAD(I_DLOAD.class, LoadSpec.F, ImmediateSpec.Blvti, PushSpec.D), //
+      ALOAD(I_ALOAD.class, LoadSpec.A, ImmediateSpec.Blvti, PushSpec.O), //
+      ILOAD_0(I_ILOAD_0.class, LoadSpec.I, PushSpec.I), //
+      ILOAD_1(I_ILOAD_1.class, LoadSpec.I, PushSpec.I), //
+      ILOAD_2(I_ILOAD_2.class, LoadSpec.I, PushSpec.I), //
+      ILOAD_3(I_ILOAD_3.class, LoadSpec.I, PushSpec.I), //
+      LLOAD_0(I_LLOAD_0.class, LoadSpec.L, PushSpec.L), //
+      LLOAD_1(I_LLOAD_1.class, LoadSpec.L, PushSpec.L), //
+      LLOAD_2(I_LLOAD_2.class, LoadSpec.L, PushSpec.L), //
+      LLOAD_3(I_LLOAD_3.class, LoadSpec.L, PushSpec.L), //
+      FLOAD_0(I_FLOAD_0.class, LoadSpec.F, PushSpec.F), //
+      FLOAD_1(I_FLOAD_1.class, LoadSpec.F, PushSpec.F), //
+      FLOAD_2(I_FLOAD_2.class, LoadSpec.F, PushSpec.F), //
+      FLOAD_3(I_FLOAD_3.class, LoadSpec.F, PushSpec.F), //
+      DLOAD_0(I_DLOAD_0.class, LoadSpec.D, PushSpec.D), //
+      DLOAD_1(I_DLOAD_1.class, LoadSpec.D, PushSpec.D), //
+      DLOAD_2(I_DLOAD_2.class, LoadSpec.D, PushSpec.D), //
+      DLOAD_3(I_DLOAD_3.class, LoadSpec.D, PushSpec.D), //
+      ALOAD_0(I_ALOAD_0.class, LoadSpec.A, PushSpec.O), //
+      ALOAD_1(I_ALOAD_1.class, LoadSpec.A, PushSpec.O), //
+      ALOAD_2(I_ALOAD_2.class, LoadSpec.A, PushSpec.O), //
+      ALOAD_3(I_ALOAD_3.class, LoadSpec.A, PushSpec.O), //
       IALOAD(I_IALOAD.class, PopSpec.AI, PushSpec.I), //
       LALOAD(I_LALOAD.class, PopSpec.AI, PushSpec.L), //
       FALOAD(I_FALOAD.class, PopSpec.AI, PushSpec.F), //
@@ -367,31 +387,31 @@ public class InstructionSet {
       BALOAD(I_BALOAD.class, PopSpec.AI, PushSpec.I), //
       CALOAD(I_CALOAD.class, PopSpec.AI, PushSpec.I), //
       SALOAD(I_SALOAD.class, PopSpec.AI, PushSpec.I), //
-      ISTORE(I_ISTORE.class, ImmediateSpec.Blvti, PopSpec.I), //
-      LSTORE(I_LSTORE.class, ImmediateSpec.Blvti, PopSpec.L), //
-      FSTORE(I_FSTORE.class, ImmediateSpec.Blvti, PopSpec.F), //
-      DSTORE(I_DSTORE.class, ImmediateSpec.Blvti, PopSpec.D), //
-      ASTORE(I_ASTORE.class, ImmediateSpec.Blvti, PopSpec.O), //
-      ISTORE_0(I_ISTORE_0.class, PopSpec.I), //
-      ISTORE_1(I_ISTORE_1.class, PopSpec.I), //
-      ISTORE_2(I_ISTORE_2.class, PopSpec.I), //
-      ISTORE_3(I_ISTORE_3.class, PopSpec.I), //
-      LSTORE_0(I_LSTORE_0.class, PopSpec.L), //
-      LSTORE_1(I_LSTORE_1.class, PopSpec.L), //
-      LSTORE_2(I_LSTORE_2.class, PopSpec.L), //
-      LSTORE_3(I_LSTORE_3.class, PopSpec.L), //
-      FSTORE_0(I_FSTORE_0.class, PopSpec.F), //
-      FSTORE_1(I_FSTORE_1.class, PopSpec.F), //
-      FSTORE_2(I_FSTORE_2.class, PopSpec.F), //
-      FSTORE_3(I_FSTORE_3.class, PopSpec.F), //
-      DSTORE_0(I_DSTORE_0.class, PopSpec.D), //
-      DSTORE_1(I_DSTORE_1.class, PopSpec.D), //
-      DSTORE_2(I_DSTORE_2.class, PopSpec.D), //
-      DSTORE_3(I_DSTORE_3.class, PopSpec.D), //
-      ASTORE_0(I_ASTORE_0.class, PopSpec.O), //
-      ASTORE_1(I_ASTORE_1.class, PopSpec.O), //
-      ASTORE_2(I_ASTORE_2.class, PopSpec.O), //
-      ASTORE_3(I_ASTORE_3.class, PopSpec.O), //
+      ISTORE(I_ISTORE.class, StoreSpec.I, ImmediateSpec.Blvti, PopSpec.I), //
+      LSTORE(I_LSTORE.class, StoreSpec.L, ImmediateSpec.Blvti, PopSpec.L), //
+      FSTORE(I_FSTORE.class, StoreSpec.F, ImmediateSpec.Blvti, PopSpec.F), //
+      DSTORE(I_DSTORE.class, StoreSpec.D, ImmediateSpec.Blvti, PopSpec.D), //
+      ASTORE(I_ASTORE.class, StoreSpec.A, ImmediateSpec.Blvti, PopSpec.O), //
+      ISTORE_0(I_ISTORE_0.class, StoreSpec.I, PopSpec.I), //
+      ISTORE_1(I_ISTORE_1.class, StoreSpec.I, PopSpec.I), //
+      ISTORE_2(I_ISTORE_2.class, StoreSpec.I, PopSpec.I), //
+      ISTORE_3(I_ISTORE_3.class, StoreSpec.I, PopSpec.I), //
+      LSTORE_0(I_LSTORE_0.class, StoreSpec.L, PopSpec.L), //
+      LSTORE_1(I_LSTORE_1.class, StoreSpec.L, PopSpec.L), //
+      LSTORE_2(I_LSTORE_2.class, StoreSpec.L, PopSpec.L), //
+      LSTORE_3(I_LSTORE_3.class, StoreSpec.L, PopSpec.L), //
+      FSTORE_0(I_FSTORE_0.class, StoreSpec.F, PopSpec.F), //
+      FSTORE_1(I_FSTORE_1.class, StoreSpec.F, PopSpec.F), //
+      FSTORE_2(I_FSTORE_2.class, StoreSpec.F, PopSpec.F), //
+      FSTORE_3(I_FSTORE_3.class, StoreSpec.F, PopSpec.F), //
+      DSTORE_0(I_DSTORE_0.class, StoreSpec.D, PopSpec.D), //
+      DSTORE_1(I_DSTORE_1.class, StoreSpec.D, PopSpec.D), //
+      DSTORE_2(I_DSTORE_2.class, StoreSpec.D, PopSpec.D), //
+      DSTORE_3(I_DSTORE_3.class, StoreSpec.D, PopSpec.D), //
+      ASTORE_0(I_ASTORE_0.class, StoreSpec.A, PopSpec.O), //
+      ASTORE_1(I_ASTORE_1.class, StoreSpec.A, PopSpec.O), //
+      ASTORE_2(I_ASTORE_2.class, StoreSpec.A, PopSpec.O), //
+      ASTORE_3(I_ASTORE_3.class, StoreSpec.A, PopSpec.O), //
       IASTORE(I_IASTORE.class, PopSpec.AII), //
       LASTORE(I_LASTORE.class, PopSpec.AIL), //
       FASTORE(I_FASTORE.class, PopSpec.AIF), //
@@ -491,28 +511,34 @@ public class InstructionSet {
       FRETURN(I_FRETURN.class, PopSpec.F), //
       DRETURN(I_DRETURN.class, PopSpec.D), //
       ARETURN(I_ARETURN.class, PopSpec.O), //
-      RETURN(I_RETURN.class, ImmediateSpec.NONE, PopSpec.NONE, PushSpec.NONE, Operator.NONE), //
+      RETURN(I_RETURN.class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.NONE, PopSpec.NONE, PushSpec.NONE, Operator.NONE), //
       GETSTATIC(I_GETSTATIC.class, ImmediateSpec.Scpfi, PushSpec.UNKNOWN), //
       PUTSTATIC(I_PUTSTATIC.class, ImmediateSpec.Scpfi, PopSpec.UNKNOWN), //
-      GETFIELD(I_GETFIELD.class, ImmediateSpec.Scpfi, PopSpec.O, PushSpec.UNKNOWN, Operator.NONE), //
+      GETFIELD(I_GETFIELD.class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.Scpfi, PopSpec.O, PushSpec.UNKNOWN, Operator.NONE), //
       PUTFIELD(I_PUTFIELD.class, ImmediateSpec.Scpfi, PopSpec.OUNKNOWN), //
-      INVOKEVIRTUAL(I_INVOKEVIRTUAL.class, ImmediateSpec.Scpmi, PopSpec.OARGS, PushSpec.UNKNOWN, Operator.NONE), //
-      INVOKESPECIAL(I_INVOKESPECIAL.class, ImmediateSpec.Scpmi, PopSpec.OARGS, PushSpec.UNKNOWN, Operator.NONE), //
-      INVOKESTATIC(I_INVOKESTATIC.class, ImmediateSpec.Scpmi, PopSpec.ARGS, PushSpec.UNKNOWN, Operator.NONE), //
-      INVOKEINTERFACE(I_INVOKEINTERFACE.class, ImmediateSpec.ScpmiBB, PopSpec.OARGS, PushSpec.UNKNOWN, Operator.NONE), //
-      INVOKEDYNAMIC(I_INVOKEDYNAMIC.class, ImmediateSpec.ScpmiBB, PopSpec.OARGS, PushSpec.UNKNOWN, Operator.NONE), //
+      INVOKEVIRTUAL(I_INVOKEVIRTUAL.class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.Scpmi, PopSpec.OARGS, PushSpec.UNKNOWN,
+            Operator.NONE), //
+      INVOKESPECIAL(I_INVOKESPECIAL.class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.Scpmi, PopSpec.OARGS, PushSpec.UNKNOWN,
+            Operator.NONE), //
+      INVOKESTATIC(I_INVOKESTATIC.class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.Scpmi, PopSpec.ARGS, PushSpec.UNKNOWN,
+            Operator.NONE), //
+      INVOKEINTERFACE(I_INVOKEINTERFACE.class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.ScpmiBB, PopSpec.OARGS,
+            PushSpec.UNKNOWN, Operator.NONE), //
+      INVOKEDYNAMIC(I_INVOKEDYNAMIC.class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.ScpmiBB, PopSpec.OARGS, PushSpec.UNKNOWN,
+            Operator.NONE), //
 
       NEW(I_NEW.class, ImmediateSpec.Scpci, PushSpec.O), //
-      NEWARRAY(I_NEWARRAY.class, ImmediateSpec.Bconst, PopSpec.I, PushSpec.A, Operator.NONE), //
-      ANEWARRAY(I_ANEWARRAY.class, ImmediateSpec.Sconst, PopSpec.I, PushSpec.A, Operator.NONE), // 189
+      NEWARRAY(I_NEWARRAY.class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.Bconst, PopSpec.I, PushSpec.A, Operator.NONE), //
+      ANEWARRAY(I_ANEWARRAY.class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.Sconst, PopSpec.I, PushSpec.A, Operator.NONE), // 189
       ARRAYLENGTH(I_ARRAYLENGTH.class, PopSpec.A, PushSpec.I), // 190
       ATHROW(I_ATHROW.class, PopSpec.O, PushSpec.O), // 191
-      CHECKCAST(I_CHECKCAST.class, ImmediateSpec.Scpci, PopSpec.O, PushSpec.O, Operator.NONE), // 192
-      INSTANCEOF(I_INSTANCEOF.class, ImmediateSpec.Scpci, PopSpec.O, PushSpec.I, Operator.NONE), // 193
+      CHECKCAST(I_CHECKCAST.class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.Scpci, PopSpec.O, PushSpec.O, Operator.NONE), // 192
+      INSTANCEOF(I_INSTANCEOF.class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.Scpci, PopSpec.O, PushSpec.I, Operator.NONE), // 193
       MONITORENTER(I_MONITORENTER.class, PopSpec.O), // 194
       MONITOREXIT(I_MONITOREXIT.class, PopSpec.O), // 195
-      WIDE(I_WIDE.class, ImmediateSpec.UNKNOWN, PopSpec.UNKNOWN, PushSpec.UNKNOWN, Operator.NONE), // 196
-      MULTIANEWARRAY(I_MULTIANEWARRAY.class, ImmediateSpec.ScpciBdim, PopSpec.UNKNOWN, PushSpec.A, Operator.NONE), // 197
+      WIDE(I_WIDE.class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.UNKNOWN, PopSpec.UNKNOWN, PushSpec.UNKNOWN, Operator.NONE), // 196
+      MULTIANEWARRAY(I_MULTIANEWARRAY.class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.ScpciBdim, PopSpec.UNKNOWN, PushSpec.A,
+            Operator.NONE), // 197
       IFNULL(I_IFNULL.class, ImmediateSpec.Spc, PopSpec.O, Operator.EqualNULL), // 198
       IFNONNULL(I_IFNONNULL.class, ImmediateSpec.Spc, PopSpec.O, Operator.NotEqualNULL), // 199
       GOTO_W(I_GOTO_W.class, ImmediateSpec.Ipc), // 200
@@ -586,7 +612,8 @@ public class InstructionSet {
       FIELD_ARRAY_ELEMENT_INCREMENT, //
       FIELD_ARRAY_ELEMENT_ASSIGN, //
       HEAD, //
-      COMPOSITE_EMPTY_LOOP;
+      COMPOSITE_EMPTY_LOOP, //
+      COMPOSITE_DO_WHILE;
 
       private final Class<?> clazz;
 
@@ -598,50 +625,72 @@ public class InstructionSet {
 
       private final Operator operator;
 
-      private ByteCode(Class<?> _class, ImmediateSpec _immediate, PopSpec _pop, PushSpec _push, Operator _operator) {
+      private LoadSpec loadSpec;
+
+      private StoreSpec storeSpec;
+
+      private ByteCode(Class<?> _class, LoadSpec _loadSpec, StoreSpec _storeSpec, ImmediateSpec _immediate, PopSpec _pop,
+            PushSpec _push, Operator _operator) {
          clazz = _class;
          immediate = _immediate;
          push = _push;
          pop = _pop;
          operator = _operator;
 
-         //    clazz = ByteCode.class.forName("com.amd.javalabs.classparser.InstructionSet$I_"+getName().toUpperCase(), true, ByteCode.class.getClassLoader());
+         loadSpec = _loadSpec;
+         storeSpec = _storeSpec;
       }
 
       private ByteCode(Class<?> _class, ImmediateSpec _immediate) {
-         this(_class, _immediate, PopSpec.NONE, PushSpec.NONE, Operator.NONE);
+         this(_class, LoadSpec.NONE, StoreSpec.NONE, _immediate, PopSpec.NONE, PushSpec.NONE, Operator.NONE);
       }
 
       private ByteCode(Class<?> _class, PushSpec _push) {
-         this(_class, ImmediateSpec.NONE, PopSpec.NONE, _push, Operator.NONE);
+         this(_class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.NONE, PopSpec.NONE, _push, Operator.NONE);
+      }
+
+      private ByteCode(Class<?> _class, StoreSpec _store, ImmediateSpec _immediate, PopSpec _pop) {
+         this(_class, LoadSpec.NONE, _store, _immediate, _pop, PushSpec.NONE, Operator.NONE);
+      }
+
+      private ByteCode(Class<?> _class, StoreSpec _store, PopSpec _pop) {
+         this(_class, LoadSpec.NONE, _store, ImmediateSpec.NONE, _pop, PushSpec.NONE, Operator.NONE);
       }
 
       private ByteCode(Class<?> _class, ImmediateSpec _immediate, PopSpec _pop) {
-         this(_class, _immediate, _pop, PushSpec.NONE, Operator.NONE);
+         this(_class, LoadSpec.NONE, StoreSpec.NONE, _immediate, _pop, PushSpec.NONE, Operator.NONE);
       }
 
       private ByteCode(Class<?> _class, ImmediateSpec _immediate, PopSpec _pop, Operator _operator) {
-         this(_class, _immediate, _pop, PushSpec.NONE, _operator);
+         this(_class, LoadSpec.NONE, StoreSpec.NONE, _immediate, _pop, PushSpec.NONE, _operator);
+      }
+
+      private ByteCode(Class<?> _class, LoadSpec _load, ImmediateSpec _immediate, PushSpec _push) {
+         this(_class, _load, StoreSpec.NONE, _immediate, PopSpec.NONE, _push, Operator.NONE);
+      }
+
+      private ByteCode(Class<?> _class, LoadSpec _load, PushSpec _push) {
+         this(_class, _load, StoreSpec.NONE, ImmediateSpec.NONE, PopSpec.NONE, _push, Operator.NONE);
       }
 
       private ByteCode(Class<?> _class, ImmediateSpec _immediate, PushSpec _push) {
-         this(_class, _immediate, PopSpec.NONE, _push, Operator.NONE);
+         this(_class, LoadSpec.NONE, StoreSpec.NONE, _immediate, PopSpec.NONE, _push, Operator.NONE);
       }
 
       private ByteCode(Class<?> _class, PopSpec _pop, PushSpec _push) {
-         this(_class, ImmediateSpec.NONE, _pop, _push, Operator.NONE);
+         this(_class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.NONE, _pop, _push, Operator.NONE);
       }
 
       private ByteCode(Class<?> _class, PopSpec _pop, PushSpec _push, Operator _operator) {
-         this(_class, ImmediateSpec.NONE, _pop, _push, _operator);
+         this(_class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.NONE, _pop, _push, _operator);
       }
 
       private ByteCode(Class<?> _class, PopSpec _pop) {
-         this(_class, ImmediateSpec.NONE, _pop, PushSpec.NONE, Operator.NONE);
+         this(_class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.NONE, _pop, PushSpec.NONE, Operator.NONE);
       }
 
       private ByteCode() {
-         this(null, ImmediateSpec.NONE, PopSpec.NONE, PushSpec.NONE, Operator.NONE);
+         this(null, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.NONE, PopSpec.NONE, PushSpec.NONE, Operator.NONE);
       }
 
       public int getCode() {
@@ -731,9 +780,17 @@ public class InstructionSet {
       public Operator getOperator() {
          return (operator);
       }
+
+      public LoadSpec getLoad() {
+         return (loadSpec);
+      }
+
+      public StoreSpec getStore() {
+         return (storeSpec);
+      }
    }
 
-   public static class CompositeInstruction extends Instruction {
+   public static class CompositeInstruction extends Instruction{
 
       protected BranchSet branchSet;
 
@@ -744,18 +801,15 @@ public class InstructionSet {
          setChildren(_firstChild, _lastChild);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("COMPOSITE! " + getByteCode());
       }
 
-      @Override
-      public int getThisPC() {
+      @Override public int getThisPC() {
          return (getLastChild().getThisPC());
       }
 
-      @Override
-      public int getStartPC() {
+      @Override public int getStartPC() {
          return (getFirstChild().getStartPC());
       }
 
@@ -784,6 +838,9 @@ public class InstructionSet {
             case COMPOSITE_EMPTY_LOOP:
                compositeInstruction = new CompositeEmptyLoopInstruction(_methodModel, _firstChild, _lastChild, _branchSet);
                break;
+            case COMPOSITE_DO_WHILE:
+               compositeInstruction = new CompositeDoWhileInstruction(_methodModel, _firstChild, _lastChild, _branchSet);
+               break;
          }
 
          return (compositeInstruction);
@@ -794,38 +851,45 @@ public class InstructionSet {
       }
    }
 
-   public static class CompositeIfInstruction extends CompositeInstruction {
+   public static class CompositeIfInstruction extends CompositeInstruction{
       public CompositeIfInstruction(MethodModel method, Instruction _firstChild, Instruction _lastChild, BranchSet _branchSet) {
          super(method, ByteCode.COMPOSITE_IF, _firstChild, _lastChild, _branchSet);
       }
    }
 
-   public static class CompositeIfElseInstruction extends CompositeInstruction {
+   public static class CompositeIfElseInstruction extends CompositeInstruction{
       public CompositeIfElseInstruction(MethodModel method, Instruction _firstChild, Instruction _lastChild, BranchSet _branchSet) {
          super(method, ByteCode.COMPOSITE_IF_ELSE, _firstChild, _lastChild, _branchSet);
       }
    }
 
-   public static class CompositeForSunInstruction extends CompositeInstruction {
+   public static class CompositeForSunInstruction extends CompositeInstruction{
       public CompositeForSunInstruction(MethodModel method, Instruction _firstChild, Instruction _lastChild, BranchSet _branchSet) {
          super(method, ByteCode.COMPOSITE_FOR_SUN, _firstChild, _lastChild, _branchSet);
       }
    }
 
-   public static class CompositeWhileInstruction extends CompositeInstruction {
+   public static class CompositeWhileInstruction extends CompositeInstruction{
       public CompositeWhileInstruction(MethodModel method, Instruction _firstChild, Instruction _lastChild, BranchSet _branchSet) {
          super(method, ByteCode.COMPOSITE_WHILE, _firstChild, _lastChild, _branchSet);
       }
    }
 
-   public static class CompositeEmptyLoopInstruction extends CompositeInstruction {
-      public CompositeEmptyLoopInstruction(MethodModel method, Instruction _firstChild, Instruction _lastChild,
-            BranchSet _branchSet) {
+   public static class CompositeEmptyLoopInstruction extends CompositeInstruction{
+      public CompositeEmptyLoopInstruction(MethodModel method, Instruction _firstChild, Instruction _lastChild, BranchSet _branchSet) {
          super(method, ByteCode.COMPOSITE_EMPTY_LOOP, _firstChild, _lastChild, _branchSet);
       }
    }
 
-   public static class CompositeForEclipseInstruction extends CompositeInstruction {
+   public static class CompositeDoWhileInstruction extends CompositeInstruction{
+
+      protected CompositeDoWhileInstruction(MethodModel method, Instruction _firstChild, Instruction _lastChild,
+            BranchSet _branchSet) {
+         super(method, ByteCode.COMPOSITE_DO_WHILE, _firstChild, _lastChild, _branchSet);
+      }
+   }
+
+   public static class CompositeForEclipseInstruction extends CompositeInstruction{
       protected CompositeForEclipseInstruction(MethodModel method, Instruction _firstChild, Instruction _lastChild,
             BranchSet _branchSet) {
          super(method, ByteCode.COMPOSITE_FOR_ECLIPSE, _firstChild, _lastChild, _branchSet);
@@ -833,14 +897,14 @@ public class InstructionSet {
       }
    }
 
-   public static class CompositeArbitraryScopeInstruction extends CompositeInstruction {
+   public static class CompositeArbitraryScopeInstruction extends CompositeInstruction{
       protected CompositeArbitraryScopeInstruction(MethodModel method, Instruction _firstChild, Instruction _lastChild,
             BranchSet _branchSet) {
          super(method, ByteCode.COMPOSITE_ARBITRARY_SCOPE, _firstChild, _lastChild, _branchSet);
       }
    }
 
-   public static abstract class OperatorInstruction extends Instruction {
+   public static abstract class OperatorInstruction extends Instruction{
       protected OperatorInstruction(MethodModel _methodPoolEntry, ByteCode code, ByteReader reader, boolean _wide) {
          super(_methodPoolEntry, code, reader, _wide);
       }
@@ -850,14 +914,12 @@ public class InstructionSet {
       }
    }
 
-   public static abstract class BinaryOperator extends OperatorInstruction implements Binary {
-      @Override
-      public final Instruction getLhs() {
+   public static abstract class BinaryOperator extends OperatorInstruction implements Binary{
+      @Override public final Instruction getLhs() {
          return (getFirstChild());
       }
 
-      @Override
-      public final Instruction getRhs() {
+      @Override public final Instruction getRhs() {
          return (getLastChild());
       }
 
@@ -866,9 +928,8 @@ public class InstructionSet {
       }
    }
 
-   public static abstract class UnaryOperator extends OperatorInstruction implements Unary {
-      @Override
-      public final Instruction getUnary() {
+   public static abstract class UnaryOperator extends OperatorInstruction implements Unary{
+      @Override public final Instruction getUnary() {
          return (getFirstChild());
       }
 
@@ -877,13 +938,13 @@ public class InstructionSet {
       }
    }
 
-   public static abstract class CastOperator extends UnaryOperator {
+   public static abstract class CastOperator extends UnaryOperator{
       protected CastOperator(MethodModel _methodPoolEntry, ByteCode code, ByteReader reader, boolean _wide) {
          super(_methodPoolEntry, code, reader, _wide);
       }
    }
 
-   public static abstract class Branch extends Instruction {
+   public static abstract class Branch extends Instruction{
       protected int offset;
 
       protected boolean breakOrContinue;
@@ -970,7 +1031,7 @@ public class InstructionSet {
       }
    }
 
-   public static abstract class ConditionalBranch extends Branch {
+   public static abstract class ConditionalBranch extends Branch{
       private BranchSet branchSet;
 
       public ConditionalBranch(MethodModel _methodPoolEntry, ByteCode _byteCode, ByteReader _byteReader, boolean _wide) {
@@ -1029,7 +1090,7 @@ public class InstructionSet {
       }
    }
 
-   public static abstract class UnconditionalBranch extends Branch {
+   public static abstract class UnconditionalBranch extends Branch{
       public UnconditionalBranch(MethodModel _methodPoolEntry, ByteCode _byteCode, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, _byteCode, _byteReader, _wide);
       }
@@ -1039,60 +1100,56 @@ public class InstructionSet {
       }
    }
 
-   public static abstract class IfUnary extends ConditionalBranch16 implements Unary {
+   public static abstract class IfUnary extends ConditionalBranch16 implements Unary{
       public IfUnary(MethodModel _methodPoolEntry, ByteCode _byteCode, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, _byteCode, _byteReader, _wide);
       }
 
-      @Override
-      public Instruction getUnary() {
+      @Override public Instruction getUnary() {
          return (getFirstChild());
       }
    }
 
-   public static abstract class If extends ConditionalBranch16 implements Binary {
+   public static abstract class If extends ConditionalBranch16 implements Binary{
       public If(MethodModel _methodPoolEntry, ByteCode _byteCode, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, _byteCode, _byteReader, _wide);
       }
 
-      @Override
-      public Instruction getLhs() {
+      @Override public Instruction getLhs() {
          return (getFirstChild());
       }
 
-      @Override
-      public Instruction getRhs() {
+      @Override public Instruction getRhs() {
          return (getLastChild());
       }
    }
 
-   public static abstract class ConditionalBranch16 extends ConditionalBranch implements HasOperator {
+   public static abstract class ConditionalBranch16 extends ConditionalBranch implements HasOperator{
       public ConditionalBranch16(MethodModel _methodPoolEntry, ByteCode _byteCode, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, _byteCode, _byteReader, _wide);
          offset = _byteReader.s2();
       }
 
-      @Override
-      public Operator getOperator() {
+      @Override public Operator getOperator() {
          return (getByteCode().getOperator());
       }
    }
 
-   public static abstract class UnconditionalBranch16 extends UnconditionalBranch {
+   public static abstract class UnconditionalBranch16 extends UnconditionalBranch{
       public UnconditionalBranch16(MethodModel _methodPoolEntry, ByteCode _byteCode, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, _byteCode, _byteReader, _wide);
          offset = _byteReader.s2();
       }
    }
 
-   public static abstract class Branch32 extends UnconditionalBranch {
+   public static abstract class Branch32 extends UnconditionalBranch{
       public Branch32(MethodModel _methodPoolEntry, ByteCode _byteCode, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, _byteCode, _byteReader, _wide);
          offset = _byteReader.s4();
       }
    }
 
-   public static abstract class ArrayAccess extends Instruction {
+   public static abstract class ArrayAccess extends Instruction{
       public ArrayAccess(MethodModel _methodPoolEntry, ByteCode _byteCode, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, _byteCode, _byteReader, _wide);
       }
@@ -1106,24 +1163,23 @@ public class InstructionSet {
       }
    }
 
-   public static abstract class AccessArrayElement extends ArrayAccess {
+   public static abstract class AccessArrayElement extends ArrayAccess{
       protected AccessArrayElement(MethodModel _methodPoolEntry, ByteCode _byteCode, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, _byteCode, _byteReader, _wide);
       }
    }
 
-   public static class I_AALOAD extends AccessArrayElement {
+   public static class I_AALOAD extends AccessArrayElement{
       public I_AALOAD(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.AALOAD, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("push reference from arrayref and index");
       }
    }
 
-   public static abstract class AssignToArrayElement extends ArrayAccess {
+   public static abstract class AssignToArrayElement extends ArrayAccess{
       public Instruction getValue() {
          return (getFirstChild().getNextExpr().getNextExpr());
       }
@@ -1133,262 +1189,246 @@ public class InstructionSet {
       }
    }
 
-   public static class I_AASTORE extends AssignToArrayElement {
+   public static class I_AASTORE extends AssignToArrayElement{
       public I_AASTORE(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.AASTORE, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("pop reference into arrayref[index]");
       }
    }
 
-   public static class I_ACONST_NULL extends Instruction implements Constant<Object> {
+   public static class I_ACONST_NULL extends Instruction implements Constant<Object>{
       public I_ACONST_NULL(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.ACONST_NULL, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("push null");
       }
 
-      @Override
-      public Object getValue() {
+      @Override public Object getValue() {
          return null;
       }
    }
 
-   public static abstract class LocalVariableConstIndexAccessor extends IndexConst implements AccessLocalVariable {
-      public LocalVariableConstIndexAccessor(MethodModel methodPoolEntry, ByteCode byteCode, ByteReader byteReader, boolean _wide, int index) {
+   public static abstract class LocalVariableConstIndexAccessor extends IndexConst implements AccessLocalVariable{
+      public LocalVariableConstIndexAccessor(MethodModel methodPoolEntry, ByteCode byteCode, ByteReader byteReader, boolean _wide,
+            int index) {
          super(methodPoolEntry, byteCode, byteReader, _wide, index);
       }
 
-      @Override
-      public int getLocalVariableTableIndex() {
+      @Override public int getLocalVariableTableIndex() {
          return (index);
       }
 
-      @Override
-      public LocalVariableInfo getLocalVariableInfo() {
+      @Override public LocalVariableInfo getLocalVariableInfo() {
          return (method.getLocalVariableTableEntry().getVariable(getThisPC() + getLength(), getLocalVariableTableIndex()));
       }
    }
 
-   public static abstract class LocalVariableConstIndexLoad extends LocalVariableConstIndexAccessor {
-      public LocalVariableConstIndexLoad(MethodModel methodPoolEntry, ByteCode byteCode, ByteReader byteReader, boolean _wide, int index) {
+   public static abstract class LocalVariableConstIndexLoad extends LocalVariableConstIndexAccessor{
+      public LocalVariableConstIndexLoad(MethodModel methodPoolEntry, ByteCode byteCode, ByteReader byteReader, boolean _wide,
+            int index) {
          super(methodPoolEntry, byteCode, byteReader, _wide, index);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("push reference from local var index " + index);
       }
    }
 
-   public static abstract class LocalVariableConstIndexStore extends LocalVariableConstIndexAccessor implements AssignToLocalVariable {
-      public LocalVariableConstIndexStore(MethodModel methodPoolEntry, ByteCode byteCode, ByteReader byteReader, boolean _wide, int index) {
+   public static abstract class LocalVariableConstIndexStore extends LocalVariableConstIndexAccessor implements
+         AssignToLocalVariable{
+      public LocalVariableConstIndexStore(MethodModel methodPoolEntry, ByteCode byteCode, ByteReader byteReader, boolean _wide,
+            int index) {
          super(methodPoolEntry, byteCode, byteReader, _wide, index);
       }
 
-      @Override
-      public boolean isDeclaration() {
-         return (method.getLocalVariableTableEntry().getVariable(getThisPC() + getLength(), getLocalVariableTableIndex())
-               .getStart() == (getThisPC() + getLength()));
+      @Override public boolean isDeclaration() {
+         LocalVariableInfo lvi = method.getLocalVariableTableEntry().getVariable(getThisPC() + getLength(),
+               getLocalVariableTableIndex());
+         return (lvi.getStart() == getThisPC() + getLength());
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("pop reference into local var index " + index);
       }
    }
 
-   public static abstract class LocalVariableIndex08Accessor extends Index08 implements AccessLocalVariable {
+   public static abstract class LocalVariableIndex08Accessor extends Index08 implements AccessLocalVariable{
       public LocalVariableIndex08Accessor(MethodModel methodPoolEntry, ByteCode byteCode, ByteReader byteReader, boolean _wide) {
          super(methodPoolEntry, byteCode, byteReader, _wide);
       }
 
-      @Override
-      public int getLocalVariableTableIndex() {
+      @Override public int getLocalVariableTableIndex() {
          return (index);
       }
 
-      @Override
-      public LocalVariableInfo getLocalVariableInfo() {
+      @Override public LocalVariableInfo getLocalVariableInfo() {
          return (method.getLocalVariableTableEntry().getVariable(getThisPC() + getLength(), getLocalVariableTableIndex()));
       }
    }
 
-   public static abstract class LocalVariableIndex08Load extends LocalVariableIndex08Accessor {
+   public static abstract class LocalVariableIndex08Load extends LocalVariableIndex08Accessor{
       public LocalVariableIndex08Load(MethodModel methodPoolEntry, ByteCode byteCode, ByteReader byteReader, boolean _wide) {
          super(methodPoolEntry, byteCode, byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("push reference from local var index " + index);
       }
    }
 
-   public static abstract class LocalVariableIndex08Store extends LocalVariableIndex08Accessor implements AssignToLocalVariable {
+   public static abstract class LocalVariableIndex08Store extends LocalVariableIndex08Accessor implements AssignToLocalVariable{
       public LocalVariableIndex08Store(MethodModel methodPoolEntry, ByteCode byteCode, ByteReader byteReader, boolean _wide) {
          super(methodPoolEntry, byteCode, byteReader, _wide);
       }
 
-      @Override
-      public boolean isDeclaration() {
+      @Override public boolean isDeclaration() {
          final LocalVariableTableEntry localVariableTableEntry = method.getLocalVariableTableEntry();
          final LocalVariableInfo localVarInfo = localVariableTableEntry.getVariable(getThisPC() + getLength(),
                getLocalVariableTableIndex());
          return ((localVarInfo != null) && (localVarInfo.getStart() == (getThisPC() + getLength())));
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("pop reference into local var index " + index);
       }
    }
 
-   public static class I_ALOAD extends LocalVariableIndex08Load {
+   public static class I_ALOAD extends LocalVariableIndex08Load{
       public I_ALOAD(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.ALOAD, _byteReader, _wide);
       }
    }
 
-   public static class I_ALOAD_0 extends LocalVariableConstIndexLoad {
+   public static class I_ALOAD_0 extends LocalVariableConstIndexLoad{
       public I_ALOAD_0(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.ALOAD_0, _byteReader, _wide, 0);
       }
    }
 
-   public static class I_ALOAD_1 extends LocalVariableConstIndexLoad {
+   public static class I_ALOAD_1 extends LocalVariableConstIndexLoad{
       public I_ALOAD_1(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.ALOAD_1, _byteReader, _wide, 1);
       }
    }
 
-   public static class I_ALOAD_2 extends LocalVariableConstIndexLoad {
+   public static class I_ALOAD_2 extends LocalVariableConstIndexLoad{
       public I_ALOAD_2(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.ALOAD_2, _byteReader, _wide, 2);
       }
    }
 
-   public static class I_ALOAD_3 extends LocalVariableConstIndexLoad {
+   public static class I_ALOAD_3 extends LocalVariableConstIndexLoad{
       public I_ALOAD_3(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.ALOAD_3, _byteReader, _wide, 3);
       }
    }
 
-   public static class I_ANEWARRAY extends Index16 implements New {
+   public static class I_ANEWARRAY extends Index16 implements New{
       public I_ANEWARRAY(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.ANEWARRAY, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("new array of reference");
       }
    }
 
-   public static class I_ARETURN extends Return {
+   public static class I_ARETURN extends Return{
       public I_ARETURN(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.ARETURN, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("return popped reference");
       }
    }
 
-   public static class I_ARRAYLENGTH extends Instruction {
+   public static class I_ARRAYLENGTH extends Instruction{
       public I_ARRAYLENGTH(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.ARRAYLENGTH, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("pop array push length");
       }
    }
 
-   public static class I_ASTORE extends LocalVariableIndex08Store {
+   public static class I_ASTORE extends LocalVariableIndex08Store{
       public I_ASTORE(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.ASTORE, _byteReader, _wide);
       }
    }
 
-   public static class I_ASTORE_0 extends LocalVariableConstIndexStore {
+   public static class I_ASTORE_0 extends LocalVariableConstIndexStore{
       public I_ASTORE_0(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.ASTORE_0, _byteReader, _wide, 0);
       }
    }
 
-   public static class I_ASTORE_1 extends LocalVariableConstIndexStore {
+   public static class I_ASTORE_1 extends LocalVariableConstIndexStore{
       public I_ASTORE_1(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.ASTORE_1, _byteReader, _wide, 1);
       }
    }
 
-   public static class I_ASTORE_2 extends LocalVariableConstIndexStore {
+   public static class I_ASTORE_2 extends LocalVariableConstIndexStore{
       public I_ASTORE_2(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.ASTORE_2, _byteReader, _wide, 2);
       }
    }
 
-   public static class I_ASTORE_3 extends LocalVariableConstIndexStore {
+   public static class I_ASTORE_3 extends LocalVariableConstIndexStore{
       public I_ASTORE_3(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.ASTORE_3, _byteReader, _wide, 3);
       }
    }
 
-   public static class I_ATHROW extends Instruction {
+   public static class I_ATHROW extends Instruction{
       public I_ATHROW(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.ATHROW, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("pop reference and throw");
       }
    }
 
-   public static class I_BALOAD extends AccessArrayElement {
+   public static class I_BALOAD extends AccessArrayElement{
       public I_BALOAD(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.BALOAD, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("push byte/boolean from arrayref and index");
       }
    }
 
-   public static class I_BASTORE extends AssignToArrayElement {
+   public static class I_BASTORE extends AssignToArrayElement{
       public I_BASTORE(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.BASTORE, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("pop boolean/byte into arrayref[index]");
       }
    }
 
-   public static class I_BIPUSH extends ImmediateConstant<Integer> {
+   public static class I_BIPUSH extends ImmediateConstant<Integer>{
       public I_BIPUSH(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.BIPUSH, _byteReader, _wide);
          value = _byteReader.u1();
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("push (byte)");
       }
 
-      @Override
-      public Integer getValue() {
+      @Override public Integer getValue() {
          int byteValue = super.getValue();
          if (byteValue > 127) {
             byteValue = -(256 - byteValue);
@@ -1397,1086 +1437,996 @@ public class InstructionSet {
       }
    }
 
-   public static class I_CALOAD extends AccessArrayElement {
+   public static class I_CALOAD extends AccessArrayElement{
       public I_CALOAD(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.CALOAD, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("push char from arrayref and index");
       }
    }
 
-   public static class I_CASTORE extends AssignToArrayElement {
+   public static class I_CASTORE extends AssignToArrayElement{
       public I_CASTORE(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.CASTORE, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("pop char into arrayref[index]");
       }
    }
 
-   public static class I_CHECKCAST extends Index16 {
+   public static class I_CHECKCAST extends Index16{
       public I_CHECKCAST(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.CHECKCAST, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("peek reference check against the constant accessed 16 bit");
       }
    }
 
-   public static class I_D2F extends CastOperator {
+   public static class I_D2F extends CastOperator{
       public I_D2F(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.D2F, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("pop double push float");
       }
    }
 
-   public static class I_D2I extends CastOperator {
+   public static class I_D2I extends CastOperator{
       public I_D2I(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.D2I, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("pop double push int");
       }
    }
 
-   public static class I_D2L extends CastOperator {
+   public static class I_D2L extends CastOperator{
       public I_D2L(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.D2L, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("pop double push long");
       }
    }
 
-   public static class I_DADD extends BinaryOperator {
+   public static class I_DADD extends BinaryOperator{
       public I_DADD(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.DADD, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("add top two doubles");
       }
    }
 
-   public static class I_DALOAD extends AccessArrayElement {
+   public static class I_DALOAD extends AccessArrayElement{
       public I_DALOAD(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.DALOAD, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("push double from arrayref and index");
       }
    }
 
-   public static class I_DASTORE extends AssignToArrayElement {
+   public static class I_DASTORE extends AssignToArrayElement{
       public I_DASTORE(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.DASTORE, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("pop double into arrayref[index]");
       }
    }
 
-   public static class I_DCMPG extends Instruction {
+   public static class I_DCMPG extends Instruction{
       public I_DCMPG(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.DCMPG, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("push result of double comparison");
       }
    }
 
-   public static class I_DCMPL extends Instruction {
+   public static class I_DCMPL extends Instruction{
       public I_DCMPL(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.DCMPL, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("push result of double comparison");
       }
    }
 
-   public static abstract class BytecodeEncodedConstant<T> extends Instruction implements Constant<T> {
+   public static abstract class BytecodeEncodedConstant<T> extends Instruction implements Constant<T>{
       private final T value;
 
-      public BytecodeEncodedConstant(MethodModel _methodPoolEntry, ByteCode _byteCode, ByteReader _byteReader, boolean _wide, T _value) {
+      public BytecodeEncodedConstant(MethodModel _methodPoolEntry, ByteCode _byteCode, ByteReader _byteReader, boolean _wide,
+            T _value) {
          super(_methodPoolEntry, _byteCode, _byteReader, _wide);
          value = _value;
       }
 
-      @Override
-      public T getValue() {
+      @Override public T getValue() {
          return (value);
       }
    }
 
-   public static abstract class ImmediateConstant<T> extends Instruction implements Constant<T> {
+   public static abstract class ImmediateConstant<T> extends Instruction implements Constant<T>{
       protected T value;
 
       public ImmediateConstant(MethodModel _methodPoolEntry, ByteCode _byteCode, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, _byteCode, _byteReader, _wide);
       }
 
-      @Override
-      public T getValue() {
+      @Override public T getValue() {
          return (value);
       }
    }
 
-   public static class I_DCONST_0 extends BytecodeEncodedConstant<Double> {
+   public static class I_DCONST_0 extends BytecodeEncodedConstant<Double>{
       public I_DCONST_0(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.DCONST_0, _byteReader, _wide, 0.0);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("push (double) 0.0");
       }
    }
 
-   public static class I_DCONST_1 extends BytecodeEncodedConstant<Double> {
+   public static class I_DCONST_1 extends BytecodeEncodedConstant<Double>{
       public I_DCONST_1(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.DCONST_1, _byteReader, _wide, 1.0);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("push (double) 1.0");
       }
    }
 
-   public static class I_DDIV extends BinaryOperator {
+   public static class I_DDIV extends BinaryOperator{
       public I_DDIV(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.DDIV, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("div top two doubles");
       }
    }
 
-   public static class I_DLOAD extends LocalVariableIndex08Load {
+   public static class I_DLOAD extends LocalVariableIndex08Load{
       public I_DLOAD(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.DLOAD, _byteReader, _wide);
       }
    }
 
-   public static class I_DLOAD_0 extends LocalVariableConstIndexLoad {
+   public static class I_DLOAD_0 extends LocalVariableConstIndexLoad{
       public I_DLOAD_0(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.DLOAD_0, _byteReader, _wide, 0);
       }
    }
 
-   public static class I_DLOAD_1 extends LocalVariableConstIndexLoad {
+   public static class I_DLOAD_1 extends LocalVariableConstIndexLoad{
       public I_DLOAD_1(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.DLOAD_1, _byteReader, _wide, 1);
       }
    }
 
-   public static class I_DLOAD_2 extends LocalVariableConstIndexLoad {
+   public static class I_DLOAD_2 extends LocalVariableConstIndexLoad{
       public I_DLOAD_2(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.DLOAD_2, _byteReader, _wide, 2);
       }
    }
 
-   public static class I_DLOAD_3 extends LocalVariableConstIndexLoad {
+   public static class I_DLOAD_3 extends LocalVariableConstIndexLoad{
       public I_DLOAD_3(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.DLOAD_3, _byteReader, _wide, 3);
       }
    }
 
-   public static class I_DMUL extends BinaryOperator {
+   public static class I_DMUL extends BinaryOperator{
       public I_DMUL(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.DMUL, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("mul top two doubles");
       }
    }
 
-   public static class I_DNEG extends UnaryOperator {
+   public static class I_DNEG extends UnaryOperator{
       public I_DNEG(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.DNEG, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("neg top double");
       }
    }
 
-   public static class I_DREM extends BinaryOperator {
+   public static class I_DREM extends BinaryOperator{
       public I_DREM(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.DREM, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("rem top two doubles");
       }
    }
 
-   public static class I_DRETURN extends Return {
+   public static class I_DRETURN extends Return{
       public I_DRETURN(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.DRETURN, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("return popped double");
       }
    }
 
-   public static class I_DSTORE extends LocalVariableIndex08Store {
+   public static class I_DSTORE extends LocalVariableIndex08Store{
       public I_DSTORE(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.DSTORE, _byteReader, _wide);
       }
    }
 
-   public static class I_DSTORE_0 extends LocalVariableConstIndexStore {
+   public static class I_DSTORE_0 extends LocalVariableConstIndexStore{
       public I_DSTORE_0(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.DSTORE_0, _byteReader, _wide, 0);
       }
    }
 
-   public static class I_DSTORE_1 extends LocalVariableConstIndexStore {
+   public static class I_DSTORE_1 extends LocalVariableConstIndexStore{
       public I_DSTORE_1(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.DSTORE_1, _byteReader, _wide, 1);
       }
    }
 
-   public static class I_DSTORE_2 extends LocalVariableConstIndexStore {
+   public static class I_DSTORE_2 extends LocalVariableConstIndexStore{
       public I_DSTORE_2(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.DSTORE_2, _byteReader, _wide, 2);
       }
    }
 
-   public static class I_DSTORE_3 extends LocalVariableConstIndexStore {
+   public static class I_DSTORE_3 extends LocalVariableConstIndexStore{
       public I_DSTORE_3(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.DSTORE_3, _byteReader, _wide, 3);
       }
    }
 
-   public static class I_DSUB extends BinaryOperator {
+   public static class I_DSUB extends BinaryOperator{
       public I_DSUB(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.DSUB, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("sub top two doubles");
       }
    }
 
-   public static abstract class DUP extends Instruction {
+   public static abstract class DUP extends Instruction{
       public DUP(MethodModel _methodPoolEntry, ByteCode _byteCode, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, _byteCode, _byteReader, _wide);
       }
    }
 
-   public static class I_DUP extends DUP {
+   public static class I_DUP extends DUP{
       public I_DUP(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.DUP, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("dup top item");
       }
    }
 
-   public static class I_DUP_X1 extends DUP {
+   public static class I_DUP_X1 extends DUP{
       public I_DUP_X1(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.DUP_X1, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("dup top item 2 items down");
       }
    }
 
-   public static class I_DUP_X2 extends DUP {
+   public static class I_DUP_X2 extends DUP{
       public I_DUP_X2(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.DUP_X2, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("dup top item 3 items down");
       }
    }
 
-   public static class I_DUP2 extends DUP {
+   public static class I_DUP2 extends DUP{
       public I_DUP2(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.DUP2, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("dup top 2 items");
       }
    }
 
-   public static class I_DUP2_X1 extends DUP {
+   public static class I_DUP2_X1 extends DUP{
       public I_DUP2_X1(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.DUP2_X1, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("dup top 2 items 2 items down");
       }
    }
 
-   public static class I_DUP2_X2 extends DUP {
+   public static class I_DUP2_X2 extends DUP{
       public I_DUP2_X2(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.DUP_X2, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("dup top 2 items 3 items down");
       }
    }
 
-   public static class I_F2D extends CastOperator {
+   public static class I_F2D extends CastOperator{
       public I_F2D(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.F2D, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("pop float push double");
       }
    }
 
-   public static class I_F2I extends CastOperator {
+   public static class I_F2I extends CastOperator{
       public I_F2I(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.F2I, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("pop float push int");
       }
    }
 
-   public static class I_F2L extends CastOperator {
+   public static class I_F2L extends CastOperator{
       public I_F2L(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.F2L, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("pop float push long");
       }
    }
 
-   public static class I_FADD extends BinaryOperator {
+   public static class I_FADD extends BinaryOperator{
       public I_FADD(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.FADD, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("add top two floats");
       }
    }
 
-   public static class I_FALOAD extends AccessArrayElement {
+   public static class I_FALOAD extends AccessArrayElement{
       public I_FALOAD(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.FALOAD, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("push float from arrayref and index");
       }
    }
 
-   public static class I_FASTORE extends AssignToArrayElement {
+   public static class I_FASTORE extends AssignToArrayElement{
       public I_FASTORE(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.FASTORE, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("pop float into arrayref[index]");
       }
    }
 
-   public static class I_FCMPG extends BinaryOperator {
+   public static class I_FCMPG extends BinaryOperator{
       public I_FCMPG(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.FCMPG, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("push result of float comparison");
       }
    }
 
-   public static class I_FCMPL extends BinaryOperator {
+   public static class I_FCMPL extends BinaryOperator{
       public I_FCMPL(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.FCMPL, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("push result of float comparison");
       }
    }
 
-   public static class I_FCONST_0 extends BytecodeEncodedConstant<Float> {
+   public static class I_FCONST_0 extends BytecodeEncodedConstant<Float>{
       public I_FCONST_0(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.FCONST_0, _byteReader, _wide, 0f);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("push (float) 0.0");
       }
    }
 
-   public static class I_FCONST_1 extends BytecodeEncodedConstant<Float> {
+   public static class I_FCONST_1 extends BytecodeEncodedConstant<Float>{
       public I_FCONST_1(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.FCONST_1, _byteReader, _wide, 1f);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("push (float) 1.0");
       }
    }
 
-   public static class I_FCONST_2 extends BytecodeEncodedConstant<Float> {
+   public static class I_FCONST_2 extends BytecodeEncodedConstant<Float>{
       public I_FCONST_2(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.FCONST_2, _byteReader, _wide, 2f);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("push (float) 2.0");
       }
    }
 
-   public static class I_FDIV extends BinaryOperator {
+   public static class I_FDIV extends BinaryOperator{
       public I_FDIV(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.FDIV, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("div top two floats");
       }
    }
 
-   public static class I_FLOAD extends LocalVariableIndex08Load {
+   public static class I_FLOAD extends LocalVariableIndex08Load{
       public I_FLOAD(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.FLOAD, _byteReader, _wide);
       }
    }
 
-   public static class I_FLOAD_0 extends LocalVariableConstIndexLoad {
+   public static class I_FLOAD_0 extends LocalVariableConstIndexLoad{
       public I_FLOAD_0(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.FLOAD_0, _byteReader, _wide, 0);
       }
    }
 
-   public static class I_FLOAD_1 extends LocalVariableConstIndexLoad {
+   public static class I_FLOAD_1 extends LocalVariableConstIndexLoad{
       public I_FLOAD_1(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.FLOAD_1, _byteReader, _wide, 1);
       }
    }
 
-   public static class I_FLOAD_2 extends LocalVariableConstIndexLoad {
+   public static class I_FLOAD_2 extends LocalVariableConstIndexLoad{
       public I_FLOAD_2(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.FLOAD_2, _byteReader, _wide, 2);
       }
    }
 
-   public static class I_FLOAD_3 extends LocalVariableConstIndexLoad {
+   public static class I_FLOAD_3 extends LocalVariableConstIndexLoad{
       public I_FLOAD_3(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.FLOAD_3, _byteReader, _wide, 3);
       }
    }
 
-   public static class I_FMUL extends BinaryOperator {
+   public static class I_FMUL extends BinaryOperator{
       public I_FMUL(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.FMUL, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("mul top two floats");
       }
    }
 
-   public static class I_FNEG extends UnaryOperator {
+   public static class I_FNEG extends UnaryOperator{
       public I_FNEG(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.FNEG, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("neg top float");
       }
    }
 
-   public static class I_FREM extends BinaryOperator {
+   public static class I_FREM extends BinaryOperator{
       public I_FREM(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.FREM, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("rem top two floats");
       }
    }
 
-   public static class I_FRETURN extends Return {
+   public static class I_FRETURN extends Return{
       public I_FRETURN(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.FRETURN, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("return popped float");
       }
    }
 
-   public static class I_FSTORE extends LocalVariableIndex08Store {
+   public static class I_FSTORE extends LocalVariableIndex08Store{
       public I_FSTORE(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.FSTORE, _byteReader, _wide);
       }
    }
 
-   public static class I_FSTORE_0 extends LocalVariableConstIndexStore {
+   public static class I_FSTORE_0 extends LocalVariableConstIndexStore{
       public I_FSTORE_0(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.FSTORE_0, _byteReader, _wide, 0);
       }
    }
 
-   public static class I_FSTORE_1 extends LocalVariableConstIndexStore {
+   public static class I_FSTORE_1 extends LocalVariableConstIndexStore{
       public I_FSTORE_1(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.FSTORE_1, _byteReader, _wide, 1);
       }
    }
 
-   public static class I_FSTORE_2 extends LocalVariableConstIndexStore {
+   public static class I_FSTORE_2 extends LocalVariableConstIndexStore{
       I_FSTORE_2(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.FSTORE_2, _byteReader, _wide, 2);
       }
    }
 
-   public static class I_FSTORE_3 extends LocalVariableConstIndexStore {
+   public static class I_FSTORE_3 extends LocalVariableConstIndexStore{
       public I_FSTORE_3(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.FSTORE_3, _byteReader, _wide, 3);
       }
    }
 
-   public static class I_FSUB extends BinaryOperator {
+   public static class I_FSUB extends BinaryOperator{
       public I_FSUB(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.FSUB, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("sub top two floats");
       }
    }
 
-   public static class I_GETFIELD extends Index16 implements AccessInstanceField {
+   public static class I_GETFIELD extends Index16 implements AccessInstanceField{
 
       public I_GETFIELD(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.GETFIELD, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("push value from field referenced by 16 bit constant index");
       }
 
-      @Override
-      public int getConstantPoolFieldIndex() {
+      @Override public int getConstantPoolFieldIndex() {
          return (index);
       }
 
-      @Override
-      public FieldEntry getConstantPoolFieldEntry() {
+      @Override public FieldEntry getConstantPoolFieldEntry() {
          return (method.getConstantPool().getFieldEntry(getConstantPoolFieldIndex()));
       }
 
-      @Override
-      public Instruction getInstance() {
+      @Override public Instruction getInstance() {
          return (getFirstChild());
       }
 
-      @Override
-      public int getStackConsumeCount() {
+      @Override public int getStackConsumeCount() {
          return (1);
       }
 
-      @Override
-      public int getStackProduceCount() {
+      @Override public int getStackProduceCount() {
          return (1);
       }
    }
 
-   public static class I_GETSTATIC extends Index16 implements AccessField {
+   public static class I_GETSTATIC extends Index16 implements AccessField{
       public I_GETSTATIC(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.GETSTATIC, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("push  static field value at 16 bit constant index");
       }
 
-      @Override
-      public int getConstantPoolFieldIndex() {
+      @Override public int getConstantPoolFieldIndex() {
          return (index);
       }
 
-      @Override
-      public FieldEntry getConstantPoolFieldEntry() {
+      @Override public FieldEntry getConstantPoolFieldEntry() {
          return (method.getConstantPool().getFieldEntry(getConstantPoolFieldIndex()));
       }
 
-      @Override
-      public int getStackConsumeCount() {
+      @Override public int getStackConsumeCount() {
          return (0);
       }
 
-      @Override
-      public int getStackProduceCount() {
+      @Override public int getStackProduceCount() {
          return (1);
       }
    }
 
-   public static class I_GOTO extends UnconditionalBranch16 {
+   public static class I_GOTO extends UnconditionalBranch16{
       public I_GOTO(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.GOTO, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("branch ");
       }
    }
 
-   public static class I_GOTO_W extends Branch32 {
+   public static class I_GOTO_W extends Branch32{
       public I_GOTO_W(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.GOTO_W, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("goto wide branch");
       }
    }
 
-   public static class I_I2B extends CastOperator {
+   public static class I_I2B extends CastOperator{
       public I_I2B(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.I2B, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("pop int push byte");
       }
    }
 
-   public static class I_I2C extends CastOperator {
+   public static class I_I2C extends CastOperator{
       public I_I2C(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.I2C, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("pop int push char");
       }
    }
 
-   public static class I_I2D extends CastOperator {
+   public static class I_I2D extends CastOperator{
       public I_I2D(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.I2D, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("pop int push double");
       }
    }
 
-   public static class I_I2F extends CastOperator {
+   public static class I_I2F extends CastOperator{
       public I_I2F(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.I2F, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("pop int push float");
       }
    }
 
-   public static class I_I2L extends CastOperator {
+   public static class I_I2L extends CastOperator{
       public I_I2L(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.I2L, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("pop int push long");
       }
    }
 
-   public static class I_I2S extends CastOperator {
+   public static class I_I2S extends CastOperator{
       public I_I2S(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.I2S, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("pop int push short");
       }
    }
 
-   public static class I_IADD extends BinaryOperator {
+   public static class I_IADD extends BinaryOperator{
       public I_IADD(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.IADD, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("add top two ints");
       }
    }
 
-   public static class I_IALOAD extends AccessArrayElement {
+   public static class I_IALOAD extends AccessArrayElement{
       public I_IALOAD(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.IALOAD, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("push int from arrayref and index");
       }
    }
 
-   public static class I_IAND extends BinaryOperator {
+   public static class I_IAND extends BinaryOperator{
       public I_IAND(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.IAND, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("and top two ints");
       }
    }
 
-   public static class I_IASTORE extends AssignToArrayElement {
+   public static class I_IASTORE extends AssignToArrayElement{
       public I_IASTORE(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.IASTORE, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("pop int into arrayref[index]");
       }
    }
 
-   public static class I_ICONST_0 extends BytecodeEncodedConstant<Integer> {
+   public static class I_ICONST_0 extends BytecodeEncodedConstant<Integer>{
       public I_ICONST_0(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.ICONST_0, _byteReader, _wide, 0);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("push (int) 0");
       }
    }
 
-   public static class I_ICONST_1 extends BytecodeEncodedConstant<Integer> {
+   public static class I_ICONST_1 extends BytecodeEncodedConstant<Integer>{
       public I_ICONST_1(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.ICONST_1, _byteReader, _wide, 1);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("push (int) 1");
       }
    }
 
-   public static class I_ICONST_2 extends BytecodeEncodedConstant<Integer> {
+   public static class I_ICONST_2 extends BytecodeEncodedConstant<Integer>{
       public I_ICONST_2(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.ICONST_2, _byteReader, _wide, 2);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("push (int) 2");
       }
    }
 
-   public static class I_ICONST_3 extends BytecodeEncodedConstant<Integer> {
+   public static class I_ICONST_3 extends BytecodeEncodedConstant<Integer>{
       public I_ICONST_3(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.ICONST_3, _byteReader, _wide, 3);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("push (int) 3");
       }
    }
 
-   public static class I_ICONST_4 extends BytecodeEncodedConstant<Integer> {
+   public static class I_ICONST_4 extends BytecodeEncodedConstant<Integer>{
       public I_ICONST_4(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.ICONST_4, _byteReader, _wide, 4);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("push (int) 4");
       }
    }
 
-   public static class I_ICONST_5 extends BytecodeEncodedConstant<Integer> {
+   public static class I_ICONST_5 extends BytecodeEncodedConstant<Integer>{
       public I_ICONST_5(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.ICONST_5, _byteReader, _wide, 5);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("push (int) 5");
       }
    }
 
-   public static class I_ICONST_M1 extends BytecodeEncodedConstant<Integer> {
+   public static class I_ICONST_M1 extends BytecodeEncodedConstant<Integer>{
       public I_ICONST_M1(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.ICONST_M1, _byteReader, _wide, -1);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("push (int)-1");
       }
    }
 
-   public static class I_IDIV extends BinaryOperator {
+   public static class I_IDIV extends BinaryOperator{
       public I_IDIV(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.IDIV, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("div top two ints");
       }
    }
 
-   public static class I_IF_ACMPEQ extends If {
+   public static class I_IF_ACMPEQ extends If{
       public I_IF_ACMPEQ(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.IF_ACMPEQ, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("branch if stack top references ==");
       }
    }
 
-   public static class I_IF_ACMPNE extends If {
+   public static class I_IF_ACMPNE extends If{
       public I_IF_ACMPNE(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.IF_ACMPNE, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("branch if stack top references !=");
       }
    }
 
-   public static class I_IF_ICMPEQ extends If {
+   public static class I_IF_ICMPEQ extends If{
       public I_IF_ICMPEQ(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.IF_ICMPEQ, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("branch if stack top ints ==");
       }
    }
 
-   public static class I_IF_ICMPGE extends If {
+   public static class I_IF_ICMPGE extends If{
       public I_IF_ICMPGE(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.IF_ICMPGE, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("branch if stack top ints >=");
       }
    }
 
-   public static class I_IF_ICMPGT extends If {
+   public static class I_IF_ICMPGT extends If{
       public I_IF_ICMPGT(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.IF_ICMPGT, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("branch if stack top ints > ");
       }
    }
 
-   public static class I_IF_ICMPLE extends If {
+   public static class I_IF_ICMPLE extends If{
       public I_IF_ICMPLE(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.IF_ICMPLE, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("branch if stack top ints <=");
       }
    }
 
-   public static class I_IF_ICMPLT extends If {
+   public static class I_IF_ICMPLT extends If{
       public I_IF_ICMPLT(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.IF_ICMPLT, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("branch if stack top ints < ");
       }
    }
 
-   public static class I_IF_ICMPNE extends If {
+   public static class I_IF_ICMPNE extends If{
       public I_IF_ICMPNE(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.IF_ICMPNE, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("branch if stack top ints !=");
       }
    }
 
-   public static class I_IFEQ extends IfUnary {
+   public static class I_IFEQ extends IfUnary{
       public I_IFEQ(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.IFEQ, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("branch if stack top int == 0");
       }
    }
 
-   public static class I_IFGE extends IfUnary {
+   public static class I_IFGE extends IfUnary{
       public I_IFGE(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.IFGE, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("branch if stack top int >= 0");
       }
    }
 
-   public static class I_IFGT extends IfUnary {
+   public static class I_IFGT extends IfUnary{
       public I_IFGT(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.IFGT, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("branch if stack top int > 0");
       }
    }
 
-   public static class I_IFLE extends IfUnary {
+   public static class I_IFLE extends IfUnary{
       public I_IFLE(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.IFLE, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("branch if stack top int <= 0");
       }
    }
 
-   public static class I_IFLT extends IfUnary {
+   public static class I_IFLT extends IfUnary{
       public I_IFLT(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.IFLT, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("branch if stack top int < 0");
       }
    }
 
-   public static class I_IFNE extends IfUnary {
+   public static class I_IFNE extends IfUnary{
       public I_IFNE(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.IFNE, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("branch if stack top int != 0");
       }
    }
 
-   public static class I_IFNONNULL extends ConditionalBranch16 {
+   public static class I_IFNONNULL extends ConditionalBranch16{
       public I_IFNONNULL(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.IFNONNULL, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("branch if non null");
       }
    }
 
-   public static class I_IFNULL extends ConditionalBranch16 {
+   public static class I_IFNULL extends ConditionalBranch16{
       public I_IFNULL(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.IFNULL, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("branch if null");
       }
    }
 
-   public static class I_IINC extends Index08 {
+   public static class I_IINC extends Index08{
       private int delta;
 
       private final boolean wide;
@@ -2492,8 +2442,7 @@ public class InstructionSet {
 
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("inc var index 08 bit by byte");
       }
 
@@ -2528,70 +2477,67 @@ public class InstructionSet {
       }
    }
 
-   public static class I_ILOAD extends LocalVariableIndex08Load {
+   public static class I_ILOAD extends LocalVariableIndex08Load{
       public I_ILOAD(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.ILOAD, _byteReader, _wide);
       }
    }
 
-   public static class I_ILOAD_0 extends LocalVariableConstIndexLoad {
+   public static class I_ILOAD_0 extends LocalVariableConstIndexLoad{
       public I_ILOAD_0(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.ILOAD_0, _byteReader, _wide, 0);
       }
    }
 
-   public static class I_ILOAD_1 extends LocalVariableConstIndexLoad {
+   public static class I_ILOAD_1 extends LocalVariableConstIndexLoad{
       public I_ILOAD_1(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.ILOAD_1, _byteReader, _wide, 1);
       }
    }
 
-   public static class I_ILOAD_2 extends LocalVariableConstIndexLoad {
+   public static class I_ILOAD_2 extends LocalVariableConstIndexLoad{
       public I_ILOAD_2(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.ILOAD_2, _byteReader, _wide, 2);
       }
    }
 
-   public static class I_ILOAD_3 extends LocalVariableConstIndexLoad {
+   public static class I_ILOAD_3 extends LocalVariableConstIndexLoad{
       public I_ILOAD_3(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.ILOAD_3, _byteReader, _wide, 3);
       }
    }
 
-   public static class I_IMUL extends BinaryOperator {
+   public static class I_IMUL extends BinaryOperator{
       public I_IMUL(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.IMUL, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("mul top two ints");
       }
    }
 
-   public static class I_INEG extends UnaryOperator {
+   public static class I_INEG extends UnaryOperator{
       public I_INEG(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.INEG, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("neg top int");
       }
    }
 
-   public static class I_INSTANCEOF extends Index16 {
+   public static class I_INSTANCEOF extends Index16{
       public I_INSTANCEOF(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.INSTANCEOF, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("pop reference check against the constant accessed 16 bit push 1 if same");
       }
    }
 
-   public static class I_INVOKEINTERFACE extends Index16 implements InterfaceConstantPoolMethodIndexAccessor {
+   public static class I_INVOKEINTERFACE extends Index16 implements InterfaceConstantPoolMethodIndexAccessor{
       private final int args;
 
       public I_INVOKEINTERFACE(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
@@ -2601,28 +2547,23 @@ public class InstructionSet {
 
       }
 
-      @Override
-      public int getArgs() {
+      @Override public int getArgs() {
          return (args);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("pop args and call the interface method referenced by 16 bit constant index");
       }
 
-      @Override
-      public int getConstantPoolInterfaceMethodIndex() {
+      @Override public int getConstantPoolInterfaceMethodIndex() {
          return (index);
       }
 
-      @Override
-      public ConstantPool.InterfaceMethodEntry getConstantPoolInterfaceMethodEntry() {
+      @Override public ConstantPool.InterfaceMethodEntry getConstantPoolInterfaceMethodEntry() {
          return (method.getConstantPool().getInterfaceMethodEntry(getConstantPoolInterfaceMethodIndex()));
       }
 
-      @Override
-      public Instruction getArg(int _arg) {
+      @Override public Instruction getArg(int _arg) {
          Instruction child = getFirstChild();
          _arg++;
 
@@ -2633,24 +2574,21 @@ public class InstructionSet {
          return (child);
       }
 
-      @Override
-      public Instruction getInstanceReference() {
+      @Override public Instruction getInstanceReference() {
          return (getFirstChild());
       }
 
-      @Override
-      public int getStackConsumeCount() {
+      @Override public int getStackConsumeCount() {
          return (getConstantPoolInterfaceMethodEntry().getStackConsumeCount() + 1); // + 1 to account for instance 'this'
 
       }
 
-      @Override
-      public int getStackProduceCount() {
+      @Override public int getStackProduceCount() {
          return (getConstantPoolInterfaceMethodEntry().getStackProduceCount()); // + 1 to account for instance 'this'
       }
    }
 
-   public static class I_INVOKEDYNAMIC extends Index16 implements InterfaceConstantPoolMethodIndexAccessor {
+   public static class I_INVOKEDYNAMIC extends Index16 implements InterfaceConstantPoolMethodIndexAccessor{
       private final int args;
 
       public I_INVOKEDYNAMIC(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
@@ -2660,28 +2598,23 @@ public class InstructionSet {
 
       }
 
-      @Override
-      public int getArgs() {
+      @Override public int getArgs() {
          return (args);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("pop args and call the invoke dynamic method referenced by 16 bit constant index");
       }
 
-      @Override
-      public int getConstantPoolInterfaceMethodIndex() {
+      @Override public int getConstantPoolInterfaceMethodIndex() {
          return (index);
       }
 
-      @Override
-      public ConstantPool.InterfaceMethodEntry getConstantPoolInterfaceMethodEntry() {
+      @Override public ConstantPool.InterfaceMethodEntry getConstantPoolInterfaceMethodEntry() {
          return (method.getConstantPool().getInterfaceMethodEntry(getConstantPoolInterfaceMethodIndex()));
       }
 
-      @Override
-      public Instruction getArg(int _arg) {
+      @Override public Instruction getArg(int _arg) {
          Instruction child = getFirstChild();
          _arg++;
          while (_arg-- != 0) {
@@ -2690,47 +2623,40 @@ public class InstructionSet {
          return (child);
       }
 
-      @Override
-      public Instruction getInstanceReference() {
+      @Override public Instruction getInstanceReference() {
          return (getFirstChild());
       }
 
-      @Override
-      public int getStackConsumeCount() {
+      @Override public int getStackConsumeCount() {
          return (getConstantPoolInterfaceMethodEntry().getStackConsumeCount() + 1); // + 1 to account for instance 'this'
 
       }
 
-      @Override
-      public int getStackProduceCount() {
+      @Override public int getStackProduceCount() {
          return (getConstantPoolInterfaceMethodEntry().getStackProduceCount()); // + 1 to account for instance 'this'
       }
    }
 
-   public static class I_INVOKESPECIAL extends Index16 implements VirtualMethodCall {
+   public static class I_INVOKESPECIAL extends Index16 implements VirtualMethodCall{
 
       public I_INVOKESPECIAL(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.INVOKESPECIAL, _byteReader, _wide);
 
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("pop object reference and args and call the special method referenced by 16 bit constant index");
       }
 
-      @Override
-      public int getConstantPoolMethodIndex() {
+      @Override public int getConstantPoolMethodIndex() {
          return (index);
       }
 
-      @Override
-      public ConstantPool.MethodEntry getConstantPoolMethodEntry() {
+      @Override public ConstantPool.MethodEntry getConstantPoolMethodEntry() {
          return (method.getConstantPool().getMethodEntry(getConstantPoolMethodIndex()));
       }
 
-      @Override
-      public Instruction getArg(int _arg) {
+      @Override public Instruction getArg(int _arg) {
          Instruction child = getFirstChild();
          _arg++;
          while (_arg-- != 0) {
@@ -2739,47 +2665,40 @@ public class InstructionSet {
          return (child);
       }
 
-      @Override
-      public Instruction getInstanceReference() {
+      @Override public Instruction getInstanceReference() {
          return (getFirstChild());
       }
 
-      @Override
-      public int getStackConsumeCount() {
+      @Override public int getStackConsumeCount() {
          return (getConstantPoolMethodEntry().getStackConsumeCount() + 1); // + 1 to account for instance 'this'
 
       }
 
-      @Override
-      public int getStackProduceCount() {
+      @Override public int getStackProduceCount() {
          return (getConstantPoolMethodEntry().getStackProduceCount());
       }
    }
 
-   public static class I_INVOKESTATIC extends Index16 implements MethodCall {
+   public static class I_INVOKESTATIC extends Index16 implements MethodCall{
 
       public I_INVOKESTATIC(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.INVOKESTATIC, _byteReader, _wide);
 
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("pop args and call the  static method referenced by 16 bit constant index");
       }
 
-      @Override
-      public int getConstantPoolMethodIndex() {
+      @Override public int getConstantPoolMethodIndex() {
          return (index);
       }
 
-      @Override
-      public ConstantPool.MethodEntry getConstantPoolMethodEntry() {
+      @Override public ConstantPool.MethodEntry getConstantPoolMethodEntry() {
          return (method.getConstantPool().getMethodEntry(getConstantPoolMethodIndex()));
       }
 
-      @Override
-      public Instruction getArg(int _arg) {
+      @Override public Instruction getArg(int _arg) {
          Instruction child = getFirstChild();
 
          while (_arg-- != 0) {
@@ -2789,41 +2708,35 @@ public class InstructionSet {
          return (child);
       }
 
-      @Override
-      public int getStackConsumeCount() {
+      @Override public int getStackConsumeCount() {
          return (getConstantPoolMethodEntry().getStackConsumeCount());
       }
 
-      @Override
-      public int getStackProduceCount() {
+      @Override public int getStackProduceCount() {
          return (getConstantPoolMethodEntry().getStackProduceCount());
       }
    }
 
-   public static class I_INVOKEVIRTUAL extends Index16 implements VirtualMethodCall {
+   public static class I_INVOKEVIRTUAL extends Index16 implements VirtualMethodCall{
 
       public I_INVOKEVIRTUAL(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.INVOKEVIRTUAL, _byteReader, _wide);
 
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("pop object reference and args and call the method referenced by 16 bit constant index");
       }
 
-      @Override
-      public int getConstantPoolMethodIndex() {
+      @Override public int getConstantPoolMethodIndex() {
          return (index);
       }
 
-      @Override
-      public ConstantPool.MethodEntry getConstantPoolMethodEntry() {
+      @Override public ConstantPool.MethodEntry getConstantPoolMethodEntry() {
          return (method.getConstantPool().getMethodEntry(getConstantPoolMethodIndex()));
       }
 
-      @Override
-      public Instruction getArg(int _arg) {
+      @Override public Instruction getArg(int _arg) {
          Instruction child = getFirstChild();
          _arg++;
 
@@ -2834,416 +2747,378 @@ public class InstructionSet {
          return (child);
       }
 
-      @Override
-      public Instruction getInstanceReference() {
+      @Override public Instruction getInstanceReference() {
          return (getFirstChild());
       }
 
-      @Override
-      public int getStackConsumeCount() {
+      @Override public int getStackConsumeCount() {
          return (getConstantPoolMethodEntry().getStackConsumeCount() + 1); // + 1 to account for instance 'this'
       }
 
-      @Override
-      public int getStackProduceCount() {
+      @Override public int getStackProduceCount() {
          return (getConstantPoolMethodEntry().getStackProduceCount());
       }
    }
 
-   public static class I_IOR extends BinaryOperator {
+   public static class I_IOR extends BinaryOperator{
       public I_IOR(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.IOR, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("or top two ints");
       }
    }
 
-   public static class I_IREM extends BinaryOperator {
+   public static class I_IREM extends BinaryOperator{
       public I_IREM(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.IREM, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("rem top two ints");
       }
    }
 
-   public static class I_IRETURN extends Return {
+   public static class I_IRETURN extends Return{
       public I_IRETURN(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.IRETURN, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("return popped int");
       }
    }
 
-   public static class I_ISHL extends BinaryOperator {
+   public static class I_ISHL extends BinaryOperator{
       public I_ISHL(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.ISHL, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("shift left top int");
       }
    }
 
-   public static class I_ISHR extends BinaryOperator {
+   public static class I_ISHR extends BinaryOperator{
       public I_ISHR(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.ISHR, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("shift right top int");
       }
    }
 
-   public static class I_ISTORE extends LocalVariableIndex08Store {
+   public static class I_ISTORE extends LocalVariableIndex08Store{
       public I_ISTORE(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.ISTORE, _byteReader, _wide);
       }
    }
 
-   public static class I_ISTORE_0 extends LocalVariableConstIndexStore {
+   public static class I_ISTORE_0 extends LocalVariableConstIndexStore{
       public I_ISTORE_0(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.ISTORE_0, _byteReader, _wide, 0);
       }
    }
 
-   public static class I_ISTORE_1 extends LocalVariableConstIndexStore {
+   public static class I_ISTORE_1 extends LocalVariableConstIndexStore{
       public I_ISTORE_1(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.ISTORE_1, _byteReader, _wide, 1);
       }
    }
 
-   public static class I_ISTORE_2 extends LocalVariableConstIndexStore {
+   public static class I_ISTORE_2 extends LocalVariableConstIndexStore{
       public I_ISTORE_2(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.ISTORE_2, _byteReader, _wide, 2);
       }
    }
 
-   public static class I_ISTORE_3 extends LocalVariableConstIndexStore {
+   public static class I_ISTORE_3 extends LocalVariableConstIndexStore{
       public I_ISTORE_3(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.ISTORE_3, _byteReader, _wide, 3);
       }
    }
 
-   public static class I_ISUB extends BinaryOperator {
+   public static class I_ISUB extends BinaryOperator{
       public I_ISUB(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.ISUB, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("sub top two ints");
       }
    }
 
-   public static class I_IUSHR extends BinaryOperator {
+   public static class I_IUSHR extends BinaryOperator{
       public I_IUSHR(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.IUSHR, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("shift right top int unsigned");
       }
    }
 
-   public static class I_IXOR extends BinaryOperator {
+   public static class I_IXOR extends BinaryOperator{
       public I_IXOR(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.IXOR, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("xor top two ints");
       }
    }
 
-   public static class I_JSR extends UnconditionalBranch16 {
+   public static class I_JSR extends UnconditionalBranch16{
       public I_JSR(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.JSR, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("jump to subroutine ");
       }
    }
 
-   public static class I_JSR_W extends Branch32 {
+   public static class I_JSR_W extends Branch32{
       public I_JSR_W(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.JSR_W, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("subroutine");
       }
    }
 
-   public static class I_L2D extends CastOperator {
+   public static class I_L2D extends CastOperator{
       public I_L2D(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.L2D, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("pop long push double");
       }
    }
 
-   public static class I_L2F extends CastOperator {
+   public static class I_L2F extends CastOperator{
       public I_L2F(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.L2F, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("pop long push float");
       }
    }
 
-   public static class I_L2I extends CastOperator {
+   public static class I_L2I extends CastOperator{
       public I_L2I(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.L2I, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("pop long push int");
       }
    }
 
-   public static class I_LADD extends BinaryOperator {
+   public static class I_LADD extends BinaryOperator{
       public I_LADD(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.LADD, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("add top two longs");
       }
    }
 
-   public static class I_LALOAD extends AccessArrayElement {
+   public static class I_LALOAD extends AccessArrayElement{
       public I_LALOAD(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.LALOAD, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("push long from arrayref and index");
       }
    }
 
-   public static class I_LAND extends BinaryOperator {
+   public static class I_LAND extends BinaryOperator{
       public I_LAND(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.LAND, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("and top two longs");
       }
    }
 
-   public static class I_LASTORE extends AssignToArrayElement {
+   public static class I_LASTORE extends AssignToArrayElement{
       public I_LASTORE(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.LASTORE, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("pop long into arrayref[index]");
       }
    }
 
-   public static class I_LCMP extends BinaryOperator {
+   public static class I_LCMP extends BinaryOperator{
       public I_LCMP(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.LCMP, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("push result of long comparison");
       }
    }
 
-   public static class I_LCONST_0 extends BytecodeEncodedConstant<Long> {
+   public static class I_LCONST_0 extends BytecodeEncodedConstant<Long>{
       public I_LCONST_0(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.LCONST_0, _byteReader, _wide, 0L);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("push (long) 0");
       }
    }
 
-   public static class I_LCONST_1 extends BytecodeEncodedConstant<Long> {
+   public static class I_LCONST_1 extends BytecodeEncodedConstant<Long>{
       public I_LCONST_1(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.LCONST_1, _byteReader, _wide, 1L);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("push (long) 1");
       }
    }
 
-   public static class I_LDC extends Index08 implements ConstantPoolEntryConstant {
+   public static class I_LDC extends Index08 implements ConstantPoolEntryConstant{
       public I_LDC(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.LDC, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("push constant at 08 bit index");
       }
 
-      @Override
-      public Object getValue() {
+      @Override public Object getValue() {
          return (method.getConstantPool().getConstantEntry(getConstantPoolIndex()));
 
       }
 
-      @Override
-      public int getConstantPoolIndex() {
+      @Override public int getConstantPoolIndex() {
          return (index);
       }
 
-      @Override
-      public Entry getConstantPoolEntry() {
+      @Override public Entry getConstantPoolEntry() {
          return (method.getConstantPool().get(getConstantPoolIndex()));
       }
    }
 
-   public static class I_LDC_W extends Index16 implements ConstantPoolEntryConstant {
+   public static class I_LDC_W extends Index16 implements ConstantPoolEntryConstant{
       public I_LDC_W(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.LDC_W, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("push constant at 16 bit index");
       }
 
-      @Override
-      public int getConstantPoolIndex() {
+      @Override public int getConstantPoolIndex() {
          return (index);
       }
 
-      @Override
-      public Object getValue() {
+      @Override public Object getValue() {
          return (method.getConstantPool().getConstantEntry(getConstantPoolIndex()));
 
       }
 
-      @Override
-      public Entry getConstantPoolEntry() {
+      @Override public Entry getConstantPoolEntry() {
          return (method.getConstantPool().get(getConstantPoolIndex()));
       }
    }
 
-   public static class I_LDC2_W extends Index16 implements ConstantPoolEntryConstant {
+   public static class I_LDC2_W extends Index16 implements ConstantPoolEntryConstant{
       public I_LDC2_W(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.LDC2_W, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("push long/double constant at 16 bit index");
       }
 
-      @Override
-      public int getConstantPoolIndex() {
+      @Override public int getConstantPoolIndex() {
          return (index);
       }
 
-      @Override
-      public Entry getConstantPoolEntry() {
+      @Override public Entry getConstantPoolEntry() {
          return (method.getConstantPool().get(getConstantPoolIndex()));
       }
 
-      @Override
-      public Object getValue() {
+      @Override public Object getValue() {
          return (method.getConstantPool().getConstantEntry(getConstantPoolIndex()));
       }
    }
 
-   public static class I_LDIV extends BinaryOperator {
+   public static class I_LDIV extends BinaryOperator{
       public I_LDIV(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.LDIV, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("div top two longs");
       }
    }
 
-   public static class I_LLOAD extends LocalVariableIndex08Load {
+   public static class I_LLOAD extends LocalVariableIndex08Load{
       public I_LLOAD(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.LLOAD, _byteReader, _wide);
       }
    }
 
-   public static class I_LLOAD_0 extends LocalVariableConstIndexLoad {
+   public static class I_LLOAD_0 extends LocalVariableConstIndexLoad{
       public I_LLOAD_0(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.LLOAD_0, _byteReader, _wide, 0);
       }
    }
 
-   public static class I_LLOAD_1 extends LocalVariableConstIndexLoad {
+   public static class I_LLOAD_1 extends LocalVariableConstIndexLoad{
       public I_LLOAD_1(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.LLOAD_1, _byteReader, _wide, 1);
       }
    }
 
-   public static class I_LLOAD_2 extends LocalVariableConstIndexLoad {
+   public static class I_LLOAD_2 extends LocalVariableConstIndexLoad{
       public I_LLOAD_2(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.LLOAD_2, _byteReader, _wide, 2);
       }
    }
 
-   public static class I_LLOAD_3 extends LocalVariableConstIndexLoad {
+   public static class I_LLOAD_3 extends LocalVariableConstIndexLoad{
       public I_LLOAD_3(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.LLOAD_3, _byteReader, _wide, 3);
       }
    }
 
-   public static class I_LMUL extends BinaryOperator {
+   public static class I_LMUL extends BinaryOperator{
       public I_LMUL(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.LMUL, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("mul top two longs");
       }
    }
 
-   public static class I_LNEG extends UnaryOperator {
+   public static class I_LNEG extends UnaryOperator{
       public I_LNEG(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.LNEG, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("neg top long");
       }
    }
 
-   public static class I_LOOKUPSWITCH extends Switch {
+   public static class I_LOOKUPSWITCH extends Switch{
       private final int[] matches;
 
       private final int npairs;
@@ -3263,8 +3138,7 @@ public class InstructionSet {
          }
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("help!");
       }
 
@@ -3277,148 +3151,138 @@ public class InstructionSet {
       }
    }
 
-   public static class I_LOR extends BinaryOperator {
+   public static class I_LOR extends BinaryOperator{
       public I_LOR(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.LOR, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("or top two longs");
       }
    }
 
-   public static class I_LREM extends BinaryOperator {
+   public static class I_LREM extends BinaryOperator{
       public I_LREM(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.LREM, _byteReader, _wide);
 
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("rem top two longs");
       }
    }
 
-   public static class I_LRETURN extends Return {
+   public static class I_LRETURN extends Return{
       public I_LRETURN(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.LRETURN, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("return popped long");
       }
    }
 
-   public static class I_LSHL extends BinaryOperator {
+   public static class I_LSHL extends BinaryOperator{
       public I_LSHL(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.LSHL, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("shift left top long");
       }
    }
 
-   public static class I_LSHR extends BinaryOperator {
+   public static class I_LSHR extends BinaryOperator{
       public I_LSHR(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.LSHR, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("shift right top long");
       }
    }
 
-   public static class I_LSTORE extends LocalVariableIndex08Store {
+   public static class I_LSTORE extends LocalVariableIndex08Store{
       public I_LSTORE(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.LSTORE, _byteReader, _wide);
       }
    }
 
-   public static class I_LSTORE_0 extends LocalVariableConstIndexStore {
+   public static class I_LSTORE_0 extends LocalVariableConstIndexStore{
       public I_LSTORE_0(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.LSTORE_0, _byteReader, _wide, 0);
       }
    }
 
-   public static class I_LSTORE_1 extends LocalVariableConstIndexStore {
+   public static class I_LSTORE_1 extends LocalVariableConstIndexStore{
       public I_LSTORE_1(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.LSTORE_1, _byteReader, _wide, 1);
       }
    }
 
-   public static class I_LSTORE_2 extends LocalVariableConstIndexStore {
+   public static class I_LSTORE_2 extends LocalVariableConstIndexStore{
       public I_LSTORE_2(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.LSTORE_2, _byteReader, _wide, 2);
       }
    }
 
-   public static class I_LSTORE_3 extends LocalVariableConstIndexStore {
+   public static class I_LSTORE_3 extends LocalVariableConstIndexStore{
       public I_LSTORE_3(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.LSTORE_3, _byteReader, _wide, 3);
       }
    }
 
-   public static class I_LSUB extends BinaryOperator {
+   public static class I_LSUB extends BinaryOperator{
       public I_LSUB(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.LSUB, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("sub top two longs");
       }
    }
 
-   public static class I_LUSHR extends BinaryOperator {
+   public static class I_LUSHR extends BinaryOperator{
       public I_LUSHR(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.LUSHR, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("shift right top long unsigned");
       }
    }
 
-   public static class I_LXOR extends BinaryOperator {
+   public static class I_LXOR extends BinaryOperator{
       public I_LXOR(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.LXOR, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("xor top two longs");
       }
    }
 
-   public static class I_MONITORENTER extends Instruction {
+   public static class I_MONITORENTER extends Instruction{
       public I_MONITORENTER(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.MONITORENTER, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("pop reference and inc monitor");
       }
    }
 
-   public static class I_MONITOREXIT extends Instruction {
+   public static class I_MONITOREXIT extends Instruction{
       public I_MONITOREXIT(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.MONITOREXIT, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("pop reference and dec monitor");
       }
    }
 
-   public static class I_MULTIANEWARRAY extends Index16 implements New {
+   public static class I_MULTIANEWARRAY extends Index16 implements New{
       private final int dimensions;
 
       public I_MULTIANEWARRAY(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
@@ -3426,8 +3290,7 @@ public class InstructionSet {
          dimensions = _byteReader.u1();
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("create a multi dimension array of refernce types ");
       }
 
@@ -3436,18 +3299,17 @@ public class InstructionSet {
       }
    }
 
-   public static class I_NEW extends Index16 implements New {
+   public static class I_NEW extends Index16 implements New{
       public I_NEW(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.NEW, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("new");
       }
    }
 
-   public static class I_NEWARRAY extends Instruction implements New {
+   public static class I_NEWARRAY extends Instruction implements New{
       private final int type;
 
       public I_NEWARRAY(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
@@ -3455,8 +3317,7 @@ public class InstructionSet {
          type = _byteReader.u1();
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("new array simple type");
       }
 
@@ -3465,139 +3326,119 @@ public class InstructionSet {
       }
    }
 
-   public static class I_NOP extends Instruction {
+   public static class I_NOP extends Instruction{
       public I_NOP(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.NOP, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("no op");
       }
    }
 
-   public static class I_POP extends Instruction {
+   public static class I_POP extends Instruction{
       public I_POP(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.POP, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("pop one item");
       }
    }
 
-   public static class I_POP2 extends Instruction {
+   public static class I_POP2 extends Instruction{
       public I_POP2(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.POP2, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("pop 2 items");
       }
    }
 
-   public static class I_PUTFIELD extends Index16 implements AssignToInstanceField {
+   public static class I_PUTFIELD extends Index16 implements AssignToInstanceField{
       public I_PUTFIELD(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.PUTFIELD, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("pop stack value into field referenced by 16 bit constant index");
       }
 
-      @Override
-      public int getConstantPoolFieldIndex() {
+      @Override public int getConstantPoolFieldIndex() {
          return (index);
       }
 
-      @Override
-      public FieldEntry getConstantPoolFieldEntry() {
+      @Override public FieldEntry getConstantPoolFieldEntry() {
          return (method.getConstantPool().getFieldEntry(getConstantPoolFieldIndex()));
       }
 
-      @Override
-      public int getStackConsumeCount() {
+      @Override public int getStackConsumeCount() {
          return (2);
       }
 
-      @Override
-      public int getStackProduceCount() {
+      @Override public int getStackProduceCount() {
          return (0);
       }
 
-      @Override
-      public Instruction getInstance() {
+      @Override public Instruction getInstance() {
          return (getFirstChild());
       }
 
-      @Override
-      public Instruction getValueToAssign() {
+      @Override public Instruction getValueToAssign() {
          return (getLastChild());
       }
    }
 
-   public static class I_PUTSTATIC extends Index16 implements AssignToField {
+   public static class I_PUTSTATIC extends Index16 implements AssignToField{
       public I_PUTSTATIC(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.PUTSTATIC, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("pop stack value into 16 bit constant index as field");
       }
 
-      @Override
-      public int getConstantPoolFieldIndex() {
+      @Override public int getConstantPoolFieldIndex() {
          return (index);
       }
 
-      @Override
-      public FieldEntry getConstantPoolFieldEntry() {
+      @Override public FieldEntry getConstantPoolFieldEntry() {
          return (method.getConstantPool().getFieldEntry(getConstantPoolFieldIndex()));
       }
 
-      @Override
-      public int getStackConsumeCount() {
+      @Override public int getStackConsumeCount() {
          return (1);
       }
 
-      @Override
-      public int getStackProduceCount() {
+      @Override public int getStackProduceCount() {
          return (0);
       }
 
-      @Override
-      public Instruction getValueToAssign() {
+      @Override public Instruction getValueToAssign() {
          return (getLastChild());
       }
    }
 
-   public static class I_RET extends Index08 implements AssignToLocalVariable {
+   public static class I_RET extends Index08 implements AssignToLocalVariable{
       public I_RET(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.RET, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("return to pc in local var index 08 bit");
       }
 
-      @Override
-      public LocalVariableInfo getLocalVariableInfo() {
+      @Override public LocalVariableInfo getLocalVariableInfo() {
          return (method.getLocalVariableTableEntry().getVariable(getThisPC() + getLength(), getLocalVariableTableIndex()));
       }
 
-      @Override
-      public boolean isDeclaration() {
+      @Override public boolean isDeclaration() {
          return (method.getLocalVariableTableEntry().getVariable(getThisPC() + getLength(), getLocalVariableTableIndex())
                .getStart() == (getThisPC() + getLength()));
       }
 
-      @Override
-      public int getLocalVariableTableIndex() {
+      @Override public int getLocalVariableTableIndex() {
          return (index);
       }
 
@@ -3606,63 +3447,58 @@ public class InstructionSet {
       //}
    }
 
-   public static class I_RETURN extends Return {
+   public static class I_RETURN extends Return{
       public I_RETURN(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.RETURN, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("return void");
       }
    }
 
-   public static class I_SALOAD extends AccessArrayElement {
+   public static class I_SALOAD extends AccessArrayElement{
       public I_SALOAD(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.SALOAD, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("push short from arrayref and index");
       }
    }
 
-   public static class I_SASTORE extends AssignToArrayElement {
+   public static class I_SASTORE extends AssignToArrayElement{
       public I_SASTORE(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.SASTORE, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("pop short into arrayref[index]");
       }
    }
 
-   public static class I_SIPUSH extends ImmediateConstant<Integer> {
+   public static class I_SIPUSH extends ImmediateConstant<Integer>{
       public I_SIPUSH(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.SIPUSH, _byteReader, _wide);
          value = _byteReader.u2();
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("push (short)");
       }
    }
 
-   public static class I_SWAP extends Instruction {
+   public static class I_SWAP extends Instruction{
       public I_SWAP(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, ByteCode.SWAP, _byteReader, _wide);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("swap top 2 items");
       }
    }
 
-   public static class I_TABLESWITCH extends Switch {
+   public static class I_TABLESWITCH extends Switch{
       private final int high;
 
       private final int low;
@@ -3681,8 +3517,7 @@ public class InstructionSet {
          }
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("help!");
       }
 
@@ -3695,7 +3530,7 @@ public class InstructionSet {
       }
    }
 
-   public static class I_WIDE extends Instruction {
+   public static class I_WIDE extends Instruction{
       private boolean iinc;
 
       private int increment;
@@ -3716,8 +3551,7 @@ public class InstructionSet {
          }
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("help");
       }
 
@@ -3738,18 +3572,17 @@ public class InstructionSet {
       }
    }
 
-   public static class I_END extends Instruction {
+   public static class I_END extends Instruction{
       public I_END(MethodModel method, int _pc) {
          super(method, ByteCode.NONE, _pc);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("END");
       }
    }
 
-   public static abstract class Index extends Instruction {
+   public static abstract class Index extends Instruction{
       protected int index;
 
       public Index(MethodModel _methodPoolEntry, ByteCode _byteCode, ByteReader _byteReader, boolean _wide) {
@@ -3757,14 +3590,14 @@ public class InstructionSet {
       }
    }
 
-   public static abstract class IndexConst extends Index {
+   public static abstract class IndexConst extends Index{
       public IndexConst(MethodModel _methodPoolEntry, ByteCode _byteCode, ByteReader _byteReader, boolean _wide, int _index) {
          super(_methodPoolEntry, _byteCode, _byteReader, _wide);
          index = _index;
       }
    }
 
-   public static abstract class Index08 extends Index {
+   public static abstract class Index08 extends Index{
       public Index08(MethodModel _methodPoolEntry, ByteCode _byteCode, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, _byteCode, _byteReader, _wide);
          if (_wide) {
@@ -3775,20 +3608,20 @@ public class InstructionSet {
       }
    }
 
-   public static abstract class Index16 extends Index {
+   public static abstract class Index16 extends Index{
       public Index16(MethodModel _methodPoolEntry, ByteCode _byteCode, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, _byteCode, _byteReader, _wide);
          index = _byteReader.u2();
       }
    }
 
-   public static abstract class Return extends Instruction {
+   public static abstract class Return extends Instruction{
       public Return(MethodModel _methodPoolEntry, ByteCode _byteCode, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, _byteCode, _byteReader, _wide);
       }
    }
 
-   public static abstract class Switch extends Branch {
+   public static abstract class Switch extends Branch{
       public Switch(MethodModel _methodPoolEntry, ByteCode _code, ByteReader _byteReader, boolean _wide) {
          super(_methodPoolEntry, _code, _byteReader, _wide);
       }
@@ -3822,7 +3655,7 @@ public class InstructionSet {
       }
    }
 
-   public interface MethodCall {
+   public interface MethodCall{
       int getConstantPoolMethodIndex();
 
       MethodEntry getConstantPoolMethodEntry();
@@ -3830,11 +3663,11 @@ public class InstructionSet {
       Instruction getArg(int _arg);
    }
 
-   public interface VirtualMethodCall extends MethodCall {
+   public interface VirtualMethodCall extends MethodCall{
       Instruction getInstanceReference();
    }
 
-   public interface InterfaceConstantPoolMethodIndexAccessor {
+   public interface InterfaceConstantPoolMethodIndexAccessor{
       public int getConstantPoolInterfaceMethodIndex();
 
       public ConstantPool.InterfaceMethodEntry getConstantPoolInterfaceMethodEntry();
@@ -3846,42 +3679,42 @@ public class InstructionSet {
       public Instruction getArg(int _arg);
    }
 
-   public static interface New {
+   public static interface New{
    }
 
-   public interface FieldReference {
+   public interface FieldReference{
       public int getConstantPoolFieldIndex();
 
       public FieldEntry getConstantPoolFieldEntry();
    }
 
-   public interface AccessField extends FieldReference {
+   public interface AccessField extends FieldReference{
 
    }
 
-   public interface AssignToField extends FieldReference {
+   public interface AssignToField extends FieldReference{
       Instruction getValueToAssign();
    }
 
-   public interface AccessInstanceField extends AccessField {
+   public interface AccessInstanceField extends AccessField{
       Instruction getInstance();
    }
 
-   public interface AssignToInstanceField extends AssignToField {
+   public interface AssignToInstanceField extends AssignToField{
       Instruction getInstance();
    }
 
-   public interface LocalVariableTableIndexAccessor {
+   public interface LocalVariableTableIndexAccessor{
       int getLocalVariableTableIndex();
 
       LocalVariableInfo getLocalVariableInfo();
    }
 
-   public interface AccessLocalVariable extends LocalVariableTableIndexAccessor {
+   public interface AccessLocalVariable extends LocalVariableTableIndexAccessor{
 
    }
 
-   public interface AssignToLocalVariable extends LocalVariableTableIndexAccessor {
+   public interface AssignToLocalVariable extends LocalVariableTableIndexAccessor{
       boolean isDeclaration();
    }
 
@@ -3889,28 +3722,27 @@ public class InstructionSet {
       T getValue();
    }
 
-   @SuppressWarnings("unchecked")
-   public interface ConstantPoolEntryConstant extends Constant {
+   @SuppressWarnings("unchecked") public interface ConstantPoolEntryConstant extends Constant{
       int getConstantPoolIndex();
 
       ConstantPool.Entry getConstantPoolEntry();
    };
 
-   public interface HasOperator {
+   public interface HasOperator{
       Operator getOperator();
    }
 
-   public interface Binary extends HasOperator {
+   public interface Binary extends HasOperator{
       Instruction getLhs();
 
       Instruction getRhs();
    }
 
-   public interface Unary extends HasOperator {
+   public interface Unary extends HasOperator{
       Instruction getUnary();
    }
 
-   public static class CloneInstruction extends Instruction {
+   public static class CloneInstruction extends Instruction{
       private final Instruction cloning;
 
       public CloneInstruction(MethodModel method, Instruction _cloning) {
@@ -3918,28 +3750,24 @@ public class InstructionSet {
          cloning = _cloning;
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("CLONE! " + getByteCode());
       }
 
-      @Override
-      public int getStackConsumeCount() {
+      @Override public int getStackConsumeCount() {
          return (cloning.getStackConsumeCount());
       }
 
-      @Override
-      public int getStackProduceCount() {
+      @Override public int getStackProduceCount() {
          return (cloning.getStackProduceCount());
       }
 
-      @Override
-      public Instruction getReal() {
+      @Override public Instruction getReal() {
          return (cloning);
       }
    }
 
-   public static class IncrementInstruction extends Instruction {
+   public static class IncrementInstruction extends Instruction{
       private final Instruction fieldOrVariable;
 
       private final boolean isInc;
@@ -3962,8 +3790,7 @@ public class InstructionSet {
          isInc = _isInc;
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("INCREMENT Local Variable! " + getByteCode());
       }
 
@@ -3971,13 +3798,12 @@ public class InstructionSet {
          return (isInc);
       }
 
-      @Override
-      public Instruction getStartInstruction() {
+      @Override public Instruction getStartInstruction() {
          return (fieldOrVariable.getStartInstruction());
       }
    }
 
-   public static class InlineAssignInstruction extends Instruction {
+   public static class InlineAssignInstruction extends Instruction{
       private final AssignToLocalVariable assignToLocalVariable;
 
       private final Instruction rhs;
@@ -3988,8 +3814,7 @@ public class InstructionSet {
          rhs = _rhs;
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("INLINE ASSIGN! " + getByteCode());
       }
 
@@ -4002,7 +3827,7 @@ public class InstructionSet {
       }
    }
 
-   public static class FieldArrayElementAssign extends Instruction {
+   public static class FieldArrayElementAssign extends Instruction{
       private final AssignToArrayElement assignToArrayElement;
 
       private final Instruction rhs;
@@ -4013,8 +3838,7 @@ public class InstructionSet {
          rhs = _rhs;
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("FIELD ARRAY ELEMENT INCREMENT! " + getByteCode());
       }
 
@@ -4027,22 +3851,22 @@ public class InstructionSet {
       }
    }
 
-   public static class FieldArrayElementIncrement extends Instruction {
+   public static class FieldArrayElementIncrement extends Instruction{
       private final AssignToArrayElement assignToArrayElement;
 
       private final boolean isPre;
 
       private final boolean isInc;
 
-      public FieldArrayElementIncrement(MethodModel method, AssignToArrayElement _assignToArrayElement, boolean _isInc, boolean _isPre) {
+      public FieldArrayElementIncrement(MethodModel method, AssignToArrayElement _assignToArrayElement, boolean _isInc,
+            boolean _isPre) {
          super(method, ByteCode.FIELD_ARRAY_ELEMENT_INCREMENT, -1);
          assignToArrayElement = _assignToArrayElement;
          isPre = _isPre;
          isInc = _isInc;
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("FIELD ARRAY ELEMENT INCREMENT! " + getByteCode());
       }
 
@@ -4059,7 +3883,7 @@ public class InstructionSet {
       }
    }
 
-   public static class MultiAssignInstruction extends Instruction {
+   public static class MultiAssignInstruction extends Instruction{
       private final Instruction from, to, common;
 
       public MultiAssignInstruction(MethodModel method, Instruction _common, Instruction _from, Instruction _to) {
@@ -4069,8 +3893,7 @@ public class InstructionSet {
          to = _to;
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return ("MULTIASSIGN! " + getByteCode());
       }
 
@@ -4087,14 +3910,13 @@ public class InstructionSet {
       }
    }
 
-   public static class FakeGoto extends UnconditionalBranch {
+   public static class FakeGoto extends UnconditionalBranch{
 
       public FakeGoto(MethodModel _methodPoolEntry, Instruction _target) {
          super(_methodPoolEntry, ByteCode.FAKEGOTO, _target);
       }
 
-      @Override
-      public String getDescription() {
+      @Override public String getDescription() {
          return "FAKE goto";
       }
    }

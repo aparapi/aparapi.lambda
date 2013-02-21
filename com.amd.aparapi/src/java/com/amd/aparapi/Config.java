@@ -54,12 +54,21 @@ import com.amd.aparapi.internal.tool.InstructionViewer;
  * @author gfrost
  * 
  */
-public class Config extends ConfigJNI {
+public class Config extends ConfigJNI{
 
    // Logging setup
    private static final String logPropName = propPkgName + ".logLevel";
 
    private static final Logger logger = Logger.getLogger(Config.getLoggerName());
+
+   /**
+    * Allows the user to request to use a jvmti agent to 
+    * access JNI code rather than loading explicitly.
+    * 
+    * Usage -agentpath=/full/path/to/agent.dll -Dcom.amd.aparapi.useAgent=true
+    */
+
+   public static final boolean useAgent = Boolean.getBoolean(propPkgName + ".useAgent");
 
    /**
     * Disable Unsafe
@@ -112,7 +121,8 @@ public class Config extends ConfigJNI {
 
    public static final boolean enablePUTSTATIC = Boolean.getBoolean(propPkgName + ".enable.PUTSTATIC");
 
-   public static final boolean enableGETSTATIC = Boolean.getBoolean(propPkgName + ".enable.GETSTATIC");
+   // Allow static array accesses 
+   public static final boolean enableGETSTATIC = true; //Boolean.getBoolean(propPkgName + ".enable.GETSTATIC");
 
    public static final boolean enableINVOKEINTERFACE = Boolean.getBoolean(propPkgName + ".enable.INVOKEINTERFACE");
 
@@ -136,7 +146,7 @@ public class Config extends ConfigJNI {
 
    public static InstructionListener instructionListener = null;
 
-   public interface InstructionListener {
+   public interface InstructionListener{
       void showAndTell(String message, Instruction _start, Instruction _instruction);
    }
 
@@ -183,7 +193,8 @@ public class Config extends ConfigJNI {
          System.out.println(propPkgName + ".enableProfiling{true|false}=" + enableProfiling);
          System.out.println(propPkgName + ".enableProfilingCSV{true|false}=" + enableProfilingCSV);
          System.out.println(propPkgName + ".enableVerboseJNI{true|false}=" + enableVerboseJNI);
-         System.out.println(propPkgName + ".enableVerboseJNIOpenCLResourceTracking{true|false}=" + enableVerboseJNIOpenCLResourceTracking);
+         System.out.println(propPkgName + ".enableVerboseJNIOpenCLResourceTracking{true|false}="
+               + enableVerboseJNIOpenCLResourceTracking);
          System.out.println(propPkgName + ".enableShowGeneratedOpenCL{true|false}=" + enableShowGeneratedOpenCL);
          System.out.println(propPkgName + ".enableExecutionModeReporting{true|false}=" + enableExecutionModeReporting);
          System.out.println(propPkgName + ".enableInstructionDecodeViewer{true|false}=" + enableInstructionDecodeViewer);

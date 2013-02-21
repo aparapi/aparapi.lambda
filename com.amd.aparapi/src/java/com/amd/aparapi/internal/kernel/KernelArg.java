@@ -16,7 +16,7 @@ import com.amd.aparapi.internal.model.ClassModel;
  * @author gfrost
  * 
  */
-public class KernelArg extends KernelArgJNI {
+public class KernelArg extends KernelArgJNI{
 
    /**
     * The byte array for obj conversion passed to opencl

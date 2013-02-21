@@ -1,69 +1,68 @@
 package com.amd.aparapi.opencl;
 
-
 public class OpenCLAdapter<T> implements OpenCL<T>{
 
-   public T put(byte[] array) {
+   @SuppressWarnings("unchecked") public T put(byte[] array) {
       return ((T) this);
    }
 
-   public T get(byte[] array) {
+   @SuppressWarnings("unchecked") public T get(byte[] array) {
       return ((T) this);
    }
 
-   public T put(float[] array) {
+   @SuppressWarnings("unchecked") public T put(float[] array) {
       return ((T) this);
    }
 
-   public T put(int[] array) {
+   @SuppressWarnings("unchecked") public T put(int[] array) {
       return ((T) this);
    }
 
-   public T put(short[] array) {
+   @SuppressWarnings("unchecked") public T put(short[] array) {
       return ((T) this);
    }
 
-   public T put(char[] array) {
+   @SuppressWarnings("unchecked") public T put(char[] array) {
       return ((T) this);
    }
 
-   public T put(boolean[] array) {
+   @SuppressWarnings("unchecked") public T put(boolean[] array) {
       return ((T) this);
    }
 
-   public T put(double[] array) {
+   @SuppressWarnings("unchecked") public T put(double[] array) {
       return ((T) this);
    }
 
-   public T get(float[] array) {
+   @SuppressWarnings("unchecked") public T get(float[] array) {
       return ((T) this);
    }
 
-   public T get(int[] array) {
+   @SuppressWarnings("unchecked") public T get(int[] array) {
       return ((T) this);
    }
 
-   public T get(short[] array) {
+   @SuppressWarnings("unchecked") public T get(short[] array) {
       return ((T) this);
    }
 
-   public T get(char[] array) {
+   @SuppressWarnings("unchecked") public T get(char[] array) {
       return ((T) this);
    }
 
-   public T get(boolean[] array) {
+   @SuppressWarnings("unchecked") public T get(boolean[] array) {
       return ((T) this);
    }
 
-   public T get(double[] array) {
+   @SuppressWarnings("unchecked") public T get(double[] array) {
       return ((T) this);
    }
 
-   public T begin() {
+   @SuppressWarnings("unchecked") public T begin() {
       return ((T) this);
    }
 
-   public T end() {
+   @SuppressWarnings("unchecked") public T end() {
       return ((T) this);
    }
 

@@ -87,7 +87,7 @@ import com.amd.aparapi.opencl.OpenCL.Local;
  * @author gfrost
  *
  */
-public class KernelRunner extends KernelRunnerJNI {
+public class KernelRunner extends KernelRunnerJNI{
 
    private static Logger logger = Logger.getLogger(Config.getLoggerName());
 
@@ -354,9 +354,8 @@ public class KernelRunner extends KernelRunnerJNI {
                kernelState.setLocalBarrier(localBarrier);
                kernelState.setPassId(passId);
 
-               threadArray[threadId] = new Thread(new Runnable() {
-                  @Override
-                  public void run() {
+               threadArray[threadId] = new Thread(new Runnable(){
+                  @Override public void run() {
                      for (int globalGroupId = 0; globalGroupId < globalGroups; globalGroupId++) {
 
                         if (_range.getDims() == 1) {
@@ -454,14 +453,19 @@ public class KernelRunner extends KernelRunnerJNI {
                            // the thread id's span WxHxD so threadId/(WxH) should yield the local depth  
                            kernelState.setLocalId(2, (threadId / (_range.getLocalSize(0) * _range.getLocalSize(1))));
 
-                           kernelState.setGlobalId(0, (((globalGroupId % _range.getNumGroups(0)) * _range.getLocalSize(0))
-                                 + kernelState.getLocalIds()[0]));
+                           kernelState.setGlobalId(
+                                 0,
+                                 (((globalGroupId % _range.getNumGroups(0)) * _range.getLocalSize(0)) + kernelState.getLocalIds()[0]));
 
-                           kernelState.setGlobalId(1, ((((globalGroupId / _range.getNumGroups(0)) * _range.getLocalSize(1))
-                                 % _range.getGlobalSize(1)) + kernelState.getLocalIds()[1]));
+                           kernelState.setGlobalId(
+                                 1,
+                                 ((((globalGroupId / _range.getNumGroups(0)) * _range.getLocalSize(1)) % _range.getGlobalSize(1)) + kernelState
+                                       .getLocalIds()[1]));
 
-                           kernelState.setGlobalId(2, (((globalGroupId / (_range.getNumGroups(0) * _range.getNumGroups(1)))
-                                 * _range.getLocalSize(2)) + kernelState.getLocalIds()[2]));
+                           kernelState.setGlobalId(
+                                 2,
+                                 (((globalGroupId / (_range.getNumGroups(0) * _range.getNumGroups(1))) * _range.getLocalSize(2)) + kernelState
+                                       .getLocalIds()[2]));
 
                            kernelState.setGroupId(0, (globalGroupId % _range.getNumGroups(0)));
                            kernelState.setGroupId(1, ((globalGroupId / _range.getNumGroups(0)) % _range.getNumGroups(1)));
@@ -911,18 +915,19 @@ public class KernelRunner extends KernelRunnerJNI {
 
    public synchronized Kernel execute(String _entrypointName, final Range _range, final int _passes) {
 
-      final long executeStartTime = System.currentTimeMillis();
+      long executeStartTime = System.currentTimeMillis();
+
       if (_range == null) {
          throw new IllegalStateException("range can't be null");
       }
 
-      /* for backward compatibility reasons we still honor execution mode, but only if the Range *does not* contain a device specification */
+      /* for backward compatibility reasons we still honor execution mode */
       if (kernel.getExecutionMode().isOpenCL()) {
          // System.out.println("OpenCL");
 
          // See if user supplied a Device
          Device device = _range.getDevice();
-            
+
          if ((device == null) || (device instanceof OpenCLDevice)) {
             if (entryPoint == null) {
                try {
@@ -934,7 +939,7 @@ public class KernelRunner extends KernelRunnerJNI {
 
                if ((entryPoint != null) && !entryPoint.shouldFallback()) {
                   synchronized (Kernel.class) { // This seems to be needed because of a race condition uncovered with issue #68 http://code.google.com/p/aparapi/issues/detail?id=68
-                     if ((device != null) && !(device instanceof OpenCLDevice)) {
+                     if (device != null && !(device instanceof OpenCLDevice)) {
                         throw new IllegalStateException("range's device is not suitable for OpenCL ");
                      }
 
@@ -979,6 +984,7 @@ public class KernelRunner extends KernelRunnerJNI {
 
                   final String extensions = getExtensionsJNI(jniContextHandle);
                   capabilitiesSet = new HashSet<String>();
+
                   final StringTokenizer strTok = new StringTokenizer(extensions);
                   while (strTok.hasMoreTokens()) {
                      capabilitiesSet.add(strTok.nextToken());
@@ -993,13 +999,16 @@ public class KernelRunner extends KernelRunnerJNI {
                   }
 
                   if (entryPoint.requiresByteAddressableStorePragma() && !hasByteAddressableStoreSupport()) {
-                     return warnFallBackAndExecute(_entrypointName, _range, _passes, "Byte addressable stores required but not supported");
+                     return warnFallBackAndExecute(_entrypointName, _range, _passes,
+                           "Byte addressable stores required but not supported");
                   }
 
-                  final boolean all32AtomicsAvailable = hasGlobalInt32BaseAtomicsSupport() && hasGlobalInt32ExtendedAtomicsSupport()
-                        && hasLocalInt32BaseAtomicsSupport() && hasLocalInt32ExtendedAtomicsSupport();
+                  final boolean all32AtomicsAvailable = hasGlobalInt32BaseAtomicsSupport()
+                        && hasGlobalInt32ExtendedAtomicsSupport() && hasLocalInt32BaseAtomicsSupport()
+                        && hasLocalInt32ExtendedAtomicsSupport();
 
                   if (entryPoint.requiresAtomic32Pragma() && !all32AtomicsAvailable) {
+
                      return warnFallBackAndExecute(_entrypointName, _range, _passes, "32 bit Atomics required but not supported");
                   }
 
@@ -1013,6 +1022,7 @@ public class KernelRunner extends KernelRunnerJNI {
                   if (Config.enableShowGeneratedOpenCL) {
                      System.out.println(openCL);
                   }
+
                   if (logger.isLoggable(Level.INFO)) {
                      logger.info(openCL);
                   }
@@ -1038,9 +1048,10 @@ public class KernelRunner extends KernelRunnerJNI {
                         final Class<?> type = field.getType();
                         if (type.isArray()) {
 
-                           if ((field.getAnnotation(Local.class) != null) || args[i].getName().endsWith(Kernel.LOCAL_SUFFIX)) {
+                           if (field.getAnnotation(Local.class) != null || args[i].getName().endsWith(Kernel.LOCAL_SUFFIX)) {
                               args[i].setType(args[i].getType() | ARG_LOCAL);
-                           } else if ((field.getAnnotation(Constant.class) != null) || args[i].getName().endsWith(Kernel.CONSTANT_SUFFIX)) {
+                           } else if ((field.getAnnotation(Constant.class) != null)
+                                 || args[i].getName().endsWith(Kernel.CONSTANT_SUFFIX)) {
                               args[i].setType(args[i].getType() | ARG_CONSTANT);
                            } else {
                               args[i].setType(args[i].getType() | ARG_GLOBAL);
@@ -1055,9 +1066,10 @@ public class KernelRunner extends KernelRunnerJNI {
 
                            // for now, treat all write arrays as read-write, see bugzilla issue 4859
                            // we might come up with a better solution later
-                           args[i].setType(args[i].getType() | (entryPoint.getArrayFieldAssignments().contains(field.getName()) ? (ARG_WRITE | ARG_READ)
-                                 : 0));
-                           args[i].setType(args[i].getType() | (entryPoint.getArrayFieldAccesses().contains(field.getName()) ? ARG_READ : 0));
+                           args[i].setType(args[i].getType()
+                                 | (entryPoint.getArrayFieldAssignments().contains(field.getName()) ? (ARG_WRITE | ARG_READ) : 0));
+                           args[i].setType(args[i].getType()
+                                 | (entryPoint.getArrayFieldAccesses().contains(field.getName()) ? ARG_READ : 0));
                            // args[i].type |= ARG_GLOBAL;
                            args[i].setType(args[i].getType() | (type.isAssignableFrom(float[].class) ? ARG_FLOAT : 0));
                            args[i].setType(args[i].getType() | (type.isAssignableFrom(int[].class) ? ARG_INT : 0));
@@ -1076,7 +1088,6 @@ public class KernelRunner extends KernelRunnerJNI {
 
                            if (type.getName().startsWith("[L")) {
                               args[i].setType(args[i].getType() | (ARG_OBJ_ARRAY_STRUCT | ARG_WRITE | ARG_READ));
-
                               if (logger.isLoggable(Level.FINE)) {
                                  logger.fine("tagging " + args[i].getName() + " as (ARG_OBJ_ARRAY_STRUCT | ARG_WRITE | ARG_READ)");
                               }
@@ -1113,8 +1124,8 @@ public class KernelRunner extends KernelRunnerJNI {
 
                      args[i].setPrimitiveSize(((args[i].getType() & ARG_FLOAT) != 0 ? 4 : (args[i].getType() & ARG_INT) != 0 ? 4
                            : (args[i].getType() & ARG_BYTE) != 0 ? 1 : (args[i].getType() & ARG_CHAR) != 0 ? 2
-                                 : (args[i].getType() & ARG_BOOLEAN) != 0 ? 1 : (args[i].getType() & ARG_SHORT) != 0 ? 2
-                                       : (args[i].getType() & ARG_LONG) != 0 ? 8 : (args[i].getType() & ARG_DOUBLE) != 0 ? 8 : 0));
+                                 : (args[i].getType() & ARG_BOOLEAN) != 0 ? 1 : (args[i].getType() & ARG_SHORT) != 0 ? 2 : (args[i]
+                                       .getType() & ARG_LONG) != 0 ? 8 : (args[i].getType() & ARG_DOUBLE) != 0 ? 8 : 0));
 
                      if (logger.isLoggable(Level.FINE)) {
                         logger.fine("arg " + i + ", " + args[i].getName() + ", type=" + Integer.toHexString(args[i].getType())
@@ -1149,12 +1160,12 @@ public class KernelRunner extends KernelRunnerJNI {
                }
             }
          } else {
-              warnFallBackAndExecute(_entrypointName, _range, _passes, "OpenCL was requested but Device supplied was not an OpenCLDevice");
+            warnFallBackAndExecute(_entrypointName, _range, _passes,
+                  "OpenCL was requested but Device supplied was not an OpenCLDevice");
          }
       } else {
          executeJava(_range, _passes);
       }
-
 
       if (Config.enableExecutionModeReporting) {
          System.out.println(kernel.getClass().getCanonicalName() + ":" + kernel.getExecutionMode());
@@ -1187,7 +1198,8 @@ public class KernelRunner extends KernelRunnerJNI {
     * @see Kernel#get(boolean[] arr)
     */
    public void get(Object array) {
-      if (explicit && ((kernel.getExecutionMode() == Kernel.EXECUTION_MODE.GPU) || (kernel.getExecutionMode() == Kernel.EXECUTION_MODE.CPU))) {
+      if (explicit
+            && ((kernel.getExecutionMode() == Kernel.EXECUTION_MODE.GPU) || (kernel.getExecutionMode() == Kernel.EXECUTION_MODE.CPU))) {
          // Only makes sense when we are using OpenCL
          getJNI(jniContextHandle, array);
       }

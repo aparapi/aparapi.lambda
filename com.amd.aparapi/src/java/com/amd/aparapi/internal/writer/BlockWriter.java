@@ -60,6 +60,7 @@ import com.amd.aparapi.internal.instruction.InstructionSet.ByteCode;
 import com.amd.aparapi.internal.instruction.InstructionSet.CastOperator;
 import com.amd.aparapi.internal.instruction.InstructionSet.CloneInstruction;
 import com.amd.aparapi.internal.instruction.InstructionSet.CompositeArbitraryScopeInstruction;
+import com.amd.aparapi.internal.instruction.InstructionSet.CompositeDoWhileInstruction;
 import com.amd.aparapi.internal.instruction.InstructionSet.CompositeEmptyLoopInstruction;
 import com.amd.aparapi.internal.instruction.InstructionSet.CompositeForEclipseInstruction;
 import com.amd.aparapi.internal.instruction.InstructionSet.CompositeForSunInstruction;
@@ -88,8 +89,8 @@ import com.amd.aparapi.internal.instruction.InstructionSet.UnaryOperator;
 import com.amd.aparapi.internal.instruction.InstructionSet.VirtualMethodCall;
 import com.amd.aparapi.internal.model.Entrypoint;
 import com.amd.aparapi.internal.model.MethodModel;
-import com.amd.aparapi.internal.model.ClassModel.AttributePool.LocalVariableTableEntry.LocalVariableInfo;
 import com.amd.aparapi.internal.model.ClassModel.ConstantPool.MethodEntry;
+import com.amd.aparapi.internal.model.ClassModel.LocalVariableInfo;
 
 /**
  * Base abstract class for converting <code>Aparapi</code> IR to text.<br/>
@@ -99,7 +100,7 @@ import com.amd.aparapi.internal.model.ClassModel.ConstantPool.MethodEntry;
  *
  */
 
-public abstract class BlockWriter {
+public abstract class BlockWriter{
 
    public final static String arrayLengthMangleSuffix = "__javaArrayLength";
 
@@ -298,6 +299,17 @@ public abstract class BlockWriter {
             write("}");
 
          }
+
+      } else if (instruction instanceof CompositeDoWhileInstruction) {
+         newLine();
+         write("do");
+         Instruction blockStart = instruction.getFirstChild();
+         Instruction blockEnd = instruction.getLastChild();
+         writeBlock(blockStart, blockEnd);
+         write("while(");
+         writeConditional(((CompositeInstruction) instruction).getBranchSet(), true);
+         write(");");
+         newLine();
       }
    }
 
@@ -463,8 +475,6 @@ public abstract class BlockWriter {
          write(assignedField.getConstantPoolFieldEntry().getNameAndTypeEntry().getNameUTF8Entry().getUTF8());
          write("=");
          writeInstruction(assignedField.getValueToAssign());
-      } else if (_instruction instanceof I_ALOAD_0) {
-         write("this");
       } else if (_instruction instanceof Constant<?>) {
          final Constant<?> constantInstruction = (Constant<?>) _instruction;
          final Object value = constantInstruction.getValue();

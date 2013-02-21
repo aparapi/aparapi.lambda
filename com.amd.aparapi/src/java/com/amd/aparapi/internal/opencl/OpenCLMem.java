@@ -1,6 +1,6 @@
 package com.amd.aparapi.internal.opencl;
 
-public class OpenCLMem {
+public class OpenCLMem{
 
    public final static int MEM_DIRTY_BIT = 1 << 0x00F;
 

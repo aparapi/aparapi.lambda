@@ -48,8 +48,7 @@ import com.amd.aparapi.internal.instruction.Instruction;
  * @author gfrost
  *
  */
-@SuppressWarnings("serial")
-public class ClassParseException extends AparapiException {
+@SuppressWarnings("serial") public class ClassParseException extends AparapiException{
 
    public static enum TYPE {
       NONE("none"), //
@@ -83,7 +82,8 @@ public class ClassParseException extends AparapiException {
       ACCESSEDOBJECTONLYSUPPORTSSIMPLEPUTFIELD("We don't support putfield instructions beyond simple setters"), //
       ACCESSEDOBJECTSETTERARRAY("Passing array arguments to Intrinsics in expression form is not supported"), //
       MULTIDIMENSIONARRAYASSIGN("Can't assign to two dimension array"), //
-      MULTIDIMENSIONARRAYACCESS("Can't access through a two dimensional array");
+      MULTIDIMENSIONARRAYACCESS("Can't access through a two dimensional array"), //
+      MISSINGLOCALVARIABLETABLE("Method does not contain a local variable table (recompile with -g?)");
 
       private String description;
 

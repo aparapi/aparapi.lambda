@@ -68,7 +68,7 @@ import com.amd.aparapi.Range;
  *
  */
 
-public class Main2D {
+public class Main2D{
 
    /**
     * An Aparapi Kernel implementation for creating a scaled view of the mandelbrot set.
@@ -77,7 +77,7 @@ public class Main2D {
     *
     */
 
-   public static class MandelKernel extends Kernel {
+   public static class MandelKernel extends Kernel{
 
       /** RGB buffer used to store the Mandelbrot image. This buffer holds (width * height) RGB values. */
       final private int rgb[];
@@ -86,8 +86,7 @@ public class Main2D {
       final private int maxIterations = 64;
 
       /** Palette maps iteration values to RGB values. */
-      @Constant
-      final private int pallette[] = new int[maxIterations + 1];
+      @Constant final private int pallette[] = new int[maxIterations + 1];
 
       /** Mutable values of scale, offsetx and offsety so that we can modify the zoom level and position of a view. */
       private float scale = .0f;
@@ -116,8 +115,7 @@ public class Main2D {
 
       }
 
-      @Override
-      public void run() {
+      @Override public void run() {
 
          /** Determine which RGB value we are going to process (0..RGB.length). */
          final int gid = (getGlobalId(1) * getGlobalSize(0)) + getGlobalId(0);
@@ -156,8 +154,7 @@ public class Main2D {
    /** User selected zoom-in point on the Mandelbrot view. */
    public static volatile Point to = null;
 
-   @SuppressWarnings("serial")
-   public static void main(String[] _args) {
+   @SuppressWarnings("serial") public static void main(String[] _args) {
 
       final JFrame frame = new JFrame("MandelBrot");
 
@@ -169,9 +166,8 @@ public class Main2D {
       final BufferedImage image = new BufferedImage(range.getGlobalSize(0), range.getGlobalSize(1), BufferedImage.TYPE_INT_RGB);
       final BufferedImage offscreen = new BufferedImage(range.getGlobalSize(0), range.getGlobalSize(1), BufferedImage.TYPE_INT_RGB);
       // Draw Mandelbrot image
-      final JComponent viewer = new JComponent() {
-         @Override
-         public void paintComponent(Graphics g) {
+      final JComponent viewer = new JComponent(){
+         @Override public void paintComponent(Graphics g) {
 
             g.drawImage(image, 0, 0, range.getGlobalSize(0), range.getGlobalSize(1), this);
          }
@@ -183,9 +179,8 @@ public class Main2D {
       final Object doorBell = new Object();
 
       // Mouse listener which reads the user clicked zoom-in point on the Mandelbrot view 
-      viewer.addMouseListener(new MouseAdapter() {
-         @Override
-         public void mouseClicked(MouseEvent e) {
+      viewer.addMouseListener(new MouseAdapter(){
+         @Override public void mouseClicked(MouseEvent e) {
             to = e.getPoint();
             synchronized (doorBell) {
                doorBell.notify();
@@ -218,9 +213,8 @@ public class Main2D {
       System.out.println("Execution mode=" + kernel.getExecutionMode());
 
       // Window listener to dispose Kernel resources on user exit.
-      frame.addWindowListener(new WindowAdapter() {
-         @Override
-         public void windowClosing(WindowEvent _windowEvent) {
+      frame.addWindowListener(new WindowAdapter(){
+         @Override public void windowClosing(WindowEvent _windowEvent) {
             kernel.dispose();
             System.exit(0);
          }

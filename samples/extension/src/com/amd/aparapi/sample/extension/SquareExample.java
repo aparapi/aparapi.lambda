@@ -7,22 +7,20 @@ import com.amd.aparapi.opencl.OpenCL;
 import com.amd.aparapi.opencl.OpenCL.Resource;
 import com.amd.aparapi.opencl.OpenCL.Source;
 
-public class SquareExample {
+public class SquareExample{
 
-   interface Squarer extends OpenCL<Squarer> {
+   interface Squarer extends OpenCL<Squarer>{
       @Kernel("{\n"//
             + "  const size_t id = get_global_id(0);\n"//
             + "  out[id] = in[id]*in[id];\n"//
-            + "}\n")
-      //
+            + "}\n")//
       public Squarer square(//
             Range _range,//
             @GlobalReadWrite("in") float[] in,//
             @GlobalReadWrite("out") float[] out);
    }
 
-   @Resource("com/amd/aparapi/sample/extension/squarer.cl")
-   interface SquarerWithResource extends OpenCL<SquarerWithResource> {
+   @Resource("com/amd/aparapi/sample/extension/squarer.cl") interface SquarerWithResource extends OpenCL<SquarerWithResource>{
       public SquarerWithResource square(//
             Range _range,//
             @GlobalReadWrite("in") float[] in,//
@@ -35,8 +33,7 @@ public class SquareExample {
          + "   __global float *out\n" + "){\n"//
          + "   const size_t id = get_global_id(0);\n"//
          + "   out[id] = in[id]*in[id];\n"//
-         + "}\n")
-   interface SquarerWithSource extends OpenCL<SquarerWithSource> {
+         + "}\n") interface SquarerWithSource extends OpenCL<SquarerWithSource>{
       public SquarerWithSource square(//
             Range _range,//
             @GlobalReadOnly("in") float[] in,//
