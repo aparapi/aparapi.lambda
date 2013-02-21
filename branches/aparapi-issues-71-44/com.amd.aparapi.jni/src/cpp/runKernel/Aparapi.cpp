@@ -658,7 +658,7 @@ void enqueueKernel(JNIContext* jniContext, Range& range, int passes, int argPos,
       if (status != CL_SUCCESS) {
          CLException(status, "clGetKernelWorkGroupInfo()").printError();
       } else {
-         range.localDims[0] = std::min(range.localDims[0], max_group_size[0]);
+         range.localDims[0] = std::min((cl_uint)range.localDims[0], max_group_size[0]);
       }
       // ------ end fix
 
