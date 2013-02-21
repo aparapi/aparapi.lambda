@@ -38,6 +38,9 @@
 
 #define APARAPI_SOURCE
 
+//this is a workaround for windows machines since <windows.h> defines min/max that break code.
+#define NOMINMAX
+
 #include "Aparapi.h"
 #include "Config.h"
 #include "ProfileInfo.h"
@@ -352,7 +355,7 @@ void updateObject(JNIEnv* jenv, JNIContext* jniContext, KernelArg* arg, int& arg
       if (mask & CL_MEM_READ_ONLY) strcat(arg->arrayBuffer->memSpec,"|CL_MEM_READ_ONLY");
       if (mask & CL_MEM_WRITE_ONLY) strcat(arg->arrayBuffer->memSpec,"|CL_MEM_WRITE_ONLY");
 
-      fprintf(stderr, "%s %d clCreateBuffer(context, %s, size=%08x bytes, address=%08x, &status)\n", arg->name, 
+      fprintf(stderr, "%s %d clCreateBuffer(context, %s, size=%08lx bytes, address=%08lx, &status)\n", arg->name, 
             argIdx, arg->arrayBuffer->memSpec, (unsigned long)arg->arrayBuffer->lengthInBytes, (unsigned long)arg->arrayBuffer->addr);
    }
 
@@ -655,7 +658,7 @@ void enqueueKernel(JNIContext* jniContext, Range& range, int passes, int argPos,
       if (status != CL_SUCCESS) {
          CLException(status, "clGetKernelWorkGroupInfo()").printError();
       } else {
-         range.localDims[0] = min(range.localDims[0], max_group_size[0]);
+         range.localDims[0] = std::min(range.localDims[0], max_group_size[0]);
       }
       // ------ end fix
 
