@@ -53,15 +53,19 @@ class KernelArg{
          if (verbose) {
             if(isLong()) {
                fprintf(stderr, "clSetKernelArg %s '%s' index=%d pos=%d value=%ld\n",
-                       getTypeName(), name, argIdx, argPos, *value);
+                       typeName, name, argIdx, argPos, *value);
             }
-            else if(isFloat() || isDouble()) {
+            if(isFloat()) {
                fprintf(stderr, "clSetKernelArg %s '%s' index=%d pos=%d value=%f\n",
-                       getTypeName(), name, argIdx, argPos, *value);
+                       typeName, name, argIdx, argPos, *value);
+            }
+            else if(isDouble()) {
+               fprintf(stderr, "clSetKernelArg %s '%s' index=%d pos=%d value=%lf\n",
+                       typeName, name, argIdx, argPos, *value);
             }
             else {
                fprintf(stderr, "clSetKernelArg %s '%s' index=%d pos=%d value=%d\n",
-                       getTypeName(), name, argIdx, argPos, *value);
+                       typeName, name, argIdx, argPos, *value);
             }
          }
       }
