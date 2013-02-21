@@ -51,22 +51,9 @@ class KernelArg{
             getPrimitiveValue(jenv, value);
          }
          if (verbose) {
-            if(isLong()) {
-               fprintf(stderr, "clSetKernelArg %s '%s' index=%d pos=%d value=%ld\n",
-                       typeName, name, argIdx, argPos, *value);
-            }
-            if(isFloat()) {
-               fprintf(stderr, "clSetKernelArg %s '%s' index=%d pos=%d value=%f\n",
-                       typeName, name, argIdx, argPos, *value);
-            }
-            else if(isDouble()) {
-               fprintf(stderr, "clSetKernelArg %s '%s' index=%d pos=%d value=%lf\n",
-                       typeName, name, argIdx, argPos, *value);
-            }
-            else {
-               fprintf(stderr, "clSetKernelArg %s '%s' index=%d pos=%d value=%d\n",
-                       typeName, name, argIdx, argPos, *value);
-            }
+             std::cerr << "clSetKernelArg " << getTypeName() << " '" << name
+                       << " ' index=" << argIdx << " pos=" << argPos 
+                       << " value=" << *value << std::endl;
          }
       }
 
