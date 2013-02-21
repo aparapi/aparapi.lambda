@@ -37,7 +37,7 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 */
 package com.amd.aparapi;
 
-public class ProfileInfo {
+public class ProfileInfo{
 
    private enum TYPE {
       R,
@@ -100,8 +100,7 @@ public class ProfileInfo {
       return (type);
    }
 
-   @Override
-   public String toString() {
+   @Override public String toString() {
       final StringBuilder sb = new StringBuilder();
       sb.append("ProfileInfo[");
       sb.append(type);

@@ -37,6 +37,8 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 */
 package com.amd.aparapi.internal.model;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -51,7 +53,6 @@ import com.amd.aparapi.internal.exception.AparapiException;
 import com.amd.aparapi.internal.exception.ClassParseException;
 import com.amd.aparapi.internal.instruction.InstructionSet.TypeSpec;
 import com.amd.aparapi.internal.model.ClassModel.AttributePool.CodeEntry;
-import com.amd.aparapi.internal.model.ClassModel.AttributePool.LocalVariableTableEntry;
 import com.amd.aparapi.internal.model.ClassModel.ConstantPool.FieldEntry;
 import com.amd.aparapi.internal.model.ClassModel.ConstantPool.MethodEntry;
 import com.amd.aparapi.internal.reader.ByteReader;
@@ -64,11 +65,35 @@ import com.amd.aparapi.internal.reader.ByteReader;
  * If the java class mode changes we may need to modify this to accommodate.
  * 
  * @see <a href="http://java.sun.com/docs/books/jvms/second_edition/ClassFileFormat-Java5.pdf">Java 5 Class File Format</a>
++ * @see <a href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html"> Java 7 Class File Format</a>
  * 
  * @author gfrost
  *
  */
-public class ClassModel {
+public class ClassModel{
+
+   public interface LocalVariableInfo{
+
+      int getStart();
+
+      boolean isArray();
+
+      int getEnd();
+
+      String getVariableName();
+
+      String getVariableDescriptor();
+
+      int getVariableIndex();
+
+      int getLength();
+
+   }
+
+   public interface LocalVariableTableEntry<T extends LocalVariableInfo> extends Iterable<T>{
+      LocalVariableInfo getVariable(int _pc, int _index);
+
+   }
 
    public static final char SIGC_VOID = 'V';
 
@@ -128,6 +153,17 @@ public class ClassModel {
       }
    }
 
+   ClassModel(InputStream _inputStream) throws ClassParseException {
+
+      parse(_inputStream);
+
+   }
+
+   ClassModel(Class<?> _clazz, byte[] _bytes) throws ClassParseException {
+      clazz = _clazz;
+      parse(new ByteArrayInputStream(_bytes));
+   }
+
    /**
     * Determine if this is the superclass of some other named class.
     * 
@@ -170,8 +206,7 @@ public class ClassModel {
       return superClazz;
    }
 
-   @DocMe
-   public void replaceSuperClazz(ClassModel c) {
+   @DocMe public void replaceSuperClazz(ClassModel c) {
       if (superClazz != null) {
          assert c.isSuperClass(getClassWeAreModelling()) == true : "not my super";
          if (superClazz.getClassWeAreModelling().getName().equals(c.getClassWeAreModelling().getName())) {
@@ -360,7 +395,7 @@ public class ClassModel {
       return (returnValue.toString());
    }
 
-   public static class MethodDescription {
+   public static class MethodDescription{
       private final String className;
 
       private final String methodName;
@@ -486,7 +521,8 @@ public class ClassModel {
       }
 
       if (inMethod) {
-         methodDescription = new MethodDescription(className, methodName, stringStack.toArray(new String[0])[0], methodStack.toArray(new String[0]));
+         methodDescription = new MethodDescription(className, methodName, stringStack.toArray(new String[0])[0],
+               methodStack.toArray(new String[0]));
       } else {
          System.out.println("can't convert to a description");
       }
@@ -517,19 +553,25 @@ public class ClassModel {
    private AttributePool attributePool;
 
    public enum ConstantPoolType {
-      EMPTY,
-      UTF8,
-      UNICODE,
-      INTEGER,
-      FLOAT,
-      LONG,
-      DOUBLE,
-      CLASS,
-      STRING,
-      FIELD,
-      METHOD,
-      INTERFACEMETHOD,
-      NAMEANDTYPE
+      EMPTY, //0
+      UTF8, //1
+      UNICODE, //2
+      INTEGER, //3
+      FLOAT, //4
+      LONG, //5
+      DOUBLE, //6
+      CLASS, //7
+      STRING, //8
+      FIELD, //9
+      METHOD, //10
+      INTERFACEMETHOD, //11
+      NAMEANDTYPE, //12
+      UNUSED13,
+      UNUSED14,
+      METHODHANDLE, //15
+      METHODTYPE, //16
+      UNUSED17,
+      INVOKEDYNAMIC//18
    };
 
    public enum Access {
@@ -580,11 +622,11 @@ public class ClassModel {
       done;
    };
 
-   public class ConstantPool implements Iterable<ConstantPool.Entry> {
+   public class ConstantPool implements Iterable<ConstantPool.Entry>{
 
       private final List<Entry> entries = new ArrayList<Entry>();
 
-      public abstract class Entry {
+      public abstract class Entry{
          private final ConstantPoolType constantPoolType;
 
          private final int slot;
@@ -603,7 +645,7 @@ public class ClassModel {
          }
       }
 
-      public class ClassEntry extends Entry {
+      public class ClassEntry extends Entry{
          private final int nameIndex;
 
          public ClassEntry(ByteReader _byteReader, int _slot) {
@@ -620,7 +662,7 @@ public class ClassModel {
          }
       }
 
-      public class DoubleEntry extends Entry {
+      public class DoubleEntry extends Entry{
          private final double doubleValue;
 
          public DoubleEntry(ByteReader _byteReader, int _slot) {
@@ -633,19 +675,19 @@ public class ClassModel {
          }
       }
 
-      public class EmptyEntry extends Entry {
+      public class EmptyEntry extends Entry{
          public EmptyEntry(ByteReader _byteReader, int _slot) {
             super(_byteReader, _slot, ConstantPoolType.EMPTY);
          }
       }
 
-      public class FieldEntry extends ReferenceEntry {
+      public class FieldEntry extends ReferenceEntry{
          public FieldEntry(ByteReader _byteReader, int _slot) {
             super(_byteReader, _slot, ConstantPoolType.FIELD);
          }
       }
 
-      public class FloatEntry extends Entry {
+      public class FloatEntry extends Entry{
          private final float floatValue;
 
          public FloatEntry(ByteReader _byteReader, int _slot) {
@@ -658,7 +700,7 @@ public class ClassModel {
          }
       }
 
-      public class IntegerEntry extends Entry {
+      public class IntegerEntry extends Entry{
          private final int intValue;
 
          public IntegerEntry(ByteReader _byteReader, int _slot) {
@@ -671,13 +713,13 @@ public class ClassModel {
          }
       }
 
-      public class InterfaceMethodEntry extends MethodReferenceEntry {
+      public class InterfaceMethodEntry extends MethodReferenceEntry{
          InterfaceMethodEntry(ByteReader _byteReader, int _slot) {
             super(_byteReader, _slot, ConstantPoolType.INTERFACEMETHOD);
          }
       }
 
-      public class LongEntry extends Entry {
+      public class LongEntry extends Entry{
          private final long longValue;
 
          public LongEntry(ByteReader _byteReader, int _slot) {
@@ -690,13 +732,12 @@ public class ClassModel {
          }
       }
 
-      public class MethodEntry extends MethodReferenceEntry {
+      public class MethodEntry extends MethodReferenceEntry{
          public MethodEntry(ByteReader _byteReader, int _slot) {
             super(_byteReader, _slot, ConstantPoolType.METHOD);
          }
 
-         @Override
-         public String toString() {
+         @Override public String toString() {
             final StringBuilder sb = new StringBuilder();
             sb.append(getClassEntry().getNameUTF8Entry().getUTF8());
             sb.append(".");
@@ -706,7 +747,7 @@ public class ClassModel {
          }
       }
 
-      public class NameAndTypeEntry extends Entry {
+      public class NameAndTypeEntry extends Entry{
          private final int descriptorIndex;
 
          private final int nameIndex;
@@ -734,9 +775,73 @@ public class ClassModel {
          }
       }
 
-      public abstract class MethodReferenceEntry extends ReferenceEntry {
+      class MethodTypeEntry extends Entry{
+         private int descriptorIndex;
 
-         public class Arg extends Type {
+         MethodTypeEntry(ByteReader _byteReader, int _slot) {
+            super(_byteReader, _slot, ConstantPoolType.METHODTYPE);
+            descriptorIndex = _byteReader.u2();
+         }
+
+         int getDescriptorIndex() {
+            return (descriptorIndex);
+         }
+
+         UTF8Entry getDescriptorUTF8Entry() {
+            return (ConstantPool.this.getUTF8Entry(descriptorIndex));
+         }
+
+      }
+
+      class MethodHandleEntry extends Entry{
+         // http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.4
+
+         private int referenceKind;
+
+         private int referenceIndex;
+
+         MethodHandleEntry(ByteReader _byteReader, int _slot) {
+            super(_byteReader, _slot, ConstantPoolType.METHODHANDLE);
+            referenceKind = _byteReader.u1();
+            referenceIndex = _byteReader.u2();
+         }
+
+         int getReferenceIndex() {
+            return (referenceIndex);
+         }
+
+         int getReferenceKind() {
+            return (referenceKind);
+         }
+
+      }
+
+      class InvokeDynamicEntry extends Entry{
+         // http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.4
+
+         private int bootstrapMethodAttrIndex;
+
+         private int nameAndTypeIndex;
+
+         InvokeDynamicEntry(ByteReader _byteReader, int _slot) {
+            super(_byteReader, _slot, ConstantPoolType.INVOKEDYNAMIC);
+            bootstrapMethodAttrIndex = _byteReader.u2();
+            nameAndTypeIndex = _byteReader.u2();
+         }
+
+         int getBootstrapMethodAttrIndex() {
+            return (bootstrapMethodAttrIndex);
+         }
+
+         int getNameAndTypeIndex() {
+            return (nameAndTypeIndex);
+         }
+
+      }
+
+      public abstract class MethodReferenceEntry extends ReferenceEntry{
+
+         public class Arg extends Type{
             Arg(String _signature, int _start, int _pos, int _argc) {
                super(_signature.substring(_start, _pos + 1));
                argc = _argc;
@@ -753,15 +858,13 @@ public class ClassModel {
 
          private Type returnType = null;
 
-         @Override
-         public int hashCode() {
+         @Override public int hashCode() {
             final NameAndTypeEntry nameAndTypeEntry = getNameAndTypeEntry();
 
             return ((((nameAndTypeEntry.getNameIndex() * 31) + nameAndTypeEntry.getDescriptorIndex()) * 31) + getClassIndex());
          }
 
-         @Override
-         public boolean equals(Object _other) {
+         @Override public boolean equals(Object _other) {
             if ((_other == null) || !(_other instanceof MethodReferenceEntry)) {
                return (false);
             } else {
@@ -868,7 +971,7 @@ public class ClassModel {
          }
       }
 
-      public abstract class ReferenceEntry extends Entry {
+      public abstract class ReferenceEntry extends Entry{
          protected int referenceClassIndex;
 
          protected int nameAndTypeIndex;
@@ -906,7 +1009,7 @@ public class ClassModel {
             return (false);
          }
 
-         public class Type {
+         public class Type{
             private int arrayDimensions = 0;
 
             public Type(String _type) {
@@ -938,7 +1041,7 @@ public class ClassModel {
          }
       }
 
-      public class StringEntry extends Entry {
+      public class StringEntry extends Entry{
          private final int utf8Index;
 
          public StringEntry(ByteReader _byteReader, int _slot) {
@@ -955,7 +1058,7 @@ public class ClassModel {
          }
       }
 
-      public class UTF8Entry extends Entry {
+      public class UTF8Entry extends Entry{
          private final String UTF8;
 
          public UTF8Entry(ByteReader _byteReader, int _slot) {
@@ -1012,6 +1115,15 @@ public class ClassModel {
                   break;
                case NAMEANDTYPE:
                   add(new NameAndTypeEntry(_byteReader, i));
+                  break;
+               case METHODHANDLE:
+                  add(new MethodHandleEntry(_byteReader, i));
+                  break;
+               case METHODTYPE:
+                  add(new MethodTypeEntry(_byteReader, i));
+                  break;
+               case INVOKEDYNAMIC:
+                  add(new InvokeDynamicEntry(_byteReader, i));
                   break;
                default:
                   System.out.printf("slot %04x unexpected Constant constantPoolType = %s\n", i, constantPoolType);
@@ -1112,8 +1224,7 @@ public class ClassModel {
 
       }
 
-      @Override
-      public Iterator<Entry> iterator() {
+      @Override public Iterator<Entry> iterator() {
          return (entries.iterator());
       }
 
@@ -1157,7 +1268,8 @@ public class ClassModel {
             final ConstantPool.MethodEntry methodEntry = (ConstantPool.MethodEntry) _entry;
             final ConstantPool.ClassEntry classEntry = (ConstantPool.ClassEntry) get(methodEntry.getClassIndex());
             final ConstantPool.UTF8Entry utf8Entry = (ConstantPool.UTF8Entry) get(classEntry.getNameIndex());
-            final ConstantPool.NameAndTypeEntry nameAndTypeEntry = (ConstantPool.NameAndTypeEntry) get(methodEntry.getNameAndTypeIndex());
+            final ConstantPool.NameAndTypeEntry nameAndTypeEntry = (ConstantPool.NameAndTypeEntry) get(methodEntry
+                  .getNameAndTypeIndex());
             final ConstantPool.UTF8Entry utf8NameEntry = (ConstantPool.UTF8Entry) get(nameAndTypeEntry.getNameIndex());
             final ConstantPool.UTF8Entry utf8DescriptorEntry = (ConstantPool.UTF8Entry) get(nameAndTypeEntry.getDescriptorIndex());
             sb.append(convert(utf8DescriptorEntry.getUTF8(), utf8Entry.getUTF8() + "." + utf8NameEntry.getUTF8()));
@@ -1174,7 +1286,8 @@ public class ClassModel {
             final ConstantPool.FieldEntry fieldEntry = (ConstantPool.FieldEntry) _entry;
             final ConstantPool.ClassEntry classEntry = (ConstantPool.ClassEntry) get(fieldEntry.getClassIndex());
             final ConstantPool.UTF8Entry utf8Entry = (ConstantPool.UTF8Entry) get(classEntry.getNameIndex());
-            final ConstantPool.NameAndTypeEntry nameAndTypeEntry = (ConstantPool.NameAndTypeEntry) get(fieldEntry.getNameAndTypeIndex());
+            final ConstantPool.NameAndTypeEntry nameAndTypeEntry = (ConstantPool.NameAndTypeEntry) get(fieldEntry
+                  .getNameAndTypeIndex());
             final ConstantPool.UTF8Entry utf8NameEntry = (ConstantPool.UTF8Entry) get(nameAndTypeEntry.getNameIndex());
             final ConstantPool.UTF8Entry utf8DescriptorEntry = (ConstantPool.UTF8Entry) get(nameAndTypeEntry.getDescriptorIndex());
             sb.append(convert(utf8DescriptorEntry.getUTF8(), utf8Entry.getUTF8() + "." + utf8NameEntry.getUTF8()));
@@ -1188,12 +1301,12 @@ public class ClassModel {
          if (_entry instanceof ConstantPool.StringEntry) {
             final ConstantPool.StringEntry stringEntry = (ConstantPool.StringEntry) _entry;
             references = new int[] {
-                  stringEntry.getUTF8Index()
+               stringEntry.getUTF8Index()
             };
          } else if (_entry instanceof ConstantPool.ClassEntry) {
             final ConstantPool.ClassEntry classEntry = (ConstantPool.ClassEntry) _entry;
             references = new int[] {
-                  classEntry.getNameIndex()
+               classEntry.getNameIndex()
             };
          } else if (_entry instanceof ConstantPool.NameAndTypeEntry) {
             final ConstantPool.NameAndTypeEntry nameAndTypeEntry = (ConstantPool.NameAndTypeEntry) _entry;
@@ -1204,8 +1317,10 @@ public class ClassModel {
          } else if (_entry instanceof ConstantPool.MethodEntry) {
             final ConstantPool.MethodEntry methodEntry = (ConstantPool.MethodEntry) _entry;
             final ConstantPool.ClassEntry classEntry = (ConstantPool.ClassEntry) get(methodEntry.getClassIndex());
-            @SuppressWarnings("unused") final ConstantPool.UTF8Entry utf8Entry = (ConstantPool.UTF8Entry) get(classEntry.getNameIndex());
-            final ConstantPool.NameAndTypeEntry nameAndTypeEntry = (ConstantPool.NameAndTypeEntry) get(methodEntry.getNameAndTypeIndex());
+            @SuppressWarnings("unused") final ConstantPool.UTF8Entry utf8Entry = (ConstantPool.UTF8Entry) get(classEntry
+                  .getNameIndex());
+            final ConstantPool.NameAndTypeEntry nameAndTypeEntry = (ConstantPool.NameAndTypeEntry) get(methodEntry
+                  .getNameAndTypeIndex());
             @SuppressWarnings("unused") final ConstantPool.UTF8Entry utf8NameEntry = (ConstantPool.UTF8Entry) get(nameAndTypeEntry
                   .getNameIndex());
             @SuppressWarnings("unused") final ConstantPool.UTF8Entry utf8DescriptorEntry = (ConstantPool.UTF8Entry) get(nameAndTypeEntry
@@ -1219,7 +1334,8 @@ public class ClassModel {
          } else if (_entry instanceof ConstantPool.InterfaceMethodEntry) {
             final ConstantPool.InterfaceMethodEntry interfaceMethodEntry = (ConstantPool.InterfaceMethodEntry) _entry;
             final ConstantPool.ClassEntry classEntry = (ConstantPool.ClassEntry) get(interfaceMethodEntry.getClassIndex());
-            @SuppressWarnings("unused") final ConstantPool.UTF8Entry utf8Entry = (ConstantPool.UTF8Entry) get(classEntry.getNameIndex());
+            @SuppressWarnings("unused") final ConstantPool.UTF8Entry utf8Entry = (ConstantPool.UTF8Entry) get(classEntry
+                  .getNameIndex());
             final ConstantPool.NameAndTypeEntry nameAndTypeEntry = (ConstantPool.NameAndTypeEntry) get(interfaceMethodEntry
                   .getNameAndTypeIndex());
             @SuppressWarnings("unused") final ConstantPool.UTF8Entry utf8NameEntry = (ConstantPool.UTF8Entry) get(nameAndTypeEntry
@@ -1235,8 +1351,10 @@ public class ClassModel {
          } else if (_entry instanceof ConstantPool.FieldEntry) {
             final ConstantPool.FieldEntry fieldEntry = (ConstantPool.FieldEntry) _entry;
             final ConstantPool.ClassEntry classEntry = (ConstantPool.ClassEntry) get(fieldEntry.getClassIndex());
-            @SuppressWarnings("unused") final ConstantPool.UTF8Entry utf8Entry = (ConstantPool.UTF8Entry) get(classEntry.getNameIndex());
-            final ConstantPool.NameAndTypeEntry nameAndTypeEntry = (ConstantPool.NameAndTypeEntry) get(fieldEntry.getNameAndTypeIndex());
+            @SuppressWarnings("unused") final ConstantPool.UTF8Entry utf8Entry = (ConstantPool.UTF8Entry) get(classEntry
+                  .getNameIndex());
+            final ConstantPool.NameAndTypeEntry nameAndTypeEntry = (ConstantPool.NameAndTypeEntry) get(fieldEntry
+                  .getNameAndTypeIndex());
             @SuppressWarnings("unused") final ConstantPool.UTF8Entry utf8NameEntry = (ConstantPool.UTF8Entry) get(nameAndTypeEntry
                   .getNameIndex());
             @SuppressWarnings("unused") final ConstantPool.UTF8Entry utf8DescriptorEntry = (ConstantPool.UTF8Entry) get(nameAndTypeEntry
@@ -1308,12 +1426,12 @@ public class ClassModel {
       }
    }
 
-   public class AttributePool {
+   public class AttributePool{
       private final List<AttributePoolEntry> attributePoolEntries = new ArrayList<AttributePoolEntry>();
 
-      public class CodeEntry extends AttributePoolEntry {
+      public class CodeEntry extends AttributePoolEntry{
 
-         public class ExceptionPoolEntry {
+         public class ExceptionPoolEntry{
             private final int exceptionClassIndex;
 
             private final int end;
@@ -1375,8 +1493,7 @@ public class ClassModel {
             codeEntryAttributePool = new AttributePool(_byteReader);
          }
 
-         @Override
-         public AttributePool getAttributePool() {
+         @Override public AttributePool getAttributePool() {
             return (codeEntryAttributePool);
          }
 
@@ -1401,7 +1518,7 @@ public class ClassModel {
          }
       }
 
-      public class ConstantValueEntry extends AttributePoolEntry {
+      public class ConstantValueEntry extends AttributePoolEntry{
          private final int index;
 
          public ConstantValueEntry(ByteReader _byteReader, int _nameIndex, int _length) {
@@ -1415,13 +1532,13 @@ public class ClassModel {
 
       }
 
-      public class DeprecatedEntry extends AttributePoolEntry {
+      public class DeprecatedEntry extends AttributePoolEntry{
          public DeprecatedEntry(ByteReader _byteReader, int _nameIndex, int _length) {
             super(_byteReader, _nameIndex, _length);
          }
       }
 
-      public abstract class AttributePoolEntry {
+      public abstract class AttributePoolEntry{
          protected int length;
 
          protected int nameIndex;
@@ -1448,7 +1565,7 @@ public class ClassModel {
          }
       }
 
-      public abstract class PoolEntry<T> extends AttributePoolEntry implements Iterable<T> {
+      public abstract class PoolEntry<T> extends AttributePoolEntry implements Iterable<T>{
          private final List<T> pool = new ArrayList<T>();
 
          public List<T> getPool() {
@@ -1459,13 +1576,12 @@ public class ClassModel {
             super(_byteReader, _nameIndex, _length);
          }
 
-         @Override
-         public Iterator<T> iterator() {
+         @Override public Iterator<T> iterator() {
             return (pool.iterator());
          }
       }
 
-      public class ExceptionEntry extends PoolEntry<Integer> {
+      public class ExceptionEntry extends PoolEntry<Integer>{
          public ExceptionEntry(ByteReader _byteReader, int _nameIndex, int _length) {
             super(_byteReader, _nameIndex, _length);
             final int exceptionTableLength = _byteReader.u2();
@@ -1475,8 +1591,8 @@ public class ClassModel {
          }
       }
 
-      public class InnerClassesEntry extends PoolEntry<InnerClassesEntry.InnerClassInfo> {
-         public class InnerClassInfo {
+      public class InnerClassesEntry extends PoolEntry<InnerClassesEntry.InnerClassInfo>{
+         public class InnerClassInfo{
             private final int innerAccess;
 
             private final int innerIndex;
@@ -1518,9 +1634,9 @@ public class ClassModel {
          }
       }
 
-      public class LineNumberTableEntry extends PoolEntry<LineNumberTableEntry.StartLineNumberPair> {
+      public class LineNumberTableEntry extends PoolEntry<LineNumberTableEntry.StartLineNumberPair>{
 
-         public class StartLineNumberPair {
+         public class StartLineNumberPair{
             private final int lineNumber;
 
             private final int start;
@@ -1575,7 +1691,7 @@ public class ClassModel {
          }
       }
 
-      public class EnclosingMethodEntry extends AttributePoolEntry {
+      public class EnclosingMethodEntry extends AttributePoolEntry{
 
          public EnclosingMethodEntry(ByteReader _byteReader, int _nameIndex, int _length) {
             super(_byteReader, _nameIndex, _length);
@@ -1596,7 +1712,7 @@ public class ClassModel {
          }
       }
 
-      public class SignatureEntry extends AttributePoolEntry {
+      public class SignatureEntry extends AttributePoolEntry{
 
          public SignatureEntry(ByteReader _byteReader, int _nameIndex, int _length) {
             super(_byteReader, _nameIndex, _length);
@@ -1610,9 +1726,10 @@ public class ClassModel {
          }
       }
 
-      public class LocalVariableTableEntry extends PoolEntry<LocalVariableTableEntry.LocalVariableInfo> {
+      public class RealLocalVariableTableEntry extends PoolEntry<RealLocalVariableTableEntry.RealLocalVariableInfo> implements
+            LocalVariableTableEntry<RealLocalVariableTableEntry.RealLocalVariableInfo>{
 
-         public class LocalVariableInfo {
+         class RealLocalVariableInfo implements LocalVariableInfo{
             private final int descriptorIndex;
 
             private final int usageLength;
@@ -1623,7 +1740,7 @@ public class ClassModel {
 
             private final int variableIndex;
 
-            public LocalVariableInfo(ByteReader _byteReader) {
+            public RealLocalVariableInfo(ByteReader _byteReader) {
                start = _byteReader.u2();
                usageLength = _byteReader.u2();
                variableNameIndex = _byteReader.u2();
@@ -1643,42 +1760,47 @@ public class ClassModel {
                return (variableNameIndex);
             }
 
-            public int getStart() {
+            @Override public int getStart() {
                return (start);
             }
 
-            public int getVariableIndex() {
+            @Override public int getVariableIndex() {
                return (variableIndex);
             }
 
-            public String getVariableName() {
+            @Override public String getVariableName() {
                return (constantPool.getUTF8Entry(variableNameIndex).getUTF8());
             }
 
-            public String getVariableDescriptor() {
+            @Override public String getVariableDescriptor() {
                return (constantPool.getUTF8Entry(descriptorIndex).getUTF8());
             }
 
-            public int getEnd() {
+            @Override public int getEnd() {
                return (start + usageLength);
+            }
+
+            @Override public boolean isArray() {
+               return (getVariableDescriptor().startsWith("["));
             }
          }
 
-         public LocalVariableTableEntry(ByteReader _byteReader, int _nameIndex, int _length) {
+         public RealLocalVariableTableEntry(ByteReader _byteReader, int _nameIndex, int _length) {
             super(_byteReader, _nameIndex, _length);
             final int localVariableTableLength = _byteReader.u2();
             for (int i = 0; i < localVariableTableLength; i++) {
-               getPool().add(new LocalVariableInfo(_byteReader));
+               getPool().add(new RealLocalVariableInfo(_byteReader));
             }
          }
 
-         public LocalVariableInfo getVariable(int _pc, int _index) {
-            LocalVariableInfo returnValue = null;
+         public RealLocalVariableInfo getVariable(int _pc, int _index) {
+            RealLocalVariableInfo returnValue = null;
             // System.out.println("pc = " + _pc + " index = " + _index);
-            for (final LocalVariableInfo localVariableInfo : getPool()) {
+            for (final RealLocalVariableInfo localVariableInfo : getPool()) {
                // System.out.println("   start=" + localVariableInfo.getStart() + " length=" + localVariableInfo.getLength()
                // + " varidx=" + localVariableInfo.getVariableIndex());
-               if ((_pc >= (localVariableInfo.getStart() - 1)) && (_pc <= (localVariableInfo.getStart() + localVariableInfo.getLength()))
+               if ((_pc >= (localVariableInfo.getStart() - 1))
+                     && (_pc <= (localVariableInfo.getStart() + localVariableInfo.getLength()))
                      && (_index == localVariableInfo.getVariableIndex())) {
                   returnValue = localVariableInfo;
                   break;
@@ -1691,7 +1813,7 @@ public class ClassModel {
 
          public String getVariableName(int _pc, int _index) {
             String returnValue = "unknown";
-            final LocalVariableInfo localVariableInfo = getVariable(_pc, _index);
+            final RealLocalVariableInfo localVariableInfo = (RealLocalVariableInfo) getVariable(_pc, _index);
             if (localVariableInfo != null) {
                returnValue = convert(constantPool.getUTF8Entry(localVariableInfo.getDescriptorIndex()).getUTF8(), constantPool
                      .getUTF8Entry(localVariableInfo.getNameIndex()).getUTF8());
@@ -1701,7 +1823,53 @@ public class ClassModel {
          }
       }
 
-      public class OtherEntry extends AttributePoolEntry {
+      class BootstrapMethodsEntry extends AttributePoolEntry{
+         // http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.21
+         class BootstrapMethod{
+            class BootstrapArgument{
+               public BootstrapArgument(ByteReader _byteReader) {
+                  argument = _byteReader.u2();
+               }
+
+               int argument;// u2;
+            }
+
+            public BootstrapMethod(ByteReader _byteReader) {
+               bootstrapMethodRef = _byteReader.u2();
+               numBootstrapArguments = _byteReader.u2();
+               bootstrapArguments = new BootstrapArgument[numBootstrapArguments];
+               for (int i = 0; i < numBootstrapArguments; i++) {
+                  bootstrapArguments[i] = new BootstrapArgument(_byteReader);
+               }
+            }
+
+            int bootstrapMethodRef; //u2
+
+            int numBootstrapArguments; //u2
+
+            BootstrapArgument bootstrapArguments[];
+         }
+
+         BootstrapMethodsEntry(ByteReader _byteReader, int _nameIndex, int _length) {
+            super(_byteReader, _nameIndex, _length);
+            numBootstrapMethods = _byteReader.u2();
+            bootstrapMethods = new BootstrapMethod[numBootstrapMethods];
+            for (int i = 0; i < numBootstrapMethods; i++) {
+               bootstrapMethods[i] = new BootstrapMethod(_byteReader);
+            }
+         }
+
+         private int numBootstrapMethods;
+
+         BootstrapMethod bootstrapMethods[];
+
+         int getNumBootstrapMethods() {
+            return (numBootstrapMethods);
+         }
+
+      }
+
+      public class OtherEntry extends AttributePoolEntry{
          private final byte[] bytes;
 
          public OtherEntry(ByteReader _byteReader, int _nameIndex, int _length) {
@@ -1713,14 +1881,47 @@ public class ClassModel {
             return (bytes);
          }
 
-         @Override
-         public String toString() {
+         @Override public String toString() {
             return (new String(bytes));
          }
 
       }
 
-      public class SourceFileEntry extends AttributePoolEntry {
+      class StackMapTableEntry extends AttributePoolEntry{
+         private byte[] bytes;
+
+         StackMapTableEntry(ByteReader _byteReader, int _nameIndex, int _length) {
+            super(_byteReader, _nameIndex, _length);
+            bytes = _byteReader.bytes(_length);
+         }
+
+         byte[] getBytes() {
+            return (bytes);
+         }
+
+         @Override public String toString() {
+            return (new String(bytes));
+         }
+      }
+
+      public class LocalVariableTypeTableEntry extends AttributePoolEntry{
+         private byte[] bytes;
+
+         public LocalVariableTypeTableEntry(ByteReader _byteReader, int _nameIndex, int _length) {
+            super(_byteReader, _nameIndex, _length);
+            bytes = _byteReader.bytes(_length);
+         }
+
+         public byte[] getBytes() {
+            return (bytes);
+         }
+
+         @Override public String toString() {
+            return (new String(bytes));
+         }
+      }
+
+      public class SourceFileEntry extends AttributePoolEntry{
          private final int sourceFileIndex;
 
          public SourceFileEntry(ByteReader _byteReader, int _nameIndex, int _length) {
@@ -1737,21 +1938,21 @@ public class ClassModel {
          }
       }
 
-      public class SyntheticEntry extends AttributePoolEntry {
+      public class SyntheticEntry extends AttributePoolEntry{
          public SyntheticEntry(ByteReader _byteReader, int _nameIndex, int _length) {
             super(_byteReader, _nameIndex, _length);
          }
       }
 
-      public class RuntimeAnnotationsEntry extends PoolEntry<RuntimeAnnotationsEntry.AnnotationInfo> {
+      public class RuntimeAnnotationsEntry extends PoolEntry<RuntimeAnnotationsEntry.AnnotationInfo>{
 
-         public class AnnotationInfo {
+         public class AnnotationInfo{
             private final int typeIndex;
 
             private final int elementValuePairCount;
 
-            public class ElementValuePair {
-               class Value {
+            public class ElementValuePair{
+               class Value{
                   Value(int _tag) {
                      tag = _tag;
                   }
@@ -1760,7 +1961,7 @@ public class ClassModel {
 
                }
 
-               public class PrimitiveValue extends Value {
+               public class PrimitiveValue extends Value{
                   private final int typeNameIndex;
 
                   private final int constNameIndex;
@@ -1780,35 +1981,33 @@ public class ClassModel {
                   }
                }
 
-               public class EnumValue extends Value {
+               public class EnumValue extends Value{
                   EnumValue(int _tag, ByteReader _byteReader) {
                      super(_tag);
                   }
                }
 
-               public class ArrayValue extends Value {
+               public class ArrayValue extends Value{
                   ArrayValue(int _tag, ByteReader _byteReader) {
                      super(_tag);
                   }
                }
 
-               public class ClassValue extends Value {
+               public class ClassValue extends Value{
                   ClassValue(int _tag, ByteReader _byteReader) {
                      super(_tag);
                   }
                }
 
-               public class AnnotationValue extends Value {
+               public class AnnotationValue extends Value{
                   AnnotationValue(int _tag, ByteReader _byteReader) {
                      super(_tag);
                   }
                }
 
-               @SuppressWarnings("unused")
-               private final int elementNameIndex;
+               @SuppressWarnings("unused") private final int elementNameIndex;
 
-               @SuppressWarnings("unused")
-               private Value value;
+               @SuppressWarnings("unused") private Value value;
 
                public ElementValuePair(ByteReader _byteReader) {
                   elementNameIndex = _byteReader.u2();
@@ -1892,11 +2091,39 @@ public class ClassModel {
 
       private SyntheticEntry syntheticEntry = null;
 
+      private BootstrapMethodsEntry bootstrapMethodsEntry = null;
+
       private final static String LOCALVARIABLETABLE_TAG = "LocalVariableTable";
 
       private final static String CONSTANTVALUE_TAG = "ConstantValue";
 
       private final static String LINENUMBERTABLE_TAG = "LineNumberTable";
+
+      private final static String SOURCEFILE_TAG = "SourceFile";
+
+      private final static String SYNTHETIC_TAG = "Synthetic";
+
+      private final static String EXCEPTIONS_TAG = "Exceptions";
+
+      private final static String INNERCLASSES_TAG = "InnerClasses";
+
+      private final static String DEPRECATED_TAG = "Deprecated";
+
+      private final static String CODE_TAG = "Code";
+
+      private final static String ENCLOSINGMETHOD_TAG = "EnclosingMethod";
+
+      private final static String SIGNATURE_TAG = "Signature";
+
+      private final static String RUNTIMEINVISIBLEANNOTATIONS_TAG = "RuntimeInvisibleAnnotations";
+
+      private final static String RUNTIMEVISIBLEANNOTATIONS_TAG = "RuntimeVisibleAnnotations";
+
+      private final static String BOOTSTRAPMETHODS_TAG = "BootstrapMethods";
+
+      private final static String STACKMAPTABLE_TAG = "StackMapTable";
+
+      private final static String LOCALVARIABLETYPETABLE_TAG = "LocalVariableTypeTable";
 
       public AttributePool(ByteReader _byteReader) {
          final int attributeCount = _byteReader.u2();
@@ -1906,47 +2133,58 @@ public class ClassModel {
             final int length = _byteReader.u4();
             final String attributeName = constantPool.getUTF8Entry(attributeNameIndex).getUTF8();
             if (attributeName.equals(LOCALVARIABLETABLE_TAG)) {
-               localVariableTableEntry = new LocalVariableTableEntry(_byteReader, attributeNameIndex, length);
-               entry = localVariableTableEntry;
+               localVariableTableEntry = new RealLocalVariableTableEntry(_byteReader, attributeNameIndex, length);
+               entry = (RealLocalVariableTableEntry) localVariableTableEntry;
             } else if (attributeName.equals(CONSTANTVALUE_TAG)) {
                entry = new ConstantValueEntry(_byteReader, attributeNameIndex, length);
             } else if (attributeName.equals(LINENUMBERTABLE_TAG)) {
                lineNumberTableEntry = new LineNumberTableEntry(_byteReader, attributeNameIndex, length);
                entry = lineNumberTableEntry;
-            } else if (attributeName.equals("SourceFile")) {
+            } else if (attributeName.equals(SOURCEFILE_TAG)) {
                sourceFileEntry = new SourceFileEntry(_byteReader, attributeNameIndex, length);
                entry = sourceFileEntry;
-            } else if (attributeName.equals("Synthetic")) {
+            } else if (attributeName.equals(SYNTHETIC_TAG)) {
                syntheticEntry = new SyntheticEntry(_byteReader, attributeNameIndex, length);
                entry = syntheticEntry;
-            } else if (attributeName.equals("Exceptions")) {
+            } else if (attributeName.equals(EXCEPTIONS_TAG)) {
                exceptionEntry = new ExceptionEntry(_byteReader, attributeNameIndex, length);
                entry = exceptionEntry;
-            } else if (attributeName.equals("InnerClasses")) {
+            } else if (attributeName.equals(INNERCLASSES_TAG)) {
                entry = new InnerClassesEntry(_byteReader, attributeNameIndex, length);
-            } else if (attributeName.equals("Deprecated")) {
+            } else if (attributeName.equals(DEPRECATED_TAG)) {
                deprecatedEntry = new DeprecatedEntry(_byteReader, attributeNameIndex, length);
                entry = deprecatedEntry;
-            } else if (attributeName.equals("Code")) {
+            } else if (attributeName.equals(CODE_TAG)) {
                codeEntry = new CodeEntry(_byteReader, attributeNameIndex, length);
                entry = codeEntry;
-            } else if (attributeName.equals("EnclosingMethod")) {
+            } else if (attributeName.equals(ENCLOSINGMETHOD_TAG)) {
                enclosingMethodEntry = new EnclosingMethodEntry(_byteReader, attributeNameIndex, length);
                entry = enclosingMethodEntry;
-            } else if (attributeName.equals("Signature")) {
+            } else if (attributeName.equals(SIGNATURE_TAG)) {
                entry = new SignatureEntry(_byteReader, attributeNameIndex, length);
-            } else if (attributeName.equals("RuntimeInvisibleAnnotations")) {
+            } else if (attributeName.equals(RUNTIMEINVISIBLEANNOTATIONS_TAG)) {
                runtimeInvisibleAnnotationsEntry = new RuntimeAnnotationsEntry(_byteReader, attributeNameIndex, length);
                entry = runtimeInvisibleAnnotationsEntry;
-            } else if (attributeName.equals("RuntimeVisibleAnnotations")) {
+            } else if (attributeName.equals(RUNTIMEVISIBLEANNOTATIONS_TAG)) {
                runtimeVisibleAnnotationsEntry = new RuntimeAnnotationsEntry(_byteReader, attributeNameIndex, length);
                entry = runtimeVisibleAnnotationsEntry;
+            } else if (attributeName.equals(BOOTSTRAPMETHODS_TAG)) {
+               bootstrapMethodsEntry = new BootstrapMethodsEntry(_byteReader, attributeNameIndex, length);
+               entry = bootstrapMethodsEntry;
+               // http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.21
+            } else if (attributeName.equals(STACKMAPTABLE_TAG)) {
+               // http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.4
+
+               entry = new StackMapTableEntry(_byteReader, attributeNameIndex, length);
+            } else if (attributeName.equals(LOCALVARIABLETYPETABLE_TAG)) {
+               // http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.14
+               entry = new LocalVariableTypeTableEntry(_byteReader, attributeNameIndex, length);
             } else {
-               //  System.out.println("Other! found (name = " + attributeName + ")");
+               logger.warning("Found unexpected Attribute (name = " + attributeName + ")");
                entry = new OtherEntry(_byteReader, attributeNameIndex, length);
+               attributePoolEntries.add(entry);
             }
 
-            attributePoolEntries.add(entry);
          }
       }
 
@@ -1985,11 +2223,16 @@ public class ClassModel {
       public RuntimeAnnotationsEntry getRuntimeVisibleAnnotationsEntry() {
          return (runtimeVisibleAnnotationsEntry);
       }
+
+      public RuntimeAnnotationsEntry getBootstrap() {
+         return (runtimeVisibleAnnotationsEntry);
+      }
+
    }
 
    private static ClassLoader classModelLoader = ClassModel.class.getClassLoader();
 
-   public class ClassModelField {
+   public class ClassModelField{
       private final int fieldAccessFlags;
 
       AttributePool fieldAttributePool;
@@ -2056,7 +2299,7 @@ public class ClassModel {
       }
    }
 
-   public class ClassModelMethod {
+   public class ClassModelMethod{
 
       private final int methodAccessFlags;
 
@@ -2131,11 +2374,15 @@ public class ClassModel {
          return (getAttributePool().codeEntry.codeEntryAttributePool.lineNumberTableEntry);
       }
 
-      public AttributePool.LocalVariableTableEntry getLocalVariableTableEntry() {
+      public LocalVariableTableEntry getLocalVariableTableEntry() {
          return (getAttributePool().codeEntry.codeEntryAttributePool.localVariableTableEntry);
       }
 
-      public LocalVariableTableEntry.LocalVariableInfo getLocalVariable(int _pc, int _index) {
+      void setLocalVariableTableEntry(LocalVariableTableEntry _localVariableTableEntry) {
+         getAttributePool().codeEntry.codeEntryAttributePool.localVariableTableEntry = _localVariableTableEntry;
+      }
+
+      public LocalVariableInfo getLocalVariable(int _pc, int _index) {
          return (getLocalVariableTableEntry().getVariable(_pc, _index));
       }
 
@@ -2146,9 +2393,13 @@ public class ClassModel {
       public ClassModel getClassModel() {
          return (ClassModel.this);
       }
+
+      public String toString() {
+         return getClassModel().getClassWeAreModelling().getName() + "." + getName() + " " + getDescriptor();
+      }
    }
 
-   public class ClassModelInterface {
+   public class ClassModelInterface{
       private final int interfaceIndex;
 
       ClassModelInterface(ByteReader _byteReader) {
@@ -2191,7 +2442,12 @@ public class ClassModel {
     */
    private void parse(ClassLoader _classLoader, String _className) throws ClassParseException {
 
-      final ByteReader byteReader = new ByteReader(_classLoader.getResourceAsStream(_className.replace('.', '/') + ".class"));
+      parse(_classLoader.getResourceAsStream(_className.replace('.', '/') + ".class"));
+   }
+
+   void parse(InputStream _inputStream) throws ClassParseException {
+
+      ByteReader byteReader = new ByteReader(_inputStream);
       magic = byteReader.u4();
       minorVersion = byteReader.u2();
       majorVersion = byteReader.u2();
@@ -2362,7 +2618,7 @@ public class ClassModel {
       totalStructSize = x;
    }
 
-   private Entrypoint getEntrypoint(String _entrypointName, String _descriptor, Object _k) throws AparapiException {
+   Entrypoint getEntrypoint(String _entrypointName, String _descriptor, Object _k) throws AparapiException {
       final MethodModel method = getMethodModel(_entrypointName, _descriptor);
       return (new Entrypoint(this, method, _k));
    }

@@ -44,6 +44,7 @@
 #include "ArrayBuffer.h"
 #include "CLHelper.h"
 #include "List.h"
+#include <algorithm>
 
 
 //compiler dependant code
@@ -637,6 +638,28 @@ void enqueueKernel(JNIContext* jniContext, Range& range, int passes, int argPos,
       // list of events to wait for
       cl_event* writeEvents = NULL;
 
+
+
+      // -----------
+      // fix for Mac OSX CPU driver (and possibly others) 
+      // which fail to give correct maximum work group info
+      // while using clGetDeviceInfo
+      // see: http://www.openwall.com/lists/john-dev/2012/04/10/4
+      cl_uint max_group_size[3];
+      status = clGetKernelWorkGroupInfo(jniContext->kernel,
+                                        (cl_device_id)jniContext->deviceId,
+                                        CL_KERNEL_WORK_GROUP_SIZE,
+                                        sizeof(max_group_size),
+                                        &max_group_size, NULL);
+      
+      if (status != CL_SUCCESS) {
+         CLException(status, "clGetKernelWorkGroupInfo()").printError();
+      } else {
+         range.localDims[0] = min(range.localDims[0], max_group_size[0]);
+      }
+      // ------ end fix
+
+        
       // two options here due to passid
       // there may be 1 or more passes
       // enqueue depends on write enqueues 
@@ -931,13 +954,10 @@ JNI_JAVA(jlong, KernelRunnerJNI, initJNI)
          fprintf(stderr, "no device object!\n");
       }
       if (config == NULL){
-         fprintf(stderr, "no config !\n");
          config = new Config(jenv);
-         fprintf(stderr, "created config !\n");
       }
       cl_int status = CL_SUCCESS;
       JNIContext* jniContext = new JNIContext(jenv, kernelObject, openCLDeviceObject, flags);
-         fprintf(stderr, "created JNIContext !\n");
 
       if (jniContext->isValid()) {
 

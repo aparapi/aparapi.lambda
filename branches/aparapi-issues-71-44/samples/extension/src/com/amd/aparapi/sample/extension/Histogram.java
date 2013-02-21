@@ -7,11 +7,9 @@ import com.amd.aparapi.device.OpenCLDevice;
 import com.amd.aparapi.opencl.OpenCL;
 import com.amd.aparapi.opencl.OpenCL.Resource;
 
-public class Histogram {
+public class Histogram{
 
-   @Resource("com/amd/aparapi/sample/extension/HistogramKernel.cl")
-   interface HistogramKernel extends
-         OpenCL<HistogramKernel> {
+   @Resource("com/amd/aparapi/sample/extension/HistogramKernel.cl") interface HistogramKernel extends OpenCL<HistogramKernel>{
 
       public HistogramKernel histogram256(//
             Range _range,//
@@ -44,10 +42,9 @@ public class Histogram {
       final int[] histo = new int[BIN_SIZE];
       final int[] refHisto = new int[BIN_SIZE];
       final Device device = Device.firstGPU();
-      final Kernel k = new Kernel() {
+      final Kernel k = new Kernel(){
 
-         @Override
-         public void run() {
+         @Override public void run() {
             final int j = getGlobalId(0);
             for (int i = 0; i < SUB_HISTOGRAM_COUNT; ++i) {
                histo[j] += binResult[(i * BIN_SIZE) + j];

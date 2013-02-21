@@ -57,7 +57,7 @@ import com.amd.aparapi.internal.reader.ByteReader;
  * @author gfrost
  *
  */
-public abstract class Instruction {
+public abstract class Instruction{
 
    protected MethodModel method;
 
@@ -180,8 +180,7 @@ public abstract class Instruction {
       return (getStackProduceCount() - getStackConsumeCount());
    }
 
-   @Override
-   public String toString() {
+   @Override public String toString() {
       return (String.format("%d %s", pc, byteCode.getName()));
    }
 

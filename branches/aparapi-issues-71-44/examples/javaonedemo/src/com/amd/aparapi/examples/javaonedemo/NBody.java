@@ -85,9 +85,9 @@ import com.jogamp.opengl.util.texture.TextureIO;
  * @author gfrost
  *
  */
-public class NBody {
+public class NBody{
 
-   public static class NBodyKernel extends Kernel {
+   public static class NBodyKernel extends Kernel{
       protected final float delT = .005f;
 
       protected final float espSqr = 1.0f;
@@ -135,8 +135,7 @@ public class NBody {
       /** 
        * Here is the kernel entrypoint. Here is where we calculate the position of each body
        */
-      @Override
-      public void run() {
+      @Override public void run() {
          final int body = getGlobalId();
          final int count = getGlobalSize(0) * 3;
          final int globalId = body * 3;
@@ -199,6 +198,8 @@ public class NBody {
 
    public static boolean running;
 
+   public static Texture texture;
+
    public static void main(String _args[]) {
 
       final NBodyKernel kernel = new NBodyKernel(Range.create(Integer.getInteger("bodies", 10000)));
@@ -211,9 +212,8 @@ public class NBody {
 
       final JButton startButton = new JButton("Start");
 
-      startButton.addActionListener(new ActionListener() {
-         @Override
-         public void actionPerformed(ActionEvent e) {
+      startButton.addActionListener(new ActionListener(){
+         @Override public void actionPerformed(ActionEvent e) {
             running = true;
             startButton.setEnabled(false);
          }
@@ -230,9 +230,8 @@ public class NBody {
 
       final JComboBox modeButton = new JComboBox(choices);
 
-      modeButton.addItemListener(new ItemListener() {
-         @Override
-         public void itemStateChanged(ItemEvent e) {
+      modeButton.addItemListener(new ItemListener(){
+         @Override public void itemStateChanged(ItemEvent e) {
             final String item = (String) modeButton.getSelectedItem();
 
             // if (item.equals(choices[2])) {
@@ -262,10 +261,11 @@ public class NBody {
 
       final GLUT glut = new GLUT();
 
-      final Dimension dimension = new Dimension(Integer.getInteger("width", 1024 + 256), Integer.getInteger("height", 768 - 64 - 32));
+      final Dimension dimension = new Dimension(Integer.getInteger("width", 1024 + 256),
+            Integer.getInteger("height", 768 - 64 - 32));
       canvas.setPreferredSize(dimension);
 
-      canvas.addGLEventListener(new GLEventListener() {
+      canvas.addGLEventListener(new GLEventListener(){
          private double ratio;
 
          private final float xeye = 0f;
@@ -286,15 +286,15 @@ public class NBody {
 
          private long last = System.currentTimeMillis();
 
-         @Override
-         public void dispose(GLAutoDrawable drawable) {
+         @Override public void dispose(GLAutoDrawable drawable) {
 
          }
 
-         @Override
-         public void display(GLAutoDrawable drawable) {
+         @Override public void display(GLAutoDrawable drawable) {
 
             final GL2 gl = drawable.getGL().getGL2();
+            texture.enable(gl);
+            texture.bind(gl);
 
             gl.glLoadIdentity();
             gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
@@ -336,8 +336,7 @@ public class NBody {
 
          }
 
-         @Override
-         public void init(GLAutoDrawable drawable) {
+         @Override public void init(GLAutoDrawable drawable) {
             final GL2 gl = drawable.getGL().getGL2();
 
             gl.glShadeModel(GLLightingFunc.GL_SMOOTH);
@@ -345,8 +344,7 @@ public class NBody {
             gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE);
             try {
                final InputStream textureStream = NBody.class.getResourceAsStream("particle.jpg");
-               final Texture texture = TextureIO.newTexture(textureStream, false, null);
-               texture.enable(gl);
+               texture = TextureIO.newTexture(textureStream, false, null);
             } catch (final IOException e) {
                e.printStackTrace();
             } catch (final GLException e) {
@@ -355,8 +353,7 @@ public class NBody {
 
          }
 
-         @Override
-         public void reshape(GLAutoDrawable drawable, int x, int y, int _width, int _height) {
+         @Override public void reshape(GLAutoDrawable drawable, int x, int y, int _width, int _height) {
             width = _width;
             height = _height;
 

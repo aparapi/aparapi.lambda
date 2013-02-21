@@ -6,7 +6,7 @@ import java.util.Map;
 import com.amd.aparapi.device.OpenCLDevice;
 import com.amd.aparapi.internal.jni.OpenCLJNI;
 
-public class OpenCLProgram extends OpenCLJNI {
+public class OpenCLProgram extends OpenCLJNI{
 
    private final long programId;
 

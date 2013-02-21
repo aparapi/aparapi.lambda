@@ -8,10 +8,9 @@ import com.amd.aparapi.device.OpenCLDevice;
 import com.amd.aparapi.opencl.OpenCL;
 import com.amd.aparapi.opencl.OpenCL.Resource;
 
-public class FFTExample {
+public class FFTExample{
 
-   @Resource("com/amd/aparapi/sample/extension/fft.cl")
-   interface FFT extends OpenCL<FFT> {
+   @Resource("com/amd/aparapi/sample/extension/fft.cl") interface FFT extends OpenCL<FFT>{
 
       public FFT forward(//
             Range _range,//

@@ -29,7 +29,7 @@ import com.amd.aparapi.opencl.OpenCL.Local;
 import com.amd.aparapi.opencl.OpenCL.Resource;
 import com.amd.aparapi.opencl.OpenCL.Source;
 
-public class OpenCLDevice extends Device {
+public class OpenCLDevice extends Device{
 
    private final OpenCLPlatform platform;
 
@@ -100,7 +100,7 @@ public class OpenCLDevice extends Device {
       return (deviceId);
    }
 
-   public static class OpenCLInvocationHandler<T extends OpenCL<T>> implements InvocationHandler {
+   public static class OpenCLInvocationHandler<T extends OpenCL<T>> implements InvocationHandler{
       private final Map<String, OpenCLKernel> map;
 
       private final OpenCLProgram program;
@@ -110,8 +110,7 @@ public class OpenCLDevice extends Device {
          map = _map;
       }
 
-      @Override
-      public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+      @Override public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
          if (!isReservedInterfaceMethod(method)) {
             final OpenCLKernel kernel = map.get(method.getName());
             if (kernel != null) {
@@ -381,11 +380,11 @@ public class OpenCLDevice extends Device {
       return instance;
    }
 
-   public interface DeviceSelector {
+   public interface DeviceSelector{
       OpenCLDevice select(OpenCLDevice _device);
    }
 
-   public interface DeviceComparitor {
+   public interface DeviceComparitor{
       OpenCLDevice select(OpenCLDevice _deviceLhs, OpenCLDevice _deviceRhs);
    }
 
@@ -425,8 +424,7 @@ public class OpenCLDevice extends Device {
       return (device);
    }
 
-   @Override
-   public String toString() {
+   @Override public String toString() {
       final StringBuilder s = new StringBuilder("{");
       boolean first = true;
       for (final int workItemSize : maxWorkItemSize) {

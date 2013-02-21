@@ -5,15 +5,14 @@ import com.amd.aparapi.device.Device;
 import com.amd.aparapi.device.OpenCLDevice;
 import com.amd.aparapi.opencl.OpenCL;
 
-public class SwapExample {
+public class SwapExample{
 
-   interface Swapper extends OpenCL<Swapper> {
+   interface Swapper extends OpenCL<Swapper>{
       @Kernel("{\n"//
             + "  const size_t id = get_global_id(0);\n"//
             + "  float temp=lhs[id];" + "  lhs[id] = rhs[id];\n"//
             + "  rhs[id] = temp;\n"//
-            + "}\n")
-      //
+            + "}\n")//
       public Swapper swap(//
             Range _range,//
             @GlobalReadWrite("lhs") float[] lhs,//

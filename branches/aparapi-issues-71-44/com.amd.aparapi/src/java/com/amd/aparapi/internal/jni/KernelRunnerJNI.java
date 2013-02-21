@@ -13,7 +13,7 @@ import com.amd.aparapi.internal.annotation.UsedByJNICode;
 /**
  * This class is intended to be used as a 'proxy' or 'facade' object for Java code to interact with JNI
  */
-public abstract class KernelRunnerJNI {
+public abstract class KernelRunnerJNI{
 
    /**
     * This 'bit' indicates that a particular <code>KernelArg</code> represents a <code>boolean</code> type (array or primitive).
@@ -23,8 +23,7 @@ public abstract class KernelRunnerJNI {
     * 
     * @author gfrost
     */
-   @UsedByJNICode
-   protected static final int ARG_BOOLEAN = 1 << 0;
+   @UsedByJNICode protected static final int ARG_BOOLEAN = 1 << 0;
 
    /**
     * This 'bit' indicates that a particular <code>KernelArg</code> represents a <code>byte</code> type (array or primitive).
@@ -34,8 +33,7 @@ public abstract class KernelRunnerJNI {
     * 
     * @author gfrost
     */
-   @UsedByJNICode
-   protected static final int ARG_BYTE = 1 << 1;
+   @UsedByJNICode protected static final int ARG_BYTE = 1 << 1;
 
    /**
     * This 'bit' indicates that a particular <code>KernelArg</code> represents a <code>float</code> type (array or primitive).
@@ -45,8 +43,7 @@ public abstract class KernelRunnerJNI {
     * 
     * @author gfrost
     */
-   @UsedByJNICode
-   protected static final int ARG_FLOAT = 1 << 2;
+   @UsedByJNICode protected static final int ARG_FLOAT = 1 << 2;
 
    /**
     * This 'bit' indicates that a particular <code>KernelArg</code> represents a <code>int</code> type (array or primitive).
@@ -56,8 +53,7 @@ public abstract class KernelRunnerJNI {
     * 
     * @author gfrost
     */
-   @UsedByJNICode
-   protected static final int ARG_INT = 1 << 3;
+   @UsedByJNICode protected static final int ARG_INT = 1 << 3;
 
    /**
     * This 'bit' indicates that a particular <code>KernelArg</code> represents a <code>double</code> type (array or primitive).
@@ -67,8 +63,7 @@ public abstract class KernelRunnerJNI {
     * 
     * @author gfrost
     */
-   @UsedByJNICode
-   protected static final int ARG_DOUBLE = 1 << 4;
+   @UsedByJNICode protected static final int ARG_DOUBLE = 1 << 4;
 
    /**
     * This 'bit' indicates that a particular <code>KernelArg</code> represents a <code>long</code> type (array or primitive).
@@ -78,8 +73,7 @@ public abstract class KernelRunnerJNI {
     * 
     * @author gfrost
     */
-   @UsedByJNICode
-   protected static final int ARG_LONG = 1 << 5;
+   @UsedByJNICode protected static final int ARG_LONG = 1 << 5;
 
    /**
     * TODO:
@@ -88,8 +82,7 @@ public abstract class KernelRunnerJNI {
     * 
     * @author gfrost
     */
-   @UsedByJNICode
-   protected static final int ARG_SHORT = 1 << 6;
+   @UsedByJNICode protected static final int ARG_SHORT = 1 << 6;
 
    /**
     * This 'bit' indicates that a particular <code>KernelArg</code> represents an array.<br/>
@@ -100,8 +93,7 @@ public abstract class KernelRunnerJNI {
     * 
     * @author gfrost
     */
-   @UsedByJNICode
-   protected static final int ARG_ARRAY = 1 << 7;
+   @UsedByJNICode protected static final int ARG_ARRAY = 1 << 7;
 
    /**
     * This 'bit' indicates that a particular <code>KernelArg</code> represents a primitive (non array).<br/>
@@ -112,8 +104,7 @@ public abstract class KernelRunnerJNI {
     * 
     * @author gfrost
     */
-   @UsedByJNICode
-   protected static final int ARG_PRIMITIVE = 1 << 8;
+   @UsedByJNICode protected static final int ARG_PRIMITIVE = 1 << 8;
 
    /**
     * This 'bit' indicates that a particular <code>KernelArg</code> is read by the Kernel (note from the Kernel's point of view).<br/>
@@ -124,8 +115,7 @@ public abstract class KernelRunnerJNI {
     * 
     * @author gfrost
     */
-   @UsedByJNICode
-   protected static final int ARG_READ = 1 << 9;
+   @UsedByJNICode protected static final int ARG_READ = 1 << 9;
 
    /**
     * This 'bit' indicates that a particular <code>KernelArg</code> is mutated by the Kernel (note from the Kernel's point of view).<br/>
@@ -136,8 +126,7 @@ public abstract class KernelRunnerJNI {
     * 
     * @author gfrost
     */
-   @UsedByJNICode
-   protected static final int ARG_WRITE = 1 << 10;
+   @UsedByJNICode protected static final int ARG_WRITE = 1 << 10;
 
    /**
     * This 'bit' indicates that a particular <code>KernelArg</code> resides in local memory in the generated OpenCL code.<br/>
@@ -148,9 +137,7 @@ public abstract class KernelRunnerJNI {
     * 
     * @author gfrost
     */
-   @Experimental
-   @UsedByJNICode
-   protected static final int ARG_LOCAL = 1 << 11;
+   @Experimental @UsedByJNICode protected static final int ARG_LOCAL = 1 << 11;
 
    /**
     * This 'bit' indicates that a particular <code>KernelArg</code> resides in global memory in the generated OpenCL code.<br/>
@@ -161,9 +148,7 @@ public abstract class KernelRunnerJNI {
     * 
     * @author gfrost
     */
-   @Experimental
-   @UsedByJNICode
-   protected static final int ARG_GLOBAL = 1 << 12;
+   @Experimental @UsedByJNICode protected static final int ARG_GLOBAL = 1 << 12;
 
    /**
     * This 'bit' indicates that a particular <code>KernelArg</code> resides in constant memory in the generated OpenCL code.<br/>
@@ -174,9 +159,7 @@ public abstract class KernelRunnerJNI {
     * 
     * @author gfrost
     */
-   @Experimental
-   @UsedByJNICode
-   protected static final int ARG_CONSTANT = 1 << 13;
+   @Experimental @UsedByJNICode protected static final int ARG_CONSTANT = 1 << 13;
 
    /**
     * This 'bit' indicates that a particular <code>KernelArg</code> has it's length reference, in which case a synthetic arg is passed (name mangled) to the OpenCL kernel.<br/>
@@ -186,8 +169,7 @@ public abstract class KernelRunnerJNI {
     * 
     * @author gfrost
     */
-   @UsedByJNICode
-   protected static final int ARG_ARRAYLENGTH = 1 << 14;
+   @UsedByJNICode protected static final int ARG_ARRAYLENGTH = 1 << 14;
 
    /**
     * TODO:
@@ -196,8 +178,7 @@ public abstract class KernelRunnerJNI {
     * 
     * @author gfrost
     */
-   @UsedByJNICode
-   protected static final int ARG_APARAPI_BUF = 1 << 15;
+   @UsedByJNICode protected static final int ARG_APARAPI_BUF = 1 << 15;
 
    /**
     * This 'bit' indicates that the arg has been explicitly marked for reading
@@ -206,8 +187,7 @@ public abstract class KernelRunnerJNI {
     * 
     * @author gfrost
     */
-   @UsedByJNICode
-   protected static final int ARG_EXPLICIT = 1 << 16;
+   @UsedByJNICode protected static final int ARG_EXPLICIT = 1 << 16;
 
    /**
     * This 'bit' indicates that the arg has been explicitly marked for writing
@@ -216,8 +196,7 @@ public abstract class KernelRunnerJNI {
     * 
     * @author gfrost
     */
-   @UsedByJNICode
-   protected static final int ARG_EXPLICIT_WRITE = 1 << 17;
+   @UsedByJNICode protected static final int ARG_EXPLICIT_WRITE = 1 << 17;
 
    /**
     * TODO:
@@ -226,8 +205,7 @@ public abstract class KernelRunnerJNI {
     * 
     * @author gfrost
     */
-   @UsedByJNICode
-   protected static final int ARG_OBJ_ARRAY_STRUCT = 1 << 18;
+   @UsedByJNICode protected static final int ARG_OBJ_ARRAY_STRUCT = 1 << 18;
 
    /**
     * TODO:
@@ -255,8 +233,7 @@ public abstract class KernelRunnerJNI {
     * 
     * @author rlamothe
     */
-   @UsedByJNICode
-   protected static final int ARG_CHAR = 1 << 21;
+   @UsedByJNICode protected static final int ARG_CHAR = 1 << 21;
 
    /**
     * This 'bit' indicates that a particular <code>KernelArg</code> represents a <code>static</code> field (array or primitive).
@@ -266,8 +243,7 @@ public abstract class KernelRunnerJNI {
     * 
     * @author gfrost
     */
-   @UsedByJNICode
-   protected static final int ARG_STATIC = 1 << 22;
+   @UsedByJNICode protected static final int ARG_STATIC = 1 << 22;
 
    /**
     * This 'bit' indicates that we wish to enable profiling from the JNI code.
@@ -296,8 +272,7 @@ public abstract class KernelRunnerJNI {
     * 
     * @author gfrost
     */
-   @UsedByJNICode
-   protected static final int JNI_FLAG_USE_GPU = 1 << 2;
+   @UsedByJNICode protected static final int JNI_FLAG_USE_GPU = 1 << 2;
 
    /**
     * This 'bit' indicates that we wish to enable verbose JNI layer messages to stderr.<br/>
@@ -333,8 +308,7 @@ public abstract class KernelRunnerJNI {
     * @param maxJTPLocalSize
     * @return
     */
-   @DocMe
-   protected native synchronized long initJNI(Kernel _kernel, OpenCLDevice device, int _flags);
+   @DocMe protected native synchronized long initJNI(Kernel _kernel, OpenCLDevice device, int _flags);
 
    protected native int getJNI(long _jniContextHandle, Object _array);
 

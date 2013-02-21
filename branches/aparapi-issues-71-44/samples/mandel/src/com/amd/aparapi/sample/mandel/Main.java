@@ -68,7 +68,7 @@ import com.amd.aparapi.Range;
  *
  */
 
-public class Main {
+public class Main{
 
    /**
     * An Aparapi Kernel implementation for creating a scaled view of the mandelbrot set.
@@ -77,7 +77,7 @@ public class Main {
     *
     */
 
-   public static class MandelKernel extends Kernel {
+   public static class MandelKernel extends Kernel{
 
       /** RGB buffer used to store the Mandelbrot image. This buffer holds (width * height) RGB values. */
       final private int rgb[];
@@ -92,8 +92,7 @@ public class Main {
       final private int maxIterations = 64;
 
       /** Palette which maps iteration values to RGB values. */
-      @Constant
-      final private int pallette[] = new int[maxIterations + 1];
+      @Constant final private int pallette[] = new int[maxIterations + 1];
 
       /** Mutable values of scale, offsetx and offsety so that we can modify the zoom level and position of a view. */
       private float scale = .0f;
@@ -124,17 +123,7 @@ public class Main {
 
       }
 
-      @Override
-      public void run() {
-
-         /** Determine which RGB value we are going to process (0..RGB.length). */
-         final int gid = getGlobalId();
-
-         /** Translate the gid into an x an y value. */
-         final float x = ((((gid % width) * scale) - ((scale / 2) * width)) / width) + offsetx;
-
-         final float y = ((((gid / height) * scale) - ((scale / 2) * height)) / height) + offsety;
-
+      public int getCount(float x, float y) {
          int count = 0;
 
          float zx = x;
@@ -148,6 +137,21 @@ public class Main {
             zx = new_zx;
             count++;
          }
+
+         return count;
+      }
+
+      @Override public void run() {
+
+         /** Determine which RGB value we are going to process (0..RGB.length). */
+         final int gid = getGlobalId();
+
+         /** Translate the gid into an x an y value. */
+         final float x = ((((gid % width) * scale) - ((scale / 2) * width)) / width) + offsetx;
+
+         final float y = ((((gid / width) * scale) - ((scale / 2) * height)) / height) + offsety;
+
+         int count = getCount(x, y);
 
          // Pull the value out of the palette for this iteration count.
          rgb[gid] = pallette[count];
@@ -164,8 +168,7 @@ public class Main {
    /** User selected zoom-in point on the Mandelbrot view. */
    public static volatile Point to = null;
 
-   @SuppressWarnings("serial")
-   public static void main(String[] _args) {
+   @SuppressWarnings("serial") public static void main(String[] _args) {
 
       final JFrame frame = new JFrame("MandelBrot");
 
@@ -182,9 +185,8 @@ public class Main {
       final BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
       final BufferedImage offscreen = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
       // Draw Mandelbrot image
-      final JComponent viewer = new JComponent() {
-         @Override
-         public void paintComponent(Graphics g) {
+      final JComponent viewer = new JComponent(){
+         @Override public void paintComponent(Graphics g) {
 
             g.drawImage(image, 0, 0, width, height, this);
          }
@@ -196,9 +198,8 @@ public class Main {
       final Object doorBell = new Object();
 
       // Mouse listener which reads the user clicked zoom-in point on the Mandelbrot view 
-      viewer.addMouseListener(new MouseAdapter() {
-         @Override
-         public void mouseClicked(MouseEvent e) {
+      viewer.addMouseListener(new MouseAdapter(){
+         @Override public void mouseClicked(MouseEvent e) {
             to = e.getPoint();
             synchronized (doorBell) {
                doorBell.notify();
@@ -232,9 +233,8 @@ public class Main {
       System.out.println("Execution mode=" + kernel.getExecutionMode());
 
       // Window listener to dispose Kernel resources on user exit.
-      frame.addWindowListener(new WindowAdapter() {
-         @Override
-         public void windowClosing(WindowEvent _windowEvent) {
+      frame.addWindowListener(new WindowAdapter(){
+         @Override public void windowClosing(WindowEvent _windowEvent) {
             kernel.dispose();
             System.exit(0);
          }

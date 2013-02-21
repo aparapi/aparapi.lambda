@@ -53,7 +53,7 @@ import java.io.InputStream;
  * @author gfrost
  *
  */
-public class ByteBuffer {
+public class ByteBuffer{
 
    private byte[] bytes;
 

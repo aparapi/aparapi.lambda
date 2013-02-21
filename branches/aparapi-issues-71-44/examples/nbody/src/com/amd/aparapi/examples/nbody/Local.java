@@ -79,9 +79,9 @@ import com.jogamp.opengl.util.texture.TextureIO;
  * @author gfrost
  *
  */
-public class Local {
+public class Local{
 
-   public static class NBodyKernel extends Kernel {
+   public static class NBodyKernel extends Kernel{
       protected final float delT = .005f;
 
       protected final float espSqr = 1.0f;
@@ -94,8 +94,7 @@ public class Local {
 
       private final float[] vxyz; // velocity component of x,y and z of bodies 
 
-      @Local
-      private final float[] localStuff; // local memory
+      @Local private final float[] localStuff; // local memory
 
       /**
        * Constructor initializes xyz and vxyz arrays.
@@ -131,8 +130,7 @@ public class Local {
       /** 
        * Here is the kernel entrypoint. Here is where we calculate the position of each body
        */
-      @Override
-      public void run() {
+      @Override public void run() {
 
          final int globalId = getGlobalId(0) * 3;
 
@@ -218,9 +216,8 @@ public class Local {
 
       final JButton startButton = new JButton("Start");
 
-      startButton.addActionListener(new ActionListener() {
-         @Override
-         public void actionPerformed(ActionEvent e) {
+      startButton.addActionListener(new ActionListener(){
+         @Override public void actionPerformed(ActionEvent e) {
             running = true;
             startButton.setEnabled(false);
          }
@@ -251,7 +248,7 @@ public class Local {
       final Dimension dimension = new Dimension(Integer.getInteger("width", 742), Integer.getInteger("height", 742));
       canvas.setPreferredSize(dimension);
 
-      canvas.addGLEventListener(new GLEventListener() {
+      canvas.addGLEventListener(new GLEventListener(){
          private double ratio;
 
          private final float xeye = 0f;
@@ -272,13 +269,11 @@ public class Local {
 
          private long last = System.currentTimeMillis();
 
-         @Override
-         public void dispose(GLAutoDrawable drawable) {
+         @Override public void dispose(GLAutoDrawable drawable) {
 
          }
 
-         @Override
-         public void display(GLAutoDrawable drawable) {
+         @Override public void display(GLAutoDrawable drawable) {
 
             final GL2 gl = drawable.getGL().getGL2();
 
@@ -324,8 +319,7 @@ public class Local {
 
          }
 
-         @Override
-         public void init(GLAutoDrawable drawable) {
+         @Override public void init(GLAutoDrawable drawable) {
             final GL2 gl = drawable.getGL().getGL2();
 
             gl.glShadeModel(GLLightingFunc.GL_SMOOTH);
@@ -343,8 +337,7 @@ public class Local {
 
          }
 
-         @Override
-         public void reshape(GLAutoDrawable drawable, int x, int y, int _width, int _height) {
+         @Override public void reshape(GLAutoDrawable drawable, int x, int y, int _width, int _height) {
             width = _width;
             height = _height;
 

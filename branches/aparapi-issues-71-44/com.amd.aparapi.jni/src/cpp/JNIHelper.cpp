@@ -133,7 +133,7 @@ jobject JNIHelper::getStaticFieldObject(JNIEnv *jenv, const char *className, con
       if (fieldId == NULL || jenv->ExceptionCheck())
          throw std::string("bummer getting static field '") + fieldName + "' from '" + className + "' with signature! '" + signature;
 
-      jobject value = jenv->GetStaticObjectField(NULL, fieldId);
+      value = jenv->GetStaticObjectField(theClass, fieldId);
       if (value == NULL || jenv->ExceptionCheck())
          throw std::string("bummer getting static field  value '") + fieldName + "' from '" + className + "' with signature! '" + signature;
 

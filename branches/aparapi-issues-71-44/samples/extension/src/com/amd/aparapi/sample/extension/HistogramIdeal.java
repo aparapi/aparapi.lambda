@@ -5,10 +5,10 @@ import com.amd.aparapi.device.Device;
 import com.amd.aparapi.device.OpenCLDevice;
 import com.amd.aparapi.opencl.OpenCL;
 
-public class HistogramIdeal {
+public class HistogramIdeal{
 
    // @Resource("com/amd/aparapi/sample/extension/HistogramKernel.cl")
-   interface HistogramKernel extends OpenCL<HistogramKernel> {
+   interface HistogramKernel extends OpenCL<HistogramKernel>{
 
       public HistogramKernel histogram256(//
             Range _range,//

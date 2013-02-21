@@ -2,7 +2,7 @@ package com.amd.aparapi.test.runtime;
 
 import com.amd.aparapi.Kernel;
 
-abstract class ArrayAccess {
+abstract class ArrayAccess{
    protected ArrayAccess(int offset, int length) {
       this.offset = offset;
       this.length = length;
@@ -23,23 +23,22 @@ abstract class ArrayAccess {
    private final int length;
 }
 
-class IntMemoryArrayAccess extends ArrayAccess {
+class IntMemoryArrayAccess extends ArrayAccess{
    public IntMemoryArrayAccess(int[] data, int offset, int length) {
       super(offset, length);
       this.data = data;
    }
 
-   @Override
-   public int[] getIntData() {
+   @Override public int[] getIntData() {
       return data;
    }
 
    private final int[] data;
 }
 
-public class Issue68 {
+public class Issue68{
    // Runnable for calculating the column transforms in parallel
-   private class ColumnTableFNTRunnable extends Kernel {
+   private class ColumnTableFNTRunnable extends Kernel{
       public ColumnTableFNTRunnable(int length, boolean isInverse, ArrayAccess arrayAccess, int[] wTable, int[] permutationTable,
             int modulus) {
          stride = arrayAccess.getLength() / length;
@@ -53,8 +52,7 @@ public class Issue68 {
          setModulus(modulus);
       }
 
-      @Override
-      public void run() {
+      @Override public void run() {
          if (isInverse) {
             inverseColumnTableFNT();
          } else {
@@ -197,11 +195,9 @@ public class Issue68 {
 
       private final int offset;
 
-      @Constant
-      private final int[] wTable;
+      @Constant private final int[] wTable;
 
-      @Constant
-      private final int[] permutationTable;
+      @Constant private final int[] permutationTable;
 
       private final int permutationTableLength;
 

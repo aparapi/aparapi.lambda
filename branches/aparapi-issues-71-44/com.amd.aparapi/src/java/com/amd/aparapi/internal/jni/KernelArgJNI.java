@@ -7,7 +7,7 @@ import com.amd.aparapi.internal.annotation.UsedByJNICode;
 /**
  * This class is intended to be used as a 'proxy' or 'facade' object for Java code to interact with JNI
  */
-public abstract class KernelArgJNI {
+public abstract class KernelArgJNI{
 
    /**
     * The type of this KernelArg. Created by or-ing appropriate flags
@@ -35,32 +35,27 @@ public abstract class KernelArgJNI {
     * @see ARG_APARAPI_BUF_HAS_ARRAY
     * @see ARG_APARAPI_BUF_IS_DIRECT
     */
-   @UsedByJNICode
-   protected int type;
+   @UsedByJNICode protected int type;
 
    /**
     * Name of the field
     */
-   @UsedByJNICode
-   protected String name;
+   @UsedByJNICode protected String name;
 
    /**
     * If this field represents a Java array then the instance will be captured here
     */
-   @UsedByJNICode
-   protected Object javaArray;
+   @UsedByJNICode protected Object javaArray;
 
    /**
     * If this is an array or a buffer then the size (in bytes) is held here
     */
-   @UsedByJNICode
-   protected int sizeInBytes;
+   @UsedByJNICode protected int sizeInBytes;
 
    /**
     * If this is an array buffer then the number of elements is stored here
     */
-   @UsedByJNICode
-   protected int numElements;
+   @UsedByJNICode protected int numElements;
 
    /**
     * If this is an array buffer then the number of elements is stored here.
@@ -72,12 +67,10 @@ public abstract class KernelArgJNI {
    /**
     * Only set for array objs, not used on JNI
     */
-   @UsedByJNICode
-   protected Object array;
+   @UsedByJNICode protected Object array;
 
    /**
     * Field in Kernel class corresponding to this arg
     */
-   @UsedByJNICode
-   protected Field field;
+   @UsedByJNICode protected Field field;
 }

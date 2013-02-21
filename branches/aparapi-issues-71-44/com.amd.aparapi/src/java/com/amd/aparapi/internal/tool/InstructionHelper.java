@@ -23,12 +23,13 @@ import com.amd.aparapi.internal.instruction.InstructionSet.OperatorInstruction;
 import com.amd.aparapi.internal.model.ClassModel;
 import com.amd.aparapi.internal.model.Entrypoint;
 import com.amd.aparapi.internal.model.MethodModel;
-import com.amd.aparapi.internal.model.ClassModel.AttributePool.LocalVariableTableEntry.LocalVariableInfo;
+import com.amd.aparapi.internal.model.ClassModel.LocalVariableTableEntry;
+import com.amd.aparapi.internal.model.ClassModel.LocalVariableInfo;
 import com.amd.aparapi.internal.writer.BlockWriter;
 
-public class InstructionHelper {
+public class InstructionHelper{
 
-   public static class Table {
+   public static class Table{
 
       final static String spaces = "                                                                                                                        ";
 
@@ -38,7 +39,7 @@ public class InstructionHelper {
 
       private int col = 0;
 
-      public static class Col {
+      public static class Col{
          private final List<String> text = new ArrayList<String>();
 
          private int width;
@@ -97,8 +98,7 @@ public class InstructionHelper {
          }
       }
 
-      @Override
-      public String toString() {
+      @Override public String toString() {
          final StringBuilder sb = new StringBuilder();
 
          for (int i = 0; i < size; i++) {
@@ -120,7 +120,7 @@ public class InstructionHelper {
       }
    }
 
-   public static class StringWriter extends BlockWriter {
+   public static class StringWriter extends BlockWriter{
       private StringBuilder sb = null;
 
       public StringWriter(StringBuilder _sb) {
@@ -131,13 +131,11 @@ public class InstructionHelper {
          sb = new StringBuilder();
       }
 
-      @Override
-      public void write(String _string) {
+      @Override public void write(String _string) {
          sb.append(_string);
       }
 
-      @Override
-      public String toString() {
+      @Override public String toString() {
          return (sb.toString().trim());
       }
 
@@ -151,18 +149,16 @@ public class InstructionHelper {
          return (sw.toString());
       }
 
-      @Override
-      public void write(Entrypoint entryPoint) {
+      @Override public void write(Entrypoint entryPoint) {
          // TODO Auto-generated method stub
       }
 
-      @Override
-      public void writeMethodBody(MethodModel _methodModel) throws CodeGenException {
+      @Override public void writeMethodBody(MethodModel _methodModel) throws CodeGenException {
          super.writeMethodBody(_methodModel);
       }
    }
 
-   public static class BranchVector {
+   public static class BranchVector{
       protected Instruction from;
 
       protected Instruction to;
@@ -221,14 +217,12 @@ public class InstructionHelper {
          return (end);
       }
 
-      @Override
-      public boolean equals(Object other) {
+      @Override public boolean equals(Object other) {
          return ((other instanceof BranchVector) && ((other == this) || (((BranchVector) other).from
                .equals(((BranchVector) other).to))));
       }
 
-      @Override
-      public int hashCode() {
+      @Override public int hashCode() {
          return ((from.hashCode() * 31) + to.hashCode());
 
       }
@@ -237,8 +231,7 @@ public class InstructionHelper {
          return (forward);
       }
 
-      @Override
-      public String toString() {
+      @Override public String toString() {
          if (isForward()) {
             return ("forward from " + getStart() + " to " + getEnd());
          }
@@ -498,9 +491,8 @@ public class InstructionHelper {
       return (table.toString());
    }
 
-   private static Comparator<BranchVector> branchInfoComparator = new Comparator<BranchVector>() {
-      @Override
-      public int compare(BranchVector left, BranchVector right) {
+   private static Comparator<BranchVector> branchInfoComparator = new Comparator<BranchVector>(){
+      @Override public int compare(BranchVector left, BranchVector right) {
          final int value = left.getFrom().compareTo(right.getFrom());
          return (value);
       }

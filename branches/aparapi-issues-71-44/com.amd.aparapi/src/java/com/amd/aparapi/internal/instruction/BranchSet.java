@@ -97,7 +97,7 @@ import com.amd.aparapi.internal.instruction.InstructionSet.ConditionalBranch;
  * @author gfrost 
  */
 
-public class BranchSet {
+public class BranchSet{
    /**
     * Base abstract class used to hold information used to construct node tree for logical expressions. 
     * 
@@ -107,7 +107,7 @@ public class BranchSet {
     * @author gfrost
     *
     */
-   public static abstract class LogicalExpressionNode {
+   public static abstract class LogicalExpressionNode{
       private LogicalExpressionNode next = null;
 
       private LogicalExpressionNode parent = null;
@@ -154,7 +154,7 @@ public class BranchSet {
     * @author gfrost
     *
     */
-   public static class SimpleLogicalExpressionNode extends LogicalExpressionNode {
+   public static class SimpleLogicalExpressionNode extends LogicalExpressionNode{
       private final ConditionalBranch branch;
 
       protected boolean invert = false;
@@ -163,18 +163,15 @@ public class BranchSet {
          branch = _branch;
       }
 
-      @Override
-      public int getTarget() {
+      @Override public int getTarget() {
          return (getBranch().getTarget().getThisPC());
       }
 
-      @Override
-      public void invert() {
+      @Override public void invert() {
          invert = !invert;
       }
 
-      @Override
-      public int getFallThrough() {
+      @Override public int getFallThrough() {
          return (getBranch().getNextPC().getThisPC());
       }
 
@@ -198,7 +195,7 @@ public class BranchSet {
     * @author gfrost
     *
     */
-   public static class CompoundLogicalExpressionNode extends LogicalExpressionNode {
+   public static class CompoundLogicalExpressionNode extends LogicalExpressionNode{
       private final LogicalExpressionNode lhs;
 
       private final LogicalExpressionNode rhs;
@@ -218,13 +215,11 @@ public class BranchSet {
          lhs.setParent(this);
       }
 
-      @Override
-      public int getTarget() {
+      @Override public int getTarget() {
          return (rhs.getTarget());
       }
 
-      @Override
-      public void invert() {
+      @Override public void invert() {
          and = !and;
          lhs.invert();
          rhs.invert();
@@ -234,8 +229,7 @@ public class BranchSet {
          return (and);
       }
 
-      @Override
-      public int getFallThrough() {
+      @Override public int getFallThrough() {
          return (rhs.getFallThrough());
       }
 

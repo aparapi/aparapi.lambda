@@ -4,7 +4,7 @@ import com.amd.aparapi.Range;
 import com.amd.aparapi.device.OpenCLDevice.DeviceComparitor;
 import com.amd.aparapi.device.OpenCLDevice.DeviceSelector;
 
-public abstract class Device {
+public abstract class Device{
 
    public static enum TYPE {
       UNKNOWN,
@@ -15,9 +15,8 @@ public abstract class Device {
    };
 
    public static Device best() {
-      return (OpenCLDevice.select(new DeviceComparitor() {
-         @Override
-         public OpenCLDevice select(OpenCLDevice _deviceLhs, OpenCLDevice _deviceRhs) {
+      return (OpenCLDevice.select(new DeviceComparitor(){
+         @Override public OpenCLDevice select(OpenCLDevice _deviceLhs, OpenCLDevice _deviceRhs) {
             if (_deviceLhs.getType() != _deviceRhs.getType()) {
                if (_deviceLhs.getType() == TYPE.GPU) {
                   return (_deviceLhs);
@@ -36,9 +35,8 @@ public abstract class Device {
    }
 
    public static Device first(final Device.TYPE _type) {
-      return (OpenCLDevice.select(new DeviceSelector() {
-         @Override
-         public OpenCLDevice select(OpenCLDevice _device) {
+      return (OpenCLDevice.select(new DeviceSelector(){
+         @Override public OpenCLDevice select(OpenCLDevice _device) {
             return (_device.getType() == _type ? _device : null);
          }
       }));
@@ -117,7 +115,8 @@ public abstract class Device {
       return (Range.create3D(this, _globalWidth, _globalHeight, _globalDepth));
    }
 
-   public Range createRange3D(int _globalWidth, int _globalHeight, int _globalDepth, int _localWidth, int _localHeight, int _localDepth) {
+   public Range createRange3D(int _globalWidth, int _globalHeight, int _globalDepth, int _localWidth, int _localHeight,
+         int _localDepth) {
       return (Range.create3D(this, _globalWidth, _globalHeight, _globalDepth, _localWidth, _localHeight, _localDepth));
    }
 }

@@ -61,11 +61,11 @@ import com.amd.aparapi.internal.instruction.InstructionSet.I_LUSHR;
 import com.amd.aparapi.internal.instruction.InstructionSet.MethodCall;
 import com.amd.aparapi.internal.instruction.InstructionSet.VirtualMethodCall;
 import com.amd.aparapi.internal.model.ClassModel;
-import com.amd.aparapi.internal.model.ClassModel.AttributePool.LocalVariableTableEntry;
-import com.amd.aparapi.internal.model.ClassModel.AttributePool.LocalVariableTableEntry.LocalVariableInfo;
+import com.amd.aparapi.internal.model.ClassModel.ClassModelField;
+import com.amd.aparapi.internal.model.ClassModel.LocalVariableInfo;
+import com.amd.aparapi.internal.model.ClassModel.LocalVariableTableEntry;
 import com.amd.aparapi.internal.model.ClassModel.AttributePool.RuntimeAnnotationsEntry;
 import com.amd.aparapi.internal.model.ClassModel.AttributePool.RuntimeAnnotationsEntry.AnnotationInfo;
-import com.amd.aparapi.internal.model.ClassModel.ClassModelField;
 import com.amd.aparapi.internal.model.ClassModel.ConstantPool.FieldEntry;
 import com.amd.aparapi.internal.model.ClassModel.ConstantPool.MethodEntry;
 import com.amd.aparapi.internal.model.Entrypoint;
@@ -73,7 +73,7 @@ import com.amd.aparapi.internal.model.MethodModel;
 import com.amd.aparapi.opencl.OpenCL.Constant;
 import com.amd.aparapi.opencl.OpenCL.Local;
 
-public abstract class KernelWriter extends BlockWriter {
+public abstract class KernelWriter extends BlockWriter{
 
    private final String cvtBooleanToChar = "char ";
 
@@ -155,8 +155,7 @@ public abstract class KernelWriter extends BlockWriter {
     *          String in the Java JNI notation, [I, etc
     * @return Suitably converted string, "char*", etc
     */
-   @Override
-   public String convertType(String _typeDesc, boolean useClassModel) {
+   @Override public String convertType(String _typeDesc, boolean useClassModel) {
       if (_typeDesc.equals("Z") || _typeDesc.equals("boolean")) {
          return (cvtBooleanToChar);
       } else if (_typeDesc.equals("[Z") || _typeDesc.equals("boolean[]")) {
@@ -188,8 +187,7 @@ public abstract class KernelWriter extends BlockWriter {
       }
    }
 
-   @Override
-   public void writeMethod(MethodCall _methodCall, MethodEntry _methodEntry) throws CodeGenException {
+   @Override public void writeMethod(MethodCall _methodCall, MethodEntry _methodEntry) throws CodeGenException {
 
       // System.out.println("_methodEntry = " + _methodEntry);
       // special case for buffers
@@ -226,12 +224,14 @@ public abstract class KernelWriter extends BlockWriter {
          if (intrinsicMapping == null) {
             assert entryPoint != null : "entryPoint should not be null";
             final boolean isSpecial = _methodCall instanceof I_INVOKESPECIAL;
+            boolean isMapped = Kernel.isMappedMethod(_methodEntry);
             final MethodModel m = entryPoint.getCallTarget(_methodEntry, isSpecial);
 
             if (m != null) {
                write(m.getName());
             } else {
                // Must be a library call like rsqrt
+               assert isMapped : _methodEntry + " should be mapped method!";
                write(methodName);
                isIntrinsic = true;
             }
@@ -251,8 +251,8 @@ public abstract class KernelWriter extends BlockWriter {
                final AccessArrayElement arrayAccess = (AccessArrayElement) ((VirtualMethodCall) _methodCall).getInstanceReference();
                final Instruction refAccess = arrayAccess.getArrayRef();
                assert refAccess instanceof I_GETFIELD : "ref should come from getfield";
-               final String fieldName = ((I_GETFIELD) refAccess).getConstantPoolFieldEntry().getNameAndTypeEntry().getNameUTF8Entry()
-                     .getUTF8();
+               final String fieldName = ((I_GETFIELD) refAccess).getConstantPoolFieldEntry().getNameAndTypeEntry()
+                     .getNameUTF8Entry().getUTF8();
                write(" &(this->" + fieldName);
                write("[");
                writeInstruction(arrayAccess.getArrayIndex());
@@ -286,8 +286,7 @@ public abstract class KernelWriter extends BlockWriter {
 
    public final static String CONSTANT_ANNOTATION_NAME = "L" + Constant.class.getName().replace(".", "/") + ";";
 
-   @Override
-   public void write(Entrypoint _entryPoint) throws CodeGenException {
+   @Override public void write(Entrypoint _entryPoint) throws CodeGenException {
       final List<String> thisStruct = new ArrayList<String>();
       final List<String> argLines = new ArrayList<String>();
       final List<String> assigns = new ArrayList<String>();
@@ -536,7 +535,7 @@ public abstract class KernelWriter extends BlockWriter {
 
          boolean alreadyHasFirstArg = !mm.getMethod().isStatic();
 
-         final LocalVariableTableEntry lvte = mm.getLocalVariableTableEntry();
+         final LocalVariableTableEntry<LocalVariableInfo> lvte = mm.getLocalVariableTableEntry();
          for (final LocalVariableInfo lvi : lvte) {
             if ((lvi.getStart() == 0) && ((lvi.getVariableIndex() != 0) || mm.getMethod().isStatic())) { // full scope but skip this
                final String descriptor = lvi.getVariableDescriptor();
@@ -603,13 +602,11 @@ public abstract class KernelWriter extends BlockWriter {
       out();
    }
 
-   @Override
-   public void writeThisRef() {
+   @Override public void writeThisRef() {
       write("this->");
    }
 
-   @Override
-   public void writeInstruction(Instruction _instruction) throws CodeGenException {
+   @Override public void writeInstruction(Instruction _instruction) throws CodeGenException {
       if ((_instruction instanceof I_IUSHR) || (_instruction instanceof I_LUSHR)) {
          final BinaryOperator binaryInstruction = (BinaryOperator) _instruction;
          final Instruction parent = binaryInstruction.getParentExpr();
@@ -646,9 +643,8 @@ public abstract class KernelWriter extends BlockWriter {
 
    public static String writeToString(Entrypoint _entrypoint) throws CodeGenException {
       final StringBuilder openCLStringBuilder = new StringBuilder();
-      final KernelWriter openCLWriter = new KernelWriter() {
-         @Override
-         public void write(String _string) {
+      final KernelWriter openCLWriter = new KernelWriter(){
+         @Override public void write(String _string) {
             openCLStringBuilder.append(_string);
          }
       };
