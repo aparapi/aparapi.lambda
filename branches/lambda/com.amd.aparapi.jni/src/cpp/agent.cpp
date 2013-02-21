@@ -4,10 +4,12 @@
 #include <jni.h>
 #include <jvmti.h>
 
+#include "jniHelper.h"
 #include "classtools.h"
+#include "com_amd_aparapi_OpenCLJNI.h"
 
-jvmtiEnv     *jvmti;
-JavaVM       *jvm;
+//jvmtiEnv     *jvmti;
+//JavaVM       *jvm;
 
 static void JNICALL vmInit(jvmtiEnv *_jvmtiEnv, JNIEnv* _jniEnv, jthread thread) {
    fprintf(stdout, "from agent vmInit()\n");
@@ -60,16 +62,8 @@ class NameToBytes{
 };
 
 NameToBytes *head = NULL;
-
-/*
- * Class:     com_amd_aparapi_OpenCLJNI
- * Method:    getClassBytes
- * Signature: (Ljava/lang/String;)V
- */
-#ifdef __cplusplus
-extern "C" {
-#endif
-   JNIEXPORT jbyteArray JNICALL Java_com_amd_aparapi_OpenCLJNI_getBytes (JNIEnv *jenv, jobject instance, jstring className){
+ JNI_JAVA(jbyteArray, OpenCLJNI, getBytes)
+   (JNIEnv *jenv, jobject instance, jstring className){
       jbyteArray bytes = NULL;
       const char *nameChars = jenv->GetStringUTFChars(className, NULL);
       fprintf(stdout, "inside getBytes(\"%s\")\n", nameChars);
@@ -96,9 +90,6 @@ extern "C" {
       jenv->ReleaseStringUTFChars(className, nameChars);
       return (bytes);
    }
-#ifdef __cplusplus
-}
-#endif
 
 
 
@@ -133,7 +124,8 @@ JNIEXPORT jint JNICALL Agent_OnLoad(JavaVM *vm, char *options, void *reserved) {
    fprintf(stdout, "Agent_Onload()\n");
 
    // Get a handle on the JVM.
-   jvm = vm;
+   jvmtiEnv     *jvmti;
+   JavaVM       *jvm;
 
    /* Get JVMTI environment */
    rc = vm->GetEnv((void **)&jvmti, JVMTI_VERSION);

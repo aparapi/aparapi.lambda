@@ -1,18 +1,14 @@
 package com.amd.aparapi;
 
-import java.awt.BasicStroke;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Polygon;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
-import java.awt.Shape;
-import java.awt.Stroke;
+import com.amd.aparapi.InstructionSet.CompositeInstruction;
+import com.amd.aparapi.InstructionViewer.Form.Check;
+import com.amd.aparapi.InstructionViewer.Form.Template;
+import com.amd.aparapi.InstructionViewer.Form.Toggle;
+
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -31,28 +27,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.JToggleButton;
-import javax.swing.JToolBar;
-import javax.swing.SpringLayout;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
-import com.amd.aparapi.InstructionSet.CompositeInstruction;
-import com.amd.aparapi.InstructionViewer.Form.Check;
-import com.amd.aparapi.InstructionViewer.Form.Template;
-import com.amd.aparapi.InstructionViewer.Form.Toggle;
 
 public class InstructionViewer implements Config.InstructionListener{
 

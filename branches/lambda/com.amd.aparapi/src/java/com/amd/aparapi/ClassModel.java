@@ -37,6 +37,11 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 */
 package com.amd.aparapi;
 
+import com.amd.aparapi.ClassModel.AttributePool.CodeEntry;
+import com.amd.aparapi.ClassModel.ConstantPool.FieldEntry;
+import com.amd.aparapi.ClassModel.ConstantPool.MethodEntry;
+import com.amd.aparapi.InstructionSet.TypeSpec;
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -45,11 +50,6 @@ import java.util.List;
 import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import com.amd.aparapi.ClassModel.AttributePool.CodeEntry;
-import com.amd.aparapi.ClassModel.ConstantPool.FieldEntry;
-import com.amd.aparapi.ClassModel.ConstantPool.MethodEntry;
-import com.amd.aparapi.InstructionSet.TypeSpec;
 
 /**
  * Class represents a ClassFile (MyClass.class).

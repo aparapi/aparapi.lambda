@@ -37,12 +37,12 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 */
 package com.amd.aparapi;
 
-import java.util.LinkedList;
-
 import com.amd.aparapi.InstructionSet.Branch;
 import com.amd.aparapi.InstructionSet.ByteCode;
 import com.amd.aparapi.InstructionSet.CompositeInstruction;
 import com.amd.aparapi.InstructionSet.ConditionalBranch;
+
+import java.util.LinkedList;
 
 /**
  * Initially represents a single Java bytecode instruction.

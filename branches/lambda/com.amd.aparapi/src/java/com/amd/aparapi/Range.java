@@ -1,5 +1,7 @@
 package com.amd.aparapi;
 
+import com.amd.aparapi.Annotations.UsedByJNICode;
+
 import java.util.Arrays;
 
 /**
@@ -45,23 +47,23 @@ import java.util.Arrays;
  * </pre></blockquote>
  */
 public class Range{
-   @KernelRunner.UsedByJNICode private int globalSize_0 = 1;
+   @UsedByJNICode private int globalSize_0 = 1;
 
-   @KernelRunner.UsedByJNICode private int localSize_0 = 1;
+   @UsedByJNICode private int localSize_0 = 1;
 
-   @KernelRunner.UsedByJNICode private int globalSize_1 = 1;
+   @UsedByJNICode private int globalSize_1 = 1;
 
-   @KernelRunner.UsedByJNICode private int localSize_1 = 1;
+   @UsedByJNICode private int localSize_1 = 1;
 
-   @KernelRunner.UsedByJNICode private int globalSize_2 = 1;
+   @UsedByJNICode private int globalSize_2 = 1;
 
-   @KernelRunner.UsedByJNICode private int localSize_2 = 1;
+   @UsedByJNICode private int localSize_2 = 1;
 
-   @KernelRunner.UsedByJNICode private int dims;
+   @UsedByJNICode private int dims;
 
-   @KernelRunner.UsedByJNICode private boolean valid = true;
+   @UsedByJNICode private boolean valid = true;
 
-   @KernelRunner.UsedByJNICode private boolean localIsDerived = false;
+   @UsedByJNICode private boolean localIsDerived = false;
 
    private Device device = null;
 
@@ -290,10 +292,10 @@ public class Range{
     * Note that for this range to be valid  <code>_globalWidth > 0 &&  _globalHeight >0 _globalDepth >0 && _localWidth>0 && _localHeight>0 && _localDepth>0 && _localWidth*_localHeight*_localDepth < MAX_GROUP_SIZE && _globalWidth%_localWidth==0 && _globalHeight%_localHeight==0 && _globalDepth%_localDepth==0</code>.
     * 
     * @param _globalWidth the width of the 3D grid we wish to process
-    * @param _globalHieght the height of the 3D grid we wish to process
+    * @param _globalHeight the height of the 3D grid we wish to process
     * @param _globalDepth the depth of the 3D grid we wish to process
     * @param _localWidth the width of the 3D group we wish to process
-    * @param _localHieght the height of the 3D group we wish to process
+    * @param _localHeight the height of the 3D group we wish to process
     * @param _localDepth the depth of the 3D group we wish to process
     * @return
     */
@@ -329,7 +331,7 @@ public class Range{
     * For example for <code>MAX_GROUP_SIZE</code> of 64 we favor 4x4x4 over 1x16x16.
     * 
     * @param _globalWidth the width of the 3D grid we wish to process
-    * @param _globalHieght the height of the 3D grid we wish to process
+    * @param _globalHeight the height of the 3D grid we wish to process
     * @param _globalDepth the depth of the 3D grid we wish to process
     * @return
     */
