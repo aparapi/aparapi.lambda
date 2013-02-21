@@ -1,8 +1,8 @@
 package com.amd.aparapi;
 
-import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CyclicBarrier;
 import java.util.function.IntConsumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -36,7 +36,7 @@ public class Aparapi{
    }
    
    
-   static final ConcurrentHashMap<Class, KernelRunner> kernels = new ConcurrentHashMap<Class, KernelRunner>();
+   static final ConcurrentHashMap<Class, LambdaRunner> kernels = new ConcurrentHashMap<Class, LambdaRunner>();
    static final ConcurrentHashMap<Class, Boolean> haveGoodKernel = new ConcurrentHashMap<Class, Boolean>();
    
    
@@ -44,22 +44,22 @@ public class Aparapi{
       
       // Note it is a new Block object each time
       
-      KernelRunner kernelRunner = kernels.get(intFunctionSAM.getClass());
+      LambdaRunner lambdaRunner = kernels.get(intFunctionSAM.getClass());
       Boolean haveKernel = haveGoodKernel.get(intFunctionSAM.getClass());
       
       try {
 
-         if ((kernelRunner == null) && (haveKernel == null)) {
-            kernelRunner = new KernelRunner(intFunctionSAM);
+         if ((lambdaRunner == null) && (haveKernel == null)) {
+             lambdaRunner = new LambdaRunner(intFunctionSAM);
          }
 
-         if ((kernelRunner != null) && (kernelRunner.getRunnable() == true)) {
-            boolean success = kernelRunner.execute(intFunctionSAM, Range.create(jobSize), 1);
+         if ((lambdaRunner != null) && (lambdaRunner.getRunnable() == true)) {
+            boolean success = lambdaRunner.execute(intFunctionSAM, Range.create(jobSize), 1);
             if (success == true) {
-               kernels.put(intFunctionSAM.getClass(), kernelRunner);
+               kernels.put(intFunctionSAM.getClass(), lambdaRunner);
                haveGoodKernel.put(intFunctionSAM.getClass(), true);
             }
-            kernelRunner.setRunnable(success);
+             lambdaRunner.setRunnable(success);
 
          } else {
             forEachJava(jobSize, intFunctionSAM);
@@ -77,16 +77,17 @@ public class Aparapi{
 
          haveGoodKernel.put(intFunctionSAM.getClass(), false);
          
-         if (kernelRunner != null) {
-            kernelRunner.setRunnable(false);
+         if (lambdaRunner != null) {
+            lambdaRunner.setRunnable(false);
          }
+          if (logger.isLoggable(Level.FINE)) {
+              logger.fine("Running java.");
+          }
+
+          forEachJava(jobSize, intFunctionSAM);
       }
       
-      if (logger.isLoggable(Level.FINE)) {
-         logger.fine("Running java.");
-      }
-      
-      forEachJava(jobSize, intFunctionSAM);
+
    }
 }
 

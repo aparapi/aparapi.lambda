@@ -37,13 +37,13 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 */
 package com.amd.aparapi;
 
+import com.amd.aparapi.InstructionSet.Branch;
+import com.amd.aparapi.InstructionSet.ConditionalBranch;
+
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-
-import com.amd.aparapi.InstructionSet.Branch;
-import com.amd.aparapi.InstructionSet.ConditionalBranch;
 
 /**
  * Deals with the issue of recognizing that a sequence of bytecode branch instructions actually represent a single if/while with a logical expression.

@@ -37,12 +37,6 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
  */
 package com.amd.aparapi;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
 import com.amd.aparapi.ClassModel.AttributePool.RuntimeAnnotationsEntry;
 import com.amd.aparapi.ClassModel.AttributePool.RuntimeAnnotationsEntry.AnnotationInfo;
 import com.amd.aparapi.ClassModel.ClassModelField;
@@ -62,6 +56,12 @@ import com.amd.aparapi.InstructionSet.I_IUSHR;
 import com.amd.aparapi.InstructionSet.I_LUSHR;
 import com.amd.aparapi.InstructionSet.MethodCall;
 import com.amd.aparapi.InstructionSet.VirtualMethodCall;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 abstract class KernelWriter extends BlockWriter{
 

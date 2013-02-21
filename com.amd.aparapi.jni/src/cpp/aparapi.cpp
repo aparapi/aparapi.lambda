@@ -35,7 +35,6 @@
    information about the EAR or your obligations under those regulations, please refer to the U.S. Bureau of Industry
    and Security?s website at http://www.bis.doc.gov/. 
    */
-#include "common.h"
 #include "config.h"
 #include "profileInfo.h"
 #include "arrayBuffer.h"
@@ -43,6 +42,8 @@
 #define APARAPI_SOURCE
 #include "aparapi.h"
 #include "com_amd_aparapi_KernelRunner.h"
+#include "com_amd_aparapi_LambdaRunner.h"
+#include "com_amd_aparapi_OpenCLRunner.h"
 #include "opencljni.h"
 
 class Range{
@@ -601,7 +602,7 @@ cl_int KernelArg::setPrimitiveArg(JNIEnv *jenv, int argIdx, int argPos){
    return status;
 }
 
-JNI_JAVA(jint, KernelRunner, disposeJNI)
+JNI_JAVA(jint, OpenCLRunner, disposeJNI)
    (JNIEnv *jenv, jobject jobj, jlong jniContextHandle) {
       if (config== NULL){
          config = new Config(jenv);
@@ -1348,7 +1349,7 @@ JNI_JAVA(jlong, KernelRunner, initJNI)
    }
 
 
-JNI_JAVA(jlong, KernelRunner, buildProgramJNI)
+JNI_JAVA(jlong, OpenCLRunner, buildProgramJNI)
    (JNIEnv *jenv, jobject jobj, jlong jniContextHandle, jstring source) {
       JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);
       if (jniContext == NULL){
@@ -1488,7 +1489,7 @@ JNI_JAVA(jint, KernelRunner, setArgsJNI)
 
 
 
-JNI_JAVA(jstring, KernelRunner, getExtensionsJNI)
+JNI_JAVA(jstring, OpenCLRunner, getExtensionsJNI)
    (JNIEnv *jenv, jobject jobj, jlong jniContextHandle) {
       if (config== NULL){
          config = new Config(jenv);
@@ -1587,7 +1588,7 @@ JNI_JAVA(jint, KernelRunner, getJNI)
       return 0;
    }
 
-JNI_JAVA(jobject, KernelRunner, getProfileInfoJNI)
+JNI_JAVA(jobject, OpenCLRunner, getProfileInfoJNI)
    (JNIEnv *jenv, jobject jobj, jlong jniContextHandle) {
       if (config== NULL){
          config = new Config(jenv);

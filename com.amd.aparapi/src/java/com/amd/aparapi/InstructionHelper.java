@@ -1,10 +1,5 @@
 package com.amd.aparapi;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
 import com.amd.aparapi.ClassModel.LocalVariableInfo;
 import com.amd.aparapi.InstructionSet.AssignToLocalVariable;
 import com.amd.aparapi.InstructionSet.Branch;
@@ -19,6 +14,11 @@ import com.amd.aparapi.InstructionSet.I_IINC;
 import com.amd.aparapi.InstructionSet.LocalVariableTableIndexAccessor;
 import com.amd.aparapi.InstructionSet.MethodCall;
 import com.amd.aparapi.InstructionSet.OperatorInstruction;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 class InstructionHelper{
 

@@ -37,11 +37,11 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 */
 package com.amd.aparapi;
 
+import com.amd.aparapi.Annotations.UsedByJNICode;
+
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import com.amd.aparapi.KernelRunner.UsedByJNICode;
 
 /**
  * A central location for holding all runtime configurable properties as well as logging configuration.

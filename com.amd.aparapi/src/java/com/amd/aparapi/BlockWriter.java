@@ -37,8 +37,6 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 */
 package com.amd.aparapi;
 
-import java.util.Stack;
-
 import com.amd.aparapi.BranchSet.CompoundLogicalExpressionNode;
 import com.amd.aparapi.BranchSet.LogicalExpressionNode;
 import com.amd.aparapi.BranchSet.SimpleLogicalExpressionNode;
@@ -85,6 +83,8 @@ import com.amd.aparapi.InstructionSet.MultiAssignInstruction;
 import com.amd.aparapi.InstructionSet.Return;
 import com.amd.aparapi.InstructionSet.UnaryOperator;
 import com.amd.aparapi.InstructionSet.VirtualMethodCall;
+
+import java.util.Stack;
 
 /**
  * Base abstract class for converting <code>Aparapi</code> IR to text.<br/>

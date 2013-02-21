@@ -37,12 +37,6 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 */
 package com.amd.aparapi;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import com.amd.aparapi.ClassModel.LocalVariableInfo;
 import com.amd.aparapi.ClassModel.LocalVariableTableEntry;
 import com.amd.aparapi.InstructionSet.AssignToLocalVariable;
@@ -54,6 +48,12 @@ import com.amd.aparapi.InstructionSet.ConditionalBranch;
 import com.amd.aparapi.InstructionSet.FakeGoto;
 import com.amd.aparapi.InstructionSet.Return;
 import com.amd.aparapi.InstructionSet.UnconditionalBranch;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Essentially a glorified linked list of Instructions plus some additional state to allow us to transform sequences.
