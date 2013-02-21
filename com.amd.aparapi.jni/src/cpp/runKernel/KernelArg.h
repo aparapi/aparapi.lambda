@@ -7,6 +7,7 @@
 #include "ArrayBuffer.h"
 #include "com_amd_aparapi_internal_jni_KernelRunnerJNI.h"
 #include "Config.h"
+#include <iostream>
 
 #ifdef _WIN32
 #define strdup _strdup
