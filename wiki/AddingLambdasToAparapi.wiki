@@ -30,7 +30,7 @@ The Java 8 stream API defines a type called {{{java.util.function.IntBlock}}}. T
 IntBlock looks something like....
 
 {{{
-interface IntBlock{
+interface IntConsumer{
    public void accept(int Id); 
 }
 }}}
@@ -41,7 +41,7 @@ So you can run the familiar 'squares' kernel using
 {{{
 int in[] = ..// 
 int out[] = .../
-Aparapi.forEach(in.length, (i)->{
+Device.bestGPU().forEach(in.length, (i)->{
    out[i] = in[i]*in[i];
  });
 }}}
@@ -51,16 +51,16 @@ Instead of
 {{{
 int in[] = ..// 
 int out[] = .../
-Aparapi.forEach(in.length, new IntBlock(){
+Device.bestGPU().forEach(in.length, new IntConsumer(){
    public void accept(int i){
        out[i] = in[i]*in[i];
    }
  });
 }}}
 
-We created Aparapi.ForEach() which takes an int (range) and a IntBlock lambda and converts the bytecode of the lambda to OpenCL at runtime.  The captured args (in[], out[] and i -  in this case) are passed to the GPU and the kernel executed. 
+We created {{{Device.forEach()}}} which takes an int (range) and a IntConsumer lambda and converts the bytecode of the lambda to OpenCL at runtime.  The captured args (in[], out[] and i -  in this case) are passed to the GPU and the kernel executed. 
 
-During our early experiments we encountered an interesting issue. The new 'lambdafied' javac uses Java 7 method handles and invoke dynamic instructions to dispatch the lambda code.  It does this by injecting a call to a MethodHandle factory into the call site.  At runtime, this factory creates a synthetic class (to capture call-site args) and passes this to our Aparapi.forEach().
+During our early experiments we encountered an interesting issue. The new 'lambdafied' javac uses Java 7 method handles and invoke dynamic instructions to dispatch the lambda code.  It does this by injecting a call to a MethodHandle factory into the call site.  At runtime, this factory creates a synthetic class (to capture call-site args) and passes this to our Device.forEach().
 
 We needed to analyse this synthetically generated class in order to work out which args need to be sent to the GPU.  Of course we have a bunch of tools already in Aparapi for analyzing bytecode, but this code expects to find bytecode in class files (either in a Jar or on the disk), we had to find a way to access these classfile bytes to Aparapi.
 
@@ -109,29 +109,29 @@ Alternate forms for kernel dispatch
 
 This version would allow us to carry over Aparapi's device selection
 {{{
-Device.getBestGPU().forEach(1024, i->{lambda});
+Device.bestGPU().forEach(1024, i->{lambda});
 }}}
 
 This version would allow us to carry over Aparapi's Range selection
 {{{
-Device.getBestGPU().range2D(width, height).forEach(1024, rid->{lambda});
+Device.bestGPU().range2D(width, height).forEach(1024, rid->{lambda});
 }}}
 
 This version would allow us to mimic {{{Kernel.execute(1024, 5)}}}
 {{{
-Device.getBestGPU().forEach(1024, 5, (id, passid)->{lambda});
+Device.bestGPU().forEach(1024, 5, (id, passid)->{lambda});
 }}}
 
 We could even have the range iterated over until some other lambda determines we are done
 {{{
-Device.getBestGPU().forEachUntil(1024, id->{lambda}, ->{predicate lambda});
+Device.bestGPU().forEachUntil(1024, id->{lambda}, ->{predicate lambda});
 }}}
 
 Explicit buffer handling could be removed in many cases by allowing the bytecode of the 'until' predicate to be snooped for buffer references. 
 {{{
 int lotsOfData[] = ...;
 boolean found[false] = new boolean[1];
-Device.getBestGPU().forEachUntil(1024, 5,
+Device.bestGPU().forEachUntil(1024, 5,
    (id, passid)->{ /* mutate lotsOfData, found[0]=true when done */ }
    ->{found[0]]});
 }}}
@@ -140,15 +140,15 @@ In the above cases Aparapi can determine that between each pass it needs to ''ON
 There is no reason that the range itself needs to be constant, we can use a collection/iterable.  This helps with some reductions. 
 {{{
 int range[] = new int[]{1024,512,128,64,32,16,8,4,2,1,0};
-Device.getBestGPU().forEach(range,{lambda});
+Device.bestGPU().forEach(range,{lambda});
 }}}
 
 or the range can be a lambda itself, here we specify a start and end value for the range itself, and a lambda to provide each step.
 
 {{{
-Device.getBestGPU().forEach(1024, 1, r->{return(r/2);},(pass, r, id)->{lambda});
+Device.bestGPU().forEach(1024, 1, r->{return(r/2);},(pass, r, id)->{lambda});
 // or
-Device.getBestGPU().forEach(1, 1024, r->{return(r*2);},(pass, r, id)->{lambda});
+Device.bestGPU().forEach(1, 1024, r->{return(r*2);},(pass, r, id)->{lambda});
 }}}
 
 
