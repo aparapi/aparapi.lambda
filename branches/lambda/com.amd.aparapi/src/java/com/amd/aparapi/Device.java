@@ -3,6 +3,8 @@ package com.amd.aparapi;
 import com.amd.aparapi.OpenCLDevice.DeviceComparitor;
 import com.amd.aparapi.OpenCLDevice.DeviceSelector;
 
+import java.util.function.IntConsumer;
+
 public abstract class Device{
    static public enum TYPE {
       UNKNOWN,
@@ -48,6 +50,11 @@ public abstract class Device{
       return (first(Device.TYPE.CPU));
 
    }
+
+    public static Device jtp() {
+        return (new JavaDevice());
+
+    }
 
    protected TYPE type = TYPE.UNKNOWN;
 
@@ -118,4 +125,5 @@ public abstract class Device{
       return (Range.create3D(this, _globalWidth, _globalHeight, _globalDepth, _localWidth, _localHeight, _localDepth));
    }
 
+   public abstract void forEach(int _range, IntConsumer _intConsumer) ;
 }

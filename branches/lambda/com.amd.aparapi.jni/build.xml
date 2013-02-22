@@ -505,10 +505,11 @@ First consider editing the properties in build.properties
          <arg value="-g" />
          <arg value="-fPIC" />
          <arg value="-DCL_USE_DEPRECATED_OPENCL_1_1_APIS"/>
-         <!--<arg value="-I${java.home}/../include" />
-         <arg value="-I${java.home}/../include/linux" />-->
+         <arg value="-I${java.home}/../include" />
+         <arg value="-I${java.home}/../include/linux" />
+   <!--
          <arg value="-I/home/gfrost/jdk1.7.0_15/include" />
-         <arg value="-I/home/gfrost/jdk1.7.0_15/include/linux" />
+         <arg value="-I/home/gfrost/jdk1.7.0_15/include/linux" /> -->
          <arg value="-Iinclude" />
          <arg value="-I${amd.app.sdk.dir}/include" />
          <arg value="-shared" />
