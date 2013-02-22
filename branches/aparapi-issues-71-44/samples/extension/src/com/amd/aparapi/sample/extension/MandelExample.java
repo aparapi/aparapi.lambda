@@ -418,29 +418,7 @@ public class MandelExample{
       float offsetx = .0f;
 
       float offsety = .0f;
-      //Device device = Device.firstGPU();
-      Device device = null;
-      /*
-      device = OpenCLDevice.select(new OpenCLDevice.DeviceSelector(){
-         @Override public OpenCLDevice select(OpenCLDevice device) {
-            return((device.getType()==Device.TYPE.GPU 
-                 // && device.getPlatform().getVendor().equals("NVIDIA Corporation")
-                  && device.getPlatform().getVendor().equals("Advanced Micro Devices, Inc.")
-                  )?device:null);
-         }});
-      */
-      for (final OpenCLPlatform p : OpenCLUtil.getOpenCLPlatforms()) {
-         // if (p.getVendor().equals("NVIDIA Corporation")){
-         if (p.getVendor().equals("Advanced Micro Devices, Inc.")) {
-            for (final OpenCLDevice d : p.getOpenCLDevices()) {
-               if (d.getType().equals(Device.TYPE.GPU)) {
-                  device = d;
-                  break;
-               }
-            }
-         }
-      }
-
+      Device device = Device.firstGPU();
       if (device instanceof OpenCLDevice) {
          final OpenCLDevice openclDevice = (OpenCLDevice) device;
 
