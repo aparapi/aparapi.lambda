@@ -418,7 +418,7 @@ public class MandelExample{
       float offsetx = .0f;
 
       float offsety = .0f;
-      Device device = Device.firstGPU();
+      Device device = Device.best();
       if (device instanceof OpenCLDevice) {
          final OpenCLDevice openclDevice = (OpenCLDevice) device;
 
