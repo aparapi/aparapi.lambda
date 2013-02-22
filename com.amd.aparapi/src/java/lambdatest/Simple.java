@@ -1,8 +1,6 @@
 package lambdatest;
 
-import com.amd.aparapi.Aparapi;
-
-import javax.lang.model.util.SimpleElementVisitor6;
+import com.amd.aparapi.Device;
 
 
 public class Simple {
@@ -14,7 +12,9 @@ public class Simple {
             in[0]=i;
             out[0]=0;
         }
-        Aparapi.forEach(100, (i) ->{out[i]=in[i]*2;});
+        Device.firstGPU().forEach(100, (i) -> {
+            out[i] = in[i] * 2;
+        });
     }
     public static void main(String[] args){
        new Simple().go();
