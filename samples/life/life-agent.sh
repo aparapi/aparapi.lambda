@@ -1,5 +1,6 @@
+#-agentpath:../../com.amd.aparapi.jni/dist/libaparapi_x86_64.so
 java\
- -agentpath:../../com.amd.aparapi.jni/dist/libaparapi_x86_64.so\
+ -agentpath:../../com.amd.aparapi.jni/dist/libaparapi_x86_64.dylib\
  -Dcom.amd.aparapi.executionMode=$1\
  -Dcom.amd.aparapi.useAgent=true\
  -classpath ../../com.amd.aparapi/dist/aparapi.jar:life.jar\
