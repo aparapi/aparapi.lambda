@@ -1,5 +1,6 @@
+#-agentpath:../../com.amd.aparapi.jni/dist/libaparapi_x86_64.so
 java\
- -agentpath:../../com.amd.aparapi.jni/dist/libaparapi_x86_64.so\
+ -agentpath:../../com.amd.aparapi.jni/dist/libaparapi_x86_64.dylib\
  -Djava.library.path=../../com.amd.aparapi.jni/dist\
  -Dcom.amd.aparapi.useAgent=true\
  -Dcom.amd.aparapi.executionMode=$1\
