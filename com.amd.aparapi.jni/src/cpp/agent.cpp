@@ -68,12 +68,16 @@ NameToBytes *head = NULL;
       const char *nameChars = jenv->GetStringUTFChars(className, NULL);
       fprintf(stdout, "inside getBytes(\"%s\")\n", nameChars);
       for (NameToBytes *ptr = head; ptr != NULL; ptr=(NameToBytes *)ptr->getNext()){
-         ClassInfo classInfo(ptr->getByteBuffer());
-         char *superClassName = classInfo.getSuperClassName();
-         if (!strcmp(superClassName,"com/amd/aparapi/Kernel")){
-            fprintf(stdout, "%s is a kernel!\n", ptr->getName()); 
-         }
-         //fprintf(stdout, "testing \"%s\"==\"%s\"\n", nameChars, ptr->getName());
+        
+         //ClassInfo classInfo(ptr->getByteBuffer());
+        // char *superClassName = classInfo.getSuperClassName();
+        // if (!strcmp(superClassName,"com/amd/aparapi/Kernel")){
+        //    fprintf(stdout, "%s is a kernel!\n", ptr->getName()); 
+        // }
+         fprintf(stdout, "testing \"%s\"==\"%s\"   ", nameChars, ptr->getName());
+         fflush(stdout);
+         //fprintf(stdout, "classinfo name  \"%s\"\n", classInfo.getClassName());
+         //fflush(stdout);
          if (!strcmp(ptr->getName(), nameChars)){
             fprintf(stdout, "found bytes for \"%s\"\n", nameChars);
             ByteBuffer *byteBuffer = ptr->getByteBuffer();
@@ -103,8 +107,9 @@ static void JNICALL cbClassFileLoadHook(jvmtiEnv *jvmti_env, JNIEnv* jni_env,
       jint* new_class_data_len,
       unsigned char** new_class_data){
    if (name != NULL){
-      //fprintf(stdout, "from agent classFileLoadHook(%s)\n", name);
+      fprintf(stdout, "from agent classFileLoadHook(%s) %d %lx %lx\n", name, class_data_len, jvmti_env, jni_env);
       byte_t *buf = new byte_t[class_data_len];
+
       memcpy((void*)buf, (void*)class_data, (size_t)class_data_len);
       ByteBuffer *byteBuffer = new ByteBuffer(buf, (size_t)class_data_len);
       head = new NameToBytes(head, (char *)name, byteBuffer);

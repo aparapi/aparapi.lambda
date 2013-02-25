@@ -305,7 +305,7 @@ public class OpenCLDevice extends Device{
          }
 
          if (interfaceIsAnnotated) {
-            // just crawl the methods (non put or get) and create kernels
+            // just crawl the methods (non put or get) and create lambdaRunnerCache
             for (Method m : _interface.getDeclaredMethods()) {
                if (!isReservedInterfaceMethod(m)) {
                   List<OpenCLArgDescriptor> args = getArgs(m);
@@ -418,16 +418,16 @@ public class OpenCLDevice extends Device{
       return (OpenCLJNI.getJNI().createProgram(this, source));
    }
 
-    final ConcurrentHashMap<Class, LambdaRunner> kernels = new ConcurrentHashMap<Class, LambdaRunner>();
-    final ConcurrentHashMap<Class, Boolean> haveGoodKernel = new ConcurrentHashMap<Class, Boolean>();
+    final ConcurrentHashMap<Class, LambdaRunner> lambdaRunnerCache = new ConcurrentHashMap<Class, LambdaRunner>();
+    final ConcurrentHashMap<Class, Boolean> lambdaRunnerCacheEntryValid = new ConcurrentHashMap<Class, Boolean>();
     private static Logger logger = Logger.getLogger(Config.getLoggerName());
 
     public void forEach(int jobSize, IntConsumer intFunctionSAM) {
 
         // Note it is a new Block object each time
 
-        LambdaRunner lambdaRunner = kernels.get(intFunctionSAM.getClass());
-        Boolean haveKernel = haveGoodKernel.get(intFunctionSAM.getClass());
+        LambdaRunner lambdaRunner = lambdaRunnerCache.get(intFunctionSAM.getClass());
+        Boolean haveKernel = lambdaRunnerCacheEntryValid.get(intFunctionSAM.getClass());
 
         try {
 
@@ -438,8 +438,8 @@ public class OpenCLDevice extends Device{
             if ((lambdaRunner != null) && (lambdaRunner.getRunnable() == true)) {
                 boolean success = lambdaRunner.execute(intFunctionSAM, Range.create(jobSize), 1);
                 if (success == true) {
-                    kernels.put(intFunctionSAM.getClass(), lambdaRunner);
-                    haveGoodKernel.put(intFunctionSAM.getClass(), true);
+                    lambdaRunnerCache.put(intFunctionSAM.getClass(), lambdaRunner);
+                    lambdaRunnerCacheEntryValid.put(intFunctionSAM.getClass(), true);
                 }
                 lambdaRunner.setRunnable(success);
 
@@ -457,7 +457,7 @@ public class OpenCLDevice extends Device{
                 logger.fine("Kernel failed, try to revert to java.");
             }
 
-            haveGoodKernel.put(intFunctionSAM.getClass(), false);
+            lambdaRunnerCacheEntryValid.put(intFunctionSAM.getClass(), false);
 
             if (lambdaRunner != null) {
                 lambdaRunner.setRunnable(false);

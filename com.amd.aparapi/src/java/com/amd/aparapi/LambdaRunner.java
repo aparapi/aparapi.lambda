@@ -299,14 +299,14 @@ class LambdaRunner extends OpenCLRunner{
    private int argc;
 
    /**
-    * Create a KernelRunner for a specific Kernel instance.
+    * Create a LambdaRunner for a specific Kernel instance.
     * 
-    * @param _block
+    * @param _intConsumer
     */
 
-   LambdaRunner(IntConsumer _block) throws AparapiException {
+   LambdaRunner(IntConsumer _intConsumer) throws AparapiException {
       try {
-         lambdaKernelCall = new LambdaKernelCall(_block);
+         lambdaKernelCall = new LambdaKernelCall(_intConsumer);
          if (logger.isLoggable(Level.INFO)) {
             logger.info("New lambda call is = " + lambdaKernelCall);
          }
@@ -877,7 +877,8 @@ class LambdaRunner extends OpenCLRunner{
          assert lambdaKernelCall != null : "Should not be null";
          
          Class lambdaClass = lambdaKernelCall.getLambdaKernelClass();
-         ClassModel classModel = new ClassModel(lambdaClass, OpenCLJNI.getJNI().getBytes(lambdaClass.getName()));
+         byte[] lambdaClassBytes =  OpenCLJNI.getJNI().getBytes(lambdaClass.getName());
+         ClassModel classModel = new ClassModel(lambdaClass, lambdaClassBytes);
 
          entryPoint = classModel.getEntrypoint(lambdaKernelCall.getLambdaMethodName(), 
                lambdaKernelCall.getLambdaMethodSignature(), lambdaKernelCall.getLambdaKernelThis());
