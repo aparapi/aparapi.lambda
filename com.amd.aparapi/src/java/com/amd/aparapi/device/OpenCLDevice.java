@@ -359,11 +359,12 @@ public class OpenCLDevice extends Device{
 
       // System.out.println("opencl{\n" + _source + "\n}opencl");
 
-      final OpenCLProgram program = new OpenCLProgram(this, _source);
+      final OpenCLProgram program = new OpenCLProgram(this, _source).createProgram(this);
 
       final Map<String, OpenCLKernel> map = new HashMap<String, OpenCLKernel>();
       for (final String name : kernelNameToArgsMap.keySet()) {
-         final OpenCLKernel kernel = new OpenCLKernel(program, name, kernelNameToArgsMap.get(name)).createKernel();
+         final OpenCLKernel kernel = OpenCLKernel.createKernel(program, name, kernelNameToArgsMap.get(name));
+         //final OpenCLKernel kernel = new OpenCLKernel(program, name, kernelNameToArgsMap.get(name));
          if (kernel == null) {
             throw new IllegalStateException("kernel is null");
          }

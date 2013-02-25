@@ -6,33 +6,47 @@ import com.amd.aparapi.internal.jni.OpenCLJNI;
 
 public class OpenCLKernel extends OpenCLJNI{
 
-   private final List<OpenCLArgDescriptor> args;
+   private OpenCLArgDescriptor[] args = null;
 
-   private final OpenCLProgram program;
+   private OpenCLProgram program = null;
 
-   private final String kernelName;
+   private String kernelName = null;
+
+   private long kernelId = 0;
 
    /**
-    * Minimal constructor
+    * This constructor is specifically for JNI usage
+    * 
+    * @param kernel
+    * @param programInstance
+    * @param name
+    * @param _args
+    */
+   public OpenCLKernel(long kernel, OpenCLProgram programInstance, String name, OpenCLArgDescriptor[] _args) {
+      kernelId = kernel;
+      program = programInstance;
+      kernelName = name;
+      args = _args;
+   }
+
+   private OpenCLKernel() {
+   }
+
+   /**
+    * This method is used to create a new Kernel from JNI
     * 
     * @param _program
     * @param _kernelName
     * @param _args
+    * @return
     */
-   public OpenCLKernel(OpenCLProgram _program, String _kernelName, List<OpenCLArgDescriptor> _args) {
-      program = _program;
-      kernelName = _kernelName;
-      //      args = _args.toArray(new OpenCLArgDescriptor[0]);
-
-      for (final OpenCLArgDescriptor arg : _args) {
-         arg.kernel = this;
+   public static OpenCLKernel createKernel(OpenCLProgram _program, String _kernelName, List<OpenCLArgDescriptor> _args) {
+      final OpenCLArgDescriptor[] argArray = _args.toArray(new OpenCLArgDescriptor[0]);
+      final OpenCLKernel oclk = new OpenCLKernel().createKernelJNI(_program, _kernelName, argArray);
+      for (final OpenCLArgDescriptor arg : argArray) {
+         arg.kernel = oclk;
       }
-
-      args = _args;
-   }
-
-   public OpenCLKernel createKernel() {
-      return createKernel(program, kernelName, args);
+      return oclk;
    }
 
    public String getName() {
