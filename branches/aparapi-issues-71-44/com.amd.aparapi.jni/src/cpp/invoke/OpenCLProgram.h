@@ -11,8 +11,8 @@ class OpenCLProgram{
                             jstring log) {
          return(JNIHelper::createInstance(jenv, OpenCLProgramClass, 
                      ArgsVoidReturn( LongArg LongArg LongArg 
-                         OpenCLDeviceClassArg StringClassArg StringClassArg) , 
-                     (jlong)program, (jlong)queue, (jlong)context, deviceInstance, source, log));
+                         OpenCLDeviceClassArg StringClassArg) , 
+                     (jlong)program, (jlong)queue, (jlong)context, deviceInstance, source));
       }
 
       static cl_context getContext(JNIEnv *jenv, jobject programInstance){

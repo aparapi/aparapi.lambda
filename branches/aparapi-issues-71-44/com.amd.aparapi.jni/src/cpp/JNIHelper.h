@@ -199,12 +199,12 @@ class JNIHelper {
             jclass theClass = jenv->GetObjectClass(instance);
             if (theClass == NULL ||  jenv->ExceptionCheck())
                throw "bummer! getting class from instance\n";
-            jfieldID fieldId = jenv->GetFieldID(theClass,fieldName,"I");
+            jfieldID fieldId = jenv->GetFieldID(theClass,fieldName,signature);
             if (fieldId == NULL || jenv->ExceptionCheck())
-               throw std::string("bummer getting ") + getType(value) + "field '" + fieldName + "' \n";
+               throw std::string("bummer getting ") + getType(value) + " field '" + fieldName + "'\n";
             setField(jenv, instance, fieldId, &value);
             if (jenv->ExceptionCheck())
-               throw std::string("bummer setting ") + getType(value) + "field '" + fieldName + "' \n";
+               throw std::string("bummer setting ") + getType(value) + " field '" + fieldName + "'\n";
          } catch(std::string& se) {
             jenv->ExceptionDescribe(); 
             jenv->ExceptionClear();

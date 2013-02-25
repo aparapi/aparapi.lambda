@@ -119,8 +119,8 @@ JNI_JAVA(jobject, OpenCLJNI, createProgram)
       return(programInstance);
    }
 
-JNI_JAVA(jobject, OpenCLJNI, createKernel)
-   (JNIEnv *jenv, jobject jobj, jobject programInstance, jstring name, jobject args) {
+JNI_JAVA(jobject, OpenCLJNI, createKernelJNI)
+   (JNIEnv *jenv, jobject jobj, jobject programInstance, jstring name, jobjectArray args) {
       cl_context context = OpenCLProgram::getContext(jenv, programInstance);
       cl_program program = OpenCLProgram::getProgram(jenv, programInstance); 
       cl_int status = CL_SUCCESS;

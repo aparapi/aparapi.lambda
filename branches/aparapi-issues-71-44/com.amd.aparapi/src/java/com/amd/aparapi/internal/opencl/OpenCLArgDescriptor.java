@@ -43,6 +43,8 @@ public class OpenCLArgDescriptor{
 
    public OpenCLKernel kernel;
 
+
+
    /**
     * Full constructor
     * 

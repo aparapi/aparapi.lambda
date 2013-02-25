@@ -7,13 +7,14 @@
 class OpenCLKernel{
    public:
 
-      static jobject create(JNIEnv *jenv, cl_kernel kernel, jobject programInstance, jstring name, jobject args){
+      static jobject create(JNIEnv *jenv, cl_kernel kernel, jobject programInstance, jstring name, jobjectArray args){
          return(JNIHelper::createInstance(jenv, OpenCLKernelClass, 
-                     ArgsVoidReturn( LongArg OpenCLProgramClassArg StringClassArg ListClassArg), 
+                     ArgsVoidReturn( LongArg OpenCLProgramClassArg StringClassArg ArrayArg(OpenCLArgDescriptorClass)), 
                      (jlong)kernel, programInstance, name, args));
       }
 
       static cl_kernel getKernel(JNIEnv *jenv, jobject kernelInstance){
+          cl_kernel k = (cl_kernel) JNIHelper::getInstanceField<jlong>(jenv, kernelInstance, "kernelId");
          return((cl_kernel) JNIHelper::getInstanceField<jlong>(jenv, kernelInstance, "kernelId"));
       }
 
