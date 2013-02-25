@@ -268,14 +268,14 @@ public class OpenCLDevice extends Device{
             e.printStackTrace();
          }
 
+         try {
+            _inputStream.close();
+         } catch (final IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+         }
       }
 
-      try {
-         _inputStream.close();
-      } catch (final IOException e) {
-         // TODO Auto-generated catch block
-         e.printStackTrace();
-      }
 
       return (sourceBuilder.toString());
    }
