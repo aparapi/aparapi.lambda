@@ -1377,7 +1377,7 @@ JNI_JAVA(jlong, OpenCLRunner, buildProgramJNI)
             &status);
       ASSERT_CL("clCreateCommandQueue()");
 
-      commandQueueList.add(jniContext->commandQueue, __LINE__, (char *)__FILE__);
+      commandQueueList.add(jniContext->commandQueue, __LINE__, (char*)__FILE__);
 
       if (config->isProfilingCSVEnabled()) {
          // compute profile filename
