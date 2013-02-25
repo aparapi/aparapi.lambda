@@ -122,7 +122,7 @@ class KernelRunner extends OpenCLRunner{
         if (kernel.getExecutionMode().equals(EXECUTION_MODE.SEQ)) {
 
             /**
-             * SEQ mode is useful for testing trivial logic, but kernels which use SEQ mode cannot be used if the
+             * SEQ mode is useful for testing trivial logic, but lambdaRunnerCache which use SEQ mode cannot be used if the
              * product of localSize(0..3) is >1.  So we can use multi-dim ranges but only if the local size is 1 in all dimensions.
              *
              * As a result of this barrier is only ever 1 work item wide and probably should be turned into a no-op.
@@ -184,7 +184,7 @@ class KernelRunner extends OpenCLRunner{
             final CyclicBarrier joinBarrier = new CyclicBarrier(threads + 1);
 
             /**
-             * This localBarrier is only ever used by the kernels.  If the kernel does not use the barrier the threads
+             * This localBarrier is only ever used by the lambdaRunnerCache.  If the kernel does not use the barrier the threads
              * can get out of sync, we promised nothing in JTP mode.
              *
              * As with OpenCL all threads within a group must wait at the barrier or none.  It is a user error (possible deadlock!)
@@ -217,7 +217,7 @@ class KernelRunner extends OpenCLRunner{
                  *
                  * Initially the use of local buffers seems broken as the buffers appears to be per Kernel.
                  * Thankfully Kernel.clone() performs a shallow clone of all buffers (local and global)
-                 * So each of the cloned kernels actually still reference the same underlying local/global buffers.
+                 * So each of the cloned lambdaRunnerCache actually still reference the same underlying local/global buffers.
                  *
                  * If the kernel uses local buffers but does not use barriers then it is possible for different groups
                  * to see mutations from each other (unlike OpenCL), however if the kernel does not us barriers then it

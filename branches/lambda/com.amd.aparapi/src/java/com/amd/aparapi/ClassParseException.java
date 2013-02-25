@@ -56,7 +56,7 @@ package com.amd.aparapi;
       ATHROW("We don't support athrow instructions"), //
       SYNCHRONIZE("We don't support monitorenter or monitorexit instructions"), //
       NEW("We don't support new instructions"), //
-      ARRAYALIAS("We don't support copying refs in kernels"), //
+      ARRAYALIAS("We don't support copying refs in lambdaRunnerCache"), //
       SWITCH("We don't support lookupswitch or tableswitch instructions"), //
       METHODARRAYARG("We don't support passing arrays as method args"), //
       RECURSION("We don't support recursion"), //
@@ -70,7 +70,7 @@ package com.amd.aparapi;
       ARRAYLOCALVARIABLE("Found an array local variable which assumes that we will alias a field array"), //
       CONFUSINGBRANCHESPOSSIBLYCONTINUE("we don't support continue"), //
       CONFUSINGBRANCHESPOSSIBLYBREAK("we don't support break"), //
-      OBJECTFIELDREFERENCE("Using java objects inside kernels is not supported"), //
+      OBJECTFIELDREFERENCE("Using java objects inside lambdaRunnerCache is not supported"), //
       OBJECTARRAYFIELDREFERENCE("Object array elements cannot contain"), //
       OVERRIDENFIELD("Found overidden field"), //
       LOCALARRAYLENGTHACCESS("Found array length access on local array. Might be a result of using ForEach()"), //
