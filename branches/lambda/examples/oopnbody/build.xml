@@ -1,6 +1,10 @@
 <?xml version="1.0"?>
 
 <project name="oopnbody" default="build" basedir=".">
+   <property name="build.compiler" value="javac1.7"/>
+	<property name="ant.build.javac.source" value="1.8"/>
+   <property name="ant.build.javac.target" value="1.8"/>
+
    <path id="compiler.class.path">
       <pathelement path="../../com.amd.aparapi/dist/aparapi.jar"/>
       <pathelement path="../third-party/jogamp/jogl-all.jar"/>

@@ -18,9 +18,9 @@
 	<echo>OS Version: ${os.version}</echo>
 	<echo>OS Arch:    ${os.arch}</echo>
 
-        	<property name="build.compiler" value="javac1.7"/>
+   <property name="build.compiler" value="javac1.7"/>
 	<property name="ant.build.javac.source" value="1.8"/>
-        <property name="ant.build.javac.target" value="1.8"/>
+   <property name="ant.build.javac.target" value="1.8"/>
 
 	<available property="findbugs.installed" file="${findbugs.home}"/>
 
