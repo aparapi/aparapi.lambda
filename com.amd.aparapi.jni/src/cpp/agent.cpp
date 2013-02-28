@@ -74,8 +74,8 @@ NameToBytes *head = NULL;
         // if (!strcmp(superClassName,"com/amd/aparapi/Kernel")){
         //    fprintf(stdout, "%s is a kernel!\n", ptr->getName()); 
         // }
-         fprintf(stdout, "testing \"%s\"==\"%s\"   ", nameChars, ptr->getName());
-         fflush(stdout);
+         //fprintf(stdout, "testing \"%s\"==\"%s\"   ", nameChars, ptr->getName());
+         //fflush(stdout);
          //fprintf(stdout, "classinfo name  \"%s\"\n", classInfo.getClassName());
          //fflush(stdout);
          if (!strcmp(ptr->getName(), nameChars)){
@@ -107,7 +107,7 @@ static void JNICALL cbClassFileLoadHook(jvmtiEnv *jvmti_env, JNIEnv* jni_env,
       jint* new_class_data_len,
       unsigned char** new_class_data){
    if (name != NULL){
-      fprintf(stdout, "from agent classFileLoadHook(%s) %d %lx %lx\n", name, class_data_len, jvmti_env, jni_env);
+      //fprintf(stdout, "from agent classFileLoadHook(%s) %d %lx %lx\n", name, class_data_len, jvmti_env, jni_env);
       byte_t *buf = new byte_t[class_data_len];
 
       memcpy((void*)buf, (void*)class_data, (size_t)class_data_len);
