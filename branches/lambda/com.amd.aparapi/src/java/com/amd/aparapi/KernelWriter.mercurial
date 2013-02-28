@@ -6,33 +6,33 @@ Redistribution and use in source and binary forms, with or without modification,
 following conditions are met:
 
 Redistributions of source code must retain the above copyright notice, this list of conditions and the following
-disclaimer. 
+disclaimer.
 
 Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following
-disclaimer in the documentation and/or other materials provided with the distribution. 
+disclaimer in the documentation and/or other materials provided with the distribution.
 
 Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products
-derived from this software without specific prior written permission. 
+derived from this software without specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
 INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
 SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, 
-WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 If you use the software (in whole or in part), you shall adhere to all applicable U.S., European, and other export
 laws, including but not limited to the U.S. Export Administration Regulations ("EAR"), (15 C.F.R. Sections 730 through
 774), and E.U. Council Regulation (EC) No 1334/2000 of 22 June 2000.  Further, pursuant to Section 740.6 of the EAR,
-you hereby certify that, except pursuant to a license granted by the United States Department of Commerce Bureau of 
-Industry and Security or as otherwise permitted pursuant to a License Exception under the U.S. Export Administration 
+you hereby certify that, except pursuant to a license granted by the United States Department of Commerce Bureau of
+Industry and Security or as otherwise permitted pursuant to a License Exception under the U.S. Export Administration
 Regulations ("EAR"), you will not (1) export, re-export or release to a national of a country in Country Groups D:1,
 E:1 or E:2 any restricted technology, software, or source code you receive hereunder, or (2) export to Country Groups
 D:1, E:1 or E:2 the direct product of such technology or software, if such foreign produced direct product is subject
 to national security controls as identified on the Commerce Control List (currently found in Supplement 1 to Part 774
 of EAR).  For the most current Country Group listings, or for additional information about the EAR or your obligations
-under those regulations, please refer to the U.S. Bureau of Industry and Security's website at http://www.bis.doc.gov/. 
+under those regulations, please refer to the U.S. Bureau of Industry and Security's website at http://www.bis.doc.gov/.
 
  */
 package com.amd.aparapi;
@@ -144,7 +144,7 @@ abstract class KernelWriter extends BlockWriter{
     * These three convert functions are here to perform
     * any type conversion that may be required between
     * Java and OpenCL.
-    * 
+    *
     * @param _typeDesc
     *          String in the Java JNI notation, [I, etc
     * @return Suitably converted string, "char*", etc
@@ -219,14 +219,14 @@ abstract class KernelWriter extends BlockWriter{
          }
       } else {
 
-         String intrinsicMapping = Kernel.getMappedMethodName(_methodEntry);
+         String intrinsicMapping = KernelRunner.getMappedMethodName(_methodEntry);
          // System.out.println("getMappedMethodName for " + methodName + " returned " + mapping);
          boolean isIntrinsic = false;
 
          if (intrinsicMapping == null) {
             assert entryPoint != null : "entryPoint should not be null";
             boolean isSpecial = _methodCall instanceof I_INVOKESPECIAL;
-            boolean isMapped = Kernel.isMappedMethod(_methodEntry);
+            boolean isMapped = KernelRunner.isMappedMethod(_methodEntry);
             MethodModel m = entryPoint.getCallTarget(_methodEntry, isSpecial);
 
             if (m != null) {
@@ -254,7 +254,7 @@ abstract class KernelWriter extends BlockWriter{
                String className = _methodEntry.getClassEntry().getNameUTF8Entry().getUTF8();
                String classNameInDotForm = className.replace("/", ".");
                if (classNameInDotForm.equals(entryPoint.getClassModel().getClassWeAreModelling().getName())) {
-               write("this");
+                  write("this");
                } else {
                   // It must be the iteration object
                   // Insert the syntax to access the iteration object from the source array
@@ -267,7 +267,7 @@ abstract class KernelWriter extends BlockWriter{
                   // Calls to objects in arrays that are fields
                   String fieldName = ((FieldReference) refAccess).getConstantPoolFieldEntry().
                         getNameAndTypeEntry().getNameUTF8Entry().getUTF8();
-               write(" &(this->" + fieldName);
+                  write(" &(this->" + fieldName);
                } else if (refAccess instanceof AccessLocalVariable) {
                   // This case is to handle lambda argument object array refs
                   AccessLocalVariable localVariableLoadInstruction = (AccessLocalVariable) refAccess;
@@ -315,6 +315,129 @@ abstract class KernelWriter extends BlockWriter{
 
       entryPoint = _entryPoint;
 
+      // Add code to collect lambda formal arguments
+      // The local variables are the java args to the method
+      {
+         MethodModel mm = entryPoint.getMethodModel();
+         int argsCount = 1;
+         Iterator<LocalVariableInfo> lvit = mm.getLocalVariableTableEntry().iterator();
+         while (lvit.hasNext()) {
+            LocalVariableInfo lvi = lvit.next();
+            StringBuilder thisStructLine = new StringBuilder();
+            StringBuilder argLine = new StringBuilder();
+            StringBuilder assignLine = new StringBuilder();
+            if ((lvi.getStart() == 0) && ((lvi.getVariableIndex() != 0) || mm.getMethod().isStatic())) { // full scope but skip this
+               String descriptor = lvi.getVariableDescriptor();
+
+               // For object stream lambdas, the lvi is the object type, but in
+               // the kernel we will need something like:
+               //
+               // __global com_amd_aparapi_examples_oopnbody_Body *elements,
+               // int   elements_array_index;
+               //
+               // where elements_array_index is the get_global_id index into the elements array
+
+               String classModelType = descriptor;
+               boolean isObjectLambda = false;
+               if (descriptor.startsWith("[")) {
+                  // This is a local array captured from the caller method and
+                  // passed in from the Block/Consumer
+                  if (descriptor.length() > 2) {
+                     classModelType = __global + " " + (classModelType.substring(2, classModelType.length() - 1)).replace("/", "_");
+                  } else {
+                     // Basic type array
+                     classModelType = __global + " " + ClassModel.typeName(classModelType.substring(1).charAt(0));
+                  }
+               } else if (! (descriptor.startsWith("L") && (descriptor.length() > 1))) {
+                  classModelType = ClassModel.typeName(descriptor.charAt(0));
+               } else {
+                  // This must be the iteration object
+                  // Turn Lcom/amd/javalabs/opencl/demo/DummyOOA; into com_amd_javalabs_opencl_demo_DummyOOA for example
+                  classModelType = __global + " " + (classModelType.substring(1, classModelType.length() - 1)).replace("/", "_");
+                  isObjectLambda = true;
+
+                  // Insert the source object array and integer index here
+                  // in case of object stream lambda
+                  //if (isObjectLambda == true && argsCount == 1) {
+
+                  final String sourceArrayName = "elements";
+                  String elementsDeclaration = classModelType + " *" + sourceArrayName;
+
+                  // Add array to args
+                  argLine.append(elementsDeclaration);
+                  argLines.add(argLine.toString());
+
+                  // Add array to this struct
+                  thisStructLine.append(elementsDeclaration);
+                  thisStruct.add(thisStructLine.toString());
+
+                  // Add index to this struct and args
+                  final String objSourceIndex = "elements_array_index";
+                  final String objSourceIndexDecl = "int " + objSourceIndex;
+                  thisStruct.add(objSourceIndexDecl);
+                  argLines.add(objSourceIndexDecl);
+
+                  // Add array to assigns
+                  assignLine.append("this->");
+                  assignLine.append(sourceArrayName);
+                  assignLine.append(" = ");
+                  assignLine.append(sourceArrayName);
+                  assigns.add(assignLine.toString());
+
+                  // Add get_global_id to assigns
+                  StringBuilder assignGid = new StringBuilder();
+                  assignGid.append(objSourceIndex);
+                  assignGid.append(" = get_global_id(0)");
+                  assigns.add(assignGid.toString());
+
+               }
+
+               if (!isObjectLambda) {
+                  if (lvi.isArray()) {
+                     // It will be a pointer ref to an array that was a captured arg
+                     argLine.append(classModelType);
+                     thisStructLine.append(classModelType);
+                  } else {
+                     argLine.append(convertType(classModelType, false));
+                     thisStructLine.append(convertType(classModelType, false));
+                  }
+                  argLine.append(" ");
+                  thisStructLine.append(" ");
+
+                  // Note in the case of int lambdas, the last lambda java method
+                  // arg is an int which acts as the opencl gid
+                  // Its value is not used and it is assigned with get_global_id(0)
+                  if (argsCount == (entryPoint.getLambdaActualParamsCount() + 1) &&
+                        (lvi != null) && lvi.getVariableDescriptor().equals("I")) {
+                     StringBuilder assignGid = new StringBuilder();
+                     assignGid.append(lvi.getVariableName());
+                     assignGid.append(" = get_global_id(0)");
+                     assigns.add(assignGid.toString());
+                  }
+
+                  assignLine.append("this->");
+                  assignLine.append(lvi.getVariableName());
+                  assignLine.append(" = ");
+                  assignLine.append(lvi.getVariableName());
+
+                  if (lvi.isArray()) {
+                     argLine.append("*" + lvi.getVariableName());
+                     thisStructLine.append("*" + lvi.getVariableName());
+                  } else {
+                     argLine.append(lvi.getVariableName());
+                     thisStructLine.append(lvi.getVariableName());
+                  }
+
+                  assigns.add(assignLine.toString());
+                  argLines.add(argLine.toString());
+                  thisStruct.add(thisStructLine.toString());
+               }
+
+               argsCount++;
+            }
+         }
+      }
+
       for (ClassModelField field : _entryPoint.getReferencedClassModelFields()) {
          // Field field = _entryPoint.getClassModel().getField(f.getName());
          StringBuilder thisStructLine = new StringBuilder();
@@ -325,21 +448,8 @@ abstract class KernelWriter extends BlockWriter{
 
          boolean isPointer = false;
 
-         // check the suffix 
-         String type = field.getName().endsWith(Kernel.LOCAL_SUFFIX) ? __local
-               : (field.getName().endsWith(Kernel.CONSTANT_SUFFIX) ? __constant : __global);
-         RuntimeAnnotationsEntry visibleAnnotations = field.fieldAttributePool.getRuntimeVisibleAnnotationsEntry();
-
-         if (visibleAnnotations != null) {
-            for (AnnotationInfo ai : visibleAnnotations) {
-               String typeDescriptor = ai.getTypeDescriptor();
-               if (typeDescriptor.equals(LOCAL_ANNOTATION_NAME)) {
-                  type = __local;
-               } else if (typeDescriptor.equals(CONSTANT_ANNOTATION_NAME)) {
-                  type = __constant;
-               }
-            }
-         }
+         // No local or constant for lambda demo
+         String type = __global;
 
          if (signature.startsWith("[")) {
             argLine.append(type + " ");
@@ -510,8 +620,8 @@ abstract class KernelWriter extends BlockWriter{
       out();
       writeln(";");
 
-      // out();
-      // newLine();
+      //out();
+      //newLine();
 
       write("}This;");
       newLine();
@@ -584,7 +694,10 @@ abstract class KernelWriter extends BlockWriter{
          newLine();
       }
 
-      write("__kernel void " + _entryPoint.getMethodModel().getSimpleName() + "(");
+      // For the purpose of a quick demo rename the lambda kernel enrtrypoint to "run"
+      // to keep in synch with JNI code
+      //write("__kernel void " + _entryPoint.getMethodModel().getSimpleName() + "(");
+      write("__kernel void run(");
 
       in();
       boolean first = true;
