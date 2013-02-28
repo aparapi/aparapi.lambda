@@ -377,6 +377,33 @@ class OpenCLRunner {
      */
     @UsedByJNICode public static final int JNI_FLAG_USE_GPU = 1 << 2;
 
+
+    /**
+     * This 'bit' indicates that this kernel represents a Java 8 lambda.
+     *
+     *
+     * Be careful changing final constants starting with JNI.<br/>
+     *
+     *
+     * @see com.amd.aparapi.Annotations.UsedByJNICode
+     *
+     * @author gfrost
+     */
+    @UsedByJNICode public static final int JNI_FLAG_LAMBDA_KERNEL = 1 << 3;
+
+    /**
+     * This 'bit' indicates that this kernel represents a 'classic' kernel rather than a java 8 lambda.
+     *
+     *
+     * Be careful changing final constants starting with JNI.<br/>
+     *
+     *
+     * @see com.amd.aparapi.Annotations.UsedByJNICode
+     *
+     * @author gfrost
+     */
+    @UsedByJNICode public static final int JNI_FLAG_CLASSIC_KERNEL = 1 << 3;
+
     /**
      * This 'bit' indicates that we wish to enable verbose JNI layer messages to stderr.<br/>
      *
@@ -386,7 +413,7 @@ class OpenCLRunner {
      * @author gfrost
      */
 
-    // @UsedByJNICode public static final int JNI_FLAG_ENABLE_VERBOSE_JNI = 1 << 3;
+    // @UsedByJNICode public static final int JNI_FLAG_ENABLE_VERBOSE_JNI = 1 << 4;
 
     /**
      * This 'bit' indicates that we wish to enable OpenCL resource tracking by JNI layer to be written to stderr.<br/>
@@ -506,6 +533,8 @@ class OpenCLRunner {
     void dispose() {
             disposeJNI(jniContextHandle);
     }
+
+
 
     protected native long buildProgramJNI(long _jniContextHandle, String _source);
 

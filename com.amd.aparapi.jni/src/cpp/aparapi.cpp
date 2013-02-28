@@ -183,64 +183,64 @@ class KernelArg{
       }
 
       int isArray(){
-         return(type&com_amd_aparapi_KernelRunner_ARG_ARRAY);
+         return(type&com_amd_aparapi_OpenCLRunner_ARG_ARRAY);
       }
       int isReadByKernel(){
-         return(type&com_amd_aparapi_KernelRunner_ARG_READ);
+         return(type&com_amd_aparapi_OpenCLRunner_ARG_READ);
       }
       int isMutableByKernel(){
-         return(type&com_amd_aparapi_KernelRunner_ARG_WRITE);
+         return(type&com_amd_aparapi_OpenCLRunner_ARG_WRITE);
       }
       int isExplicit(){
-         return(type&com_amd_aparapi_KernelRunner_ARG_EXPLICIT);
+         return(type&com_amd_aparapi_OpenCLRunner_ARG_EXPLICIT);
       }
       int usesArrayLength(){
-         return(type&com_amd_aparapi_KernelRunner_ARG_ARRAYLENGTH);
+         return(type&com_amd_aparapi_OpenCLRunner_ARG_ARRAYLENGTH);
       }
       int isExplicitWrite(){
-         return(type&com_amd_aparapi_KernelRunner_ARG_EXPLICIT_WRITE);
+         return(type&com_amd_aparapi_OpenCLRunner_ARG_EXPLICIT_WRITE);
       }
       int isImplicit(){
          return(!isExplicit());
       }
       int isPrimitive(){
-         return(type&com_amd_aparapi_KernelRunner_ARG_PRIMITIVE);
+         return(type&com_amd_aparapi_OpenCLRunner_ARG_PRIMITIVE);
       }
       int isGlobal(){
-         return(type&com_amd_aparapi_KernelRunner_ARG_GLOBAL);
+         return(type&com_amd_aparapi_OpenCLRunner_ARG_GLOBAL);
       }
       int isFloat(){
-         return(type&com_amd_aparapi_KernelRunner_ARG_FLOAT);
+         return(type&com_amd_aparapi_OpenCLRunner_ARG_FLOAT);
       }
       int isLong(){
-         return (type&com_amd_aparapi_KernelRunner_ARG_LONG);
+         return (type&com_amd_aparapi_OpenCLRunner_ARG_LONG);
       }
       int isInt(){
-         return (type&com_amd_aparapi_KernelRunner_ARG_INT);
+         return (type&com_amd_aparapi_OpenCLRunner_ARG_INT);
       }
       int isDouble(){
-         return (type&com_amd_aparapi_KernelRunner_ARG_DOUBLE);
+         return (type&com_amd_aparapi_OpenCLRunner_ARG_DOUBLE);
       }
       int isBoolean(){
-         return (type&com_amd_aparapi_KernelRunner_ARG_BOOLEAN);
+         return (type&com_amd_aparapi_OpenCLRunner_ARG_BOOLEAN);
       }
       int isByte(){
-         return (type&com_amd_aparapi_KernelRunner_ARG_BYTE);
+         return (type&com_amd_aparapi_OpenCLRunner_ARG_BYTE);
       }
       int isShort(){
-         return (type&com_amd_aparapi_KernelRunner_ARG_SHORT);
+         return (type&com_amd_aparapi_OpenCLRunner_ARG_SHORT);
       }
       int isLocal(){
-         return (type&com_amd_aparapi_KernelRunner_ARG_LOCAL);
+         return (type&com_amd_aparapi_OpenCLRunner_ARG_LOCAL);
       }
       int isStatic(){
-         return (type&com_amd_aparapi_KernelRunner_ARG_STATIC);
+         return (type&com_amd_aparapi_OpenCLRunner_ARG_STATIC);
       }
       int isConstant(){
-         return (type&com_amd_aparapi_KernelRunner_ARG_CONSTANT);
+         return (type&com_amd_aparapi_OpenCLRunner_ARG_CONSTANT);
       }
       int isAparapiBuf(){
-         return (type&com_amd_aparapi_KernelRunner_ARG_APARAPI_BUF);
+         return (type&com_amd_aparapi_OpenCLRunner_ARG_APARAPI_BUF);
       }
       int isBackedByArray(){
          return ( (isArray() && (isGlobal() || isConstant())));
@@ -261,13 +261,14 @@ class KernelArg{
          arrayBuffer->length = jenv->GetIntField(javaArg, numElementsFieldID);
       }
       void clearExplicitBufferBit(JNIEnv* jenv){
-         type &= ~com_amd_aparapi_KernelRunner_ARG_EXPLICIT_WRITE;
+         type &= ~com_amd_aparapi_OpenCLRunner_ARG_EXPLICIT_WRITE;
          jenv->SetIntField(javaArg, typeFieldID,type );
       }
 
       void syncValue(JNIEnv *jenv); // Uses JNIContext so can't inline here we below.  
       cl_int setLocalBufferArg(JNIEnv *jenv, int argIdx, int argPos); // Uses JNIContext so can't inline here we below.  
-      cl_int setPrimitiveArg(JNIEnv *jenv, int argIdx, int argPos ); // Uses JNIContext so can't inline here we below.  
+      cl_int setPrimitiveLambdaArg(JNIEnv *jenv, int argIdx, int argPos ); // Uses JNIContext so can't inline here we below.  
+      cl_int setPrimitiveClassicArg(JNIEnv *jenv, int argIdx, int argPos ); // Uses JNIContext so can't inline here we below.  
 };
 
 jclass KernelArg::argClazz=(jclass)0;
@@ -317,7 +318,7 @@ class JNIContext{
          profileBaseTime(0),
          passes(0),
          exec(NULL),
-         deviceType(((flags&com_amd_aparapi_KernelRunner_JNI_FLAG_USE_GPU)==com_amd_aparapi_KernelRunner_JNI_FLAG_USE_GPU)?CL_DEVICE_TYPE_GPU:CL_DEVICE_TYPE_CPU),
+         deviceType(((flags&com_amd_aparapi_OpenCLRunner_JNI_FLAG_USE_GPU)==com_amd_aparapi_OpenCLRunner_JNI_FLAG_USE_GPU)?CL_DEVICE_TYPE_GPU:CL_DEVICE_TYPE_CPU),
          profileFile(NULL), 
          valid(JNI_FALSE){
             cl_int status = CL_SUCCESS;
@@ -342,7 +343,13 @@ class JNIContext{
          return(valid);
       }
       jboolean isUsingGPU(){
-         return((flags&com_amd_aparapi_KernelRunner_JNI_FLAG_USE_GPU)==com_amd_aparapi_KernelRunner_JNI_FLAG_USE_GPU?JNI_TRUE:JNI_FALSE);
+         return((flags&com_amd_aparapi_OpenCLRunner_JNI_FLAG_USE_GPU)==com_amd_aparapi_OpenCLRunner_JNI_FLAG_USE_GPU?JNI_TRUE:JNI_FALSE);
+      }
+      jboolean isLambdaKernel(){
+         return((flags&com_amd_aparapi_OpenCLRunner_JNI_FLAG_LAMBDA_KERNEL)==com_amd_aparapi_OpenCLRunner_JNI_FLAG_LAMBDA_KERNEL?JNI_TRUE:JNI_FALSE);
+      }
+      jboolean isClassicKernel(){
+         return((flags&com_amd_aparapi_OpenCLRunner_JNI_FLAG_CLASSIC_KERNEL)==com_amd_aparapi_OpenCLRunner_JNI_FLAG_CLASSIC_KERNEL?JNI_TRUE:JNI_FALSE);
       }
       ~JNIContext(){
       }
@@ -488,8 +495,9 @@ cl_int KernelArg::setLocalBufferArg(JNIEnv *jenv, int argIdx, int argPos){
    }
    return(clSetKernelArg(jniContext->kernel, argPos, (int)arrayBuffer->lengthInBytes, NULL));
 }
-cl_int KernelArg::setPrimitiveArg(JNIEnv *jenv, int argIdx, int argPos){
+cl_int KernelArg::setPrimitiveClassicArg(JNIEnv *jenv, int argIdx, int argPos){
    cl_int status = CL_SUCCESS;
+
    if (isFloat()){
       if (isStatic()){
          jfieldID fieldID = jenv->GetStaticFieldID(jniContext->kernelClass, name, "F");
@@ -592,6 +600,124 @@ cl_int KernelArg::setPrimitiveArg(JNIEnv *jenv, int argIdx, int argPos){
       }else{
          jfieldID fieldID = jenv->GetFieldID(jniContext->kernelClass, name, "D");
          jdouble d = jenv->GetDoubleField(jniContext->kernelObject, fieldID);
+         if (config->isVerbose()){
+            fprintf(stderr, "clSetKernelArg primitive long '%s' index=%d pos=%d value=%lf\n",
+                 name, argIdx, argPos, d); 
+         }
+         status = clSetKernelArg(jniContext->kernel, argPos, sizeof(jdouble), &d);
+      }
+   }
+   return status;
+}
+
+cl_int KernelArg::setPrimitiveLambdaArg(JNIEnv *jenv, int argIdx, int argPos){
+   cl_int status = CL_SUCCESS;
+
+   // Get the class of the object holding this field
+   jclass fieldHolderClass = jenv->GetObjectClass(fieldHolder);
+
+   if (isFloat()){
+      if (isStatic()){
+         jfieldID fieldID = jenv->GetStaticFieldID(fieldHolderClass, name, "F");
+         jfloat f = jenv->GetStaticFloatField(fieldHolderClass, fieldID);
+         if (config->isVerbose()){
+            fprintf(stderr, "clSetKernelArg static primitive float '%s' index=%d pos=%d value=%f\n",
+                 name, argIdx, argPos, f); 
+         }
+         status = clSetKernelArg(jniContext->kernel, argPos, sizeof(jfloat), &f);
+      }else{
+         jfieldID fieldID = jenv->GetFieldID(fieldHolderClass, name, "F");
+         jfloat f = jenv->GetFloatField(fieldHolder, fieldID);
+         if (config->isVerbose()){
+            fprintf(stderr, "clSetKernelArg primitive float '%s' index=%d pos=%d value=%f\n",
+                 name, argIdx, argPos, f); 
+         }
+         status = clSetKernelArg(jniContext->kernel, argPos, sizeof(jfloat), &f);
+      }
+   }else if (isInt()){
+      if (isStatic()){
+         jfieldID fieldID = jenv->GetStaticFieldID(fieldHolderClass, name, "I");
+         jint i = jenv->GetStaticIntField(fieldHolderClass, fieldID);
+         if (config->isVerbose()){
+            fprintf(stderr, "clSetKernelArg static primitive int '%s' index=%d pos=%d value=%d\n",
+                 name, argIdx, argPos, i); 
+         }
+         status = clSetKernelArg(jniContext->kernel, argPos, sizeof(jint), &i);
+      }else{
+         jfieldID fieldID = jenv->GetFieldID(fieldHolderClass, name, "I");
+         jint i = jenv->GetIntField(fieldHolder, fieldID);
+         if (config->isVerbose()){
+            fprintf(stderr, "clSetKernelArg primitive int '%s' index=%d pos=%d value=%d\n",
+                 name, argIdx, argPos, i); 
+         }
+         status = clSetKernelArg(jniContext->kernel, argPos, sizeof(jint), &i);
+      }
+   }else if (isBoolean()){
+      if (isStatic()){
+         jfieldID fieldID = jenv->GetStaticFieldID(fieldHolderClass, name, "Z");
+         jboolean z = jenv->GetStaticBooleanField(fieldHolderClass, fieldID);
+         if (config->isVerbose()){
+            fprintf(stderr, "clSetKernelArg static primitive boolean '%s' index=%d pos=%d value=%d\n",
+                 name, argIdx, argPos, z); 
+         }
+         status = clSetKernelArg(jniContext->kernel, argPos, sizeof(jboolean), &z);
+      }else{
+         jfieldID fieldID = jenv->GetFieldID(fieldHolderClass, name, "Z");
+         jboolean z = jenv->GetBooleanField(fieldHolder, fieldID);
+         if (config->isVerbose()){
+            fprintf(stderr, "clSetKernelArg primitive boolean '%s' index=%d pos=%d value=%d\n",
+                 name, argIdx, argPos, z); 
+         }
+         status = clSetKernelArg(jniContext->kernel, argPos, sizeof(jboolean), &z);
+      }
+   }else if (isByte()){
+      if (isStatic()){
+         jfieldID fieldID = jenv->GetStaticFieldID(fieldHolderClass, name, "B");
+         jbyte b = jenv->GetStaticByteField(fieldHolderClass, fieldID);
+         if (config->isVerbose()){
+            fprintf(stderr, "clSetKernelArg static primitive byte '%s' index=%d pos=%d value=%d\n",
+                 name, argIdx, argPos, b); 
+         }
+         status = clSetKernelArg(jniContext->kernel, argPos, sizeof(jbyte), &b);
+      }else{
+         jfieldID fieldID = jenv->GetFieldID(fieldHolderClass, name, "B");
+         jbyte b = jenv->GetByteField(fieldHolder, fieldID);
+         if (config->isVerbose()){
+            fprintf(stderr, "clSetKernelArg primitive byte '%s' index=%d pos=%d value=%d\n",
+                 name, argIdx, argPos, b); 
+         }
+         status = clSetKernelArg(jniContext->kernel, argPos, sizeof(jbyte), &b);
+      }
+   }else if (isLong()){
+      if (isStatic()){
+         jfieldID fieldID = jenv->GetStaticFieldID(fieldHolderClass, name, "J");
+         jlong j = jenv->GetStaticLongField(fieldHolderClass, fieldID);
+         if (config->isVerbose()){
+            fprintf(stderr, "clSetKernelArg static primitive long '%s' index=%d pos=%d value=%ld\n",
+                 name, argIdx, argPos, (signed long)j); 
+         }
+         status = clSetKernelArg(jniContext->kernel, argPos, sizeof(jlong), &j);
+      }else{
+         jfieldID fieldID = jenv->GetFieldID(fieldHolderClass, name, "J");
+         jlong j = jenv->GetLongField(fieldHolder, fieldID);
+         if (config->isVerbose()){
+            fprintf(stderr, "clSetKernelArg primitive long '%s' index=%d pos=%d value=%ld\n",
+                 name, argIdx, argPos, (signed long)j); 
+         }
+         status = clSetKernelArg(jniContext->kernel, argPos, sizeof(jlong), &j);
+      }
+   }else if (isDouble()){
+      if (isStatic()){
+         jfieldID fieldID = jenv->GetStaticFieldID(fieldHolderClass, name, "D");
+         jdouble d  = jenv->GetStaticDoubleField(fieldHolderClass, fieldID);
+         if (config->isVerbose()){
+            fprintf(stderr, "clSetKernelArg static primitive long '%s' index=%d pos=%d value=%lf\n",
+                 name, argIdx, argPos, d); 
+         }
+         status = clSetKernelArg(jniContext->kernel, argPos, sizeof(jdouble), &d);
+      }else{
+         jfieldID fieldID = jenv->GetFieldID(fieldHolderClass, name, "D");
+         jdouble d = jenv->GetDoubleField(fieldHolder, fieldID);
          if (config->isVerbose()){
             fprintf(stderr, "clSetKernelArg primitive long '%s' index=%d pos=%d value=%lf\n",
                  name, argIdx, argPos, d); 
@@ -1048,7 +1174,11 @@ JNI_JAVA(jint, KernelRunner, runKernelJNI)
                }
             }
          }else{  // primitive arguments
-            status = arg->setPrimitiveArg(jenv, argIdx, argPos);
+            if (jniContext->isLambdaKernel()){
+                 status = arg->setPrimitiveLambdaArg(jenv, argIdx, argPos);
+            }else{
+                 status = arg->setPrimitiveClassicArg(jenv, argIdx, argPos);
+            }
             if (status != CL_SUCCESS) {
                PRINT_CL_ERR(status, "clSetKernelArg()");
                jniContext->unpinAll(jenv);
@@ -1330,6 +1460,23 @@ JNI_JAVA(jint, KernelRunner, runKernelJNI)
       return(status);
    }
 
+
+// we return the JNIContext from here 
+JNI_JAVA(jlong, LambdaRunner, initJNI)
+   (JNIEnv *jenv, jclass clazz, jobject lambdaObject, jobject openCLDeviceObject, jint flags) {
+      if (config== NULL){
+         config = new Config(jenv);
+      }
+      cl_int status = CL_SUCCESS;
+      JNIContext* jniContext = new JNIContext(jenv, lambdaObject, openCLDeviceObject, flags);
+
+      if (jniContext->isValid()){
+
+         return((jlong)jniContext);
+      }else{
+         return(0L);
+      }
+   }
 
 // we return the JNIContext from here 
 JNI_JAVA(jlong, KernelRunner, initJNI)
