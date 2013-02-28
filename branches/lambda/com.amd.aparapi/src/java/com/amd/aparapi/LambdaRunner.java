@@ -892,6 +892,7 @@ class LambdaRunner extends OpenCLRunner{
                openCLDevice = (OpenCLDevice) ((Config.executionMode != null && Config.executionMode.equals("CPU")) ? OpenCLDevice.firstCPU() : OpenCLDevice.best());
                assert openCLDevice != null : "Device should not be null";
                jniFlags |= JNI_FLAG_USE_GPU; // this flag might be redundant now.
+                jniFlags |= JNI_FLAG_LAMBDA_KERNEL;
                jniContextHandle = initJNI(lambdaKernelCall.isStatic() == true ?
                      lambdaKernelCall.getLambdaKernelClass() : lambdaKernelCall.getLambdaKernelThis(), 
                      openCLDevice, jniFlags);

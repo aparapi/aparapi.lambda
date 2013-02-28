@@ -101,7 +101,7 @@ class KernelRunner extends OpenCLRunner{
      */
     @Annotations.DocMe private native static synchronized long initJNI(Kernel _kernel, OpenCLDevice _device, int _flags);
 
-    private native int setArgsJNI(long _jniContextHandle, KernelArg[] _args, int argc);
+    private native int setArgsJNI(long _jniContextHandle, KernelArg[] _args, int _argc);
 
     private native int runKernelJNI(long _jniContextHandle, Range _range, boolean _needSync, int _passes);
 
@@ -823,7 +823,7 @@ class KernelRunner extends OpenCLRunner{
 
                             OpenCLDevice openCLDevice = (OpenCLDevice) device; // still might be null!
 
-                            int jniFlags = 0;
+                            int jniFlags = JNI_FLAG_CLASSIC_KERNEL;
                             if (openCLDevice == null) {
                                 if (kernel.getExecutionMode().equals(EXECUTION_MODE.GPU)) {
                                     // We used to treat as before by getting first GPU device
