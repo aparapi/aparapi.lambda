@@ -1,5 +1,7 @@
 java ^
+ -agentpath:../../com.amd.aparapi.jni/dist/aparapi_x86_64.dll ^
  -Djava.library.path=../../com.amd.aparapi.jni/dist ^
+ -Dcom.amd.aparapi.useAgent=true ^
  -Dcom.amd.aparapi.executionMode=%1 ^
  -Dcom.amd.aparapi.logLevel=OFF^
  -Dcom.amd.aparapi.enableVerboseJNI=false ^
