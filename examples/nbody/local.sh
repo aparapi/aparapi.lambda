@@ -10,5 +10,5 @@ java\
   -Dheight=600 \
   -Dwidth=600 \
   -classpath ../third-party/jogamp/jogl-all.jar:../third-party/jogamp/gluegen-rt.jar:../../com.amd.aparapi/dist/aparapi.jar:nbody.jar \
-  com.amd.aparapi.examples.nbody.Main 
+  com.amd.aparapi.examples.nbody.Local
 
