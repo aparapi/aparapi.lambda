@@ -326,10 +326,6 @@ class MethodModel{
     * have the branch node (at 100) added to it's forwardUnconditional list.
     * 
     * @see InstructionSet.Branch#getTarget()
-    * @see Instruction#getForwardConditionalTargets()
-    * @see Instruction#getForwardUnconditionalTargets()
-    * @see Instruction#getReverseConditionalTargets()
-    * @see Instruction#getReverseUnconditionalTargets()
     */
    void buildBranchGraphs(Map<Integer, Instruction> pcMap) {
 
@@ -1654,10 +1650,10 @@ class MethodModel{
             localVariableTableEntry = new FakeLocalVariableTableEntry(pcMap, method);
 
             method.setLocalVariableTableEntry(localVariableTableEntry);
-            logger.warning("Method "
+            logger.info("Method "
                   + method.getName()
                   + method.getDescriptor()
-                  + " does not contain a LocalVariableTable entry (source not compiled with -g) aparapi will attempt to create a synthetic table based on bytecode. This is experimental!!");
+                  + " does not contain a LocalVariableTable entry (source not compiled with -g) aparapi create a synthetic table based on bytecode");
          }
 
          // pass #2 build branch graph
