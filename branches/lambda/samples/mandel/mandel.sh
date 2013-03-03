@@ -1,7 +1,10 @@
-#-agentpath:../../com.amd.aparapi.jni/dist/libaparapi_x86_64.so
+LIBPREFIX=../../com.amd.aparapi.jni/dist/libaparapi_$(uname -m)
+case $(uname -s) in 
+  Darwin) LIBNAME=${LIBPREFIX}.dyLib;;
+  Linux)  LIBNAME=${LIBPREFIX}.so;;
+esac
 java\
- -agentpath:../../com.amd.aparapi.jni/dist/libaparapi_x86_64.so\
- -Djava.library.path=../../com.amd.aparapi.jni/dist\
+ -agentpath:${LIBNAME}\
  -Dcom.amd.aparapi.useAgent=true\
  -Dcom.amd.aparapi.executionMode=$1\
  -classpath ../../com.amd.aparapi/dist/aparapi.jar:mandel.jar\
