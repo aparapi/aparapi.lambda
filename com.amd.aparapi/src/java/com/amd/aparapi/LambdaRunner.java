@@ -139,7 +139,7 @@ class LambdaRunner extends OpenCLRunner{
          }
 
          // The class name is created with the "/" style delimiters
-         ClassModel blockModel = new ClassModel(bc, OpenCLJNI.getJNI().getBytes(bc.getName()));
+         ClassModel blockModel = new ClassModel(bc);
          
          String acceptSignature;
          if (block instanceof IntConsumer) {
@@ -877,8 +877,7 @@ class LambdaRunner extends OpenCLRunner{
          assert lambdaKernelCall != null : "Should not be null";
          
          Class lambdaClass = lambdaKernelCall.getLambdaKernelClass();
-         byte[] lambdaClassBytes =  OpenCLJNI.getJNI().getBytes(lambdaClass.getName());
-         ClassModel classModel = new ClassModel(lambdaClass, lambdaClassBytes);
+         ClassModel classModel = new ClassModel(lambdaClass);
 
          entryPoint = classModel.getEntrypoint(lambdaKernelCall.getLambdaMethodName(), 
                lambdaKernelCall.getLambdaMethodSignature(), lambdaKernelCall.getLambdaKernelThis());

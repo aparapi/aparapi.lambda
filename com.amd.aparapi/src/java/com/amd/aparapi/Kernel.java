@@ -1642,8 +1642,8 @@ public abstract class Kernel implements Cloneable{
     * 
     * @return The total time spent executing the kernel (ms) 
     * 
-    * @see getExecutionTime();
-    * @see getConversionTime();
+    * @see #getExecutionTime();
+    * @see #getConversionTime();
     * 
     */
    public synchronized long getAccumulatedExecutionTime() {
@@ -1654,8 +1654,8 @@ public abstract class Kernel implements Cloneable{
     * Determine the time taken to convert bytecode to OpenCL for first Kernel.execute(range) call.
     * @return The time spent preparing the kernel for execution using GPU
     * 
-    * @see getExecutionTime();
-    * @see getAccumulatedExectutionTime();
+    * @see #getExecutionTime();
+    * @see #getAccumulatedExecutionTime();
     */
    public synchronized long getConversionTime() {
       return (kernelRunner.getConversionTime());
@@ -1667,7 +1667,7 @@ public abstract class Kernel implements Cloneable{
     * When <code>kernel.execute(globalSize)</code> is invoked, Aparapi will schedule the execution of <code>globalSize</code> lambdaRunnerCache. If the execution mode is GPU then
     * the lambdaRunnerCache will execute as OpenCL code on the GPU device. Otherwise, if the mode is JTP, the lambdaRunnerCache will execute as a pool of Java threads on the CPU.
     * <p>
-    * @param range The number of Kernels that we would like to initiate.
+    * @param _range The number of Kernels that we would like to initiate.
     * @returnThe Kernel instance (this) so we can chain calls to put(arr).execute(range).get(arr)
     * 
     */
@@ -1696,7 +1696,7 @@ public abstract class Kernel implements Cloneable{
     * When <code>kernel.execute(_range, _passes)</code> is invoked, Aparapi will schedule the execution of <code>_reange</code> lambdaRunnerCache. If the execution mode is GPU then
     * the lambdaRunnerCache will execute as OpenCL code on the GPU device. Otherwise, if the mode is JTP, the lambdaRunnerCache will execute as a pool of Java threads on the CPU.
     * <p>
-    * @param _globalSize The number of Kernels that we would like to initiate.
+    * @param _range The number of Kernels that we would like to initiate.
     * @param _passes The number of passes to make
     * @return The Kernel instance (this) so we can chain calls to put(arr).execute(range).get(arr)
     * 
@@ -1726,8 +1726,8 @@ public abstract class Kernel implements Cloneable{
     * When <code>kernel.execute("entrypoint", globalSize)</code> is invoked, Aparapi will schedule the execution of <code>globalSize</code> lambdaRunnerCache. If the execution mode is GPU then
     * the lambdaRunnerCache will execute as OpenCL code on the GPU device. Otherwise, if the mode is JTP, the lambdaRunnerCache will execute as a pool of Java threads on the CPU.
     * <p>
-    * @param _entrypoint is the name of the method we wish to use as the entrypoint to the kernel
-    * @param _globalSize The number of Kernels that we would like to initiate.
+    * @param _entry is the name of the method we wish to use as the entrypoint to the kernel
+    * @param _range The number of Kernels that we would like to initiate.
     * @return The Kernel instance (this) so we can chain calls to put(arr).execute(range).get(arr)
     * 
     */
@@ -1746,7 +1746,7 @@ public abstract class Kernel implements Cloneable{
     * the lambdaRunnerCache will execute as OpenCL code on the GPU device. Otherwise, if the mode is JTP, the lambdaRunnerCache will execute as a pool of Java threads on the CPU.
     * <p>
     * @param _entrypoint is the name of the method we wish to use as the entrypoint to the kernel
-    * @param _globalSize The number of Kernels that we would like to initiate.
+    * @param _range The number of Kernels that we would like to initiate.
     * @return The Kernel instance (this) so we can chain calls to put(arr).execute(range).get(arr)
     * 
     */
@@ -1762,7 +1762,8 @@ public abstract class Kernel implements Cloneable{
     * the lambdaRunnerCache will execute as OpenCL code on the GPU device. Otherwise, if the mode is JTP, the lambdaRunnerCache will execute as a pool of Java threads on the CPU.
     * <p>
     * @param _entrypoint is the name of the method we wish to use as the entrypoint to the kernel
-    * @param _globalSize The number of Kernels that we would like to initiate.
+    * @param _range The number of Kernels that we would like to initiate.
+    * @param _passes The number of Kernels that we would like to initiate.
     * @return The Kernel instance (this) so we can chain calls to put(arr).execute(range).get(arr)
     * 
     */
