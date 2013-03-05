@@ -808,7 +808,7 @@ class KernelRunner extends OpenCLRunner{
                     try {
                         ClassModel classModel = null;
 
-                            classModel = new ClassModel(kernel.getClass(), OpenCLJNI.getJNI().getBytes(kernel.getClass().getName()));
+                            classModel = new ClassModel(kernel.getClass());
 
                         entryPoint = classModel.getEntrypoint(_entrypointName, kernel);
                     } catch (Exception exception) {

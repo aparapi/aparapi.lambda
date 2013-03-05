@@ -153,7 +153,8 @@ class ClassModel{
 
    //}
 
-   ClassModel(Class<?> _clazz, byte[] _bytes) throws ClassParseException {
+   ClassModel(Class<?> _clazz) throws ClassParseException {
+      byte[] _bytes = OpenCLJNI.getJNI().getBytes(_clazz.getName());
       clazz = _clazz;
       parse(new ByteArrayInputStream(_bytes));
    }
@@ -2431,11 +2432,11 @@ class ClassModel{
     * @param _class The class we wish to model
     * @throws ClassParseException
     */
-   void parse(Class<?> _class) throws ClassParseException {
+  // void parse(Class<?> _class) throws ClassParseException {
 
-      clazz = _class;
-      parse(_class.getClassLoader(), _class.getName());
-   }
+    //  clazz = _class;
+    //  parse(_class.getClassLoader(), _class.getName());
+  // }
 
    /**
     * Populate this model by parsing a given classfile from the given classloader.
@@ -2448,10 +2449,10 @@ class ClassModel{
     * @param _className The name of the class to load (we convert '.' to '/' and append ".class" so you don't have to).
     * @throws ClassParseException
     */
-   private void parse(ClassLoader _classLoader, String _className) throws ClassParseException {
-      parse(_classLoader.getResourceAsStream(_className.replace('.', '/') + ".class"));
+  // private void parse(ClassLoader _classLoader, String _className) throws ClassParseException {
+    //  parse(_classLoader.getResourceAsStream(_className.replace('.', '/') + ".class"));
 
-   }
+  // }
 
    void parse(InputStream _inputStream) throws ClassParseException {
 
