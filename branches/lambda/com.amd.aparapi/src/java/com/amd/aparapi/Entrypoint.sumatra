@@ -573,6 +573,10 @@ class Entrypoint{
 
             for (Instruction instruction = methodModel.getPCHead(); instruction != null; instruction = instruction.getNextPC()) {
 
+
+
+
+
                if (instruction instanceof AssignToArrayElement) {
                   AssignToArrayElement assignment = (AssignToArrayElement) instruction;
 
@@ -683,12 +687,11 @@ class Entrypoint{
                } else if (instruction instanceof I_INVOKEVIRTUAL) {
                   I_INVOKEVIRTUAL invokeInstruction = (I_INVOKEVIRTUAL) instruction;
                   MethodEntry methodEntry = invokeInstruction.getConstantPoolMethodEntry();
-                  if (KernelRunner.isMappedMethod(methodEntry)) { //only do this for intrinsics
+                  if ((!isLambda && Kernel.isMappedMethod(methodEntry))||(isLambda && KernelRunner.isMappedMethod(methodEntry))) { //only do this for intrinsics
 
-                     // I forgot what atomics are for, check with Gary
-//                     if (Kernel.usesAtomic32(methodEntry)) {
-//                        setRequiresAtomics32Pragma(true);
-//                     }
+                     if (Kernel.usesAtomic32(methodEntry)) {
+                        setRequiresAtomics32Pragma(true);
+                     }
 
                      Arg methodArgs[] = methodEntry.getArgs();
                      if (methodArgs.length > 0 && methodArgs[0].isArray()) { //currently array arg can only take slot 0
@@ -864,7 +867,7 @@ class Entrypoint{
     */
    MethodModel getCallTarget(MethodEntry _methodEntry, boolean _isSpecial) {
       ClassModelMethod target = getClassModel().getMethod(_methodEntry, _isSpecial);
-      boolean isMapped = KernelRunner.isMappedMethod(_methodEntry);
+      boolean isMapped = (!isLambda && Kernel.isMappedMethod(_methodEntry)) || (isLambda && KernelRunner.isMappedMethod(_methodEntry));
 
       if (logger.isLoggable(Level.FINE) && target == null) {
          logger.fine("Did not find call target: " + _methodEntry + " in " + 

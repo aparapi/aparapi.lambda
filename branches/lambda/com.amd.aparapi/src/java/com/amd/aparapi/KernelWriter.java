@@ -315,6 +315,129 @@ abstract class KernelWriter extends BlockWriter{
 
       entryPoint = _entryPoint;
 
+      // Add code to collect lambda formal arguments
+      // The local variables are the java args to the method
+      {
+         MethodModel mm = entryPoint.getMethodModel();
+         int argsCount = 1;
+         Iterator<LocalVariableInfo> lvit = mm.getLocalVariableTableEntry().iterator();
+         while (lvit.hasNext()) {
+            LocalVariableInfo lvi = lvit.next();
+            StringBuilder thisStructLine = new StringBuilder();
+            StringBuilder argLine = new StringBuilder();
+            StringBuilder assignLine = new StringBuilder();
+            if ((lvi.getStart() == 0) && ((lvi.getVariableIndex() != 0) || mm.getMethod().isStatic())) { // full scope but skip this
+               String descriptor = lvi.getVariableDescriptor();
+
+               // For object stream lambdas, the lvi is the object type, but in
+               // the kernel we will need something like:
+               //
+               // __global com_amd_aparapi_examples_oopnbody_Body *elements,
+               // int   elements_array_index;
+               //
+               // where elements_array_index is the get_global_id index into the elements array
+
+               String classModelType = descriptor;
+               boolean isObjectLambda = false;
+               if (descriptor.startsWith("[")) {
+                  // This is a local array captured from the caller method and
+                  // passed in from the Block/Consumer
+                  if (descriptor.length() > 2) {
+                     classModelType = __global + " " + (classModelType.substring(2, classModelType.length() - 1)).replace("/", "_");
+                  } else {
+                     // Basic type array
+                     classModelType = __global + " " + ClassModel.typeName(classModelType.substring(1).charAt(0));
+                  }
+               } else if (! (descriptor.startsWith("L") && (descriptor.length() > 1))) {
+                  classModelType = ClassModel.typeName(descriptor.charAt(0));
+               } else {
+                  // This must be the iteration object
+                  // Turn Lcom/amd/javalabs/opencl/demo/DummyOOA; into com_amd_javalabs_opencl_demo_DummyOOA for example
+                  classModelType = __global + " " + (classModelType.substring(1, classModelType.length() - 1)).replace("/", "_");
+                  isObjectLambda = true;
+
+                  // Insert the source object array and integer index here
+                  // in case of object stream lambda
+                  //if (isObjectLambda == true && argsCount == 1) {
+
+                  final String sourceArrayName = "elements";
+                  String elementsDeclaration = classModelType + " *" + sourceArrayName;
+
+                  // Add array to args
+                  argLine.append(elementsDeclaration);
+                  argLines.add(argLine.toString());
+
+                  // Add array to this struct
+                  thisStructLine.append(elementsDeclaration);
+                  thisStruct.add(thisStructLine.toString());
+
+                  // Add index to this struct and args
+                  final String objSourceIndex = "elements_array_index";
+                  final String objSourceIndexDecl = "int " + objSourceIndex;
+                  thisStruct.add(objSourceIndexDecl);
+                  argLines.add(objSourceIndexDecl);
+
+                  // Add array to assigns
+                  assignLine.append("this->");
+                  assignLine.append(sourceArrayName);
+                  assignLine.append(" = ");
+                  assignLine.append(sourceArrayName);
+                  assigns.add(assignLine.toString());
+
+                  // Add get_global_id to assigns
+                  StringBuilder assignGid = new StringBuilder();
+                  assignGid.append(objSourceIndex);
+                  assignGid.append(" = get_global_id(0)");
+                  assigns.add(assignGid.toString());
+
+               }
+
+               if (!isObjectLambda) {
+                  if (lvi.isArray()) {
+                     // It will be a pointer ref to an array that was a captured arg
+                     argLine.append(classModelType);
+                     thisStructLine.append(classModelType);
+                  } else {
+                     argLine.append(convertType(classModelType, false));
+                     thisStructLine.append(convertType(classModelType, false));
+                  }
+                  argLine.append(" ");
+                  thisStructLine.append(" ");
+
+                  // Note in the case of int lambdas, the last lambda java method
+                  // arg is an int which acts as the opencl gid
+                  // Its value is not used and it is assigned with get_global_id(0)
+                  if (argsCount == (entryPoint.getLambdaActualParamsCount() + 1) &&
+                        (lvi != null) && lvi.getVariableDescriptor().equals("I")) {
+                     StringBuilder assignGid = new StringBuilder();
+                     assignGid.append(lvi.getVariableName());
+                     assignGid.append(" = get_global_id(0)");
+                     assigns.add(assignGid.toString());
+                  }
+
+                  assignLine.append("this->");
+                  assignLine.append(lvi.getVariableName());
+                  assignLine.append(" = ");
+                  assignLine.append(lvi.getVariableName());
+
+                  if (lvi.isArray()) {
+                     argLine.append("*" + lvi.getVariableName());
+                     thisStructLine.append("*" + lvi.getVariableName());
+                  } else {
+                     argLine.append(lvi.getVariableName());
+                     thisStructLine.append(lvi.getVariableName());
+                  }
+
+                  assigns.add(assignLine.toString());
+                  argLines.add(argLine.toString());
+                  thisStruct.add(thisStructLine.toString());
+               }
+
+               argsCount++;
+            }
+         }
+      }
+
       for (ClassModelField field : _entryPoint.getReferencedClassModelFields()) {
          // Field field = _entryPoint.getClassModel().getField(f.getName());
          StringBuilder thisStructLine = new StringBuilder();
@@ -340,6 +463,7 @@ abstract class KernelWriter extends BlockWriter{
                }
             }
          }
+
 
          if (signature.startsWith("[")) {
             argLine.append(type + " ");
@@ -583,9 +707,11 @@ abstract class KernelWriter extends BlockWriter{
          writeMethodBody(mm);
          newLine();
       }
-
+      if (_entryPoint.isKernel()){
       write("__kernel void " + _entryPoint.getMethodModel().getSimpleName() + "(");
-
+      }else{
+       write("  __kernel void run(");
+      }
       in();
       boolean first = true;
       for (String line : argLines) {
