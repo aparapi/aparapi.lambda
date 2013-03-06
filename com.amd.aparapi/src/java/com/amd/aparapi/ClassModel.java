@@ -72,6 +72,8 @@ class ClassModel{
 
       boolean isArray();
 
+      boolean isObject();
+
       int getEnd();
 
       String getVariableName();
@@ -1756,6 +1758,9 @@ class ClassModel{
             @Override public boolean isArray() {
                return (getVariableDescriptor().startsWith("["));
             }
+             @Override public boolean isObject() {
+                 return (getVariableDescriptor().startsWith("L"));
+             }
          }
 
          RealLocalVariableTableEntry(ByteReader _byteReader, int _nameIndex, int _length) {
