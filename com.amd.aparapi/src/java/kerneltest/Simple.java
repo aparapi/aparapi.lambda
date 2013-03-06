@@ -9,8 +9,8 @@ public class Simple {
             int[] in = new int[1024];
             int[] out = new int[1024];
             for(int i=0; i<1024; i++){
-                in[0]=i;
-                out[0]=0;
+                in[i]=i;
+                out[i]=0;
             }
             Device device = Device.firstGPU();
             Range range = device.createRange(100);
@@ -23,7 +23,10 @@ public class Simple {
 
 
             };
-            kernel.execute(100);
+            kernel.execute(1024);
+            for(int i=0; i<64; i++){
+                System.out.println(in[i]+" "+out[i]);
+            }
 
         }
         public static void main(String[] args){
