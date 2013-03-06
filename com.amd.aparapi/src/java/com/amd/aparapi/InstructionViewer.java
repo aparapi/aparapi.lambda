@@ -1069,7 +1069,7 @@ public class InstructionViewer implements Config.InstructionListener{
 
             Entrypoint entrypoint;
             try {
-               entrypoint = instructionViewer.classModel.getEntrypoint();
+               entrypoint = instructionViewer.classModel.getKernelEntrypoint();
                MethodModel method = entrypoint.getMethodModel();
             } catch (AparapiException e) {
                // TODO Auto-generated catch block

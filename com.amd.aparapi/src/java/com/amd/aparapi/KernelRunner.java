@@ -810,7 +810,7 @@ class KernelRunner extends OpenCLRunner{
 
                             classModel = new ClassModel(kernel.getClass());
 
-                        entryPoint = classModel.getEntrypoint(_entrypointName, kernel);
+                        entryPoint = classModel.getKernelEntrypoint(_entrypointName, kernel);
                     } catch (Exception exception) {
                         return warnFallBackAndExecute(_entrypointName, _range, _passes, exception);
                     }

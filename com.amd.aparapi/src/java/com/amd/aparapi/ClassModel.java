@@ -123,35 +123,7 @@ class ClassModel{
 
    private ClassModel superClazz = null;
 
-   /**
-    * Create a ClassModel representing a given Class.
-    * 
-    * The class's classfile must be available from the class's classloader via <code>getClassLoader().getResourceAsStream(name))</code>. 
-    * For dynamic languages creating classes on the fly we may need another approach. 
-    * 
-    * @param _class The class we will extract the model from
-    * @throws ClassParseException
-    */
 
-   //ClassModel(Class<?> _class) throws ClassParseException {
-
-     // parse(_class);
-
-     // Class<?> mySuper = _class.getSuperclass();
-      // Find better way to do this check
-      // The java.lang.Object test is for unit test framework to succeed - should 
-      // not occur in normal use
-    //  if ((mySuper != null) && (!mySuper.getName().equals(Kernel.class.getName()))
-     //       && (!mySuper.getName().equals("java.lang.Object"))) {
-    //    superClazz = new ClassModel(mySuper);
-    //  }
-  //}
-
-   //ClassModel(InputStream _inputStream) throws ClassParseException {
-
-     // parse(_inputStream);
-
-   //}
 
    ClassModel(Class<?> _clazz) throws ClassParseException {
       byte[] _bytes = OpenCLJNI.getJNI().getBytes(_clazz.getName());
@@ -178,7 +150,7 @@ class ClassModel{
    /**
     * Determine if this is the superclass of some other class.
     * 
-    * @param otherClass The class to compare against
+    * @param other The class to compare against
     * @return true if 'this' a superclass of another class   
     */
    boolean isSuperClass(Class<?> other) {
@@ -2427,32 +2399,6 @@ class ClassModel{
 
    private Class<?> clazz;
 
-   /**
-    * We extract the class's classloader and name and delegate to private parse method.
-    * @param _class The class we wish to model
-    * @throws ClassParseException
-    */
-  // void parse(Class<?> _class) throws ClassParseException {
-
-    //  clazz = _class;
-    //  parse(_class.getClassLoader(), _class.getName());
-  // }
-
-   /**
-    * Populate this model by parsing a given classfile from the given classloader.
-    * 
-    * We create a ByteReader (wrapper around the bytes representing the classfile) and pass it to local inner classes to handle the various sections of the class file. 
-    * 
-    * @see ByteReader
-    * @see <a href="http://java.sun.com/docs/books/jvms/second_edition/ClassFileFormat-Java5.pdf">Java 5 Class File Format</a>
-    * @param _classLoader The classloader to access the classfile
-    * @param _className The name of the class to load (we convert '.' to '/' and append ".class" so you don't have to).
-    * @throws ClassParseException
-    */
-  // private void parse(ClassLoader _classLoader, String _className) throws ClassParseException {
-    //  parse(_classLoader.getResourceAsStream(_className.replace('.', '/') + ".class"));
-
-  // }
 
    void parse(InputStream _inputStream) throws ClassParseException {
 
@@ -2631,20 +2577,32 @@ class ClassModel{
       totalStructSize = x;
    }
 
-   Entrypoint getEntrypoint(String _entrypointName, String _descriptor, Object _k) throws AparapiException {
+   Entrypoint getLambdaEntrypoint(String _entrypointName, String _descriptor, Object _k) throws AparapiException {
       MethodModel method = getMethodModel(_entrypointName, _descriptor);
-      return (new Entrypoint(this, method, _k));
+      return (new Entrypoint(this, method, _k, true));
    }
+
+    Entrypoint getKernelEntrypoint(String _entrypointName, String _descriptor, Object _k) throws AparapiException {
+        MethodModel method = getMethodModel(_entrypointName, _descriptor);
+        return (new Entrypoint(this, method, _k, false));
+    }
 
    Class<?> getClassWeAreModelling() {
       return clazz;
    }
 
-   public Entrypoint getEntrypoint(String _entrypointName, Object _k) throws AparapiException {
-      return (getEntrypoint(_entrypointName, "()V", _k));
+   public Entrypoint getKernelEntrypoint(String _entrypointName, Object _k) throws AparapiException {
+      return (getKernelEntrypoint(_entrypointName, "()V", _k));
    }
 
-   public Entrypoint getEntrypoint() throws AparapiException {
-      return (getEntrypoint("run", "()V", null));
+    public Entrypoint getLambdaEntrypoint(String _entrypointName, Object _k) throws AparapiException {
+        return (getLambdaEntrypoint(_entrypointName, "()V", _k));
+    }
+
+   public Entrypoint getKernelEntrypoint() throws AparapiException {
+      return (getKernelEntrypoint("run", "()V", null));
    }
+    public Entrypoint getLambdaEntrypoint() throws AparapiException {
+        return (getLambdaEntrypoint("run", "()V", null));
+    }
 }

@@ -879,7 +879,7 @@ class LambdaRunner extends OpenCLRunner{
          Class lambdaClass = lambdaKernelCall.getLambdaKernelClass();
          ClassModel classModel = new ClassModel(lambdaClass);
 
-         entryPoint = classModel.getEntrypoint(lambdaKernelCall.getLambdaMethodName(), 
+         entryPoint = classModel.getLambdaEntrypoint(lambdaKernelCall.getLambdaMethodName(),
                lambdaKernelCall.getLambdaMethodSignature(), lambdaKernelCall.getLambdaKernelThis());
 
          if ((entryPoint != null) && !entryPoint.shouldFallback()) {

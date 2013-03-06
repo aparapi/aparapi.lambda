@@ -72,6 +72,15 @@ import java.util.logging.Logger;
 
 class Entrypoint{
 
+    private boolean isLambda;
+
+    public boolean isLambda(){
+        return(isLambda);
+    }
+    public boolean isKernel(){
+        return(!isLambda);
+    }
+
    private static Logger logger = Logger.getLogger(Config.getLoggerName());
 
    private List<ClassModel.ClassModelField> referencedClassModelFields = new ArrayList<ClassModel.ClassModelField>();
@@ -473,7 +482,8 @@ class Entrypoint{
       return m;
    }
 
-   Entrypoint(ClassModel _classModel, MethodModel _methodModel, Object _k) throws AparapiException {
+   Entrypoint(ClassModel _classModel, MethodModel _methodModel, Object _k, boolean _isLambda) throws AparapiException {
+      isLambda = _isLambda;
       classModel = _classModel;
       methodModel = _methodModel;
       kernelInstance = _k;
@@ -575,12 +585,24 @@ class Entrypoint{
 
             for (Instruction instruction = methodModel.getPCHead(); instruction != null; instruction = instruction.getNextPC()) {
 
+
+
+
+
                if (instruction instanceof AssignToArrayElement) {
                   AssignToArrayElement assignment = (AssignToArrayElement) instruction;
 
                   Instruction arrayRef = assignment.getArrayRef();
                   // AccessField here allows instance and static array refs
-                  if (arrayRef instanceof AccessField) {
+                   if (isLambda && arrayRef instanceof I_GETFIELD) {
+                       I_GETFIELD getField = (I_GETFIELD) arrayRef;
+                       FieldEntry field = getField.getConstantPoolFieldEntry();
+                       String assignedArrayFieldName = field.getNameAndTypeEntry().getNameUTF8Entry().getUTF8();
+                       arrayFieldAssignments.add(assignedArrayFieldName);
+                       referencedFieldNames.add(assignedArrayFieldName);
+
+                   }
+                  if (!isLambda && arrayRef instanceof AccessField) {
                      AccessField getField = (AccessField) arrayRef;
                      FieldEntry field = getField.getConstantPoolFieldEntry();
                      String assignedArrayFieldName = field.getNameAndTypeEntry().getNameUTF8Entry().getUTF8();
@@ -593,7 +615,16 @@ class Entrypoint{
 
                   Instruction arrayRef = access.getArrayRef();
                   // AccessField here allows instance and static array refs
-                  if (arrayRef instanceof AccessField) {
+
+                   if (isLambda && arrayRef instanceof I_GETFIELD) {
+                       I_GETFIELD getField = (I_GETFIELD) arrayRef;
+                       FieldEntry field = getField.getConstantPoolFieldEntry();
+                       String accessedArrayFieldName = field.getNameAndTypeEntry().getNameUTF8Entry().getUTF8();
+                       arrayFieldAccesses.add(accessedArrayFieldName);
+                       referencedFieldNames.add(accessedArrayFieldName);
+
+                   }
+                   if (!isLambda && arrayRef instanceof AccessField) {
                      AccessField getField = (AccessField) arrayRef;
                      FieldEntry field = getField.getConstantPoolFieldEntry();
                      String accessedArrayFieldName = field.getNameAndTypeEntry().getNameUTF8Entry().getUTF8();
@@ -687,7 +718,7 @@ class Entrypoint{
                } else if (instruction instanceof I_INVOKEVIRTUAL) {
                   I_INVOKEVIRTUAL invokeInstruction = (I_INVOKEVIRTUAL) instruction;
                   MethodEntry methodEntry = invokeInstruction.getConstantPoolMethodEntry();
-                  if (Kernel.isMappedMethod(methodEntry)) { //only do this for intrinsics
+                  if ((!isLambda && Kernel.isMappedMethod(methodEntry))||(isLambda && KernelRunner.isMappedMethod(methodEntry))) { //only do this for intrinsics
 
                      if (Kernel.usesAtomic32(methodEntry)) {
                         setRequiresAtomics32Pragma(true);
@@ -867,7 +898,7 @@ class Entrypoint{
     */
    MethodModel getCallTarget(MethodEntry _methodEntry, boolean _isSpecial) {
       ClassModelMethod target = getClassModel().getMethod(_methodEntry, _isSpecial);
-      boolean isMapped = Kernel.isMappedMethod(_methodEntry);
+      boolean isMapped = (!isLambda && Kernel.isMappedMethod(_methodEntry)) || (isLambda && KernelRunner.isMappedMethod(_methodEntry));
 
       if (logger.isLoggable(Level.FINE) && target == null) {
          logger.fine("Did not find call target: " + _methodEntry + " in " + getClassModel().getClassWeAreModelling().getName()
