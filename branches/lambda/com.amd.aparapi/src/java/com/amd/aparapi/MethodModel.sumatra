@@ -37,8 +37,23 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
  */
 package com.amd.aparapi;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import com.amd.aparapi.ClassModel.ClassModelMethod;
 import com.amd.aparapi.ClassModel.ConstantPool;
+import com.amd.aparapi.ClassModel.AttributePool.CodeEntry;
 import com.amd.aparapi.ClassModel.ConstantPool.FieldEntry;
 import com.amd.aparapi.ClassModel.ConstantPool.MethodReferenceEntry;
 import com.amd.aparapi.ClassModel.ConstantPool.MethodReferenceEntry.Arg;
@@ -86,20 +101,6 @@ import com.amd.aparapi.InstructionSet.MultiAssignInstruction;
 import com.amd.aparapi.InstructionSet.New;
 import com.amd.aparapi.InstructionSet.Return;
 import com.amd.aparapi.InstructionSet.StoreSpec;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 class MethodModel{
    static Logger logger = Logger.getLogger(Config.getLoggerName());
@@ -285,7 +286,7 @@ class MethodModel{
                MethodCall methodCall = (MethodCall) instruction;
 
                MethodReferenceEntry methodReferenceEntry = methodCall.getConstantPoolMethodEntry();
-               if (!Kernel.isMappedMethod(methodReferenceEntry)) { // we will allow trusted methods to violate this rule
+               if (!KernelRunner.isMappedMethod(methodReferenceEntry)) { // we will allow trusted methods to violate this rule
                   for (Arg arg : methodReferenceEntry.getArgs()) {
                      if (arg.isArray()) {
                         throw new ClassParseException(instruction, ClassParseException.TYPE.METHODARRAYARG);
@@ -330,6 +331,10 @@ class MethodModel{
     * have the branch node (at 100) added to it's forwardUnconditional list.
     * 
     * @see InstructionSet.Branch#getTarget()
+    * @see Instruction#getForwardConditionalTargets()
+    * @see Instruction#getForwardUnconditionalTargets()
+    * @see Instruction#getReverseConditionalTargets()
+    * @see Instruction#getReverseUnconditionalTargets()
     */
    void buildBranchGraphs(Map<Integer, Instruction> pcMap) {
 
@@ -1408,11 +1413,11 @@ class MethodModel{
             if (prev instanceof AccessLocalVariable) {
                FieldEntry field = ((AssignToInstanceField) instruction).getConstantPoolFieldEntry();
                accessedFieldName = field.getNameAndTypeEntry().getNameUTF8Entry().getUTF8();
-
+               
                if (logger.isLoggable(Level.FINE)) {
                   logger.fine("Looking for setter variable: " + methodName + " accessedFieldName: " + accessedFieldName + ", varNameCandidateCamelCased: " + varNameCandidateCamelCased);
                }
-
+               
                if (accessedFieldName.equals(varNameCandidateCamelCased)) {
 
                   // Verify field type matches setter arg type
@@ -1559,7 +1564,7 @@ class MethodModel{
             list.add(vars[0]);
 
          }
-
+                  
          for (int i = 0; i < args.length; i++) {
             if (args[i].startsWith("[")) {
                argsAsStoreSpecs[i + thisOffset] = StoreSpec.A;
@@ -1569,8 +1574,8 @@ class MethodModel{
                argsAsStoreSpecs[i + thisOffset] = StoreSpec.valueOf(args[i].substring(0, 1));
             }
             vars[i + thisOffset] = new Var(argsAsStoreSpecs[i + thisOffset], i + thisOffset, 0, true);
-
-            // Preserve actual object type
+            
+            // Preserve actual object type 
             if (argsAsStoreSpecs[i + thisOffset] == StoreSpec.O || argsAsStoreSpecs[i + thisOffset] == StoreSpec.A) {
                vars[i + thisOffset].descriptor = args[i];
             }
@@ -1651,10 +1656,19 @@ class MethodModel{
    private void init(ClassModelMethod _method) throws AparapiException {
       try {
          method = _method;
+         
+         assert method != null : "method should not be null";
+         
          expressionList = new ExpressionList(this);
-
+         
+         assert expressionList != null : "expressionList should not be null";
+         
          // check if we have any exception handlers
-         int exceptionsSize = method.getCodeEntry().getExceptionPoolEntries().size();
+         CodeEntry c = method.getCodeEntry();
+         
+         assert c != null : "should not be null";
+         
+         int exceptionsSize = c.getExceptionPoolEntries().size();
          if (exceptionsSize > 0) {
             if (logger.isLoggable(Level.FINE)) {
                logger.fine("exception size for " + method + " = " + exceptionsSize);
@@ -1671,15 +1685,25 @@ class MethodModel{
 
          LocalVariableTableEntry<LocalVariableInfo> localVariableTableEntry = method.getLocalVariableTableEntry();
 
-         if (localVariableTableEntry == null) {
+         if (localVariableTableEntry == null || method.isSynthetic()) {
             localVariableTableEntry = new FakeLocalVariableTableEntry(pcMap, method);
 
             method.setLocalVariableTableEntry(localVariableTableEntry);
-            logger.info("Method "
-                  + method.getName()
-                  + method.getDescriptor()
-                  + " does not contain a LocalVariableTable entry (source not compiled with -g) aparapi create a synthetic table based on bytecode");
+            logger.info("Method " + method
+                  + " does not contain a LocalVariableTable entry (source not compiled with -g) aparapi will attempt to create a synthetic table based on bytecode. This is experimental!!");
          }
+         
+         if (logger.isLoggable(Level.FINE)) {
+            // Dump out all the instructions
+            System.out.println("MethodModel.init of " + method);
+
+            Iterator<Instruction> instIterator = pcMap.values().iterator();
+            while(instIterator.hasNext()) {
+               Instruction instr = instIterator.next();
+               System.out.println("  Inst = " + instr);
+            }
+         }
+                  
 
          // pass #2 build branch graph
          buildBranchGraphs(pcMap);
