@@ -422,7 +422,7 @@ public class OpenCLDevice extends Device{
     final ConcurrentHashMap<Class, Boolean> lambdaRunnerCacheEntryValid = new ConcurrentHashMap<Class, Boolean>();
     private static Logger logger = Logger.getLogger(Config.getLoggerName());
 
-    public void forEach(int jobSize, IntConsumer intFunctionSAM) {
+    public Device forEach(int jobSize, IntConsumer intFunctionSAM) {
 
         // Note it is a new Block object each time
 
@@ -447,7 +447,7 @@ public class OpenCLDevice extends Device{
                 new JavaDevice().forEach(jobSize, intFunctionSAM);
             }
 
-            return;
+            return this;
 
         } catch (AparapiException e) {
             System.err.println(e);
@@ -468,7 +468,7 @@ public class OpenCLDevice extends Device{
 
             new JavaDevice().forEach(jobSize, intFunctionSAM);
         }
-
+        return(this);
 
     }
 

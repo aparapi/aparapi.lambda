@@ -125,5 +125,5 @@ public abstract class Device{
       return (Range.create3D(this, _globalWidth, _globalHeight, _globalDepth, _localWidth, _localHeight, _localDepth));
    }
 
-   public abstract void forEach(int _range, IntConsumer _intConsumer) ;
+   public abstract Device forEach(int _range, IntConsumer _intConsumer) ;
 }

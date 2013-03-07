@@ -13,7 +13,7 @@ public class JavaDevice extends Device{
         }
     }
 
-    public void forEach(int _range, final IntConsumer _intConsumer) {
+    public Device forEach(int _range, final IntConsumer _intConsumer) {
         final int threads = Runtime.getRuntime().availableProcessors();
         final CyclicBarrier barrier = new CyclicBarrier(threads+1);
         for (int t=0; t<threads; t++){
@@ -26,7 +26,7 @@ public class JavaDevice extends Device{
             }).start();
         }
         wait(barrier);
-
+        return(this);
     }
 
 }
