@@ -1,7 +1,9 @@
 @echo off
 
 java ^
-  -Djava.library.path=..\..\com.amd.aparapi.jni\dist;..\third-party\jogamp ^
+  -agentpath:../../com.amd.aparapi.jni/dist/aparapi_x86_64.dll ^
+  -Dcom.amd.aparapi.useAgent=true ^
+  -Djava.library.path=..\third-party\jogamp ^
   -Dcom.amd.aparapi.executionMode=%1 ^
   -Dcom.amd.aparapi.enableProfiling=false ^
   -Dcom.amd.aparapi.enableShowGeneratedOpenCL=true ^
