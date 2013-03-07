@@ -402,7 +402,7 @@ class OpenCLRunner {
      *
      * @author gfrost
      */
-    @UsedByJNICode public static final int JNI_FLAG_CLASSIC_KERNEL = 1 << 3;
+    @UsedByJNICode public static final int JNI_FLAG_CLASSIC_KERNEL = 1 << 4;
 
     /**
      * This 'bit' indicates that we wish to enable verbose JNI layer messages to stderr.<br/>
