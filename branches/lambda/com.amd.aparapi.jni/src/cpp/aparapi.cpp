@@ -69,6 +69,7 @@ class Range{
          offsets(NULL),
          globalDims(NULL),
          localDims(NULL){
+            config->in("Range::Range()");
             if (rangeClazz ==NULL){
                jclass rangeClazz = jenv->GetObjectClass(range); 
                globalSize_0_FieldID = jenv->GetFieldID(rangeClazz, "globalSize_0", "I"); ASSERT_FIELD(globalSize_0_);
@@ -108,8 +109,10 @@ class Range{
                }
 
             }
+            config->out("Range::Range()");
          }
       ~Range(){
+         config->in("Range::~Range()");
          if (offsets!= NULL){
             delete offsets;
          }
@@ -119,6 +122,7 @@ class Range{
          if (localDims!= NULL){
             delete localDims;
          }
+         config->out("Range::~Range()");
       }
 };
 jclass Range::rangeClazz = (jclass)0;
@@ -461,6 +465,7 @@ class JNIContext{
 KernelArg::KernelArg(JNIEnv *jenv, JNIContext *jniContext, jobject argObj):
    jniContext(jniContext),
    argObj(argObj){
+      config->in("KernelArg::KernelArg");
       javaArg = jenv->NewGlobalRef(argObj);   // save a global ref to the java Arg Object
       if (argClazz == 0){
          jclass c = jenv->GetObjectClass(argObj); 
@@ -487,130 +492,99 @@ KernelArg::KernelArg(JNIEnv *jenv, JNIContext *jniContext, jobject argObj):
       if (isArray()){
          arrayBuffer= new ArrayBuffer();
       }
+      config->out("KernelArg::KernelArg");
    }
 
 cl_int KernelArg::setLocalBufferArg(JNIEnv *jenv, int argIdx, int argPos){
-   if (config->isVerbose()){
-       fprintf(stderr, "ISLOCAL, clSetKernelArg(jniContext->kernel, %d, %d, NULL);\n", argIdx, (int) arrayBuffer->lengthInBytes);
-   }
-   return(clSetKernelArg(jniContext->kernel, argPos, (int)arrayBuffer->lengthInBytes, NULL));
+   config->in("KernelArg::setLocalBufferArg()");
+   config->indentf("ISLOCAL, clSetKernelArg(jniContext->kernel, %d, %d, NULL);\n", argIdx, (int) arrayBuffer->lengthInBytes);
+   cl_int status = clSetKernelArg(jniContext->kernel, argPos, (int)arrayBuffer->lengthInBytes, NULL);
+   config->out("KernelArg::setLocalBufferArg()");
+   return(status);
 }
 cl_int KernelArg::setPrimitiveClassicArg(JNIEnv *jenv, int argIdx, int argPos){
+   config->in("KernelArg::setPrimitiveKernelArg()");
    cl_int status = CL_SUCCESS;
 
    if (isFloat()){
       if (isStatic()){
          jfieldID fieldID = jenv->GetStaticFieldID(jniContext->kernelClass, name, "F");
          jfloat f = jenv->GetStaticFloatField(jniContext->kernelClass, fieldID);
-         if (config->isVerbose()){
-            fprintf(stderr, "clSetKernelArg static primitive float '%s' index=%d pos=%d value=%f\n",
-                 name, argIdx, argPos, f); 
-         }
+         config->indentf("clSetKernelArg static primitive float '%s' index=%d pos=%d value=%f\n", name, argIdx, argPos, f); 
          status = clSetKernelArg(jniContext->kernel, argPos, sizeof(jfloat), &f);
       }else{
          jfieldID fieldID = jenv->GetFieldID(jniContext->kernelClass, name, "F");
          jfloat f = jenv->GetFloatField(jniContext->kernelObject, fieldID);
-         if (config->isVerbose()){
-            fprintf(stderr, "clSetKernelArg primitive float '%s' index=%d pos=%d value=%f\n",
-                 name, argIdx, argPos, f); 
-         }
+         config->indentf("clSetKernelArg primitive float '%s' index=%d pos=%d value=%f\n", name, argIdx, argPos, f); 
          status = clSetKernelArg(jniContext->kernel, argPos, sizeof(jfloat), &f);
       }
    }else if (isInt()){
       if (isStatic()){
          jfieldID fieldID = jenv->GetStaticFieldID(jniContext->kernelClass, name, "I");
          jint i = jenv->GetStaticIntField(jniContext->kernelClass, fieldID);
-         if (config->isVerbose()){
-            fprintf(stderr, "clSetKernelArg static primitive int '%s' index=%d pos=%d value=%d\n",
-                 name, argIdx, argPos, i); 
-         }
+         config->indentf("clSetKernelArg static primitive int '%s' index=%d pos=%d value=%d\n", name, argIdx, argPos, i); 
          status = clSetKernelArg(jniContext->kernel, argPos, sizeof(jint), &i);
       }else{
          jfieldID fieldID = jenv->GetFieldID(jniContext->kernelClass, name, "I");
          jint i = jenv->GetIntField(jniContext->kernelObject, fieldID);
-         if (config->isVerbose()){
-            fprintf(stderr, "clSetKernelArg primitive int '%s' index=%d pos=%d value=%d\n",
-                 name, argIdx, argPos, i); 
-         }
+         config->indentf("clSetKernelArg primitive int '%s' index=%d pos=%d value=%d\n", name, argIdx, argPos, i); 
          status = clSetKernelArg(jniContext->kernel, argPos, sizeof(jint), &i);
       }
    }else if (isBoolean()){
       if (isStatic()){
          jfieldID fieldID = jenv->GetStaticFieldID(jniContext->kernelClass, name, "Z");
          jboolean z = jenv->GetStaticBooleanField(jniContext->kernelClass, fieldID);
-         if (config->isVerbose()){
-            fprintf(stderr, "clSetKernelArg static primitive boolean '%s' index=%d pos=%d value=%d\n",
-                 name, argIdx, argPos, z); 
-         }
+         config->indentf("clSetKernelArg static primitive boolean '%s' index=%d pos=%d value=%d\n", name, argIdx, argPos, z); 
          status = clSetKernelArg(jniContext->kernel, argPos, sizeof(jboolean), &z);
       }else{
          jfieldID fieldID = jenv->GetFieldID(jniContext->kernelClass, name, "Z");
          jboolean z = jenv->GetBooleanField(jniContext->kernelObject, fieldID);
-         if (config->isVerbose()){
-            fprintf(stderr, "clSetKernelArg primitive boolean '%s' index=%d pos=%d value=%d\n",
-                 name, argIdx, argPos, z); 
-         }
+         config->indentf("clSetKernelArg primitive boolean '%s' index=%d pos=%d value=%d\n", name, argIdx, argPos, z); 
          status = clSetKernelArg(jniContext->kernel, argPos, sizeof(jboolean), &z);
       }
    }else if (isByte()){
       if (isStatic()){
          jfieldID fieldID = jenv->GetStaticFieldID(jniContext->kernelClass, name, "B");
          jbyte b = jenv->GetStaticByteField(jniContext->kernelClass, fieldID);
-         if (config->isVerbose()){
-            fprintf(stderr, "clSetKernelArg static primitive byte '%s' index=%d pos=%d value=%d\n",
-                 name, argIdx, argPos, b); 
-         }
+         config->indentf("clSetKernelArg static primitive byte '%s' index=%d pos=%d value=%d\n", name, argIdx, argPos, b); 
          status = clSetKernelArg(jniContext->kernel, argPos, sizeof(jbyte), &b);
       }else{
          jfieldID fieldID = jenv->GetFieldID(jniContext->kernelClass, name, "B");
          jbyte b = jenv->GetByteField(jniContext->kernelObject, fieldID);
-         if (config->isVerbose()){
-            fprintf(stderr, "clSetKernelArg primitive byte '%s' index=%d pos=%d value=%d\n",
-                 name, argIdx, argPos, b); 
-         }
+         config->indentf("clSetKernelArg primitive byte '%s' index=%d pos=%d value=%d\n", name, argIdx, argPos, b); 
          status = clSetKernelArg(jniContext->kernel, argPos, sizeof(jbyte), &b);
       }
    }else if (isLong()){
       if (isStatic()){
          jfieldID fieldID = jenv->GetStaticFieldID(jniContext->kernelClass, name, "J");
          jlong j = jenv->GetStaticLongField(jniContext->kernelClass, fieldID);
-         if (config->isVerbose()){
-            fprintf(stderr, "clSetKernelArg static primitive long '%s' index=%d pos=%d value=%ld\n",
-                 name, argIdx, argPos, (signed long)j); 
-         }
+         config->indentf("clSetKernelArg static primitive long '%s' index=%d pos=%d value=%ld\n", name, argIdx, argPos, (signed long)j); 
          status = clSetKernelArg(jniContext->kernel, argPos, sizeof(jlong), &j);
       }else{
          jfieldID fieldID = jenv->GetFieldID(jniContext->kernelClass, name, "J");
          jlong j = jenv->GetLongField(jniContext->kernelObject, fieldID);
-         if (config->isVerbose()){
-            fprintf(stderr, "clSetKernelArg primitive long '%s' index=%d pos=%d value=%ld\n",
-                 name, argIdx, argPos, (signed long)j); 
-         }
+         config->indentf("clSetKernelArg primitive long '%s' index=%d pos=%d value=%ld\n", name, argIdx, argPos, (signed long)j); 
          status = clSetKernelArg(jniContext->kernel, argPos, sizeof(jlong), &j);
       }
    }else if (isDouble()){
       if (isStatic()){
          jfieldID fieldID = jenv->GetStaticFieldID(jniContext->kernelClass, name, "D");
          jdouble d  = jenv->GetStaticDoubleField(jniContext->kernelClass, fieldID);
-         if (config->isVerbose()){
-            fprintf(stderr, "clSetKernelArg static primitive long '%s' index=%d pos=%d value=%lf\n",
-                 name, argIdx, argPos, d); 
-         }
+         config->indentf("clSetKernelArg static primitive long '%s' index=%d pos=%d value=%lf\n", name, argIdx, argPos, d); 
          status = clSetKernelArg(jniContext->kernel, argPos, sizeof(jdouble), &d);
       }else{
          jfieldID fieldID = jenv->GetFieldID(jniContext->kernelClass, name, "D");
          jdouble d = jenv->GetDoubleField(jniContext->kernelObject, fieldID);
-         if (config->isVerbose()){
-            fprintf(stderr, "clSetKernelArg primitive long '%s' index=%d pos=%d value=%lf\n",
-                 name, argIdx, argPos, d); 
-         }
+         config->indentf("clSetKernelArg primitive long '%s' index=%d pos=%d value=%lf\n", name, argIdx, argPos, d); 
          status = clSetKernelArg(jniContext->kernel, argPos, sizeof(jdouble), &d);
       }
    }
+   config->out("KernelArg::setPrimitiveKernelArg()");
    return status;
 }
 
 cl_int KernelArg::setPrimitiveLambdaArg(JNIEnv *jenv, int argIdx, int argPos){
+   config->in("KernelArg::setPrimitiveLambdaArg()");
    cl_int status = CL_SUCCESS;
 
    // Get the class of the object holding this field
@@ -620,111 +594,76 @@ cl_int KernelArg::setPrimitiveLambdaArg(JNIEnv *jenv, int argIdx, int argPos){
       if (isStatic()){
          jfieldID fieldID = jenv->GetStaticFieldID(fieldHolderClass, name, "F");
          jfloat f = jenv->GetStaticFloatField(fieldHolderClass, fieldID);
-         if (config->isVerbose()){
-            fprintf(stderr, "clSetKernelArg static primitive float '%s' index=%d pos=%d value=%f\n",
-                 name, argIdx, argPos, f); 
-         }
+         config->indentf("clSetKernelArg static primitive float '%s' index=%d pos=%d value=%f\n", name, argIdx, argPos, f); 
          status = clSetKernelArg(jniContext->kernel, argPos, sizeof(jfloat), &f);
       }else{
          jfieldID fieldID = jenv->GetFieldID(fieldHolderClass, name, "F");
          jfloat f = jenv->GetFloatField(fieldHolder, fieldID);
-         if (config->isVerbose()){
-            fprintf(stderr, "clSetKernelArg primitive float '%s' index=%d pos=%d value=%f\n",
-                 name, argIdx, argPos, f); 
-         }
+         config->indentf("clSetKernelArg primitive float '%s' index=%d pos=%d value=%f\n", name, argIdx, argPos, f); 
          status = clSetKernelArg(jniContext->kernel, argPos, sizeof(jfloat), &f);
       }
    }else if (isInt()){
       if (isStatic()){
          jfieldID fieldID = jenv->GetStaticFieldID(fieldHolderClass, name, "I");
          jint i = jenv->GetStaticIntField(fieldHolderClass, fieldID);
-         if (config->isVerbose()){
-            fprintf(stderr, "clSetKernelArg static primitive int '%s' index=%d pos=%d value=%d\n",
-                 name, argIdx, argPos, i); 
-         }
+         config->indentf("clSetKernelArg static primitive int '%s' index=%d pos=%d value=%d\n", name, argIdx, argPos, i); 
          status = clSetKernelArg(jniContext->kernel, argPos, sizeof(jint), &i);
       }else{
          jfieldID fieldID = jenv->GetFieldID(fieldHolderClass, name, "I");
          jint i = jenv->GetIntField(fieldHolder, fieldID);
-         if (config->isVerbose()){
-            fprintf(stderr, "clSetKernelArg primitive int '%s' index=%d pos=%d value=%d\n",
-                 name, argIdx, argPos, i); 
-         }
+         config->indentf("clSetKernelArg primitive int '%s' index=%d pos=%d value=%d\n", name, argIdx, argPos, i); 
          status = clSetKernelArg(jniContext->kernel, argPos, sizeof(jint), &i);
       }
    }else if (isBoolean()){
       if (isStatic()){
          jfieldID fieldID = jenv->GetStaticFieldID(fieldHolderClass, name, "Z");
          jboolean z = jenv->GetStaticBooleanField(fieldHolderClass, fieldID);
-         if (config->isVerbose()){
-            fprintf(stderr, "clSetKernelArg static primitive boolean '%s' index=%d pos=%d value=%d\n",
-                 name, argIdx, argPos, z); 
-         }
+         config->indentf("clSetKernelArg static primitive boolean '%s' index=%d pos=%d value=%d\n", name, argIdx, argPos, z); 
          status = clSetKernelArg(jniContext->kernel, argPos, sizeof(jboolean), &z);
       }else{
          jfieldID fieldID = jenv->GetFieldID(fieldHolderClass, name, "Z");
          jboolean z = jenv->GetBooleanField(fieldHolder, fieldID);
-         if (config->isVerbose()){
-            fprintf(stderr, "clSetKernelArg primitive boolean '%s' index=%d pos=%d value=%d\n",
-                 name, argIdx, argPos, z); 
-         }
+         config->indentf("clSetKernelArg primitive boolean '%s' index=%d pos=%d value=%d\n", name, argIdx, argPos, z); 
          status = clSetKernelArg(jniContext->kernel, argPos, sizeof(jboolean), &z);
       }
    }else if (isByte()){
       if (isStatic()){
          jfieldID fieldID = jenv->GetStaticFieldID(fieldHolderClass, name, "B");
          jbyte b = jenv->GetStaticByteField(fieldHolderClass, fieldID);
-         if (config->isVerbose()){
-            fprintf(stderr, "clSetKernelArg static primitive byte '%s' index=%d pos=%d value=%d\n",
-                 name, argIdx, argPos, b); 
-         }
+         config->indentf("clSetKernelArg static primitive byte '%s' index=%d pos=%d value=%d\n", name, argIdx, argPos, b); 
          status = clSetKernelArg(jniContext->kernel, argPos, sizeof(jbyte), &b);
       }else{
          jfieldID fieldID = jenv->GetFieldID(fieldHolderClass, name, "B");
          jbyte b = jenv->GetByteField(fieldHolder, fieldID);
-         if (config->isVerbose()){
-            fprintf(stderr, "clSetKernelArg primitive byte '%s' index=%d pos=%d value=%d\n",
-                 name, argIdx, argPos, b); 
-         }
+         config->indentf("clSetKernelArg primitive byte '%s' index=%d pos=%d value=%d\n", name, argIdx, argPos, b); 
          status = clSetKernelArg(jniContext->kernel, argPos, sizeof(jbyte), &b);
       }
    }else if (isLong()){
       if (isStatic()){
          jfieldID fieldID = jenv->GetStaticFieldID(fieldHolderClass, name, "J");
          jlong j = jenv->GetStaticLongField(fieldHolderClass, fieldID);
-         if (config->isVerbose()){
-            fprintf(stderr, "clSetKernelArg static primitive long '%s' index=%d pos=%d value=%ld\n",
-                 name, argIdx, argPos, (signed long)j); 
-         }
+         config->indentf("clSetKernelArg static primitive long '%s' index=%d pos=%d value=%ld\n", name, argIdx, argPos, (signed long)j); 
          status = clSetKernelArg(jniContext->kernel, argPos, sizeof(jlong), &j);
       }else{
          jfieldID fieldID = jenv->GetFieldID(fieldHolderClass, name, "J");
          jlong j = jenv->GetLongField(fieldHolder, fieldID);
-         if (config->isVerbose()){
-            fprintf(stderr, "clSetKernelArg primitive long '%s' index=%d pos=%d value=%ld\n",
-                 name, argIdx, argPos, (signed long)j); 
-         }
+         config->indentf("clSetKernelArg primitive long '%s' index=%d pos=%d value=%ld\n", name, argIdx, argPos, (signed long)j); 
          status = clSetKernelArg(jniContext->kernel, argPos, sizeof(jlong), &j);
       }
    }else if (isDouble()){
       if (isStatic()){
          jfieldID fieldID = jenv->GetStaticFieldID(fieldHolderClass, name, "D");
          jdouble d  = jenv->GetStaticDoubleField(fieldHolderClass, fieldID);
-         if (config->isVerbose()){
-            fprintf(stderr, "clSetKernelArg static primitive long '%s' index=%d pos=%d value=%lf\n",
-                 name, argIdx, argPos, d); 
-         }
+         config->indentf("clSetKernelArg static primitive long '%s' index=%d pos=%d value=%lf\n", name, argIdx, argPos, d); 
          status = clSetKernelArg(jniContext->kernel, argPos, sizeof(jdouble), &d);
       }else{
          jfieldID fieldID = jenv->GetFieldID(fieldHolderClass, name, "D");
          jdouble d = jenv->GetDoubleField(fieldHolder, fieldID);
-         if (config->isVerbose()){
-            fprintf(stderr, "clSetKernelArg primitive long '%s' index=%d pos=%d value=%lf\n",
-                 name, argIdx, argPos, d); 
-         }
+         config->indentf("clSetKernelArg primitive long '%s' index=%d pos=%d value=%lf\n", name, argIdx, argPos, d); 
          status = clSetKernelArg(jniContext->kernel, argPos, sizeof(jdouble), &d);
       }
    }
+   config->out("KernelArg::setPrimitiveLambdaArg()");
    return status;
 }
 
@@ -733,6 +672,7 @@ JNI_JAVA(jint, OpenCLRunner, disposeJNI)
       if (config== NULL){
          config = new Config(jenv);
       }
+      config->in("disposeJNI()");
       cl_int status = CL_SUCCESS;
       JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);
       if (jniContext != NULL){
@@ -740,6 +680,7 @@ JNI_JAVA(jint, OpenCLRunner, disposeJNI)
          delete jniContext;
          jniContext = NULL;
       }
+      config->out("<- disposeJNI()");
       return(status);
    }
 
@@ -856,42 +797,33 @@ cl_int profile(ProfileInfo *profileInfo, cl_event *event, jint type, char* name,
 //The field may have been re-assigned by the Java code to NULL or another instance. 
 //If we detect a change then we discard the previous cl_mem buffer, the caller will detect that the buffers are null and will create new cl_mem buffers. 
 jint updateNonPrimitiveReferences(JNIEnv *jenv, jobject jobj, JNIContext* jniContext) {
+   config->in("updateNonPrimitiveReferences()");         
    cl_int status = CL_SUCCESS;
    if (jniContext != NULL){
       for (jint i=0; i<jniContext->argc; i++){ 
          KernelArg *arg=jniContext->args[i];
          arg->syncType(jenv); // make sure that the JNI arg reflects the latest type info from the instance.  For example if the buffer is tagged as explicit and needs to be pushed
 
-         if (config->isVerbose()){
-            fprintf(stderr, "got type for %s: %08x\n", arg->name, arg->type);
-         }
+         config->indentf("got type for %s: %08x\n", arg->name, arg->type);
          if (!arg->isPrimitive()) {
             // Following used for all primitive arrays, object arrays and nio Buffers
             jarray newRef = (jarray)jenv->GetObjectField(arg->javaArg, KernelArg::javaArrayFieldID);
-            if (config->isVerbose()){
-               fprintf(stderr, "testing for Resync javaArray %s: old=%p, new=%p\n", arg->name, arg->arrayBuffer->javaArray, newRef);         
-            }
+            config->indentf("testing for Resync javaArray %s: old=%p, new=%p\n", arg->name, arg->arrayBuffer->javaArray, newRef);         
 
             if (!jenv->IsSameObject(newRef, arg->arrayBuffer->javaArray)) {
-               if (config->isVerbose()){
-                  fprintf(stderr, "Resync javaArray for %s: %p  %p\n", arg->name, newRef, arg->arrayBuffer->javaArray);         
-               }
+               config->indentf("Resync javaArray for %s: %p  %p\n", arg->name, newRef, arg->arrayBuffer->javaArray);         
                // Free previous ref if any
                if (arg->arrayBuffer->javaArray != NULL) {
                   jenv->DeleteWeakGlobalRef((jweak) arg->arrayBuffer->javaArray);
-                  if (config->isVerbose()){
-                     fprintf(stderr, "DeleteWeakGlobalRef for %s: %p\n", arg->name, arg->arrayBuffer->javaArray);         
-                  }
+                  config->indentf("DeleteWeakGlobalRef for %s: %p\n", arg->name, arg->arrayBuffer->javaArray);         
                }
 
                // need to free opencl buffers, run will reallocate later
                if (arg->arrayBuffer->mem != 0) {
-                  //fprintf(stderr, "-->releaseMemObject[%d]\n", i);
                   if (config->isTrackingOpenCLResources()){
                      memList.remove(arg->arrayBuffer->mem,__LINE__, (char *)__FILE__);
                   }
                   status = clReleaseMemObject((cl_mem)arg->arrayBuffer->mem);
-                  //fprintf(stderr, "<--releaseMemObject[%d]\n", i);
                   ASSERT_CL("clReleaseMemObject()");
                   arg->arrayBuffer->mem = (cl_mem)0;
                }
@@ -902,10 +834,7 @@ jint updateNonPrimitiveReferences(JNIEnv *jenv, jobject jobj, JNIContext* jniCon
 
                if (newRef != NULL) {
                   arg->arrayBuffer->javaArray = (jarray)jenv->NewWeakGlobalRef((jarray)newRef);
-                  if (config->isVerbose()){
-                     fprintf(stderr, "NewWeakGlobalRef for %s, set to %p\n", arg->name,
-                           arg->arrayBuffer->javaArray);         
-                  }
+                  config->indentf("NewWeakGlobalRef for %s, set to %p\n", arg->name, arg->arrayBuffer->javaArray); 
                } else {
                   arg->arrayBuffer->javaArray = NULL;
                }
@@ -913,13 +842,12 @@ jint updateNonPrimitiveReferences(JNIEnv *jenv, jobject jobj, JNIContext* jniCon
                // Save the lengthInBytes which was set on the java side
                arg->syncSizeInBytes(jenv);
 
-               if (config->isVerbose()){
-                  fprintf(stderr, "updateNonPrimitiveReferences, args[%d].lengthInBytes=%d\n", i, arg->arrayBuffer->lengthInBytes);
-               }
+               config->indentf("updateNonPrimitiveReferences, args[%d].lengthInBytes=%d\n", i, arg->arrayBuffer->lengthInBytes);
             } // object has changed
          }
       } // for each arg
    } // if jniContext != NULL
+   config->out("updateNonPrimitiveReferences()");         
    return(status);
 }
 
@@ -928,6 +856,7 @@ jint updateNonPrimitiveReferences(JNIEnv *jenv, jobject jobj, JNIContext* jniCon
 JNI_JAVA(jint, LambdaRunner, updateLambdaBlockJNI)
    (JNIEnv *jenv, jobject jobj, jlong jniContextHandle, jobject newHolder, jint argc) {
 
+   config->in("LambdaRunner::updateLambdaBlockJNI()"); 
 	JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);
 
 	for(int argIdx=0; argIdx<argc; argIdx++) {
@@ -937,6 +866,7 @@ JNI_JAVA(jint, LambdaRunner, updateLambdaBlockJNI)
         jniContext->args[argIdx]->fieldHolder = jenv->NewGlobalRef(newHolder);
 	}
 
+   config->out("LambdaRunner::updateLambdaBlockJNI()"); 
 	return 0;
 }
 
@@ -945,12 +875,12 @@ JNI_JAVA(jint, KernelRunner, runKernelJNI)
       if (config== NULL){
          config = new Config(jenv);
       }
+      config->in("KernelRunner::runKernelJNI()"); 
 
       Range range(jenv, _range);
 
       cl_int status = CL_SUCCESS;
       JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);
-
 
       if (jniContext->firstRun && config->isProfilingEnabled()){
          cl_event firstEvent;
@@ -974,18 +904,13 @@ JNI_JAVA(jint, KernelRunner, runKernelJNI)
             PRINT_CL_ERR(status, "clReleaseEvent() read event");
             return 0L;
          }
-         if (config->isVerbose()){
-            fprintf(stderr, "profileBaseTime %lu \n", (unsigned long)jniContext->profileBaseTime);
-         }
+         config->indentf("profileBaseTime %lu \n", (unsigned long)jniContext->profileBaseTime);
       }
 
 
       // Need to capture array refs
       if (jniContext->firstRun || needSync) {
          updateNonPrimitiveReferences(jenv, jobj, jniContext );
-         if (config->isVerbose()){
-            fprintf(stderr, "back from updateNonPrimitiveReferences\n");
-         }
       }
 
       int writeEventCount = 0;
@@ -999,9 +924,7 @@ JNI_JAVA(jint, KernelRunner, runKernelJNI)
          KernelArg *arg = jniContext->args[argIdx];
          arg->syncType(jenv); // make sure that the JNI arg reflects the latest type info from the instance.  For example if the buffer is tagged as explicit and needs to be pushed
 
-         if (config->isVerbose()){
-            fprintf(stderr, "got type for arg %d, %s, type=%08x\n", argIdx, arg->name, arg->type);
-         }
+         config->indentf("got type for arg %d, %s, type=%08x\n", argIdx, arg->name, arg->type);
          if (!arg->isPrimitive() && !arg->isLocal()) {
             if (config->isProfilingEnabled()){
                arg->arrayBuffer->read.valid = false;
@@ -1015,26 +938,24 @@ JNI_JAVA(jint, KernelRunner, runKernelJNI)
             arg->pin(jenv);
 
             if (config->isVerbose()){
-               fprintf(stderr, "runKernel: arrayOrBuf ref %p, oldAddr=%p, newAddr=%p, ref.mem=%p\n",
+               config->indentf("runKernel: arrayOrBuf ref %p, oldAddr=%p, newAddr=%p, ref.mem=%p\n",
                      arg->arrayBuffer->javaArray, 
                      prevAddr,
                      arg->arrayBuffer->addr,
                      arg->arrayBuffer->mem);
-               fprintf(stderr, "at memory addr %p, contents: ", arg->arrayBuffer->addr);
+               config->indentf("at memory addr %p, contents: ", arg->arrayBuffer->addr);
                unsigned char *pb = (unsigned char *) arg->arrayBuffer->addr;
                for (int k=0; k<8; k++) {
-                  fprintf(stderr, "%02x ", pb[k]);
+                  config->f("%02x ", pb[k]);
                }
-               fprintf(stderr, "\n" );
+               config->f("\n" );
             }
             // record whether object moved 
             // if we see that isCopy was returned by getPrimitiveArrayCritical, treat that as a move
             bool objectMoved = (arg->arrayBuffer->addr != prevAddr) || arg->arrayBuffer->isCopy;
 
-            if (config->isVerbose()){
-               if (arg->isExplicit() && arg->isExplicitWrite()){
-                  fprintf(stderr, "explicit write of %s\n",  arg->name);
-               }
+            if (arg->isExplicit() && arg->isExplicitWrite()){
+               config->indentf("explicit write of %s\n",  arg->name);
             }
 
             if (jniContext->firstRun || (arg->arrayBuffer->mem == 0) || objectMoved ){
@@ -1062,7 +983,7 @@ JNI_JAVA(jint, KernelRunner, runKernelJNI)
                   if (mask & CL_MEM_READ_ONLY) strcat(arg->arrayBuffer->memSpec,"|CL_MEM_READ_ONLY");
                   if (mask & CL_MEM_WRITE_ONLY) strcat(arg->arrayBuffer->memSpec,"|CL_MEM_WRITE_ONLY");
 
-                  fprintf(stderr, "%s %d clCreateBuffer(context, %s, size=%08x bytes, address=%08lx, &status)\n", arg->name, 
+                  config->indentf("%s %d clCreateBuffer(context, %s, size=%08x bytes, address=%08lx, &status)\n", arg->name, 
                         argIdx, arg->arrayBuffer->memSpec, arg->arrayBuffer->lengthInBytes, (unsigned long)arg->arrayBuffer->addr);
                }
                arg->arrayBuffer->mem = clCreateBuffer(jniContext->context, arg->arrayBuffer->memMask, 
@@ -1090,9 +1011,7 @@ JNI_JAVA(jint, KernelRunner, runKernelJNI)
 
                   status = clSetKernelArg(jniContext->kernel, argPos, sizeof(jint), &(arg->arrayBuffer->length));
 
-                  if (config->isVerbose()){
-                     fprintf(stderr, "runKernel arg %d %s, length = %d\n", argIdx, arg->name, arg->arrayBuffer->length);
-                  }
+                  config->indentf("runKernel arg %d %s, length = %d\n", argIdx, arg->name, arg->arrayBuffer->length);
                   if (status != CL_SUCCESS) {
                      PRINT_CL_ERR(status, "clSetKernelArg (array length)");
                      jniContext->unpinAll(jenv);
@@ -1111,15 +1030,13 @@ JNI_JAVA(jint, KernelRunner, runKernelJNI)
             // the default behavior for Constant buffers is also that there is no write enqueued unless explicit
 
             if (arg->needToEnqueueWrite() && !arg->isConstant()){
-               if (config->isVerbose()){
-                  fprintf(stderr, "%swriting %s%sbuffer argIndex=%d argPos=%d %s\n",  
+               config->indentf("%swriting %s%sbuffer argIndex=%d argPos=%d %s\n",  
                         (arg->isExplicit() ? "explicitly " : ""), 
                         (arg->isConstant() ? "constant " : ""), 
                         (arg->isLocal() ? "local " : ""), 
                         argIdx,
                         argPos,
                         arg->name);
-               }
                if (config->isProfilingEnabled()) {
                   jniContext->writeEventArgs[writeEventCount]=argIdx;
                }
@@ -1136,9 +1053,7 @@ JNI_JAVA(jint, KernelRunner, runKernelJNI)
                }
                writeEventCount++;
                if (arg->isExplicit() && arg->isExplicitWrite()){
-                  if (config->isVerbose()){
-                     fprintf(stderr, "clearing explicit buffer bit %d %s\n", argIdx, arg->name);
-                  }
+                  config->indentf("clearing explicit buffer bit %d %s\n", argIdx, arg->name);
                   arg->clearExplicitBufferBit(jenv);
                }
             }
@@ -1157,9 +1072,7 @@ JNI_JAVA(jint, KernelRunner, runKernelJNI)
 
                   status = clSetKernelArg(jniContext->kernel, argPos, sizeof(jint), &(arg->arrayBuffer->length));
 
-                  if (config->isVerbose()){
-                     fprintf(stderr, "runKernel arg %d %s, javaArrayLength = %d\n", argIdx, arg->name, arg->arrayBuffer->length);
-                  }
+                  config->indentf("runKernel arg %d %s, javaArrayLength = %d\n", argIdx, arg->name, arg->arrayBuffer->length);
                   if (status != CL_SUCCESS) {
                      PRINT_CL_ERR(status, "clSetKernelArg (array length)");
                      jniContext->unpinAll(jenv);
@@ -1175,9 +1088,11 @@ JNI_JAVA(jint, KernelRunner, runKernelJNI)
             }
          }else{  // primitive arguments
             if (jniContext->isLambdaKernel()){
-                 status = arg->setPrimitiveLambdaArg(jenv, argIdx, argPos);
+               config->indentf("isLambdaKernel() == true\n");
+               status = arg->setPrimitiveLambdaArg(jenv, argIdx, argPos);
             }else{
-                 status = arg->setPrimitiveClassicArg(jenv, argIdx, argPos);
+               config->indentf("isLambdaKernel() == false\n");
+               status = arg->setPrimitiveClassicArg(jenv, argIdx, argPos);
             }
             if (status != CL_SUCCESS) {
                PRINT_CL_ERR(status, "clSetKernelArg()");
@@ -1336,9 +1251,7 @@ JNI_JAVA(jint, KernelRunner, runKernelJNI)
             if (config->isProfilingEnabled()) {
                jniContext->readEventArgs[readEventCount]=i;
             }
-            if (config->isVerbose()){
-               fprintf(stderr, "reading buffer %d %s\n", i, arg->name);
-            }
+            config->indentf("reading buffer %d %s\n", i, arg->name);
 
             status = clEnqueueReadBuffer(jniContext->commandQueue, arg->arrayBuffer->mem, CL_FALSE, 0, 
                   arg->arrayBuffer->lengthInBytes,arg->arrayBuffer->addr , 1, jniContext->executeEvents, &(jniContext->readEvents[readEventCount]));
@@ -1455,8 +1368,7 @@ JNI_JAVA(jint, KernelRunner, runKernelJNI)
       }
 
       jniContext->firstRun = false;
-
-      //fprintf(stderr, "About to return %d from exec\n", status);
+      config->out("KernelRunner::runKernelJNI()"); 
       return(status);
    }
 
@@ -1466,6 +1378,7 @@ JNI_JAVA(jint, LambdaRunner, runKernelJNI)
       if (config== NULL){
          config = new Config(jenv);
       }
+      config->in("LambdaRunner::runKernelJNI()"); 
 
       Range range(jenv, _range);
 
@@ -1495,18 +1408,13 @@ JNI_JAVA(jint, LambdaRunner, runKernelJNI)
             PRINT_CL_ERR(status, "clReleaseEvent() read event");
             return 0L;
          }
-         if (config->isVerbose()){
-            fprintf(stderr, "profileBaseTime %lu \n", (unsigned long)jniContext->profileBaseTime);
-         }
+         config->indentf("profileBaseTime %lu \n", (unsigned long)jniContext->profileBaseTime);
       }
 
 
       // Need to capture array refs
       if (jniContext->firstRun || needSync) {
          updateNonPrimitiveReferences(jenv, jobj, jniContext );
-         if (config->isVerbose()){
-            fprintf(stderr, "back from updateNonPrimitiveReferences\n");
-         }
       }
 
       int writeEventCount = 0;
@@ -1520,9 +1428,7 @@ JNI_JAVA(jint, LambdaRunner, runKernelJNI)
          KernelArg *arg = jniContext->args[argIdx];
          arg->syncType(jenv); // make sure that the JNI arg reflects the latest type info from the instance.  For example if the buffer is tagged as explicit and needs to be pushed
 
-         if (config->isVerbose()){
-            fprintf(stderr, "got type for arg %d, %s, type=%08x\n", argIdx, arg->name, arg->type);
-         }
+         config->indentf("got type for arg %d, %s, type=%08x\n", argIdx, arg->name, arg->type);
          if (!arg->isPrimitive() && !arg->isLocal()) {
             if (config->isProfilingEnabled()){
                arg->arrayBuffer->read.valid = false;
@@ -1536,26 +1442,24 @@ JNI_JAVA(jint, LambdaRunner, runKernelJNI)
             arg->pin(jenv);
 
             if (config->isVerbose()){
-               fprintf(stderr, "runKernel: arrayOrBuf ref %p, oldAddr=%p, newAddr=%p, ref.mem=%p\n",
+               config->indentf("runKernel: arrayOrBuf ref %p, oldAddr=%p, newAddr=%p, ref.mem=%p\n",
                      arg->arrayBuffer->javaArray, 
                      prevAddr,
                      arg->arrayBuffer->addr,
                      arg->arrayBuffer->mem);
-               fprintf(stderr, "at memory addr %p, contents: ", arg->arrayBuffer->addr);
+               config->indentf("at memory addr %p, contents: ", arg->arrayBuffer->addr);
                unsigned char *pb = (unsigned char *) arg->arrayBuffer->addr;
                for (int k=0; k<8; k++) {
-                  fprintf(stderr, "%02x ", pb[k]);
+                  config->f("%02x ", pb[k]);
                }
-               fprintf(stderr, "\n" );
+               config->f("\n" );
             }
             // record whether object moved 
             // if we see that isCopy was returned by getPrimitiveArrayCritical, treat that as a move
             bool objectMoved = (arg->arrayBuffer->addr != prevAddr) || arg->arrayBuffer->isCopy;
 
-            if (config->isVerbose()){
-               if (arg->isExplicit() && arg->isExplicitWrite()){
-                  fprintf(stderr, "explicit write of %s\n",  arg->name);
-               }
+            if (arg->isExplicit() && arg->isExplicitWrite()){
+               config->indentf("explicit write of %s\n",  arg->name);
             }
 
             if (jniContext->firstRun || (arg->arrayBuffer->mem == 0) || objectMoved ){
@@ -1583,7 +1487,7 @@ JNI_JAVA(jint, LambdaRunner, runKernelJNI)
                   if (mask & CL_MEM_READ_ONLY) strcat(arg->arrayBuffer->memSpec,"|CL_MEM_READ_ONLY");
                   if (mask & CL_MEM_WRITE_ONLY) strcat(arg->arrayBuffer->memSpec,"|CL_MEM_WRITE_ONLY");
 
-                  fprintf(stderr, "%s %d clCreateBuffer(context, %s, size=%08x bytes, address=%08lx, &status)\n", arg->name, 
+                  config->indentf("%s %d clCreateBuffer(context, %s, size=%08x bytes, address=%08lx, &status)\n", arg->name, 
                         argIdx, arg->arrayBuffer->memSpec, arg->arrayBuffer->lengthInBytes, (unsigned long)arg->arrayBuffer->addr);
                }
                arg->arrayBuffer->mem = clCreateBuffer(jniContext->context, arg->arrayBuffer->memMask, 
@@ -1611,9 +1515,7 @@ JNI_JAVA(jint, LambdaRunner, runKernelJNI)
 
                   status = clSetKernelArg(jniContext->kernel, argPos, sizeof(jint), &(arg->arrayBuffer->length));
 
-                  if (config->isVerbose()){
-                     fprintf(stderr, "runKernel arg %d %s, length = %d\n", argIdx, arg->name, arg->arrayBuffer->length);
-                  }
+                  config->indentf("runKernel arg %d %s, length = %d\n", argIdx, arg->name, arg->arrayBuffer->length);
                   if (status != CL_SUCCESS) {
                      PRINT_CL_ERR(status, "clSetKernelArg (array length)");
                      jniContext->unpinAll(jenv);
@@ -1632,15 +1534,13 @@ JNI_JAVA(jint, LambdaRunner, runKernelJNI)
             // the default behavior for Constant buffers is also that there is no write enqueued unless explicit
 
             if (arg->needToEnqueueWrite() && !arg->isConstant()){
-               if (config->isVerbose()){
-                  fprintf(stderr, "%swriting %s%sbuffer argIndex=%d argPos=%d %s\n",  
+               config->indentf("%swriting %s%sbuffer argIndex=%d argPos=%d %s\n",  
                         (arg->isExplicit() ? "explicitly " : ""), 
                         (arg->isConstant() ? "constant " : ""), 
                         (arg->isLocal() ? "local " : ""), 
                         argIdx,
                         argPos,
                         arg->name);
-               }
                if (config->isProfilingEnabled()) {
                   jniContext->writeEventArgs[writeEventCount]=argIdx;
                }
@@ -1657,9 +1557,7 @@ JNI_JAVA(jint, LambdaRunner, runKernelJNI)
                }
                writeEventCount++;
                if (arg->isExplicit() && arg->isExplicitWrite()){
-                  if (config->isVerbose()){
-                     fprintf(stderr, "clearing explicit buffer bit %d %s\n", argIdx, arg->name);
-                  }
+                  config->indentf("clearing explicit buffer bit %d %s\n", argIdx, arg->name);
                   arg->clearExplicitBufferBit(jenv);
                }
             }
@@ -1678,9 +1576,7 @@ JNI_JAVA(jint, LambdaRunner, runKernelJNI)
 
                   status = clSetKernelArg(jniContext->kernel, argPos, sizeof(jint), &(arg->arrayBuffer->length));
 
-                  if (config->isVerbose()){
-                     fprintf(stderr, "runKernel arg %d %s, javaArrayLength = %d\n", argIdx, arg->name, arg->arrayBuffer->length);
-                  }
+                  config->indentf("runKernel arg %d %s, javaArrayLength = %d\n", argIdx, arg->name, arg->arrayBuffer->length);
                   if (status != CL_SUCCESS) {
                      PRINT_CL_ERR(status, "clSetKernelArg (array length)");
                      jniContext->unpinAll(jenv);
@@ -1696,9 +1592,11 @@ JNI_JAVA(jint, LambdaRunner, runKernelJNI)
             }
          }else{  // primitive arguments
             if (jniContext->isLambdaKernel()){
-                 status = arg->setPrimitiveLambdaArg(jenv, argIdx, argPos);
+               config->indentf("isLambdaKernel() == true\n");
+               status = arg->setPrimitiveLambdaArg(jenv, argIdx, argPos);
             }else{
-                 status = arg->setPrimitiveClassicArg(jenv, argIdx, argPos);
+               config->indentf("isLambdaKernel() == false\n");
+               status = arg->setPrimitiveClassicArg(jenv, argIdx, argPos);
             }
             if (status != CL_SUCCESS) {
                PRINT_CL_ERR(status, "clSetKernelArg()");
@@ -1857,9 +1755,7 @@ JNI_JAVA(jint, LambdaRunner, runKernelJNI)
             if (config->isProfilingEnabled()) {
                jniContext->readEventArgs[readEventCount]=i;
             }
-            if (config->isVerbose()){
-               fprintf(stderr, "reading buffer %d %s\n", i, arg->name);
-            }
+            config->indentf("reading buffer %d %s\n", i, arg->name);
 
             status = clEnqueueReadBuffer(jniContext->commandQueue, arg->arrayBuffer->mem, CL_FALSE, 0, 
                   arg->arrayBuffer->lengthInBytes,arg->arrayBuffer->addr , 1, jniContext->executeEvents, &(jniContext->readEvents[readEventCount]));
@@ -1976,8 +1872,7 @@ JNI_JAVA(jint, LambdaRunner, runKernelJNI)
       }
 
       jniContext->firstRun = false;
-
-      //fprintf(stderr, "About to return %d from exec\n", status);
+      config->out("LambdaRunner::runKernelJNI()"); 
       return(status);
    }
 
@@ -1985,40 +1880,42 @@ JNI_JAVA(jint, LambdaRunner, runKernelJNI)
 // we return the JNIContext from here 
 JNI_JAVA(jlong, LambdaRunner, initJNI)
    (JNIEnv *jenv, jclass clazz, jobject lambdaObject, jobject openCLDeviceObject, jint flags) {
+      jlong jniContextHandle = 0L;
       if (config== NULL){
          config = new Config(jenv);
       }
+      config->in("LambdaRunner::initJNI()");
       cl_int status = CL_SUCCESS;
       JNIContext* jniContext = new JNIContext(jenv, lambdaObject, openCLDeviceObject, flags);
-
       if (jniContext->isValid()){
-
-         return((jlong)jniContext);
-      }else{
-         return(0L);
+         jniContextHandle = (jlong)jniContext;
       }
+      config->out("LambdaRunner::initJNI()");
+      return(jniContextHandle);
    }
 
 // we return the JNIContext from here 
 JNI_JAVA(jlong, KernelRunner, initJNI)
    (JNIEnv *jenv, jclass clazz, jobject kernelObject, jobject openCLDeviceObject, jint flags) {
+      jlong jniContextHandle = 0L;
       if (config== NULL){
          config = new Config(jenv);
       }
+      config->in("KernelRunner::initJNI()");
       cl_int status = CL_SUCCESS;
       JNIContext* jniContext = new JNIContext(jenv, kernelObject, openCLDeviceObject, flags);
 
       if (jniContext->isValid()){
-
-         return((jlong)jniContext);
-      }else{
-         return(0L);
+         jniContextHandle = (jlong)jniContext;
       }
+      config->out("KernelRunner::initJNI()");
+      return(jniContextHandle);
    }
 
 
 JNI_JAVA(jlong, OpenCLRunner, buildProgramJNI)
    (JNIEnv *jenv, jobject jobj, jlong jniContextHandle, jstring source) {
+      config->in("OpenCLRunner::buildProgramJNI()");
       JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);
       if (jniContext == NULL){
          return 0;
@@ -2091,6 +1988,7 @@ JNI_JAVA(jlong, OpenCLRunner, buildProgramJNI)
          delete []fnameStr;
       }
 
+      config->out("OpenCLRunner::buildProgramJNI()");
       return((jlong)jniContext);
    }
 
@@ -2101,6 +1999,7 @@ JNI_JAVA(jint, KernelRunner, setArgsJNI)
       if (config== NULL){
          config = new Config(jenv);
       }
+      config->in("KernelRunner::setArgsJNI()");
       JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);
       cl_int status = CL_SUCCESS;
       if (jniContext != NULL){      
@@ -2112,22 +2011,18 @@ JNI_JAVA(jint, KernelRunner, setArgsJNI)
          for (jint i=0; i<jniContext->argc; i++){ 
             jobject argObj = jenv->GetObjectArrayElement(argArray, i);
             KernelArg* arg = jniContext->args[i] = new KernelArg(jenv, jniContext, argObj);
-            if (config->isVerbose()){
-               if (arg->isExplicit()){
-                  fprintf(stderr, "%s is explicit!\n", arg->name);
-               }
+            if (arg->isExplicit()){
+               config->indentf("%s is explicit!\n", arg->name);
             }
 
-            if (config->isVerbose()){
-               fprintf(stderr, "in setArgs arg %d %s type %08x\n", i, arg->name, arg->type);
+               config->indentf("in setArgs arg %d %s type %08x\n", i, arg->name, arg->type);
                if (arg->isLocal()){
-                  fprintf(stderr, "in setArgs arg %d %s is local\n", i, arg->name);
+                  config->indentf("in setArgs arg %d %s is local\n", i, arg->name);
                }else if (arg->isConstant()){
-                  fprintf(stderr, "in setArgs arg %d %s is constant\n", i, arg->name);
+                  config->indentf("in setArgs arg %d %s is constant\n", i, arg->name);
                }else{
-                  fprintf(stderr, "in setArgs arg %d %s is *not* local\n", i, arg->name);
+                  config->indentf("in setArgs arg %d %s is *not* local\n", i, arg->name);
                }
-            }
 
             //If an error occurred, return early so we report the first problem, not the last
             if (jenv->ExceptionCheck() == JNI_TRUE) {
@@ -2152,6 +2047,7 @@ JNI_JAVA(jint, KernelRunner, setArgsJNI)
             jniContext->writeEventArgs = new jint[jniContext->argc];
          }
       }
+      config->out("KernelRunner::setArgsJNI()");
       return(status);
    }
 
@@ -2161,6 +2057,7 @@ JNI_JAVA(jint, LambdaRunner, setArgsJNI)
       if (config== NULL){
          config = new Config(jenv);
       }
+      config->in("LambdaRunner::setArgsJNI()");
       JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);
       cl_int status = CL_SUCCESS;
       if (jniContext != NULL){      
@@ -2172,22 +2069,18 @@ JNI_JAVA(jint, LambdaRunner, setArgsJNI)
          for (jint i=0; i<jniContext->argc; i++){ 
             jobject argObj = jenv->GetObjectArrayElement(argArray, i);
             KernelArg* arg = jniContext->args[i] = new KernelArg(jenv, jniContext, argObj);
-            if (config->isVerbose()){
                if (arg->isExplicit()){
-                  fprintf(stderr, "%s is explicit!\n", arg->name);
+                  config->indentf("%s is explicit!\n", arg->name);
                }
-            }
 
-            if (config->isVerbose()){
-               fprintf(stderr, "in setArgs arg %d %s type %08x\n", i, arg->name, arg->type);
+               config->indentf("in setArgs arg %d %s type %08x\n", i, arg->name, arg->type);
                if (arg->isLocal()){
-                  fprintf(stderr, "in setArgs arg %d %s is local\n", i, arg->name);
+                  config->indentf("in setArgs arg %d %s is local\n", i, arg->name);
                }else if (arg->isConstant()){
-                  fprintf(stderr, "in setArgs arg %d %s is constant\n", i, arg->name);
+                  config->indentf("in setArgs arg %d %s is constant\n", i, arg->name);
                }else{
-                  fprintf(stderr, "in setArgs arg %d %s is *not* local\n", i, arg->name);
+                  config->indentf("in setArgs arg %d %s is *not* local\n", i, arg->name);
                }
-            }
 
             //If an error occurred, return early so we report the first problem, not the last
             if (jenv->ExceptionCheck() == JNI_TRUE) {
@@ -2212,6 +2105,7 @@ JNI_JAVA(jint, LambdaRunner, setArgsJNI)
             jniContext->writeEventArgs = new jint[jniContext->argc];
          }
       }
+      config->out("LambdaRunner::setArgsJNI()");
       return(status);
 }
 
@@ -2221,18 +2115,21 @@ JNI_JAVA(jstring, OpenCLRunner, getExtensionsJNI)
       if (config== NULL){
          config = new Config(jenv);
       }
+      config->in("getExtentionsJNI()");
       jstring jextensions = NULL;
       JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);
       if (jniContext != NULL){
          cl_int status = CL_SUCCESS;
          jextensions = CLHelper::getExtensions(jenv, jniContext->deviceId, &status);
       }
+      config->out("getExtentionsJNI()");
       return jextensions;
    }
 
 KernelArg* getArgForBuffer(JNIEnv* jenv, JNIContext* jniContext, jobject buffer) {
    cl_int status = CL_SUCCESS;
    KernelArg *returnArg= NULL;
+   config->in("getArgForBuffer()");
 
    if (jniContext != NULL){
       for (jint i=0; returnArg == NULL && i<jniContext->argc; i++){ 
@@ -2240,23 +2137,18 @@ KernelArg* getArgForBuffer(JNIEnv* jenv, JNIContext* jniContext, jobject buffer)
          if (arg->isArray()){
             jboolean isSame = jenv->IsSameObject(buffer, arg->arrayBuffer->javaArray);
             if (isSame){
-               if (config->isVerbose()){
-                  fprintf(stderr, "matched arg '%s'\n", arg->name);
-               }
+               config->indentf("matched arg '%s'\n", arg->name);
                returnArg = arg;
             }else{
-               if (config->isVerbose()){
-                  fprintf(stderr, "unmatched arg '%s'\n", arg->name);
-               }
+               config->indentf("unmatched arg '%s'\n", arg->name);
             }
          }
       }
       if (returnArg==NULL){
-         if (config->isVerbose()){
-            fprintf(stderr, "attempt to get arg for buffer that does not appear to be referenced from kernel\n");
-         }
+         config->indentf("attempt to get arg for buffer that does not appear to be referenced from kernel\n");
       }
    }
+   config->out("getArgForBuffer()");
    return returnArg;
 }
 
@@ -2266,21 +2158,18 @@ JNI_JAVA(jint, KernelRunner, getJNI)
       if (config== NULL){
          config = new Config(jenv);
       }
+      config->in("getJNI()");
       cl_int status = CL_SUCCESS;
       JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);
       if (jniContext != NULL){
          KernelArg *arg= getArgForBuffer(jenv, jniContext, buffer);
          if (arg != NULL){
-            if (config->isVerbose()){
-               fprintf(stderr, "explicitly reading buffer %s\n", arg->name);
-            }
+            config->indentf("explicitly reading buffer %s\n", arg->name);
             arg->pin(jenv);
 
             status = clEnqueueReadBuffer(jniContext->commandQueue, arg->arrayBuffer->mem, CL_FALSE, 0, 
                   arg->arrayBuffer->lengthInBytes,arg->arrayBuffer->addr , 0, NULL, &jniContext->readEvents[0]);
-            if (config->isVerbose()){
-               fprintf(stderr, "explicitly read %s ptr=%lx len=%d\n", arg->name, (unsigned long)arg->arrayBuffer->addr,arg->arrayBuffer->lengthInBytes );
-            }
+            config->indentf("explicitly read %s ptr=%lx len=%d\n", arg->name, (unsigned long)arg->arrayBuffer->addr,arg->arrayBuffer->lengthInBytes );
             if (status != CL_SUCCESS) {
                PRINT_CL_ERR(status, "clEnqueueReadBuffer()");
                return status;
@@ -2307,11 +2196,10 @@ JNI_JAVA(jint, KernelRunner, getJNI)
             arg->unpin(jenv); // was unpinCommit
 
          }else{
-            if (config->isVerbose()){
-               fprintf(stderr, "attempt to request to get a buffer that does not appear to be referenced from kernel\n");
-            }
+            config->indentf("attempt to request to get a buffer that does not appear to be referenced from kernel\n");
          }
       }
+      config->out("getJNI()");
       return 0;
    }
 

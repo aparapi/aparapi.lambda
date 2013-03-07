@@ -40,6 +40,8 @@
 #include "common.h"
 
 class Config{
+   private:
+      int indent;
    public: 
       jboolean configured;
       jclass configClass;
@@ -54,6 +56,10 @@ class Config{
       jboolean isProfilingCSVEnabled();
       jboolean isTrackingOpenCLResources();
       jboolean isProfilingEnabled();
+      void f(char *_fmt, ...);
+      void indentf(char *_fmt, ...);
+      void in(char *name);
+      void out(char *name);
 };
 
 #ifdef CONFIG_SOURCE

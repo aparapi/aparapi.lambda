@@ -43,7 +43,7 @@ jboolean Config::getBoolean(JNIEnv *jenv, char *fieldName){
    return(jenv->GetStaticBooleanField(configClass, fieldID));
 }
 
-Config::Config(JNIEnv *jenv){
+Config::Config(JNIEnv *jenv) : indent(0){
    enableVerboseJNI = false;
    configClass = jenv->FindClass("com/amd/aparapi/Config");
    if (configClass == NULL ||  jenv->ExceptionCheck()) {
@@ -75,4 +75,34 @@ jboolean Config::isTrackingOpenCLResources(){
 }
 jboolean Config::isProfilingEnabled(){
    return enableProfiling;
+}
+void Config::f(char *_fmt, ...){
+      va_list args;
+      va_start (args, _fmt);
+      vfprintf (stderr, _fmt, args);
+      va_end (args);
+}
+void Config::indentf(char *_fmt, ...){
+   if (isVerbose()){
+      for (int i=0; i< indent; i++){
+         fprintf(stderr, "    ");
+      }
+      va_list args;
+      va_start (args, _fmt);
+      vfprintf (stderr, _fmt, args);
+      va_end (args);
+   }
+}
+
+void Config::in(char *_name){
+   if (isVerbose()){
+      indentf("-> %s\n", _name);
+      indent++;
+   }
+}
+void Config::out(char *_name){
+   if (isVerbose()){
+      indent--;
+      indentf("<- %s\n", _name);
+   }
 }
