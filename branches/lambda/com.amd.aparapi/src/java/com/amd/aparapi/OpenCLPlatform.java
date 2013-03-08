@@ -15,43 +15,43 @@ public class OpenCLPlatform{
 
    private List<OpenCLDevice> devices = new ArrayList<OpenCLDevice>();
 
-   OpenCLPlatform(long _platformId, String _version, String _vendor, String _name) {
+   OpenCLPlatform(long _platformId, String _version, String _vendor, String _name){
       platformId = _platformId;
       version = _version;
       vendor = _vendor;
       name = _name;
    }
 
-   public String toString() {
+   public String toString(){
       return ("PlatformId " + platformId + "\nName:" + vendor + "\nVersion:" + version);
    }
 
-   public void add(OpenCLDevice device) {
+   public void add(OpenCLDevice device){
       devices.add(device);
    }
 
-   public List<OpenCLDevice> getDevices() {
+   public List<OpenCLDevice> getDevices(){
       return (devices);
    }
 
-   public static List<OpenCLPlatform> getPlatforms() {
-      if (OpenCLJNI.getJNI().isOpenCLAvailable()) {
+   public static List<OpenCLPlatform> getPlatforms(){
+      if(OpenCLJNI.getJNI().isOpenCLAvailable()){
          return (OpenCLJNI.getJNI().getPlatforms());
-      } else {
+      }else{
          return (new ArrayList<OpenCLPlatform>());
       }
 
    }
 
-   public String getName() {
+   public String getName(){
       return (name);
    }
 
-   public String getVersion() {
+   public String getVersion(){
       return (version);
    }
 
-   public String getVendor() {
+   public String getVendor(){
       return (vendor);
    }
 

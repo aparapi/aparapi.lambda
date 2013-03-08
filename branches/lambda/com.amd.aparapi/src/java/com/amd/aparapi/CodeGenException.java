@@ -39,11 +39,11 @@ package com.amd.aparapi;
 
 @SuppressWarnings("serial") class CodeGenException extends AparapiException{
 
-   CodeGenException(String msg) {
+   CodeGenException(String msg){
       super(msg);
    }
 
-   CodeGenException(Throwable t) {
+   CodeGenException(Throwable t){
       super(t);
    }
 }

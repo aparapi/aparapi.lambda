@@ -39,7 +39,7 @@ package com.amd.aparapi;
 
 @SuppressWarnings("serial") class RangeException extends AparapiException{
 
-   RangeException(String msg) {
+   RangeException(String msg){
       super(msg);
    }
 

@@ -43,15 +43,13 @@ import java.io.InputStream;
 
 /**
  * Used to parse ClassFile structure. <br/>
- * 
+ * <p/>
  * Provides low level access to sequential bytes in a stream given a specific offset.
- * 
+ * <p/>
  * Does not keep track of accesses.  For this you will need a <code>ByteReader</code>
- * 
- * @see com.amd.aparapi.ByteReader
- * 
- * @author gfrost
  *
+ * @author gfrost
+ * @see com.amd.aparapi.ByteReader
  */
 class ByteBuffer{
 
@@ -59,20 +57,20 @@ class ByteBuffer{
 
    /**
     * Construct from an <code>InputStream</code>
-    * 
+    *
     * @param _inputStream
     */
-   ByteBuffer(InputStream _inputStream) {
+   ByteBuffer(InputStream _inputStream){
 
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       bytes = new byte[4096];
       int bytesRead = 0;
-      try {
-         while ((bytesRead = _inputStream.read(bytes)) > 0) {
+      try{
+         while((bytesRead = _inputStream.read(bytes)) > 0){
             baos.write(bytes, 0, bytesRead);
          }
          bytes = baos.toByteArray();
-      } catch (IOException e) {
+      }catch(IOException e){
          bytes = new byte[0];
          // TODO Auto-generated catch block
          e.printStackTrace();
@@ -80,64 +78,64 @@ class ByteBuffer{
 
    }
 
-   int u2(int _offset) {
+   int u2(int _offset){
       return (u1(_offset) << 8 | u1(_offset + 1));
    }
 
-   int s2(int _offset) {
+   int s2(int _offset){
       int s2 = u2(_offset);
 
-      if (s2 > 0x7fff) {
+      if(s2 > 0x7fff){
          s2 = -(0x10000 - s2);
       }
       return (s2);
    }
 
-   int u4(int _offset) {
+   int u4(int _offset){
       return ((u2(_offset) & 0xffff) << 16 | u2(_offset + 2));
    }
 
-   int s4(int _offset) {
+   int s4(int _offset){
       int s4 = u4(_offset);
       return (s4);
    }
 
-   ByteBuffer(byte[] _bytes) {
+   ByteBuffer(byte[] _bytes){
       bytes = _bytes;
    }
 
-   int u1(int _offset) {
+   int u1(int _offset){
       return ((bytes[_offset] & 0xff));
    }
 
-   int size() {
+   int size(){
       return (bytes.length);
    }
 
-   double d8(int _offset) {
+   double d8(int _offset){
       return (Double.longBitsToDouble(u8(_offset)));
    }
 
-   float f4(int _offset) {
+   float f4(int _offset){
       return (Float.intBitsToFloat(u4(_offset)));
 
    }
 
-   long u8(int _offset) {
+   long u8(int _offset){
       return ((u4(_offset) & 0xffffffffL) << 32) | (u4(_offset + 4) & 0xffffffffL);
    }
 
-   int utf8bytes(int _offset) {
+   int utf8bytes(int _offset){
       return (2 + u2(_offset));
    }
 
-   byte[] bytes(int _offset, int _length) {
+   byte[] bytes(int _offset, int _length){
       byte[] returnBytes = new byte[_length];
       System.arraycopy(bytes, _offset, returnBytes, 0, _length);
       return (returnBytes);
    }
 
-   String utf8(int _offset) {
+   String utf8(int _offset){
       int utflen = u2(_offset);
       _offset += 2;
       byte[] bytearr = new byte[utflen];
@@ -147,22 +145,23 @@ class ByteBuffer{
       int count = 0;
       int chararr_count = 0;
 
-      for (int i = 0; i < utflen; i++) {
+      for(int i = 0; i < utflen; i++){
          bytearr[i] = b(_offset + i);
       }
       _offset += utflen;
 
-      while (count < utflen) {
+      while(count < utflen){
          c = bytearr[count] & 0xff;
-         if (c > 127)
+         if(c > 127){
             break;
+         }
          count++;
          chararr[chararr_count++] = (char) c;
       }
 
-      while (count < utflen) {
+      while(count < utflen){
          c = bytearr[count] & 0xff;
-         switch (c >> 4) {
+         switch(c >> 4){
             case 0:
             case 1:
             case 2:
@@ -179,12 +178,12 @@ class ByteBuffer{
             case 13:
                /* 110x xxxx   10xx xxxx*/
                count += 2;
-               if (count > utflen) {
+               if(count > utflen){
                   System.out.println("malformed input: partial character at end");
                   return (null);
                }
                char2 = bytearr[count - 1];
-               if ((char2 & 0xC0) != 0x80) {
+               if((char2 & 0xC0) != 0x80){
                   System.out.println("malformed input around byte " + count);
                   return (null);
                }
@@ -193,13 +192,13 @@ class ByteBuffer{
             case 14:
                /* 1110 xxxx  10xx xxxx  10xx xxxx */
                count += 3;
-               if (count > utflen) {
+               if(count > utflen){
                   System.out.println("malformed input: partial character at end");
                   return (null);
                }
                char2 = bytearr[count - 2];
                char3 = bytearr[count - 1];
-               if (((char2 & 0xC0) != 0x80) || ((char3 & 0xC0) != 0x80)) {
+               if(((char2 & 0xC0) != 0x80) || ((char3 & 0xC0) != 0x80)){
                   System.out.println("malformed input around byte " + (count - 1));
                   return (null);
                }
@@ -217,7 +216,7 @@ class ByteBuffer{
       return (returnString);
    }
 
-   byte b(int _offset) {
+   byte b(int _offset){
       return bytes[_offset];
    }
 

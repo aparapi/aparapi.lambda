@@ -41,17 +41,12 @@ import com.amd.aparapi.ClassModel.ConstantPool.MethodEntry;
 import com.amd.aparapi.InstructionSet.MethodCall;
 import com.amd.aparapi.InstructionSet.TypeSpec;
 import com.amd.aparapi.InstructionSet.VirtualMethodCall;
-
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.StringTokenizer;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 import java.util.logging.Level;
@@ -61,174 +56,190 @@ import java.util.stream.Stream;
 
 /**
  * The class is responsible for executing <code>Kernel</code> implementations. <br/>
- * 
+ * <p/>
  * The <code>KernelRunner</code> is the real workhorse for Aparapi.  Each <code>Kernel</code> instance creates a single
- * <code>KernelRunner</code> to encapsulate state and to help coordinate interactions between the <code>Kernel</code> 
+ * <code>KernelRunner</code> to encapsulate state and to help coordinate interactions between the <code>Kernel</code>
  * and it's execution logic.<br/>
- * 
- * The <code>KernelRunner</code> is created <i>lazily</i> as a result of calling <code>Kernel.execute()</code>. A this 
- * time the <code>ExecutionMode</code> is consulted to determine the default requested mode.  This will dictate how 
+ * <p/>
+ * The <code>KernelRunner</code> is created <i>lazily</i> as a result of calling <code>Kernel.execute()</code>. A this
+ * time the <code>ExecutionMode</code> is consulted to determine the default requested mode.  This will dictate how
  * the <code>KernelRunner</code> will attempt to execute the <code>Kernel</code>
- *   
- * @see com.amd.aparapi.Kernel#execute(int _globalSize)
- * 
- * @author gfrost
  *
+ * @author gfrost
+ * @see com.amd.aparapi.Kernel#execute(int _globalSize)
  */
 class LambdaRunner extends OpenCLRunner{
 
 
-
-   
-
-   
-   class LambdaKernelCall {
-      Object   block;
-      String   lambdaKernelSource;
-      String   lambdaMethodName;
+   class LambdaKernelCall{
+      Object block;
+      String lambdaKernelSource;
+      String lambdaMethodName;
       Field[] lambdaCapturedFields;
-      Object   lambdaThisObject;
+      Object lambdaThisObject;
       String lambdaMethodSignature;
-      boolean  isStatic;
-      boolean  isObjectLambda;
-      Class    lambdaKernelClass;
-      
-      public boolean    isStatic()                 { return isStatic; }
-      public boolean    isObjectLambda()           { return isObjectLambda; }
-      public String     getLambdaKernelSource()    { return lambdaKernelSource; }
-      public Object     getLambdaKernelThis()      { return isStatic == true ? null : lambdaThisObject; }
-      public String     getLambdaMethodName()      { return lambdaMethodName; }
-      public String     getLambdaMethodSignature()    { return lambdaMethodSignature; }
-      public Class      getLambdaKernelClass()        { return lambdaKernelClass; }
+      boolean isStatic;
+      boolean isObjectLambda;
+      Class lambdaKernelClass;
 
-      public String toString() { 
-         return getLambdaKernelClass() + " " + getLambdaMethodName() + " " + 
+      public boolean isStatic(){
+         return isStatic;
+      }
+
+      public boolean isObjectLambda(){
+         return isObjectLambda;
+      }
+
+      public String getLambdaKernelSource(){
+         return lambdaKernelSource;
+      }
+
+      public Object getLambdaKernelThis(){
+         return isStatic == true ? null : lambdaThisObject;
+      }
+
+      public String getLambdaMethodName(){
+         return lambdaMethodName;
+      }
+
+      public String getLambdaMethodSignature(){
+         return lambdaMethodSignature;
+      }
+
+      public Class getLambdaKernelClass(){
+         return lambdaKernelClass;
+      }
+
+      public String toString(){
+         return getLambdaKernelClass() + " " + getLambdaMethodName() + " " +
                getLambdaMethodSignature() + " from block: " + block;
       }
-      
-      public Field[]   getLambdaCapturedFields()    { return lambdaCapturedFields; }
-      
+
+      public Field[] getLambdaCapturedFields(){
+         return lambdaCapturedFields;
+      }
+
       // Collect 'this' object as first parameter to lambda from Consumer object
-      void collectLambdaThis(Field bcf) throws AparapiException {
-         try {
+      void collectLambdaThis(Field bcf) throws AparapiException{
+         try{
             Class currFieldType = bcf.getType();
             long offset = UnsafeWrapper.objectFieldOffset(bcf);
-            if (currFieldType.isPrimitive() == false) {
+            if(currFieldType.isPrimitive() == false){
                lambdaThisObject = UnsafeWrapper.getObject(block, offset);
-            } else {
-               if (logger.isLoggable(Level.WARNING)) {
+            }else{
+               if(logger.isLoggable(Level.WARNING)){
                   logger.warning("# Problem getting Lambda this: " + currFieldType + "  " + bcf.getName());
                }
             }
-            if (logger.isLoggable(Level.FINE)) {
+            if(logger.isLoggable(Level.FINE)){
                logger.fine("# Lambda this: " + currFieldType + "  " + bcf.getName() + " = " + lambdaThisObject);
             }
-         } catch (Exception e) {
+         }catch(Exception e){
             System.out.println("Problem getting Block args:" + e);
             throw new AparapiException(e);
          }
 
       }
-      
-      void init(Object _block) throws AparapiException, ClassNotFoundException { 
+
+      void init(Object _block) throws AparapiException, ClassNotFoundException{
          block = _block;
-         
+
          Class bc = block.getClass();
-         if (logger.isLoggable(Level.FINE)) {
+         if(logger.isLoggable(Level.FINE)){
             logger.fine("Block class calling lambda = " + bc);
          }
 
          // The class name is created with the "/" style delimiters
          ClassModel blockModel = new ClassModel(bc);
-         
+
          String acceptSignature;
-         if (block instanceof IntConsumer) {
+         if(block instanceof IntConsumer){
             // We know we are calling an IntConsumer lambda with signature "(I)V"
             acceptSignature = "(I)V";
-         } else {
+         }else{
             // Calling an object Consumer lambda like: public void accept(java.lang.Object)
             acceptSignature = "(Ljava/lang/Object;)V";
          }
          MethodModel acceptModel = blockModel.getMethodModel("accept", acceptSignature);
          assert acceptModel != null : "acceptModel should not be null";
-         
+
          List<MethodCall> acceptCallSites = acceptModel.getMethodCalls();
          assert acceptCallSites.size() == 1 : "Should only have one call site in this method";
 
          MethodCall lambdaCallSite = acceptCallSites.get(0);
          MethodEntry lambdaCallTarget = lambdaCallSite.getConstantPoolMethodEntry();
-         
+
          String lambdaClassNameWithSlashes = lambdaCallTarget.getClassEntry().getNameUTF8Entry().getUTF8();
          String lambdaClassName = lambdaClassNameWithSlashes.replace('/', '.');
-         
+
          lambdaKernelClass = Class.forName(lambdaClassName, false, bc.getClassLoader());
          lambdaMethodName = lambdaCallTarget.getNameAndTypeEntry().getNameUTF8Entry().getUTF8();
          lambdaMethodSignature = lambdaCallTarget.getNameAndTypeEntry().getDescriptorUTF8Entry().getUTF8();
-                  
+
          // The first field is "this" for the lambda call if the lambda
          // is not static, the later fields are captured values which will 
          // become lambda call parameters
 
          Field[] allBlockClassFields = bc.getDeclaredFields();
 
-         if (logger.isLoggable(Level.FINE)) {
+         if(logger.isLoggable(Level.FINE)){
             logger.fine("# allBlockClassFields.length: " + allBlockClassFields.length);
-            for(Field f : allBlockClassFields) {
+            for(Field f : allBlockClassFields){
                logger.fine("# Block obj field: " + f.getType().getName() + " " + f);
             }
          }
          Field[] capturedFieldsWithoutThis;
-         if ((lambdaCallSite instanceof VirtualMethodCall) == true) {
+         if((lambdaCallSite instanceof VirtualMethodCall) == true){
             isStatic = false;
 
             capturedFieldsWithoutThis = new Field[allBlockClassFields.length - 1];
-            for(int i=1; i<allBlockClassFields.length; i++) {
-               capturedFieldsWithoutThis[i-1] = allBlockClassFields[i];
+            for(int i = 1; i < allBlockClassFields.length; i++){
+               capturedFieldsWithoutThis[i - 1] = allBlockClassFields[i];
             }
 
-         } else {
+         }else{
             isStatic = true;
-            
+
             capturedFieldsWithoutThis = new Field[allBlockClassFields.length];
-            for(int i=0; i<allBlockClassFields.length; i++) {
+            for(int i = 0; i < allBlockClassFields.length; i++){
                capturedFieldsWithoutThis[i] = allBlockClassFields[i];
             }
          }
-         
-         if (lambdaMethodSignature.endsWith("I)V")) {
+
+         if(lambdaMethodSignature.endsWith("I)V")){
             // It is an int lambda
             isObjectLambda = false;
-            if (logger.isLoggable(Level.FINE)) {
+            if(logger.isLoggable(Level.FINE)){
                logger.fine("# Found int lambda");
             }
-         } else if (lambdaMethodSignature.contains("L") && lambdaMethodSignature.endsWith(";)V")) {
+         }else if(lambdaMethodSignature.contains("L") && lambdaMethodSignature.endsWith(";)V")){
             // It is an object lambda
             isObjectLambda = true;
-            if (logger.isLoggable(Level.FINE)) {
+            if(logger.isLoggable(Level.FINE)){
                logger.fine("# Found Object lambda");
             }
 
          }
 
-         if (logger.isLoggable(Level.FINE)) {
-            logger.fine("call target = " +  lambdaClassName + 
+         if(logger.isLoggable(Level.FINE)){
+            logger.fine("call target = " + lambdaClassName +
                   " " + lambdaMethodName + " " + lambdaMethodSignature + " ## target lambda is static? " + isStatic +
                   ", its loader = " + getLambdaKernelClass().getClassLoader());
          }
-         
-         if (!isStatic()) {
+
+         if(!isStatic()){
             collectLambdaThis(allBlockClassFields[0]);
          }
          lambdaCapturedFields = capturedFieldsWithoutThis;
 
       }
-      
-      
-      Object unsafeGetFieldRefFromObject(Object sourceObj, String fieldName) {
+
+
+      Object unsafeGetFieldRefFromObject(Object sourceObj, String fieldName){
          // Get ref to java.util.stream.AbstractPipeline.source
          Object fieldRef = null;
-         for (Field f : sourceObj.getClass().getDeclaredFields()) {
-            if (f.getName().equals(fieldName)) {
+         for(Field f : sourceObj.getClass().getDeclaredFields()){
+            if(f.getName().equals(fieldName)){
                long offset = UnsafeWrapper.objectFieldOffset(f);
                fieldRef = UnsafeWrapper.getObject(sourceObj, offset);
                break;
@@ -236,61 +247,61 @@ class LambdaRunner extends OpenCLRunner{
          }
          return fieldRef;
       }
-      
-      
+
+
       // Get source array ref from Stream obj to set up as a kernel argument
       //
       // For the time being the only supported Stream is ReferencePipeline 
       // with super class AbstractPipeline         
-      Object setupStreamSource(Stream _source) throws AparapiException {
+      Object setupStreamSource(Stream _source) throws AparapiException{
          Class sourceSuperClass = _source.getClass().getSuperclass();
-         
-         if (logger.isLoggable(Level.FINE)) {
+
+         if(logger.isLoggable(Level.FINE)){
             logger.fine("Stream source class= " + _source.getClass() + " super= " + sourceSuperClass);
          }
-         
+
          Field[] streamClassFields = sourceSuperClass.getDeclaredFields();
-         if (logger.isLoggable(Level.FINE)) {
+         if(logger.isLoggable(Level.FINE)){
             logger.fine("# sourceClassFields.length: " + streamClassFields.length);
-            for(Field f : streamClassFields) {
+            for(Field f : streamClassFields){
                logger.fine("# source class field: " + f.getType().getName() + " " + f);
             }
          }
 
          // Get ref to java.util.stream.AbstractPipeline.source
          Object sourceObj = null;
-         for (Field f : streamClassFields) {
-            if (f.getName().equals("source")) {
+         for(Field f : streamClassFields){
+            if(f.getName().equals("source")){
                long offset = UnsafeWrapper.objectFieldOffset(f);
                sourceObj = UnsafeWrapper.getObject(_source, offset);
                break;
             }
          }
-         
+
          Object argObj = unsafeGetFieldRefFromObject(sourceObj, "arg$1");
          // Get the elements out of the arg$1 ref
          Object elementsObj = unsafeGetFieldRefFromObject(argObj, "elements");
-         
-         if (logger.isLoggable(Level.FINE)) {
+
+         if(logger.isLoggable(Level.FINE)){
             logger.fine("# elements array: " + elementsObj);
          }
-         
+
          return elementsObj;
       }
-      
-      
-      public LambdaKernelCall(Object _block) throws AparapiException, ClassNotFoundException {
+
+
+      public LambdaKernelCall(Object _block) throws AparapiException, ClassNotFoundException{
          init(_block);
       }
-      
-      public LambdaKernelCall(Object _block, Stream _source) throws AparapiException, ClassNotFoundException { 
+
+      public LambdaKernelCall(Object _block, Stream _source) throws AparapiException, ClassNotFoundException{
          init(_block);
          objectLambdaSourceArray = (Object[]) setupStreamSource(_source);
       }
-      
+
    }
 
-   private LambdaKernelCall lambdaKernelCall;  
+   private LambdaKernelCall lambdaKernelCall;
 
    private long jniContextHandle = 0;
 
@@ -300,53 +311,49 @@ class LambdaRunner extends OpenCLRunner{
 
    /**
     * Create a LambdaRunner for a specific Kernel instance.
-    * 
+    *
     * @param _intConsumer
     */
 
-   LambdaRunner(IntConsumer _intConsumer) throws AparapiException {
-      try {
+   LambdaRunner(IntConsumer _intConsumer) throws AparapiException{
+      try{
          lambdaKernelCall = new LambdaKernelCall(_intConsumer);
-         if (logger.isLoggable(Level.INFO)) {
+         if(logger.isLoggable(Level.INFO)){
             logger.info("New lambda call is = " + lambdaKernelCall);
          }
-      } catch (ClassNotFoundException c) {
+      }catch(ClassNotFoundException c){
          throw new AparapiException(c);
       }
    }
 
 
-    LambdaRunner(Consumer block, Stream source) throws AparapiException {
-      try {
+   LambdaRunner(Consumer block, Stream source) throws AparapiException{
+      try{
          lambdaKernelCall = new LambdaKernelCall(block, source);
-         if (logger.isLoggable(Level.INFO)) {
+         if(logger.isLoggable(Level.INFO)){
             logger.info("New lambda call is = " + lambdaKernelCall);
          }
-      } catch (ClassNotFoundException c) {
+      }catch(ClassNotFoundException c){
          throw new AparapiException(c);
       }
    }
 
    /**
     * <code>Kernel.dispose()</code> delegates to <code>KernelRunner.dispose()</code> which delegates to <code>disposeJNI()</code> to actually close JNI data structures.<br/>
-    * 
+    *
     * @see LambdaRunner#disposeJNI(long)
     */
-   void dispose() {
-      
+   void dispose(){
+
       // Might need to revisit this for Superbowl
-      
-//      if (kernel.getExecutionMode().isOpenCL()) {
-//         disposeJNI(jniContextHandle);
-//      }
+
+      //      if (kernel.getExecutionMode().isOpenCL()) {
+      //         disposeJNI(jniContextHandle);
+      //      }
    }
 
 
-
    private native int updateLambdaBlockJNI(long _jniContextHandle, Object newHolder, int argc);
-
-
-
 
 
    private KernelArg[] args = null;
@@ -354,36 +361,35 @@ class LambdaRunner extends OpenCLRunner{
    private boolean usesOopConversion = false;
 
    /**
-    * 
     * @param arg
     * @return
     * @throws AparapiException
     */
-   private boolean prepareOopConversionBuffer(KernelArg arg) throws AparapiException {
+   private boolean prepareOopConversionBuffer(KernelArg arg) throws AparapiException{
       usesOopConversion = true;
       Class<?> arrayClass = null;
       ClassModel c = null;
       boolean didReallocate = false;
 
-      if (lambdaKernelCall.isObjectLambda()) {
+      if(lambdaKernelCall.isObjectLambda()){
          // Use the actual type of the object stream source array
          arrayClass = objectLambdaSourceArray.getClass();
-      } else {
+      }else{
          arrayClass = arg.field.getType();
       }
 
-      if (arg.objArrayElementModel == null) {
+      if(arg.objArrayElementModel == null){
          String tmp = arrayClass.getName().substring(2).replace("/", ".");
          String arrayClassInDotForm = tmp.substring(0, tmp.length() - 1);
 
-         if (logger.isLoggable(Level.FINE)) {
+         if(logger.isLoggable(Level.FINE)){
             logger.fine("looking for type = " + arrayClassInDotForm);
          }
 
          // get ClassModel of obj array from entrypt.objectArrayFieldsClasses
          c = entryPoint.getObjectArrayFieldsClasses().get(arrayClassInDotForm);
          arg.objArrayElementModel = c;
-      } else {
+      }else{
          c = arg.objArrayElementModel;
       }
       assert c != null : "should find class for elements " + arrayClass.getName();
@@ -391,17 +397,17 @@ class LambdaRunner extends OpenCLRunner{
       int arrayBaseOffset = UnsafeWrapper.arrayBaseOffset(arrayClass);
       int arrayScale = UnsafeWrapper.arrayIndexScale(arrayClass);
 
-      if (logger.isLoggable(Level.FINEST)) {
+      if(logger.isLoggable(Level.FINEST)){
          logger.finest("Syncing obj array type = " + arrayClass + " cvtd= " + c.getClassWeAreModelling().getName()
                + "arrayBaseOffset=" + arrayBaseOffset + " arrayScale=" + arrayScale);
       }
 
       int objArraySize = 0;
       Object newRef = null;
-      try {
+      try{
          newRef = arg.field.get(arg.fieldHolder);
          objArraySize = Array.getLength(newRef);
-      } catch (IllegalAccessException e) {
+      }catch(IllegalAccessException e){
          throw new AparapiException(e);
       }
 
@@ -411,16 +417,16 @@ class LambdaRunner extends OpenCLRunner{
       int totalBufferSize = objArraySize * totalStructSize;
 
       // allocate ByteBuffer if first time or array changed
-      if ((arg.objArrayBuffer == null) || (newRef != arg.array)) {
+      if((arg.objArrayBuffer == null) || (newRef != arg.array)){
          ByteBuffer structBuffer = ByteBuffer.allocate(totalBufferSize);
          arg.objArrayByteBuffer = structBuffer.order(ByteOrder.LITTLE_ENDIAN);
          arg.objArrayBuffer = arg.objArrayByteBuffer.array();
          didReallocate = true;
-         if (logger.isLoggable(Level.FINEST)) {
+         if(logger.isLoggable(Level.FINEST)){
             logger.finest("objArraySize = " + objArraySize + " totalStructSize= " + totalStructSize + " totalBufferSize="
                   + totalBufferSize);
          }
-      } else {
+      }else{
          arg.objArrayByteBuffer.clear();
       }
 
@@ -429,52 +435,52 @@ class LambdaRunner extends OpenCLRunner{
       arg.numElements = objArraySize;
       arg.sizeInBytes = totalBufferSize;
 
-      for (int j = 0; j < objArraySize; j++) {
+      for(int j = 0; j < objArraySize; j++){
          int sizeWritten = 0;
 
          Object object = UnsafeWrapper.getObject(newRef, arrayBaseOffset + arrayScale * j);
-         for (int i = 0; i < c.getStructMemberTypes().size(); i++) {
+         for(int i = 0; i < c.getStructMemberTypes().size(); i++){
             TypeSpec t = c.getStructMemberTypes().get(i);
             long offset = c.getStructMemberOffsets().get(i);
 
-            if (logger.isLoggable(Level.FINEST)) {
+            if(logger.isLoggable(Level.FINEST)){
                logger.finest("name = " + c.getStructMembers().get(i).getNameAndTypeEntry().getNameUTF8Entry().getUTF8() + " t= "
                      + t);
             }
 
-            switch (t) {
-               case I: {
+            switch(t){
+               case I:{
                   int x = UnsafeWrapper.getInt(object, offset);
                   arg.objArrayByteBuffer.putInt(x);
                   sizeWritten += t.getSize();
                   break;
                }
-               case F: {
+               case F:{
                   float x = UnsafeWrapper.getFloat(object, offset);
                   arg.objArrayByteBuffer.putFloat(x);
                   sizeWritten += t.getSize();
                   break;
                }
-               case J: {
+               case J:{
                   long x = UnsafeWrapper.getLong(object, offset);
                   arg.objArrayByteBuffer.putLong(x);
                   sizeWritten += t.getSize();
                   break;
                }
-               case Z: {
+               case Z:{
                   boolean x = UnsafeWrapper.getBoolean(object, offset);
                   arg.objArrayByteBuffer.put(x == true ? (byte) 1 : (byte) 0);
                   // Booleans converted to 1 byte C chars for opencl
                   sizeWritten += TypeSpec.B.getSize();
                   break;
                }
-               case B: {
+               case B:{
                   byte x = UnsafeWrapper.getByte(object, offset);
                   arg.objArrayByteBuffer.put(x);
                   sizeWritten += t.getSize();
                   break;
                }
-               case D: {
+               case D:{
                   throw new AparapiException("Double not implemented yet");
                }
                default:
@@ -484,14 +490,14 @@ class LambdaRunner extends OpenCLRunner{
          }
 
          // add padding here if needed
-         if (logger.isLoggable(Level.FINEST)) {
+         if(logger.isLoggable(Level.FINEST)){
             logger.finest("sizeWritten = " + sizeWritten + " totalStructSize= " + totalStructSize);
          }
 
          assert sizeWritten <= totalStructSize : "wrote too much into buffer";
 
-         while (sizeWritten < totalStructSize) {
-            if (logger.isLoggable(Level.FINEST)) {
+         while(sizeWritten < totalStructSize){
+            if(logger.isLoggable(Level.FINEST)){
                logger.finest(arg.name + " struct pad byte = " + sizeWritten + " totalStructSize= " + totalStructSize);
             }
             arg.objArrayByteBuffer.put((byte) -1);
@@ -504,30 +510,30 @@ class LambdaRunner extends OpenCLRunner{
       return didReallocate;
    }
 
-   private void extractOopConversionBuffer(KernelArg arg) throws AparapiException {
+   private void extractOopConversionBuffer(KernelArg arg) throws AparapiException{
       Class<?> arrayClass = null;
-      
-      if (lambdaKernelCall.isObjectLambda()) {
+
+      if(lambdaKernelCall.isObjectLambda()){
          // Use the actual type of the object stream source array
          arrayClass = objectLambdaSourceArray.getClass();
-      } else {
+      }else{
          arrayClass = arg.field.getType();
       }
-      
+
       ClassModel c = arg.objArrayElementModel;
       assert c != null : "should find class for elements: " + arrayClass.getName();
       assert arg.array != null : "array is null";
 
       int arrayBaseOffset = UnsafeWrapper.arrayBaseOffset(arrayClass);
       int arrayScale = UnsafeWrapper.arrayIndexScale(arrayClass);
-      if (logger.isLoggable(Level.FINEST)) {
+      if(logger.isLoggable(Level.FINEST)){
          logger.finest("Syncing field:" + arg.name + ", bb=" + arg.objArrayByteBuffer + ", type = " + arrayClass);
       }
 
       int objArraySize = 0;
-      try {
+      try{
          objArraySize = Array.getLength(arg.field.get(arg.fieldHolder));
-      } catch (IllegalAccessException e) {
+      }catch(IllegalAccessException e){
          throw new AparapiException(e);
       }
 
@@ -537,44 +543,44 @@ class LambdaRunner extends OpenCLRunner{
 
       arg.objArrayByteBuffer.rewind();
 
-      for (int j = 0; j < objArraySize; j++) {
+      for(int j = 0; j < objArraySize; j++){
          int sizeWritten = 0;
          Object object = UnsafeWrapper.getObject(arg.array, arrayBaseOffset + arrayScale * j);
-         for (int i = 0; i < c.getStructMemberTypes().size(); i++) {
+         for(int i = 0; i < c.getStructMemberTypes().size(); i++){
             TypeSpec t = c.getStructMemberTypes().get(i);
             long offset = c.getStructMemberOffsets().get(i);
-            switch (t) {
-               case I: {
+            switch(t){
+               case I:{
                   // read int value from buffer and store into obj in the array
                   int x = arg.objArrayByteBuffer.getInt();
-                  if (logger.isLoggable(Level.FINEST)) {
+                  if(logger.isLoggable(Level.FINEST)){
                      logger.finest("fType = " + t.getShortName() + " x= " + x);
                   }
                   UnsafeWrapper.putInt(object, offset, x);
                   sizeWritten += t.getSize();
                   break;
                }
-               case F: {
+               case F:{
                   float x = arg.objArrayByteBuffer.getFloat();
-                  if (logger.isLoggable(Level.FINEST)) {
+                  if(logger.isLoggable(Level.FINEST)){
                      logger.finest("fType = " + t.getShortName() + " x= " + x);
                   }
                   UnsafeWrapper.putFloat(object, offset, x);
                   sizeWritten += t.getSize();
                   break;
                }
-               case J: {
+               case J:{
                   long x = arg.objArrayByteBuffer.getLong();
-                  if (logger.isLoggable(Level.FINEST)) {
+                  if(logger.isLoggable(Level.FINEST)){
                      logger.finest("fType = " + t.getShortName() + " x= " + x);
                   }
                   UnsafeWrapper.putLong(object, offset, x);
                   sizeWritten += t.getSize();
                   break;
                }
-               case Z: {
+               case Z:{
                   byte x = arg.objArrayByteBuffer.get();
-                  if (logger.isLoggable(Level.FINEST)) {
+                  if(logger.isLoggable(Level.FINEST)){
                      logger.finest("fType = " + t.getShortName() + " x= " + x);
                   }
                   UnsafeWrapper.putBoolean(object, offset, (x == 1 ? true : false));
@@ -582,16 +588,16 @@ class LambdaRunner extends OpenCLRunner{
                   sizeWritten += TypeSpec.B.getSize();
                   break;
                }
-               case B: {
+               case B:{
                   byte x = arg.objArrayByteBuffer.get();
-                  if (logger.isLoggable(Level.FINEST)) {
+                  if(logger.isLoggable(Level.FINEST)){
                      logger.finest("fType = " + t.getShortName() + " x= " + x);
                   }
                   UnsafeWrapper.putByte(object, offset, x);
                   sizeWritten += t.getSize();
                   break;
                }
-               case D: {
+               case D:{
                   throw new AparapiException("Double not implemented yet");
                }
                default:
@@ -601,13 +607,13 @@ class LambdaRunner extends OpenCLRunner{
          }
 
          // add padding here if needed
-         if (logger.isLoggable(Level.FINEST)) {
+         if(logger.isLoggable(Level.FINEST)){
             logger.finest("sizeWritten = " + sizeWritten + " totalStructSize= " + totalStructSize);
          }
 
          assert sizeWritten <= totalStructSize : "wrote too much into buffer";
 
-         while (sizeWritten < totalStructSize) {
+         while(sizeWritten < totalStructSize){
             // skip over pad bytes
             arg.objArrayByteBuffer.get();
             sizeWritten++;
@@ -615,85 +621,85 @@ class LambdaRunner extends OpenCLRunner{
       }
    }
 
-   private void restoreObjects() throws AparapiException {
-      for (int i = 0; i < argc; i++) {
+   private void restoreObjects() throws AparapiException{
+      for(int i = 0; i < argc; i++){
          KernelArg arg = args[i];
-         if ((arg.type & ARG_OBJ_ARRAY_STRUCT) != 0) {
+         if((arg.type & ARG_OBJ_ARRAY_STRUCT) != 0){
             extractOopConversionBuffer(arg);
          }
       }
    }
 
-   private boolean updateKernelArrayRefs(Object lambdaObject) throws AparapiException {
+   private boolean updateKernelArrayRefs(Object lambdaObject) throws AparapiException{
       boolean needsSync = false;
 
-      for (int i = 0; i < argc; i++) {
+      for(int i = 0; i < argc; i++){
          KernelArg arg = args[i];
-         try {
-            if ((arg.type & ARG_ARRAY) != 0) {
+         try{
+            if((arg.type & ARG_ARRAY) != 0){
                Object newArrayRef;
                newArrayRef = arg.field.get(arg.fieldHolder);
 
-               if (newArrayRef == null) {
+               if(newArrayRef == null){
                   throw new IllegalStateException("Cannot send null refs to kernel, reverting to java");
                }
 
-               if ((arg.type & ARG_OBJ_ARRAY_STRUCT) != 0) {
+               if((arg.type & ARG_OBJ_ARRAY_STRUCT) != 0){
                   prepareOopConversionBuffer(arg);
-               } else {
+               }else{
                   // set up JNI fields for normal arrays
                   arg.javaArray = newArrayRef;
                   arg.numElements = Array.getLength(newArrayRef);
                   arg.sizeInBytes = arg.numElements * arg.primitiveSize;
 
-//                  if (((args[i].type & ARG_EXPLICIT) != 0) && puts.contains(newArrayRef)) {
-//                     args[i].type |= ARG_EXPLICIT_WRITE;
-//                     // System.out.println("detected an explicit write " + args[i].name);
-//                     puts.remove(newArrayRef);
-//                  }
+                  //                  if (((args[i].type & ARG_EXPLICIT) != 0) && puts.contains(newArrayRef)) {
+                  //                     args[i].type |= ARG_EXPLICIT_WRITE;
+                  //                     // System.out.println("detected an explicit write " + args[i].name);
+                  //                     puts.remove(newArrayRef);
+                  //                  }
                }
-               if (newArrayRef != arg.array) {
+               if(newArrayRef != arg.array){
                   needsSync = true;
-                  if (logger.isLoggable(Level.FINE)) {
+                  if(logger.isLoggable(Level.FINE)){
                      logger.fine("saw newArrayRef for " + arg.name + " = " + newArrayRef + ", newArrayLen = "
                            + Array.getLength(newArrayRef));
                   }
                }
                arg.array = newArrayRef;
             }
-         } catch (IllegalArgumentException e) {
+         }catch(IllegalArgumentException e){
             e.printStackTrace();
-         } catch (IllegalAccessException e) {
+         }catch(IllegalAccessException e){
             e.printStackTrace();
          }
       }
       return needsSync;
    }
 
-      
-//   /**
-//    * There is a new Block for each invocation of the lambda
-//    * @param callerBlock
-//    */
-//   private void updateCallerBlockParams(Object callerBlock) {
-//      currentCallerBlock = callerBlock;
-//      for(int i=0; i<argc; i++) {
-//         if (args[i].fieldHolder instanceof IntConsumer) {
-//            if (logger.isLoggable(Level.FINE)) {
-//               logger.fine("Updated Block for " + args[i].name + " old: " + args[i].fieldHolder + " new: " + callerBlock);
-//            }
-//            args[i].fieldHolder = callerBlock;
-//         }
-//      }
-//   }
 
-   private LambdaRunner executeOpenCL(Object lambdaObject, Object callerBlock, final Range _range, final int _passes) throws AparapiException {
-       assert args != null : "args should not be null";
+   //   /**
+   //    * There is a new Block for each invocation of the lambda
+   //    * @param callerBlock
+   //    */
+   //   private void updateCallerBlockParams(Object callerBlock) {
+   //      currentCallerBlock = callerBlock;
+   //      for(int i=0; i<argc; i++) {
+   //         if (args[i].fieldHolder instanceof IntConsumer) {
+   //            if (logger.isLoggable(Level.FINE)) {
+   //               logger.fine("Updated Block for " + args[i].name + " old: " + args[i].fieldHolder + " new: " + callerBlock);
+   //            }
+   //            args[i].fieldHolder = callerBlock;
+   //         }
+   //      }
+   //   }
+
+   private LambdaRunner executeOpenCL(Object lambdaObject, Object callerBlock, final Range _range, final int _passes) throws AparapiException{
+      assert args != null : "args should not be null";
 
       // Read the array refs after kernel may have changed them
       // We need to do this as input to computing the localSize
       boolean needSync = updateKernelArrayRefs(lambdaObject);
-      if (needSync && logger.isLoggable(Level.FINE)) {
+      if(needSync && logger.isLoggable(Level.FINE)){
          logger.fine("Need to resync arrays on " + lambdaObject.getClass().getName());
       }
 
@@ -704,46 +710,47 @@ class LambdaRunner extends OpenCLRunner{
       updateLambdaBlockJNI(jniContextHandle, callerBlock, lambdaKernelCall.getLambdaCapturedFields().length);
 
       // native side will reallocate array buffers if necessary
-      if (runJNI(jniContextHandle, _range, needSync, _passes) != 0) {
+      if(runJNI(jniContextHandle, _range, needSync, _passes) != 0){
          logger.warning("### CL exec seems to have failed. Trying to revert to Java ###");
-         throw new AparapiException ("CL exec seems to have failed. Trying to revert to Java");         
+         throw new AparapiException("CL exec seems to have failed. Trying to revert to Java");
       }
 
-      if (usesOopConversion == true) {
+      if(usesOopConversion == true){
          restoreObjects();
       }
 
-      if (logger.isLoggable(Level.FINEST)) {
+      if(logger.isLoggable(Level.FINEST)){
          logger.finest("executeOpenCL completed. " + _range);
       }
       return this;
    }
+
    /**
     * This is simply used to pass the iteration variable to the kernel
     */
    final int iterationVariable = 0;
-   Object[]   objectLambdaSourceArray;
-   
-   
-   KernelArg prepareOneArg(Field field, Object holder) {
-      KernelArg   currArg = new KernelArg();
+   Object[] objectLambdaSourceArray;
+
+
+   KernelArg prepareOneArg(Field field, Object holder){
+      KernelArg currArg = new KernelArg();
 
       currArg.fieldHolder = holder;
       currArg.name = field.getName();
       currArg.field = field;
-      if ((field.getModifiers() & Modifier.STATIC) == Modifier.STATIC) {
+      if((field.getModifiers() & Modifier.STATIC) == Modifier.STATIC){
          currArg.type |= ARG_STATIC;
       }
 
       Class<?> type = field.getType();
-      if (type.isArray()) {         
+      if(type.isArray()){
          currArg.type |= ARG_GLOBAL;
          currArg.array = null; // will get updated in updateKernelArrayRefs
          currArg.type |= ARG_ARRAY;
 
          // For Aparapi/Sumatra demos treat all arrays as read/write
          currArg.type |= (ARG_WRITE | ARG_READ);
-         
+
          currArg.type |= type.isAssignableFrom(float[].class) ? ARG_FLOAT : 0;
 
          currArg.type |= type.isAssignableFrom(int[].class) ? ARG_INT : 0;
@@ -762,57 +769,57 @@ class LambdaRunner extends OpenCLRunner{
 
          // arrays whose length is used will have an int arg holding
          // the length as a kernel param
-         if (entryPoint.getArrayFieldArrayLengthUsed().contains(currArg.name)) {
+         if(entryPoint.getArrayFieldArrayLengthUsed().contains(currArg.name)){
             currArg.type |= ARG_ARRAYLENGTH;
          }
 
-         if (type.getName().startsWith("[L")) {
+         if(type.getName().startsWith("[L")){
             currArg.type |= (ARG_OBJ_ARRAY_STRUCT | ARG_WRITE | ARG_READ);
-            if (logger.isLoggable(Level.FINE)) {
+            if(logger.isLoggable(Level.FINE)){
                logger.fine("tagging " + currArg.name + " as (ARG_OBJ_ARRAY_STRUCT | ARG_WRITE | ARG_READ)");
             }
          }
-      } else if (type.isAssignableFrom(float.class)) {
+      }else if(type.isAssignableFrom(float.class)){
          currArg.type |= ARG_PRIMITIVE;
          currArg.type |= ARG_FLOAT;
-      } else if (type.isAssignableFrom(int.class)) {
+      }else if(type.isAssignableFrom(int.class)){
          currArg.type |= ARG_PRIMITIVE;
          currArg.type |= ARG_INT;
-      } else if (type.isAssignableFrom(double.class)) {
+      }else if(type.isAssignableFrom(double.class)){
          currArg.type |= ARG_PRIMITIVE;
          currArg.type |= ARG_DOUBLE;
-      } else if (type.isAssignableFrom(long.class)) {
+      }else if(type.isAssignableFrom(long.class)){
          currArg.type |= ARG_PRIMITIVE;
          currArg.type |= ARG_LONG;
-      } else if (type.isAssignableFrom(boolean.class)) {
+      }else if(type.isAssignableFrom(boolean.class)){
          currArg.type |= ARG_PRIMITIVE;
          currArg.type |= ARG_BOOLEAN;
-      } else if (type.isAssignableFrom(byte.class)) {
+      }else if(type.isAssignableFrom(byte.class)){
          currArg.type |= ARG_PRIMITIVE;
          currArg.type |= ARG_BYTE;
-      } else if (type.isAssignableFrom(char.class)) {
+      }else if(type.isAssignableFrom(char.class)){
          currArg.type |= ARG_PRIMITIVE;
          currArg.type |= ARG_CHAR;
-      } else if (type.isAssignableFrom(short.class)) {
+      }else if(type.isAssignableFrom(short.class)){
          currArg.type |= ARG_PRIMITIVE;
          currArg.type |= ARG_SHORT;
       }
 
       currArg.primitiveSize = ((currArg.type & ARG_FLOAT) != 0 ? 4 : (currArg.type & ARG_INT) != 0 ? 4
             : (currArg.type & ARG_BYTE) != 0 ? 1 : (currArg.type & ARG_CHAR) != 0 ? 2
-                  : (currArg.type & ARG_BOOLEAN) != 0 ? 1 : (currArg.type & ARG_SHORT) != 0 ? 2
-                        : (currArg.type & ARG_LONG) != 0 ? 8 : (currArg.type & ARG_DOUBLE) != 0 ? 8 : 0);
+            : (currArg.type & ARG_BOOLEAN) != 0 ? 1 : (currArg.type & ARG_SHORT) != 0 ? 2
+            : (currArg.type & ARG_LONG) != 0 ? 8 : (currArg.type & ARG_DOUBLE) != 0 ? 8 : 0);
 
-      if (logger.isLoggable(Level.FINE)) {
+      if(logger.isLoggable(Level.FINE)){
          logger.fine("prepareOneArg : " + currArg.name + ", type=" + Integer.toHexString(currArg.type)
                + ", primitiveSize=" + currArg.primitiveSize);
       }
 
       return currArg;
    }
-   
-   
-   KernelArg[] prepareLambdaArgs(LambdaKernelCall call, Object callerBlock) {
+
+
+   KernelArg[] prepareLambdaArgs(LambdaKernelCall call, Object callerBlock){
       Object lambdaObject = call.getLambdaKernelThis();
       Field[] callerCapturedFields = call.getLambdaCapturedFields();
       List<KernelArg> argsList = new ArrayList<KernelArg>();
@@ -822,56 +829,62 @@ class LambdaRunner extends OpenCLRunner{
       // 1b. Source array if this is an object stream
       // 2. iteration variable,
       // 3. field references from lambda's object
-      try {
-         
-         for (Field field : callerCapturedFields) {
+      try{
+
+         for(Field field : callerCapturedFields){
             field.setAccessible(true);
-            argsList.add(prepareOneArg(field, callerBlock));            
+            argsList.add(prepareOneArg(field, callerBlock));
          }
-         
-         if (call.isObjectLambda()) {
+
+         if(call.isObjectLambda()){
             argsList.add(prepareOneArg(this.getClass().getDeclaredField("objectLambdaSourceArray"), this));
          }
 
          argsList.add(prepareOneArg(this.getClass().getDeclaredField("iterationVariable"), this));
 
-         for (Field field : entryPoint.getReferencedFields()) {
+         for(Field field : entryPoint.getReferencedFields()){
             field.setAccessible(true);
-            argsList.add(prepareOneArg(field, lambdaObject));            
+            argsList.add(prepareOneArg(field, lambdaObject));
          }
 
-      } catch (Exception e) {
+      }catch(Exception e){
          e.printStackTrace();
          return null;
       }
       return argsList.toArray(new KernelArg[0]);
    }
-   
+
    // Hope for the best!
    boolean runnable = true;
-   public void setRunnable(boolean b) { runnable = b; }
-   public boolean getRunnable() { return runnable; }
+
+   public void setRunnable(boolean b){
+      runnable = b;
+   }
+
+   public boolean getRunnable(){
+      return runnable;
+   }
 
 
-   synchronized boolean execute(Object callerBlock, final Range _range, final int _passes) throws AparapiException {
+   synchronized boolean execute(Object callerBlock, final Range _range, final int _passes) throws AparapiException{
 
       long executeStartTime = System.currentTimeMillis();
 
-      if (_range == null) {
+      if(_range == null){
          throw new IllegalStateException("range can't be null");
       }
 
-      if (entryPoint == null) {
+      if(entryPoint == null){
          assert lambdaKernelCall != null : "Should not be null";
-         
+
          Class lambdaClass = lambdaKernelCall.getLambdaKernelClass();
          ClassModel classModel = new ClassModel(lambdaClass);
 
          entryPoint = classModel.getLambdaEntrypoint(lambdaKernelCall.getLambdaMethodName(),
                lambdaKernelCall.getLambdaMethodSignature(), lambdaKernelCall.getLambdaKernelThis());
 
-         if ((entryPoint != null) && !entryPoint.shouldFallback()) {
-            synchronized (KernelRunner.class) { // This seems to be needed because of a race condition uncovered with issue #68 http://code.google.com/p/aparapi/issues/detail?id=68
+         if((entryPoint != null) && !entryPoint.shouldFallback()){
+            synchronized(KernelRunner.class){ // This seems to be needed because of a race condition uncovered with issue #68 http://code.google.com/p/aparapi/issues/detail?id=68
                OpenCLDevice openCLDevice = null;
                int jniFlags = 0;
                // We used to treat as before by getting first GPU device
@@ -879,40 +892,40 @@ class LambdaRunner extends OpenCLRunner{
                openCLDevice = (OpenCLDevice) ((Config.executionMode != null && Config.executionMode.equals("CPU")) ? OpenCLDevice.firstCPU() : OpenCLDevice.best());
                assert openCLDevice != null : "Device should not be null";
                jniFlags |= JNI_FLAG_USE_GPU; // this flag might be redundant now.
-                jniFlags |= JNI_FLAG_LAMBDA_KERNEL;
+               jniFlags |= JNI_FLAG_LAMBDA_KERNEL;
                jniContextHandle = initJNI(lambdaKernelCall.isStatic() == true ?
-                     lambdaKernelCall.getLambdaKernelClass() : lambdaKernelCall.getLambdaKernelThis(), 
+                     lambdaKernelCall.getLambdaKernelClass() : lambdaKernelCall.getLambdaKernelThis(),
                      openCLDevice, jniFlags);
             }
 
-            if (jniContextHandle == 0) {
-               throw new AparapiException ("Can't create JNI context");
+            if(jniContextHandle == 0){
+               throw new AparapiException("Can't create JNI context");
             }
 
             String extensions = getExtensionsJNI(jniContextHandle);
             capabilitiesSet = new HashSet<String>();
 
             StringTokenizer strTok = new StringTokenizer(extensions);
-            while (strTok.hasMoreTokens()) {
+            while(strTok.hasMoreTokens()){
                capabilitiesSet.add(strTok.nextToken());
             }
 
-            if (logger.isLoggable(Level.FINE)) {
+            if(logger.isLoggable(Level.FINE)){
                logger.fine("Capabilities initialized to :" + capabilitiesSet.toString());
             }
 
-            if (entryPoint.requiresDoublePragma() && !hasFP64Support()) {
-               throw new AparapiException ("FP64 required but not supported");
+            if(entryPoint.requiresDoublePragma() && !hasFP64Support()){
+               throw new AparapiException("FP64 required but not supported");
             }
 
-            if (entryPoint.requiresByteAddressableStorePragma() && !hasByteAddressableStoreSupport()) {
+            if(entryPoint.requiresByteAddressableStorePragma() && !hasByteAddressableStoreSupport()){
                throw new AparapiException("Byte addressable stores required but not supported");
             }
 
             boolean all32AtomicsAvailable = hasGlobalInt32BaseAtomicsSupport() && hasGlobalInt32ExtendedAtomicsSupport()
                   && hasLocalInt32BaseAtomicsSupport() && hasLocalInt32ExtendedAtomicsSupport();
 
-            if (entryPoint.requiresAtomic32Pragma() && !all32AtomicsAvailable) {
+            if(entryPoint.requiresAtomic32Pragma() && !all32AtomicsAvailable){
                throw new AparapiException("32 bit Atomics required but not supported");
             }
 
@@ -922,16 +935,16 @@ class LambdaRunner extends OpenCLRunner{
             String openCL = null;
             openCL = KernelWriter.writeToString(entryPoint);
 
-            if (Config.enableShowGeneratedOpenCL) {
+            if(Config.enableShowGeneratedOpenCL){
                System.out.println(openCL);
             }
 
-            if (logger.isLoggable(Level.INFO)) {
+            if(logger.isLoggable(Level.INFO)){
                logger.info(openCL);
             }
 
             // Send the string to OpenCL to compile it
-            if (buildProgramJNI(jniContextHandle, openCL) == 0) {
+            if(buildProgramJNI(jniContextHandle, openCL) == 0){
                throw new AparapiException("OpenCL compile failed");
             }
 
@@ -946,15 +959,15 @@ class LambdaRunner extends OpenCLRunner{
             executeOpenCL(lambdaKernelCall.isStatic() == true ?
                   lambdaKernelCall.getLambdaKernelClass() : lambdaKernelCall.getLambdaKernelThis(), callerBlock, _range, _passes);
 
-            if (logger.isLoggable(Level.INFO)) {
+            if(logger.isLoggable(Level.INFO)){
                logger.info("First run done. ");
             }
 
-         } else {
+         }else{
             throw new AparapiException("failed to locate entrypoint");
          }
 
-      } else {
+      }else{
          executeOpenCL(lambdaKernelCall.isStatic() == true ?
                lambdaKernelCall.getLambdaKernelClass() : lambdaKernelCall.getLambdaKernelThis(), callerBlock, _range, _passes);
       }
@@ -964,8 +977,8 @@ class LambdaRunner extends OpenCLRunner{
 
       return true;
    }
-   
-   synchronized boolean execute(Object callerBlock, final int _passes) throws AparapiException {
+
+   synchronized boolean execute(Object callerBlock, final int _passes) throws AparapiException{
       execute(callerBlock, Range.create(objectLambdaSourceArray.length), _passes);
       return true;
    }
@@ -973,7 +986,6 @@ class LambdaRunner extends OpenCLRunner{
    private Set<Object> puts = new HashSet<Object>();
 
    private native int getJNI(long _jniContextHandle, Object _array);
-
 
 
 }

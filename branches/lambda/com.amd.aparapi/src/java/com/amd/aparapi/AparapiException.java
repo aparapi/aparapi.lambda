@@ -39,25 +39,23 @@ package com.amd.aparapi;
 
 /**
  * We use <code>AparapiException</code> class and subclasses to wrap other
- * <code>Exception</code> classes, mainly to allow differentiation between Aparapi specific issues at runtime. 
- * 
- * The class parser for example will throw a specific <code>ClassParseException</code> if any Aparapi unfriendly 
+ * <code>Exception</code> classes, mainly to allow differentiation between Aparapi specific issues at runtime.
+ * <p/>
+ * The class parser for example will throw a specific <code>ClassParseException</code> if any Aparapi unfriendly
  * constructs are found.  This allows us to <strong>fail fast</strong> during classfile parsing.
- * 
- * @see com.amd.aparapi.ClassParseException
- * @see com.amd.aparapi.CodeGenException
  *
  * @author gfrost
- *
+ * @see com.amd.aparapi.ClassParseException
+ * @see com.amd.aparapi.CodeGenException
  */
 
 @SuppressWarnings("serial") public class AparapiException extends Exception{
 
-   AparapiException(String _msg) {
+   AparapiException(String _msg){
       super(_msg);
    }
 
-   AparapiException(Throwable _t) {
+   AparapiException(Throwable _t){
       super(_t);
    }
 

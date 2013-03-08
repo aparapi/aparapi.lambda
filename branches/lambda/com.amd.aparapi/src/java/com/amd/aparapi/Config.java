@@ -38,19 +38,17 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 package com.amd.aparapi;
 
 import com.amd.aparapi.Annotations.UsedByJNICode;
-
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * A central location for holding all runtime configurable properties as well as logging configuration.
- * 
+ * <p/>
  * Ideally we will find all properties used by <code>Aparapi</code> here.  Please consider updating this class if you wish
- * to add new properties which control <code>Aparapi</code>s behavior. 
+ * to add new properties which control <code>Aparapi</code>s behavior.
  *
  * @author gfrost
- *
  */
 class Config{
 
@@ -58,7 +56,7 @@ class Config{
 
    /**
     * Allows the user to request to use a jvmti agent to access JNI code rather than loading explicitly.
-    * 
+    * <p/>
     * Usage -agentpath=/full/path/to/agent.dll -Dcom.amd.aparapi.useAgent=true
     */
 
@@ -68,61 +66,55 @@ class Config{
 
    /**
     * Allows the user to request a specific Kernel.EXECUTION_MODE enum value for all Kernels.
-    * 
-    *  Usage -Dcom.amd.aparapi.executionMode={SEQ|JTP|CPU|GPU}
-    *  
-    *  @see com.amd.aparapi.Kernel.EXECUTION_MODE
+    * <p/>
+    * Usage -Dcom.amd.aparapi.executionMode={SEQ|JTP|CPU|GPU}
+    *
+    * @see com.amd.aparapi.Kernel.EXECUTION_MODE
     */
    static final String executionMode = System.getProperty(propPkgName + ".executionMode");
 
    /**
     * Allows the user to turn on OpenCL profiling for the JNI/OpenCL layer.
-    * 
-    *  Usage -Dcom.amd.aparapi.enableProfiling={true|false}
-    *  
+    * <p/>
+    * Usage -Dcom.amd.aparapi.enableProfiling={true|false}
     */
    @UsedByJNICode static final boolean enableProfiling = Boolean.getBoolean(propPkgName + ".enableProfiling");
 
    /**
     * Allows the user to turn on OpenCL profiling for the JNI/OpenCL layer, this information will be written to CSV file
-    * 
-    *  Usage -Dcom.amd.aparapi.enableProfiling={true|false}
-    *  
+    * <p/>
+    * Usage -Dcom.amd.aparapi.enableProfiling={true|false}
     */
    @UsedByJNICode static final boolean enableProfilingCSV = Boolean.getBoolean(propPkgName + ".enableProfilingCSV");
 
    /**
     * Allows the user to request that verbose JNI messages be dumped to stderr.
-    * 
-    *  Usage -Dcom.amd.aparapi.enableVerboseJNI={true|false}
-    *  
+    * <p/>
+    * Usage -Dcom.amd.aparapi.enableVerboseJNI={true|false}
     */
    @UsedByJNICode static final boolean enableVerboseJNI = Boolean.getBoolean(propPkgName + ".enableVerboseJNI");
 
    /**
-    * Allows the user to request tracking of opencl resources.  
-    * 
-    *  This is really a debugging option to help locate leaking OpenCL resources, this will be dumped to stderr.
-    * 
-    *  Usage -Dcom.amd.aparapi.enableOpenCLResourceTracking={true|false}
-    *  
+    * Allows the user to request tracking of opencl resources.
+    * <p/>
+    * This is really a debugging option to help locate leaking OpenCL resources, this will be dumped to stderr.
+    * <p/>
+    * Usage -Dcom.amd.aparapi.enableOpenCLResourceTracking={true|false}
     */
    @UsedByJNICode static final boolean enableVerboseJNIOpenCLResourceTracking = Boolean.getBoolean(propPkgName
          + ".enableVerboseJNIOpenCLResourceTracking");
 
    /**
     * Allows the user to request that the execution mode of each kernel invocation be reported to stdout.
-    * 
-    *  Usage -Dcom.amd.aparapi.enableExecutionModeReporting={true|false}
-    *  
+    * <p/>
+    * Usage -Dcom.amd.aparapi.enableExecutionModeReporting={true|false}
     */
    static final boolean enableExecutionModeReporting = Boolean.getBoolean(propPkgName + ".enableExecutionModeReporting");
 
    /**
     * Allows the user to request that generated OpenCL code is dumped to standard out.
-    * 
-    *  Usage -Dcom.amd.aparapi.enableShowGeneratedOpenCL={true|false}
-    *  
+    * <p/>
+    * Usage -Dcom.amd.aparapi.enableShowGeneratedOpenCL={true|false}
     */
    static final boolean enableShowGeneratedOpenCL = Boolean.getBoolean(propPkgName + ".enableShowGeneratedOpenCL");
 
@@ -169,30 +161,33 @@ class Config{
    // Logging setup
    private static final String logPropName = propPkgName + ".logLevel";
 
-   static String getLoggerName() {
+   static String getLoggerName(){
       return logPropName;
    }
 
    static Logger logger = Logger.getLogger(Config.getLoggerName());
-   static {
 
-      try {
+   static{
+
+      try{
 
          Level level = Level.parse(System.getProperty(getLoggerName(), "WARNING"));
 
          Handler[] handlers = Logger.getLogger("").getHandlers();
-         for (int index = 0; index < handlers.length; index++) {
+         for(int index = 0; index < handlers.length; index++){
             handlers[index].setLevel(level);
          }
 
          logger.setLevel(level);
 
-      } catch (Exception e) {
+      }catch(Exception e){
          System.out.println("Exception " + e + " in Aparapi logging setup.");
          e.printStackTrace();
       }
 
-   };
+   }
+
+   ;
 
    public interface InstructionListener{
       void showAndTell(String message, Instruction _start, Instruction _instruction);
@@ -204,26 +199,26 @@ class Config{
 
    static public InstructionListener instructionListener = null;
 
-   static {
-      if (enableInstructionDecodeViewer && (instructionListenerClassName == null || instructionListenerClassName.equals(""))) {
+   static{
+      if(enableInstructionDecodeViewer && (instructionListenerClassName == null || instructionListenerClassName.equals(""))){
          instructionListenerClassName = InstructionViewer.class.getName();
       }
-      if (instructionListenerClassName != null && !instructionListenerClassName.equals("")) {
-         try {
+      if(instructionListenerClassName != null && !instructionListenerClassName.equals("")){
+         try{
             Class<?> instructionListenerClass = Class.forName(instructionListenerClassName);
             instructionListener = (InstructionListener) instructionListenerClass.newInstance();
-         } catch (ClassNotFoundException e) {
+         }catch(ClassNotFoundException e){
             // TODO Auto-generated catch block
             e.printStackTrace();
-         } catch (InstantiationException e) {
+         }catch(InstantiationException e){
             // TODO Auto-generated catch block
             e.printStackTrace();
-         } catch (IllegalAccessException e) {
+         }catch(IllegalAccessException e){
             // TODO Auto-generated catch block
             e.printStackTrace();
          }
       }
-      if (dumpFlags) {
+      if(dumpFlags){
 
          System.out.println(propPkgName + ".executionMode{GPU|CPU|JTP|SEQ}=" + executionMode);
          System.out.println(propPkgName + ".logLevel{OFF|FINEST|FINER|FINE|WARNING|SEVERE|ALL}=" + logger.getLevel());

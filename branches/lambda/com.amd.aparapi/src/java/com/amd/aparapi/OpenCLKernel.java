@@ -11,21 +11,21 @@ public class OpenCLKernel{
 
    private String name;
 
-   OpenCLKernel(long _kernelId, OpenCLProgram _program, String _name, List<OpenCLArgDescriptor> _args) {
+   OpenCLKernel(long _kernelId, OpenCLProgram _program, String _name, List<OpenCLArgDescriptor> _args){
       kernelId = _kernelId;
       program = _program;
       name = _name;
       args = _args.toArray(new OpenCLArgDescriptor[0]);
-      for (OpenCLArgDescriptor arg : args) {
+      for(OpenCLArgDescriptor arg : args){
          arg.kernel = this;
       }
    }
 
-   public String getName() {
+   public String getName(){
       return name;
    }
 
-   public void invoke(Object[] _args) {
+   public void invoke(Object[] _args){
       OpenCLJNI.getJNI().invoke(this, _args);
 
    }

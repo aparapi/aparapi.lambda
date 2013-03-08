@@ -4,34 +4,24 @@ import com.amd.aparapi.InstructionSet.CompositeInstruction;
 import com.amd.aparapi.InstructionViewer.Form.Check;
 import com.amd.aparapi.InstructionViewer.Form.Template;
 import com.amd.aparapi.InstructionViewer.Form.Toggle;
-
-import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseWheelEvent;
+import java.awt.event.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.CubicCurve2D;
 import java.awt.image.BufferedImage;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 public class InstructionViewer implements Config.InstructionListener{
 
-   public static abstract class Form<T extends Form.Template> {
-      public @interface OneOf {
+   public static abstract class Form<T extends Form.Template>{
+      public @interface OneOf{
          String label();
 
          String[] options();
@@ -40,12 +30,12 @@ public class InstructionViewer implements Config.InstructionListener{
       public interface Template{
       }
 
-      @Retention(RetentionPolicy.RUNTIME) public @interface List {
+      @Retention(RetentionPolicy.RUNTIME) public @interface List{
          Class<?> value();
 
       }
 
-      @Retention(RetentionPolicy.RUNTIME) public @interface Toggle {
+      @Retention(RetentionPolicy.RUNTIME) public @interface Toggle{
          String label();
 
          String on();
@@ -53,7 +43,7 @@ public class InstructionViewer implements Config.InstructionListener{
          String off();
       }
 
-      @Retention(RetentionPolicy.RUNTIME) public @interface Check {
+      @Retention(RetentionPolicy.RUNTIME) public @interface Check{
          String label();
       }
 
@@ -65,45 +55,45 @@ public class InstructionViewer implements Config.InstructionListener{
 
       private SpringLayout layout = new SpringLayout();
 
-      void setBoolean(Field _field, boolean _value) {
-         try {
+      void setBoolean(Field _field, boolean _value){
+         try{
             _field.setBoolean(template, _value);
-         } catch (IllegalArgumentException e) {
+         }catch(IllegalArgumentException e){
             // TODO Auto-generated catch block
             e.printStackTrace();
-         } catch (IllegalAccessException e) {
+         }catch(IllegalAccessException e){
             // TODO Auto-generated catch block
             e.printStackTrace();
          }
       }
 
-      boolean getBoolean(Field _field) {
-         try {
+      boolean getBoolean(Field _field){
+         try{
             return (_field.getBoolean(template));
-         } catch (IllegalArgumentException e) {
+         }catch(IllegalArgumentException e){
             // TODO Auto-generated catch block
             e.printStackTrace();
-         } catch (IllegalAccessException e) {
+         }catch(IllegalAccessException e){
             // TODO Auto-generated catch block
             e.printStackTrace();
          }
          return (false);
       }
 
-      Object get(Field _field) {
-         try {
+      Object get(Field _field){
+         try{
             return (_field.get(template));
-         } catch (IllegalArgumentException e) {
+         }catch(IllegalArgumentException e){
             // TODO Auto-generated catch block
             e.printStackTrace();
-         } catch (IllegalAccessException e) {
+         }catch(IllegalAccessException e){
             // TODO Auto-generated catch block
             e.printStackTrace();
          }
          return (null);
       }
 
-      public Form(T _template) {
+      public Form(T _template){
          template = _template;
          panel = new JPanel(layout);
          JComponent last = panel;
@@ -112,54 +102,54 @@ public class InstructionViewer implements Config.InstructionListener{
          int fieldWithWidestLabelWidth = 0;
 
          // we need to know the widest Label so create the labels in one pass
-         for (Field field : template.getClass().getFields()) {
+         for(Field field : template.getClass().getFields()){
             String labelString = null;
 
             Check checkAnnotation = field.getAnnotation(Check.class);
-            if (checkAnnotation != null) {
+            if(checkAnnotation != null){
                labelString = checkAnnotation.label();
-            } else {
+            }else{
                Toggle toggleAnnotation = field.getAnnotation(Toggle.class);
-               if (toggleAnnotation != null) {
+               if(toggleAnnotation != null){
                   labelString = toggleAnnotation.label();
                }
             }
-            if (labelString != null) {
+            if(labelString != null){
                JLabel label = new JLabel(labelString);
                panel.add(label);
 
                fieldToLabelMap.put(field, label);
-               if (labelString.length() > fieldWithWidestLabelWidth) {
+               if(labelString.length() > fieldWithWidestLabelWidth){
                   fieldWithWidestLabel = field;
                   fieldWithWidestLabelWidth = labelString.length();
                }
             }
          }
 
-         for (Field field : fieldToLabelMap.keySet()) {
+         for(Field field : fieldToLabelMap.keySet()){
             layout.putConstraint(SpringLayout.NORTH, fieldToLabelMap.get(field), INSET, (last == panel) ? SpringLayout.NORTH
                   : SpringLayout.SOUTH, last);
             layout.putConstraint(SpringLayout.WEST, fieldToLabelMap.get(field), INSET, SpringLayout.WEST, panel);
             JComponent newComponent = null;
 
-            if (field.getType().isAssignableFrom(Boolean.TYPE)) {
+            if(field.getType().isAssignableFrom(Boolean.TYPE)){
                final Field booleanField = field;
 
                Toggle toggleAnnotation = field.getAnnotation(Toggle.class);
-               if (toggleAnnotation != null) {
+               if(toggleAnnotation != null){
                   final String toggleButtonOnLabel = toggleAnnotation.on();
                   final String toggleButtonOffLabel = toggleAnnotation.off();
                   String toggleButtonLabel = getBoolean(field) ? toggleButtonOnLabel : toggleButtonOffLabel;
                   JToggleButton toggleButton = new JToggleButton(toggleButtonLabel, getBoolean(field));
                   toggleButton.addActionListener(new ActionListener(){
-                     @Override public void actionPerformed(ActionEvent _actionEvent) {
+                     @Override public void actionPerformed(ActionEvent _actionEvent){
                         JToggleButton toggleButton = ((JToggleButton) _actionEvent.getSource());
                         //  System.out.println("toggle toggle "+toggleButton);
-                        if (toggleButton.getText().equals(toggleButtonOnLabel)) {
+                        if(toggleButton.getText().equals(toggleButtonOnLabel)){
                            toggleButton.setText(toggleButtonOffLabel);
                            setBoolean(booleanField, false);
 
-                        } else {
+                        }else{
                            toggleButton.setText(toggleButtonOnLabel);
                            setBoolean(booleanField, true);
 
@@ -171,13 +161,13 @@ public class InstructionViewer implements Config.InstructionListener{
                   newComponent = toggleButton;
                }
                Check checkAnnotation = field.getAnnotation(Check.class);
-               if (checkAnnotation != null) {
+               if(checkAnnotation != null){
                   JCheckBox checkBox = new JCheckBox();
                   checkBox.setSelected(getBoolean(field));
 
                   checkBox.addChangeListener(new ChangeListener(){
 
-                     @Override public void stateChanged(ChangeEvent _changeEvent) {
+                     @Override public void stateChanged(ChangeEvent _changeEvent){
 
                         JCheckBox checkBox = ((JCheckBox) _changeEvent.getSource());
                         //  System.out.println("check toggle "+checkBox);
@@ -189,7 +179,7 @@ public class InstructionViewer implements Config.InstructionListener{
                   newComponent = checkBox;
                }
             }
-            if (newComponent != null) {
+            if(newComponent != null){
                panel.add(newComponent);
                layout.putConstraint(SpringLayout.NORTH, newComponent, INSET, (last == panel) ? SpringLayout.NORTH
                      : SpringLayout.SOUTH, last);
@@ -206,7 +196,7 @@ public class InstructionViewer implements Config.InstructionListener{
 
       public abstract void sync();
 
-      public Component getPanel() {
+      public Component getPanel(){
          return (panel);
       }
    }
@@ -246,7 +236,7 @@ public class InstructionViewer implements Config.InstructionListener{
    }
 
    private static class XY{
-      public XY(double _x, double _y) {
+      public XY(double _x, double _y){
          x = _x;
          y = _y;
       }
@@ -263,20 +253,20 @@ public class InstructionViewer implements Config.InstructionListener{
 
       private double y;
 
-      public double translatex(int _screenx) {
+      public double translatex(int _screenx){
          return ((_screenx - offGraphicsTransform.getTranslateX()) / offGraphicsTransform.getScaleX());
 
       }
 
-      public double screenx() {
+      public double screenx(){
          return (offGraphicsTransform.getScaleX() * x + offGraphicsTransform.getTranslateX());
       }
 
-      public double translatey(int _screeny) {
+      public double translatey(int _screeny){
          return ((_screeny - offGraphicsTransform.getTranslateY()) / offGraphicsTransform.getScaleY());
       }
 
-      public double screeny() {
+      public double screeny(){
          return (offGraphicsTransform.getScaleY() * y + offGraphicsTransform.getTranslateY());
       }
    }
@@ -289,7 +279,7 @@ public class InstructionViewer implements Config.InstructionListener{
 
    private Graphics2D offgraphics;
 
-   public void dirty() {
+   public void dirty(){
       dirty = true;
 
       container.repaint();
@@ -301,15 +291,15 @@ public class InstructionViewer implements Config.InstructionListener{
 
    private XY dragStart = null;
 
-   public synchronized void draw(Graphics _g) {
+   public synchronized void draw(Graphics _g){
 
       Dimension containerSize = container.getSize();
-      if (dirty || (offscreen == null) || (containerSize.width != offscreensize.width)
-            || (containerSize.height != offscreensize.height)) {
+      if(dirty || (offscreen == null) || (containerSize.width != offscreensize.width)
+            || (containerSize.height != offscreensize.height)){
          offscreensize = new Dimension(containerSize.width, containerSize.height);
          offscreen = (BufferedImage) container.createImage(offscreensize.width, offscreensize.height);
 
-         if (offgraphics != null) {
+         if(offgraphics != null){
             offgraphics.dispose();
          }
          offgraphics = offscreen.createGraphics();
@@ -330,7 +320,7 @@ public class InstructionViewer implements Config.InstructionListener{
          view.offGraphicsTransform = offGraphicsTransform;
          dirty = false;
 
-      } else {
+      }else{
          offgraphics.setColor(container.getBackground());
          offgraphics.fillRect(0, 0, (offscreensize.width), (offscreensize.height));
       }
@@ -339,17 +329,17 @@ public class InstructionViewer implements Config.InstructionListener{
 
    }
 
-   public Component getContainer() {
+   public Component getContainer(){
       return (container);
    }
 
-   public void text(Graphics2D _g, String _text, double _x, double _y) {
+   public void text(Graphics2D _g, String _text, double _x, double _y){
       FontMetrics fm = _g.getFontMetrics();
       _g.drawString(_text, (int) _x, (int) (_y - fm.getAscent() + fm.getHeight()));
 
    }
 
-   public void text(Graphics2D _g, Color _color, String _text, double _x, double _y) {
+   public void text(Graphics2D _g, Color _color, String _text, double _x, double _y){
       Color color = _g.getColor();
       _g.setColor(_color);
       text(_g, _text, _x, _y);
@@ -357,28 +347,28 @@ public class InstructionViewer implements Config.InstructionListener{
 
    }
 
-   public void line(Graphics2D _g, Stroke _stroke, double _x1, double _y1, double _x2, double _y2) {
+   public void line(Graphics2D _g, Stroke _stroke, double _x1, double _y1, double _x2, double _y2){
       Stroke stroke = _g.getStroke();
       _g.setStroke(_stroke);
       line(_g, _x1, _y1, _x2, _y2);
       _g.setStroke(stroke);
    }
 
-   public void stroke(Graphics2D _g, Stroke _stroke, Shape _rect) {
+   public void stroke(Graphics2D _g, Stroke _stroke, Shape _rect){
       Stroke stroke = _g.getStroke();
       _g.setStroke(_stroke);
       draw(_g, _rect);
       _g.setStroke(stroke);
    }
 
-   public void fill(Graphics2D _g, Color _color, Shape _rect) {
+   public void fill(Graphics2D _g, Color _color, Shape _rect){
       Color color = _g.getColor();
       _g.setColor(_color);
       fill(_g, _rect);
       _g.setColor(color);
    }
 
-   public void fillStroke(Graphics2D _g, Color _fillColor, Color _strokeColor, Stroke _stroke, Shape _rect) {
+   public void fillStroke(Graphics2D _g, Color _fillColor, Color _strokeColor, Stroke _stroke, Shape _rect){
       Color color = _g.getColor();
       _g.setColor(_fillColor);
       fill(_g, _rect);
@@ -387,15 +377,15 @@ public class InstructionViewer implements Config.InstructionListener{
       _g.setColor(color);
    }
 
-   public void line(Graphics2D _g, double _x1, double _y1, double _x2, double _y2) {
+   public void line(Graphics2D _g, double _x1, double _y1, double _x2, double _y2){
       _g.drawLine((int) _x1, (int) _y1, (int) _x2, (int) _y2);
    }
 
-   public void draw(Graphics2D _g, Shape _rectangle) {
+   public void draw(Graphics2D _g, Shape _rectangle){
       _g.draw(_rectangle);
    }
 
-   public void fill(Graphics2D _g, Shape _rectangle) {
+   public void fill(Graphics2D _g, Shape _rectangle){
       _g.fill(_rectangle);
    }
 
@@ -412,6 +402,7 @@ public class InstructionViewer implements Config.InstructionListener{
    private Stroke outlineStroke = new BasicStroke((float) 0.5);
 
    public Polygon arrowHeadOut = new Polygon();
+
    {
       arrowHeadOut.addPoint(8, -4);
       arrowHeadOut.addPoint(0, 0);
@@ -420,6 +411,7 @@ public class InstructionViewer implements Config.InstructionListener{
    }
 
    Polygon arrowHeadIn = new Polygon();
+
    {
       arrowHeadIn.addPoint(0, -4);
       arrowHeadIn.addPoint(8, 0);
@@ -441,7 +433,7 @@ public class InstructionViewer implements Config.InstructionListener{
 
       public boolean dim;
 
-      public InstructionView(Instruction _instruction) {
+      public InstructionView(Instruction _instruction){
          instruction = _instruction;
       }
 
@@ -449,17 +441,17 @@ public class InstructionViewer implements Config.InstructionListener{
 
    private Map<Instruction, InstructionView> locationToInstructionViewMap = new HashMap<Instruction, InstructionView>();
 
-   InstructionView getInstructionView(Instruction _instruction) {
+   InstructionView getInstructionView(Instruction _instruction){
 
       InstructionView instructionView = locationToInstructionViewMap.get(_instruction);
-      if (instructionView == null) {
+      if(instructionView == null){
          locationToInstructionViewMap.put(_instruction, instructionView = new InstructionView(_instruction));
 
       }
       return (instructionView);
    }
 
-   double foldPlace(Graphics2D _g, InstructionView _instructionView, double _x, double _y, boolean _dim) {
+   double foldPlace(Graphics2D _g, InstructionView _instructionView, double _x, double _y, boolean _dim){
       _instructionView.dim = _dim;
       FontMetrics fm = _g.getFontMetrics();
 
@@ -472,12 +464,12 @@ public class InstructionViewer implements Config.InstructionListener{
       double y = _y;
       double x = _x + w + (_instructionView.instruction.getRootExpr() == _instructionView.instruction ? HGAP : HGAP);
 
-      if (!config.collapseAll && !config.showExpressions) {
+      if(!config.collapseAll && !config.showExpressions){
 
-         for (Instruction e = _instructionView.instruction.getFirstChild(); e != null; e = e.getNextExpr()) {
+         for(Instruction e = _instructionView.instruction.getFirstChild(); e != null; e = e.getNextExpr()){
 
             y = foldPlace(_g, getInstructionView(e), x, y, _dim);
-            if (e != _instructionView.instruction.getLastChild()) {
+            if(e != _instructionView.instruction.getLastChild()){
                y += VGAP;
             }
          }
@@ -489,18 +481,18 @@ public class InstructionViewer implements Config.InstructionListener{
 
    }
 
-   void foldRender(Graphics2D _g, InstructionView _instructionView) {
+   void foldRender(Graphics2D _g, InstructionView _instructionView){
       Instruction instruction = _instructionView.instruction;
-      if (!config.collapseAll && !config.showExpressions) {
-         for (Instruction e = instruction.getFirstChild(); e != null; e = e.getNextExpr()) {
+      if(!config.collapseAll && !config.showExpressions){
+         for(Instruction e = instruction.getFirstChild(); e != null; e = e.getNextExpr()){
 
             foldRender(_g, getInstructionView(e));
 
          }
       }
-      if (_instructionView.dim) {
+      if(_instructionView.dim){
          _g.setColor(unselectedColor);
-      } else {
+      }else{
          _g.setColor(selectedColor);
       }
       _g.fill(_instructionView.shape);
@@ -510,11 +502,11 @@ public class InstructionViewer implements Config.InstructionListener{
       text(_g, _instructionView.label, _instructionView.shape.getBounds().getCenterX()
             - _instructionView.shape.getBounds().getWidth() / 2, _instructionView.shape.getBounds().getCenterY());
 
-      if (!config.collapseAll && !config.showExpressions) {
+      if(!config.collapseAll && !config.showExpressions){
 
-         if (config.edgeFan) {
+         if(config.edgeFan){
 
-            for (Instruction e = instruction.getFirstChild(); e != null; e = e.getNextExpr()) {
+            for(Instruction e = instruction.getFirstChild(); e != null; e = e.getNextExpr()){
                InstructionView iv = getInstructionView(e);
                double x1 = _instructionView.shape.getBounds().getMaxX() + ARROWGAP;
 
@@ -522,9 +514,9 @@ public class InstructionViewer implements Config.InstructionListener{
                double x2 = iv.shape.getBounds().getMinX() - 5;
                double y2 = iv.shape.getBounds().getCenterY();
 
-               if (config.edgeCurve) {
+               if(config.edgeCurve){
                   _g.draw(new CubicCurve2D.Double(x1, y1, x1 + CURVEBOW, y1, x2 - CURVEBOW, y2, x2, y2));
-               } else {
+               }else{
                   double dx = (x1 - x2);
                   double dy = (y1 - y2);
 
@@ -539,10 +531,10 @@ public class InstructionViewer implements Config.InstructionListener{
                }
             }
 
-         } else {
+         }else{
 
             _g.setStroke(thickStroke);
-            if (instruction.getFirstChild() != null && instruction.getFirstChild() != instruction.getLastChild()) { // >1 children
+            if(instruction.getFirstChild() != null && instruction.getFirstChild() != instruction.getLastChild()){ // >1 children
                InstructionView iv0 = getInstructionView(instruction.getFirstChild());
                InstructionView ivn = getInstructionView(instruction.getLastChild());
 
@@ -551,12 +543,12 @@ public class InstructionViewer implements Config.InstructionListener{
                line(_g, _instructionView.shape.getBounds().getMaxX() + ARROWGAP, _instructionView.shape.getBounds().getCenterY(),
                      midx, _instructionView.shape.getBounds().getCenterY());
 
-               for (Instruction e = instruction.getFirstChild(); e != null; e = e.getNextExpr()) {
+               for(Instruction e = instruction.getFirstChild(); e != null; e = e.getNextExpr()){
                   InstructionView iv = getInstructionView(e);
                   line(_g, midx, iv.shape.getBounds().getCenterY(), iv.shape.getBounds().getMinX() - ARROWGAP, iv.shape.getBounds()
                         .getCenterY());
                }
-            } else if (instruction.getFirstChild() != null) { // 1 child
+            }else if(instruction.getFirstChild() != null){ // 1 child
                InstructionView iv = getInstructionView(instruction.getFirstChild());
                line(_g, _instructionView.shape.getBounds().getMaxX() + ARROWGAP, _instructionView.shape.getBounds().getCenterY(),
                      iv.shape.getBounds().getMinX() - ARROWGAP, iv.shape.getBounds().getCenterY());
@@ -566,7 +558,7 @@ public class InstructionViewer implements Config.InstructionListener{
 
    }
 
-   double flatPlace(Graphics2D _g, InstructionView _instructionView, double _x, double _y) {
+   double flatPlace(Graphics2D _g, InstructionView _instructionView, double _x, double _y){
       FontMetrics fm = _g.getFontMetrics();
       Instruction instruction = _instructionView.instruction;
       _instructionView.label = InstructionHelper.getLabel(instruction, config.showPc, config.showExpressions,
@@ -578,7 +570,7 @@ public class InstructionViewer implements Config.InstructionListener{
       return (_y + h);
    }
 
-   void flatRender(Graphics2D _g, InstructionView _instructionView) {
+   void flatRender(Graphics2D _g, InstructionView _instructionView){
       _g.setColor(unselectedColor);
       _g.fill(_instructionView.shape);
       _g.setColor(Color.black);
@@ -589,38 +581,38 @@ public class InstructionViewer implements Config.InstructionListener{
 
    ClassModel classModel = null;
 
-   public InstructionViewer(Color _background, String _name) {
+   public InstructionViewer(Color _background, String _name){
 
-      try {
-         Class clazz =  Class.forName(_name);
+      try{
+         Class clazz = Class.forName(_name);
          classModel = new ClassModel(clazz);
-      } catch (ClassParseException e) {
+      }catch(ClassParseException e){
          // TODO Auto-generated catch block
          e.printStackTrace();
-      } catch (ClassNotFoundException e) {
+      }catch(ClassNotFoundException e){
          // TODO Auto-generated catch block
          e.printStackTrace();
       }
       container = new JPanel(){
          /**
-          * 
+          *
           */
          private static final long serialVersionUID = 1L;
 
-         @Override public void paintComponent(Graphics g) {
+         @Override public void paintComponent(Graphics g){
             draw(g);
          }
       };
       container.setBackground(_background);
 
       MouseAdapter mouseAdaptor = new MouseAdapter(){
-         @Override public void mouseEntered(MouseEvent e) {
+         @Override public void mouseEntered(MouseEvent e){
             container.requestFocusInWindow();
          }
 
-         @Override public void mouseDragged(MouseEvent e) {
+         @Override public void mouseDragged(MouseEvent e){
             // System.out.println("dragged");
-            if (dragStart != null) {
+            if(dragStart != null){
                view.x = view.translatex(e.getX()) - dragStart.x;
                view.y = view.translatey(e.getY()) - dragStart.y;
                dirty();
@@ -628,27 +620,27 @@ public class InstructionViewer implements Config.InstructionListener{
 
          }
 
-         @Override public void mousePressed(MouseEvent e) {
+         @Override public void mousePressed(MouseEvent e){
 
-            if (e.getButton() == 1) {
+            if(e.getButton() == 1){
                dragStart = new XY(view.translatex(e.getX()), view.translatey(e.getY()));
                dirty();
 
-            } else if (e.getButton() == 3) {
+            }else if(e.getButton() == 3){
 
-               if (select(view.translatex(e.getX()), view.translatey(e.getY()))) {
+               if(select(view.translatex(e.getX()), view.translatey(e.getY()))){
                   dirty();
                }
             }
 
          }
 
-         @Override public void mouseReleased(MouseEvent e) {
+         @Override public void mouseReleased(MouseEvent e){
             dragStart = null;
             // container.repaint();
          }
 
-         @Override public void mouseWheelMoved(MouseWheelEvent e) {
+         @Override public void mouseWheelMoved(MouseWheelEvent e){
             view.scale += e.getWheelRotation() / 10.0;
             dirty();
          }
@@ -656,11 +648,11 @@ public class InstructionViewer implements Config.InstructionListener{
       };
 
       KeyAdapter keyAdaptor = new KeyAdapter(){
-         @Override public void keyTyped(KeyEvent arg0) {
-            if (arg0.getKeyChar() == '-' || arg0.getKeyChar() == '+') {
-               if (arg0.getKeyChar() == '-') {
+         @Override public void keyTyped(KeyEvent arg0){
+            if(arg0.getKeyChar() == '-' || arg0.getKeyChar() == '+'){
+               if(arg0.getKeyChar() == '-'){
                   view.scale -= .1;
-               } else {
+               }else{
                   view.scale += .1;
                }
                dirty();
@@ -677,7 +669,7 @@ public class InstructionViewer implements Config.InstructionListener{
 
    }
 
-   public InstructionViewer() {
+   public InstructionViewer(){
 
       JFrame frame = new JFrame();
 
@@ -688,13 +680,13 @@ public class InstructionViewer implements Config.InstructionListener{
       JMenu fileMenu = new JMenu("File");
       fileMenu.setMnemonic(KeyEvent.VK_F);
       ActionListener closeActionListener = new ActionListener(){
-         @Override public void actionPerformed(ActionEvent arg0) {
+         @Override public void actionPerformed(ActionEvent arg0){
             System.exit(1);
          }
 
       };
       ActionListener nextActionListener = new ActionListener(){
-         @Override public void actionPerformed(ActionEvent arg0) {
+         @Override public void actionPerformed(ActionEvent arg0){
             doorbell.ring();
 
          }
@@ -722,24 +714,24 @@ public class InstructionViewer implements Config.InstructionListener{
 
       container = new JPanel(){
          /**
-          * 
+          *
           */
          private static final long serialVersionUID = 1L;
 
-         @Override public void paintComponent(Graphics g) {
+         @Override public void paintComponent(Graphics g){
             draw(g);
          }
       };
       container.setBackground(Color.WHITE);
 
       MouseAdapter mouseAdaptor = new MouseAdapter(){
-         @Override public void mouseEntered(MouseEvent e) {
+         @Override public void mouseEntered(MouseEvent e){
             container.requestFocusInWindow();
          }
 
-         @Override public void mouseDragged(MouseEvent e) {
+         @Override public void mouseDragged(MouseEvent e){
             // System.out.println("dragged");
-            if (dragStart != null) {
+            if(dragStart != null){
                view.x = view.translatex(e.getX()) - dragStart.x;
                view.y = view.translatey(e.getY()) - dragStart.y;
                dirty();
@@ -747,27 +739,27 @@ public class InstructionViewer implements Config.InstructionListener{
 
          }
 
-         @Override public void mousePressed(MouseEvent e) {
+         @Override public void mousePressed(MouseEvent e){
 
-            if (e.getButton() == 1) {
+            if(e.getButton() == 1){
                dragStart = new XY(view.translatex(e.getX()), view.translatey(e.getY()));
                dirty();
 
-            } else if (e.getButton() == 3) {
+            }else if(e.getButton() == 3){
 
-               if (select(view.translatex(e.getX()), view.translatey(e.getY()))) {
+               if(select(view.translatex(e.getX()), view.translatey(e.getY()))){
                   dirty();
                }
             }
 
          }
 
-         @Override public void mouseReleased(MouseEvent e) {
+         @Override public void mouseReleased(MouseEvent e){
             dragStart = null;
             // container.repaint();
          }
 
-         @Override public void mouseWheelMoved(MouseWheelEvent e) {
+         @Override public void mouseWheelMoved(MouseWheelEvent e){
             view.scale += e.getWheelRotation() / 10.0;
             dirty();
          }
@@ -775,11 +767,11 @@ public class InstructionViewer implements Config.InstructionListener{
       };
 
       KeyAdapter keyAdaptor = new KeyAdapter(){
-         @Override public void keyTyped(KeyEvent arg0) {
-            if (arg0.getKeyChar() == '-' || arg0.getKeyChar() == '+') {
-               if (arg0.getKeyChar() == '-') {
+         @Override public void keyTyped(KeyEvent arg0){
+            if(arg0.getKeyChar() == '-' || arg0.getKeyChar() == '+'){
+               if(arg0.getKeyChar() == '-'){
                   view.scale -= .1;
-               } else {
+               }else{
                   view.scale += .1;
                }
                dirty();
@@ -799,7 +791,7 @@ public class InstructionViewer implements Config.InstructionListener{
       JPanel controls = new JPanel(new BorderLayout());
 
       Form<Options> form = new Form<Options>(config){
-         @Override public void sync() {
+         @Override public void sync(){
             dirty();
          }
       };
@@ -815,10 +807,10 @@ public class InstructionViewer implements Config.InstructionListener{
 
    }
 
-   public boolean select(double _x, double _y) {
-      for (Instruction l = first; l != null; l = l.getNextPC()) {
+   public boolean select(double _x, double _y){
+      for(Instruction l = first; l != null; l = l.getNextPC()){
          InstructionView iv = getInstructionView(l);
-         if (iv.shape != null && iv.shape.contains(_x, _y)) {
+         if(iv.shape != null && iv.shape.contains(_x, _y)){
 
             return (true);
          }
@@ -826,16 +818,16 @@ public class InstructionViewer implements Config.InstructionListener{
       return (false);
    }
 
-   public void render(Graphics2D _g) {
-      if (first != null) {
+   public void render(Graphics2D _g){
+      if(first != null){
 
-         if (config.fold) {
+         if(config.fold){
             double y = 100;
             Instruction firstRoot = first.getRootExpr();
             List<InstructionView> instructionViews = new ArrayList<InstructionView>();
 
             Instruction lastInstruction = null;
-            for (Instruction instruction = firstRoot; instruction != null; instruction = instruction.getNextExpr()) {
+            for(Instruction instruction = firstRoot; instruction != null; instruction = instruction.getNextExpr()){
                InstructionView iv = getInstructionView(instruction);
                iv.dim = false;
                y = foldPlace(_g, iv, 100, y, false) + VGAP;
@@ -843,10 +835,10 @@ public class InstructionViewer implements Config.InstructionListener{
                lastInstruction = instruction;
             }
             lastInstruction.getRootExpr();
-            while (lastInstruction instanceof CompositeInstruction) {
+            while(lastInstruction instanceof CompositeInstruction){
                lastInstruction = lastInstruction.getLastChild();
             }
-            for (Instruction instruction = lastInstruction.getNextPC(); instruction != null; instruction = instruction.getNextPC()) {
+            for(Instruction instruction = lastInstruction.getNextPC(); instruction != null; instruction = instruction.getNextPC()){
 
                InstructionView iv = getInstructionView(instruction);
                iv.dim = true;
@@ -857,8 +849,8 @@ public class InstructionViewer implements Config.InstructionListener{
 
             _g.setColor(Color.black);
 
-            for (InstructionView instructionView : instructionViews) {
-               if (instructionView.instruction.isBranch()) {
+            for(InstructionView instructionView : instructionViews){
+               if(instructionView.instruction.isBranch()){
                   Instruction rootFromInstruction = instructionView.instruction;
                   Instruction rootToInstruction = instructionView.instruction.asBranch().getTarget();
                   InstructionView fromIv = getInstructionView(rootFromInstruction);
@@ -869,27 +861,27 @@ public class InstructionViewer implements Config.InstructionListener{
 
             InstructionView last = null;
 
-            for (InstructionView instructionView : instructionViews) {
+            for(InstructionView instructionView : instructionViews){
 
                foldRender(_g, instructionView);
-               if (last != null) {
+               if(last != null){
                   line(_g, thickStroke, 120, last.shape.getBounds().getMaxY(), 120, instructionView.shape.getBounds().getMinY());
                }
                foldRender(_g, instructionView);
                last = instructionView;
             }
 
-         } else {
+         }else{
             double y = 100;
-            for (Instruction l = first; l != null; l = l.getNextPC()) {
+            for(Instruction l = first; l != null; l = l.getNextPC()){
 
                y = flatPlace(_g, getInstructionView(l), 100, y) + VGAP;
 
             }
 
             _g.setColor(Color.black);
-            for (Instruction l = first; l != null; l = l.getNextPC()) {
-               if (l.isBranch()) {
+            for(Instruction l = first; l != null; l = l.getNextPC()){
+               if(l.isBranch()){
                   Instruction rootFromInstruction = l;
                   Instruction rootToInstruction = l.asBranch().getTarget();
                   InstructionView fromIv = getInstructionView(rootFromInstruction);
@@ -901,10 +893,10 @@ public class InstructionViewer implements Config.InstructionListener{
             }
 
             InstructionView last = null;
-            for (Instruction l = first; l != null; l = l.getNextPC()) {
+            for(Instruction l = first; l != null; l = l.getNextPC()){
                InstructionView iv = getInstructionView(l);
 
-               if (last != null) {
+               if(last != null){
                   line(_g, thickStroke, 120, last.shape.getBounds().getMaxY(), 120, iv.shape.getBounds().getMinY());
                }
                flatRender(_g, iv);
@@ -916,17 +908,17 @@ public class InstructionViewer implements Config.InstructionListener{
    }
 
    public void edge(Graphics2D _g, Color _color, InstructionView _branch, InstructionView _target, String _endLabel,
-         String _startLabel) {
+                    String _startLabel){
 
       int delta = _target.instruction.getThisPC() - _branch.instruction.getThisPC();
       int adjust = 7 + Math.abs(delta);
       double y1 = (int) _branch.shape.getBounds().getMaxY();
-      if (_target.shape != null) {
+      if(_target.shape != null){
          _g.setStroke(thinStroke);
          Color old = _g.getColor();
          _g.setColor(_color);
          double y2 = (int) _target.shape.getBounds().getMinY();
-         if (delta > 0) {
+         if(delta > 0){
 
             double x1 = (int) _branch.shape.getBounds().getMinX() - EDGEGAP;
             double x2 = (int) _target.shape.getBounds().getMinX() - EDGEGAP;
@@ -938,7 +930,7 @@ public class InstructionViewer implements Config.InstructionListener{
             _g.fillPolygon(arrowHeadIn);
             _g.setTransform(transform);
 
-         } else {
+         }else{
 
             double x1 = (int) _branch.shape.getBounds().getMaxX() + EDGEGAP;
             double x2 = (int) _target.shape.getBounds().getMaxX() + EDGEGAP;
@@ -959,9 +951,9 @@ public class InstructionViewer implements Config.InstructionListener{
 
    volatile Instruction current = null;
 
-   @Override public void showAndTell(String message, Instruction head, Instruction _instruction) {
+   @Override public void showAndTell(String message, Instruction head, Instruction _instruction){
 
-      if (first == null) {
+      if(first == null){
          first = head;
       }
       current = _instruction;
@@ -973,11 +965,11 @@ public class InstructionViewer implements Config.InstructionListener{
    public static class DoorBell{
       volatile boolean notified = false;
 
-      public synchronized void snooze() {
-         while (!notified) {
-            try {
+      public synchronized void snooze(){
+         while(!notified){
+            try{
                this.wait();
-            } catch (InterruptedException e) {
+            }catch(InterruptedException e){
                // TODO Auto-generated catch block
                e.printStackTrace();
             }
@@ -985,7 +977,7 @@ public class InstructionViewer implements Config.InstructionListener{
          notified = false;
       }
 
-      public synchronized void ring() {
+      public synchronized void ring(){
          notified = true;
          this.notify();
       }
@@ -995,7 +987,7 @@ public class InstructionViewer implements Config.InstructionListener{
    public static DoorBell doorbell = new DoorBell();
 
    public static void main(String[] _args) throws ClassNotFoundException, InstantiationException, IllegalAccessException,
-         UnsupportedLookAndFeelException, AparapiException {
+         UnsupportedLookAndFeelException, AparapiException{
 
       UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 
@@ -1009,13 +1001,13 @@ public class InstructionViewer implements Config.InstructionListener{
       JMenu fileMenu = new JMenu("File");
       fileMenu.setMnemonic(KeyEvent.VK_F);
       ActionListener closeActionListener = new ActionListener(){
-         @Override public void actionPerformed(ActionEvent arg0) {
+         @Override public void actionPerformed(ActionEvent arg0){
             System.exit(1);
          }
 
       };
       ActionListener nextActionListener = new ActionListener(){
-         @Override public void actionPerformed(ActionEvent arg0) {
+         @Override public void actionPerformed(ActionEvent arg0){
             doorbell.ring();
 
          }
@@ -1049,7 +1041,7 @@ public class InstructionViewer implements Config.InstructionListener{
       JPanel controls = new JPanel(new BorderLayout());
 
       Form<Options> form = new Form<Options>(instructionViewer.config){
-         @Override public void sync() {
+         @Override public void sync(){
             instructionViewer.dirty();
          }
       };
@@ -1065,13 +1057,13 @@ public class InstructionViewer implements Config.InstructionListener{
 
       (new Thread(new Runnable(){
 
-         @Override public void run() {
+         @Override public void run(){
 
             Entrypoint entrypoint;
-            try {
+            try{
                entrypoint = instructionViewer.classModel.getKernelEntrypoint();
                MethodModel method = entrypoint.getMethodModel();
-            } catch (AparapiException e) {
+            }catch(AparapiException e){
                // TODO Auto-generated catch block
                e.printStackTrace();
             }

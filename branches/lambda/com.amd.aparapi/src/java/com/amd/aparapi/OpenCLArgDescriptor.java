@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.amd.aparapi;
 
@@ -43,47 +43,47 @@ public class OpenCLArgDescriptor{
 
    public OpenCLKernel kernel;
 
-   public OpenCLArgDescriptor(String _name, long _bits) {
+   public OpenCLArgDescriptor(String _name, long _bits){
 
       name = _name;
       bits = _bits;
    }
 
-   public String toString() {
+   public String toString(){
       StringBuilder argBuilder = new StringBuilder();
-      if ((bits & ARG_GLOBAL_BIT) == ARG_GLOBAL_BIT) {
+      if((bits & ARG_GLOBAL_BIT) == ARG_GLOBAL_BIT){
          argBuilder.append("__global ");
-      } else if ((bits & ARG_LOCAL_BIT) == ARG_LOCAL_BIT) {
+      }else if((bits & ARG_LOCAL_BIT) == ARG_LOCAL_BIT){
          argBuilder.append("__local ");
-      } else if ((bits & ARG_CONST_BIT) == ARG_CONST_BIT) {
+      }else if((bits & ARG_CONST_BIT) == ARG_CONST_BIT){
          argBuilder.append("__constant ");
-      } else if ((bits & ARG_ISARG_BIT) == ARG_ISARG_BIT) {
+      }else if((bits & ARG_ISARG_BIT) == ARG_ISARG_BIT){
          // 
-      } else {
+      }else{
          argBuilder.append("WHATISTHIS?");
       }
 
-      if ((bits & ARG_FLOAT_BIT) == ARG_FLOAT_BIT) {
+      if((bits & ARG_FLOAT_BIT) == ARG_FLOAT_BIT){
          argBuilder.append("float ");
-      } else if ((bits & ARG_INT_BIT) == ARG_INT_BIT) {
+      }else if((bits & ARG_INT_BIT) == ARG_INT_BIT){
          argBuilder.append("int ");
-      } else if ((bits & ARG_SHORT_BIT) == ARG_SHORT_BIT) {
+      }else if((bits & ARG_SHORT_BIT) == ARG_SHORT_BIT){
          argBuilder.append("short ");
-      } else if ((bits & ARG_DOUBLE_BIT) == ARG_DOUBLE_BIT) {
+      }else if((bits & ARG_DOUBLE_BIT) == ARG_DOUBLE_BIT){
          argBuilder.append("double ");
-      } else if ((bits & ARG_LONG_BIT) == ARG_LONG_BIT) {
+      }else if((bits & ARG_LONG_BIT) == ARG_LONG_BIT){
          argBuilder.append("long ");
       }
 
-      if ((bits & ARG_ARRAY_BIT) == ARG_ARRAY_BIT) {
+      if((bits & ARG_ARRAY_BIT) == ARG_ARRAY_BIT){
          argBuilder.append("*");
       }
       argBuilder.append(name);
-      if ((bits & ARG_READONLY_BIT) == ARG_READONLY_BIT) {
+      if((bits & ARG_READONLY_BIT) == ARG_READONLY_BIT){
          argBuilder.append(" /* readonly */");
-      } else if ((bits & ARG_WRITEONLY_BIT) == ARG_WRITEONLY_BIT) {
+      }else if((bits & ARG_WRITEONLY_BIT) == ARG_WRITEONLY_BIT){
          argBuilder.append(" /* writeonly */");
-      } else if ((bits & ARG_READWRITE_BIT) == ARG_READWRITE_BIT) {
+      }else if((bits & ARG_READWRITE_BIT) == ARG_READWRITE_BIT){
          argBuilder.append(" /* readwrite */");
       }
       return (argBuilder.toString());

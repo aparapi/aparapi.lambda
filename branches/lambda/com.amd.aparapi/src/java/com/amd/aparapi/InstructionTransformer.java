@@ -42,11 +42,11 @@ public abstract class InstructionTransformer{
 
    public abstract Instruction transform(final ExpressionList _expressionList, final Instruction i);
 
-   InstructionTransformer(String _description) {
+   InstructionTransformer(String _description){
       description = _description;
    }
 
-   public String getDescription() {
+   public String getDescription(){
       return (description);
    }
 }
