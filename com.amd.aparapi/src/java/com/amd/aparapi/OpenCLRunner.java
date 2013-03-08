@@ -534,7 +534,21 @@ class OpenCLRunner {
             disposeJNI(jniContextHandle);
     }
 
+    /**
+     * TODO:
+     *
+     * synchronized to avoid race in clGetPlatformIDs() in OpenCL lib problem should fixed in some future OpenCL version
+     *
+     * @param _kernel
+     * @param _flags
+     * @param _device
+     * @return
+     */
+    protected native static synchronized long initJNI(Object _kernel, OpenCLDevice _device, int _flags);
 
+    protected native int setArgsJNI(long _jniContextHandle, KernelArg[] _args, int argc);
+
+    protected native int runJNI(long _jniContextHandle, Range _range, boolean _needSync, int _passes);
 
     protected native long buildProgramJNI(long _jniContextHandle, String _source);
 

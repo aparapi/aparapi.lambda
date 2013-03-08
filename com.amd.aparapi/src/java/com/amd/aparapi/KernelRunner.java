@@ -89,21 +89,7 @@ class KernelRunner extends OpenCLRunner{
 
     }
 
-    /**
-     * TODO:
-     *
-     * synchronized to avoid race in clGetPlatformIDs() in OpenCL lib problem should fixed in some future OpenCL version
-     *
-     * @param _kernel
-     * @param _flags
-     * @param _device
-     * @return
-     */
-    @Annotations.DocMe private native static synchronized long initJNI(Kernel _kernel, OpenCLDevice _device, int _flags);
 
-    private native int setArgsJNI(long _jniContextHandle, KernelArg[] _args, int _argc);
-
-    private native int runKernelJNI(long _jniContextHandle, Range _range, boolean _needSync, int _passes);
 
     /**
      * Execute using a Java thread pool. Either because we were explicitly asked to do so, or because we 'fall back' after discovering an OpenCL issue.
@@ -743,7 +729,7 @@ class KernelRunner extends OpenCLRunner{
             logger.fine("Need to resync arrays on " + kernel.getClass().getName());
         }
         // native side will reallocate array buffers if necessary
-        if (runKernelJNI(jniContextHandle, _range, needSync, _passes) != 0) {
+        if (runJNI(jniContextHandle, _range, needSync, _passes) != 0) {
             logger.warning("### CL exec seems to have failed. Trying to revert to Java ###");
             kernel.setFallbackExecutionMode();
             return execute(_entrypointName, _range, _passes);
