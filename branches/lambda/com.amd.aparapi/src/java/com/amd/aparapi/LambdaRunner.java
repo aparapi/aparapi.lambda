@@ -341,23 +341,11 @@ class LambdaRunner extends OpenCLRunner{
 //      }
    }
 
-   /**
-    * TODO:
-    * 
-    * synchronized to avoid race in clGetPlatformIDs() in OpenCL lib problem should fixed in some future OpenCL version
-    * 
-    * @param _kernel
-    * @param _flags
-    * @param _device
-    * @return
-    */
-   private native static synchronized long initJNI(Object _kernel, OpenCLDevice _device, int _flags);
 
-   private native int setArgsJNI(long _jniContextHandle, KernelArg[] _args, int argc);
 
    private native int updateLambdaBlockJNI(long _jniContextHandle, Object newHolder, int argc);
 
-   private native int runKernelJNI(long _jniContextHandle, Range _range, boolean _needSync, int _passes);
+
 
 
 
@@ -716,7 +704,7 @@ class LambdaRunner extends OpenCLRunner{
       updateLambdaBlockJNI(jniContextHandle, callerBlock, lambdaKernelCall.getLambdaCapturedFields().length);
 
       // native side will reallocate array buffers if necessary
-      if (runKernelJNI(jniContextHandle, _range, needSync, _passes) != 0) {
+      if (runJNI(jniContextHandle, _range, needSync, _passes) != 0) {
          logger.warning("### CL exec seems to have failed. Trying to revert to Java ###");
          throw new AparapiException ("CL exec seems to have failed. Trying to revert to Java");         
       }
