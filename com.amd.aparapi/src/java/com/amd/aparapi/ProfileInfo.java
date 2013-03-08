@@ -38,11 +38,13 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 package com.amd.aparapi;
 
 public class ProfileInfo{
-   private enum TYPE {
+   private enum TYPE{
       R,
       X,
       W
-   }; // 0 = write, 1 = execute, 2 = read
+   }
+
+   ; // 0 = write, 1 = execute, 2 = read
 
    TYPE type;
 
@@ -56,7 +58,7 @@ public class ProfileInfo{
 
    private long queued;
 
-   public ProfileInfo(String _label, int _type, long _start, long _end, long _submit, long _queued) {
+   public ProfileInfo(String _label, int _type, long _start, long _end, long _submit, long _queued){
       type = TYPE.values()[_type];
       label = _label == null ? "exec()" : _label;
       start = _start;
@@ -65,32 +67,32 @@ public class ProfileInfo{
       queued = _queued;
    }
 
-   public long getStart() {
+   public long getStart(){
       return start;
    }
 
-   public long getEnd() {
+   public long getEnd(){
       return end;
    }
 
-   public long getSubmit() {
+   public long getSubmit(){
       return submit;
    }
 
-   public long getQueued() {
+   public long getQueued(){
       return queued;
    }
 
-   public String toString() {
+   public String toString(){
       return "ProfileInfo[" + type + " '" + label + "' start=" + start + ", end=" + end + ", submit=" + submit + ", queued="
             + queued + ", duration=" + (end - start) + "]";
    }
 
-   public String getLabel() {
+   public String getLabel(){
       return (label);
    }
 
-   public TYPE getType() {
+   public TYPE getType(){
       return (type);
    }
 }

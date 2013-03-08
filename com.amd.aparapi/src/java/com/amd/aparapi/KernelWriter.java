@@ -37,12 +37,6 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
  */
 package com.amd.aparapi;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
 import com.amd.aparapi.ClassModel.AttributePool.RuntimeAnnotationsEntry;
 import com.amd.aparapi.ClassModel.AttributePool.RuntimeAnnotationsEntry.AnnotationInfo;
 import com.amd.aparapi.ClassModel.ClassModelField;
@@ -50,20 +44,8 @@ import com.amd.aparapi.ClassModel.ConstantPool.FieldEntry;
 import com.amd.aparapi.ClassModel.ConstantPool.MethodEntry;
 import com.amd.aparapi.ClassModel.LocalVariableInfo;
 import com.amd.aparapi.ClassModel.LocalVariableTableEntry;
-import com.amd.aparapi.InstructionSet.AccessArrayElement;
-import com.amd.aparapi.InstructionSet.AccessLocalVariable;
-import com.amd.aparapi.InstructionSet.AssignToArrayElement;
-import com.amd.aparapi.InstructionSet.AssignToField;
-import com.amd.aparapi.InstructionSet.AssignToLocalVariable;
-import com.amd.aparapi.InstructionSet.BinaryOperator;
-import com.amd.aparapi.InstructionSet.FieldReference;
-import com.amd.aparapi.InstructionSet.I_ALOAD_0;
-import com.amd.aparapi.InstructionSet.I_GETFIELD;
-import com.amd.aparapi.InstructionSet.I_INVOKESPECIAL;
-import com.amd.aparapi.InstructionSet.I_IUSHR;
-import com.amd.aparapi.InstructionSet.I_LUSHR;
-import com.amd.aparapi.InstructionSet.MethodCall;
-import com.amd.aparapi.InstructionSet.VirtualMethodCall;
+import com.amd.aparapi.InstructionSet.*;
+import java.util.*;
 
 abstract class KernelWriter extends BlockWriter{
 
@@ -94,6 +76,7 @@ abstract class KernelWriter extends BlockWriter{
    Entrypoint entryPoint = null;
 
    final static Map<String, String> javaToCLIdentifierMap = new HashMap<String, String>();
+
    {
 
       javaToCLIdentifierMap.put("getGlobalId()I", "get_global_id(0)");
@@ -144,52 +127,51 @@ abstract class KernelWriter extends BlockWriter{
     * These three convert functions are here to perform
     * any type conversion that may be required between
     * Java and OpenCL.
-    * 
-    * @param _typeDesc
-    *          String in the Java JNI notation, [I, etc
+    *
+    * @param _typeDesc String in the Java JNI notation, [I, etc
     * @return Suitably converted string, "char*", etc
     */
-   @Override protected String convertType(String _typeDesc, boolean useClassModel) {
+   @Override protected String convertType(String _typeDesc, boolean useClassModel){
       return KernelWriter.convertType0(_typeDesc, useClassModel);
    }
 
-   public static String convertType0(String _typeDesc, boolean useClassModel) {
-      if (_typeDesc.equals("Z") || _typeDesc.equals("boolean")) {
+   public static String convertType0(String _typeDesc, boolean useClassModel){
+      if(_typeDesc.equals("Z") || _typeDesc.equals("boolean")){
          return (cvtBooleanToChar);
-      } else if (_typeDesc.equals("[Z") || _typeDesc.equals("boolean[]")) {
+      }else if(_typeDesc.equals("[Z") || _typeDesc.equals("boolean[]")){
          return (cvtBooleanArrayToCharStar);
-      } else if (_typeDesc.equals("B") || _typeDesc.equals("byte")) {
+      }else if(_typeDesc.equals("B") || _typeDesc.equals("byte")){
          return (cvtByteToChar);
-      } else if (_typeDesc.equals("[B") || _typeDesc.equals("byte[]")) {
+      }else if(_typeDesc.equals("[B") || _typeDesc.equals("byte[]")){
          return (cvtByteArrayToCharStar);
-      } else if (_typeDesc.equals("C") || _typeDesc.equals("char")) {
+      }else if(_typeDesc.equals("C") || _typeDesc.equals("char")){
          return (cvtCharToShort);
-      } else if (_typeDesc.equals("[C") || _typeDesc.equals("char[]")) {
+      }else if(_typeDesc.equals("[C") || _typeDesc.equals("char[]")){
          return (cvtCharArrayToShortStar);
-      } else if (_typeDesc.equals("I")) {
+      }else if(_typeDesc.equals("I")){
          return ("int ");
-      } else if (_typeDesc.equals("[I") || _typeDesc.equals("int[]")) {
+      }else if(_typeDesc.equals("[I") || _typeDesc.equals("int[]")){
          return (cvtIntArrayToIntStar);
-      } else if (_typeDesc.equals("F")) {
+      }else if(_typeDesc.equals("F")){
          return ("float ");
-      } else if (_typeDesc.equals("[F") || _typeDesc.equals("float[]")) {
+      }else if(_typeDesc.equals("[F") || _typeDesc.equals("float[]")){
          return (cvtFloatArrayToFloatStar);
-      } else if (_typeDesc.equals("[D") || _typeDesc.equals("double[]")) {
+      }else if(_typeDesc.equals("[D") || _typeDesc.equals("double[]")){
          return (cvtDoubleArrayToDoubleStar);
-      } else if (_typeDesc.equals("[J") || _typeDesc.equals("long[]")) {
+      }else if(_typeDesc.equals("[J") || _typeDesc.equals("long[]")){
          return (cvtLongArrayToLongStar);
-      } else if (_typeDesc.equals("[S") || _typeDesc.equals("short[]")) {
+      }else if(_typeDesc.equals("[S") || _typeDesc.equals("short[]")){
          return (cvtShortArrayToShortStar);
       }
       // if we get this far, we haven't matched anything yet
-      if (useClassModel) {
+      if(useClassModel){
          return (ClassModel.convert(_typeDesc, "", true));
-      } else {
+      }else{
          return _typeDesc;
       }
    }
 
-   @Override protected void writeMethod(MethodCall _methodCall, MethodEntry _methodEntry) throws CodeGenException {
+   @Override protected void writeMethod(MethodCall _methodCall, MethodEntry _methodEntry) throws CodeGenException{
 
       // System.out.println("_methodEntry = " + _methodEntry);
       // special case for buffers
@@ -201,74 +183,74 @@ abstract class KernelWriter extends BlockWriter{
 
       String barrierAndGetterMappings = javaToCLIdentifierMap.get(methodName + methodSignature);
 
-      if (barrierAndGetterMappings != null) {
+      if(barrierAndGetterMappings != null){
          // this is one of the OpenCL barrier or size getter methods
          // write the mapping and exit
-         if (argc > 0) {
+         if(argc > 0){
             write(barrierAndGetterMappings);
             write("(");
-            for (int arg = 0; arg < argc; arg++) {
-               if ((arg != 0)) {
+            for(int arg = 0; arg < argc; arg++){
+               if((arg != 0)){
                   write(", ");
                }
                writeInstruction(_methodCall.getArg(arg));
             }
             write(")");
-         } else {
+         }else{
             write(barrierAndGetterMappings);
          }
-      } else {
+      }else{
 
          String intrinsicMapping = Kernel.getMappedMethodName(_methodEntry);
          // System.out.println("getMappedMethodName for " + methodName + " returned " + mapping);
          boolean isIntrinsic = false;
 
-         if (intrinsicMapping == null) {
+         if(intrinsicMapping == null){
             assert entryPoint != null : "entryPoint should not be null";
             boolean isSpecial = _methodCall instanceof I_INVOKESPECIAL;
             boolean isMapped = Kernel.isMappedMethod(_methodEntry);
             MethodModel m = entryPoint.getCallTarget(_methodEntry, isSpecial);
 
-            if (m != null) {
+            if(m != null){
                write(m.getName());
-            } else {
+            }else{
                // Must be a library call like rsqrt
                assert isMapped : _methodEntry + " should be mapped method!";
 
                write(methodName);
                isIntrinsic = true;
             }
-         } else {
+         }else{
             write(intrinsicMapping);
          }
 
          write("(");
 
-         if ((intrinsicMapping == null) && (_methodCall instanceof VirtualMethodCall) && (!isIntrinsic)) {
+         if((intrinsicMapping == null) && (_methodCall instanceof VirtualMethodCall) && (!isIntrinsic)){
 
             Instruction i = ((VirtualMethodCall) _methodCall).getInstanceReference();
 
-            if (i instanceof I_ALOAD_0) {
+            if(i instanceof I_ALOAD_0){
                // For I_ALOAD_0, it must be either a call in the lambda class or
                // a call to the iteration object.
                String className = _methodEntry.getClassEntry().getNameUTF8Entry().getUTF8();
                String classNameInDotForm = className.replace("/", ".");
-               if (classNameInDotForm.equals(entryPoint.getClassModel().getClassWeAreModelling().getName())) {
-               write("this");
-               } else {
+               if(classNameInDotForm.equals(entryPoint.getClassModel().getClassWeAreModelling().getName())){
+                  write("this");
+               }else{
                   // It must be the iteration object
                   // Insert the syntax to access the iteration object from the source array
                   write(" &(this->elements[elements_array_index])");
                }
-            } else if (i instanceof AccessArrayElement) {
+            }else if(i instanceof AccessArrayElement){
                AccessArrayElement arrayAccess = (AccessArrayElement) ((VirtualMethodCall) _methodCall).getInstanceReference();
                Instruction refAccess = arrayAccess.getArrayRef();
-               if (refAccess instanceof FieldReference) {
+               if(refAccess instanceof FieldReference){
                   // Calls to objects in arrays that are fields
                   String fieldName = ((FieldReference) refAccess).getConstantPoolFieldEntry().
                         getNameAndTypeEntry().getNameUTF8Entry().getUTF8();
-               write(" &(this->" + fieldName);
-               } else if (refAccess instanceof AccessLocalVariable) {
+                  write(" &(this->" + fieldName);
+               }else if(refAccess instanceof AccessLocalVariable){
                   // This case is to handle lambda argument object array refs
                   AccessLocalVariable localVariableLoadInstruction = (AccessLocalVariable) refAccess;
                   LocalVariableInfo localVariable = localVariableLoadInstruction.getLocalVariableInfo();
@@ -277,14 +259,14 @@ abstract class KernelWriter extends BlockWriter{
                write("[");
                writeInstruction(arrayAccess.getArrayIndex());
                write("])");
-            } else {
+            }else{
                // Assume it is a call in an object lambda on the iteration object.
                // Insert the syntax to access the iteration object from the source array
                write(" &(this->elements[elements_array_index])");
             }
          }
-         for (int arg = 0; arg < argc; arg++) {
-            if (((intrinsicMapping == null) && (_methodCall instanceof VirtualMethodCall) && (!isIntrinsic)) || (arg != 0)) {
+         for(int arg = 0; arg < argc; arg++){
+            if(((intrinsicMapping == null) && (_methodCall instanceof VirtualMethodCall) && (!isIntrinsic)) || (arg != 0)){
                write(", ");
             }
             writeInstruction(_methodCall.getArg(arg));
@@ -293,7 +275,7 @@ abstract class KernelWriter extends BlockWriter{
       }
    }
 
-   void writePragma(String _name, boolean _enable) {
+   void writePragma(String _name, boolean _enable){
       write("#pragma OPENCL EXTENSION " + _name + " : " + (_enable ? "en" : "dis") + "able");
       newLine();
    }
@@ -308,7 +290,7 @@ abstract class KernelWriter extends BlockWriter{
 
    public final static String CONSTANT_ANNOTATION_NAME = "L" + Kernel.Constant.class.getName().replace(".", "/") + ";";
 
-   @Override void write(Entrypoint _entryPoint) throws CodeGenException {
+   @Override void write(Entrypoint _entryPoint) throws CodeGenException{
       List<String> thisStruct = new ArrayList<String>();
       List<String> argLines = new ArrayList<String>();
       List<String> assigns = new ArrayList<String>();
@@ -321,12 +303,12 @@ abstract class KernelWriter extends BlockWriter{
          MethodModel mm = entryPoint.getMethodModel();
          int argsCount = 1;
          Iterator<LocalVariableInfo> lvit = mm.getLocalVariableTableEntry().iterator();
-         while (lvit.hasNext()) {
+         while(lvit.hasNext()){
             LocalVariableInfo lvi = lvit.next();
             StringBuilder thisStructLine = new StringBuilder();
             StringBuilder argLine = new StringBuilder();
             StringBuilder assignLine = new StringBuilder();
-            if ((lvi.getStart() == 0) && ((lvi.getVariableIndex() != 0) || mm.getMethod().isStatic())) { // full scope but skip this
+            if((lvi.getStart() == 0) && ((lvi.getVariableIndex() != 0) || mm.getMethod().isStatic())){ // full scope but skip this
                String descriptor = lvi.getVariableDescriptor();
 
                // For object stream lambdas, the lvi is the object type, but in
@@ -339,18 +321,18 @@ abstract class KernelWriter extends BlockWriter{
 
                String classModelType = descriptor;
                boolean isObjectLambda = false;
-               if (descriptor.startsWith("[")) {
+               if(descriptor.startsWith("[")){
                   // This is a local array captured from the caller method and
                   // passed in from the Block/Consumer
-                  if (descriptor.length() > 2) {
+                  if(descriptor.length() > 2){
                      classModelType = __global + " " + (classModelType.substring(2, classModelType.length() - 1)).replace("/", "_");
-                  } else {
+                  }else{
                      // Basic type array
                      classModelType = __global + " " + ClassModel.typeName(classModelType.substring(1).charAt(0));
                   }
-               } else if (! (descriptor.startsWith("L") && (descriptor.length() > 1))) {
+               }else if(!(descriptor.startsWith("L") && (descriptor.length() > 1))){
                   classModelType = ClassModel.typeName(descriptor.charAt(0));
-               } else {
+               }else{
                   // This must be the iteration object
                   // Turn Lcom/amd/javalabs/opencl/demo/DummyOOA; into com_amd_javalabs_opencl_demo_DummyOOA for example
                   classModelType = __global + " " + (classModelType.substring(1, classModelType.length() - 1)).replace("/", "_");
@@ -392,12 +374,12 @@ abstract class KernelWriter extends BlockWriter{
 
                }
 
-               if (!isObjectLambda) {
-                  if (lvi.isArray()) {
+               if(!isObjectLambda){
+                  if(lvi.isArray()){
                      // It will be a pointer ref to an array that was a captured arg
                      argLine.append(classModelType);
                      thisStructLine.append(classModelType);
-                  } else {
+                  }else{
                      argLine.append(convertType(classModelType, false));
                      thisStructLine.append(convertType(classModelType, false));
                   }
@@ -407,8 +389,8 @@ abstract class KernelWriter extends BlockWriter{
                   // Note in the case of int lambdas, the last lambda java method
                   // arg is an int which acts as the opencl gid
                   // Its value is not used and it is assigned with get_global_id(0)
-                  if (argsCount == (entryPoint.getLambdaActualParamsCount() + 1) &&
-                        (lvi != null) && lvi.getVariableDescriptor().equals("I")) {
+                  if(argsCount == (entryPoint.getLambdaActualParamsCount() + 1) &&
+                        (lvi != null) && lvi.getVariableDescriptor().equals("I")){
                      StringBuilder assignGid = new StringBuilder();
                      assignGid.append(lvi.getVariableName());
                      assignGid.append(" = get_global_id(0)");
@@ -420,10 +402,10 @@ abstract class KernelWriter extends BlockWriter{
                   assignLine.append(" = ");
                   assignLine.append(lvi.getVariableName());
 
-                  if (lvi.isArray()) {
+                  if(lvi.isArray()){
                      argLine.append("*" + lvi.getVariableName());
                      thisStructLine.append("*" + lvi.getVariableName());
-                  } else {
+                  }else{
                      argLine.append(lvi.getVariableName());
                      thisStructLine.append(lvi.getVariableName());
                   }
@@ -438,7 +420,7 @@ abstract class KernelWriter extends BlockWriter{
          }
       }
 
-      for (ClassModelField field : _entryPoint.getReferencedClassModelFields()) {
+      for(ClassModelField field : _entryPoint.getReferencedClassModelFields()){
          // Field field = _entryPoint.getClassModel().getField(f.getName());
          StringBuilder thisStructLine = new StringBuilder();
          StringBuilder argLine = new StringBuilder();
@@ -453,19 +435,19 @@ abstract class KernelWriter extends BlockWriter{
                : (field.getName().endsWith(Kernel.CONSTANT_SUFFIX) ? __constant : __global);
          RuntimeAnnotationsEntry visibleAnnotations = field.fieldAttributePool.getRuntimeVisibleAnnotationsEntry();
 
-         if (visibleAnnotations != null) {
-            for (AnnotationInfo ai : visibleAnnotations) {
+         if(visibleAnnotations != null){
+            for(AnnotationInfo ai : visibleAnnotations){
                String typeDescriptor = ai.getTypeDescriptor();
-               if (typeDescriptor.equals(LOCAL_ANNOTATION_NAME)) {
+               if(typeDescriptor.equals(LOCAL_ANNOTATION_NAME)){
                   type = __local;
-               } else if (typeDescriptor.equals(CONSTANT_ANNOTATION_NAME)) {
+               }else if(typeDescriptor.equals(CONSTANT_ANNOTATION_NAME)){
                   type = __constant;
                }
             }
          }
 
 
-         if (signature.startsWith("[")) {
+         if(signature.startsWith("[")){
             argLine.append(type + " ");
             thisStructLine.append(type + " ");
             isPointer = true;
@@ -474,7 +456,7 @@ abstract class KernelWriter extends BlockWriter{
 
          // If it is a converted array of objects, emit the struct param
          String className = null;
-         if (signature.startsWith("L")) {
+         if(signature.startsWith("L")){
             // Turn Lcom/amd/javalabs/opencl/demo/DummyOOA; into com_amd_javalabs_opencl_demo_DummyOOA for example
             className = (signature.substring(1, signature.length() - 1)).replace("/", "_");
             // if (logger.isLoggable(Level.FINE)) {
@@ -483,7 +465,7 @@ abstract class KernelWriter extends BlockWriter{
 
             argLine.append(className);
             thisStructLine.append(className);
-         } else {
+         }else{
             argLine.append(convertType(ClassModel.typeName(signature.charAt(0)), false));
             thisStructLine.append(convertType(ClassModel.typeName(signature.charAt(0)), false));
          }
@@ -491,7 +473,7 @@ abstract class KernelWriter extends BlockWriter{
          argLine.append(" ");
          thisStructLine.append(" ");
 
-         if (isPointer) {
+         if(isPointer){
             argLine.append("*");
             thisStructLine.append("*");
          }
@@ -507,7 +489,7 @@ abstract class KernelWriter extends BlockWriter{
 
          // Add int field into "this" struct for supporting java arraylength op
          // named like foo__javaArrayLength
-         if (isPointer && _entryPoint.getArrayFieldArrayLengthUsed().contains(field.getName())) {
+         if(isPointer && _entryPoint.getArrayFieldArrayLengthUsed().contains(field.getName())){
             StringBuilder lenStructLine = new StringBuilder();
             StringBuilder lenArgLine = new StringBuilder();
             StringBuilder lenAssignLine = new StringBuilder();
@@ -527,29 +509,29 @@ abstract class KernelWriter extends BlockWriter{
          }
       }
 
-      if (Config.enableByteWrites || _entryPoint.requiresByteAddressableStorePragma()) {
+      if(Config.enableByteWrites || _entryPoint.requiresByteAddressableStorePragma()){
          // Starting with OpenCL 1.1 (which is as far back as we support)
          // this feature is part of the core, so we no longer need this pragma
-         if (false) {
+         if(false){
             writePragma("cl_khr_byte_addressable_store", true);
             newLine();
          }
       }
 
       boolean usesAtomics = false;
-      if (Config.enableAtomic32 || _entryPoint.requiresAtomic32Pragma()) {
+      if(Config.enableAtomic32 || _entryPoint.requiresAtomic32Pragma()){
          usesAtomics = true;
          writePragma("cl_khr_global_int32_base_atomics", true);
          writePragma("cl_khr_global_int32_extended_atomics", true);
          writePragma("cl_khr_local_int32_base_atomics", true);
          writePragma("cl_khr_local_int32_extended_atomics", true);
       }
-      if (Config.enableAtomic64 || _entryPoint.requiresAtomic64Pragma()) {
+      if(Config.enableAtomic64 || _entryPoint.requiresAtomic64Pragma()){
          usesAtomics = true;
          writePragma("cl_khr_int64_base_atomics", true);
          writePragma("cl_khr_int64_extended_atomics", true);
       }
-      if (usesAtomics) {
+      if(usesAtomics){
          write("int atomicAdd(__global int *_arr, int _index, int _delta){");
          in();
          {
@@ -563,15 +545,15 @@ abstract class KernelWriter extends BlockWriter{
          newLine();
       }
 
-      if (Config.enableDoubles || _entryPoint.requiresDoublePragma()) {
+      if(Config.enableDoubles || _entryPoint.requiresDoublePragma()){
          writePragma("cl_khr_fp64", true);
          newLine();
       }
 
       // Emit structs for oop transformation accessors
-      for (ClassModel cm : _entryPoint.getObjectArrayFieldsClasses().values()) {
+      for(ClassModel cm : _entryPoint.getObjectArrayFieldsClasses().values()){
          ArrayList<FieldEntry> fieldSet = cm.getStructMembers();
-         if (fieldSet.size() > 0) {
+         if(fieldSet.size() > 0){
             String mangledClassName = cm.getClassWeAreModelling().getName().replace(".", "_");
             newLine();
             write("typedef struct " + mangledClassName + "_s{");
@@ -582,12 +564,12 @@ abstract class KernelWriter extends BlockWriter{
             int alignTo = 0;
 
             Iterator<FieldEntry> it = fieldSet.iterator();
-            while (it.hasNext()) {
+            while(it.hasNext()){
                FieldEntry field = it.next();
                String fType = field.getNameAndTypeEntry().getDescriptorUTF8Entry().getUTF8();
                int fSize = InstructionSet.TypeSpec.valueOf(fType.equals("Z") ? "B" : fType).getSize();
 
-               if (fSize > alignTo) {
+               if(fSize > alignTo){
                   alignTo = fSize;
                }
                totalSize += fSize;
@@ -599,14 +581,14 @@ abstract class KernelWriter extends BlockWriter{
 
             // compute total size for OpenCL buffer
             int totalStructSize = 0;
-            if (totalSize % alignTo == 0) {
+            if(totalSize % alignTo == 0){
                totalStructSize = totalSize;
-            } else {
+            }else{
                // Pad up if necessary
                totalStructSize = ((totalSize / alignTo) + 1) * alignTo;
             }
-            if (totalStructSize > alignTo) {
-               while (totalSize < totalStructSize) {
+            if(totalStructSize > alignTo){
+               while(totalSize < totalStructSize){
                   // structBuffer.put((byte)-1);
                   writeln("char _pad_" + totalSize + ";");
                   totalSize++;
@@ -624,7 +606,7 @@ abstract class KernelWriter extends BlockWriter{
 
       in();
       newLine();
-      for (String line : thisStruct) {
+      for(String line : thisStruct){
          write(line);
          writeln(";");
       }
@@ -652,30 +634,30 @@ abstract class KernelWriter extends BlockWriter{
       newLine();
 
 
-      for (MethodModel mm : _entryPoint.getCalledMethods()) {
+      for(MethodModel mm : _entryPoint.getCalledMethods()){
          // write declaration :)
 
          String returnType = mm.getReturnType();
          // Arrays always map to __global arrays
-         if (returnType.startsWith("[")) {
+         if(returnType.startsWith("[")){
             write(" __global ");
          }
          write(convertType(returnType, true));
 
          write(mm.getName() + "(");
 
-         if (!mm.getMethod().isStatic()) {
-            if ((mm.getMethod().getClassModel() == _entryPoint.getClassModel())
-                  || mm.getMethod().getClassModel().isSuperClass(_entryPoint.getClassModel().getClassWeAreModelling())) {
+         if(!mm.getMethod().isStatic()){
+            if((mm.getMethod().getClassModel() == _entryPoint.getClassModel())
+                  || mm.getMethod().getClassModel().isSuperClass(_entryPoint.getClassModel().getClassWeAreModelling())){
                write("This *this");
-            } else {
+            }else{
                // Call to an object member or superclass of member
-               for (ClassModel c : _entryPoint.getObjectArrayFieldsClasses().values()) {
-                  if (mm.getMethod().getClassModel() == c) {
+               for(ClassModel c : _entryPoint.getObjectArrayFieldsClasses().values()){
+                  if(mm.getMethod().getClassModel() == c){
                      write("__global " + mm.getMethod().getClassModel().getClassWeAreModelling().getName().replace(".", "_")
                            + " *this");
                      break;
-                  } else if (mm.getMethod().getClassModel().isSuperClass(c.getClassWeAreModelling())) {
+                  }else if(mm.getMethod().getClassModel().isSuperClass(c.getClassWeAreModelling())){
                      write("__global " + c.getClassWeAreModelling().getName().replace(".", "_") + " *this");
                      break;
                   }
@@ -686,15 +668,15 @@ abstract class KernelWriter extends BlockWriter{
          boolean alreadyHasFirstArg = !mm.getMethod().isStatic();
 
          LocalVariableTableEntry<LocalVariableInfo> lvte = mm.getLocalVariableTableEntry();
-         for (LocalVariableInfo lvi : lvte) {
-            if ((lvi.getStart() == 0) && ((lvi.getVariableIndex() != 0) || mm.getMethod().isStatic())) { // full scope but skip this
+         for(LocalVariableInfo lvi : lvte){
+            if((lvi.getStart() == 0) && ((lvi.getVariableIndex() != 0) || mm.getMethod().isStatic())){ // full scope but skip this
                String descriptor = lvi.getVariableDescriptor();
-               if (alreadyHasFirstArg) {
+               if(alreadyHasFirstArg){
                   write(", ");
                }
 
                // Arrays always map to __global arrays
-               if (descriptor.startsWith("[")) {
+               if(descriptor.startsWith("[")){
                   write(" __global ");
                }
 
@@ -707,18 +689,18 @@ abstract class KernelWriter extends BlockWriter{
          writeMethodBody(mm);
          newLine();
       }
-      if (_entryPoint.isKernel()){
-      write("__kernel void " + _entryPoint.getMethodModel().getSimpleName() + "(");
+      if(_entryPoint.isKernel()){
+         write("__kernel void " + _entryPoint.getMethodModel().getSimpleName() + "(");
       }else{
-       write("  __kernel void run(");
+         write("  __kernel void run(");
       }
       in();
       boolean first = true;
-      for (String line : argLines) {
+      for(String line : argLines){
 
-         if (first) {
+         if(first){
             first = false;
-         } else {
+         }else{
             write(", ");
          }
 
@@ -726,9 +708,9 @@ abstract class KernelWriter extends BlockWriter{
          write(line);
       }
 
-      if (first) {
+      if(first){
          first = false;
-      } else {
+      }else{
          write(", ");
       }
       newLine();
@@ -742,7 +724,7 @@ abstract class KernelWriter extends BlockWriter{
       newLine();
       writeln("This thisStruct;");
       writeln("This* this=&thisStruct;");
-      for (String line : assigns) {
+      for(String line : assigns){
          write(line);
          writeln(";");
       }
@@ -757,43 +739,43 @@ abstract class KernelWriter extends BlockWriter{
 
    }
 
-   @Override protected void writeThisRef() {
+   @Override protected void writeThisRef(){
 
       write("this->");
 
    }
 
    // Emit the this-> syntax when accessing locals that are lambda arguments
-   @Override protected void doAccessLocalVariable(Instruction _instruction) {
+   @Override protected void doAccessLocalVariable(Instruction _instruction){
       AccessLocalVariable localVariableLoadInstruction = (AccessLocalVariable) _instruction;
       LocalVariableInfo localVariable = localVariableLoadInstruction.getLocalVariableInfo();
-      if ((localVariable.getStart() == 0) && (_instruction.getMethod() == entryPoint.getMethodModel())) {
+      if((localVariable.getStart() == 0) && (_instruction.getMethod() == entryPoint.getMethodModel())){
          // This is a method parameter captured value into the lambda
          writeThisRef();
       }
       write(localVariable.getVariableName());
    }
 
-   @Override void writeInstruction(Instruction _instruction) throws CodeGenException {
-      if ((_instruction instanceof I_IUSHR) || (_instruction instanceof I_LUSHR)) {
+   @Override void writeInstruction(Instruction _instruction) throws CodeGenException{
+      if((_instruction instanceof I_IUSHR) || (_instruction instanceof I_LUSHR)){
          BinaryOperator binaryInstruction = (BinaryOperator) _instruction;
          Instruction parent = binaryInstruction.getParentExpr();
          boolean needsParenthesis = true;
 
-         if (parent instanceof AssignToLocalVariable) {
+         if(parent instanceof AssignToLocalVariable){
             needsParenthesis = false;
-         } else if (parent instanceof AssignToField) {
+         }else if(parent instanceof AssignToField){
             needsParenthesis = false;
-         } else if (parent instanceof AssignToArrayElement) {
+         }else if(parent instanceof AssignToArrayElement){
             needsParenthesis = false;
          }
-         if (needsParenthesis) {
+         if(needsParenthesis){
             write("(");
          }
 
-         if (binaryInstruction instanceof I_IUSHR) {
+         if(binaryInstruction instanceof I_IUSHR){
             write("((unsigned int)");
-         } else {
+         }else{
             write("((unsigned long)");
          }
          writeInstruction(binaryInstruction.getLhs());
@@ -801,26 +783,26 @@ abstract class KernelWriter extends BlockWriter{
          write(" >> ");
          writeInstruction(binaryInstruction.getRhs());
 
-         if (needsParenthesis) {
+         if(needsParenthesis){
             write(")");
          }
-      } else {
+      }else{
          super.writeInstruction(_instruction);
       }
    }
 
-   static String writeToString(Entrypoint _entrypoint) throws CodeGenException {
+   static String writeToString(Entrypoint _entrypoint) throws CodeGenException{
       final StringBuilder openCLStringBuilder = new StringBuilder();
       KernelWriter openCLWriter = new KernelWriter(){
-         @Override void write(String _string) {
+         @Override void write(String _string){
             openCLStringBuilder.append(_string);
          }
       };
-      try {
+      try{
          openCLWriter.write(_entrypoint);
-      } catch (CodeGenException codeGenException) {
+      }catch(CodeGenException codeGenException){
          throw codeGenException;
-      } catch (Throwable t) {
+      }catch(Throwable t){
          throw new CodeGenException(t);
       }
       return (openCLStringBuilder.toString());

@@ -39,57 +39,54 @@ package com.amd.aparapi;
 
 /**
  * A collection of annotations used at dev time to tag intent.
- * 
- * We should be able to remove all of these before OpenSource release. 
- * 
+ * <p/>
+ * We should be able to remove all of these before OpenSource release.
+ *
  * @author gfrost
  */
 class Annotations{
 
    /**
-    * Use this annotation to tag stuff that needs Java Doc added. 
-    * 
+    * Use this annotation to tag stuff that needs Java Doc added.
+    *
     * @author gfrost
     */
-   @interface DocMe {
+   @interface DocMe{
    }
 
    /**
     * Use this annotation to tag fields that we think need to be removed (method/field/var).
-    * 
+    *
     * @author gfrost
     */
-   @interface RemoveMe {
+   @interface RemoveMe{
    }
 
    /**
-    * Used to tag experimental features (methods/fields).  
-    * 
-    * Do not rely on anything tagged as experimental, it will probably be retracted/refactored. 
-    * 
-    * @author gfrost
+    * Used to tag experimental features (methods/fields).
+    * <p/>
+    * Do not rely on anything tagged as experimental, it will probably be retracted/refactored.
     *
+    * @author gfrost
     */
-   @interface Experimental {
+   @interface Experimental{
    }
 
    /**
-    * Used to tag unused features (methods/fields).  
-    * 
-    * Do not rely on anything tagged as unused, it will probably be retracted/refactored. 
-    * 
-    * @author gfrost
+    * Used to tag unused features (methods/fields).
+    * <p/>
+    * Do not rely on anything tagged as unused, it will probably be retracted/refactored.
     *
+    * @author gfrost
     */
-   @interface Unused {
+   @interface Unused{
    }
 
-    /**
-     * Used to tag (methods/fields) which are used by JNI code.
-     *
-     * @author gfrost
-     *
-     */
-    @interface UsedByJNICode {
-    }
+   /**
+    * Used to tag (methods/fields) which are used by JNI code.
+    *
+    * @author gfrost
+    */
+   @interface UsedByJNICode{
+   }
 }

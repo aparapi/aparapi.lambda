@@ -17,7 +17,7 @@ public class OpenCLProgram{
 
    private String log;
 
-   OpenCLProgram(long _programId, long _queueId, long _contextId, OpenCLDevice _device, String _source, String _log) {
+   OpenCLProgram(long _programId, long _queueId, long _contextId, OpenCLDevice _device, String _source, String _log){
       programId = _programId;
       queueId = _queueId;
       contextId = _contextId;
@@ -26,11 +26,11 @@ public class OpenCLProgram{
       log = _log;
    }
 
-   public OpenCLDevice getDevice() {
+   public OpenCLDevice getDevice(){
       return device;
    }
 
-   public OpenCLKernel createKernel(String _kernelName, List<OpenCLArgDescriptor> args) {
+   public OpenCLKernel createKernel(String _kernelName, List<OpenCLArgDescriptor> args){
       return (OpenCLJNI.getJNI().createKernel(this, _kernelName, args));
    }
 
@@ -38,11 +38,11 @@ public class OpenCLProgram{
 
    private Map<Long, OpenCLMem> addressToMem = new HashMap<Long, OpenCLMem>();
 
-   public synchronized OpenCLMem getMem(Object _instance, long _address) {
+   public synchronized OpenCLMem getMem(Object _instance, long _address){
       OpenCLMem mem = instanceToMem.get(_instance);
-      if (mem == null) {
+      if(mem == null){
          mem = addressToMem.get(_instance);
-         if (mem != null) {
+         if(mem != null){
             System.out.println("object has been moved, we need to remap the buffer");
             OpenCLJNI.getJNI().remap(this, mem, _address);
          }
@@ -50,13 +50,13 @@ public class OpenCLProgram{
       return (mem);
    }
 
-   public synchronized void add(OpenCLMem _mem) {
+   public synchronized void add(OpenCLMem _mem){
 
       instanceToMem.put(_mem.instance, _mem);
       addressToMem.put(_mem.address, _mem);
    }
 
-   public synchronized void remaped(OpenCLMem _mem, long _oldAddress) {
+   public synchronized void remaped(OpenCLMem _mem, long _oldAddress){
       addressToMem.remove(_oldAddress);
       addressToMem.put(_mem.address, _mem);
    }

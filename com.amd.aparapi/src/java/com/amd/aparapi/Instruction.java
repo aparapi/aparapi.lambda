@@ -41,19 +41,16 @@ import com.amd.aparapi.InstructionSet.Branch;
 import com.amd.aparapi.InstructionSet.ByteCode;
 import com.amd.aparapi.InstructionSet.CompositeInstruction;
 import com.amd.aparapi.InstructionSet.ConditionalBranch;
-
 import java.util.LinkedList;
 
 /**
  * Initially represents a single Java bytecode instruction.
- * 
- * Instructions for each bytecode are created when the bytecode is first scanned.  
- * 
+ * <p/>
+ * Instructions for each bytecode are created when the bytecode is first scanned.
+ * <p/>
  * Each Instruction will contain a pc (program counter) offset from the beginning of the sequence of bytecode and the length will be determined by the information gleaned from InstructionSet.BYTECODE.
- * 
- * 
- * @author gfrost
  *
+ * @author gfrost
  */
 abstract class Instruction{
 
@@ -89,16 +86,16 @@ abstract class Instruction{
 
    private Instruction lastChild = null;
 
-   protected void setChildren(Instruction _firstChild, Instruction _lastChild) {
+   protected void setChildren(Instruction _firstChild, Instruction _lastChild){
 
-      if (_firstChild == null || _lastChild == null) {
+      if(_firstChild == null || _lastChild == null){
          throw new IllegalStateException("null children added");
       }
       firstChild = _firstChild;
       lastChild = _lastChild;
 
-      for (Instruction i = firstChild; i != lastChild; i = i.getNextExpr()) {
-         if (i == null) {
+      for(Instruction i = firstChild; i != lastChild; i = i.getNextExpr()){
+         if(i == null){
             throw new IllegalStateException("child list broken ");
          }
          i.setParentExpr(this);
@@ -106,217 +103,217 @@ abstract class Instruction{
       lastChild.setParentExpr(this);
    }
 
-   Instruction getPrevExpr() {
+   Instruction getPrevExpr(){
       return (prevExpr);
 
    }
 
-   Instruction getNextExpr() {
+   Instruction getNextExpr(){
       return (nextExpr);
    }
 
-   void setNextPC(Instruction _nextByPC) {
+   void setNextPC(Instruction _nextByPC){
       nextPC = _nextByPC;
    }
 
-   void setPrevPC(Instruction _prevByPC) {
+   void setPrevPC(Instruction _prevByPC){
       prevPC = _prevByPC;
    }
 
-   void setPrevExpr(Instruction _prevExpr) {
+   void setPrevExpr(Instruction _prevExpr){
       prevExpr = _prevExpr;
    }
 
-   void setNextExpr(Instruction _nextExpr) {
+   void setNextExpr(Instruction _nextExpr){
       nextExpr = _nextExpr;
    }
 
-   Instruction toInstruction() {
+   Instruction toInstruction(){
       return (this);
    }
 
-   final int getLength() {
+   final int getLength(){
       return (length);
    }
 
-   final void setLength(int _length) {
+   final void setLength(int _length){
       length = _length;
    }
 
-   final ByteCode getByteCode() {
+   final ByteCode getByteCode(){
       return (byteCode);
    }
 
-   int getThisPC() {
+   int getThisPC(){
       return (pc);
    }
 
-   int getStartPC() {
+   int getStartPC(){
       return (getFirstChild() == null ? pc : getFirstChild().getStartPC());
    }
 
-   protected Instruction(MethodModel _method, ByteCode _byteCode, int _pc) {
+   protected Instruction(MethodModel _method, ByteCode _byteCode, int _pc){
       method = _method;
       pc = _pc;
       byteCode = _byteCode;
    }
 
-   protected Instruction(MethodModel _method, ByteCode _byteCode, ByteReader _byteReader, boolean _wide) {
+   protected Instruction(MethodModel _method, ByteCode _byteCode, ByteReader _byteReader, boolean _wide){
       this(_method, _byteCode, _wide ? _byteReader.getOffset() - 2 : _byteReader.getOffset() - 1);
    }
 
    // This works for most cases (except calls whose operand count depends upon the signature) so all call instructions therefore override this method
-   int getStackConsumeCount() {
+   int getStackConsumeCount(){
       return (byteCode.getPop().getStackAdjust());
    }
 
-   int getStackProduceCount() {
+   int getStackProduceCount(){
       return (byteCode.getPush().getStackAdjust());
    }
 
-   int getStackDelta() {
+   int getStackDelta(){
       return (getStackProduceCount() - getStackConsumeCount());
    }
 
-   @Override public String toString() {
+   @Override public String toString(){
       return (String.format("%d %s", pc, byteCode.getName()));
    }
 
-   boolean isBranch() {
+   boolean isBranch(){
       return (this instanceof Branch);
    }
 
-   int compareTo(Instruction _other) {
+   int compareTo(Instruction _other){
       return (pc - _other.pc);
    }
 
-   boolean isAfter(Instruction _other) {
+   boolean isAfter(Instruction _other){
       return (compareTo(_other) > 0);
    }
 
-   boolean isAfterOrEqual(Instruction _other) {
+   boolean isAfterOrEqual(Instruction _other){
       return (compareTo(_other) >= 0);
    }
 
-   boolean isBefore(Instruction _other) {
+   boolean isBefore(Instruction _other){
       return (compareTo(_other) < 0);
    }
 
-   boolean isBeforeOrEqual(Instruction _other) {
+   boolean isBeforeOrEqual(Instruction _other){
       return (compareTo(_other) <= 0);
    }
 
-   Instruction getFirstChild() {
+   Instruction getFirstChild(){
       return (firstChild);
    }
 
-   Instruction getLastChild() {
+   Instruction getLastChild(){
       return (lastChild);
    }
 
-   Instruction getStartInstruction() {
+   Instruction getStartInstruction(){
       return (getFirstChild() == null ? this : getFirstChild().getStartInstruction());
 
    }
 
-   MethodModel getMethod() {
+   MethodModel getMethod(){
       return (method);
    }
 
-   Instruction getNextPC() {
+   Instruction getNextPC(){
       return (nextPC);
    }
 
-   Instruction getPrevPC() {
+   Instruction getPrevPC(){
       return (prevPC);
    }
 
-   void setParentExpr(Instruction _parentExpr) {
+   void setParentExpr(Instruction _parentExpr){
       parentExpr = _parentExpr;
    }
 
-   Instruction getParentExpr() {
+   Instruction getParentExpr(){
       return (parentExpr);
    }
 
-   Instruction getRootExpr() {
+   Instruction getRootExpr(){
       return (parentExpr == null ? this : parentExpr.getRootExpr());
    }
 
-   boolean isReverseConditionalBranchTarget() {
+   boolean isReverseConditionalBranchTarget(){
       return (reverseConditionalBranchTargets != null && reverseConditionalBranchTargets.size() > 0);
    }
 
-   boolean isForwardConditionalBranchTarget() {
+   boolean isForwardConditionalBranchTarget(){
       return (forwardConditionalBranchTargets != null && forwardConditionalBranchTargets.size() > 0);
    }
 
-   boolean isReverseUnconditionalBranchTarget() {
+   boolean isReverseUnconditionalBranchTarget(){
       return (reverseUnconditionalBranchTargets != null && reverseUnconditionalBranchTargets.size() > 0);
    }
 
-   boolean isForwardUnconditionalBranchTarget() {
+   boolean isForwardUnconditionalBranchTarget(){
       return (forwardUnconditionalBranchTargets != null && forwardUnconditionalBranchTargets.size() > 0);
    }
 
-   boolean isReverseBranchTarget() {
+   boolean isReverseBranchTarget(){
       return (isReverseConditionalBranchTarget() || isReverseUnconditionalBranchTarget());
    }
 
-   boolean isConditionalBranchTarget() {
+   boolean isConditionalBranchTarget(){
       return (isReverseConditionalBranchTarget() || isForwardConditionalBranchTarget());
    }
 
-   boolean isUnconditionalBranchTarget() {
+   boolean isUnconditionalBranchTarget(){
       return (isReverseUnconditionalBranchTarget() || isForwardUnconditionalBranchTarget());
    }
 
-   boolean isForwardBranchTarget() {
+   boolean isForwardBranchTarget(){
       return (isForwardConditionalBranchTarget() || isForwardUnconditionalBranchTarget());
    }
 
-   boolean isBranchTarget() {
+   boolean isBranchTarget(){
       return (isForwardBranchTarget() || isReverseBranchTarget());
    }
 
-   boolean producesStack() {
+   boolean producesStack(){
       return (this instanceof CompositeInstruction || (getStackProduceCount() > 0));
    }
 
-   Instruction getReal() {
+   Instruction getReal(){
       return (this);
    }
 
-   Branch asBranch() {
+   Branch asBranch(){
       return ((Branch) this);
    }
 
-   boolean consumesStack() {
+   boolean consumesStack(){
       return (getStackConsumeCount() > 0);
    }
 
-   void addBranchTarget(Branch _branch) {
+   void addBranchTarget(Branch _branch){
 
-      if (_branch.isReverse()) {
-         if (_branch.isConditional()) {
-            if (reverseConditionalBranchTargets == null) {
+      if(_branch.isReverse()){
+         if(_branch.isConditional()){
+            if(reverseConditionalBranchTargets == null){
                reverseConditionalBranchTargets = new LinkedList<ConditionalBranch>();
             }
             reverseConditionalBranchTargets.add((ConditionalBranch) _branch);
-         } else {
-            if (reverseUnconditionalBranchTargets == null) {
+         }else{
+            if(reverseUnconditionalBranchTargets == null){
                reverseUnconditionalBranchTargets = new LinkedList<Branch>();
             }
             reverseUnconditionalBranchTargets.add(_branch);
          }
-      } else {
-         if (_branch.isConditional()) {
-            if (forwardConditionalBranchTargets == null) {
+      }else{
+         if(_branch.isConditional()){
+            if(forwardConditionalBranchTargets == null){
                forwardConditionalBranchTargets = new LinkedList<ConditionalBranch>();
             }
             forwardConditionalBranchTargets.add((ConditionalBranch) _branch);
-         } else {
-            if (forwardUnconditionalBranchTargets == null) {
+         }else{
+            if(forwardUnconditionalBranchTargets == null){
                forwardUnconditionalBranchTargets = new LinkedList<Branch>();
             }
             forwardUnconditionalBranchTargets.add(_branch);
@@ -325,35 +322,35 @@ abstract class Instruction{
 
    }
 
-   void removeBranchTarget(Branch _branch) {
-      if (_branch.isReverse()) {
-         if (_branch.isConditional()) {
-            if (reverseConditionalBranchTargets != null) {
+   void removeBranchTarget(Branch _branch){
+      if(_branch.isReverse()){
+         if(_branch.isConditional()){
+            if(reverseConditionalBranchTargets != null){
                reverseConditionalBranchTargets.remove(_branch);
-               if (reverseConditionalBranchTargets.size() == 0) {
+               if(reverseConditionalBranchTargets.size() == 0){
                   reverseConditionalBranchTargets = null;
                }
             }
-         } else {
-            if (reverseUnconditionalBranchTargets != null) {
+         }else{
+            if(reverseUnconditionalBranchTargets != null){
                reverseUnconditionalBranchTargets.remove(_branch);
-               if (reverseUnconditionalBranchTargets.size() == 0) {
+               if(reverseUnconditionalBranchTargets.size() == 0){
                   reverseUnconditionalBranchTargets = null;
                }
             }
          }
-      } else {
-         if (_branch.isConditional()) {
-            if (forwardConditionalBranchTargets != null) {
+      }else{
+         if(_branch.isConditional()){
+            if(forwardConditionalBranchTargets != null){
                forwardConditionalBranchTargets.remove(_branch);
-               if (forwardConditionalBranchTargets.size() == 0) {
+               if(forwardConditionalBranchTargets.size() == 0){
                   forwardConditionalBranchTargets = null;
                }
             }
-         } else {
-            if (forwardUnconditionalBranchTargets != null) {
+         }else{
+            if(forwardUnconditionalBranchTargets != null){
                forwardUnconditionalBranchTargets.remove(_branch);
-               if (forwardUnconditionalBranchTargets.size() == 0) {
+               if(forwardUnconditionalBranchTargets.size() == 0){
                   forwardUnconditionalBranchTargets = null;
                }
             }
@@ -361,27 +358,27 @@ abstract class Instruction{
       }
    }
 
-   LinkedList<Branch> getForwardUnconditionalBranches() {
+   LinkedList<Branch> getForwardUnconditionalBranches(){
       return (forwardUnconditionalBranchTargets);
    }
 
-   LinkedList<ConditionalBranch> getForwardConditionalBranches() {
+   LinkedList<ConditionalBranch> getForwardConditionalBranches(){
       return (forwardConditionalBranchTargets);
    }
 
-   LinkedList<Branch> getReverseUnconditionalBranches() {
+   LinkedList<Branch> getReverseUnconditionalBranches(){
       return (reverseUnconditionalBranchTargets);
    }
 
-   LinkedList<ConditionalBranch> getReverseConditionalBranches() {
+   LinkedList<ConditionalBranch> getReverseConditionalBranches(){
       return (reverseConditionalBranchTargets);
    }
 
-   boolean isForwardBranch() {
+   boolean isForwardBranch(){
       return (isBranch() && asBranch().isForward());
    }
 
-   boolean sameAs(Instruction _other) {
+   boolean sameAs(Instruction _other){
       return (equals(_other));
    }
 

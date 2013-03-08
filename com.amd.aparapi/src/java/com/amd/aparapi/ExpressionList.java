@@ -39,16 +39,7 @@ package com.amd.aparapi;
 
 import com.amd.aparapi.ClassModel.LocalVariableInfo;
 import com.amd.aparapi.ClassModel.LocalVariableTableEntry;
-import com.amd.aparapi.InstructionSet.AssignToLocalVariable;
-import com.amd.aparapi.InstructionSet.Branch;
-import com.amd.aparapi.InstructionSet.ByteCode;
-import com.amd.aparapi.InstructionSet.CompositeArbitraryScopeInstruction;
-import com.amd.aparapi.InstructionSet.CompositeInstruction;
-import com.amd.aparapi.InstructionSet.ConditionalBranch;
-import com.amd.aparapi.InstructionSet.FakeGoto;
-import com.amd.aparapi.InstructionSet.Return;
-import com.amd.aparapi.InstructionSet.UnconditionalBranch;
-
+import com.amd.aparapi.InstructionSet.*;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -57,11 +48,11 @@ import java.util.logging.Logger;
 
 /**
  * Essentially a glorified linked list of Instructions plus some additional state to allow us to transform sequences.
- * 
- * ExpressionLists do have the notion of a parent which allows us to clone an existing parent, allow transformations 
- * and then possibly commit or abort the transformations at will. 
- * @author gfrost
+ * <p/>
+ * ExpressionLists do have the notion of a parent which allows us to clone an existing parent, allow transformations
+ * and then possibly commit or abort the transformations at will.
  *
+ * @author gfrost
  */
 class ExpressionList{
 
@@ -77,52 +68,52 @@ class ExpressionList{
 
    private Instruction instruction;
 
-   private ExpressionList(MethodModel _methodModel, ExpressionList _parent, Instruction _instruction) {
+   private ExpressionList(MethodModel _methodModel, ExpressionList _parent, Instruction _instruction){
 
       methodModel = _methodModel;
       parent = _parent;
       instruction = _instruction;
-      if (parent != null) {
+      if(parent != null){
          head = parent.head;
          tail = parent.tail;
       }
-      if (instruction != null) {
+      if(instruction != null){
          tail = _instruction.getPrevExpr();
          tail.setNextExpr(null);
          _instruction.setPrevExpr(null);
       }
    }
 
-   ExpressionList(MethodModel _methodModel) {
+   ExpressionList(MethodModel _methodModel){
       this(_methodModel, null, null);
    }
 
    /**
-    * Determine whether the sequence of instructions from _start to _extent is free of branches which extend beyond _extent. 
-    * 
+    * Determine whether the sequence of instructions from _start to _extent is free of branches which extend beyond _extent.
+    * <p/>
     * As a side effect, if we find a possible branch it is likely a break or continue so we mark the conditional as such.
     *
     * @param _start
     * @param _extent
     * @return
     */
-   boolean doesNotContainContinueOrBreak(Instruction _start, Instruction _extent) {
+   boolean doesNotContainContinueOrBreak(Instruction _start, Instruction _extent){
       boolean ok = true;
       boolean breakOrContinue = false;
-      for (Instruction i = _start; i != null; i = i.getNextExpr()) {
-         if (i.isBranch()) {
-            if (i.asBranch().isForwardUnconditional() && i.asBranch().getTarget().isAfter(_extent)) {
+      for(Instruction i = _start; i != null; i = i.getNextExpr()){
+         if(i.isBranch()){
+            if(i.asBranch().isForwardUnconditional() && i.asBranch().getTarget().isAfter(_extent)){
                breakOrContinue = true;
-            } else {
+            }else{
                ok = false;
                break;
             }
          }
       }
-      if (ok) {
-         if (breakOrContinue) {
-            for (Instruction i = _start; i != null; i = i.getNextExpr()) {
-               if (i.isBranch() && i.asBranch().isForwardUnconditional() && i.asBranch().getTarget().isAfter(_extent)) {
+      if(ok){
+         if(breakOrContinue){
+            for(Instruction i = _start; i != null; i = i.getNextExpr()){
+               if(i.isBranch() && i.asBranch().isForwardUnconditional() && i.asBranch().getTarget().isAfter(_extent)){
                   i.asBranch().setBreakOrContinue(true);
                }
             }
@@ -131,10 +122,10 @@ class ExpressionList{
       return (ok);
    }
 
-   boolean doesNotContainCompositeOrBranch(Instruction _start, Instruction _exclusiveEnd) {
+   boolean doesNotContainCompositeOrBranch(Instruction _start, Instruction _exclusiveEnd){
       boolean ok = true;
-      for (Instruction i = _start; i != null && i != _exclusiveEnd; i = i.getNextExpr()) {
-         if (!(i instanceof CompositeInstruction) && (i.isBranch())) {
+      for(Instruction i = _start; i != null && i != _exclusiveEnd; i = i.getNextExpr()){
+         if(!(i instanceof CompositeInstruction) && (i.isBranch())){
             ok = false;
             break;
          }
@@ -142,13 +133,13 @@ class ExpressionList{
       return (ok);
    }
 
-   void unwind() {
-      if (parent != null) {
-         if (instruction != null) {
+   void unwind(){
+      if(parent != null){
+         if(instruction != null){
             tail.setNextExpr(instruction);
             instruction.setPrevExpr(tail);
             parent.head = head;
-         } else {
+         }else{
             parent.head = head;
             parent.tail = tail;
          }
@@ -156,24 +147,24 @@ class ExpressionList{
    }
 
    /**
-    *  [1] [2] [3] [4]
-    *  
-    *  Note that passing null here essentially deletes the existing expression list and returns the expression
-    *  
+    * [1] [2] [3] [4]
+    * <p/>
+    * Note that passing null here essentially deletes the existing expression list and returns the expression
+    *
     * @param _newTail
     * @return
     */
 
-   Instruction createList(final Instruction _newTail) {
+   Instruction createList(final Instruction _newTail){
       Instruction childExprHead = null;
-      if (_newTail == null) {
+      if(_newTail == null){
          childExprHead = head;
          tail = head = null;
-      } else {
+      }else{
          childExprHead = _newTail.getNextExpr();
          tail = _newTail;
          _newTail.setNextExpr(null);
-         if (childExprHead != null) {
+         if(childExprHead != null){
             childExprHead.setPrevExpr(null);
          }
 
@@ -182,17 +173,17 @@ class ExpressionList{
    }
 
    /**
-    * Add this instruction to the end of the list. 
-    * 
+    * Add this instruction to the end of the list.
+    *
     * @param _instruction
     * @return The instruction we added
     */
 
-   Instruction add(Instruction _instruction) {
+   Instruction add(Instruction _instruction){
 
-      if (head == null) {
+      if(head == null){
          head = _instruction;
-      } else {
+      }else{
          _instruction.setPrevExpr(tail);
          tail.setNextExpr(_instruction);
 
@@ -203,28 +194,29 @@ class ExpressionList{
    }
 
    /**
-    * Insert the given instruction (_newone) between the existing entries (_prev and _next). 
+    * Insert the given instruction (_newone) between the existing entries (_prev and _next).
+    *
     * @param _prev
     * @param _next
     * @param _newOne
     */
-   void insertBetween(Instruction _prev, Instruction _next, Instruction _newOne) {
+   void insertBetween(Instruction _prev, Instruction _next, Instruction _newOne){
       _newOne.setNextExpr(null);
       _newOne.setPrevExpr(null);
-      if (_prev == null) {
+      if(_prev == null){
          // this is the new head
-         if (_next == null) {
+         if(_next == null){
             head = tail = _newOne;
-         } else {
+         }else{
             _newOne.setNextExpr(head);
             head.setPrevExpr(_newOne);
             head = _newOne;
          }
-      } else if (_next == null) {
+      }else if(_next == null){
          _newOne.setPrevExpr(tail);
          tail.setNextExpr(_newOne);
          tail = _newOne;
-      } else {
+      }else{
          _newOne.setNextExpr(_prev.getNextExpr());
          _newOne.setPrevExpr(_next.getPrevExpr());
          _prev.setNextExpr(_newOne);
@@ -234,47 +226,47 @@ class ExpressionList{
    }
 
    /**
-     * Inclusive replace between _head and _tail with _newOne. 
-      * 
-      * <pre>
-      *    |      | --> |       | ---> ... ---> |       | ---> |      |
-      *    | prev |     | _head |               | _tail |      | next |
-      *    |      | <-- |       | <--- ... <----|       | <--- |      |
-      * </pre>
-      *  To 
-      * <pre>
-      *    |      | --> |         | ---> |      |
-      *    | prev |     | _newOne |      | next |
-      *    |      | <-- |         | <--- |      |
-      * </pre>
-      */
+    * Inclusive replace between _head and _tail with _newOne.
+    * <p/>
+    * <pre>
+    *    |      | --> |       | ---> ... ---> |       | ---> |      |
+    *    | prev |     | _head |               | _tail |      | next |
+    *    |      | <-- |       | <--- ... <----|       | <--- |      |
+    * </pre>
+    * To
+    * <pre>
+    *    |      | --> |         | ---> |      |
+    *    | prev |     | _newOne |      | next |
+    *    |      | <-- |         | <--- |      |
+    * </pre>
+    */
 
-   void replaceInclusive(Instruction _head, Instruction _tail, Instruction _newOne) {
+   void replaceInclusive(Instruction _head, Instruction _tail, Instruction _newOne){
       _newOne.setNextExpr(null);
       _newOne.setPrevExpr(null);
       Instruction prevHead = _head.getPrevExpr();
-      if (_tail == null) {
+      if(_tail == null){
          // this is the new tail
          _newOne.setPrevExpr(prevHead);
          prevHead.setNextExpr(_newOne);
          tail = _newOne;
-      } else {
+      }else{
          Instruction tailNext = _tail.getNextExpr();
-         if (prevHead == null) {
+         if(prevHead == null){
             // this is the new head
-            if (tailNext == null) {
+            if(tailNext == null){
                head = tail = _newOne;
-            } else {
+            }else{
                _newOne.setNextExpr(head);
                head.setPrevExpr(_newOne);
                head = _newOne;
             }
-         } else if (tailNext == null) {
+         }else if(tailNext == null){
             _newOne.setPrevExpr(prevHead);
             prevHead.setNextExpr(_newOne);
             tail = _newOne;
             _head.setPrevExpr(null);
-         } else {
+         }else{
             _newOne.setNextExpr(tailNext);
             _newOne.setPrevExpr(prevHead);
             prevHead.setNextExpr(_newOne);
@@ -289,46 +281,46 @@ class ExpressionList{
 
    /**
     * Fold headTail.tail into valid composites
-    * 
+    * <p/>
     * <pre>
-    * if(??){then}... 
+    * if(??){then}...
     *   ?? ?> [THEN] ...
     *       -------->
     *
     * if (??){THEN}else{ELSE}...
-    * 
+    *
     *   ?? ?> [THEN] >> [ELSE] ...
     *       ------------>
     *                 -------->
-    *               
+    *
     * sun for (INIT,??,DELTA){BODY} ...
-    * 
+    *
     *    [INIT] ?? ?> [BODY] [DELTA] << ...
     *               ------------------>
     *            <-------------------
-    *        
+    *
     * sun for (,??,DELTA){BODY} ...
-    * 
+    *
     *     ?? ?> [BODY] [DELTA] << ...
     *         ------------------>
-    *      <-------------------    
-    *        
+    *      <-------------------
+    *
     * sun while (?){l} ...
-    * 
+    *
     *    ?? ?> [BODY] << ...
     *        ----------->
     *     <------------
-    *               
+    *
     * eclipse for (INIT,??,DELTA){BODY} ...
     *    [INIT] >> [BODY] [DELTA] ?? ?< ...
     *            ---------------->
     *              <-----------------
-    *          
+    *
     * eclipse for (,??,DELTA){BODY} ...
     *    >> [BODY] [DELTA] ?? ?< ...
     *     --------------->
     *       <-----------------
-    *      
+    *
     * eclipse while (??){BODY} ...
     *    >> [BODY] ?? ?< ...
     *     -------->
@@ -338,97 +330,98 @@ class ExpressionList{
     *    ?1 ?> >> [BODY] ?2 ?< >> [ELSE] ...
     *           --------->
     *              <---------
-    *        --------------------->    
-    *                           -------->   
-    * 
+    *        --------------------->
+    *                           -------->
+    *
     * sun for (,?1,DELTA){ if (?2) { THEN break; } BODY} ...
-    * 
+    *
     *     ?1 ?> ?2 ?> [THEN] >> [BODY] [DELTA] << ...
     *               ----------->
     *         ---------------------------------->
     *                         ------------------>
-    *     <------------------------------------ 
-    *     
+    *     <------------------------------------
+    *
     * sun for (,?1,DELTA){ if (?2) { THEN continue; } BODY} ...
-    * 
+    *
     *     ?1 ?> ?2 ?> THEN >> [BODY] [DELTA] << ...
     *               --------->
     *                       -------->
     *         -------------------------------->
-    *     <----------------------------------     
-    *           
+    *     <----------------------------------
+    *
     * Some exceptions based on sun javac optimizations
-    * 
+    *
     * if (?1){ if (?2){THEN} }else{ ELSE } ...
-    *   One might expect 
+    *   One might expect
     *    ?1 ?> ?2 ?> [THEN] >> [ELSE] ...
     *        ----------------->
-    *              -------->!         
+    *              -------->!
     *                        ------------->
-    *   However the conditional branch to the unconditional (!) is optimized away and instead the unconditional inverted and extended 
-    *                   
+    *   However the conditional branch to the unconditional (!) is optimized away and instead the unconditional inverted and extended
+    *
     *    ?1 ?> ?2 ?> [THEN] >> [ELSE] ...
     *        ----------------->
     *              --------*--------->
-    *              
+    *
     * sun if (?1) { while (?2) {l} } else {e} ...
-    *   One might expect 
+    *   One might expect
     *    ?1 ?> ?2 ?> [BODY] << >> [ELSE] ...
     *        ------------------->
     *              ----------->!
-    *            <----------    
+    *            <----------
     *                           -------->
-    *                    
-    *   However as above the conditional branch to the unconditional (!) can be optimized away and the conditional inverted and extended 
+    *
+    *   However as above the conditional branch to the unconditional (!) can be optimized away and the conditional inverted and extended
     *    ?1 ?> ?2 ?> [BODY] << >> [ELSE] ...
     *        -------------------->
-    *              -----------*--------->   
-    *            <-----------  
-    *              
+    *              -----------*--------->
+    *            <-----------
+    *
     *   However we can also now remove the forward unconditional completely as it is unreachable
     *    ?1 ?> ?2 ?> [BODY] << [ELSE] ...
     *        ----------------->
-    *              ------------------>   
-    *            <-----------       
-    *               
+    *              ------------------>
+    *            <-----------
+    *
     * sun while(?1){if (?2) {THEN} else {ELSE} } ...
-    *   One might expect 
+    *   One might expect
     *    ?1 ?> ?2 ?> [BODY] >> [ELSE] << ...
     *         -------------------------->
     *           <---------------------
-    *               ---------->    
+    *               ---------->
     *                         ------->!
-    *                    
-    *   However the unconditional branch to the unconditional backbranch (!) can be optimized away and the unconditional wrapped back directly to the loop control head 
+    *
+    *   However the unconditional branch to the unconditional backbranch (!) can be optimized away and the unconditional wrapped back directly to the loop control head
     *    ?1 ?> ?2 ?> [BODY] << [ELSE] << ...
     *         -------------------------->
     *           <---------------------
-    *               ---------->    
+    *               ---------->
     *           <-----------
-                                        
+    *
     * </pre>
+    *
     * @param _instruction
-    * @throws ClassParseException 
+    * @throws ClassParseException
     */
-   boolean foldComposite(final Instruction _instruction) throws ClassParseException {
+   boolean foldComposite(final Instruction _instruction) throws ClassParseException{
       boolean handled = false;
-      try {
+      try{
 
-         if (logger.isLoggable(Level.FINE)) {
+         if(logger.isLoggable(Level.FINE)){
             System.out.println("foldComposite: curr = " + _instruction);
             System.out.println(dumpDiagram(_instruction));
             // System.out.println(dumpDiagram(null, _instruction));
          }
-         if (_instruction.isForwardBranchTarget() || (tail != null && tail.isBranch() && tail.asBranch().isReverseConditional())) {
-            while (_instruction.isForwardBranchTarget()
-                  || (tail != null && tail.isBranch() && tail.asBranch().isReverseConditional())) {
-               if (logger.isLoggable(Level.FINE)) {
+         if(_instruction.isForwardBranchTarget() || (tail != null && tail.isBranch() && tail.asBranch().isReverseConditional())){
+            while(_instruction.isForwardBranchTarget()
+                  || (tail != null && tail.isBranch() && tail.asBranch().isReverseConditional())){
+               if(logger.isLoggable(Level.FINE)){
                   System.out.println(dumpDiagram(_instruction));
 
                }
                handled = false;
 
-               if (tail != null && tail.isBranch() && tail.asBranch().isReverseConditional()) {
+               if(tail != null && tail.isBranch() && tail.asBranch().isReverseConditional()){
                   /**
                    * This looks like an eclipse style for/while loop or possibly a do{}while()
                    * <pre>
@@ -436,12 +429,12 @@ class ExpressionList{
                    *    [INIT] >> [BODY] [DELTA] ?? ?< ...
                    *            ---------------->
                    *              <-----------------
-                   *          
+                   *
                    * eclipse for (,??,DELTA){BODY} ...
                    *    >> [BODY] [DELTA] ?? ?< ...
                    *     --------------->
                    *       <-----------------
-                   *      
+                   *
                    * eclipse while (??){BODY} ...
                    *    >> [BODY] ?? ?< ...
                    *     -------->
@@ -449,7 +442,7 @@ class ExpressionList{
                    * do {BODY} while(??)
                    *    [BODY] ?? ?< ...
                    *    <-----------
-                   *    
+                   *
                    * </pre>
                    **/
                   BranchSet branchSet = ((ConditionalBranch) tail.asBranch()).getOrCreateBranchSet();
@@ -458,32 +451,32 @@ class ExpressionList{
 
                   Instruction startOfBeginningOfBranch = beginingOfBranch.getStartInstruction();
                   // empty loops sometimes look like eclipse loops!
-                  if (startOfBeginningOfBranch == loopTop) {
+                  if(startOfBeginningOfBranch == loopTop){
 
                      loopTop = loopTop.getPrevExpr();
-                     if (loopTop instanceof AssignToLocalVariable) {
+                     if(loopTop instanceof AssignToLocalVariable){
                         LocalVariableInfo localVariableInfo = ((AssignToLocalVariable) loopTop).getLocalVariableInfo();
-                        if (localVariableInfo.getStart() == loopTop.getNextExpr().getStartPC()
-                              && localVariableInfo.getEnd() == _instruction.getThisPC()) {
+                        if(localVariableInfo.getStart() == loopTop.getNextExpr().getStartPC()
+                              && localVariableInfo.getEnd() == _instruction.getThisPC()){
                            loopTop = loopTop.getPrevExpr(); // back up over the initialization
                         }
                      }
                      addAsComposites(ByteCode.COMPOSITE_EMPTY_LOOP, loopTop, branchSet);
                      handled = true;
-                  } else {
+                  }else{
 
-                     if (loopTop.getPrevExpr() != null && loopTop.getPrevExpr().isBranch()
-                           && loopTop.getPrevExpr().asBranch().isForwardUnconditional()) {
-                        if (doesNotContainCompositeOrBranch(branchSet.getTarget().getRootExpr(), branchSet.getFirst().getPrevExpr())) {
+                     if(loopTop.getPrevExpr() != null && loopTop.getPrevExpr().isBranch()
+                           && loopTop.getPrevExpr().asBranch().isForwardUnconditional()){
+                        if(doesNotContainCompositeOrBranch(branchSet.getTarget().getRootExpr(), branchSet.getFirst().getPrevExpr())){
                            branchSet.unhook();
                            loopTop.getPrevExpr().asBranch().unhook();
                            loopTop = loopTop.getPrevExpr();
                            // looptop == the unconditional?
                            loopTop = loopTop.getPrevExpr();
-                           if (loopTop instanceof AssignToLocalVariable) {
+                           if(loopTop instanceof AssignToLocalVariable){
                               LocalVariableInfo localVariableInfo = ((AssignToLocalVariable) loopTop).getLocalVariableInfo();
-                              if (localVariableInfo.getStart() == loopTop.getNextExpr().getStartPC()
-                                    && localVariableInfo.getEnd() == _instruction.getThisPC()) {
+                              if(localVariableInfo.getStart() == loopTop.getNextExpr().getStartPC()
+                                    && localVariableInfo.getEnd() == _instruction.getThisPC()){
                                  loopTop = loopTop.getPrevExpr(); // back up over the initialization
                               }
                            }
@@ -491,60 +484,60 @@ class ExpressionList{
                            handled = true;
                         }
                      }
-                     if (!handled) {
+                     if(!handled){
                         // do{}while()_ do not require any previous instruction
-                        if (loopTop.getPrevExpr() == null) {
+                        if(loopTop.getPrevExpr() == null){
                            throw new IllegalStateException("might be a dowhile with no provious expression");
 
-                        } else if (!(loopTop.getPrevExpr().isBranch() && loopTop.getPrevExpr().asBranch().isForwardUnconditional())) {
-                           if (doesNotContainCompositeOrBranch(branchSet.getTarget().getRootExpr(), branchSet.getFirst()
-                                 .getPrevExpr())) {
+                        }else if(!(loopTop.getPrevExpr().isBranch() && loopTop.getPrevExpr().asBranch().isForwardUnconditional())){
+                           if(doesNotContainCompositeOrBranch(branchSet.getTarget().getRootExpr(), branchSet.getFirst()
+                                 .getPrevExpr())){
                               loopTop = loopTop.getPrevExpr();
                               branchSet.unhook();
                               addAsComposites(ByteCode.COMPOSITE_DO_WHILE, loopTop, branchSet);
                               handled = true;
                            }
-                        } else {
+                        }else{
                            throw new IllegalStateException("might be mistaken for a do while!");
                         }
 
                      }
                   }
                }
-               if (!handled && _instruction.isForwardConditionalBranchTarget() && tail.isBranch()
-                     && tail.asBranch().isReverseUnconditional()) {
+               if(!handled && _instruction.isForwardConditionalBranchTarget() && tail.isBranch()
+                     && tail.asBranch().isReverseUnconditional()){
 
                   /**
                    * This is s sun style loop 
                    * <pre>       
                    * sun for (INIT,??,DELTA){BODY} ...
-                   * 
+                   *
                    *    [INIT] ?? ?> [BODY] [DELTA] << ...
                    *               ------------------>
                    *            <-------------------
-                   *        
+                   *
                    * sun for (,??,DELTA){BODY} ...
-                   * 
+                   *
                    *     ?? ?> [BODY] [DELTA] << ...
                    *         ------------------>
                    *      <-------------------    
-                   *        
+                   *
                    * sun while (?){l} ...
-                   *  
+                   *
                    *    ?? ?> [BODY] << ...
                    *         ----------->
                    *     <------------
-                   *               
+                   *
                    *</pre>
                    */
                   ConditionalBranch lastForwardConditional = _instruction.getForwardConditionalBranches().getLast();
                   BranchSet branchSet = lastForwardConditional.getOrCreateBranchSet();
                   Branch reverseGoto = tail.asBranch();
                   Instruction loopBackTarget = reverseGoto.getTarget();
-                  if (loopBackTarget.getReverseUnconditionalBranches().size() > 1) {
+                  if(loopBackTarget.getReverseUnconditionalBranches().size() > 1){
                      throw new ClassParseException(ClassParseException.TYPE.CONFUSINGBRANCHESPOSSIBLYCONTINUE);
                   }
-                  if (_instruction.isForwardUnconditionalBranchTarget()) {
+                  if(_instruction.isForwardUnconditionalBranchTarget()){
                      /**
                       * Check if we have a break
                       * <pre>              
@@ -553,15 +546,15 @@ class ExpressionList{
                       *                     ---->
                       *                        ----------->
                       *     <----------------------------
-                      *               
+                      *
                       *</pre>
                       */
                      Branch lastForwardUnconditional = _instruction.getForwardUnconditionalBranches().getLast();
-                     if (lastForwardUnconditional != null && lastForwardUnconditional.isAfter(lastForwardConditional)) {
+                     if(lastForwardUnconditional != null && lastForwardUnconditional.isAfter(lastForwardConditional)){
                         throw new ClassParseException(ClassParseException.TYPE.CONFUSINGBRANCHESPOSSIBLYBREAK);
                      }
                   }
-                  if (loopBackTarget != branchSet.getFirst().getStartInstruction()) {
+                  if(loopBackTarget != branchSet.getFirst().getStartInstruction()){
                      /**
                       * we may have a if(?1){while(?2){}}else{...} where the else goto has been optimized away. 
                       * <pre>
@@ -571,38 +564,38 @@ class ExpressionList{
                       *              ----------->!
                       *            <----------    
                       *                           -------->
-                      *                    
+                      *
                       *   However as above the conditional branch to the unconditional (!) can be optimized away and the conditional inverted and extended 
                       *    ?1 ?> ?2 ?> [BODY] << >> [ELSE] ...
                       *        -------------------->
                       *              -----------*--------->   
                       *            <-----------  
-                      *              
+                      *
                       *   However we can also now remove the forward unconditional completely as it is unreachable
                       *    ?1 ?> ?2 ?> [BODY] << [ELSE] ...
                       *        ----------------->
                       *              ------------------>   
                       *            <-----------       
-                      *               
+                      *
                       * </pre>
                       */
 
                      Instruction loopbackTargetRoot = loopBackTarget.getRootExpr();
-                     if (loopbackTargetRoot.isBranch() && loopbackTargetRoot.asBranch().isConditional()) {
+                     if(loopbackTargetRoot.isBranch() && loopbackTargetRoot.asBranch().isConditional()){
                         ConditionalBranch topOfRealLoop = (ConditionalBranch) loopbackTargetRoot.asBranch();
                         BranchSet extentBranchSet = topOfRealLoop.getBranchSet();
-                        if (topOfRealLoop.getBranchSet() == null) {
+                        if(topOfRealLoop.getBranchSet() == null){
                            extentBranchSet = topOfRealLoop.findEndOfConditionalBranchSet(_instruction.getNextPC())
                                  .getOrCreateBranchSet();
                         }
                         // We believe that this extendBranchSet is the real top of the while.
-                        if (doesNotContainCompositeOrBranch(extentBranchSet.getLast().getNextExpr(), reverseGoto)) {
+                        if(doesNotContainCompositeOrBranch(extentBranchSet.getLast().getNextExpr(), reverseGoto)){
 
                            Instruction loopTop = topOfRealLoop.getPrevExpr();
-                           if (loopTop instanceof AssignToLocalVariable) {
+                           if(loopTop instanceof AssignToLocalVariable){
                               LocalVariableInfo localVariableInfo = ((AssignToLocalVariable) loopTop).getLocalVariableInfo();
-                              if (localVariableInfo.getStart() == loopTop.getNextExpr().getStartPC()
-                                    && localVariableInfo.getEnd() == _instruction.getThisPC()) {
+                              if(localVariableInfo.getStart() == loopTop.getNextExpr().getStartPC()
+                                    && localVariableInfo.getEnd() == _instruction.getThisPC()){
                                  loopTop = loopTop.getPrevExpr(); // back up over the initialization
                               }
                            }
@@ -617,26 +610,26 @@ class ExpressionList{
                            handled = true;
                         }
                      }
-                  } else {
+                  }else{
                      /**
                       * Just a normal sun style loop
                       */
-                     if (doesNotContainCompositeOrBranch(branchSet.getLast().getNextExpr(), reverseGoto)) {
+                     if(doesNotContainCompositeOrBranch(branchSet.getLast().getNextExpr(), reverseGoto)){
                         Instruction loopTop = reverseGoto.getTarget().getRootExpr().getPrevExpr();
 
-                        if (logger.isLoggable(Level.FINEST)) {
+                        if(logger.isLoggable(Level.FINEST)){
                            Instruction next = branchSet.getFirst().getNextExpr();
                            System.out.println("### for/while candidate exprs: " + branchSet.getFirst());
-                           while (next != null) {
+                           while(next != null){
                               System.out.println("### expr = " + next);
                               next = next.getNextExpr();
                            }
                         }
 
-                        if (loopTop instanceof AssignToLocalVariable) {
+                        if(loopTop instanceof AssignToLocalVariable){
                            LocalVariableInfo localVariableInfo = ((AssignToLocalVariable) loopTop).getLocalVariableInfo();
-                           if (localVariableInfo.getStart() == loopTop.getNextExpr().getStartPC()
-                                 && localVariableInfo.getEnd() == _instruction.getThisPC()) {
+                           if(localVariableInfo.getStart() == loopTop.getNextExpr().getStartPC()
+                                 && localVariableInfo.getEnd() == _instruction.getThisPC()){
                               loopTop = loopTop.getPrevExpr(); // back up over the initialization
 
                            }
@@ -645,9 +638,9 @@ class ExpressionList{
 
                         // If there is an inner scope, it is likely that the loop counter var
                         // is modified using an inner scope variable so use while rather than for
-                        if (reverseGoto.getPrevExpr() instanceof CompositeArbitraryScopeInstruction) {
+                        if(reverseGoto.getPrevExpr() instanceof CompositeArbitraryScopeInstruction){
                            addAsComposites(ByteCode.COMPOSITE_WHILE, loopTop, branchSet);
-                        } else {
+                        }else{
                            addAsComposites(ByteCode.COMPOSITE_FOR_SUN, loopTop, branchSet);
                         }
                         handled = true;
@@ -655,7 +648,7 @@ class ExpressionList{
 
                   }
                }
-               if (!handled && !tail.isForwardBranch() && _instruction.isForwardConditionalBranchTarget()) {
+               if(!handled && !tail.isForwardBranch() && _instruction.isForwardConditionalBranchTarget()){
                   /**
                    * This an if(exp) 
                    *<pre>             *
@@ -667,38 +660,38 @@ class ExpressionList{
                    */
                   ConditionalBranch lastForwardConditional = _instruction.getForwardConditionalBranches().getLast();
                   BranchSet branchSet = lastForwardConditional.getOrCreateBranchSet();
-                  if (doesNotContainContinueOrBreak(branchSet.getLast().getNextExpr(), _instruction)) {
+                  if(doesNotContainContinueOrBreak(branchSet.getLast().getNextExpr(), _instruction)){
                      branchSet.unhook();
                      addAsComposites(ByteCode.COMPOSITE_IF, branchSet.getFirst().getPrevExpr(), branchSet);
                      handled = true;
                   }
                }
-               if (!handled && !tail.isForwardBranch() && _instruction.isForwardUnconditionalBranchTarget()) {
+               if(!handled && !tail.isForwardBranch() && _instruction.isForwardUnconditionalBranchTarget()){
 
                   LinkedList<Branch> forwardUnconditionalBranches = _instruction.getForwardUnconditionalBranches();
 
                   Branch lastForwardUnconditional = forwardUnconditionalBranches.getLast();
                   Instruction afterGoto = lastForwardUnconditional.getNextExpr();
-                  if (afterGoto.getStartInstruction().isForwardConditionalBranchTarget()) {
+                  if(afterGoto.getStartInstruction().isForwardConditionalBranchTarget()){
                      LinkedList<ConditionalBranch> forwardConditionalBranches = afterGoto.getStartInstruction()
                            .getForwardConditionalBranches();
                      ConditionalBranch lastForwardConditional = forwardConditionalBranches.getLast();
                      BranchSet branchSet = lastForwardConditional.getOrCreateBranchSet();
 
-                     if (doesNotContainCompositeOrBranch(branchSet.getLast().getNextExpr(), lastForwardUnconditional)) {
-                        if (doesNotContainContinueOrBreak(afterGoto.getNextExpr(), _instruction)) {
+                     if(doesNotContainCompositeOrBranch(branchSet.getLast().getNextExpr(), lastForwardUnconditional)){
+                        if(doesNotContainContinueOrBreak(afterGoto.getNextExpr(), _instruction)){
                            branchSet.unhook();
                            lastForwardUnconditional.unhook();
                            addAsComposites(ByteCode.COMPOSITE_IF_ELSE, branchSet.getFirst().getPrevExpr(), branchSet);
                            handled = true;
                         }
-                     } else {
+                     }else{
                         //then not clean.   
                         ExpressionList newHeadTail = new ExpressionList(methodModel, this, lastForwardUnconditional);
                         handled = newHeadTail.foldComposite(lastForwardUnconditional.getStartInstruction());
                         newHeadTail.unwind();
                         // handled = foldCompositeRecurse(lastForwardUnconditional);
-                        if (!handled && forwardUnconditionalBranches.size() > 1) {
+                        if(!handled && forwardUnconditionalBranches.size() > 1){
                            //  BI  AI      AE      BE
                            //  ?>  ?>  ..  >>  ..  >>   C   S  
                            //  ?---------------------->22    
@@ -711,21 +704,21 @@ class ExpressionList{
                            // So given more than one target we retreat up the list of unconditionals until we find a clean one treating the previously visited GOTO 
                            // as a possible end
 
-                           for (int i = forwardUnconditionalBranches.size(); i > 1; i--) {
+                           for(int i = forwardUnconditionalBranches.size(); i > 1; i--){
                               Branch thisGoto = forwardUnconditionalBranches.get(i - 1);
                               Branch elseGoto = forwardUnconditionalBranches.get(i - 2);
                               Instruction afterElseGoto = elseGoto.getNextExpr();
-                              if (afterElseGoto.getStartInstruction().isConditionalBranchTarget()) {
+                              if(afterElseGoto.getStartInstruction().isConditionalBranchTarget()){
                                  BranchSet elseBranchSet = afterElseGoto.getStartInstruction().getForwardConditionalBranches()
                                        .getLast().getOrCreateBranchSet();
-                                 if (doesNotContainCompositeOrBranch(elseBranchSet.getLast().getNextExpr(), elseGoto)) {
-                                    if (doesNotContainCompositeOrBranch(afterElseGoto.getNextExpr(), thisGoto)) {
-                                       if (logger.isLoggable(Level.FINE)) {
+                                 if(doesNotContainCompositeOrBranch(elseBranchSet.getLast().getNextExpr(), elseGoto)){
+                                    if(doesNotContainCompositeOrBranch(afterElseGoto.getNextExpr(), thisGoto)){
+                                       if(logger.isLoggable(Level.FINE)){
                                           System.out.println(dumpDiagram(_instruction));
                                        }
                                        elseBranchSet.unhook();
                                        elseGoto.unhook();
-                                       if (logger.isLoggable(Level.FINE)) {
+                                       if(logger.isLoggable(Level.FINE)){
                                           System.out.println(dumpDiagram(_instruction));
 
                                        }
@@ -749,8 +742,8 @@ class ExpressionList{
                   }
 
                }
-               if (!handled && !tail.isForwardBranch() && _instruction.isForwardConditionalBranchTarget()
-                     && _instruction.isForwardUnconditionalBranchTarget()) {
+               if(!handled && !tail.isForwardBranch() && _instruction.isForwardConditionalBranchTarget()
+                     && _instruction.isForwardUnconditionalBranchTarget()){
                   // here we have multiple composites ending at the same point
 
                   Branch lastForwardUnconditional = _instruction.getForwardUnconditionalBranches().getLast();
@@ -758,7 +751,7 @@ class ExpressionList{
                         .getLast();
                   // we will clip the tail and see if recursing helps
 
-                  if (lastForwardConditional.getTarget().isAfter(lastForwardUnconditional)) {
+                  if(lastForwardConditional.getTarget().isAfter(lastForwardUnconditional)){
 
                      lastForwardConditional.retarget(lastForwardUnconditional);
 
@@ -769,33 +762,33 @@ class ExpressionList{
                   }
 
                }
-               if (!handled) {
+               if(!handled){
                   break;
                }
             }
 
-         } else {
+         }else{
 
             // might be end of arbitrary scope
             LocalVariableTableEntry<LocalVariableInfo> localVariableTable = methodModel.getMethod().getLocalVariableTableEntry();
             int startPc = Short.MAX_VALUE;
 
-            for (LocalVariableInfo localVariableInfo : localVariableTable) {
+            for(LocalVariableInfo localVariableInfo : localVariableTable){
 
-               if (localVariableInfo.getEnd() == _instruction.getThisPC()) {
+               if(localVariableInfo.getEnd() == _instruction.getThisPC()){
                   logger.fine(localVariableInfo.getVariableName() + "  scope  " + localVariableInfo.getStart() + " ,"
                         + localVariableInfo.getEnd());
-                  if (localVariableInfo.getStart() < startPc) {
+                  if(localVariableInfo.getStart() < startPc){
                      startPc = localVariableInfo.getStart();
                   }
                }
 
             }
 
-            if (startPc < Short.MAX_VALUE) {
+            if(startPc < Short.MAX_VALUE){
                logger.fine("Scope block from " + startPc + " to  " + (tail.getThisPC() + tail.getLength()));
-               for (Instruction i = head; i != null; i = i.getNextPC()) {
-                  if (i.getThisPC() == startPc) {
+               for(Instruction i = head; i != null; i = i.getNextPC()){
+                  if(i.getThisPC() == startPc){
                      Instruction startInstruction = i.getRootExpr().getPrevExpr();
                      logger.fine("Start = " + startInstruction);
 
@@ -809,20 +802,20 @@ class ExpressionList{
 
          }
 
-         if (Config.instructionListener != null) {
+         if(Config.instructionListener != null){
             Config.instructionListener.showAndTell("after folding", head, _instruction);
          }
 
-      } catch (ClassParseException _classParseException) {
+      }catch(ClassParseException _classParseException){
          throw new ClassParseException(_classParseException);
-      } catch (Throwable t) {
+      }catch(Throwable t){
          throw new ClassParseException(t);
 
       }
       return (handled);
    }
 
-   private void addAsComposites(ByteCode _byteCode, Instruction _start, BranchSet _branchSet) {
+   private void addAsComposites(ByteCode _byteCode, Instruction _start, BranchSet _branchSet){
       Instruction childTail = tail;
       Instruction childHead = createList(_start);
       CompositeInstruction composite = CompositeInstruction.create(_byteCode, methodModel, childHead, childTail, _branchSet);
@@ -830,7 +823,7 @@ class ExpressionList{
    }
 
    /**
-    * Aids debugging.  Creates a diagrammatic form of the roots (+ tail instruction) so that we can analyze control flow. 
+    * Aids debugging.  Creates a diagrammatic form of the roots (+ tail instruction) so that we can analyze control flow.
     * <pre>
     * I I I C C I U I U[I]I
     *       |---------->1
@@ -838,92 +831,93 @@ class ExpressionList{
     *             |------>2
     *                 |-->2
     * </pre>
-    * @param _cursor The instruction we are looking at
+    *
+    * @param _cursor      The instruction we are looking at
     * @param _instruction The instruction we are considering adding (may be null)
     * @return
     */
-   String dumpDiagram(Instruction _instruction) {
+   String dumpDiagram(Instruction _instruction){
       StringBuilder sb = new StringBuilder();
       List<Instruction> list = new ArrayList<Instruction>();
 
-      for (Instruction i = head; i != null; i = i.getNextExpr()) {
+      for(Instruction i = head; i != null; i = i.getNextExpr()){
          list.add(i);
       }
 
-      for (Instruction i = _instruction; i != null; i = i.getNextPC()) {
+      for(Instruction i = _instruction; i != null; i = i.getNextPC()){
          list.add(i);
       }
       Instruction[] array = list.toArray(new Instruction[0]);
       boolean lastWasCursor = false;
 
       List<Branch> branches = new ArrayList<Branch>();
-      for (Instruction i : list) {
+      for(Instruction i : list){
          sb.append(String.format(" %3d", i.getStartPC()));
       }
       sb.append("\n");
-      for (Instruction i : list) {
+      for(Instruction i : list){
          sb.append(String.format(" %3d", i.getThisPC()));
       }
       sb.append("\n");
-      for (Instruction i : list) {
+      for(Instruction i : list){
 
-         if (i == _instruction) {
+         if(i == _instruction){
             sb.append(" [");
             lastWasCursor = true;
-         } else {
-            if (lastWasCursor) {
+         }else{
+            if(lastWasCursor){
                sb.append("] ");
                lastWasCursor = false;
-            } else {
+            }else{
                sb.append("  ");
             }
          }
-         if (i.isBranch() && i.asBranch().isConditional()) {
+         if(i.isBranch() && i.asBranch().isConditional()){
             branches.add(i.asBranch());
 
-            if (i.asBranch().isForward()) {
+            if(i.asBranch().isForward()){
                sb.append("?>");
 
-            } else {
+            }else{
                sb.append("?<");
             }
-         } else if (i.isBranch() && i.asBranch().isUnconditional()) {
+         }else if(i.isBranch() && i.asBranch().isUnconditional()){
             branches.add(i.asBranch());
-            if (i.asBranch().isForward()) {
+            if(i.asBranch().isForward()){
                sb.append(">>");
-            } else {
+            }else{
                sb.append("<<");
             }
-         } else if (i instanceof CompositeInstruction) {
+         }else if(i instanceof CompositeInstruction){
             sb.append(" C");
-         } else if (i instanceof Return) {
+         }else if(i instanceof Return){
 
             sb.append(" R");
             // } else if (i instanceof AssignToLocalVariable) {
             //    sb.append(" S");
-         } else {
+         }else{
             sb.append("..");
          }
       }
-      if (lastWasCursor) {
+      if(lastWasCursor){
          sb.append("] ");
-      } else {
+      }else{
          sb.append("  ");
       }
-      for (Branch b : branches) {
+      for(Branch b : branches){
          sb.append("\n   ");
-         if (b.isForward()) {
-            for (int i = 0; i < array.length; i++) {
-               if (array[i].getStartPC() < b.getStartPC() || array[i].getThisPC() > b.getTarget().getThisPC()) {
+         if(b.isForward()){
+            for(int i = 0; i < array.length; i++){
+               if(array[i].getStartPC() < b.getStartPC() || array[i].getThisPC() > b.getTarget().getThisPC()){
                   sb.append("    ");
-               } else {
-                  if (b.isConditional()) {
+               }else{
+                  if(b.isConditional()){
                      sb.append("?-");
-                  } else {
+                  }else{
                      sb.append("+-");
                   }
                   i++;
-                  while (i < array.length && array[i].getStartPC() < b.getTarget().getThisPC()) {
+                  while(i < array.length && array[i].getStartPC() < b.getTarget().getThisPC()){
                      sb.append("----");
                      i++;
                   }
@@ -932,20 +926,20 @@ class ExpressionList{
 
                }
             }
-         } else {
-            for (int i = 0; i < array.length; i++) {
-               if (array[i].getStartPC() < b.getTarget().getThisPC() || array[i].getThisPC() > b.getThisPC()) {
+         }else{
+            for(int i = 0; i < array.length; i++){
+               if(array[i].getStartPC() < b.getTarget().getThisPC() || array[i].getThisPC() > b.getThisPC()){
                   sb.append("    ");
-               } else {
+               }else{
                   sb.append("<-");
                   i++;
-                  while (i < array.length && array[i].getStartPC() < b.getThisPC()) {
+                  while(i < array.length && array[i].getStartPC() < b.getThisPC()){
                      sb.append("----");
                      i++;
                   }
-                  if (b.isConditional()) {
+                  if(b.isConditional()){
                      sb.append("-?");
-                  } else {
+                  }else{
                      sb.append("-+");
                   }
                }
@@ -956,11 +950,11 @@ class ExpressionList{
       return (sb.toString());
    }
 
-   Instruction getTail() {
+   Instruction getTail(){
       return (tail);
    }
 
-   Instruction getHead() {
+   Instruction getHead(){
       return (head);
    }
 }

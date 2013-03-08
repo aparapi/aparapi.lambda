@@ -9,7 +9,7 @@ public class OpenCLJNI{
    static boolean openCLAvailable = true;
    static final OpenCLJNI jni = new OpenCLJNI();
 
-   public static OpenCLJNI getJNI() {
+   public static OpenCLJNI getJNI(){
       return (jni);
    }
 
@@ -27,7 +27,7 @@ public class OpenCLJNI{
 
    native public byte[] getBytes(String className);
 
-   public boolean isOpenCLAvailable() {
+   public boolean isOpenCLAvailable(){
       return (openCLAvailable);
    }
 

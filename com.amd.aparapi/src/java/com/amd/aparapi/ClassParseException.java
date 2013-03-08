@@ -38,16 +38,14 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 package com.amd.aparapi;
 
 /**
- * We throw <code>ClassParseException</code>s (derived from <code>AparapiException</code>) if we encounter any Aparapi unfriendly 
+ * We throw <code>ClassParseException</code>s (derived from <code>AparapiException</code>) if we encounter any Aparapi unfriendly
  * constructs.  This allows us to <strong>fail fast</strong>.
- * 
- * @see com.amd.aparapi.AparapiException
  *
  * @author gfrost
- *
+ * @see com.amd.aparapi.AparapiException
  */
 @SuppressWarnings("serial") public class ClassParseException extends AparapiException{
-   public static enum TYPE {
+   public static enum TYPE{
       NONE("none"), //
       ARRAY_RETURN("We don't support areturn instructions"), //
       PUTFIELD("We don't support putstatic instructions"), //
@@ -85,46 +83,48 @@ package com.amd.aparapi;
 
       private String description;
 
-      TYPE(final String _description) {
+      TYPE(final String _description){
          description = _description;
       }
 
-      public String getDescription() {
+      public String getDescription(){
          return (description);
       }
-   };
+   }
+
+   ;
 
    Instruction instruction;
 
    TYPE type;
 
-   ClassParseException(final TYPE _type) {
+   ClassParseException(final TYPE _type){
       super(_type.getDescription());
       type = _type;
       instruction = null;
    }
 
-   ClassParseException(final Instruction _instruction, final TYPE _type) {
+   ClassParseException(final Instruction _instruction, final TYPE _type){
       super("@" + _instruction.getThisPC() + " " + _instruction.getByteCode() + " " + _type.getDescription());
       type = _type;
       instruction = _instruction;
    }
 
-   ClassParseException(final TYPE _type, final String _methodName) {
+   ClassParseException(final TYPE _type, final String _methodName){
       super("@" + _methodName + " " + _type.getDescription());
       type = _type;
       instruction = null;
    }
 
-   public Instruction getInstruction() {
+   public Instruction getInstruction(){
       return (instruction);
    }
 
-   public TYPE getType() {
+   public TYPE getType(){
       return (type);
    }
 
-   ClassParseException(final Throwable _t) {
+   ClassParseException(final Throwable _t){
       super(_t);
    }
 }

@@ -42,13 +42,12 @@ import java.io.InputStream;
 /**
  * Primarily used to parse various ClassFile structures. This class provides low level access to sequential bytes in a stream given stream.
  * <p>
- * Basically wraps a <code>ByteBuffer</code> and keeps track of the current offset. All requests on 
+ * Basically wraps a <code>ByteBuffer</code> and keeps track of the current offset. All requests on
  * this <code>ByteReader</code> will be delegated to wrapped<code>ByteBuffer</code>.
  * </p>
- * @see com.amd.aparapi.ByteBuffer
- * 
- * @author gfrost
  *
+ * @author gfrost
+ * @see com.amd.aparapi.ByteBuffer
  */
 class ByteReader{
    private final ByteBuffer byteBuffer;
@@ -57,108 +56,108 @@ class ByteReader{
 
    /**
     * Construct form a given ByteBuffer.
-    * 
+    *
     * @param _byteBuffer an existing <code>ByteBuffer</code>
     */
-   ByteReader(ByteBuffer _byteBuffer) {
+   ByteReader(ByteBuffer _byteBuffer){
       byteBuffer = _byteBuffer;
    }
 
    /**
     * Construct form an array of bytes.
-    * 
+    *
     * @param _bytes an existing byte array
     */
-   ByteReader(byte[] _bytes) {
+   ByteReader(byte[] _bytes){
       this(new ByteBuffer(_bytes));
    }
 
    /**
     * Construct form an input stream (say a ClassFile).
-    * 
+    *
     * @param _inputStream a stream of bytes
     */
-   ByteReader(InputStream _inputStream) {
+   ByteReader(InputStream _inputStream){
       this(new ByteBuffer(_inputStream));
    }
 
-   int u1() {
+   int u1(){
       int value = byteBuffer.u1(offset);
       offset += 1;
       return (value);
    }
 
-   int u2() {
+   int u2(){
       int value = byteBuffer.u2(offset);
       offset += 2;
       return (value);
    }
 
-   int s2() {
+   int s2(){
       int value = byteBuffer.s2(offset);
       offset += 2;
       return (value);
    }
 
-   int peekU2() {
+   int peekU2(){
       return (byteBuffer.u2(offset));
    }
 
-   int u4() {
+   int u4(){
       int value = byteBuffer.u4(offset);
       offset += 4;
       return (value);
    }
 
-   int s4() {
+   int s4(){
       int value = byteBuffer.s4(offset);
       offset += 4;
       return (value);
    }
 
-   long u8() {
+   long u8(){
       long value = byteBuffer.u8(offset);
       offset += 8;
       return (value);
    }
 
-   float f4() {
+   float f4(){
       float value = byteBuffer.f4(offset);
       offset += 4;
       return (value);
    }
 
-   double d8() {
+   double d8(){
       double value = byteBuffer.d8(offset);
       offset += 8;
       return (value);
    }
 
-   String utf8() {
+   String utf8(){
       String utf8 = byteBuffer.utf8(offset);
       offset += byteBuffer.utf8bytes(offset);
       return (utf8);
    }
 
-   byte[] bytes(int _length) {
+   byte[] bytes(int _length){
       byte[] bytes = byteBuffer.bytes(offset, _length);
       offset += _length;
       return (bytes);
    }
 
-   void skip(int _length) {
+   void skip(int _length){
       offset += _length;
    }
 
-   int getOffset() {
+   int getOffset(){
       return (offset);
    }
 
-   void setOffset(int _offset) {
+   void setOffset(int _offset){
       offset = _offset;
    }
 
-   boolean hasMore() {
+   boolean hasMore(){
       return (getOffset() < byteBuffer.size());
    }
 

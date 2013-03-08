@@ -37,32 +37,20 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 */
 package com.amd.aparapi;
 
-import com.amd.aparapi.InstructionSet.AccessArrayElement;
-import com.amd.aparapi.InstructionSet.AccessInstanceField;
-import com.amd.aparapi.InstructionSet.AccessLocalVariable;
-import com.amd.aparapi.InstructionSet.AssignToArrayElement;
-import com.amd.aparapi.InstructionSet.AssignToInstanceField;
-import com.amd.aparapi.InstructionSet.AssignToLocalVariable;
-import com.amd.aparapi.InstructionSet.CastOperator;
-import com.amd.aparapi.InstructionSet.Constant;
-import com.amd.aparapi.InstructionSet.I_IADD;
-import com.amd.aparapi.InstructionSet.I_ICONST_1;
-import com.amd.aparapi.InstructionSet.I_IINC;
-import com.amd.aparapi.InstructionSet.I_ISUB;
-import com.amd.aparapi.InstructionSet.MethodCall;
+import com.amd.aparapi.InstructionSet.*;
 
 class InstructionPattern{
 
-   @SuppressWarnings("unused") private boolean compareSubTrees(Instruction _lhs, Instruction _rhs) {
+   @SuppressWarnings("unused") private boolean compareSubTrees(Instruction _lhs, Instruction _rhs){
       _lhs = _lhs.getReal();
       _rhs = _rhs.getReal();
       boolean same = _lhs.sameAs(_rhs);
-      if (same) {
+      if(same){
          Instruction lhsChild = _lhs.getFirstChild();
          Instruction rhsChild = _rhs.getFirstChild();
-         while (same && lhsChild != null && rhsChild != null) {
+         while(same && lhsChild != null && rhsChild != null){
             same = same && compareSubTrees(lhsChild, rhsChild);
-            if (same) {
+            if(same){
                rhsChild = rhsChild.getNextExpr();
                lhsChild = lhsChild.getNextExpr();
             }
@@ -80,11 +68,11 @@ class InstructionPattern{
 
       static final InstructionMatch FALSE = new InstructionMatch(false);
 
-      InstructionMatch(boolean _ok) {
+      InstructionMatch(boolean _ok){
          ok = _ok;
       }
 
-      static InstructionMatch test(boolean _condition) {
+      static InstructionMatch test(boolean _condition){
          return (_condition ? TRUE : FALSE);
       }
 
@@ -96,20 +84,20 @@ class InstructionPattern{
 
       abstract InstructionMatch matches(Instruction _instruction);
 
-      InstructionMatch matches(Instruction _instruction, InstructionMatcher _instructionMatcher) {
-         if (matches(_instruction.getReal()).ok) {
-            if (_instruction.getNextExpr() != null) {
+      InstructionMatch matches(Instruction _instruction, InstructionMatcher _instructionMatcher){
+         if(matches(_instruction.getReal()).ok){
+            if(_instruction.getNextExpr() != null){
                return (_instructionMatcher.matches(_instruction.getNextExpr().getReal()));
             }
          }
          return (InstructionMatch.FALSE);
       }
 
-      InstructionMatcher(String _description) {
+      InstructionMatcher(String _description){
          description = _description;
       }
 
-      String getDescription() {
+      String getDescription(){
          return (description);
       }
    }
@@ -117,15 +105,15 @@ class InstructionPattern{
    class AssignableInstructionMatcher extends InstructionMatcher{
       private Class<?>[] classes;
 
-      AssignableInstructionMatcher(Class<?>... _classes) {
+      AssignableInstructionMatcher(Class<?>... _classes){
          super("AssignableInstructionMatcher");
          classes = _classes;
       }
 
-      @Override InstructionMatch matches(Instruction _instruction) {
+      @Override InstructionMatch matches(Instruction _instruction){
 
-         for (Class<?> c : classes) {
-            if (c.isAssignableFrom(_instruction.getClass())) {
+         for(Class<?> c : classes){
+            if(c.isAssignableFrom(_instruction.getClass())){
                return (InstructionMatch.TRUE);
 
             }
@@ -136,7 +124,7 @@ class InstructionPattern{
 
    static final InstructionMatcher assignToLocalVariable = new InstructionMatcher("Assign to local variable"){
 
-      @Override InstructionMatch matches(Instruction _instruction) {
+      @Override InstructionMatch matches(Instruction _instruction){
          return (InstructionMatch.test(_instruction instanceof AssignToLocalVariable));
       }
 
@@ -144,7 +132,7 @@ class InstructionPattern{
 
    static final InstructionMatcher constant = new InstructionMatcher("Constant "){
 
-      @Override InstructionMatch matches(Instruction _instruction) {
+      @Override InstructionMatch matches(Instruction _instruction){
          return (InstructionMatch.test(_instruction instanceof Constant<?>));
       }
 
@@ -152,7 +140,7 @@ class InstructionPattern{
 
    static final InstructionMatcher assignToArrayElement = new InstructionMatcher("Assign to array element"){
 
-      @Override InstructionMatch matches(Instruction _instruction) {
+      @Override InstructionMatch matches(Instruction _instruction){
          return (InstructionMatch.test(_instruction instanceof AssignToArrayElement));
       }
 
@@ -160,7 +148,7 @@ class InstructionPattern{
 
    static final InstructionMatcher methodCall = new InstructionMatcher("Method Call"){
 
-      @Override InstructionMatch matches(Instruction _instruction) {
+      @Override InstructionMatch matches(Instruction _instruction){
 
          return (InstructionMatch.test(_instruction instanceof MethodCall));
       }
@@ -170,33 +158,33 @@ class InstructionPattern{
    static final InstructionMatcher longHandIncLocalVariable = new InstructionMatcher("Long hand increment of local variable"){
       /**
        * <pre>
-       *                                                   
+       *
        *                  / iload<n>         
        *  istore<n> - iadd                       
        *                  \ i_const_1   
-       *                  
+       *
        *                          / iload<n>         
        *  istore<n> - (?2i) - iadd                       
        *                          \ i_const_1    
        *
        * </pre>
        */
-      @Override InstructionMatch matches(Instruction _instruction) {
-         if (_instruction instanceof AssignToLocalVariable) {
+      @Override InstructionMatch matches(Instruction _instruction){
+         if(_instruction instanceof AssignToLocalVariable){
             AssignToLocalVariable assign = (AssignToLocalVariable) _instruction;
             Instruction child = ((Instruction) assign).getFirstChild();
 
-            if (child instanceof CastOperator) {
+            if(child instanceof CastOperator){
                child = child.getFirstChild();
             }
-            if (child instanceof I_IADD) {
+            if(child instanceof I_IADD){
                I_IADD add = (I_IADD) child;
                Instruction lhs = add.getLhs();
                Instruction rhs = add.getRhs();
-               if (lhs instanceof AccessLocalVariable) {
+               if(lhs instanceof AccessLocalVariable){
                   AccessLocalVariable access = (AccessLocalVariable) lhs;
-                  if (access.getLocalVariableTableIndex() == assign.getLocalVariableTableIndex()) {
-                     if (rhs instanceof I_ICONST_1) {
+                  if(access.getLocalVariableTableIndex() == assign.getLocalVariableTableIndex()){
+                     if(rhs instanceof I_ICONST_1){
                         return (InstructionMatch.TRUE);
                      }
                   }
@@ -211,33 +199,33 @@ class InstructionPattern{
    static final InstructionMatcher longHandDecLocalVariable = new InstructionMatcher("Long hand decrement of local variable"){
       /**
        * <pre>
-       *                                                   
+       *
        *                  / iload<n>         
        *  istore<n> - isub                       
        *                  \ i_const_1   
-       *                  
+       *
        *                          / iload<n>         
        *  istore<n> - (?2i) - isub                       
        *                          \ i_const_1    
        *
        * </pre>
        */
-      @Override InstructionMatch matches(Instruction _instruction) {
-         if (_instruction instanceof AssignToLocalVariable) {
+      @Override InstructionMatch matches(Instruction _instruction){
+         if(_instruction instanceof AssignToLocalVariable){
             AssignToLocalVariable assign = (AssignToLocalVariable) _instruction;
             Instruction child = ((Instruction) assign).getFirstChild();
 
-            if (child instanceof CastOperator) {
+            if(child instanceof CastOperator){
                child = child.getFirstChild();
             }
-            if (child instanceof I_ISUB) {
+            if(child instanceof I_ISUB){
                I_ISUB add = (I_ISUB) child;
                Instruction lhs = add.getLhs();
                Instruction rhs = add.getRhs();
-               if (lhs instanceof AccessLocalVariable) {
+               if(lhs instanceof AccessLocalVariable){
                   AccessLocalVariable access = (AccessLocalVariable) lhs;
-                  if (access.getLocalVariableTableIndex() == assign.getLocalVariableTableIndex()) {
-                     if (rhs instanceof I_ICONST_1) {
+                  if(access.getLocalVariableTableIndex() == assign.getLocalVariableTableIndex()){
+                     if(rhs instanceof I_ICONST_1){
                         return (InstructionMatch.TRUE);
                      }
                   }
@@ -255,25 +243,25 @@ class InstructionPattern{
        *                   / getfield<f>       
        *         i2<t> iadd                          
        *                   \ i_const_1    
-       *                         
+       *
        *              / getfield<f>  
        *         iadd              
        *              \ i_const_1    
        * </pre>
        */
-      @Override InstructionMatch matches(Instruction _instruction) {
+      @Override InstructionMatch matches(Instruction _instruction){
 
-         if (_instruction instanceof CastOperator) {
+         if(_instruction instanceof CastOperator){
             CastOperator topCastOperator = (CastOperator) _instruction;
             _instruction = topCastOperator.getFirstChild().getReal();
          }
 
-         if (_instruction instanceof I_IADD) {
+         if(_instruction instanceof I_IADD){
             I_IADD add = (I_IADD) _instruction;
             Instruction addLhs = add.getLhs().getReal();
             Instruction addRhs = add.getRhs().getReal();
-            if (addLhs instanceof AccessInstanceField) {
-               if (addRhs instanceof I_ICONST_1) {
+            if(addLhs instanceof AccessInstanceField){
+               if(addRhs instanceof I_ICONST_1){
                   return (InstructionMatch.TRUE);
                }
             }
@@ -289,25 +277,25 @@ class InstructionPattern{
        *                   / getfield<f>       
        *         i2<t> isub                          
        *                   \ i_const_1    
-       *                         
+       *
        *              / getfield<f>  
        *         isub              
        *              \ i_const_1    
        * </pre>
        */
-      @Override InstructionMatch matches(Instruction _instruction) {
+      @Override InstructionMatch matches(Instruction _instruction){
 
-         if (_instruction instanceof CastOperator) {
+         if(_instruction instanceof CastOperator){
             CastOperator topCastOperator = (CastOperator) _instruction;
             _instruction = topCastOperator.getFirstChild().getReal();
          }
 
-         if (_instruction instanceof I_ISUB) {
+         if(_instruction instanceof I_ISUB){
             I_ISUB add = (I_ISUB) _instruction;
             Instruction addLhs = add.getLhs().getReal();
             Instruction addRhs = add.getRhs().getReal();
-            if (addLhs instanceof AccessInstanceField) {
-               if (addRhs instanceof I_ICONST_1) {
+            if(addLhs instanceof AccessInstanceField){
+               if(addRhs instanceof I_ICONST_1){
                   return (InstructionMatch.TRUE);
                }
             }
@@ -319,21 +307,21 @@ class InstructionPattern{
 
    static final InstructionMatcher fieldArrayElementAccess = new InstructionMatcher("Field array element access"){
       /**
-       * 
+       *
        * <pre>                                                
-       *                         
+       *
        *              / getfield<f>  
        *         iaload             
        *              \ i_load    
        * </pre>
        */
-      @Override InstructionMatch matches(Instruction _instruction) {
+      @Override InstructionMatch matches(Instruction _instruction){
 
-         if (_instruction instanceof AccessArrayElement) {
+         if(_instruction instanceof AccessArrayElement){
             AccessArrayElement accessArrayElement = (AccessArrayElement) _instruction;
             Instruction addLhs = accessArrayElement.getArrayRef().getReal();
             // Instruction addRhs = accessArrayElement.getArrayIndex().getReal();
-            if (addLhs instanceof AccessInstanceField) {
+            if(addLhs instanceof AccessInstanceField){
 
                return (InstructionMatch.TRUE);
 
@@ -353,14 +341,14 @@ class InstructionPattern{
        *              \ iconst_1    
        * </pre>
        */
-      @Override InstructionMatch matches(Instruction _instruction) {
-         if (_instruction instanceof I_IADD) {
+      @Override InstructionMatch matches(Instruction _instruction){
+         if(_instruction instanceof I_IADD){
             I_IADD accessArrayElement = (I_IADD) _instruction;
-            if (accessArrayElement.getLhs() != null) {
+            if(accessArrayElement.getLhs() != null){
                Instruction addLhs = accessArrayElement.getLhs().getReal();
-               if (fieldArrayElementAccess.matches(addLhs).ok) {
+               if(fieldArrayElementAccess.matches(addLhs).ok){
                   Instruction addRhs = accessArrayElement.getRhs().getReal();
-                  if (addRhs instanceof I_ICONST_1) {
+                  if(addRhs instanceof I_ICONST_1){
                      return (InstructionMatch.TRUE);
                   }
                }
@@ -380,13 +368,13 @@ class InstructionPattern{
        *              \ iconst_1    
        * </pre>
        */
-      @Override InstructionMatch matches(Instruction _instruction) {
-         if (_instruction instanceof I_ISUB) {
+      @Override InstructionMatch matches(Instruction _instruction){
+         if(_instruction instanceof I_ISUB){
             I_ISUB accessArrayElement = (I_ISUB) _instruction;
             Instruction addLhs = accessArrayElement.getLhs().getReal();
-            if (fieldArrayElementAccess.matches(addLhs).ok) {
+            if(fieldArrayElementAccess.matches(addLhs).ok){
                Instruction addRhs = accessArrayElement.getRhs().getReal();
-               if (addRhs instanceof I_ICONST_1) {
+               if(addRhs instanceof I_ICONST_1){
                   return (InstructionMatch.TRUE);
                }
             }
@@ -401,22 +389,22 @@ class InstructionPattern{
       /**
        * //iastore{9:getfield{8:aload_0} ,12:iload_1 ,17:iadd{14:iaload{*9:getfield{8:aload_0} ,*12:iload_1} ,16:iconst_1}}
        * <pre>                                                
-       *                         
+       *
        *                  / getfield - aload  
        *         iastore -  iload                                                    
        *                  \ [fieldArrayElementPlusOne]     
        * </pre>
        */
-      @Override InstructionMatch matches(Instruction _instruction) {
+      @Override InstructionMatch matches(Instruction _instruction){
 
-         if (_instruction instanceof AssignToArrayElement) {
+         if(_instruction instanceof AssignToArrayElement){
             AssignToArrayElement accessArrayElement = (AssignToArrayElement) _instruction;
             Instruction arrayRef = accessArrayElement.getArrayRef().getReal();
             //  Instruction arrayIndex = accessArrayElement.getArrayIndex().getReal();
             Instruction value = accessArrayElement.getValue().getReal();
             // Instruction addRhs = accessArrayElement.getArrayIndex().getReal();
-            if (arrayRef instanceof AccessInstanceField) {
-               if (fieldArrayElementPlusOne.matches(value).ok) {
+            if(arrayRef instanceof AccessInstanceField){
+               if(fieldArrayElementPlusOne.matches(value).ok){
                   return (InstructionMatch.TRUE);
                }
             }
@@ -431,22 +419,22 @@ class InstructionPattern{
       /**
        * //iastore{9:getfield{8:aload_0} ,12:iload_1 ,17:iadd{14:iaload{*9:getfield{8:aload_0} ,*12:iload_1} ,16:iconst_1}}
        * <pre>                                                
-       *                         
+       *
        *                  / getfield - aload  
        *         iastore -  iload                                                    
        *                  \ [fieldArrayElementPlusOne]     
        * </pre>
        */
-      @Override InstructionMatch matches(Instruction _instruction) {
+      @Override InstructionMatch matches(Instruction _instruction){
 
-         if (_instruction instanceof AssignToArrayElement) {
+         if(_instruction instanceof AssignToArrayElement){
             AssignToArrayElement accessArrayElement = (AssignToArrayElement) _instruction;
             Instruction arrayRef = accessArrayElement.getArrayRef().getReal();
             //  Instruction arrayIndex = accessArrayElement.getArrayIndex().getReal();
             Instruction value = accessArrayElement.getValue().getReal();
             // Instruction addRhs = accessArrayElement.getArrayIndex().getReal();
-            if (arrayRef instanceof AccessInstanceField) {
-               if (fieldArrayElementMinusOne.matches(value).ok) {
+            if(arrayRef instanceof AccessInstanceField){
+               if(fieldArrayElementMinusOne.matches(value).ok){
                   return (InstructionMatch.TRUE);
                }
             }
@@ -458,7 +446,7 @@ class InstructionPattern{
 
    static final InstructionMatcher accessLocalVariable = new InstructionMatcher("access to local variable"){
 
-      @Override InstructionMatch matches(Instruction _instruction) {
+      @Override InstructionMatch matches(Instruction _instruction){
          return (InstructionMatch.test(_instruction instanceof AccessLocalVariable));
       }
 
@@ -466,7 +454,7 @@ class InstructionPattern{
 
    static final InstructionMatcher inc = new InstructionMatcher("inc"){
 
-      @Override InstructionMatch matches(Instruction _instruction) {
+      @Override InstructionMatch matches(Instruction _instruction){
          return (InstructionMatch.test(_instruction instanceof I_IINC));
       }
 
@@ -474,7 +462,7 @@ class InstructionPattern{
 
    static final InstructionMatcher cast = new InstructionMatcher("cast"){
 
-      @Override InstructionMatch matches(Instruction _instruction) {
+      @Override InstructionMatch matches(Instruction _instruction){
          return (InstructionMatch.test(_instruction instanceof CastOperator));
       }
 
@@ -482,7 +470,7 @@ class InstructionPattern{
 
    static final InstructionMatcher accessInstanceField = new InstructionMatcher("access instance field"){
 
-      @Override InstructionMatch matches(Instruction _instruction) {
+      @Override InstructionMatch matches(Instruction _instruction){
          return (InstructionMatch.test(_instruction instanceof AccessInstanceField));
       }
 
@@ -490,7 +478,7 @@ class InstructionPattern{
 
    static final InstructionMatcher assignToInstanceField = new InstructionMatcher("assign to instance field"){
 
-      @Override InstructionMatch matches(Instruction _instruction) {
+      @Override InstructionMatch matches(Instruction _instruction){
          return (InstructionMatch.test(_instruction instanceof AssignToInstanceField));
       }
 
@@ -498,7 +486,7 @@ class InstructionPattern{
 
    static final InstructionMatcher iadd = new InstructionMatcher("iadd"){
 
-      @Override InstructionMatch matches(Instruction _instruction) {
+      @Override InstructionMatch matches(Instruction _instruction){
          return (InstructionMatch.test(_instruction instanceof I_IADD));
       }
 
