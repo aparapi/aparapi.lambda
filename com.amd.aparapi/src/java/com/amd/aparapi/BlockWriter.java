@@ -59,8 +59,40 @@ abstract class BlockWriter{
 
    abstract void write(String _string);
 
-   protected void writeln(String _string){
+   protected void writeLn(String _string){
       write(_string);
+      newLine();
+   }
+
+   protected void writeIn(String _string){
+      write(_string);
+      in();
+   }
+   protected void lnWriteIn(String _string){
+      newLine();
+      writeIn(_string);
+   }
+   protected void lnWriteInLn(String _string){
+      newLine();
+      writeInLn(_string);
+   }
+   protected void writeInLn(String _string){
+      writeIn(_string);
+      newLine();
+   }
+
+   protected void writeOutLn(String _string){
+      write(_string);
+      out();
+      newLine();
+   }
+   protected void outWrite(String _string){
+      out();
+      newLine();
+      write(_string);
+   }
+   protected void outWriteLn(String _string){
+      outWrite(_string);
       newLine();
    }
 

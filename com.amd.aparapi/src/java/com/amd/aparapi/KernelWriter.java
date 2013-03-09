@@ -45,6 +45,7 @@ import com.amd.aparapi.ClassModel.ConstantPool.MethodEntry;
 import com.amd.aparapi.ClassModel.LocalVariableInfo;
 import com.amd.aparapi.ClassModel.LocalVariableTableEntry;
 import com.amd.aparapi.InstructionSet.*;
+import com.amd.aparapi.TypeHelper.Type;
 
 import java.util.*;
 
@@ -429,9 +430,8 @@ abstract class KernelWriter extends BlockWriter{
          StringBuilder argLine = new StringBuilder();
          StringBuilder assignLine = new StringBuilder();
 
-         String signature = field.getDescriptor();
+         Type fieldType = field.getType();
 
-         boolean isPointer = false;
 
          // check the suffix
          String type = field.getName().endsWith(Kernel.LOCAL_SUFFIX) ? __local
@@ -450,33 +450,28 @@ abstract class KernelWriter extends BlockWriter{
          }
 
 
-         if(signature.startsWith("[")){
+         if(fieldType.isArray()){
             argLine.append(type + " ");
             thisStructLine.append(type + " ");
-            isPointer = true;
-            signature = signature.substring(1);
          }
 
          // If it is a converted array of objects, emit the struct param
          String className = null;
-         if(signature.startsWith("L")){
+         if(fieldType.isObject()){
             // Turn Lcom/amd/javalabs/opencl/demo/DummyOOA; into com_amd_javalabs_opencl_demo_DummyOOA for example
-            className = (signature.substring(1, signature.length() - 1)).replace("/", "_");
-            // if (logger.isLoggable(Level.FINE)) {
-            // logger.fine("Examining object parameter: " + signature + " new: " + className);
-            // }
-
+            className = fieldType.getObjectClassName().replace("/", "_");
             argLine.append(className);
             thisStructLine.append(className);
          }else{
-            argLine.append(convertType(TypeHelper.typeName(signature.charAt(0)), false));
-            thisStructLine.append(convertType(TypeHelper.typeName(signature.charAt(0)), false));
+            //argLine.append(TypeHelper.openCLName(fieldType));
+            argLine.append(convertType(TypeHelper.typeName(fieldType.getType().charAt(0)), false));
+            thisStructLine.append(convertType(TypeHelper.typeName(fieldType.getType().charAt(0)), false));
          }
 
          argLine.append(" ");
          thisStructLine.append(" ");
 
-         if(isPointer){
+         if(fieldType.isArray()){
             argLine.append("*");
             thisStructLine.append("*");
          }
@@ -492,7 +487,7 @@ abstract class KernelWriter extends BlockWriter{
 
          // Add int field into "this" struct for supporting java arraylength op
          // named like foo__javaArrayLength
-         if(isPointer && _entryPoint.getArrayFieldArrayLengthUsed().contains(field.getName())){
+         if(fieldType.isArray() && _entryPoint.getArrayFieldArrayLengthUsed().contains(field.getName())){
             StringBuilder lenStructLine = new StringBuilder();
             StringBuilder lenArgLine = new StringBuilder();
             StringBuilder lenAssignLine = new StringBuilder();
@@ -512,15 +507,6 @@ abstract class KernelWriter extends BlockWriter{
          }
       }
 
-      if(Config.enableByteWrites || _entryPoint.requiresByteAddressableStorePragma()){
-         // Starting with OpenCL 1.1 (which is as far back as we support)
-         // this feature is part of the core, so we no longer need this pragma
-         if(false){
-            writePragma("cl_khr_byte_addressable_store", true);
-            newLine();
-         }
-      }
-
       boolean usesAtomics = false;
       if(Config.enableAtomic32 || _entryPoint.requiresAtomic32Pragma()){
          usesAtomics = true;
@@ -535,17 +521,11 @@ abstract class KernelWriter extends BlockWriter{
          writePragma("cl_khr_int64_extended_atomics", true);
       }
       if(usesAtomics){
-         write("int atomicAdd(__global int *_arr, int _index, int _delta){");
-         in();
+         writeInLn("int atomicAdd(__global int *_arr, int _index, int _delta){");
          {
-            newLine();
-            write("return atomic_add(&_arr[_index], _delta);");
-            out();
-            newLine();
+            writeOutLn("return atomic_add(&_arr[_index], _delta);");
          }
-         write("}");
-
-         newLine();
+         writeLn("}");
       }
 
       if(Config.enableDoubles || _entryPoint.requiresDoublePragma()){
@@ -558,11 +538,8 @@ abstract class KernelWriter extends BlockWriter{
          ArrayList<FieldEntry> fieldSet = cm.getStructMembers();
          if(fieldSet.size() > 0){
             String mangledClassName = cm.getClassWeAreModelling().getName().replace(".", "_");
-            newLine();
-            write("typedef struct " + mangledClassName + "_s{");
-            in();
-            newLine();
 
+            lnWriteInLn("typedef struct " + mangledClassName + "_s{");
             int totalSize = 0;
             int alignTo = 0;
 
@@ -579,7 +556,7 @@ abstract class KernelWriter extends BlockWriter{
 
                String cType = convertType(field.getNameAndTypeEntry().getDescriptorUTF8Entry().getUTF8(), true);
                assert cType != null : "could not find type for " + field.getNameAndTypeEntry().getDescriptorUTF8Entry().getUTF8();
-               writeln(cType + " " + field.getNameAndTypeEntry().getNameUTF8Entry().getUTF8() + ";");
+               writeLn(cType + " " + field.getNameAndTypeEntry().getNameUTF8Entry().getUTF8() + ";");
             }
 
             // compute total size for OpenCL buffer
@@ -593,15 +570,13 @@ abstract class KernelWriter extends BlockWriter{
             if(totalStructSize > alignTo){
                while(totalSize < totalStructSize){
                   // structBuffer.put((byte)-1);
-                  writeln("char _pad_" + totalSize + ";");
+                  writeLn("char _pad_" + totalSize + ";");
                   totalSize++;
                }
             }
 
-            out();
-            newLine();
-            write("} " + mangledClassName + ";");
-            newLine();
+            outWriteLn("} " + mangledClassName + ";");
+
          }
       }
 
@@ -610,30 +585,16 @@ abstract class KernelWriter extends BlockWriter{
       in();
       newLine();
       for(String line : thisStruct){
-         write(line);
-         writeln(";");
+         writeLn(line+";");
       }
+      writeOutLn("int passid;");
+      writeLn("}This;");
 
-      // The passid is the OpenCL gid
-      write("int passid");
-      out();
-      writeln(";");
-
-      // out();
-      // newLine();
-
-      write("}This;");
-      newLine();
-
-      write("int get_pass_id(This *this){");
-      in();
+      lnWriteInLn("int get_pass_id(This *this){");
       {
-         newLine();
-         write("return this->passid;");
-         out();
-         newLine();
+         writeOutLn("return this->passid;");
       }
-      write("}");
+      writeLn("}");
       newLine();
 
 
@@ -695,7 +656,7 @@ abstract class KernelWriter extends BlockWriter{
       if(_entryPoint.isKernel()){
          write("__kernel void " + _entryPoint.getMethodModel().getSimpleName() + "(");
       }else{
-         write("  __kernel void run(");
+         write("__kernel void run(");
       }
       in();
       boolean first = true;
@@ -725,19 +686,19 @@ abstract class KernelWriter extends BlockWriter{
       write("){");
       in();
       newLine();
-      writeln("This thisStruct;");
-      writeln("This* this=&thisStruct;");
+      writeLn("This thisStruct;");
+      writeLn("This* this=&thisStruct;");
       for(String line : assigns){
          write(line);
-         writeln(";");
+         writeLn(";");
       }
       write("this->passid = passid");
-      writeln(";");
+      writeLn(";");
 
       writeMethodBody(_entryPoint.getMethodModel());
       out();
       newLine();
-      writeln("}");
+      writeLn("}");
       out();
 
    }
