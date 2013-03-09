@@ -43,6 +43,7 @@ import com.amd.aparapi.ClassModel.ConstantPool.FieldEntry;
 import com.amd.aparapi.ClassModel.ConstantPool.MethodEntry;
 import com.amd.aparapi.ClassModel.LocalVariableInfo;
 import com.amd.aparapi.ClassModel.LocalVariableTableEntry;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 

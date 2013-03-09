@@ -58,7 +58,7 @@ public class OpenCLArgDescriptor{
       }else if((bits & ARG_CONST_BIT) == ARG_CONST_BIT){
          argBuilder.append("__constant ");
       }else if((bits & ARG_ISARG_BIT) == ARG_ISARG_BIT){
-         // 
+         //
       }else{
          argBuilder.append("WHATISTHIS?");
       }

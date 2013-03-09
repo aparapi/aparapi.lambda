@@ -39,6 +39,7 @@ package com.amd.aparapi;
 
 import com.amd.aparapi.InstructionSet.TypeSpec;
 import com.amd.aparapi.Kernel.EXECUTION_MODE;
+
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -223,7 +224,8 @@ class KernelRunner extends OpenCLRunner{
                kernelClone.passId = passId;
 
                threadArray[threadId] = new Thread(new Runnable(){
-                  @Override public void run(){
+                  @Override
+                  public void run(){
                      for(int globalGroupId = 0; globalGroupId < globalGroups; globalGroupId++){
 
                         if(_range.getDims() == 1){
@@ -378,7 +380,7 @@ class KernelRunner extends OpenCLRunner{
       boolean didReallocate = false;
 
       if(arg.objArrayElementModel == null){
-         String tmp = arrayClass.getName().substring(2).replace("/", ".");
+         String tmp = TypeHelper.signatureToDotClassName(arrayClass.getName(), 1);
          String arrayClassInDotForm = tmp.substring(0, tmp.length() - 1);
 
          if(logger.isLoggable(Level.FINE)){

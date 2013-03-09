@@ -43,6 +43,7 @@ import com.amd.aparapi.ClassModel.ConstantPool.FieldEntry;
 import com.amd.aparapi.ClassModel.ConstantPool.MethodEntry;
 import com.amd.aparapi.ClassModel.ConstantPool.MethodReferenceEntry.Arg;
 import com.amd.aparapi.InstructionSet.*;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.*;
@@ -234,11 +235,11 @@ class Entrypoint{
 
    /*
     * Update the list of object array member classes and all the superclasses
-    * of those classes and the fields in each class. 
-    * 
+    * of those classes and the fields in each class.
+    *
     * It is important to have only one ClassModel for each class used in the kernel
     * and only one MethodModel per method, so comparison operations work properly.
-    * 
+    *
     * The className param is in dot form, not slashes
     */
    ClassModel getOrUpdateAllClassAccesses(String className) throws AparapiException{
@@ -290,7 +291,7 @@ class Entrypoint{
    }
 
    ClassModelMethod resolveAccessorCandidate(MethodCall _methodCall, MethodEntry _methodEntry) throws AparapiException{
-      String methodsActualClassName = (_methodEntry.getClassEntry().getNameUTF8Entry().getUTF8()).replace('/', '.');
+      String methodsActualDotClassName = _methodEntry.getClassEntry().getDotClassName();
 
       if(_methodCall instanceof VirtualMethodCall){
          Instruction callInstance = ((VirtualMethodCall) _methodCall).getInstanceReference();
@@ -301,9 +302,9 @@ class Entrypoint{
 
                // It is a call from a member obj array element
                if(logger.isLoggable(Level.FINE)){
-                  logger.fine("Looking for class in accessor call: " + methodsActualClassName);
+                  logger.fine("Looking for class in accessor call: " + methodsActualDotClassName);
                }
-               ClassModel memberClassModel = getOrUpdateAllClassAccesses(methodsActualClassName);
+               ClassModel memberClassModel = getOrUpdateAllClassAccesses(methodsActualDotClassName);
 
                // false = no invokespecial allowed here
                return memberClassModel.getMethod(_methodEntry, false);
@@ -314,7 +315,7 @@ class Entrypoint{
    }
 
    /*
-    * Update accessor structures when there is a direct access to an 
+    * Update accessor structures when there is a direct access to an
     * obect array element's data members
     */
    void updateObjectMemberFieldAccesses(String className, FieldEntry field) throws AparapiException{
@@ -434,8 +435,7 @@ class Entrypoint{
       // Look for a intra-object call in a object member
       if(m == null && !isMapped){
          for(ClassModel c : allFieldsClasses.values()){
-            if(c.getClassWeAreModelling().getName()
-                  .equals(methodEntry.getClassEntry().getNameUTF8Entry().getUTF8().replace('/', '.'))){
+            if(c.getClassWeAreModelling().getName().equals(methodEntry.getClassEntry().getDotClassName())){
                m = c.getMethod(methodEntry, (methodCall instanceof I_INVOKESPECIAL) ? true : false);
                assert m != null;
                break;
@@ -445,13 +445,13 @@ class Entrypoint{
 
       // Look for static call to some other class
       if((m == null) && !isMapped && (methodCall instanceof I_INVOKESTATIC)){
-         String otherClassName = methodEntry.getClassEntry().getNameUTF8Entry().getUTF8().replace('/', '.');
-         ClassModel otherClassModel = getOrUpdateAllClassAccesses(otherClassName);
+         String otherDotClassName = methodEntry.getClassEntry().getDotClassName();
+         ClassModel otherClassModel = getOrUpdateAllClassAccesses(otherDotClassName);
 
          //if (logger.isLoggable(Level.FINE)) {
          //   logger.fine("Looking for: " + methodEntry + " in other class " + otherClass.getName());
          //}
-         // false because INVOKESPECIAL not allowed here 
+         // false because INVOKESPECIAL not allowed here
          m = otherClassModel.getMethod(methodEntry, false);
       }
 
@@ -508,9 +508,9 @@ class Entrypoint{
                if(m != null){
                   MethodModel target = null;
                   if(methodMap.keySet().contains(m)){
-                     // we remove and then add again.  Because this is a LinkedHashMap this 
+                     // we remove and then add again.  Because this is a LinkedHashMap this
                      // places this at the end of the list underlying the map
-                     // then when we reverse the collection (below) we get the method 
+                     // then when we reverse the collection (below) we get the method
                      // declarations in the correct order.  We are trying to avoid creating forward references
                      target = methodMap.remove(m);
                      if(logger.isLoggable(Level.FINEST)){
@@ -622,19 +622,20 @@ class Entrypoint{
                }else if(instruction instanceof AccessField){
                   AccessField access = (AccessField) instruction;
                   FieldEntry field = access.getConstantPoolFieldEntry();
+                  FieldEntry.Type accessedFieldType = field.getType();
                   String accessedFieldName = field.getNameAndTypeEntry().getNameUTF8Entry().getUTF8();
                   fieldAccesses.add(accessedFieldName);
                   referencedFieldNames.add(accessedFieldName);
 
-                  String signature = field.getNameAndTypeEntry().getDescriptorUTF8Entry().getUTF8();
+                  // String signature = field.getNameAndTypeEntry().getDescriptorUTF8Entry().getUTF8();
                   if(logger.isLoggable(Level.FINE)){
-                     logger.fine("AccessField field type= " + signature + " in " + methodModel.getName());
+                     logger.fine("AccessField field type= " + accessedFieldType + " in " + methodModel.getName());
                   }
 
                   // Add the class model for the referenced obj array
-                  if(signature.startsWith("[L")){
+                  if(accessedFieldType.isArrayOfObjects(1)){   // is this a one dimension array of objects
                      // Turn [Lcom/amd/javalabs/opencl/demo/DummyOOA; into com.amd.javalabs.opencl.demo.DummyOOA for example
-                     String className = (signature.substring(2, signature.length() - 1)).replace("/", ".");
+                     String className = accessedFieldType.getObjectClassName();
                      ClassModel arrayFieldModel = getOrUpdateAllClassAccesses(className);
                      if(arrayFieldModel != null){
                         Class<?> memberClass = arrayFieldModel.getClassWeAreModelling();
@@ -664,11 +665,11 @@ class Entrypoint{
                         }
                      }
                   }else{
-                     String className = (field.getClassEntry().getNameUTF8Entry().getUTF8()).replace("/", ".");
+                     String dotClassName = (field.getClassEntry().getDotClassName());
                      // Look for object data member access
-                     if(!className.equals(this.getClassModel().getClassWeAreModelling().getName())
+                     if(!dotClassName.equals(this.getClassModel().getClassWeAreModelling().getName())
                            && getFieldFromClassHierarchy(getClassModel().getClassWeAreModelling(), accessedFieldName) == null){
-                        updateObjectMemberFieldAccesses(className, field);
+                        updateObjectMemberFieldAccesses(dotClassName, field);
                      }
                   }
 
@@ -679,11 +680,11 @@ class Entrypoint{
                   fieldAssignments.add(assignedFieldName);
                   referencedFieldNames.add(assignedFieldName);
 
-                  String className = (field.getClassEntry().getNameUTF8Entry().getUTF8()).replace("/", ".");
+                  String dotClassName = field.getClassEntry().getDotClassName();
                   // Look for object data member access
-                  if(!className.equals(this.getClassModel().getClassWeAreModelling().getName())
+                  if(!dotClassName.equals(this.getClassModel().getClassWeAreModelling().getName())
                         && getFieldFromClassHierarchy(getClassModel().getClassWeAreModelling(), assignedFieldName) == null){
-                     updateObjectMemberFieldAccesses(className, field);
+                     updateObjectMemberFieldAccesses(dotClassName, field);
                   }else{
 
                      if((!Config.enablePUTFIELD) && methodModel.methodUsesPutfield() && !methodModel.isSetter()){
@@ -741,7 +742,7 @@ class Entrypoint{
 
             for(ClassModel memberObjClass : objectArrayFieldsClasses.values()){
 
-               // At this point we have already done the field override safety check, so 
+               // At this point we have already done the field override safety check, so
                // add all the superclass fields into the kernel member class to be
                // sorted by size and emitted into the struct
                ClassModel superModel = memberObjClass.getSuperClazz();
@@ -885,8 +886,8 @@ class Entrypoint{
       if(target == null){
          // Look for member obj accessor calls
          for(ClassModel memberObjClass : objectArrayFieldsClasses.values()){
-            String entryClassNameInDotForm = _methodEntry.getClassEntry().getNameUTF8Entry().getUTF8().replace('/', '.');
-            if(entryClassNameInDotForm.equals(memberObjClass.getClassWeAreModelling().getName())){
+            String entryDotClassName = _methodEntry.getClassEntry().getDotClassName();
+            if(entryDotClassName.equals(memberObjClass.getClassWeAreModelling().getName())){
                if(logger.isLoggable(Level.FINE)){
                   logger.fine("Searching for call target: " + _methodEntry + " in "
                         + memberObjClass.getClassWeAreModelling().getName());

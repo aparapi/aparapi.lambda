@@ -40,6 +40,7 @@ package com.amd.aparapi;
 import com.amd.aparapi.ClassModel.LocalVariableInfo;
 import com.amd.aparapi.ClassModel.LocalVariableTableEntry;
 import com.amd.aparapi.InstructionSet.*;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -508,8 +509,8 @@ class ExpressionList{
                      && tail.asBranch().isReverseUnconditional()){
 
                   /**
-                   * This is s sun style loop 
-                   * <pre>       
+                   * This is s sun style loop
+                   * <pre>
                    * sun for (INIT,??,DELTA){BODY} ...
                    *
                    *    [INIT] ?? ?> [BODY] [DELTA] << ...
@@ -520,7 +521,7 @@ class ExpressionList{
                    *
                    *     ?? ?> [BODY] [DELTA] << ...
                    *         ------------------>
-                   *      <-------------------    
+                   *      <-------------------
                    *
                    * sun while (?){l} ...
                    *
@@ -540,7 +541,7 @@ class ExpressionList{
                   if(_instruction.isForwardUnconditionalBranchTarget()){
                      /**
                       * Check if we have a break
-                      * <pre>              
+                      * <pre>
                       *    ?? ?> [BODY] ?1 ?> >> [BODY] << ...
                       *         -------------------------->
                       *                     ---->
@@ -556,26 +557,26 @@ class ExpressionList{
                   }
                   if(loopBackTarget != branchSet.getFirst().getStartInstruction()){
                      /**
-                      * we may have a if(?1){while(?2){}}else{...} where the else goto has been optimized away. 
+                      * we may have a if(?1){while(?2){}}else{...} where the else goto has been optimized away.
                       * <pre>
-                      *   One might expect 
+                      *   One might expect
                       *    ?1 ?> ?2 ?> [BODY] << >> [ELSE] ...
                       *        ------------------->
                       *              ----------->!
-                      *            <----------    
+                      *            <----------
                       *                           -------->
                       *
-                      *   However as above the conditional branch to the unconditional (!) can be optimized away and the conditional inverted and extended 
+                      *   However as above the conditional branch to the unconditional (!) can be optimized away and the conditional inverted and extended
                       *    ?1 ?> ?2 ?> [BODY] << >> [ELSE] ...
                       *        -------------------->
-                      *              -----------*--------->   
-                      *            <-----------  
+                      *              -----------*--------->
+                      *            <-----------
                       *
                       *   However we can also now remove the forward unconditional completely as it is unreachable
                       *    ?1 ?> ?2 ?> [BODY] << [ELSE] ...
                       *        ----------------->
-                      *              ------------------>   
-                      *            <-----------       
+                      *              ------------------>
+                      *            <-----------
                       *
                       * </pre>
                       */
@@ -650,9 +651,9 @@ class ExpressionList{
                }
                if(!handled && !tail.isForwardBranch() && _instruction.isForwardConditionalBranchTarget()){
                   /**
-                   * This an if(exp) 
+                   * This an if(exp)
                    *<pre>             *
-                   * if(??){then}... 
+                   * if(??){then}...
                    *   ?? ?> [THEN] ...
                    *       -------->
                    *
@@ -686,22 +687,22 @@ class ExpressionList{
                            handled = true;
                         }
                      }else{
-                        //then not clean.   
+                        //then not clean.
                         ExpressionList newHeadTail = new ExpressionList(methodModel, this, lastForwardUnconditional);
                         handled = newHeadTail.foldComposite(lastForwardUnconditional.getStartInstruction());
                         newHeadTail.unwind();
                         // handled = foldCompositeRecurse(lastForwardUnconditional);
                         if(!handled && forwardUnconditionalBranches.size() > 1){
                            //  BI  AI      AE      BE
-                           //  ?>  ?>  ..  >>  ..  >>   C   S  
-                           //  ?---------------------->22    
-                           //      ?---------->18            
+                           //  ?>  ?>  ..  >>  ..  >>   C   S
+                           //  ?---------------------->22
+                           //      ?---------->18
                            //              +-------------->31
                            //                      +------>31
                            // Javac sometimes performs the above optimization.  Basically the GOTO for the inner IFELSE(AI,AE) instead of targeting the GOTO
                            // from the outer IFELSE(B1,BE) so instead of AE->BE->... we have AE-->...
                            //
-                           // So given more than one target we retreat up the list of unconditionals until we find a clean one treating the previously visited GOTO 
+                           // So given more than one target we retreat up the list of unconditionals until we find a clean one treating the previously visited GOTO
                            // as a possible end
 
                            for(int i = forwardUnconditionalBranches.size(); i > 1; i--){

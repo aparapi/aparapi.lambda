@@ -109,7 +109,8 @@ public class OpenCLDevice extends Device{
          map = _map;
       }
 
-      @Override public Object invoke(Object proxy, Method method, Object[] args) throws Throwable{
+      @Override
+      public Object invoke(Object proxy, Method method, Object[] args) throws Throwable{
          if(!isReservedInterfaceMethod(method)){
             OpenCLKernel kernel = map.get(method.getName());
             if(kernel != null){

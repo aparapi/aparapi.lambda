@@ -43,6 +43,7 @@ import com.amd.aparapi.ClassModel.ConstantPool.MethodReferenceEntry;
 import com.amd.aparapi.ClassModel.ConstantPool.MethodReferenceEntry.Arg;
 import com.amd.aparapi.InstructionPattern.InstructionMatch;
 import com.amd.aparapi.InstructionSet.*;
+
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.logging.Level;
@@ -451,7 +452,7 @@ class MethodModel{
             logger.fine("Found DUP_X2 prev=" + e.getPrevExpr() + " e=" + e + " curr=" + _instruction);
          }
 
-         // Get the previous instr to write to stack "word1" 
+         // Get the previous instr to write to stack "word1"
          while(!e.producesStack()){
             if(logger.isLoggable(Level.FINE)){
                logger.fine("DUP_X2 skipping to find write: e=" + e);
@@ -466,7 +467,7 @@ class MethodModel{
             logger.fine("DUP_X2 cloning: clone1=" + clone1);
          }
 
-         // Skip over 2 earlier writes to stack and capture 3rd one 
+         // Skip over 2 earlier writes to stack and capture 3rd one
          e = e.getPrevExpr();
 
          for(int i = 0; i < 2; ){
@@ -509,9 +510,9 @@ class MethodModel{
 
       for(Instruction instruction = pcHead; instruction != null; instruction = instruction.getNextPC()){
 
-         // Here we are going to extract loop/if/structure from the list that we have collected so far in the roots list 
+         // Here we are going to extract loop/if/structure from the list that we have collected so far in the roots list
          // We are looking for a new instruction which is the target of a forward branch (this is why we collected forward branch counts) we only enter this loop
-         // however if roots list is not empty and it's tail is not a forward branch. 
+         // however if roots list is not empty and it's tail is not a forward branch.
 
          expressionList.foldComposite(instruction);
 
@@ -520,7 +521,7 @@ class MethodModel{
             txFormDups(expressionList, instruction);
          }else{
             if(instruction.consumesStack()){
-               // If instruction consumes n operands, then walk back until we find n roots on the xpressionlist that produce stack. 
+               // If instruction consumes n operands, then walk back until we find n roots on the xpressionlist that produce stack.
                // we will user this cursor to track our progress
                Instruction cursor = expressionList.getTail();
 
@@ -541,7 +542,7 @@ class MethodModel{
                   cursor = cursor.getPrevExpr();
                }
 
-               // if we found something that did not consume stack we probably have an expression with a side effect 
+               // if we found something that did not consume stack we probably have an expression with a side effect
 
                if(foundNonStackProducer){
                   // Something like
@@ -589,7 +590,8 @@ class MethodModel{
              * </code></pre>
              */
 
-            @Override public Instruction transform(final ExpressionList _expressionList, final Instruction i){
+            @Override
+            public Instruction transform(final ExpressionList _expressionList, final Instruction i){
                InstructionMatch result = null;
 
                if(Config.enablePUTFIELD
@@ -638,7 +640,8 @@ class MethodModel{
              * </pre>
              */
 
-            @Override public Instruction transform(final ExpressionList _expressionList, final Instruction i){
+            @Override
+            public Instruction transform(final ExpressionList _expressionList, final Instruction i){
                InstructionMatch result = null;
                if(Config.enablePUTFIELD
                      && (result = InstructionPattern.fieldPlusOne.matches(i, InstructionPattern.assignToInstanceField)).ok){
@@ -700,7 +703,8 @@ class MethodModel{
              *                 B                                     B
              * </pre>
              */
-            @Override public Instruction transform(ExpressionList _expressionList, Instruction i){
+            @Override
+            public Instruction transform(ExpressionList _expressionList, Instruction i){
                // looking for a post increment on a local variable
                InstructionMatch result = null;
                if((result = InstructionPattern.accessLocalVariable.matches(i, InstructionPattern.longHandIncLocalVariable)).ok){
@@ -737,7 +741,8 @@ class MethodModel{
              *                 B                                     B
              * </pre>
              */
-            @Override public Instruction transform(ExpressionList _expressionList, Instruction i){
+            @Override
+            public Instruction transform(ExpressionList _expressionList, Instruction i){
 
                InstructionMatch result = null;
                if((result = InstructionPattern.accessLocalVariable.matches(i, InstructionPattern.longHandDecLocalVariable)).ok){
@@ -762,7 +767,7 @@ class MethodModel{
              *          0, 0  istore<n> - iadd                       |
              *                 |              \ i_const_1            Increment(++varref<n>)
              *         +1, 0  iload<n>                               |
-             *                 |                                     |           
+             *                 |                                     |
              *                 B                                     B
              *
              *                 A                                     A
@@ -774,7 +779,8 @@ class MethodModel{
              *                 B                                     B
              * </pre>
              */
-            @Override public Instruction transform(ExpressionList _expressionList, Instruction i){
+            @Override
+            public Instruction transform(ExpressionList _expressionList, Instruction i){
 
                InstructionMatch result = null;
                // pre increment local variable
@@ -802,11 +808,12 @@ class MethodModel{
              *          0, 0  iload<n>                               |
              *                 |       / iload<n>               InlineAssign(istore<?>, iload<n>)
              *         +1, 0  istore<?>                              |
-             *                 |                                     |           
+             *                 |                                     |
              *                 B                                     B
              * </pre>
              */
-            @Override public Instruction transform(ExpressionList _expressionList, Instruction i){
+            @Override
+            public Instruction transform(ExpressionList _expressionList, Instruction i){
 
                InstructionMatch result = null;
 
@@ -830,7 +837,8 @@ class MethodModel{
          },
          new InstructionTransformer("pre increment of local variable"){
 
-            @Override public Instruction transform(ExpressionList _expressionList, Instruction i){
+            @Override
+            public Instruction transform(ExpressionList _expressionList, Instruction i){
 
                InstructionMatch result = null;
                if((result = InstructionPattern.inc.matches(i, InstructionPattern.accessLocalVariable)).ok){
@@ -850,7 +858,8 @@ class MethodModel{
          },
          new InstructionTransformer("post increment of local variable"){
 
-            @Override public Instruction transform(ExpressionList _expressionList, Instruction i){
+            @Override
+            public Instruction transform(ExpressionList _expressionList, Instruction i){
 
                InstructionMatch result = null;
 
@@ -879,11 +888,12 @@ class MethodModel{
              *          0, 0  cast<n>                                |
              *                 |       / iload<n>               InlineAssign(istore<?>, cast)
              *         +1, 0  istore<?>                              |
-             *                 |                                     |           
+             *                 |                                     |
              *                 B                                     B
              * </pre>
              */
-            @Override public Instruction transform(ExpressionList _expressionList, Instruction i){
+            @Override
+            public Instruction transform(ExpressionList _expressionList, Instruction i){
 
                InstructionMatch result = null;
                if((result = InstructionPattern.cast.matches(i, InstructionPattern.assignToLocalVariable)).ok){
@@ -908,18 +918,19 @@ class MethodModel{
              *                 |            / getfield - aload       |
              *                 |    / iaload                         |
              *                 |   /        \ i_aload1               |
-             *                iadd                                   |                            
+             *                iadd                                   |
              *                 |   \ iconst 1                        |
              *                 |                                     |
              *                 |                                  FieldArrayElementIncrement(pre)
              *                 |    / getfield - aload               |
-             *                iastore -  iload                       |                            
+             *                iastore -  iload                       |
              *                 |    \ [fieldArrayElementPlusOne]     |
-             *                 |                                     |       
+             *                 |                                     |
              *                 B                                     B
              * </pre>
              */
-            @Override public Instruction transform(ExpressionList _expressionList, Instruction i){
+            @Override
+            public Instruction transform(ExpressionList _expressionList, Instruction i){
 
                InstructionMatch result = null;
                if((result = InstructionPattern.fieldArrayElementPlusOne.matches(i,
@@ -947,18 +958,19 @@ class MethodModel{
              *                 |            / getfield - aload       |
              *                 |    / iaload                         |
              *                 |   /        \ i_aload1               |
-             *                isub                                   |                            
+             *                isub                                   |
              *                 |   \ iconst 1                        |
              *                 |                                     |
              *                 |                                  FieldArrayElementIncrement(pre)
              *                 |    / getfield - aload               |
-             *                iastore -  iload                       |                            
+             *                iastore -  iload                       |
              *                 |    \ [fieldArrayElementMinusOne]    |
-             *                 |                                     |       
+             *                 |                                     |
              *                 B                                     B
              * </pre>
              */
-            @Override public Instruction transform(ExpressionList _expressionList, Instruction i){
+            @Override
+            public Instruction transform(ExpressionList _expressionList, Instruction i){
 
                InstructionMatch result = null;
                if((result = InstructionPattern.fieldArrayElementMinusOne.matches(i,
@@ -980,22 +992,23 @@ class MethodModel{
          },
          new InstructionTransformer("field array element post inccrement with nested index (local variable) "){
 
-            @Override public Instruction transform(ExpressionList _expressionList, Instruction i){
+            @Override
+            public Instruction transform(ExpressionList _expressionList, Instruction i){
 
                InstructionMatch result = null;
                if((result = InstructionPattern.fieldArrayElementAccess.matches(i,
                      InstructionPattern.longHandFieldArrayElementIncrement)).ok){
                   /**
                    * <pre>
-                   *                 A                                     A              
+                   *                 A                                     A
                    *                 |     / getfield<f> - aload           |
                    *                iaload                                 |
-                   *                 |     \ i_load                        |                    
+                   *                 |     \ i_load                        |
                    *                 |                                 FieldArrayElementIncrement(post)
                    *                 |    / getfield - aload               |
-                   *                iastore -  iload                       |                            
+                   *                iastore -  iload                       |
                    *                 |    \ [fieldArrayElementPlusOne]     |
-                   *                 |                                     |           
+                   *                 |                                     |
                    *                 B                                     B
                    *
                    *
@@ -1029,21 +1042,22 @@ class MethodModel{
          new InstructionTransformer("field array element post decrement with nested index (local variable) "){
             /**
              * <pre>
-             *                 A                                     A              
+             *                 A                                     A
              *                 |     / getfield<f> - aload           |
              *                iaload                                 |
-             *                 |     \ i_load                        |                    
+             *                 |     \ i_load                        |
              *                 |                                 FieldArrayElementIncrement(post)
              *                 |    / getfield - aload               |
-             *                iastore -  iload                       |                            
+             *                iastore -  iload                       |
              *                 |    \ [fieldArrayElementMinusOne]    |
-             *                 |                                     |           
+             *                 |                                     |
              *                 B                                     B
              *
              *
              * </pre>
              */
-            @Override public Instruction transform(ExpressionList _expressionList, Instruction i){
+            @Override
+            public Instruction transform(ExpressionList _expressionList, Instruction i){
 
                InstructionMatch result = null;
                if((result = InstructionPattern.fieldArrayElementAccess.matches(i,
@@ -1081,12 +1095,13 @@ class MethodModel{
              *          0, 0  invoke<n>                              |
              *                 |       / invoke()               InlineAssign(istore<?>, invoke)
              *         +1, 0  istore<?>                              |
-             *                 |                                     |           
+             *                 |                                     |
              *                 B                                     B
              * </pre>
              */
 
-            @Override public Instruction transform(ExpressionList _expressionList, Instruction i){
+            @Override
+            public Instruction transform(ExpressionList _expressionList, Instruction i){
 
                InstructionMatch result = null;
                if((result = InstructionPattern.methodCall.matches(i, InstructionPattern.assignToLocalVariable)).ok){
@@ -1112,12 +1127,13 @@ class MethodModel{
              *          0, 0  invoke<n>                              |
              *                 |       / invoke()               InlineAssign(istore<?>, invoke)
              *         +1, 0  istore<?>                              |
-             *                 |                                     |           
+             *                 |                                     |
              *                 B                                     B
              * </pre>
              */
 
-            @Override public Instruction transform(ExpressionList _expressionList, Instruction i){
+            @Override
+            public Instruction transform(ExpressionList _expressionList, Instruction i){
 
                InstructionMatch result = null;
 
@@ -1146,11 +1162,12 @@ class MethodModel{
              *          0, 0  invoke<n>                              |
              *                 |       / invoke()               InlineAssign(istore<?>, invoke)
              *         +1, 0  iastore<?>                              |
-             *                 |                                     |           
+             *                 |                                     |
              *                 B                                     B
              * </pre>
              */
-            @Override public Instruction transform(ExpressionList _expressionList, Instruction i){
+            @Override
+            public Instruction transform(ExpressionList _expressionList, Instruction i){
 
                InstructionMatch result = null;
                if((result = InstructionPattern.methodCall.matches(i, InstructionPattern.assignToArrayElement)).ok){
@@ -1177,11 +1194,12 @@ class MethodModel{
              *          0, 0  invoke<n>                              |
              *                 |       / invoke()               InlineAssign(istore<?>, invoke)
              *         +1, 0  iastore<?>                              |
-             *                 |                                     |           
+             *                 |                                     |
              *                 B                                     B
              * </pre>
              */
-            @Override public Instruction transform(ExpressionList _expressionList, Instruction i){
+            @Override
+            public Instruction transform(ExpressionList _expressionList, Instruction i){
 
                InstructionMatch result = null;
                if((result = InstructionPattern.assignToArrayElement.matches(i,
@@ -1217,7 +1235,7 @@ class MethodModel{
 
       /**
        * Here we look for multi-assigns
-       * i.e 
+       * i.e
        *
        * a=b=c=<exp>;
        */
@@ -1443,7 +1461,8 @@ class MethodModel{
             name = "NONE";
          }
 
-         @Override public boolean equals(Object object){
+         @Override
+         public boolean equals(Object object){
             return (object instanceof Var && ((object == this) || ((Var) object).name.equals(name)));
          }
 
@@ -1451,35 +1470,43 @@ class MethodModel{
             return (name + "[" + startPc + "-" + endPc + "]");
          }
 
-         @Override public int getStart(){
+         @Override
+         public int getStart(){
             return startPc;
          }
 
-         @Override public boolean isArray(){
+         @Override
+         public boolean isArray(){
             return name.startsWith("arr");
          }
 
-         @Override public boolean isObject(){
+         @Override
+         public boolean isObject(){
             return name.startsWith("o");
          }
 
-         @Override public int getEnd(){
+         @Override
+         public int getEnd(){
             return endPc;
          }
 
-         @Override public int getLength(){
+         @Override
+         public int getLength(){
             return endPc - startPc;
          }
 
-         @Override public String getVariableName(){
+         @Override
+         public String getVariableName(){
             return (name);
          }
 
-         @Override public String getVariableDescriptor(){
+         @Override
+         public String getVariableDescriptor(){
             return (descriptor);
          }
 
-         @Override public int getVariableIndex(){
+         @Override
+         public int getVariableIndex(){
             return (slotIndex);
          }
       }
@@ -1545,7 +1572,8 @@ class MethodModel{
             vars[i].endPc = pc + instruction.getLength();
          }
          Collections.sort(list, new Comparator<LocalVariableInfo>(){
-            @Override public int compare(LocalVariableInfo o1, LocalVariableInfo o2){
+            @Override
+            public int compare(LocalVariableInfo o1, LocalVariableInfo o2){
                return o1.getStart() - o2.getStart();
             }
          });
@@ -1561,7 +1589,8 @@ class MethodModel{
 
       }
 
-      @Override public LocalVariableInfo getVariable(int _pc, int _index){
+      @Override
+      public LocalVariableInfo getVariable(int _pc, int _index){
          LocalVariableInfo returnValue = null;
          //  System.out.println("pc = " + _pc + " index = " + _index);
          for(LocalVariableInfo localVariableInfo : list){
@@ -1586,7 +1615,8 @@ class MethodModel{
          return (returnValue);
       }
 
-      @Override public Iterator<LocalVariableInfo> iterator(){
+      @Override
+      public Iterator<LocalVariableInfo> iterator(){
          return list.iterator();
       }
 
@@ -1635,7 +1665,7 @@ class MethodModel{
 
          foldExpressions();
 
-         // Attempt to detect accesses through multi-dimension arrays. 
+         // Attempt to detect accesses through multi-dimension arrays.
          // This was issue 10 in open source release http://code.google.com/p/aparapi/issues/detail?id=10
          for(Entry<Integer, Instruction> instructionEntry : pcMap.entrySet()){
             Instruction instruction = instructionEntry.getValue();

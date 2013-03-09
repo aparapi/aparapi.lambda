@@ -24,8 +24,9 @@ public class Simple{
       Device device = Device.firstGPU();
       device.forEach(in.length, (i) -> {
          out[i] = in[i] * 2;
-      }).forEach(in.length, (i) -> {
-         in[i] = div3(out[i]);
+      });
+      device.forEach(in.length, (i) -> {
+         in[i] = Math.abs(out[i]);
       });
 
       for(int i = 0; i < 64; i++){
