@@ -1864,6 +1864,15 @@ class ClassModel{
          return (constantPool.getUTF8Entry(nameIndex));
       }
 
+      Type type;
+
+      Type getType(){
+         if (type == null){
+            type = new Type(getDescriptor());
+         }
+         return(type);
+      }
+
       Class<?> getDeclaringClass(){
          String clazzName = getDescriptor().replaceAll("^L", "").replaceAll("/", ".").replaceAll(";$", "");
          try{
