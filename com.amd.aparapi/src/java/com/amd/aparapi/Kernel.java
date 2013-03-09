@@ -38,7 +38,8 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 package com.amd.aparapi;
 
 import com.amd.aparapi.ClassModel.ConstantPool.MethodReferenceEntry;
-
+import com.amd.aparapi.TypeHelper.ArgsAndReturnType;
+import com.amd.aparapi.TypeHelper.Type;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Method;
@@ -159,7 +160,7 @@ public abstract class Kernel implements Cloneable{
     *  int[] buffer_$local$ = new int[1024];
     *  </code></pre>
     *
-    * @see LOCAL_SUFFIX
+    * @see #LOCAL_SUFFIX
     */
    public
    @Retention(RetentionPolicy.RUNTIME) @interface Local{
@@ -178,7 +179,7 @@ public abstract class Kernel implements Cloneable{
     *  int[] buffer_$constant$ = new int[1024];
     *  </code></pre>
     *
-    * @see LOCAL_SUFFIX
+    * @see #LOCAL_SUFFIX
     */
    public
    @Retention(RetentionPolicy.RUNTIME) @interface Constant{
@@ -1645,8 +1646,8 @@ public abstract class Kernel implements Cloneable{
     * Note that for the first call this will include the conversion time.
     *
     * @return The time spent executing the kernel (ms)
-    * @see getConversionTime();
-    * @see getAccumulatedExectutionTime();
+    * @see #getConversionTime();
+    * @see #getAccumulatedExecutionTime();
     */
    public synchronized long getExecutionTime(){
       return (kernelRunner.getExecutionTime());
@@ -1842,64 +1843,34 @@ public abstract class Kernel implements Cloneable{
 
    }
 
-   final static Map<String, String> typeToLetterMap = new HashMap<String, String>();
 
-   static{
-      // only primitive types for now
-      typeToLetterMap.put("double", "D");
-      typeToLetterMap.put("float", "F");
-      typeToLetterMap.put("int", "I");
-      typeToLetterMap.put("long", "J");
-      typeToLetterMap.put("boolean", "Z");
-      typeToLetterMap.put("byte", "B");
-      typeToLetterMap.put("char", "C");
-      typeToLetterMap.put("short", "S");
-      typeToLetterMap.put("void", "V");
-   }
 
-   private static String descriptorToReturnTypeLetter(String desc){
-      // find the letter after the closed parenthesis
-      return desc.substring(desc.lastIndexOf(')') + 1);
-   }
 
-   private static String getReturnTypeLetter(Method meth){
-      Class<?> retClass = meth.getReturnType();
-      String strRetClass = retClass.toString();
-      String mapping = typeToLetterMap.get(strRetClass);
-      // System.out.println("strRetClass = <" + strRetClass + ">, mapping = " + mapping);
-      return mapping;
-   }
 
    static String getMappedMethodName(MethodReferenceEntry _methodReferenceEntry){
       String mappedName = null;
-      String name = _methodReferenceEntry.getNameAndTypeEntry().getNameUTF8Entry().getUTF8();
+      String methodName = _methodReferenceEntry.getNameAndTypeEntry().getNameUTF8Entry().getUTF8();
+      String methodClass =   _methodReferenceEntry.getClassEntry().getNameUTF8Entry().getUTF8();
+      if (methodClass.equals(Kernel.class.getName())){
+      ArgsAndReturnType methodArgsAndReturnType = _methodReferenceEntry.getArgsAndReturnType();
+      Type methodReturnType = methodArgsAndReturnType.getReturnType();
+
       for(Method kernelMethod : Kernel.class.getDeclaredMethods()){
          if(kernelMethod.isAnnotationPresent(OpenCLMapping.class)){
-            // ultimately, need a way to constrain this based upon signature (to disambiguate abs(float) from abs(int);
-            // for Alpha, we will just disambiguate based on the return type
-            if(false){
-               System.out.println("kernelMethod is ... " + kernelMethod.toGenericString());
-               System.out.println("returnType = " + kernelMethod.getReturnType());
-               System.out.println("returnTypeLetter = " + getReturnTypeLetter(kernelMethod));
-               System.out.println("kernelMethod getName = " + kernelMethod.getName());
-               System.out.println("methRefName = " + name + " descriptor = "
-                     + _methodReferenceEntry.getNameAndTypeEntry().getDescriptorUTF8Entry().getUTF8());
-               System.out
-                     .println("descToReturnTypeLetter = "
-                           + descriptorToReturnTypeLetter(_methodReferenceEntry.getNameAndTypeEntry().getDescriptorUTF8Entry()
-                           .getUTF8()));
-            }
-            if(_methodReferenceEntry.getNameAndTypeEntry().getNameUTF8Entry().getUTF8().equals(kernelMethod.getName())
-                  && descriptorToReturnTypeLetter(_methodReferenceEntry.getNameAndTypeEntry().getDescriptorUTF8Entry().getUTF8())
-                  .equals(getReturnTypeLetter(kernelMethod))){
-               OpenCLMapping annotation = kernelMethod.getAnnotation(OpenCLMapping.class);
-               String mapTo = annotation.mapTo();
-               if(!mapTo.equals("")){
-                  mappedName = mapTo;
-                  // System.out.println("mapTo = " + mapTo);
+            String kernelMethodName =   kernelMethod.getName();
+
+
+               if(methodName.equals(kernelMethodName)&& methodArgsAndReturnType.matches(kernelMethod)){
+                  OpenCLMapping annotation = kernelMethod.getAnnotation(OpenCLMapping.class);
+                  String mapTo = annotation.mapTo();
+                  if(!mapTo.equals("")){
+                     mappedName = mapTo;
+                      System.out.println("mapTo = " + mapTo + " class="+methodClass);
+                  }
                }
-            }
+
          }
+      }
       }
       // System.out.println("... in getMappedMethodName, returning = " + mappedName);
       return (mappedName);
