@@ -38,11 +38,13 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 package com.amd.aparapi;
 
 import com.amd.aparapi.ClassModel.*;
+import com.amd.aparapi.TypeHelper.MethodDescription;
 import com.amd.aparapi.ClassModel.ConstantPool.FieldEntry;
 import com.amd.aparapi.ClassModel.ConstantPool.MethodReferenceEntry;
-import com.amd.aparapi.ClassModel.ConstantPool.MethodReferenceEntry.Arg;
 import com.amd.aparapi.InstructionPattern.InstructionMatch;
 import com.amd.aparapi.InstructionSet.*;
+import com.amd.aparapi.TypeHelper.ArgsAndReturnType;
+import com.amd.aparapi.TypeHelper.Arg;
 
 import java.util.*;
 import java.util.Map.Entry;
@@ -233,7 +235,7 @@ class MethodModel{
 
                MethodReferenceEntry methodReferenceEntry = methodCall.getConstantPoolMethodEntry();
                if(!Kernel.isMappedMethod(methodReferenceEntry)){ // we will allow trusted methods to violate this rule
-                  for(Arg arg : methodReferenceEntry.getArgs()){
+                  for(Arg arg : methodReferenceEntry.getArgsAndReturnType().getArgs()){
                      if(arg.isArray()){
                         throw new ClassParseException(instruction, ClassParseException.TYPE.METHODARRAYARG);
 
@@ -1516,9 +1518,10 @@ class MethodModel{
       public FakeLocalVariableTableEntry(Map<Integer, Instruction> _pcMap, ClassModelMethod _method){
          int numberOfSlots = _method.getCodeEntry().getMaxLocals();
 
-         MethodDescription description = ClassModel.getMethodDescription(_method.getDescriptor());
+        // MethodDescription description = TypeHelper.getMethodDescription(_method.getDescriptor());
 
-         String[] args = description.getArgs();
+         ArgsAndReturnType argsAndReturnType = _method.getArgsAndReturnType();
+         Arg[] args = argsAndReturnType.getArgs();
 
          int thisOffset = _method.isStatic() ? 0 : 1;
 
@@ -1532,18 +1535,18 @@ class MethodModel{
          }
 
          for(int i = 0; i < args.length; i++){
-            if(args[i].startsWith("[")){
+            if(args[i].isArray()){
                argsAsStoreSpecs[i + thisOffset] = StoreSpec.A;
-            }else if(args[i].startsWith("L") && args[i].length() > 1){
+            }else if(args[i].isObject()){
                argsAsStoreSpecs[i + thisOffset] = StoreSpec.O;
             }else{
-               argsAsStoreSpecs[i + thisOffset] = StoreSpec.valueOf(args[i].substring(0, 1));
+               argsAsStoreSpecs[i + thisOffset] = StoreSpec.valueOf(args[i].getType().substring(0, 1));
             }
             vars[i + thisOffset] = new Var(argsAsStoreSpecs[i + thisOffset], i + thisOffset, 0, true);
 
             // Preserve actual object type
             if(argsAsStoreSpecs[i + thisOffset] == StoreSpec.O || argsAsStoreSpecs[i + thisOffset] == StoreSpec.A){
-               vars[i + thisOffset].descriptor = args[i];
+               vars[i + thisOffset].descriptor = args[i].getType();
             }
             list.add(vars[i + thisOffset]);
          }

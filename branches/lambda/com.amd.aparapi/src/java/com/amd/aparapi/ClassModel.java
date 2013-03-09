@@ -47,9 +47,10 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import com.amd.aparapi.TypeHelper.Type;
+import com.amd.aparapi.TypeHelper.ArgsAndReturnType;
 
 /**
  * Class represents a ClassFile (MyClass.class).
@@ -89,35 +90,7 @@ class ClassModel{
 
    }
 
-   static final char SIGC_VOID = 'V';
 
-   static final char SIGC_BOOLEAN = 'Z';
-
-   static final char SIGC_BYTE = 'B';
-
-   static final char SIGC_CHAR = 'C';
-
-   static final char SIGC_SHORT = 'S';
-
-   static final char SIGC_INT = 'I';
-
-   static final char SIGC_LONG = 'J';
-
-   static final char SIGC_FLOAT = 'F';
-
-   static final char SIGC_DOUBLE = 'D';
-
-   static final char SIGC_ARRAY = '[';
-
-   static final char SIGC_CLASS = 'L';
-
-   static final char SIGC_START_METHOD = '(';
-
-   static final char SIGC_END_CLASS = ';';
-
-   static final char SIGC_END_METHOD = ')';
-
-   static final char SIGC_PACKAGE = '/';
 
    private static Logger logger = Logger.getLogger(Config.getLoggerName());
 
@@ -183,309 +156,8 @@ class ClassModel{
       }
    }
 
-   /**
-    * Convert a given JNI character type (say 'I') to its type name ('int').
-    *
-    * @param _typeChar
-    * @return either a mapped type name or null if no mapping exists.
-    */
-   static String typeName(char _typeChar){
-      String returnName = null;
-      switch(_typeChar){
-         case SIGC_VOID:
-            returnName = "void";
-            break;
-         case SIGC_INT:
-            returnName = "int";
-            break;
-         case SIGC_DOUBLE:
-            returnName = "double";
-            break;
-         case SIGC_FLOAT:
-            returnName = "float";
-            break;
-         case SIGC_SHORT:
-            returnName = "short";
-            break;
-         case SIGC_CHAR:
-            returnName = "char";
-            break;
-         case SIGC_BYTE:
-            returnName = "byte";
-            break;
-         case SIGC_LONG:
-            returnName = "long";
-            break;
-         case SIGC_BOOLEAN:
-            returnName = "boolean";
-            break;
-      }
-      return (returnName);
-   }
 
-   static String convert(String _string){
-      return (convert(_string, "", false));
-   }
 
-   static String convert(String _string, String _insert){
-      return (convert(_string, _insert, false));
-   }
-
-   static String convert(String _string, String _insert, boolean _showFullClassName){
-      Stack<String> stringStack = new Stack<String>();
-      Stack<String> methodStack = null;
-      int length = _string.length();
-      char[] chars = _string.toCharArray();
-      int i = 0;
-      boolean inArray = false;
-      boolean inMethod = false;
-      boolean inArgs = false;
-      int args = 0;
-      while(i < length){
-         switch(chars[i]){
-            case SIGC_CLASS:{
-               StringBuilder classNameBuffer = new StringBuilder();
-               i++;
-               while((i < length) && chars[i] != SIGC_END_CLASS){
-                  if(chars[i] == SIGC_PACKAGE){
-                     classNameBuffer.append('.');
-                  }else{
-                     classNameBuffer.append(chars[i]);
-                  }
-                  i++;
-               }
-               i++; // step over SIGC_ENDCLASS
-               String className = classNameBuffer.toString();
-               if(_showFullClassName){
-                  if(className.startsWith("java.lang")){
-                     className = className.substring("java.lang.".length());
-                  }
-               }else{
-                  int lastDot = className.lastIndexOf('.');
-                  if(lastDot > 0){
-                     className = className.substring(lastDot + 1);
-                  }
-               }
-               if(inArray){
-                  // swap the stack items
-                  String popped = stringStack.pop();
-                  if(inArgs && args > 0){
-                     stringStack.push(", ");
-                  }
-                  stringStack.push(className);
-                  stringStack.push(popped);
-                  inArray = false;
-               }else{
-                  if(inArgs && args > 0){
-                     stringStack.push(", ");
-                  }
-                  stringStack.push(className);
-               }
-               args++;
-            }
-            break;
-            case SIGC_ARRAY:{
-               StringBuilder arrayDims = new StringBuilder();
-               while((i < length) && chars[i] == SIGC_ARRAY){
-                  arrayDims.append("[]");
-                  i++;
-               }
-               stringStack.push(arrayDims.toString());
-               inArray = true;
-            }
-            break;
-            case SIGC_VOID:
-            case SIGC_INT:
-            case SIGC_DOUBLE:
-            case SIGC_FLOAT:
-            case SIGC_SHORT:
-            case SIGC_CHAR:
-            case SIGC_BYTE:
-            case SIGC_LONG:
-            case SIGC_BOOLEAN:{
-               if(inArray){
-                  // swap the stack items
-                  String popped = stringStack.pop();
-                  if(inArgs && args > 0){
-                     stringStack.push(", ");
-                  }
-                  stringStack.push(typeName(chars[i]));
-                  stringStack.push(popped);
-                  inArray = false;
-               }else{
-                  if(inArgs && args > 0){
-                     stringStack.push(", ");
-                  }
-                  stringStack.push(typeName(chars[i]));
-               }
-               i++; // step over this
-            }
-            break;
-            case SIGC_START_METHOD:{
-               stringStack.push("(");
-               i++; // step over this
-               inArgs = true;
-               args = 0;
-            }
-            break;
-            case SIGC_END_METHOD:{
-               inMethod = true;
-               inArgs = false;
-               stringStack.push(")");
-               methodStack = stringStack;
-               stringStack = new Stack<String>();
-               i++; // step over this
-            }
-            break;
-         }
-      }
-
-      StringBuilder returnValue = new StringBuilder();
-      for(String s : stringStack){
-         returnValue.append(s);
-         returnValue.append(" ");
-
-      }
-      if(inMethod){
-         for(String s : methodStack){
-            returnValue.append(s);
-            returnValue.append(" ");
-         }
-      }else{
-         returnValue.append(_insert);
-      }
-      return (returnValue.toString());
-   }
-
-   static class MethodDescription{
-      private String className;
-
-      private String methodName;
-
-      private String type;
-
-      private String[] args;
-
-      MethodDescription(String _className, String _methodName, String _type, String[] _args){
-         methodName = _methodName;
-         className = _className;
-         type = _type;
-         args = _args;
-      }
-
-      String[] getArgs(){
-         return (args);
-      }
-
-      String getType(){
-         return (type);
-      }
-
-      String getClassName(){
-         return (className);
-      }
-
-      String getMethodName(){
-         return (methodName);
-      }
-   }
-
-   static MethodDescription getMethodDescription(String _string){
-      String className = null;
-      String methodName = null;
-      String descriptor = null;
-      MethodDescription methodDescription = null;
-      if(_string.startsWith("(")){
-         className = "?";
-         methodName = "?";
-         descriptor = _string;
-      }else{
-         int parenIndex = _string.indexOf("(");
-         int dotIndex = _string.indexOf(".");
-         descriptor = _string.substring(parenIndex);
-         className = _string.substring(0, dotIndex);
-         methodName = _string.substring(dotIndex + 1, parenIndex);
-      }
-      Stack<String> stringStack = new Stack<String>();
-      Stack<String> methodStack = null;
-      int length = descriptor.length();
-      char[] chars = new char[descriptor.length()];
-      descriptor.getChars(0, descriptor.length(), chars, 0);
-      int i = 0;
-      boolean inArray = false;
-      boolean inMethod = false;
-      while(i < length){
-         switch(chars[i]){
-            case SIGC_CLASS:{
-               StringBuilder stringBuffer = null;
-               if(inArray){
-                  stringBuffer = new StringBuilder(stringStack.pop());
-               }else{
-                  stringBuffer = new StringBuilder();
-               }
-               while((i < length) && chars[i] != SIGC_END_CLASS){
-                  stringBuffer.append(chars[i]);
-                  i++;
-               }
-               stringBuffer.append(chars[i]);
-               i++; // step over SIGC_ENDCLASS
-               stringStack.push(stringBuffer.toString());
-               inArray = false;
-            }
-            break;
-            case SIGC_ARRAY:{
-               StringBuilder stringBuffer = new StringBuilder();
-               while((i < length) && chars[i] == SIGC_ARRAY){
-                  stringBuffer.append(chars[i]);
-                  i++;
-               }
-               stringStack.push(stringBuffer.toString());
-               inArray = true;
-            }
-            break;
-            case SIGC_VOID:
-            case SIGC_INT:
-            case SIGC_DOUBLE:
-            case SIGC_FLOAT:
-            case SIGC_SHORT:
-            case SIGC_CHAR:
-            case SIGC_BYTE:
-            case SIGC_LONG:
-            case SIGC_BOOLEAN:{
-               StringBuilder stringBuffer = null;
-               if(inArray){
-                  stringBuffer = new StringBuilder(stringStack.pop());
-               }else{
-                  stringBuffer = new StringBuilder();
-               }
-               stringBuffer.append(chars[i]);
-               i++; // step over this
-               stringStack.push(stringBuffer.toString());
-               inArray = false;
-            }
-            break;
-            case SIGC_START_METHOD:{
-               i++; // step over this
-            }
-            break;
-            case SIGC_END_METHOD:{
-               inMethod = true;
-               inArray = false;
-               methodStack = stringStack;
-               stringStack = new Stack<String>();
-               i++; // step over this
-            }
-            break;
-         }
-      }
-      if(inMethod){
-         methodDescription = new MethodDescription(className, methodName, stringStack.toArray(new String[0])[0],
-               methodStack.toArray(new String[0]));
-      }else{
-         System.out.println("can't convert to a description");
-      }
-      return (methodDescription);
-   }
 
    private int magic;
 
@@ -573,15 +245,6 @@ class ClassModel{
       }
    }
 
-   private static enum SignatureParseState{
-      skipping,
-      counting,
-      inclass,
-      inArray,
-      done;
-   }
-
-   ;
 
    class ConstantPool implements Iterable<ConstantPool.Entry>{
 
@@ -838,22 +501,9 @@ class ClassModel{
 
       abstract class MethodReferenceEntry extends ReferenceEntry{
 
-         class Arg extends Type{
-            Arg(String _signature, int _start, int _pos, int _argc){
-               super(_signature.substring(_start, _pos + 1));
-               argc = _argc;
-            }
 
-            private int argc;
 
-            int getArgc(){
-               return (argc);
-            }
-         }
 
-         private Arg[] args = null;
-
-         private Type returnType = null;
 
          @Override
          public int hashCode(){
@@ -877,96 +527,28 @@ class ClassModel{
          MethodReferenceEntry(ByteReader byteReader, int slot, ConstantPoolType constantPoolType){
             super(byteReader, slot, constantPoolType);
 
+
          }
 
          int getStackProduceCount(){
-            return (getReturnType().isVoid() ? 0 : 1);
+            return (getArgsAndReturnType().getReturnType().isVoid() ? 0 : 1);
          }
 
-         Type getReturnType(){
-            if(returnType == null){
-               getArgs();
+         ArgsAndReturnType argsAndReturnType;
+
+         ArgsAndReturnType getArgsAndReturnType(){
+            if (argsAndReturnType == null){
+            NameAndTypeEntry nameAndTypeEntry = getNameAndTypeEntry();
+
+            String signature = nameAndTypeEntry.getDescriptorUTF8Entry().getUTF8();// "([[IF)V" for a method that takes an int[][], float and returns void.
+            argsAndReturnType = new ArgsAndReturnType(signature);
             }
-            return (returnType);
+            return (argsAndReturnType);
          }
 
-         Arg[] getArgs(){
-            if(args == null || returnType == null){
-               List<Arg> argList = new ArrayList<Arg>();
-               NameAndTypeEntry nameAndTypeEntry = getNameAndTypeEntry();
-
-               String signature = nameAndTypeEntry.getDescriptorUTF8Entry().getUTF8();// "([[IF)V" for a method that takes an int[][], float and returns void.
-               // Sadly we need to parse this, we need the # of arguments for the call
-               SignatureParseState state = SignatureParseState.skipping;
-               int start = 0;
-
-               for(int pos = 0; state != SignatureParseState.done; pos++){
-                  char ch = signature.charAt(pos);
-                  switch(ch){
-                     case '(':
-                        state = SignatureParseState.counting;
-                        break;
-                     case ')':
-                        state = SignatureParseState.done;
-                        returnType = new Type(signature.substring(pos + 1));
-                        break;
-                     case '[':
-                        switch(state){
-                           case counting:
-                              state = SignatureParseState.inArray;
-                              start = pos;
-                              break;
-
-                        }
-                        // we don't care about arrays
-                        break;
-                     case 'L':
-                        // beginning of Ljava/lang/String; or something
-
-                        switch(state){
-                           case counting:
-                              start = pos;
-                              // fallthrough intended!!
-                           case inArray:
-                              state = SignatureParseState.inclass;
-                              break;
-                        }
-                        break;
-                     case ';':
-                        // note we will only be in 'inclass' if we were previously counting, so this is safe
-                        switch(state){
-                           case inclass:
-                              argList.add(new Arg(signature, start, pos, argList.size()));
-                              state = SignatureParseState.counting;
-                              break;
-                        }
-                        break;
-
-                     default:
-                        // we have IJBZDF so inc counter if we are still counting
-                        switch(state){
-                           case counting:
-                              start = pos;
-                              // fallthrough intended!!
-                           case inArray:
-                              argList.add(new Arg(signature, start, pos, argList.size()));
-                              break;
-
-                        }
-                        break;
-                  }
-
-               }
-               // System.out.println("method "+name+" has signature of "+signature+" which has "+count+" args");
-
-               args = argList.toArray(new Arg[0]);
-            }
-            return (args);
-
-         }
 
          int getStackConsumeCount(){
-            return (getArgs().length);
+            return (getArgsAndReturnType().getArgs().length);
          }
       }
 
@@ -1007,109 +589,6 @@ class ClassModel{
             return (false);
          }
 
-         class Type{
-            private int arrayDimensions = 0;
-
-            Type(String _type){
-               type = _type;
-
-               while(type.charAt(arrayDimensions) == '['){
-                  arrayDimensions++;
-               }
-               type = type.substring(arrayDimensions);
-            }
-
-            String getType(){
-               return (type);
-            }
-
-            boolean isVoid(){
-               return (type.equals("V"));
-            }
-
-            boolean isInt(){
-               return (type.equals("I"));
-            }
-
-            boolean isLong(){
-               return (type.equals("J"));
-            }
-
-            boolean isShort(){
-               return (type.equals("H"));
-            }
-
-            boolean isBoolean(){
-               return (type.equals("Z"));
-            }
-
-            boolean isChar(){
-               return (type.equals("C"));
-            }
-
-            boolean isFloat(){
-               return (type.equals("F"));
-            }
-
-            boolean isDouble(){
-               return (type.equals("D"));
-            }
-
-            boolean isByte(){
-               return (type.equals("B"));
-            }
-
-            boolean isObject(){
-               return (type.startsWith("L"));
-            }
-
-            String getObjectClassName(){
-               return (TypeHelper.signatureToDotClassName(type, 0));
-            }
-
-            private String type;
-
-            final boolean isArray(){
-               return (arrayDimensions > 0);
-            }
-
-            final int getArrayDimensions(){
-               return (arrayDimensions);
-            }
-
-            final boolean isArrayOfObjects(int _dim){
-               return (isArray() && getArrayDimensions() == _dim && isObject());
-            }
-
-            final boolean isArrayOfInts(int _dim){
-               return (isArray() && getArrayDimensions() == _dim && isInt());
-            }
-
-            final boolean isArrayOfFloats(int _dim){
-               return (isArray() && getArrayDimensions() == _dim && isFloat());
-            }
-
-            final boolean isArrayOfDoubles(int _dim){
-               return (isArray() && getArrayDimensions() == _dim && isDouble());
-            }
-
-            final boolean isArrayOfChars(int _dim){
-               return (isArray() && getArrayDimensions() == _dim && isChar());
-            }
-
-            final boolean isArrayOfLong(int _dim){
-               return (isArray() && getArrayDimensions() == _dim && isLong());
-            }
-
-            final boolean isArrayOfShorts(int _dim){
-               return (isArray() && getArrayDimensions() == _dim && isShort());
-            }
-
-            final boolean isArrayOfBytes(int _dim){
-               return (isArray() && getArrayDimensions() == _dim && isByte());
-            }
-
-         }
 
       }
 
@@ -1347,7 +826,7 @@ class ClassModel{
             ConstantPool.NameAndTypeEntry nameAndTypeEntry = (ConstantPool.NameAndTypeEntry) get(methodEntry.getNameAndTypeIndex());
             ConstantPool.UTF8Entry utf8NameEntry = (ConstantPool.UTF8Entry) get(nameAndTypeEntry.getNameIndex());
             ConstantPool.UTF8Entry utf8DescriptorEntry = (ConstantPool.UTF8Entry) get(nameAndTypeEntry.getDescriptorIndex());
-            sb.append(convert(utf8DescriptorEntry.getUTF8(), utf8Entry.getUTF8() + "." + utf8NameEntry.getUTF8()));
+            sb.append(TypeHelper.convert(utf8DescriptorEntry.getUTF8(), utf8Entry.getUTF8() + "." + utf8NameEntry.getUTF8()));
          }else if(_entry instanceof ConstantPool.InterfaceMethodEntry){
             ConstantPool.InterfaceMethodEntry interfaceMethodEntry = (ConstantPool.InterfaceMethodEntry) _entry;
             ConstantPool.ClassEntry classEntry = (ConstantPool.ClassEntry) get(interfaceMethodEntry.getClassIndex());
@@ -1356,7 +835,7 @@ class ClassModel{
                   .getNameAndTypeIndex());
             ConstantPool.UTF8Entry utf8NameEntry = (ConstantPool.UTF8Entry) get(nameAndTypeEntry.getNameIndex());
             ConstantPool.UTF8Entry utf8DescriptorEntry = (ConstantPool.UTF8Entry) get(nameAndTypeEntry.getDescriptorIndex());
-            sb.append(convert(utf8DescriptorEntry.getUTF8(), utf8Entry.getUTF8() + "." + utf8NameEntry.getUTF8()));
+            sb.append(TypeHelper.convert(utf8DescriptorEntry.getUTF8(), utf8Entry.getUTF8() + "." + utf8NameEntry.getUTF8()));
          }else if(_entry instanceof ConstantPool.FieldEntry){
             ConstantPool.FieldEntry fieldEntry = (ConstantPool.FieldEntry) _entry;
             ConstantPool.ClassEntry classEntry = (ConstantPool.ClassEntry) get(fieldEntry.getClassIndex());
@@ -1364,7 +843,7 @@ class ClassModel{
             ConstantPool.NameAndTypeEntry nameAndTypeEntry = (ConstantPool.NameAndTypeEntry) get(fieldEntry.getNameAndTypeIndex());
             ConstantPool.UTF8Entry utf8NameEntry = (ConstantPool.UTF8Entry) get(nameAndTypeEntry.getNameIndex());
             ConstantPool.UTF8Entry utf8DescriptorEntry = (ConstantPool.UTF8Entry) get(nameAndTypeEntry.getDescriptorIndex());
-            sb.append(convert(utf8DescriptorEntry.getUTF8(), utf8Entry.getUTF8() + "." + utf8NameEntry.getUTF8()));
+            sb.append(TypeHelper.convert(utf8DescriptorEntry.getUTF8(), utf8Entry.getUTF8() + "." + utf8NameEntry.getUTF8()));
          }
          return (sb.toString());
       }
@@ -1899,7 +1378,7 @@ class ClassModel{
             String returnValue = "unknown";
             RealLocalVariableInfo localVariableInfo = (RealLocalVariableInfo) getVariable(_pc, _index);
             if(localVariableInfo != null){
-               returnValue = convert(constantPool.getUTF8Entry(localVariableInfo.getDescriptorIndex()).getUTF8(), constantPool
+               returnValue = TypeHelper.convert(constantPool.getUTF8Entry(localVariableInfo.getDescriptorIndex()).getUTF8(), constantPool
                      .getUTF8Entry(localVariableInfo.getNameIndex()).getUTF8());
             }
             // System.out.println("returning " + returnValue);
@@ -2110,14 +1589,14 @@ class ClassModel{
                   int tag = _byteReader.u1();
 
                   switch(tag){
-                     case SIGC_BYTE:
-                     case SIGC_CHAR:
-                     case SIGC_INT:
-                     case SIGC_LONG:
-                     case SIGC_DOUBLE:
-                     case SIGC_FLOAT:
-                     case SIGC_SHORT:
-                     case SIGC_BOOLEAN:
+                     case TypeHelper.BYTE:
+                     case TypeHelper.CHAR:
+                     case TypeHelper.INT:
+                     case TypeHelper.LONG:
+                     case TypeHelper.DOUBLE:
+                     case TypeHelper.FLOAT:
+                     case TypeHelper.SHORT:
+                     case TypeHelper.BOOLEAN:
                      case 's': // special for String
                         value = new PrimitiveValue(tag, _byteReader);
                         break;
@@ -2446,6 +1925,10 @@ class ClassModel{
 
       ConstantPool.UTF8Entry getDescriptorUTF8Entry(){
          return (constantPool.getUTF8Entry(descriptorIndex));
+      }
+
+      ArgsAndReturnType getArgsAndReturnType(){
+         return (new ArgsAndReturnType(getDescriptor()));
       }
 
       int getIndex(){
