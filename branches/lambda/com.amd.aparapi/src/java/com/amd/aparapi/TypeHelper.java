@@ -3,6 +3,7 @@ package com.amd.aparapi;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
+import java.lang.reflect.Method;
 
 /**
  * Created with IntelliJ IDEA.
@@ -465,6 +466,30 @@ public class TypeHelper{
          return (isArray() && getArrayDimensions() == _dim && isByte());
       }
 
+      String getJavaName(){
+         switch (type.charAt(0)) {
+            case DOUBLE: return("double");
+            case FLOAT: return("float");
+            case INT: return("int");
+            case CHAR: return("char");
+            case BYTE: return("byte");
+            case SHORT: return("short");
+            case LONG: return("long");
+            case BOOLEAN: return("boolean");
+            case ARRAY: {
+
+            }
+            case CLASS_START: {
+
+            }
+
+         }
+         return("?");
+      }
+      public boolean matches(Class<?> _type){
+           String javaName = getJavaName();
+           return(_type.getName().equals(javaName));
+      }
    }
 
    static class Arg extends Type{
@@ -602,5 +627,10 @@ public class TypeHelper{
 
    args = argList.toArray(new Arg[0]);
    }
+
+      public boolean matches(Method _method){
+         return (returnType.matches(_method.getReturnType())) ;
+
+      }
    }
 }
