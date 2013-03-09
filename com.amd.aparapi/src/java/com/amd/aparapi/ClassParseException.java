@@ -44,7 +44,8 @@ package com.amd.aparapi;
  * @author gfrost
  * @see com.amd.aparapi.AparapiException
  */
-@SuppressWarnings("serial") public class ClassParseException extends AparapiException{
+@SuppressWarnings("serial")
+public class ClassParseException extends AparapiException{
    public static enum TYPE{
       NONE("none"), //
       ARRAY_RETURN("We don't support areturn instructions"), //

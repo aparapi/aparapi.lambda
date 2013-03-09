@@ -41,6 +41,7 @@ import com.amd.aparapi.ClassModel.ConstantPool.MethodEntry;
 import com.amd.aparapi.InstructionSet.MethodCall;
 import com.amd.aparapi.InstructionSet.TypeSpec;
 import com.amd.aparapi.InstructionSet.VirtualMethodCall;
+
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -169,15 +170,14 @@ class LambdaRunner extends OpenCLRunner{
          MethodCall lambdaCallSite = acceptCallSites.get(0);
          MethodEntry lambdaCallTarget = lambdaCallSite.getConstantPoolMethodEntry();
 
-         String lambdaClassNameWithSlashes = lambdaCallTarget.getClassEntry().getNameUTF8Entry().getUTF8();
-         String lambdaClassName = lambdaClassNameWithSlashes.replace('/', '.');
+         String lambdaDotClassName = lambdaCallTarget.getClassEntry().getDotClassName();
 
-         lambdaKernelClass = Class.forName(lambdaClassName, false, bc.getClassLoader());
+         lambdaKernelClass = Class.forName(lambdaDotClassName, false, bc.getClassLoader());
          lambdaMethodName = lambdaCallTarget.getNameAndTypeEntry().getNameUTF8Entry().getUTF8();
          lambdaMethodSignature = lambdaCallTarget.getNameAndTypeEntry().getDescriptorUTF8Entry().getUTF8();
 
          // The first field is "this" for the lambda call if the lambda
-         // is not static, the later fields are captured values which will 
+         // is not static, the later fields are captured values which will
          // become lambda call parameters
 
          Field[] allBlockClassFields = bc.getDeclaredFields();
@@ -222,7 +222,7 @@ class LambdaRunner extends OpenCLRunner{
          }
 
          if(logger.isLoggable(Level.FINE)){
-            logger.fine("call target = " + lambdaClassName +
+            logger.fine("call target = " + lambdaDotClassName +
                   " " + lambdaMethodName + " " + lambdaMethodSignature + " ## target lambda is static? " + isStatic +
                   ", its loader = " + getLambdaKernelClass().getClassLoader());
          }
@@ -251,8 +251,8 @@ class LambdaRunner extends OpenCLRunner{
 
       // Get source array ref from Stream obj to set up as a kernel argument
       //
-      // For the time being the only supported Stream is ReferencePipeline 
-      // with super class AbstractPipeline         
+      // For the time being the only supported Stream is ReferencePipeline
+      // with super class AbstractPipeline
       Object setupStreamSource(Stream _source) throws AparapiException{
          Class sourceSuperClass = _source.getClass().getSuperclass();
 
@@ -379,8 +379,8 @@ class LambdaRunner extends OpenCLRunner{
       }
 
       if(arg.objArrayElementModel == null){
-         String tmp = arrayClass.getName().substring(2).replace("/", ".");
-         String arrayClassInDotForm = tmp.substring(0, tmp.length() - 1);
+         String arrayClassInDotForm = TypeHelper.signatureToDotClassName(arrayClass.getName(), 1);
+
 
          if(logger.isLoggable(Level.FINE)){
             logger.fine("looking for type = " + arrayClassInDotForm);
@@ -703,9 +703,9 @@ class LambdaRunner extends OpenCLRunner{
          logger.fine("Need to resync arrays on " + lambdaObject.getClass().getName());
       }
 
-      // The arguments are extracted from the block. It is a new block object 
+      // The arguments are extracted from the block. It is a new block object
       // each time. The captured refs could be arrays in the lambda this object.
-      // This could probably be improved so it is not continually updating 
+      // This could probably be improved so it is not continually updating
       // the same arrays refs from the lambda this object.
       updateLambdaBlockJNI(jniContextHandle, callerBlock, lambdaKernelCall.getLambdaCapturedFields().length);
 
@@ -824,7 +824,7 @@ class LambdaRunner extends OpenCLRunner{
       Field[] callerCapturedFields = call.getLambdaCapturedFields();
       List<KernelArg> argsList = new ArrayList<KernelArg>();
 
-      // Add fields in this order: 
+      // Add fields in this order:
       // 1. captured args from block, including local arrays in caller method
       // 1b. Source array if this is an object stream
       // 2. iteration variable,

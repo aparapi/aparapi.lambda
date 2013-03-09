@@ -45,6 +45,7 @@ import com.amd.aparapi.ClassModel.ConstantPool.MethodEntry;
 import com.amd.aparapi.ClassModel.LocalVariableInfo;
 import com.amd.aparapi.ClassModel.LocalVariableTableEntry;
 import com.amd.aparapi.InstructionSet.*;
+
 import java.util.*;
 
 abstract class KernelWriter extends BlockWriter{
@@ -131,7 +132,8 @@ abstract class KernelWriter extends BlockWriter{
     * @param _typeDesc String in the Java JNI notation, [I, etc
     * @return Suitably converted string, "char*", etc
     */
-   @Override protected String convertType(String _typeDesc, boolean useClassModel){
+   @Override
+   protected String convertType(String _typeDesc, boolean useClassModel){
       return KernelWriter.convertType0(_typeDesc, useClassModel);
    }
 
@@ -171,7 +173,8 @@ abstract class KernelWriter extends BlockWriter{
       }
    }
 
-   @Override protected void writeMethod(MethodCall _methodCall, MethodEntry _methodEntry) throws CodeGenException{
+   @Override
+   protected void writeMethod(MethodCall _methodCall, MethodEntry _methodEntry) throws CodeGenException{
 
       // System.out.println("_methodEntry = " + _methodEntry);
       // special case for buffers
@@ -234,7 +237,7 @@ abstract class KernelWriter extends BlockWriter{
                // For I_ALOAD_0, it must be either a call in the lambda class or
                // a call to the iteration object.
                String className = _methodEntry.getClassEntry().getNameUTF8Entry().getUTF8();
-               String classNameInDotForm = className.replace("/", ".");
+               String classNameInDotForm = TypeHelper.slashClassNameToDotClassName(className);
                if(classNameInDotForm.equals(entryPoint.getClassModel().getClassWeAreModelling().getName())){
                   write("this");
                }else{
@@ -286,9 +289,9 @@ abstract class KernelWriter extends BlockWriter{
 
    public final static String __constant = "__constant";
 
-   public final static String LOCAL_ANNOTATION_NAME = "L" + Kernel.Local.class.getName().replace(".", "/") + ";";
+   public final static String LOCAL_ANNOTATION_NAME = TypeHelper.dotClassNameToSignature(Kernel.Local.class.getName(), 0);
 
-   public final static String CONSTANT_ANNOTATION_NAME = "L" + Kernel.Constant.class.getName().replace(".", "/") + ";";
+   public final static String CONSTANT_ANNOTATION_NAME = TypeHelper.dotClassNameToSignature(Kernel.Constant.class.getName(), 0);
 
    @Override void write(Entrypoint _entryPoint) throws CodeGenException{
       List<String> thisStruct = new ArrayList<String>();
@@ -430,7 +433,7 @@ abstract class KernelWriter extends BlockWriter{
 
          boolean isPointer = false;
 
-         // check the suffix 
+         // check the suffix
          String type = field.getName().endsWith(Kernel.LOCAL_SUFFIX) ? __local
                : (field.getName().endsWith(Kernel.CONSTANT_SUFFIX) ? __constant : __global);
          RuntimeAnnotationsEntry visibleAnnotations = field.fieldAttributePool.getRuntimeVisibleAnnotationsEntry();
@@ -739,14 +742,16 @@ abstract class KernelWriter extends BlockWriter{
 
    }
 
-   @Override protected void writeThisRef(){
+   @Override
+   protected void writeThisRef(){
 
       write("this->");
 
    }
 
    // Emit the this-> syntax when accessing locals that are lambda arguments
-   @Override protected void doAccessLocalVariable(Instruction _instruction){
+   @Override
+   protected void doAccessLocalVariable(Instruction _instruction){
       AccessLocalVariable localVariableLoadInstruction = (AccessLocalVariable) _instruction;
       LocalVariableInfo localVariable = localVariableLoadInstruction.getLocalVariableInfo();
       if((localVariable.getStart() == 0) && (_instruction.getMethod() == entryPoint.getMethodModel())){

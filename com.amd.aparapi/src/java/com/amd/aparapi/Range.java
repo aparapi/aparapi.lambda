@@ -1,6 +1,7 @@
 package com.amd.aparapi;
 
 import com.amd.aparapi.Annotations.UsedByJNICode;
+
 import java.util.Arrays;
 
 /**
@@ -45,23 +46,32 @@ import java.util.Arrays;
  * </pre></blockquote>
  */
 public class Range{
-   @UsedByJNICode private int globalSize_0 = 1;
+   @UsedByJNICode
+   private int globalSize_0 = 1;
 
-   @UsedByJNICode private int localSize_0 = 1;
+   @UsedByJNICode
+   private int localSize_0 = 1;
 
-   @UsedByJNICode private int globalSize_1 = 1;
+   @UsedByJNICode
+   private int globalSize_1 = 1;
 
-   @UsedByJNICode private int localSize_1 = 1;
+   @UsedByJNICode
+   private int localSize_1 = 1;
 
-   @UsedByJNICode private int globalSize_2 = 1;
+   @UsedByJNICode
+   private int globalSize_2 = 1;
 
-   @UsedByJNICode private int localSize_2 = 1;
+   @UsedByJNICode
+   private int localSize_2 = 1;
 
-   @UsedByJNICode private int dims;
+   @UsedByJNICode
+   private int dims;
 
-   @UsedByJNICode private boolean valid = true;
+   @UsedByJNICode
+   private boolean valid = true;
 
-   @UsedByJNICode private boolean localIsDerived = false;
+   @UsedByJNICode
+   private boolean localIsDerived = false;
 
    private Device device = null;
 

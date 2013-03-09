@@ -43,6 +43,7 @@ import com.amd.aparapi.BranchSet.SimpleLogicalExpressionNode;
 import com.amd.aparapi.ClassModel.ConstantPool.MethodEntry;
 import com.amd.aparapi.ClassModel.LocalVariableInfo;
 import com.amd.aparapi.InstructionSet.*;
+
 import java.util.Stack;
 
 

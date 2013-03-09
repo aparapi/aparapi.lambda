@@ -38,6 +38,7 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 package com.amd.aparapi;
 
 import com.amd.aparapi.Annotations.UsedByJNICode;
+
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -78,21 +79,24 @@ class Config{
     * <p/>
     * Usage -Dcom.amd.aparapi.enableProfiling={true|false}
     */
-   @UsedByJNICode static final boolean enableProfiling = Boolean.getBoolean(propPkgName + ".enableProfiling");
+   @UsedByJNICode
+   static final boolean enableProfiling = Boolean.getBoolean(propPkgName + ".enableProfiling");
 
    /**
     * Allows the user to turn on OpenCL profiling for the JNI/OpenCL layer, this information will be written to CSV file
     * <p/>
     * Usage -Dcom.amd.aparapi.enableProfiling={true|false}
     */
-   @UsedByJNICode static final boolean enableProfilingCSV = Boolean.getBoolean(propPkgName + ".enableProfilingCSV");
+   @UsedByJNICode
+   static final boolean enableProfilingCSV = Boolean.getBoolean(propPkgName + ".enableProfilingCSV");
 
    /**
     * Allows the user to request that verbose JNI messages be dumped to stderr.
     * <p/>
     * Usage -Dcom.amd.aparapi.enableVerboseJNI={true|false}
     */
-   @UsedByJNICode static final boolean enableVerboseJNI = Boolean.getBoolean(propPkgName + ".enableVerboseJNI");
+   @UsedByJNICode
+   static final boolean enableVerboseJNI = Boolean.getBoolean(propPkgName + ".enableVerboseJNI");
 
    /**
     * Allows the user to request tracking of opencl resources.
@@ -101,7 +105,8 @@ class Config{
     * <p/>
     * Usage -Dcom.amd.aparapi.enableOpenCLResourceTracking={true|false}
     */
-   @UsedByJNICode static final boolean enableVerboseJNIOpenCLResourceTracking = Boolean.getBoolean(propPkgName
+   @UsedByJNICode
+   static final boolean enableVerboseJNIOpenCLResourceTracking = Boolean.getBoolean(propPkgName
          + ".enableVerboseJNIOpenCLResourceTracking");
 
    /**
@@ -139,7 +144,7 @@ class Config{
 
    static final boolean enablePUTSTATIC = Boolean.getBoolean(propPkgName + ".enable.PUTSTATIC");
 
-   // Allow static array accesses 
+   // Allow static array accesses
    static final boolean enableGETSTATIC = true; //Boolean.getBoolean(propPkgName + ".enable.GETSTATIC");
 
    static final boolean enableINVOKEINTERFACE = Boolean.getBoolean(propPkgName + ".enable.INVOKEINTERFACE");

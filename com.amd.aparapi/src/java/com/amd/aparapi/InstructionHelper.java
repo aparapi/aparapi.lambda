@@ -2,6 +2,7 @@ package com.amd.aparapi;
 
 import com.amd.aparapi.ClassModel.LocalVariableInfo;
 import com.amd.aparapi.InstructionSet.*;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -80,7 +81,8 @@ class InstructionHelper{
 
       }
 
-      @Override public String toString(){
+      @Override
+      public String toString(){
          StringBuilder sb = new StringBuilder();
 
          for(int i = 0; i < size; i++){
@@ -113,12 +115,14 @@ class InstructionHelper{
          sb = new StringBuilder();
       }
 
-      @Override public void write(String _string){
+      @Override
+      public void write(String _string){
          sb.append(_string);
 
       }
 
-      @Override public String toString(){
+      @Override
+      public String toString(){
          return (sb.toString().trim());
       }
 
@@ -132,7 +136,8 @@ class InstructionHelper{
          return (sw.toString());
       }
 
-      @Override public void write(Entrypoint entryPoint){
+      @Override
+      public void write(Entrypoint entryPoint){
          // TODO Auto-generated method stub
 
       }
@@ -201,12 +206,14 @@ class InstructionHelper{
          return (end);
       }
 
-      @Override public boolean equals(Object other){
+      @Override
+      public boolean equals(Object other){
          return (other instanceof BranchVector && ((other == this) || (((BranchVector) other).from
                .equals(((BranchVector) other).to))));
       }
 
-      @Override public int hashCode(){
+      @Override
+      public int hashCode(){
          return (from.hashCode() * 31 + to.hashCode());
 
       }
@@ -215,7 +222,8 @@ class InstructionHelper{
          return (forward);
       }
 
-      @Override public String toString(){
+      @Override
+      public String toString(){
          if(isForward()){
             return ("forward from " + getStart() + " to " + getEnd());
          }
@@ -476,7 +484,8 @@ class InstructionHelper{
    }
 
    private static Comparator<BranchVector> branchInfoComparator = new Comparator<BranchVector>(){
-      @Override public int compare(BranchVector left, BranchVector right){
+      @Override
+      public int compare(BranchVector left, BranchVector right){
          int value = left.getFrom().compareTo(right.getFrom());
          return (value);
       }

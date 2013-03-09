@@ -2,6 +2,7 @@ package com.amd.aparapi;
 
 import com.amd.aparapi.OpenCLDevice.DeviceComparitor;
 import com.amd.aparapi.OpenCLDevice.DeviceSelector;
+
 import java.util.function.IntConsumer;
 
 public abstract class Device{
@@ -17,7 +18,8 @@ public abstract class Device{
 
    public static Device best(){
       return (OpenCLDevice.select(new DeviceComparitor(){
-         @Override public OpenCLDevice select(OpenCLDevice _deviceLhs, OpenCLDevice _deviceRhs){
+         @Override
+         public OpenCLDevice select(OpenCLDevice _deviceLhs, OpenCLDevice _deviceRhs){
             if(_deviceLhs.getType() != _deviceRhs.getType()){
                if(_deviceLhs.getType() == TYPE.GPU){
                   return (_deviceLhs);
@@ -37,7 +39,8 @@ public abstract class Device{
 
    public static Device first(final Device.TYPE _type){
       return (OpenCLDevice.select(new DeviceSelector(){
-         @Override public OpenCLDevice select(OpenCLDevice _device){
+         @Override
+         public OpenCLDevice select(OpenCLDevice _device){
             return (_device.getType() == _type ? _device : null);
          }
       }));

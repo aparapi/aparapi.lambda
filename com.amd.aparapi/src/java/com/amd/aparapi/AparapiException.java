@@ -49,7 +49,8 @@ package com.amd.aparapi;
  * @see com.amd.aparapi.CodeGenException
  */
 
-@SuppressWarnings("serial") public class AparapiException extends Exception{
+@SuppressWarnings("serial")
+public class AparapiException extends Exception{
 
    AparapiException(String _msg){
       super(_msg);

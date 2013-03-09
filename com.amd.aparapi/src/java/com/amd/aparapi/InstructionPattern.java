@@ -41,7 +41,8 @@ import com.amd.aparapi.InstructionSet.*;
 
 class InstructionPattern{
 
-   @SuppressWarnings("unused") private boolean compareSubTrees(Instruction _lhs, Instruction _rhs){
+   @SuppressWarnings("unused")
+   private boolean compareSubTrees(Instruction _lhs, Instruction _rhs){
       _lhs = _lhs.getReal();
       _rhs = _rhs.getReal();
       boolean same = _lhs.sameAs(_rhs);
@@ -159,13 +160,13 @@ class InstructionPattern{
       /**
        * <pre>
        *
-       *                  / iload<n>         
-       *  istore<n> - iadd                       
-       *                  \ i_const_1   
+       *                  / iload<n>
+       *  istore<n> - iadd
+       *                  \ i_const_1
        *
-       *                          / iload<n>         
-       *  istore<n> - (?2i) - iadd                       
-       *                          \ i_const_1    
+       *                          / iload<n>
+       *  istore<n> - (?2i) - iadd
+       *                          \ i_const_1
        *
        * </pre>
        */
@@ -200,13 +201,13 @@ class InstructionPattern{
       /**
        * <pre>
        *
-       *                  / iload<n>         
-       *  istore<n> - isub                       
-       *                  \ i_const_1   
+       *                  / iload<n>
+       *  istore<n> - isub
+       *                  \ i_const_1
        *
-       *                          / iload<n>         
-       *  istore<n> - (?2i) - isub                       
-       *                          \ i_const_1    
+       *                          / iload<n>
+       *  istore<n> - (?2i) - isub
+       *                          \ i_const_1
        *
        * </pre>
        */
@@ -239,14 +240,14 @@ class InstructionPattern{
 
    static final InstructionMatcher fieldPlusOne = new InstructionMatcher("Field Plus One"){
       /**
-       * <pre>                                               
-       *                   / getfield<f>       
-       *         i2<t> iadd                          
-       *                   \ i_const_1    
+       * <pre>
+       *                   / getfield<f>
+       *         i2<t> iadd
+       *                   \ i_const_1
        *
-       *              / getfield<f>  
-       *         iadd              
-       *              \ i_const_1    
+       *              / getfield<f>
+       *         iadd
+       *              \ i_const_1
        * </pre>
        */
       @Override InstructionMatch matches(Instruction _instruction){
@@ -273,14 +274,14 @@ class InstructionPattern{
 
    static final InstructionMatcher fieldMinusOne = new InstructionMatcher("Field minus 1"){
       /**
-       * <pre>                                               
-       *                   / getfield<f>       
-       *         i2<t> isub                          
-       *                   \ i_const_1    
+       * <pre>
+       *                   / getfield<f>
+       *         i2<t> isub
+       *                   \ i_const_1
        *
-       *              / getfield<f>  
-       *         isub              
-       *              \ i_const_1    
+       *              / getfield<f>
+       *         isub
+       *              \ i_const_1
        * </pre>
        */
       @Override InstructionMatch matches(Instruction _instruction){
@@ -308,11 +309,11 @@ class InstructionPattern{
    static final InstructionMatcher fieldArrayElementAccess = new InstructionMatcher("Field array element access"){
       /**
        *
-       * <pre>                                                
+       * <pre>
        *
-       *              / getfield<f>  
-       *         iaload             
-       *              \ i_load    
+       *              / getfield<f>
+       *         iaload
+       *              \ i_load
        * </pre>
        */
       @Override InstructionMatch matches(Instruction _instruction){
@@ -334,11 +335,11 @@ class InstructionPattern{
 
    static final InstructionMatcher fieldArrayElementPlusOne = new InstructionMatcher("field array element plus one"){
       /**
-       * <pre>                                                
+       * <pre>
        *                                         [       / getfield - aload_0 ]
        *              / [fieldArrayElementAccess][ iaload                     ]
        *         iadd                            [       \ iload              ]
-       *              \ iconst_1    
+       *              \ iconst_1
        * </pre>
        */
       @Override InstructionMatch matches(Instruction _instruction){
@@ -361,11 +362,11 @@ class InstructionPattern{
 
    static final InstructionMatcher fieldArrayElementMinusOne = new InstructionMatcher("field array element minus one"){
       /**
-       * <pre>                                                
+       * <pre>
        *                                         [       / getfield - aload_0 ]
        *              / [fieldArrayElementAccess][ iaload                     ]
        *         isub                            [       \ iload              ]
-       *              \ iconst_1    
+       *              \ iconst_1
        * </pre>
        */
       @Override InstructionMatch matches(Instruction _instruction){
@@ -388,11 +389,11 @@ class InstructionPattern{
          "long hand field array element increment"){
       /**
        * //iastore{9:getfield{8:aload_0} ,12:iload_1 ,17:iadd{14:iaload{*9:getfield{8:aload_0} ,*12:iload_1} ,16:iconst_1}}
-       * <pre>                                                
+       * <pre>
        *
-       *                  / getfield - aload  
-       *         iastore -  iload                                                    
-       *                  \ [fieldArrayElementPlusOne]     
+       *                  / getfield - aload
+       *         iastore -  iload
+       *                  \ [fieldArrayElementPlusOne]
        * </pre>
        */
       @Override InstructionMatch matches(Instruction _instruction){
@@ -418,11 +419,11 @@ class InstructionPattern{
          "long hand field array element decrement"){
       /**
        * //iastore{9:getfield{8:aload_0} ,12:iload_1 ,17:iadd{14:iaload{*9:getfield{8:aload_0} ,*12:iload_1} ,16:iconst_1}}
-       * <pre>                                                
+       * <pre>
        *
-       *                  / getfield - aload  
-       *         iastore -  iload                                                    
-       *                  \ [fieldArrayElementPlusOne]     
+       *                  / getfield - aload
+       *         iastore -  iload
+       *                  \ [fieldArrayElementPlusOne]
        * </pre>
        */
       @Override InstructionMatch matches(Instruction _instruction){

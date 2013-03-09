@@ -38,6 +38,7 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 package com.amd.aparapi;
 
 import com.amd.aparapi.Annotations.UsedByJNICode;
+
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -71,7 +72,8 @@ class OpenCLRunner{
     * @see com.amd.aparapi.Annotations.UsedByJNICode
     * @see com.amd.aparapi.OpenCLRunner.KernelArg
     */
-   @UsedByJNICode public static final int ARG_BOOLEAN = 1 << 0;
+   @UsedByJNICode
+   public static final int ARG_BOOLEAN = 1 << 0;
 
    /**
     * This 'bit' indicates that a particular <code>KernelArg</code> represents a <code>byte</code> type (array or primitive).
@@ -80,7 +82,8 @@ class OpenCLRunner{
     * @see com.amd.aparapi.Annotations.UsedByJNICode
     * @see com.amd.aparapi.OpenCLRunner.KernelArg
     */
-   @UsedByJNICode public static final int ARG_BYTE = 1 << 1;
+   @UsedByJNICode
+   public static final int ARG_BYTE = 1 << 1;
 
    /**
     * This 'bit' indicates that a particular <code>KernelArg</code> represents a <code>float</code> type (array or primitive).
@@ -89,7 +92,8 @@ class OpenCLRunner{
     * @see com.amd.aparapi.Annotations.UsedByJNICode
     * @see com.amd.aparapi.OpenCLRunner.KernelArg
     */
-   @UsedByJNICode public static final int ARG_FLOAT = 1 << 2;
+   @UsedByJNICode
+   public static final int ARG_FLOAT = 1 << 2;
 
    /**
     * This 'bit' indicates that a particular <code>KernelArg</code> represents a <code>int</code> type (array or primitive).
@@ -98,7 +102,8 @@ class OpenCLRunner{
     * @see com.amd.aparapi.Annotations.UsedByJNICode
     * @see com.amd.aparapi.OpenCLRunner.KernelArg
     */
-   @UsedByJNICode public static final int ARG_INT = 1 << 3;
+   @UsedByJNICode
+   public static final int ARG_INT = 1 << 3;
 
    /**
     * This 'bit' indicates that a particular <code>KernelArg</code> represents a <code>double</code> type (array or primitive).
@@ -107,7 +112,8 @@ class OpenCLRunner{
     * @see com.amd.aparapi.Annotations.UsedByJNICode
     * @see com.amd.aparapi.OpenCLRunner.KernelArg
     */
-   @UsedByJNICode public static final int ARG_DOUBLE = 1 << 4;
+   @UsedByJNICode
+   public static final int ARG_DOUBLE = 1 << 4;
 
    /**
     * This 'bit' indicates that a particular <code>KernelArg</code> represents a <code>long</code> type (array or primitive).
@@ -116,7 +122,8 @@ class OpenCLRunner{
     * @see com.amd.aparapi.Annotations.UsedByJNICode
     * @see com.amd.aparapi.OpenCLRunner.KernelArg
     */
-   @UsedByJNICode public static final int ARG_LONG = 1 << 5;
+   @UsedByJNICode
+   public static final int ARG_LONG = 1 << 5;
 
    /**
     * TODO:
@@ -125,7 +132,8 @@ class OpenCLRunner{
     * @see com.amd.aparapi.Annotations.UsedByJNICode
     * @see com.amd.aparapi.OpenCLRunner.KernelArg
     */
-   @UsedByJNICode public static final int ARG_SHORT = 1 << 6;
+   @UsedByJNICode
+   public static final int ARG_SHORT = 1 << 6;
 
    /**
     * This 'bit' indicates that a particular <code>KernelArg</code> represents an array.<br/>
@@ -135,7 +143,8 @@ class OpenCLRunner{
     * @see com.amd.aparapi.Annotations.UsedByJNICode
     * @see com.amd.aparapi.OpenCLRunner.KernelArg
     */
-   @UsedByJNICode public static final int ARG_ARRAY = 1 << 7;
+   @UsedByJNICode
+   public static final int ARG_ARRAY = 1 << 7;
 
    /**
     * This 'bit' indicates that a particular <code>KernelArg</code> represents a primitive (non array).<br/>
@@ -145,7 +154,8 @@ class OpenCLRunner{
     * @see com.amd.aparapi.Annotations.UsedByJNICode
     * @see com.amd.aparapi.OpenCLRunner.KernelArg
     */
-   @UsedByJNICode public static final int ARG_PRIMITIVE = 1 << 8;
+   @UsedByJNICode
+   public static final int ARG_PRIMITIVE = 1 << 8;
 
    /**
     * This 'bit' indicates that a particular <code>KernelArg</code> is read by the Kernel (note from the Kernel's point of view).<br/>
@@ -155,7 +165,8 @@ class OpenCLRunner{
     * @see com.amd.aparapi.Annotations.UsedByJNICode
     * @see com.amd.aparapi.OpenCLRunner.KernelArg
     */
-   @UsedByJNICode public static final int ARG_READ = 1 << 9;
+   @UsedByJNICode
+   public static final int ARG_READ = 1 << 9;
 
    /**
     * This 'bit' indicates that a particular <code>KernelArg</code> is mutated by the Kernel (note from the Kernel's point of view).<br/>
@@ -165,7 +176,8 @@ class OpenCLRunner{
     * @see com.amd.aparapi.Annotations.UsedByJNICode
     * @see com.amd.aparapi.OpenCLRunner.KernelArg
     */
-   @UsedByJNICode public static final int ARG_WRITE = 1 << 10;
+   @UsedByJNICode
+   public static final int ARG_WRITE = 1 << 10;
 
    /**
     * This 'bit' indicates that a particular <code>KernelArg</code> resides in local memory in the generated OpenCL code.<br/>
@@ -175,7 +187,9 @@ class OpenCLRunner{
     * @see com.amd.aparapi.Annotations.Experimental
     * @see com.amd.aparapi.OpenCLRunner.KernelArg
     */
-   @Annotations.Experimental @UsedByJNICode public static final int ARG_LOCAL = 1 << 11;
+   @Annotations.Experimental
+   @UsedByJNICode
+   public static final int ARG_LOCAL = 1 << 11;
 
    /**
     * This 'bit' indicates that a particular <code>KernelArg</code> resides in global memory in the generated OpenCL code.<br/>
@@ -185,7 +199,9 @@ class OpenCLRunner{
     * @see com.amd.aparapi.Annotations.Experimental
     * @see com.amd.aparapi.OpenCLRunner.KernelArg
     */
-   @Annotations.Experimental @UsedByJNICode public static final int ARG_GLOBAL = 1 << 12;
+   @Annotations.Experimental
+   @UsedByJNICode
+   public static final int ARG_GLOBAL = 1 << 12;
 
    /**
     * This 'bit' indicates that a particular <code>KernelArg</code> resides in constant memory in the generated OpenCL code.<br/>
@@ -195,7 +211,9 @@ class OpenCLRunner{
     * @see com.amd.aparapi.Annotations.Experimental
     * @see com.amd.aparapi.OpenCLRunner.KernelArg
     */
-   @Annotations.Experimental @UsedByJNICode public static final int ARG_CONSTANT = 1 << 13;
+   @Annotations.Experimental
+   @UsedByJNICode
+   public static final int ARG_CONSTANT = 1 << 13;
 
    /**
     * This 'bit' indicates that a particular <code>KernelArg</code> has it's length reference, in which case a synthetic arg is passed (name mangled) to the OpenCL kernel.<br/>
@@ -204,7 +222,8 @@ class OpenCLRunner{
     * @see com.amd.aparapi.Annotations.UsedByJNICode
     * @see com.amd.aparapi.OpenCLRunner.KernelArg
     */
-   @UsedByJNICode public static final int ARG_ARRAYLENGTH = 1 << 14;
+   @UsedByJNICode
+   public static final int ARG_ARRAYLENGTH = 1 << 14;
 
    /**
     * TODO:
@@ -213,7 +232,8 @@ class OpenCLRunner{
     * @see com.amd.aparapi.Annotations.UsedByJNICode
     * @see com.amd.aparapi.OpenCLRunner.KernelArg
     */
-   @UsedByJNICode public static final int ARG_APARAPI_BUF = 1 << 15;
+   @UsedByJNICode
+   public static final int ARG_APARAPI_BUF = 1 << 15;
 
    /**
     * This 'bit' indicates that the arg has been explicitly marked for reading
@@ -222,7 +242,8 @@ class OpenCLRunner{
     * @see com.amd.aparapi.Annotations.UsedByJNICode
     * @see com.amd.aparapi.OpenCLRunner.KernelArg
     */
-   @UsedByJNICode public static final int ARG_EXPLICIT = 1 << 16;
+   @UsedByJNICode
+   public static final int ARG_EXPLICIT = 1 << 16;
 
    /**
     * This 'bit' indicates that the arg has been explicitly marked for writing
@@ -231,7 +252,8 @@ class OpenCLRunner{
     * @see com.amd.aparapi.Annotations.UsedByJNICode
     * @see com.amd.aparapi.OpenCLRunner.KernelArg
     */
-   @UsedByJNICode public static final int ARG_EXPLICIT_WRITE = 1 << 17;
+   @UsedByJNICode
+   public static final int ARG_EXPLICIT_WRITE = 1 << 17;
 
    /**
     * TODO:
@@ -240,7 +262,8 @@ class OpenCLRunner{
     * @see com.amd.aparapi.Annotations.UsedByJNICode
     * @see com.amd.aparapi.OpenCLRunner.KernelArg
     */
-   @UsedByJNICode public static final int ARG_OBJ_ARRAY_STRUCT = 1 << 18;
+   @UsedByJNICode
+   public static final int ARG_OBJ_ARRAY_STRUCT = 1 << 18;
 
    /**
     * TODO:
@@ -269,7 +292,8 @@ class OpenCLRunner{
     * @see com.amd.aparapi.Annotations.UsedByJNICode
     * @see com.amd.aparapi.OpenCLRunner.KernelArg
     */
-   @UsedByJNICode public static final int ARG_CHAR = 1 << 21;
+   @UsedByJNICode
+   public static final int ARG_CHAR = 1 << 21;
 
    /**
     * This 'bit' indicates that a particular <code>KernelArg</code> represents a <code>static</code> field (array or primitive).
@@ -278,7 +302,8 @@ class OpenCLRunner{
     * @see com.amd.aparapi.Annotations.UsedByJNICode
     * @see com.amd.aparapi.OpenCLRunner.KernelArg
     */
-   @UsedByJNICode public static final int ARG_STATIC = 1 << 22;
+   @UsedByJNICode
+   public static final int ARG_STATIC = 1 << 22;
 
    static final String CL_KHR_FP64 = "cl_khr_fp64";
 
@@ -333,7 +358,8 @@ class OpenCLRunner{
     * @author gfrost
     * @see com.amd.aparapi.Annotations.UsedByJNICode
     */
-   @UsedByJNICode public static final int JNI_FLAG_USE_GPU = 1 << 2;
+   @UsedByJNICode
+   public static final int JNI_FLAG_USE_GPU = 1 << 2;
 
 
    /**
@@ -345,7 +371,8 @@ class OpenCLRunner{
     * @author gfrost
     * @see com.amd.aparapi.Annotations.UsedByJNICode
     */
-   @UsedByJNICode public static final int JNI_FLAG_LAMBDA_KERNEL = 1 << 3;
+   @UsedByJNICode
+   public static final int JNI_FLAG_LAMBDA_KERNEL = 1 << 3;
 
    /**
     * This 'bit' indicates that this kernel represents a 'classic' kernel rather than a java 8 lambda.
@@ -356,7 +383,8 @@ class OpenCLRunner{
     * @author gfrost
     * @see com.amd.aparapi.Annotations.UsedByJNICode
     */
-   @UsedByJNICode public static final int JNI_FLAG_CLASSIC_KERNEL = 1 << 4;
+   @UsedByJNICode
+   public static final int JNI_FLAG_CLASSIC_KERNEL = 1 << 4;
 
    /**
     * This 'bit' indicates that we wish to enable verbose JNI layer messages to stderr.<br/>
@@ -392,27 +420,32 @@ class OpenCLRunner{
       /**
        * The type of this KernelArg. Created by oring appropriate flags
        */
-      @UsedByJNICode public int type;
+      @UsedByJNICode
+      public int type;
 
       /**
        * Name of the field
        */
-      @UsedByJNICode public String name;
+      @UsedByJNICode
+      public String name;
 
       /**
        * If this field represents a Java array then the instance will be captured here
        */
-      @UsedByJNICode public Object javaArray;
+      @UsedByJNICode
+      public Object javaArray;
 
       /**
        * If this is an array or a buffer then the size (in bytes) is held here
        */
-      @UsedByJNICode public int sizeInBytes;
+      @UsedByJNICode
+      public int sizeInBytes;
 
       /**
        * If this is an array buffer then the number of elements is stored here
        */
-      @UsedByJNICode public int numElements;
+      @UsedByJNICode
+      public int numElements;
 
       /**
        * If this is an array buffer then the number of elements is stored here.
@@ -424,17 +457,20 @@ class OpenCLRunner{
       /**
        * Only set for array objs, not used on JNI
        */
-      @UsedByJNICode public Object array;
+      @UsedByJNICode
+      public Object array;
 
       /**
        * Field in Kernel class corresponding to this arg
        */
-      @UsedByJNICode public Object fieldHolder;
+      @UsedByJNICode
+      public Object fieldHolder;
 
       /**
        * Field in Kernel class corresponding to this arg
        */
-      @UsedByJNICode public Field field;
+      @UsedByJNICode
+      public Field field;
 
       /**
        * The byte array for obj conversion passed to opencl

@@ -41,6 +41,7 @@ import com.amd.aparapi.ClassModel.AttributePool.CodeEntry;
 import com.amd.aparapi.ClassModel.ConstantPool.FieldEntry;
 import com.amd.aparapi.ClassModel.ConstantPool.MethodEntry;
 import com.amd.aparapi.InstructionSet.TypeSpec;
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -623,6 +624,14 @@ class ClassModel{
             return (ConstantPool.this.getUTF8Entry(nameIndex));
          }
 
+         String getClassName(){
+            return (getNameUTF8Entry().getUTF8());
+         }
+
+         String getDotClassName(){
+            return (TypeHelper.slashClassNameToDotClassName(getNameUTF8Entry().getUTF8()));
+         }
+
       }
 
       class DoubleEntry extends Entry{
@@ -652,6 +661,20 @@ class ClassModel{
             super(_byteReader, _slot, ConstantPoolType.FIELD);
          }
 
+         private Type type;
+
+         Type getType(){
+            if(type == null){
+               NameAndTypeEntry nameAndTypeEntry = getNameAndTypeEntry();
+
+
+               String signature = nameAndTypeEntry.getDescriptorUTF8Entry().getUTF8();
+               type = new Type(signature);
+
+            }
+            return (type);
+
+         }
       }
 
       class FloatEntry extends Entry{
@@ -708,7 +731,8 @@ class ClassModel{
             super(_byteReader, _slot, ConstantPoolType.METHOD);
          }
 
-         @Override public String toString(){
+         @Override
+         public String toString(){
             StringBuilder sb = new StringBuilder();
             sb.append(getClassEntry().getNameUTF8Entry().getUTF8());
             sb.append(".");
@@ -831,13 +855,15 @@ class ClassModel{
 
          private Type returnType = null;
 
-         @Override public int hashCode(){
+         @Override
+         public int hashCode(){
             NameAndTypeEntry nameAndTypeEntry = getNameAndTypeEntry();
 
             return ((nameAndTypeEntry.getNameIndex() * 31 + nameAndTypeEntry.getDescriptorIndex()) * 31 + getClassIndex());
          }
 
-         @Override public boolean equals(Object _other){
+         @Override
+         public boolean equals(Object _other){
             if(_other == null || !(_other instanceof MethodReferenceEntry)){
                return (false);
             }else{
@@ -1001,6 +1027,46 @@ class ClassModel{
                return (type.equals("V"));
             }
 
+            boolean isInt(){
+               return (type.equals("I"));
+            }
+
+            boolean isLong(){
+               return (type.equals("J"));
+            }
+
+            boolean isShort(){
+               return (type.equals("H"));
+            }
+
+            boolean isBoolean(){
+               return (type.equals("Z"));
+            }
+
+            boolean isChar(){
+               return (type.equals("C"));
+            }
+
+            boolean isFloat(){
+               return (type.equals("F"));
+            }
+
+            boolean isDouble(){
+               return (type.equals("D"));
+            }
+
+            boolean isByte(){
+               return (type.equals("B"));
+            }
+
+            boolean isObject(){
+               return (type.startsWith("L"));
+            }
+
+            String getObjectClassName(){
+               return (TypeHelper.signatureToDotClassName(type, 0));
+            }
+
             private String type;
 
             final boolean isArray(){
@@ -1009,6 +1075,38 @@ class ClassModel{
 
             final int getArrayDimensions(){
                return (arrayDimensions);
+            }
+
+            final boolean isArrayOfObjects(int _dim){
+               return (isArray() && getArrayDimensions() == _dim && isObject());
+            }
+
+            final boolean isArrayOfInts(int _dim){
+               return (isArray() && getArrayDimensions() == _dim && isInt());
+            }
+
+            final boolean isArrayOfFloats(int _dim){
+               return (isArray() && getArrayDimensions() == _dim && isFloat());
+            }
+
+            final boolean isArrayOfDoubles(int _dim){
+               return (isArray() && getArrayDimensions() == _dim && isDouble());
+            }
+
+            final boolean isArrayOfChars(int _dim){
+               return (isArray() && getArrayDimensions() == _dim && isChar());
+            }
+
+            final boolean isArrayOfLong(int _dim){
+               return (isArray() && getArrayDimensions() == _dim && isLong());
+            }
+
+            final boolean isArrayOfShorts(int _dim){
+               return (isArray() && getArrayDimensions() == _dim && isShort());
+            }
+
+            final boolean isArrayOfBytes(int _dim){
+               return (isArray() && getArrayDimensions() == _dim && isByte());
             }
 
          }
@@ -1201,7 +1299,8 @@ class ClassModel{
 
       }
 
-      @Override public Iterator<Entry> iterator(){
+      @Override
+      public Iterator<Entry> iterator(){
          return (entries.iterator());
       }
 
@@ -1543,7 +1642,8 @@ class ClassModel{
             super(_byteReader, _nameIndex, _length);
          }
 
-         @Override public Iterator<T> iterator(){
+         @Override
+         public Iterator<T> iterator(){
             return (pool.iterator());
          }
 
@@ -1735,31 +1835,38 @@ class ClassModel{
                return (variableNameIndex);
             }
 
-            @Override public int getStart(){
+            @Override
+            public int getStart(){
                return (start);
             }
 
-            @Override public int getVariableIndex(){
+            @Override
+            public int getVariableIndex(){
                return (variableIndex);
             }
 
-            @Override public String getVariableName(){
+            @Override
+            public String getVariableName(){
                return (constantPool.getUTF8Entry(variableNameIndex).getUTF8());
             }
 
-            @Override public String getVariableDescriptor(){
+            @Override
+            public String getVariableDescriptor(){
                return (constantPool.getUTF8Entry(descriptorIndex).getUTF8());
             }
 
-            @Override public int getEnd(){
+            @Override
+            public int getEnd(){
                return (start + usageLength);
             }
 
-            @Override public boolean isArray(){
+            @Override
+            public boolean isArray(){
                return (getVariableDescriptor().startsWith("["));
             }
 
-            @Override public boolean isObject(){
+            @Override
+            public boolean isObject(){
                return (getVariableDescriptor().startsWith("L"));
             }
          }
@@ -1859,7 +1966,8 @@ class ClassModel{
             return (bytes);
          }
 
-         @Override public String toString(){
+         @Override
+         public String toString(){
             return (new String(bytes));
          }
 
@@ -1877,7 +1985,8 @@ class ClassModel{
             return (bytes);
          }
 
-         @Override public String toString(){
+         @Override
+         public String toString(){
             return (new String(bytes));
          }
       }
@@ -1894,7 +2003,8 @@ class ClassModel{
             return (bytes);
          }
 
-         @Override public String toString(){
+         @Override
+         public String toString(){
             return (new String(bytes));
          }
       }
@@ -1989,9 +2099,11 @@ class ClassModel{
 
                }
 
-               @SuppressWarnings("unused") private int elementNameIndex;
+               @SuppressWarnings("unused")
+               private int elementNameIndex;
 
-               @SuppressWarnings("unused") private Value value;
+               @SuppressWarnings("unused")
+               private Value value;
 
                ElementValuePair(ByteReader _byteReader){
                   elementNameIndex = _byteReader.u2();
@@ -2514,7 +2626,7 @@ class ClassModel{
     * @return The Method or null if we fail to locate a given method.
     */
    ClassModelMethod getMethod(MethodEntry _methodEntry, boolean _isSpecial){
-      String entryClassNameInDotForm = _methodEntry.getClassEntry().getNameUTF8Entry().getUTF8().replace('/', '.');
+      String entryClassNameInDotForm = _methodEntry.getClassEntry().getDotClassName();
 
       // Shortcut direct calls to supers to allow "foo() { super.foo() }" type stuff to work
       if(_isSpecial && (superClazz != null) && superClazz.isSuperClass(entryClassNameInDotForm)){
