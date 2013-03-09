@@ -167,7 +167,7 @@ abstract class KernelWriter extends BlockWriter{
       }
       // if we get this far, we haven't matched anything yet
       if(useClassModel){
-         return (ClassModel.convert(_typeDesc, "", true));
+         return (TypeHelper.convert(_typeDesc, "", true));
       }else{
          return _typeDesc;
       }
@@ -331,10 +331,10 @@ abstract class KernelWriter extends BlockWriter{
                      classModelType = __global + " " + (classModelType.substring(2, classModelType.length() - 1)).replace("/", "_");
                   }else{
                      // Basic type array
-                     classModelType = __global + " " + ClassModel.typeName(classModelType.substring(1).charAt(0));
+                     classModelType = __global + " " + TypeHelper.typeName(classModelType.substring(1).charAt(0));
                   }
                }else if(!(descriptor.startsWith("L") && (descriptor.length() > 1))){
-                  classModelType = ClassModel.typeName(descriptor.charAt(0));
+                  classModelType = TypeHelper.typeName(descriptor.charAt(0));
                }else{
                   // This must be the iteration object
                   // Turn Lcom/amd/javalabs/opencl/demo/DummyOOA; into com_amd_javalabs_opencl_demo_DummyOOA for example
@@ -469,8 +469,8 @@ abstract class KernelWriter extends BlockWriter{
             argLine.append(className);
             thisStructLine.append(className);
          }else{
-            argLine.append(convertType(ClassModel.typeName(signature.charAt(0)), false));
-            thisStructLine.append(convertType(ClassModel.typeName(signature.charAt(0)), false));
+            argLine.append(convertType(TypeHelper.typeName(signature.charAt(0)), false));
+            thisStructLine.append(convertType(TypeHelper.typeName(signature.charAt(0)), false));
          }
 
          argLine.append(" ");

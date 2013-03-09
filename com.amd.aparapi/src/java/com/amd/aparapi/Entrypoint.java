@@ -41,7 +41,8 @@ import com.amd.aparapi.ClassModel.ClassModelField;
 import com.amd.aparapi.ClassModel.ClassModelMethod;
 import com.amd.aparapi.ClassModel.ConstantPool.FieldEntry;
 import com.amd.aparapi.ClassModel.ConstantPool.MethodEntry;
-import com.amd.aparapi.ClassModel.ConstantPool.MethodReferenceEntry.Arg;
+import com.amd.aparapi.TypeHelper.Arg;
+import com.amd.aparapi.TypeHelper.Type;
 import com.amd.aparapi.InstructionSet.*;
 
 import java.lang.reflect.Field;
@@ -622,7 +623,7 @@ class Entrypoint{
                }else if(instruction instanceof AccessField){
                   AccessField access = (AccessField) instruction;
                   FieldEntry field = access.getConstantPoolFieldEntry();
-                  FieldEntry.Type accessedFieldType = field.getType();
+                  Type accessedFieldType = field.getType();
                   String accessedFieldName = field.getNameAndTypeEntry().getNameUTF8Entry().getUTF8();
                   fieldAccesses.add(accessedFieldName);
                   referencedFieldNames.add(accessedFieldName);
@@ -702,7 +703,7 @@ class Entrypoint{
                         setRequiresAtomics32Pragma(true);
                      }
 
-                     Arg methodArgs[] = methodEntry.getArgs();
+                     Arg methodArgs[] = methodEntry.getArgsAndReturnType().getArgs();
                      if(methodArgs.length > 0 && methodArgs[0].isArray()){ //currently array arg can only take slot 0
                         Instruction arrInstruction = invokeInstruction.getArg(0);
                         if(arrInstruction instanceof AccessField){
