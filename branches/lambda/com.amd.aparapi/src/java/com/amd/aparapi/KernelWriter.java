@@ -216,7 +216,7 @@ abstract class KernelWriter extends BlockWriter{
             MethodModel m = entryPoint.getCallTarget(_methodEntry, isSpecial);
 
             if(m != null){
-               write(m.getName());
+               write(m.getMangledName());
             }else{
                // Must be a library call like rsqrt
                assert isMapped : _methodEntry + " should be mapped method!";
@@ -313,7 +313,7 @@ abstract class KernelWriter extends BlockWriter{
             StringBuilder argLine = new StringBuilder();
             StringBuilder assignLine = new StringBuilder();
             if((lvi.getStart() == 0) && ((lvi.getVariableIndex() != 0) || mm.getMethod().isStatic())){ // full scope but skip this
-               String descriptor = lvi.getVariableDescriptor();
+              // String descriptor = ;
 
                // For object stream lambdas, the lvi is the object type, but in
                // the kernel we will need something like:
@@ -323,23 +323,28 @@ abstract class KernelWriter extends BlockWriter{
                //
                // where elements_array_index is the get_global_id index into the elements array
 
-               String classModelType = descriptor;
+
+
+               TypeHelper.Type type = new TypeHelper.Type(lvi.getVariableDescriptor());
+              // String classModelType = type.getType();
+               String output;
                boolean isObjectLambda = false;
-               if(descriptor.startsWith("[")){
+               if(type.isArray()){
                   // This is a local array captured from the caller method and
                   // passed in from the Block/Consumer
-                  if(descriptor.length() > 2){
-                     classModelType = __global + " " + (classModelType.substring(2, classModelType.length() - 1)).replace("/", "_");
+                  if(type.isObject()){
+                     //classModelType = __global + " " + (classModelType.substring(2, classModelType.length() - 1)).replace("/", "_");
+                     output = __global + " " + type.getMangledClassName();
                   }else{
                      // Basic type array
-                     classModelType = __global + " " + TypeHelper.typeName(classModelType.substring(1).charAt(0));
+                     output = __global + " " + type.getJavaName();
                   }
-               }else if(!(descriptor.startsWith("L") && (descriptor.length() > 1))){
-                  classModelType = TypeHelper.typeName(descriptor.charAt(0));
+               }else if(type.isPrimitive()){
+                  output = type.getJavaName();
                }else{
                   // This must be the iteration object
                   // Turn Lcom/amd/javalabs/opencl/demo/DummyOOA; into com_amd_javalabs_opencl_demo_DummyOOA for example
-                  classModelType = __global + " " + (classModelType.substring(1, classModelType.length() - 1)).replace("/", "_");
+                  output = __global + " " + type.getMangledClassName();
                   isObjectLambda = true;
 
                   // Insert the source object array and integer index here
@@ -347,7 +352,7 @@ abstract class KernelWriter extends BlockWriter{
                   //if (isObjectLambda == true && argsCount == 1) {
 
                   final String sourceArrayName = "elements";
-                  String elementsDeclaration = classModelType + " *" + sourceArrayName;
+                  String elementsDeclaration = output + " *" + sourceArrayName;
 
                   // Add array to args
                   argLine.append(elementsDeclaration);
@@ -381,11 +386,11 @@ abstract class KernelWriter extends BlockWriter{
                if(!isObjectLambda){
                   if(lvi.isArray()){
                      // It will be a pointer ref to an array that was a captured arg
-                     argLine.append(classModelType);
-                     thisStructLine.append(classModelType);
+                     argLine.append(output);
+                     thisStructLine.append(output);
                   }else{
-                     argLine.append(convertType(classModelType, false));
-                     thisStructLine.append(convertType(classModelType, false));
+                     argLine.append(convertType(output, false));
+                     thisStructLine.append(convertType(output, false));
                   }
                   argLine.append(" ");
                   thisStructLine.append(" ");
@@ -459,7 +464,7 @@ abstract class KernelWriter extends BlockWriter{
          String className = null;
          if(fieldType.isObject()){
             // Turn Lcom/amd/javalabs/opencl/demo/DummyOOA; into com_amd_javalabs_opencl_demo_DummyOOA for example
-            className = fieldType.getObjectClassName().replace("/", "_");
+            className = fieldType.getMangledClassName();
             argLine.append(className);
             thisStructLine.append(className);
          }else{
@@ -537,7 +542,7 @@ abstract class KernelWriter extends BlockWriter{
       for(ClassModel cm : _entryPoint.getObjectArrayFieldsClasses().values()){
          ArrayList<FieldEntry> fieldSet = cm.getStructMembers();
          if(fieldSet.size() > 0){
-            String mangledClassName = cm.getClassWeAreModelling().getName().replace(".", "_");
+            String mangledClassName = cm.getMangledClassName();
 
             lnWriteInLn("typedef struct " + mangledClassName + "_s{");
             int totalSize = 0;
@@ -608,7 +613,7 @@ abstract class KernelWriter extends BlockWriter{
          }
          write(convertType(returnType, true));
 
-         write(mm.getName() + "(");
+         write(mm.getMangledName() + "(");
 
          if(!mm.getMethod().isStatic()){
             if((mm.getMethod().getClassModel() == _entryPoint.getClassModel())
@@ -618,11 +623,11 @@ abstract class KernelWriter extends BlockWriter{
                // Call to an object member or superclass of member
                for(ClassModel c : _entryPoint.getObjectArrayFieldsClasses().values()){
                   if(mm.getMethod().getClassModel() == c){
-                     write("__global " + mm.getMethod().getClassModel().getClassWeAreModelling().getName().replace(".", "_")
+                     write("__global " + mm.getMethod().getClassModel().getMangledClassName()
                            + " *this");
                      break;
                   }else if(mm.getMethod().getClassModel().isSuperClass(c.getClassWeAreModelling())){
-                     write("__global " + c.getClassWeAreModelling().getName().replace(".", "_") + " *this");
+                     write("__global " + c.getMangledClassName()  + " *this");
                      break;
                   }
                }
@@ -654,11 +659,10 @@ abstract class KernelWriter extends BlockWriter{
          newLine();
       }
       if(_entryPoint.isKernel()){
-         write("__kernel void " + _entryPoint.getMethodModel().getSimpleName() + "(");
+         writeIn("__kernel void " + _entryPoint.getMethodModel().getSimpleName() + "(");
       }else{
-         write("__kernel void run(");
+         writeIn("__kernel void run(");
       }
-      in();
       boolean first = true;
       for(String line : argLines){
 
@@ -677,37 +681,27 @@ abstract class KernelWriter extends BlockWriter{
       }else{
          write(", ");
       }
-      newLine();
 
-      write("int passid");
-      out();
-      newLine();
-
-      write("){");
-      in();
-      newLine();
+      writeOutLn("int passid");
+      writeInLn("){");
       writeLn("This thisStruct;");
       writeLn("This* this=&thisStruct;");
       for(String line : assigns){
-         write(line);
-         writeLn(";");
+         writeLn(line+";");
       }
-      write("this->passid = passid");
-      writeLn(";");
+      writeLn("this->passid = passid;");
 
       writeMethodBody(_entryPoint.getMethodModel());
-      out();
-      newLine();
-      writeLn("}");
+    //  out();
+     // newLine();
+      outWriteLn("}");
       out();
 
    }
 
    @Override
    protected void writeThisRef(){
-
       write("this->");
-
    }
 
    // Emit the this-> syntax when accessing locals that are lambda arguments
