@@ -431,14 +431,14 @@ public class MandelExample{
       */
       for (OpenCLPlatform p : OpenCLPlatform.getPlatforms()) {
          // if (p.getVendor().equals("NVIDIA Corporation")){
-         if (p.getVendor().equals("Advanced Micro Devices, Inc.")) {
+         //if (p.getVendor().equals("Advanced Micro Devices, Inc.")) {
             for (OpenCLDevice d : p.getDevices()) {
                if (d.getType().equals(Device.TYPE.GPU)) {
                   device = d;
                   break;
                }
             }
-         }
+         //}
       }
 
       if (device instanceof OpenCLDevice) {
