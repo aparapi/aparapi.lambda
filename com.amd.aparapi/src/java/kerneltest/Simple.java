@@ -16,9 +16,12 @@ public class Simple{
       Device device = Device.firstGPU();
       Range range = device.createRange(100);
       Kernel kernel = new Kernel(){
+         int twoTimes(int _i){
+               return(in[_i]*2);
+         }
          public void run(){
             int i = getGlobalId();
-            out[i] = in[i] * 2;
+            out[i] = twoTimes(i);
          }
 
 

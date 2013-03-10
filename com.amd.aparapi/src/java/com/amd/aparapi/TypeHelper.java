@@ -46,6 +46,8 @@ public class TypeHelper{
 
    static final char DOT = '.';
 
+   static final char UNDERSCORE = '_';
+
 
    /**
     * Convert a given JNI character type (say 'I') to its type name ('int').
@@ -334,6 +336,10 @@ public class TypeHelper{
       return (slashClassNameToDotClassName(_signature.substring(1 + _dims)));
    }
 
+   public static String signatureToMangledClassName(String _signature, int _dims){
+      return (slashClassNameToMangledClassName(_signature.substring(1 + _dims)));
+   }
+
    /**
     * @param _dotClassName
     * @param _dims
@@ -346,6 +352,10 @@ public class TypeHelper{
       }
       sb.append(CLASS_START).append(dotClassNameToSlashClassName(_dotClassName)).append(CLASS_END);
       return (sb.toString());
+   }
+
+   public static String dotClassNameToMangledClassName(String _dotClassName){
+      return(_dotClassName.replace(DOT, UNDERSCORE));
    }
 
    /**
@@ -362,6 +372,14 @@ public class TypeHelper{
     */
    public static String slashClassNameToDotClassName(String _slashClassName){
       return (_slashClassName.replace(SLASH, DOT));
+   }
+
+   /**
+    * @param _slashClassName
+    * @return
+    */
+   public static String slashClassNameToMangledClassName(String _slashClassName){
+      return (_slashClassName.replace(SLASH, UNDERSCORE));
    }
 
    static class Type{
@@ -424,6 +442,10 @@ public class TypeHelper{
          return (TypeHelper.signatureToDotClassName(type, 0));
       }
 
+      String getMangledClassName(){
+         return (TypeHelper.signatureToMangledClassName(type, 0));
+      }
+
       private String type;
 
       final boolean isArray(){
@@ -466,8 +488,12 @@ public class TypeHelper{
          return (isArray() && getArrayDimensions() == _dim && isByte());
       }
 
-      String getJavaName(){
-         switch (type.charAt(0)) {
+      final boolean isPrimitive(){
+         return (isInt()||isFloat()||isDouble()||isChar()||isLong()||isShort()||isByte());
+      }
+
+      String primitiveCharToJavaName(char _ch){
+         switch (_ch) {
             case DOUBLE: return("double");
             case FLOAT: return("float");
             case INT: return("int");
@@ -476,16 +502,20 @@ public class TypeHelper{
             case SHORT: return("short");
             case LONG: return("long");
             case BOOLEAN: return("boolean");
-            case ARRAY: {
-
-            }
-            case CLASS_START: {
-
-            }
-
          }
          return("?");
       }
+
+      String getJavaName(){
+         String javaName="?";
+         if (isPrimitive()){
+            javaName = primitiveCharToJavaName(type.charAt(0));
+         }else if (isObject()) {
+            javaName = getObjectClassName();
+         }
+         return(javaName);
+      }
+
       public boolean matches(Class<?> _type){
            String javaName = getJavaName();
            return(_type.getName().equals(javaName));

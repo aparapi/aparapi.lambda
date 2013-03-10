@@ -315,13 +315,9 @@ abstract class BlockWriter{
    }
 
    protected void writeBlock(Instruction _first, Instruction _last) throws CodeGenException{
-      write("{");
-      in();
+      writeIn("{");
       writeSequence(_first, _last);
-      out();
-      newLine();
-
-      write("}");
+      outWrite("}");
    }
 
    protected Instruction writeConditional(BranchSet _branchSet) throws CodeGenException{
@@ -341,7 +337,6 @@ abstract class BlockWriter{
    protected void write(LogicalExpressionNode _node) throws CodeGenException{
       if(_node instanceof SimpleLogicalExpressionNode){
          SimpleLogicalExpressionNode sn = (SimpleLogicalExpressionNode) _node;
-
          writeConditionalBranch16((ConditionalBranch16) sn.getBranch(), sn.isInvert());
       }else{
          CompoundLogicalExpressionNode ln = (CompoundLogicalExpressionNode) _node;
@@ -353,14 +348,12 @@ abstract class BlockWriter{
             }
          }
          if(needParenthesis){
-
             write("(");
          }
          write(ln.getLhs());
          write(ln.isAnd() ? " && " : " || ");
          write(ln.getRhs());
          if(needParenthesis){
-
             write(")");
          }
       }

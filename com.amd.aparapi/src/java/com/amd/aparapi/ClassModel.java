@@ -295,6 +295,9 @@ class ClassModel{
             return (TypeHelper.slashClassNameToDotClassName(getNameUTF8Entry().getUTF8()));
          }
 
+         String getMangledClassName(){
+            return (TypeHelper.slashClassNameToMangledClassName(getNameUTF8Entry().getUTF8()));
+         }
       }
 
       class DoubleEntry extends Entry{
@@ -2215,4 +2218,28 @@ class ClassModel{
    public Entrypoint getLambdaEntrypoint() throws AparapiException{
       return (getLambdaEntrypoint("run", "()V", null));
    }
+
+   public String getClassName(){
+      ConstantPool.ClassEntry thisClassEntry = constantPool.getClassEntry(getThisClassConstantPoolIndex());
+      return(thisClassEntry.getClassName());
+   }
+   public String getDotClassName(){
+      ConstantPool.ClassEntry thisClassEntry = constantPool.getClassEntry(getThisClassConstantPoolIndex());
+      return(thisClassEntry.getDotClassName());
+   }
+
+   public String getMangledClassName(){
+
+      ConstantPool.ClassEntry thisClassEntry = constantPool.getClassEntry(getThisClassConstantPoolIndex());
+      return(thisClassEntry.getMangledClassName());
+   }
+   public String getSuperClassName(){
+      ConstantPool.ClassEntry superClassEntry = constantPool.getClassEntry(getSuperClassConstantPoolIndex());
+      return(superClassEntry.getClassName());
+   }
+   public String getSuperDotClassName(){
+      ConstantPool.ClassEntry superClassEntry = constantPool.getClassEntry(getSuperClassConstantPoolIndex());
+      return(superClassEntry.getDotClassName());
+   }
+
 }

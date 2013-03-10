@@ -1743,12 +1743,16 @@ class MethodModel{
    }
 
    /*
-    * @return the fully qualified name such as "com_amd_javalabs_opencl_demo_PaternityTest$SimpleKernel__actuallyDoIt"
+    * @return the fully qualified name such as "com.amd.javalabs.opencl.demo.PaternityTest$SimpleKernel.actuallyDoIt"
     */
    String getName(){
-      return (method.getClassModel().getMethod(method.getName(), method.getDescriptor()).getClassModel().getClassWeAreModelling()
-            .getName().replace('.', '_')
-            + "__" + method.getName());
+      return(method.getClassModel().getDotClassName()+"."+method.getName());
+   }
+   /*
+   * @return the mangled fully qualified name such as "com_amd_javalabs_opencl_demo_PaternityTest$SimpleKernel__actuallyDoIt"
+   */
+   String getMangledName(){
+      return (method.getClassModel().getMangledClassName() + "__" + method.getName());
    }
 
    public boolean equals(Object other){
