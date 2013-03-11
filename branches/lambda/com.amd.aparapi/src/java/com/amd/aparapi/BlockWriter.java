@@ -53,7 +53,7 @@ import java.util.Stack;
  * @author gfrost
  */
 
-abstract class BlockWriter{
+abstract class BlockWriter {
 
    final static String arrayLengthMangleSuffix = "__javaArrayLength";
 
@@ -68,10 +68,7 @@ abstract class BlockWriter{
       write(_string);
       in();
    }
-   protected void lnWriteIn(String _string){
-      newLine();
-      writeIn(_string);
-   }
+
    protected void lnWriteInLn(String _string){
       newLine();
       writeInLn(_string);
@@ -80,7 +77,10 @@ abstract class BlockWriter{
       writeIn(_string);
       newLine();
    }
-
+   protected void lnWriteOutLn(String _string){
+      newLine();
+      writeOutLn(_string);
+   }
    protected void writeOutLn(String _string){
       write(_string);
       out();
@@ -90,10 +90,6 @@ abstract class BlockWriter{
       out();
       newLine();
       write(_string);
-   }
-   protected void outWriteLn(String _string){
-      outWrite(_string);
-      newLine();
    }
 
    private int indent = 0;

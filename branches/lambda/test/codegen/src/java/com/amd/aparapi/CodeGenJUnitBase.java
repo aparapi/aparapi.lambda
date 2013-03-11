@@ -54,7 +54,7 @@ public class CodeGenJUnitBase{
          // we assume the specified class will have a null constructor
          Object kernelInstance = _class.getConstructor((Class<?>[]) null).newInstance();
 
-         Entrypoint entrypoint = classModel.getEntrypoint("run", kernelInstance instanceof Kernel ? kernelInstance : null);
+         Entrypoint entrypoint = classModel.getKernelEntrypoint("run", kernelInstance instanceof Kernel ? kernelInstance : null);
          String actual = KernelWriter.writeToString(entrypoint);
 
          if (_expectedExceptionType == null) {

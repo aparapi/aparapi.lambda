@@ -66,27 +66,27 @@ public class ObjectArrayMemberCall extends Kernel{
 /**{OpenCL{
 typedef struct com_amd_aparapi_test_ObjectArrayMemberCall$DummyOOA_s{
    int  mem;
-   
 } com_amd_aparapi_test_ObjectArrayMemberCall$DummyOOA;
 
 typedef struct This_s{
    __global com_amd_aparapi_test_ObjectArrayMemberCall$DummyOOA *dummy;
    int passid;
 }This;
+
 int get_pass_id(This *this){
    return this->passid;
-   }
+}
 
-int com_amd_aparapi_test_ObjectArrayMemberCall$DummyOOA__getMem( __global com_amd_aparapi_test_ObjectArrayMemberCall$DummyOOA *this){
+int com_amd_aparapi_test_ObjectArrayMemberCall$DummyOOA__getMem(__global com_amd_aparapi_test_ObjectArrayMemberCall$DummyOOA *this){
    return(this->mem);
 }
-int com_amd_aparapi_test_ObjectArrayMemberCall$DummyOOA__addEmUp( __global com_amd_aparapi_test_ObjectArrayMemberCall$DummyOOA *this, int x, int y){
+int com_amd_aparapi_test_ObjectArrayMemberCall$DummyOOA__addEmUp(__global com_amd_aparapi_test_ObjectArrayMemberCall$DummyOOA *this, int x, int y){
    return((x + y));
 }
-int com_amd_aparapi_test_ObjectArrayMemberCall$DummyOOA__addEmUpPlusOne( __global com_amd_aparapi_test_ObjectArrayMemberCall$DummyOOA *this, int x, int y){
+int com_amd_aparapi_test_ObjectArrayMemberCall$DummyOOA__addEmUpPlusOne(__global com_amd_aparapi_test_ObjectArrayMemberCall$DummyOOA *this, int x, int y){
    return(((com_amd_aparapi_test_ObjectArrayMemberCall$DummyOOA__addEmUp(this, x, y) + 1) + com_amd_aparapi_test_ObjectArrayMemberCall$DummyOOA__getMem(this)));
 }
-int com_amd_aparapi_test_ObjectArrayMemberCall$DummyOOA__addToMem( __global com_amd_aparapi_test_ObjectArrayMemberCall$DummyOOA *this, int x){
+int com_amd_aparapi_test_ObjectArrayMemberCall$DummyOOA__addToMem(__global com_amd_aparapi_test_ObjectArrayMemberCall$DummyOOA *this, int x){
    return((x + this->mem));
 }
 __kernel void run(
