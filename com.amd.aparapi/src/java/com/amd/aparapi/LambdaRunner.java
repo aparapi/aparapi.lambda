@@ -41,13 +41,16 @@ import com.amd.aparapi.ClassModel.ConstantPool.MethodEntry;
 import com.amd.aparapi.InstructionSet.MethodCall;
 import com.amd.aparapi.InstructionSet.TypeSpec;
 import com.amd.aparapi.InstructionSet.VirtualMethodCall;
-
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 import java.util.logging.Level;

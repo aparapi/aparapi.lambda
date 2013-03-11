@@ -1,8 +1,19 @@
 package com.amd.aparapi;
 
 import com.amd.aparapi.ClassModel.LocalVariableInfo;
-import com.amd.aparapi.InstructionSet.*;
-
+import com.amd.aparapi.InstructionSet.AssignToLocalVariable;
+import com.amd.aparapi.InstructionSet.Branch;
+import com.amd.aparapi.InstructionSet.ByteCode;
+import com.amd.aparapi.InstructionSet.CloneInstruction;
+import com.amd.aparapi.InstructionSet.CompositeInstruction;
+import com.amd.aparapi.InstructionSet.ConditionalBranch16;
+import com.amd.aparapi.InstructionSet.Constant;
+import com.amd.aparapi.InstructionSet.FieldReference;
+import com.amd.aparapi.InstructionSet.I_ACONST_NULL;
+import com.amd.aparapi.InstructionSet.I_IINC;
+import com.amd.aparapi.InstructionSet.LocalVariableTableIndexAccessor;
+import com.amd.aparapi.InstructionSet.MethodCall;
+import com.amd.aparapi.InstructionSet.OperatorInstruction;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;

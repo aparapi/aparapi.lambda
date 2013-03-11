@@ -39,7 +39,6 @@ package com.amd.aparapi;
 
 import com.amd.aparapi.InstructionSet.TypeSpec;
 import com.amd.aparapi.Kernel.EXECUTION_MODE;
-
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
