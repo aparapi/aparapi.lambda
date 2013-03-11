@@ -38,7 +38,6 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 package com.amd.aparapi;
 
 import com.amd.aparapi.ClassModel.*;
-import com.amd.aparapi.TypeHelper.MethodDescription;
 import com.amd.aparapi.ClassModel.ConstantPool.FieldEntry;
 import com.amd.aparapi.ClassModel.ConstantPool.MethodReferenceEntry;
 import com.amd.aparapi.InstructionPattern.InstructionMatch;

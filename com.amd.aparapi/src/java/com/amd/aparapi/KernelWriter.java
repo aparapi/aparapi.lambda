@@ -579,14 +579,13 @@ abstract class KernelWriter extends BlockWriter{
                   totalSize++;
                }
             }
-
-            outWriteLn("} " + mangledClassName + ";");
-
+            out();
+            writeLn("} " + mangledClassName + ";");
+            newLine();
          }
       }
 
       write("typedef struct This_s{");
-
       in();
       newLine();
       for(String line : thisStruct){
@@ -682,7 +681,7 @@ abstract class KernelWriter extends BlockWriter{
          write(", ");
       }
 
-      writeOutLn("int passid");
+      lnWriteOutLn("int passid");
       writeInLn("){");
       writeLn("This thisStruct;");
       writeLn("This* this=&thisStruct;");
@@ -693,9 +692,9 @@ abstract class KernelWriter extends BlockWriter{
 
       writeMethodBody(_entryPoint.getMethodModel());
     //  out();
-     // newLine();
-      outWriteLn("}");
-      out();
+      outWrite("}");
+
+     // out();
 
    }
 

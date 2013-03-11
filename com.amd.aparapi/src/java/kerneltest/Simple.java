@@ -14,7 +14,7 @@ public class Simple{
          out[i] = 0;
       }
       Device device = Device.firstGPU();
-      Range range = device.createRange(100);
+      Range range = device.createRange(in.length);
       Kernel kernel = new Kernel(){
          int twoTimes(int _i){
                return(in[_i]*2);
@@ -26,11 +26,19 @@ public class Simple{
 
 
       };
-      kernel.execute(1024);
+      kernel.execute(range);
       for(int i = 0; i < 64; i++){
          System.out.println(in[i] + " " + out[i]);
       }
-
+      new Kernel(){
+         public void run(){
+            int i = getGlobalId();
+            out[i] = in[i]*in[i];
+         }
+      }.execute(range);
+      for(int i = 0; i < 64; i++){
+         System.out.println(in[i] + " " + out[i]);
+      }
    }
 
    public static void main(String[] args){
