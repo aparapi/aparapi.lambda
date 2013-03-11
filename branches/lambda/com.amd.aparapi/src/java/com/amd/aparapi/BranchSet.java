@@ -39,7 +39,6 @@ package com.amd.aparapi;
 
 import com.amd.aparapi.InstructionSet.Branch;
 import com.amd.aparapi.InstructionSet.ConditionalBranch;
-
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;

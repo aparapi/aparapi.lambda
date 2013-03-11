@@ -2,7 +2,6 @@ package com.amd.aparapi;
 
 import com.amd.aparapi.OpenCLDevice.DeviceComparitor;
 import com.amd.aparapi.OpenCLDevice.DeviceSelector;
-
 import java.util.function.IntConsumer;
 
 public abstract class Device{

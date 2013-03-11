@@ -39,8 +39,15 @@ package com.amd.aparapi;
 
 import com.amd.aparapi.ClassModel.LocalVariableInfo;
 import com.amd.aparapi.ClassModel.LocalVariableTableEntry;
-import com.amd.aparapi.InstructionSet.*;
-
+import com.amd.aparapi.InstructionSet.AssignToLocalVariable;
+import com.amd.aparapi.InstructionSet.Branch;
+import com.amd.aparapi.InstructionSet.ByteCode;
+import com.amd.aparapi.InstructionSet.CompositeArbitraryScopeInstruction;
+import com.amd.aparapi.InstructionSet.CompositeInstruction;
+import com.amd.aparapi.InstructionSet.ConditionalBranch;
+import com.amd.aparapi.InstructionSet.FakeGoto;
+import com.amd.aparapi.InstructionSet.Return;
+import com.amd.aparapi.InstructionSet.UnconditionalBranch;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;

@@ -1,7 +1,6 @@
 package com.amd.aparapi;
 
 import com.amd.aparapi.Annotations.UsedByJNICode;
-
 import java.util.Arrays;
 
 /**

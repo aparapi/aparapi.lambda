@@ -44,10 +44,25 @@ import com.amd.aparapi.ClassModel.ConstantPool.FieldEntry;
 import com.amd.aparapi.ClassModel.ConstantPool.MethodEntry;
 import com.amd.aparapi.ClassModel.LocalVariableInfo;
 import com.amd.aparapi.ClassModel.LocalVariableTableEntry;
-import com.amd.aparapi.InstructionSet.*;
+import com.amd.aparapi.InstructionSet.AccessArrayElement;
+import com.amd.aparapi.InstructionSet.AccessLocalVariable;
+import com.amd.aparapi.InstructionSet.AssignToArrayElement;
+import com.amd.aparapi.InstructionSet.AssignToField;
+import com.amd.aparapi.InstructionSet.AssignToLocalVariable;
+import com.amd.aparapi.InstructionSet.BinaryOperator;
+import com.amd.aparapi.InstructionSet.FieldReference;
+import com.amd.aparapi.InstructionSet.I_ALOAD_0;
+import com.amd.aparapi.InstructionSet.I_INVOKESPECIAL;
+import com.amd.aparapi.InstructionSet.I_IUSHR;
+import com.amd.aparapi.InstructionSet.I_LUSHR;
+import com.amd.aparapi.InstructionSet.MethodCall;
+import com.amd.aparapi.InstructionSet.VirtualMethodCall;
 import com.amd.aparapi.TypeHelper.Type;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 abstract class KernelWriter extends BlockWriter{
 

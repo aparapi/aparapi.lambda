@@ -43,7 +43,6 @@ import com.amd.aparapi.ClassModel.ConstantPool.MethodEntry;
 import com.amd.aparapi.InstructionSet.TypeSpec;
 import com.amd.aparapi.TypeHelper.ArgsAndReturnType;
 import com.amd.aparapi.TypeHelper.Type;
-
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;

@@ -38,7 +38,6 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 package com.amd.aparapi;
 
 import com.amd.aparapi.Annotations.UsedByJNICode;
-
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.util.List;
