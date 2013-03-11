@@ -41,6 +41,8 @@ import com.amd.aparapi.ClassModel.AttributePool.CodeEntry;
 import com.amd.aparapi.ClassModel.ConstantPool.FieldEntry;
 import com.amd.aparapi.ClassModel.ConstantPool.MethodEntry;
 import com.amd.aparapi.InstructionSet.TypeSpec;
+import com.amd.aparapi.TypeHelper.ArgsAndReturnType;
+import com.amd.aparapi.TypeHelper.Type;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -49,8 +51,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import com.amd.aparapi.TypeHelper.Type;
-import com.amd.aparapi.TypeHelper.ArgsAndReturnType;
 
 /**
  * Class represents a ClassFile (MyClass.class).
@@ -89,7 +89,6 @@ class ClassModel{
       LocalVariableInfo getVariable(int _pc, int _index);
 
    }
-
 
 
    private static Logger logger = Logger.getLogger(Config.getLoggerName());
@@ -155,8 +154,6 @@ class ClassModel{
          }
       }
    }
-
-
 
 
    private int magic;
@@ -505,9 +502,6 @@ class ClassModel{
       abstract class MethodReferenceEntry extends ReferenceEntry{
 
 
-
-
-
          @Override
          public int hashCode(){
             NameAndTypeEntry nameAndTypeEntry = getNameAndTypeEntry();
@@ -540,11 +534,11 @@ class ClassModel{
          ArgsAndReturnType argsAndReturnType;
 
          ArgsAndReturnType getArgsAndReturnType(){
-            if (argsAndReturnType == null){
-            NameAndTypeEntry nameAndTypeEntry = getNameAndTypeEntry();
+            if(argsAndReturnType == null){
+               NameAndTypeEntry nameAndTypeEntry = getNameAndTypeEntry();
 
-            String signature = nameAndTypeEntry.getDescriptorUTF8Entry().getUTF8();// "([[IF)V" for a method that takes an int[][], float and returns void.
-            argsAndReturnType = new ArgsAndReturnType(signature);
+               String signature = nameAndTypeEntry.getDescriptorUTF8Entry().getUTF8();// "([[IF)V" for a method that takes an int[][], float and returns void.
+               argsAndReturnType = new ArgsAndReturnType(signature);
             }
             return (argsAndReturnType);
          }
@@ -1870,10 +1864,10 @@ class ClassModel{
       Type type;
 
       Type getType(){
-         if (type == null){
+         if(type == null){
             type = new Type(getDescriptor());
          }
-         return(type);
+         return (type);
       }
 
       Class<?> getDeclaringClass(){
@@ -2221,25 +2215,28 @@ class ClassModel{
 
    public String getClassName(){
       ConstantPool.ClassEntry thisClassEntry = constantPool.getClassEntry(getThisClassConstantPoolIndex());
-      return(thisClassEntry.getClassName());
+      return (thisClassEntry.getClassName());
    }
+
    public String getDotClassName(){
       ConstantPool.ClassEntry thisClassEntry = constantPool.getClassEntry(getThisClassConstantPoolIndex());
-      return(thisClassEntry.getDotClassName());
+      return (thisClassEntry.getDotClassName());
    }
 
    public String getMangledClassName(){
 
       ConstantPool.ClassEntry thisClassEntry = constantPool.getClassEntry(getThisClassConstantPoolIndex());
-      return(thisClassEntry.getMangledClassName());
+      return (thisClassEntry.getMangledClassName());
    }
+
    public String getSuperClassName(){
       ConstantPool.ClassEntry superClassEntry = constantPool.getClassEntry(getSuperClassConstantPoolIndex());
-      return(superClassEntry.getClassName());
+      return (superClassEntry.getClassName());
    }
+
    public String getSuperDotClassName(){
       ConstantPool.ClassEntry superClassEntry = constantPool.getClassEntry(getSuperClassConstantPoolIndex());
-      return(superClassEntry.getDotClassName());
+      return (superClassEntry.getDotClassName());
    }
 
 }
