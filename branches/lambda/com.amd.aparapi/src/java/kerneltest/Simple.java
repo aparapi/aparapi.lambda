@@ -17,8 +17,9 @@ public class Simple{
       Range range = device.createRange(in.length);
       Kernel kernel = new Kernel(){
          int twoTimes(int _i){
-               return(in[_i]*2);
+            return (in[_i] * 2);
          }
+
          public void run(){
             int i = getGlobalId();
             out[i] = twoTimes(i);
@@ -33,7 +34,7 @@ public class Simple{
       new Kernel(){
          public void run(){
             int i = getGlobalId();
-            out[i] = in[i]*in[i];
+            out[i] = in[i] * in[i];
          }
       }.execute(range);
       for(int i = 0; i < 64; i++){

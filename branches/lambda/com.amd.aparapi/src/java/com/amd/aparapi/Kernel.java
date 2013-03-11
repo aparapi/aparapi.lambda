@@ -40,10 +40,14 @@ package com.amd.aparapi;
 import com.amd.aparapi.ClassModel.ConstantPool.MethodReferenceEntry;
 import com.amd.aparapi.TypeHelper.ArgsAndReturnType;
 import com.amd.aparapi.TypeHelper.Type;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.logging.Logger;
@@ -1844,33 +1848,30 @@ public abstract class Kernel implements Cloneable{
    }
 
 
-
-
-
    static String getMappedMethodName(MethodReferenceEntry _methodReferenceEntry){
       String mappedName = null;
       String methodName = _methodReferenceEntry.getNameAndTypeEntry().getNameUTF8Entry().getUTF8();
-      String methodClass =   _methodReferenceEntry.getClassEntry().getNameUTF8Entry().getUTF8();
-      if (methodClass.equals(Kernel.class.getName())){
-      ArgsAndReturnType methodArgsAndReturnType = _methodReferenceEntry.getArgsAndReturnType();
-      Type methodReturnType = methodArgsAndReturnType.getReturnType();
+      String methodClass = _methodReferenceEntry.getClassEntry().getNameUTF8Entry().getUTF8();
+      if(methodClass.equals(Kernel.class.getName())){
+         ArgsAndReturnType methodArgsAndReturnType = _methodReferenceEntry.getArgsAndReturnType();
+         Type methodReturnType = methodArgsAndReturnType.getReturnType();
 
-      for(Method kernelMethod : Kernel.class.getDeclaredMethods()){
-         if(kernelMethod.isAnnotationPresent(OpenCLMapping.class)){
-            String kernelMethodName =   kernelMethod.getName();
+         for(Method kernelMethod : Kernel.class.getDeclaredMethods()){
+            if(kernelMethod.isAnnotationPresent(OpenCLMapping.class)){
+               String kernelMethodName = kernelMethod.getName();
 
 
-               if(methodName.equals(kernelMethodName)&& methodArgsAndReturnType.matches(kernelMethod)){
+               if(methodName.equals(kernelMethodName) && methodArgsAndReturnType.matches(kernelMethod)){
                   OpenCLMapping annotation = kernelMethod.getAnnotation(OpenCLMapping.class);
                   String mapTo = annotation.mapTo();
                   if(!mapTo.equals("")){
                      mappedName = mapTo;
-                      System.out.println("mapTo = " + mapTo + " class="+methodClass);
+                     System.out.println("mapTo = " + mapTo + " class=" + methodClass);
                   }
                }
 
+            }
          }
-      }
       }
       // System.out.println("... in getMappedMethodName, returning = " + mappedName);
       return (mappedName);

@@ -41,9 +41,9 @@ import com.amd.aparapi.ClassModel.ClassModelField;
 import com.amd.aparapi.ClassModel.ClassModelMethod;
 import com.amd.aparapi.ClassModel.ConstantPool.FieldEntry;
 import com.amd.aparapi.ClassModel.ConstantPool.MethodEntry;
+import com.amd.aparapi.InstructionSet.*;
 import com.amd.aparapi.TypeHelper.Arg;
 import com.amd.aparapi.TypeHelper.Type;
-import com.amd.aparapi.InstructionSet.*;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;

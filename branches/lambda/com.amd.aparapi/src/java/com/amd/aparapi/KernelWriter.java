@@ -313,7 +313,7 @@ abstract class KernelWriter extends BlockWriter{
             StringBuilder argLine = new StringBuilder();
             StringBuilder assignLine = new StringBuilder();
             if((lvi.getStart() == 0) && ((lvi.getVariableIndex() != 0) || mm.getMethod().isStatic())){ // full scope but skip this
-              // String descriptor = ;
+               // String descriptor = ;
 
                // For object stream lambdas, the lvi is the object type, but in
                // the kernel we will need something like:
@@ -324,9 +324,8 @@ abstract class KernelWriter extends BlockWriter{
                // where elements_array_index is the get_global_id index into the elements array
 
 
-
                TypeHelper.Type type = new TypeHelper.Type(lvi.getVariableDescriptor());
-              // String classModelType = type.getType();
+               // String classModelType = type.getType();
                String output;
                boolean isObjectLambda = false;
                if(type.isArray()){
@@ -589,7 +588,7 @@ abstract class KernelWriter extends BlockWriter{
       in();
       newLine();
       for(String line : thisStruct){
-         writeLn(line+";");
+         writeLn(line + ";");
       }
       writeOutLn("int passid;");
       writeLn("}This;");
@@ -626,7 +625,7 @@ abstract class KernelWriter extends BlockWriter{
                            + " *this");
                      break;
                   }else if(mm.getMethod().getClassModel().isSuperClass(c.getClassWeAreModelling())){
-                     write("__global " + c.getMangledClassName()  + " *this");
+                     write("__global " + c.getMangledClassName() + " *this");
                      break;
                   }
                }
@@ -686,15 +685,15 @@ abstract class KernelWriter extends BlockWriter{
       writeLn("This thisStruct;");
       writeLn("This* this=&thisStruct;");
       for(String line : assigns){
-         writeLn(line+";");
+         writeLn(line + ";");
       }
       writeLn("this->passid = passid;");
 
       writeMethodBody(_entryPoint.getMethodModel());
-    //  out();
+      //  out();
       outWrite("}");
 
-     // out();
+      // out();
 
    }
 

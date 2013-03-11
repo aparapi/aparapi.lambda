@@ -1,9 +1,9 @@
 package com.amd.aparapi;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
-import java.lang.reflect.Method;
 
 
 public class TypeHelper{
@@ -228,11 +228,11 @@ public class TypeHelper{
     * @return
     */
    public static String signatureToDotClassName(String _signature, int _dims){
-      return (slashClassNameToDotClassName(_signature.substring(1 + _dims, _signature.length()-_dims-1)));
+      return (slashClassNameToDotClassName(_signature.substring(1 + _dims, _signature.length() - _dims - 1)));
    }
 
    public static String signatureToMangledClassName(String _signature, int _dims){
-      return (slashClassNameToMangledClassName(_signature.substring(1 + _dims,  _signature.length()-_dims-1)));
+      return (slashClassNameToMangledClassName(_signature.substring(1 + _dims, _signature.length() - _dims - 1)));
    }
 
    /**
@@ -250,7 +250,7 @@ public class TypeHelper{
    }
 
    public static String dotClassNameToMangledClassName(String _dotClassName){
-      return(_dotClassName.replace(DOT, UNDERSCORE));
+      return (_dotClassName.replace(DOT, UNDERSCORE));
    }
 
    /**
@@ -384,37 +384,46 @@ public class TypeHelper{
       }
 
       final boolean isPrimitive(){
-         return (isInt()||isFloat()||isDouble()||isChar()||isLong()||isShort()||isByte());
+         return (isInt() || isFloat() || isDouble() || isChar() || isLong() || isShort() || isByte());
       }
 
       String primitiveCharToJavaName(char _ch){
-         switch (_ch) {
-            case VOID: return("void");
-            case DOUBLE: return("double");
-            case FLOAT: return("float");
-            case INT: return("int");
-            case CHAR: return("char");
-            case BYTE: return("byte");
-            case SHORT: return("short");
-            case LONG: return("long");
-            case BOOLEAN: return("boolean");
+         switch(_ch){
+            case VOID:
+               return ("void");
+            case DOUBLE:
+               return ("double");
+            case FLOAT:
+               return ("float");
+            case INT:
+               return ("int");
+            case CHAR:
+               return ("char");
+            case BYTE:
+               return ("byte");
+            case SHORT:
+               return ("short");
+            case LONG:
+               return ("long");
+            case BOOLEAN:
+               return ("boolean");
          }
-         return("?");
+         return ("?");
       }
 
       String getJavaName(){
-         String javaName="?";
-         if (isPrimitive()){
+         String javaName = "?";
+         if(isPrimitive()){
             javaName = primitiveCharToJavaName(type.charAt(0));
-         }else if (isObject()) {
+         }else if(isObject()){
             javaName = getObjectClassName();
          }
-         return(javaName);
+         return (javaName);
       }
 
       public boolean matches(Class<?> _type){
-           String javaName = getJavaName();
-           return(_type.getName().equals(javaName));
+         String javaName = getJavaName();
+         return (_type.getName().equals(javaName));
       }
    }
 
@@ -443,86 +452,87 @@ public class TypeHelper{
       ;
       Arg[] args;
       Type returnType;
+
       public Arg[] getArgs(){
-         return(args);
+         return (args);
       }
+
       public Type getReturnType(){
-         return(returnType);
+         return (returnType);
       }
 
 
-   ArgsAndReturnType(String _signature){
+      ArgsAndReturnType(String _signature){
 
 
+         SignatureParseState state = SignatureParseState.skipping;
+         List<Arg> argList = new ArrayList<Arg>();
+         int start = 0;
 
-      SignatureParseState state = SignatureParseState.skipping;
-   List<Arg> argList = new ArrayList<Arg>();
-   int start = 0;
-
-   for(int pos = 0; state != SignatureParseState.done; pos++){
-      char ch = _signature.charAt(pos);
-      switch(ch){
-         case ARG_START:
-            state = SignatureParseState.counting;
-            break;
-         case ARG_END:
-            state = SignatureParseState.done;
-            returnType = new Type(_signature.substring(pos + 1));
-            break;
-         case ARRAY:
-            switch(state){
-               case counting:
-                  state = SignatureParseState.inArray;
-                  start = pos;
-                  break;
-
-            }
-            // we don't care about arrays
-            break;
-         case CLASS_START:
-            // beginning of Ljava/lang/String; or something
-
-            switch(state){
-               case counting:
-                  start = pos;
-                  // fallthrough intended!!
-               case inArray:
-                  state = SignatureParseState.inClass;
-                  break;
-            }
-            break;
-         case CLASS_END:
-            // note we will only be in 'inclass' if we were previously counting, so this is safe
-            switch(state){
-               case inClass:
-                  argList.add(new Arg(_signature, start, pos, argList.size()));
+         for(int pos = 0; state != SignatureParseState.done; pos++){
+            char ch = _signature.charAt(pos);
+            switch(ch){
+               case ARG_START:
                   state = SignatureParseState.counting;
                   break;
-            }
-            break;
+               case ARG_END:
+                  state = SignatureParseState.done;
+                  returnType = new Type(_signature.substring(pos + 1));
+                  break;
+               case ARRAY:
+                  switch(state){
+                     case counting:
+                        state = SignatureParseState.inArray;
+                        start = pos;
+                        break;
 
-         default:
-            // we have IJBZDF so inc counter if we are still counting
-            switch(state){
-               case counting:
-                  start = pos;
-                  // fallthrough intended!!
-               case inArray:
-                  argList.add(new Arg(_signature, start, pos, argList.size()));
+                  }
+                  // we don't care about arrays
+                  break;
+               case CLASS_START:
+                  // beginning of Ljava/lang/String; or something
+
+                  switch(state){
+                     case counting:
+                        start = pos;
+                        // fallthrough intended!!
+                     case inArray:
+                        state = SignatureParseState.inClass;
+                        break;
+                  }
+                  break;
+               case CLASS_END:
+                  // note we will only be in 'inclass' if we were previously counting, so this is safe
+                  switch(state){
+                     case inClass:
+                        argList.add(new Arg(_signature, start, pos, argList.size()));
+                        state = SignatureParseState.counting;
+                        break;
+                  }
                   break;
 
+               default:
+                  // we have IJBZDF so inc counter if we are still counting
+                  switch(state){
+                     case counting:
+                        start = pos;
+                        // fallthrough intended!!
+                     case inArray:
+                        argList.add(new Arg(_signature, start, pos, argList.size()));
+                        break;
+
+                  }
+                  break;
             }
-            break;
+
+         }
+         // System.out.println("method "+name+" has signature of "+signature+" which has "+count+" args");
+
+         args = argList.toArray(new Arg[0]);
       }
 
-   }
-   // System.out.println("method "+name+" has signature of "+signature+" which has "+count+" args");
-
-   args = argList.toArray(new Arg[0]);
-   }
-
       public boolean matches(Method _method){
-         return (returnType.matches(_method.getReturnType())) ;
+         return (returnType.matches(_method.getReturnType()));
 
       }
    }

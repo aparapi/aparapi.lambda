@@ -37,13 +37,16 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
  */
 package com.amd.aparapi;
 
-import com.amd.aparapi.ClassModel.*;
+import com.amd.aparapi.ClassModel.ClassModelMethod;
+import com.amd.aparapi.ClassModel.ConstantPool;
 import com.amd.aparapi.ClassModel.ConstantPool.FieldEntry;
 import com.amd.aparapi.ClassModel.ConstantPool.MethodReferenceEntry;
+import com.amd.aparapi.ClassModel.LocalVariableInfo;
+import com.amd.aparapi.ClassModel.LocalVariableTableEntry;
 import com.amd.aparapi.InstructionPattern.InstructionMatch;
 import com.amd.aparapi.InstructionSet.*;
-import com.amd.aparapi.TypeHelper.ArgsAndReturnType;
 import com.amd.aparapi.TypeHelper.Arg;
+import com.amd.aparapi.TypeHelper.ArgsAndReturnType;
 
 import java.util.*;
 import java.util.Map.Entry;
@@ -1517,7 +1520,7 @@ class MethodModel{
       public FakeLocalVariableTableEntry(Map<Integer, Instruction> _pcMap, ClassModelMethod _method){
          int numberOfSlots = _method.getCodeEntry().getMaxLocals();
 
-        // MethodDescription description = TypeHelper.getMethodDescription(_method.getDescriptor());
+         // MethodDescription description = TypeHelper.getMethodDescription(_method.getDescriptor());
 
          ArgsAndReturnType argsAndReturnType = _method.getArgsAndReturnType();
          Arg[] args = argsAndReturnType.getArgs();
@@ -1745,8 +1748,9 @@ class MethodModel{
     * @return the fully qualified name such as "com.amd.javalabs.opencl.demo.PaternityTest$SimpleKernel.actuallyDoIt"
     */
    String getName(){
-      return(method.getClassModel().getDotClassName()+"."+method.getName());
+      return (method.getClassModel().getDotClassName() + "." + method.getName());
    }
+
    /*
    * @return the mangled fully qualified name such as "com_amd_javalabs_opencl_demo_PaternityTest$SimpleKernel__actuallyDoIt"
    */
