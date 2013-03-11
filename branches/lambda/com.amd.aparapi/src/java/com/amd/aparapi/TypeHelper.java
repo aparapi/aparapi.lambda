@@ -5,13 +5,7 @@ import java.util.List;
 import java.util.Stack;
 import java.lang.reflect.Method;
 
-/**
- * Created with IntelliJ IDEA.
- * User: gfrost
- * Date: 3/8/13
- * Time: 5:33 PM
- * To change this template use File | Settings | File Templates.
- */
+
 public class TypeHelper{
 
    static final char VOID = 'V';
@@ -223,105 +217,6 @@ public class TypeHelper{
       return (returnValue.toString());
    }
 
-
-   static MethodDescription getMethodDescription(String _string){
-      String className = null;
-      String methodName = null;
-      String descriptor = null;
-      MethodDescription methodDescription = null;
-      if(_string.startsWith("(")){
-         className = "?";
-         methodName = "?";
-         descriptor = _string;
-      }else{
-         int argStartIndex = _string.indexOf(ARG_START);
-         int dotIndex = _string.indexOf(DOT);
-         descriptor = _string.substring(argStartIndex);
-         className = _string.substring(0, dotIndex);
-         methodName = _string.substring(dotIndex + 1, argStartIndex);
-      }
-      Stack<String> stringStack = new Stack<String>();
-      Stack<String> methodStack = null;
-      int length = descriptor.length();
-      char[] chars = new char[descriptor.length()];
-      descriptor.getChars(0, descriptor.length(), chars, 0);
-      int i = 0;
-      boolean inArray = false;
-      boolean inMethod = false;
-      while(i < length){
-         switch(chars[i]){
-            case CLASS_START:{
-               StringBuilder stringBuffer = null;
-               if(inArray){
-                  stringBuffer = new StringBuilder(stringStack.pop());
-               }else{
-                  stringBuffer = new StringBuilder();
-               }
-               while((i < length) && chars[i] != CLASS_END){
-                  stringBuffer.append(chars[i]);
-                  i++;
-               }
-               stringBuffer.append(chars[i]);
-               i++; // step over CLASS_END
-               stringStack.push(stringBuffer.toString());
-               inArray = false;
-            }
-            break;
-            case ARRAY:{
-               StringBuilder stringBuffer = new StringBuilder();
-               while((i < length) && chars[i] == ARRAY){
-                  stringBuffer.append(chars[i]);
-                  i++;
-               }
-               stringStack.push(stringBuffer.toString());
-               inArray = true;
-            }
-            break;
-            case VOID:
-            case INT:
-            case DOUBLE:
-            case FLOAT:
-            case SHORT:
-            case CHAR:
-            case BYTE:
-            case LONG:
-            case BOOLEAN:{
-               StringBuilder stringBuffer = null;
-               if(inArray){
-                  stringBuffer = new StringBuilder(stringStack.pop());
-               }else{
-                  stringBuffer = new StringBuilder();
-               }
-               stringBuffer.append(chars[i]);
-               i++; // step over this
-               stringStack.push(stringBuffer.toString());
-               inArray = false;
-            }
-            break;
-            case ARG_START:{
-               i++; // step over this
-            }
-            break;
-            case ARG_END:{
-               inMethod = true;
-               inArray = false;
-               methodStack = stringStack;
-               stringStack = new Stack<String>();
-               i++; // step over this
-            }
-            break;
-         }
-      }
-      if(inMethod){
-         methodDescription = new MethodDescription(className, methodName, null, null /*stringStack.toArray(new String[0])[0],
-               methodStack.toArray(new String[0])*/);
-      }else{
-         System.out.println("can't convert to a description");
-      }
-      return (methodDescription);
-   }
-
-
    /**
     * Convert a signature form "Lpackage/Name;" or array form to dot class form.
     * <p/>
@@ -494,6 +389,7 @@ public class TypeHelper{
 
       String primitiveCharToJavaName(char _ch){
          switch (_ch) {
+            case VOID: return("void");
             case DOUBLE: return("double");
             case FLOAT: return("float");
             case INT: return("int");
@@ -535,44 +431,11 @@ public class TypeHelper{
       }
    }
 
-   static class MethodDescription{
-      private String className;
-
-      private String methodName;
-
-      private Type type;
-
-      private Arg[] args;
-
-      MethodDescription(String _className, String _methodName, Type _type, Arg[] _args){
-         methodName = _methodName;
-         className = _className;
-         type = _type;
-         args = _args;
-      }
-
-      Arg[] getArgs(){
-         return (args);
-      }
-
-      Type getType(){
-         return (type);
-      }
-
-      String getClassName(){
-         return (className);
-      }
-
-      String getMethodName(){
-         return (methodName);
-      }
-   }
-
    static class ArgsAndReturnType{
       private static enum SignatureParseState{
          skipping,
          counting,
-         inclass,
+         inClass,
          inArray,
          done;
       }
@@ -624,14 +487,14 @@ public class TypeHelper{
                   start = pos;
                   // fallthrough intended!!
                case inArray:
-                  state = SignatureParseState.inclass;
+                  state = SignatureParseState.inClass;
                   break;
             }
             break;
          case CLASS_END:
             // note we will only be in 'inclass' if we were previously counting, so this is safe
             switch(state){
-               case inclass:
+               case inClass:
                   argList.add(new Arg(_signature, start, pos, argList.size()));
                   state = SignatureParseState.counting;
                   break;
