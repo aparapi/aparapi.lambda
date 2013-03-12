@@ -1,6 +1,7 @@
 package com.amd.aparapi;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
@@ -289,6 +290,48 @@ public class TypeHelper{
          type = type.substring(arrayDimensions);
       }
 
+      public Type(Field _field){
+         this(_field.getType());
+      }
+
+      public Type(Class<?> _clazz){
+         Class componentType;
+         String arrayPrefix = "";
+         if (_clazz.isArray()){
+            componentType = _clazz.getComponentType();
+            arrayDimensions = _clazz.getName().lastIndexOf('[')+1;
+            arrayPrefix=_clazz.getName().substring(0, arrayDimensions);
+         }else{
+            componentType = _clazz;
+         }
+
+
+
+         if (componentType == int.class){
+            type = arrayPrefix+"I";
+         }else if (componentType == float.class){
+            type = arrayPrefix+"F";
+         }else if (componentType == double.class){
+            type = arrayPrefix+"D";
+         }else if (componentType == long.class){
+            type = arrayPrefix+"J";
+         }else if (componentType == char.class){
+            type = arrayPrefix+"C";
+         }else if (componentType == byte.class){
+            type = arrayPrefix+"B";
+         }else if (componentType == short.class){
+            type = arrayPrefix+"S";
+         }else if (componentType == void.class){
+            type = arrayPrefix+"V";
+         }else if (componentType == boolean.class){
+            type = arrayPrefix+"Z";
+         }else{
+            // its an object or an array of objects
+            type = arrayPrefix+"L"+dotClassNameToSlashClassName(_clazz.getName())+";";
+         }
+
+      }
+
       String getType(){
          return (type);
       }
@@ -427,9 +470,13 @@ public class TypeHelper{
       }
    }
 
-   static class Arg extends Type{
+   public static class Arg extends Type{
       Arg(String _signature, int _start, int _pos, int _argc){
          super(_signature.substring(_start, _pos + 1));
+         argc = _argc;
+      }
+      Arg(Class _clazz, int _argc){
+         super(_clazz);
          argc = _argc;
       }
 
@@ -440,7 +487,7 @@ public class TypeHelper{
       }
    }
 
-   static class ArgsAndReturnType{
+   public static class ArgsAndReturnType{
       private static enum SignatureParseState{
          skipping,
          counting,
@@ -531,9 +578,19 @@ public class TypeHelper{
          args = argList.toArray(new Arg[0]);
       }
 
+      public ArgsAndReturnType(Method _method){
+         args = new Arg[_method.getParameterCount()];
+         Class<?> argsAsClasses[]=_method.getParameterTypes();
+         for (int i=0;i<argsAsClasses.length; i++ ){
+            args[i] = new Arg(argsAsClasses[i], i);
+         }
+         returnType = new Type(_method.getReturnType());
+      }
+
       public boolean matches(Method _method){
          return (returnType.matches(_method.getReturnType()));
-
       }
+
    }
+
 }
