@@ -2735,7 +2735,7 @@ class InstructionSet{
 
    }
 
-   static class I_IINC extends Index08{
+   static class I_IINC extends Index08 implements  LocalVariableTableIndexAccessor{
       private int delta;
 
       private boolean wide;
@@ -2755,11 +2755,11 @@ class InstructionSet{
          return ("inc var index 08 bit by byte");
       }
 
-      LocalVariableInfo getLocalVariableInfo(){
+      public LocalVariableInfo getLocalVariableInfo(){
          return (method.getLocalVariableTableEntry().getVariable(getThisPC(), getLocalVariableTableIndex()));
       }
 
-      int getLocalVariableTableIndex(){
+      public int getLocalVariableTableIndex(){
          return (index);
       }
 
