@@ -565,6 +565,14 @@ class ClassModel{
             return (ConstantPool.this.getClassEntry(referenceClassIndex));
          }
 
+         Type getContainingClass(){
+            return(new TypeHelper.Type(getClassEntry().getClassName()));
+         }
+
+         String getName(){
+            return(getNameAndTypeEntry().getNameUTF8Entry().getUTF8());
+         }
+
          int getClassIndex(){
             return (referenceClassIndex);
          }
