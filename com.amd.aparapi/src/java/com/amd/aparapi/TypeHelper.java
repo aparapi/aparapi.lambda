@@ -487,6 +487,46 @@ public class TypeHelper{
       }
    }
 
+   public static class MethodInfo{
+      ArgsAndReturnType argsAndReturnType;
+      Type containingClass;
+      String methodName;
+      public MethodInfo(Method _method){
+         argsAndReturnType = new ArgsAndReturnType(_method);
+         containingClass = new Type(_method.getDeclaringClass());
+         methodName = _method.getName();
+      }
+      public MethodInfo(ClassModel.ConstantPool.MethodEntry _methodEntry){
+         argsAndReturnType = _methodEntry.getArgsAndReturnType();
+         containingClass = _methodEntry.getContainingClass();
+         methodName = _methodEntry.getName();
+
+      }
+      public boolean equals(MethodInfo _other){
+         return(_other.methodName.equals(methodName) && _other.containingClass.equals(containingClass) && _other.argsAndReturnType.equals(argsAndReturnType));
+      }
+
+   }
+
+   public static class FieldInfo{
+      Type type;
+      Type containingClass;
+      String fieldName;
+      FieldInfo(Field _field){
+         type = new Type(_field);
+         containingClass = new Type(_field.getDeclaringClass());
+         fieldName = _field.getName();
+      }
+      FieldInfo(ClassModel.ConstantPool.FieldEntry _fieldEntry){
+          type = _fieldEntry.getType();
+          containingClass = _fieldEntry.getContainingClass();
+          fieldName = _fieldEntry.getName();
+      }
+      public boolean equals(FieldInfo _other){
+         return(_other.fieldName.equals(fieldName) && _other.containingClass.equals(containingClass) && _other.type.equals(type));
+      }
+   }
+
    public static class ArgsAndReturnType{
       private static enum SignatureParseState{
          skipping,
@@ -494,9 +534,9 @@ public class TypeHelper{
          inClass,
          inArray,
          done;
-      }
+      };
 
-      ;
+
       Arg[] args;
       Type returnType;
 
