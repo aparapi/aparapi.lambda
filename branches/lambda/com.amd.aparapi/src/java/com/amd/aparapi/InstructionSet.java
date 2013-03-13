@@ -77,8 +77,8 @@ class InstructionSet{
       B("B", "byte", 1, 1), //
       S("S", "short", 2, 1), //
       I("I", "int", 4, 1), //
-      L("L", "long", 8, 1), // 
-      J("J", "long", 8, 1), // Note J is the java code for 'long' type
+      L("L", "long", 8, 2), // 
+      J("J", "long", 8, 2), // Note J is the java code for 'long' type
       A("A", "array", 4, 1), //
       O("O", "object", 4, 1),
       N("N", "null", 4, 1),
