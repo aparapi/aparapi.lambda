@@ -83,15 +83,10 @@ import com.amd.aparapi.InstructionSet.MethodCall;
 import com.amd.aparapi.InstructionSet.MultiAssignInstruction;
 import com.amd.aparapi.InstructionSet.New;
 import com.amd.aparapi.InstructionSet.Return;
-import com.amd.aparapi.InstructionSet.StoreSpec;
 import com.amd.aparapi.TypeHelper.Arg;
-import com.amd.aparapi.TypeHelper.ArgsAndReturnType;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -180,9 +175,9 @@ class MethodModel{
     * After we have folded the top level instructions this root list will contain a list of all of the 'root' instructions (stores/loops/conditionals)
     * We are going to build a linked list.  Here we track the head and tail
     */
-   private Instruction pcTail = null;
+   //rivate Instruction pcTail = null;
 
-   private Instruction pcHead = null;
+   //private Instruction pcHead = null;
 
    /**
     * Look at each instruction for use of long/double or byte writes which
@@ -225,15 +220,9 @@ class MethodModel{
     * @return Map<Integer, Instruction> the returned pc to Instruction map
     */
    Map<Integer, Instruction> createListOfInstructions() throws ClassParseException{
-      Map<Integer, Instruction> pcMap = new LinkedHashMap<Integer, Instruction>();
-      byte[] code = method.getCode();
 
-      // We create a byteReader for reading the bytes from the code array
-      ByteReader codeReader = new ByteReader(code);
-      while(codeReader.hasMore()){
-         // Create an instruction from code reader's current position
-         int pc = codeReader.getOffset();
-         Instruction instruction = InstructionSet.ByteCode.create(this, codeReader);
+      for(Instruction instruction : method.getInstructions().values()){
+
 
          if((!Config.enablePUTFIELD) && (instruction instanceof I_PUTFIELD)){
             // Special case putfield handling to allow object setter processing
@@ -296,24 +285,9 @@ class MethodModel{
 
          setRequiredPragmas(instruction);
 
-         pcMap.put(pc, instruction);
-
-         // list maintenance, make this the pcHead if pcHead is null
-         if(pcHead == null){
-            pcHead = instruction;
-         }
-
-         // extend the list of instructions here we make the new instruction point to previous tail
-         instruction.setPrevPC(pcTail);
-         // if tail exists (not the first instruction in the list) link it to the new instruction
-         if(pcTail != null){
-            pcTail.setNextPC(instruction);
-         }
-         // now move the tail along
-         pcTail = instruction;
 
       }
-      return (pcMap);
+      return (method.getInstructions());
    }
 
    /**
@@ -331,7 +305,7 @@ class MethodModel{
     */
    void buildBranchGraphs(Map<Integer, Instruction> pcMap){
 
-      for(Instruction instruction = pcHead; instruction != null; instruction = instruction.getNextPC()){
+      for(Instruction instruction : pcMap.values()){
          if(instruction.isBranch()){
             Branch branch = instruction.asBranch();
             Instruction targetInstruction = pcMap.get(branch.getAbsolute());
@@ -352,7 +326,7 @@ class MethodModel{
     */
    void deoptimizeReverseBranches(){
 
-      for(Instruction instruction = pcHead; instruction != null; instruction = instruction.getNextPC()){
+      for(Instruction instruction : method.getInstructions().values()){
          if(instruction.isBranch()){
             Branch branch = instruction.asBranch();
             if(branch.isReverse()){
@@ -463,7 +437,7 @@ class MethodModel{
          while(!e.producesStack()){
             e = e.getPrevExpr();
          }
-         _expressionList.add(new CloneInstruction(this, e));
+         _expressionList.add(new CloneInstruction(method, e));
          System.out.println("clone of " + e);
       }else if(_instruction instanceof I_DUP2){
 
@@ -476,8 +450,8 @@ class MethodModel{
          while(!e.producesStack()){
             e = e.getPrevExpr();
          }
-         _expressionList.add(new CloneInstruction(this, e));
-         _expressionList.add(new CloneInstruction(this, clone));
+         _expressionList.add(new CloneInstruction(method, e));
+         _expressionList.add(new CloneInstruction(method, clone));
       }else if(_instruction instanceof I_DUP_X1){
 
          Instruction e = _expressionList.getTail();
@@ -485,7 +459,7 @@ class MethodModel{
          while(!e.producesStack()){
             e = e.getPrevExpr();
          }
-         Instruction clone1 = new CloneInstruction(this, e);
+         Instruction clone1 = new CloneInstruction(method, e);
          e = e.getPrevExpr();
          while(!e.producesStack()){
             e = e.getPrevExpr();
@@ -512,7 +486,7 @@ class MethodModel{
          }
 
          // Clone it, this will replace the dup action
-         Instruction clone1 = new CloneInstruction(this, e);
+         Instruction clone1 = new CloneInstruction(method, e);
 
          if(logger.isLoggable(Level.FINE)){
             logger.fine("DUP_X2 cloning: clone1=" + clone1);
@@ -559,7 +533,7 @@ class MethodModel{
 
       // we also populate a second list of expressions held between headTail.head and headTail.tail
 
-      for(Instruction instruction = pcHead; instruction != null; instruction = instruction.getNextPC()){
+      for(Instruction instruction : method.getInstructions().values()){
 
          // Here we are going to extract loop/if/structure from the list that we have collected so far in the roots list
          // We are looking for a new instruction which is the target of a forward branch (this is why we collected forward branch counts) we only enter this loop
@@ -664,7 +638,7 @@ class MethodModel{
                         Instruction rhs = add.getRhs();
                         if(lhs instanceof AccessInstanceField){
                            if(rhs instanceof I_ICONST_1){
-                              IncrementInstruction inc = new IncrementInstruction(MethodModel.this, (Instruction) access, true,
+                              IncrementInstruction inc = new IncrementInstruction(method, (Instruction) access, true,
                                     false);
                               _expressionList.replaceInclusive((Instruction) accessRaw, (Instruction) assignRaw, inc);
                               return (inc);
@@ -717,7 +691,7 @@ class MethodModel{
                               if(lhs instanceof AccessInstanceField){
                                  if(rhs instanceof I_ICONST_1){
 
-                                    IncrementInstruction inc = new IncrementInstruction(MethodModel.this,
+                                    IncrementInstruction inc = new IncrementInstruction(method,
                                           (Instruction) topLhsAccess, true, true);
                                     _expressionList.replaceInclusive((Instruction) topAddRaw, (Instruction) assignRaw, inc);
 
@@ -763,7 +737,7 @@ class MethodModel{
                   AccessLocalVariable access = (AccessLocalVariable) i;
                   AssignToLocalVariable assign = (AssignToLocalVariable) i.getNextExpr();
                   if(access.getLocalVariableTableIndex() == assign.getLocalVariableTableIndex()){
-                     IncrementInstruction inc = new IncrementInstruction(MethodModel.this, (Instruction) access, true, false);
+                     IncrementInstruction inc = new IncrementInstruction(method, (Instruction) access, true, false);
                      _expressionList.replaceInclusive((Instruction) access, (Instruction) assign, inc);
                      return (inc);
                   }
@@ -801,7 +775,7 @@ class MethodModel{
                   AccessLocalVariable access = (AccessLocalVariable) i;
                   AssignToLocalVariable assign = (AssignToLocalVariable) i.getNextExpr();
                   if(access.getLocalVariableTableIndex() == assign.getLocalVariableTableIndex()){
-                     IncrementInstruction inc = new IncrementInstruction(MethodModel.this, (Instruction) access, false, false);
+                     IncrementInstruction inc = new IncrementInstruction(method, (Instruction) access, false, false);
                      _expressionList.replaceInclusive((Instruction) access, (Instruction) assign, inc);
                      return (inc);
                   }
@@ -840,7 +814,7 @@ class MethodModel{
                   AssignToLocalVariable assign = (AssignToLocalVariable) i;
                   AccessLocalVariable access = (AccessLocalVariable) i.getNextExpr();
                   if(access.getLocalVariableTableIndex() == assign.getLocalVariableTableIndex()){
-                     IncrementInstruction inc = new IncrementInstruction(MethodModel.this, (Instruction) access, true, true);
+                     IncrementInstruction inc = new IncrementInstruction(method, (Instruction) access, true, true);
                      _expressionList.replaceInclusive((Instruction) assign, (Instruction) access, inc);
                      return (inc);
                   }
@@ -874,7 +848,7 @@ class MethodModel{
                   if(access.getLocalVariableTableIndex() != 0){ // we don;t want to trap on 'this' references ;)
                      AssignToLocalVariable assign = (AssignToLocalVariable) i.getNextExpr();
                      if(access.getLocalVariableTableIndex() != assign.getLocalVariableTableIndex()){
-                        InlineAssignInstruction inlineAssign = new InlineAssignInstruction(MethodModel.this, assign,
+                        InlineAssignInstruction inlineAssign = new InlineAssignInstruction(method, assign,
                               (Instruction) access);
                         _expressionList.replaceInclusive((Instruction) access, (Instruction) assign, inlineAssign);
                         return (inlineAssign);
@@ -898,7 +872,7 @@ class MethodModel{
                   AccessLocalVariable access = (AccessLocalVariable) i.getNextExpr();
                   if(iinc.getLocalVariableTableIndex() == access.getLocalVariableTableIndex()){
 
-                     IncrementInstruction inc = new IncrementInstruction(MethodModel.this, (Instruction) access, iinc.isInc(), true);
+                     IncrementInstruction inc = new IncrementInstruction(method, (Instruction) access, iinc.isInc(), true);
                      _expressionList.replaceInclusive(iinc, (Instruction) access, inc);
                      return (inc);
                   }
@@ -921,7 +895,7 @@ class MethodModel{
 
                   if(iinc.getLocalVariableTableIndex() == access.getLocalVariableTableIndex()){
 
-                     IncrementInstruction inc = new IncrementInstruction(MethodModel.this, (Instruction) access, iinc.isInc(),
+                     IncrementInstruction inc = new IncrementInstruction(method, (Instruction) access, iinc.isInc(),
                            false);
                      _expressionList.replaceInclusive((Instruction) access, iinc, inc);
                      return (inc);
@@ -953,7 +927,7 @@ class MethodModel{
 
                   AssignToLocalVariable assign = (AssignToLocalVariable) i.getNextExpr();
 
-                  InlineAssignInstruction inlineAssign = new InlineAssignInstruction(MethodModel.this, assign, (Instruction) cast);
+                  InlineAssignInstruction inlineAssign = new InlineAssignInstruction(method, assign, (Instruction) cast);
                   _expressionList.replaceInclusive((Instruction) cast, (Instruction) assign, inlineAssign);
                   return (inlineAssign);
 
@@ -991,7 +965,7 @@ class MethodModel{
                   Instruction assignArrayRaw = i.getNextExpr();
                   //   I_IADD add = (I_IADD) addRaw.getReal();
                   AssignToArrayElement assignArray = (AssignToArrayElement) assignArrayRaw.getReal();
-                  FieldArrayElementIncrement inlineAssign = new FieldArrayElementIncrement(MethodModel.this, assignArray, true,
+                  FieldArrayElementIncrement inlineAssign = new FieldArrayElementIncrement(method, assignArray, true,
                         true);
                   _expressionList.replaceInclusive(addRaw, assignArrayRaw, inlineAssign);
                   return (inlineAssign);
@@ -1031,7 +1005,7 @@ class MethodModel{
                   Instruction assignArrayRaw = i.getNextExpr();
                   //   I_IADD add = (I_IADD) addRaw.getReal();
                   AssignToArrayElement assignArray = (AssignToArrayElement) assignArrayRaw.getReal();
-                  FieldArrayElementIncrement inlineAssign = new FieldArrayElementIncrement(MethodModel.this, assignArray, false,
+                  FieldArrayElementIncrement inlineAssign = new FieldArrayElementIncrement(method, assignArray, false,
                         true);
                   _expressionList.replaceInclusive(subRaw, assignArrayRaw, inlineAssign);
                   return (inlineAssign);
@@ -1077,7 +1051,7 @@ class MethodModel{
                      //AccessLocalVariable accessLocalVariable2 = (AccessLocalVariable) assignArray.getArrayIndex().getReal();
                      //  if (accessLocalVariable1.getLocalVariableTableIndex() == accessLocalVariable2.getLocalVariableTableIndex()) {
                      // and both arrays are referencing the array element using the same variable
-                     FieldArrayElementIncrement inlineAssign = new FieldArrayElementIncrement(MethodModel.this, assignArray, true,
+                     FieldArrayElementIncrement inlineAssign = new FieldArrayElementIncrement(method, assignArray, true,
                            false);
                      _expressionList.replaceInclusive(accessArrayRaw, assignArrayRaw, inlineAssign);
                      return (inlineAssign);
@@ -1126,7 +1100,7 @@ class MethodModel{
                      AccessLocalVariable accessLocalVariable2 = (AccessLocalVariable) assignArray.getArrayIndex().getReal();
                      if(accessLocalVariable1.getLocalVariableTableIndex() == accessLocalVariable2.getLocalVariableTableIndex()){
                         // and both arrays are referencing the array element using the same variable
-                        FieldArrayElementIncrement inlineAssign = new FieldArrayElementIncrement(MethodModel.this, assignArray,
+                        FieldArrayElementIncrement inlineAssign = new FieldArrayElementIncrement(method, assignArray,
                               false, false);
                         _expressionList.replaceInclusive(accessArrayRaw, assignArrayRaw, inlineAssign);
                         return (inlineAssign);
@@ -1161,7 +1135,7 @@ class MethodModel{
 
                   AssignToLocalVariable assign = (AssignToLocalVariable) i.getNextExpr();
 
-                  InlineAssignInstruction inlineAssign = new InlineAssignInstruction(MethodModel.this, assign, (Instruction) invoke);
+                  InlineAssignInstruction inlineAssign = new InlineAssignInstruction(method, assign, (Instruction) invoke);
                   _expressionList.replaceInclusive((Instruction) invoke, (Instruction) assign, inlineAssign);
                   return (inlineAssign);
 
@@ -1194,7 +1168,7 @@ class MethodModel{
 
                   AssignToLocalVariable assign = (AssignToLocalVariable) i.getNextExpr();
 
-                  InlineAssignInstruction inlineAssign = new InlineAssignInstruction(MethodModel.this, assign,
+                  InlineAssignInstruction inlineAssign = new InlineAssignInstruction(method, assign,
                         (Instruction) constant);
                   _expressionList.replaceInclusive((Instruction) constant, (Instruction) assign, inlineAssign);
                   return (inlineAssign);
@@ -1227,7 +1201,7 @@ class MethodModel{
 
                   AssignToArrayElement assign = (AssignToArrayElement) i.getNextExpr();
 
-                  FieldArrayElementAssign inlineAssign = new FieldArrayElementAssign(MethodModel.this, assign, (Instruction) invoke);
+                  FieldArrayElementAssign inlineAssign = new FieldArrayElementAssign(method, assign, (Instruction) invoke);
                   _expressionList.replaceInclusive((Instruction) invoke, (Instruction) assign, inlineAssign);
                   return (inlineAssign);
 
@@ -1260,7 +1234,7 @@ class MethodModel{
 
                   AssignToArrayElement assign = (AssignToArrayElement) i.getNextExpr();
 
-                  FieldArrayElementAssign inlineAssign = new FieldArrayElementAssign(MethodModel.this, assign, (Instruction) invoke);
+                  FieldArrayElementAssign inlineAssign = new FieldArrayElementAssign(method, assign, (Instruction) invoke);
                   _expressionList.replaceInclusive((Instruction) invoke, (Instruction) assign, inlineAssign);
 
                   return (inlineAssign);
@@ -1300,7 +1274,7 @@ class MethodModel{
             count++;
          }
          if(assign == null){
-            Instruction newOne = new MultiAssignInstruction(this, _operandStart, assignFirst, assign);
+            Instruction newOne = new MultiAssignInstruction(method, _operandStart, assignFirst, assign);
             _expressionList.replaceInclusive(_operandStart, assign, newOne);
             txformed = true;
          }
@@ -1478,201 +1452,6 @@ class MethodModel{
       // used for fake derived classes
    }
 
-   public static class FakeLocalVariableTableEntry implements LocalVariableTableEntry<LocalVariableInfo>{
-
-      class Var implements LocalVariableInfo{
-
-         int startPc = 0;
-
-         int endPc = 0;
-
-         String name = null;
-
-         boolean arg;
-
-         String descriptor = "";
-
-         int slotIndex;
-
-         Var(StoreSpec _storeSpec, int _slotIndex, int _startPc, boolean _arg){
-            slotIndex = _slotIndex;
-            arg = _arg;
-            startPc = _startPc;
-            if(_storeSpec.equals(StoreSpec.A)){
-               name = "arr_" + _slotIndex;
-               descriptor = "/* arg */";
-            }else{
-               name = _storeSpec.toString().toLowerCase() + "_" + _slotIndex;
-               descriptor = _storeSpec.toString();
-
-            }
-         }
-
-         Var(){
-            name = "NONE";
-         }
-
-         @Override
-         public boolean equals(Object object){
-            return (object instanceof Var && ((object == this) || ((Var) object).name.equals(name)));
-         }
-
-         public String toString(){
-            return (name + "[" + startPc + "-" + endPc + "]");
-         }
-
-         @Override
-         public int getStart(){
-            return startPc;
-         }
-
-         @Override
-         public boolean isArray(){
-            return name.startsWith("arr");
-         }
-
-         @Override
-         public boolean isObject(){
-            return name.startsWith("o");
-         }
-
-         @Override
-         public int getEnd(){
-            return endPc;
-         }
-
-         @Override
-         public int getLength(){
-            return endPc - startPc;
-         }
-
-         @Override
-         public String getVariableName(){
-            return (name);
-         }
-
-         @Override
-         public String getVariableDescriptor(){
-            return (descriptor);
-         }
-
-         @Override
-         public int getVariableIndex(){
-            return (slotIndex);
-         }
-      }
-
-      List<LocalVariableInfo> list = new ArrayList<LocalVariableInfo>();
-
-      public FakeLocalVariableTableEntry(Map<Integer, Instruction> _pcMap, ClassModelMethod _method){
-         int numberOfSlots = _method.getCodeEntry().getMaxLocals();
-
-         // MethodDescription description = TypeHelper.getMethodDescription(_method.getDescriptor());
-
-         ArgsAndReturnType argsAndReturnType = _method.getArgsAndReturnType();
-         Arg[] args = argsAndReturnType.getArgs();
-
-         int thisOffset = _method.isStatic() ? 0 : 1;
-
-         Var[] vars = new Var[numberOfSlots + thisOffset];
-         StoreSpec[] argsAsStoreSpecs = new StoreSpec[args.length + thisOffset];
-         if(thisOffset == 1){
-            argsAsStoreSpecs[0] = StoreSpec.O;
-            vars[0] = new Var(argsAsStoreSpecs[0], 0, 0, true);
-            list.add(vars[0]);
-
-         }
-
-         for(int i = 0; i < args.length; i++){
-            if(args[i].isArray()){
-               argsAsStoreSpecs[i + thisOffset] = StoreSpec.A;
-            }else if(args[i].isObject()){
-               argsAsStoreSpecs[i + thisOffset] = StoreSpec.O;
-            }else{
-               argsAsStoreSpecs[i + thisOffset] = StoreSpec.valueOf(args[i].getType().substring(0, 1));
-            }
-            vars[i + thisOffset] = new Var(argsAsStoreSpecs[i + thisOffset], i + thisOffset, 0, true);
-
-            // Preserve actual object type
-            if(argsAsStoreSpecs[i + thisOffset] == StoreSpec.O || argsAsStoreSpecs[i + thisOffset] == StoreSpec.A){
-               vars[i + thisOffset].descriptor = args[i].getType();
-            }
-            list.add(vars[i + thisOffset]);
-         }
-         for(int i = args.length + thisOffset; i < numberOfSlots + thisOffset; i++){
-            vars[i] = new Var();
-         }
-
-         int pc = 0;
-         Instruction instruction = null;
-         for(Entry<Integer, Instruction> entry : _pcMap.entrySet()){
-            pc = entry.getKey();
-            instruction = entry.getValue();
-            StoreSpec storeSpec = instruction.getByteCode().getStore();
-            if(storeSpec != StoreSpec.NONE){
-               int slotIndex = ((InstructionSet.LocalVariableTableIndexAccessor) instruction).getLocalVariableTableIndex();
-               Var prevVar = vars[slotIndex];
-               Var var = new Var(storeSpec, slotIndex, pc + instruction.getLength(), false); // will get collected pretty soon if this is not the same as the previous in this slot
-               if(!prevVar.equals(var)){
-                  prevVar.endPc = pc;
-                  vars[slotIndex] = var;
-                  list.add(vars[slotIndex]);
-               }
-            }
-         }
-         for(int i = 0; i < numberOfSlots + thisOffset; i++){
-            vars[i].endPc = pc + instruction.getLength();
-         }
-         Collections.sort(list, new Comparator<LocalVariableInfo>(){
-            @Override
-            public int compare(LocalVariableInfo o1, LocalVariableInfo o2){
-               return o1.getStart() - o2.getStart();
-            }
-         });
-         if(Config.enableShowFakeLocalVariableTable){
-            System.out.println("FakeLocalVariableTable:");
-            System.out.println(" Start  Length  Slot    Name   Signature");
-            for(LocalVariableInfo lvi : list){
-               Var var = (Var) lvi;
-               System.out.println(String.format(" %5d   %5d  %4d  %8s     %s", var.startPc, var.getLength(), var.slotIndex,
-                     var.name, var.descriptor));
-            }
-         }
-
-      }
-
-      @Override
-      public LocalVariableInfo getVariable(int _pc, int _index){
-         LocalVariableInfo returnValue = null;
-         //  System.out.println("pc = " + _pc + " index = " + _index);
-         for(LocalVariableInfo localVariableInfo : list){
-            // System.out.println("   start=" + localVariableInfo.getStart() + " length=" + localVariableInfo.getLength()
-            // + " varidx=" + localVariableInfo.getVariableIndex());
-            if(_pc >= localVariableInfo.getStart() - 1 && _pc <= (localVariableInfo.getStart() + localVariableInfo.getLength())
-                  && _index == localVariableInfo.getVariableIndex()){
-               returnValue = localVariableInfo;
-               break;
-            }
-         }
-         return (returnValue);
-      }
-
-      String getVariableName(int _pc, int _index){
-         String returnValue = "unknown";
-         LocalVariableInfo localVariableInfo = (LocalVariableInfo) getVariable(_pc, _index);
-         if(localVariableInfo != null){
-            returnValue = ((Var) localVariableInfo).name;
-         }
-         // System.out.println("returning " + returnValue);
-         return (returnValue);
-      }
-
-      @Override
-      public Iterator<LocalVariableInfo> iterator(){
-         return list.iterator();
-      }
-
-   }
 
    private void init(ClassModelMethod _method) throws AparapiException{
       try{
@@ -1693,22 +1472,8 @@ class MethodModel{
          // We are going to make 4 passes.
 
          // Pass #1 create a linked list of instructions from head to tail
-         Map<Integer, Instruction> pcMap = createListOfInstructions();
+         Map<Integer, Instruction> pcMap = method.getInstructions();
 
-         LocalVariableTableEntry<LocalVariableInfo> localVariableTableEntry = method.getLocalVariableTableEntry();
-
-         if(localVariableTableEntry == null){
-            localVariableTableEntry = new FakeLocalVariableTableEntry(pcMap, method);
-
-            method.setLocalVariableTableEntry(localVariableTableEntry);
-            logger.info("Method "
-                  + method.getName()
-                  + method.getDescriptor()
-                  + " does not contain a LocalVariableTable entry (source not compiled with -g) aparapi create a synthetic table based on bytecode");
-         }
-
-         // pass #2 build branch graph
-         buildBranchGraphs(pcMap);
 
          // pass #3 build branch graph
          deoptimizeReverseBranches();
@@ -1841,7 +1606,7 @@ class MethodModel{
    }
 
    Instruction getPCHead(){
-      return (pcHead);
+      return (method.getPCHead());
    }
 
    Instruction getExprHead(){

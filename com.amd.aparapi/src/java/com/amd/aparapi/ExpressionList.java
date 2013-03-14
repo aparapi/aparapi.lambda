@@ -610,7 +610,7 @@ class ExpressionList{
                            extentBranchSet.unhook();
 
                            addAsComposites(ByteCode.COMPOSITE_FOR_SUN, loopTop, extentBranchSet);
-                           UnconditionalBranch fakeGoto = new FakeGoto(methodModel, extentBranchSet.getLast().getTarget());
+                           UnconditionalBranch fakeGoto = new FakeGoto(methodModel.getMethod(), extentBranchSet.getLast().getTarget());
 
                            add(fakeGoto);
                            extentBranchSet.getLast().getTarget().addBranchTarget(fakeGoto);
@@ -732,7 +732,7 @@ class ExpressionList{
                                        }
 
                                        CompositeInstruction composite = CompositeInstruction.create(ByteCode.COMPOSITE_IF_ELSE,
-                                             methodModel, elseBranchSet.getFirst(), thisGoto, elseBranchSet);
+                                             methodModel.getMethod(), elseBranchSet.getFirst(), thisGoto, elseBranchSet);
                                        replaceInclusive(elseBranchSet.getFirst(), thisGoto.getPrevExpr(), composite);
 
                                        handled = true;
@@ -778,7 +778,7 @@ class ExpressionList{
          }else{
 
             // might be end of arbitrary scope
-            LocalVariableTableEntry<LocalVariableInfo> localVariableTable = methodModel.getMethod().getLocalVariableTableEntry();
+            LocalVariableTableEntry<LocalVariableTableEntry, LocalVariableInfo> localVariableTable = methodModel.getMethod().getLocalVariableTableEntry();
             int startPc = Short.MAX_VALUE;
 
             for(LocalVariableInfo localVariableInfo : localVariableTable){
@@ -826,7 +826,7 @@ class ExpressionList{
    private void addAsComposites(ByteCode _byteCode, Instruction _start, BranchSet _branchSet){
       Instruction childTail = tail;
       Instruction childHead = createList(_start);
-      CompositeInstruction composite = CompositeInstruction.create(_byteCode, methodModel, childHead, childTail, _branchSet);
+      CompositeInstruction composite = CompositeInstruction.create(_byteCode, methodModel.getMethod(), childHead, childTail, _branchSet);
       add(composite);
    }
 
@@ -840,7 +840,6 @@ class ExpressionList{
     *                 |-->2
     * </pre>
     *
-    * @param _cursor      The instruction we are looking at
     * @param _instruction The instruction we are considering adding (may be null)
     * @return
     */

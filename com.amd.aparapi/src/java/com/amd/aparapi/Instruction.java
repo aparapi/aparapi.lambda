@@ -54,7 +54,7 @@ import java.util.LinkedList;
  */
 abstract class Instruction{
 
-   protected MethodModel method;
+   protected ClassModel.ClassModelMethod method;
 
    private ByteCode byteCode;
 
@@ -152,13 +152,13 @@ abstract class Instruction{
       return (getFirstChild() == null ? pc : getFirstChild().getStartPC());
    }
 
-   protected Instruction(MethodModel _method, ByteCode _byteCode, int _pc){
+   protected Instruction(ClassModel.ClassModelMethod _method, ByteCode _byteCode, int _pc){
       method = _method;
       pc = _pc;
       byteCode = _byteCode;
    }
 
-   protected Instruction(MethodModel _method, ByteCode _byteCode, ByteReader _byteReader, boolean _wide){
+   protected Instruction(ClassModel.ClassModelMethod _method, ByteCode _byteCode, ByteReader _byteReader, boolean _wide){
       this(_method, _byteCode, _wide ? _byteReader.getOffset() - 2 : _byteReader.getOffset() - 1);
    }
 
@@ -217,7 +217,7 @@ abstract class Instruction{
 
    }
 
-   MethodModel getMethod(){
+   ClassModel.ClassModelMethod getMethod(){
       return (method);
    }
 

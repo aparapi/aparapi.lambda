@@ -729,14 +729,14 @@ class InstructionSet{
          return false;
       }
 
-      Instruction newInstruction(MethodModel _methodModel, ByteReader byteReader, boolean _isWide){
+      Instruction newInstruction(ClassModel.ClassModelMethod _classModelMethod, ByteReader byteReader, boolean _isWide){
          Instruction newInstruction = null;
          if(clazz != null){
 
             try{
 
-               Constructor<?> constructor = clazz.getDeclaredConstructor(MethodModel.class, ByteReader.class, boolean.class);
-               newInstruction = (Instruction) constructor.newInstance(_methodModel, byteReader, _isWide);
+               Constructor<?> constructor = clazz.getDeclaredConstructor(ClassModel.ClassModelMethod.class, ByteReader.class, boolean.class);
+               newInstruction = (Instruction) constructor.newInstance(_classModelMethod, byteReader, _isWide);
                newInstruction.setLength(byteReader.getOffset() - newInstruction.getThisPC());
             }catch(SecurityException e){
                // TODO Auto-generated catch block
@@ -762,7 +762,7 @@ class InstructionSet{
          return (newInstruction);
       }
 
-      static Instruction create(MethodModel _methodModel, ByteReader _byteReader){
+      static Instruction create(ClassModel.ClassModelMethod _classModelMethod, ByteReader _byteReader){
          ByteCode byteCode = get(_byteReader.u1());
          boolean isWide = false;
          if(byteCode.equals(ByteCode.WIDE)){
@@ -771,7 +771,7 @@ class InstructionSet{
             isWide = true;
             byteCode = get(_byteReader.u1());
          }
-         Instruction newInstruction = byteCode.newInstruction(_methodModel, _byteReader, isWide);
+         Instruction newInstruction = byteCode.newInstruction(_classModelMethod, _byteReader, isWide);
 
          return (newInstruction);
 
@@ -794,7 +794,7 @@ class InstructionSet{
 
       protected BranchSet branchSet;
 
-      protected CompositeInstruction(MethodModel method, ByteCode _byteCode, Instruction _firstChild, Instruction _lastChild,
+      protected CompositeInstruction(ClassModel.ClassModelMethod method, ByteCode _byteCode, Instruction _firstChild, Instruction _lastChild,
                                      BranchSet _branchSet){
          super(method, _byteCode, -1);
          branchSet = _branchSet;
@@ -813,7 +813,7 @@ class InstructionSet{
          return (getFirstChild().getStartPC());
       }
 
-      static CompositeInstruction create(ByteCode _byteCode, MethodModel _methodModel, Instruction _firstChild,
+      static CompositeInstruction create(ByteCode _byteCode, ClassModel.ClassModelMethod _methodModel, Instruction _firstChild,
                                          Instruction _lastChild, BranchSet _branchSet){
          CompositeInstruction compositeInstruction = null;
          switch(_byteCode){
@@ -853,16 +853,16 @@ class InstructionSet{
 
    static class CompositeIfInstruction extends CompositeInstruction{
 
-      protected CompositeIfInstruction(MethodModel method, Instruction _firstChild, Instruction _lastChild, BranchSet _branchSet){
-         super(method, ByteCode.COMPOSITE_IF, _firstChild, _lastChild, _branchSet);
+      protected CompositeIfInstruction(ClassModel.ClassModelMethod _method, Instruction _firstChild, Instruction _lastChild, BranchSet _branchSet){
+         super(_method, ByteCode.COMPOSITE_IF, _firstChild, _lastChild, _branchSet);
 
       }
    }
 
    static class CompositeIfElseInstruction extends CompositeInstruction{
 
-      protected CompositeIfElseInstruction(MethodModel method, Instruction _firstChild, Instruction _lastChild, BranchSet _branchSet){
-         super(method, ByteCode.COMPOSITE_IF_ELSE, _firstChild, _lastChild, _branchSet);
+      protected CompositeIfElseInstruction(ClassModel.ClassModelMethod _method, Instruction _firstChild, Instruction _lastChild, BranchSet _branchSet){
+         super(_method, ByteCode.COMPOSITE_IF_ELSE, _firstChild, _lastChild, _branchSet);
 
       }
 
@@ -870,60 +870,60 @@ class InstructionSet{
 
    static class CompositeForSunInstruction extends CompositeInstruction{
 
-      protected CompositeForSunInstruction(MethodModel method, Instruction _firstChild, Instruction _lastChild, BranchSet _branchSet){
-         super(method, ByteCode.COMPOSITE_FOR_SUN, _firstChild, _lastChild, _branchSet);
+      protected CompositeForSunInstruction(ClassModel.ClassModelMethod _method, Instruction _firstChild, Instruction _lastChild, BranchSet _branchSet){
+         super(_method, ByteCode.COMPOSITE_FOR_SUN, _firstChild, _lastChild, _branchSet);
 
       }
    }
 
    static class CompositeWhileInstruction extends CompositeInstruction{
 
-      protected CompositeWhileInstruction(MethodModel method, Instruction _firstChild, Instruction _lastChild, BranchSet _branchSet){
-         super(method, ByteCode.COMPOSITE_WHILE, _firstChild, _lastChild, _branchSet);
+      protected CompositeWhileInstruction(ClassModel.ClassModelMethod _method, Instruction _firstChild, Instruction _lastChild, BranchSet _branchSet){
+         super(_method, ByteCode.COMPOSITE_WHILE, _firstChild, _lastChild, _branchSet);
 
       }
    }
 
    static class CompositeEmptyLoopInstruction extends CompositeInstruction{
 
-      protected CompositeEmptyLoopInstruction(MethodModel method, Instruction _firstChild, Instruction _lastChild,
+      protected CompositeEmptyLoopInstruction(ClassModel.ClassModelMethod _method, Instruction _firstChild, Instruction _lastChild,
                                               BranchSet _branchSet){
-         super(method, ByteCode.COMPOSITE_EMPTY_LOOP, _firstChild, _lastChild, _branchSet);
+         super(_method, ByteCode.COMPOSITE_EMPTY_LOOP, _firstChild, _lastChild, _branchSet);
 
       }
    }
 
    static class CompositeDoWhileInstruction extends CompositeInstruction{
 
-      protected CompositeDoWhileInstruction(MethodModel method, Instruction _firstChild, Instruction _lastChild,
+      protected CompositeDoWhileInstruction(ClassModel.ClassModelMethod _method, Instruction _firstChild, Instruction _lastChild,
                                             BranchSet _branchSet){
-         super(method, ByteCode.COMPOSITE_DO_WHILE, _firstChild, _lastChild, _branchSet);
+         super(_method, ByteCode.COMPOSITE_DO_WHILE, _firstChild, _lastChild, _branchSet);
 
       }
    }
 
    static class CompositeForEclipseInstruction extends CompositeInstruction{
 
-      protected CompositeForEclipseInstruction(MethodModel method, Instruction _firstChild, Instruction _lastChild,
+      protected CompositeForEclipseInstruction(ClassModel.ClassModelMethod _method, Instruction _firstChild, Instruction _lastChild,
                                                BranchSet _branchSet){
-         super(method, ByteCode.COMPOSITE_FOR_ECLIPSE, _firstChild, _lastChild, _branchSet);
+         super(_method, ByteCode.COMPOSITE_FOR_ECLIPSE, _firstChild, _lastChild, _branchSet);
 
       }
    }
 
    static class CompositeArbitraryScopeInstruction extends CompositeInstruction{
 
-      protected CompositeArbitraryScopeInstruction(MethodModel method, Instruction _firstChild, Instruction _lastChild,
+      protected CompositeArbitraryScopeInstruction(ClassModel.ClassModelMethod _method, Instruction _firstChild, Instruction _lastChild,
                                                    BranchSet _branchSet){
-         super(method, ByteCode.COMPOSITE_ARBITRARY_SCOPE, _firstChild, _lastChild, _branchSet);
+         super(_method, ByteCode.COMPOSITE_ARBITRARY_SCOPE, _firstChild, _lastChild, _branchSet);
 
       }
    }
 
    static abstract class OperatorInstruction extends Instruction{
 
-      protected OperatorInstruction(MethodModel _methodPoolEntry, ByteCode code, ByteReader reader, boolean _wide){
-         super(_methodPoolEntry, code, reader, _wide);
+      protected OperatorInstruction(ClassModel.ClassModelMethod _method, ByteCode code, ByteReader reader, boolean _wide){
+         super(_method, code, reader, _wide);
 
       }
 
@@ -945,8 +945,8 @@ class InstructionSet{
          return (getLastChild());
       }
 
-      protected BinaryOperator(MethodModel _methodPoolEntry, ByteCode code, ByteReader reader, boolean _wide){
-         super(_methodPoolEntry, code, reader, _wide);
+      protected BinaryOperator(ClassModel.ClassModelMethod _method, ByteCode code, ByteReader reader, boolean _wide){
+         super(_method, code, reader, _wide);
       }
 
    }
@@ -958,16 +958,16 @@ class InstructionSet{
          return (getFirstChild());
       }
 
-      protected UnaryOperator(MethodModel _methodPoolEntry, ByteCode code, ByteReader reader, boolean _wide){
-         super(_methodPoolEntry, code, reader, _wide);
+      protected UnaryOperator(ClassModel.ClassModelMethod _method, ByteCode code, ByteReader reader, boolean _wide){
+         super(_method, code, reader, _wide);
       }
 
    }
 
    static abstract class CastOperator extends UnaryOperator{
 
-      protected CastOperator(MethodModel _methodPoolEntry, ByteCode code, ByteReader reader, boolean _wide){
-         super(_methodPoolEntry, code, reader, _wide);
+      protected CastOperator(ClassModel.ClassModelMethod _method, ByteCode code, ByteReader reader, boolean _wide){
+         super(_method, code, reader, _wide);
       }
 
    }
@@ -987,13 +987,13 @@ class InstructionSet{
          return (offset);
       }
 
-      Branch(MethodModel _methodPoolEntry, ByteCode _byteCode, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, _byteCode, _byteReader, _wide);
+      Branch(ClassModel.ClassModelMethod _method, ByteCode _byteCode, ByteReader _byteReader, boolean _wide){
+         super(_method, _byteCode, _byteReader, _wide);
 
       }
 
-      Branch(MethodModel _methodPoolEntry, ByteCode _byteCode, Instruction _target){
-         super(_methodPoolEntry, _byteCode, -1);
+      Branch(ClassModel.ClassModelMethod _method, ByteCode _byteCode, Instruction _target){
+         super(_method, _byteCode, -1);
          setTarget(_target);
 
       }
@@ -1068,8 +1068,8 @@ class InstructionSet{
    static abstract class ConditionalBranch extends Branch{
       private BranchSet branchSet;
 
-      ConditionalBranch(MethodModel _methodPoolEntry, ByteCode _byteCode, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, _byteCode, _byteReader, _wide);
+      ConditionalBranch(ClassModel.ClassModelMethod _method, ByteCode _byteCode, ByteReader _byteReader, boolean _wide){
+         super(_method, _byteCode, _byteReader, _wide);
       }
 
       void setBranchSet(BranchSet _branchSet){
@@ -1121,20 +1121,20 @@ class InstructionSet{
 
    static abstract class UnconditionalBranch extends Branch{
 
-      UnconditionalBranch(MethodModel _methodPoolEntry, ByteCode _byteCode, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, _byteCode, _byteReader, _wide);
+      UnconditionalBranch(ClassModel.ClassModelMethod _method, ByteCode _byteCode, ByteReader _byteReader, boolean _wide){
+         super(_method, _byteCode, _byteReader, _wide);
       }
 
-      UnconditionalBranch(MethodModel _methodPoolEntry, ByteCode _byteCode, Instruction _target){
-         super(_methodPoolEntry, _byteCode, _target);
+      UnconditionalBranch(ClassModel.ClassModelMethod _method, ByteCode _byteCode, Instruction _target){
+         super(_method, _byteCode, _target);
       }
 
    }
 
    static abstract class IfUnary extends ConditionalBranch16 implements Unary{
 
-      IfUnary(MethodModel _methodPoolEntry, ByteCode _byteCode, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, _byteCode, _byteReader, _wide);
+      IfUnary(ClassModel.ClassModelMethod _method, ByteCode _byteCode, ByteReader _byteReader, boolean _wide){
+         super(_method, _byteCode, _byteReader, _wide);
 
       }
 
@@ -1147,8 +1147,8 @@ class InstructionSet{
 
    static abstract class If extends ConditionalBranch16 implements Binary{
 
-      If(MethodModel _methodPoolEntry, ByteCode _byteCode, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, _byteCode, _byteReader, _wide);
+      If(ClassModel.ClassModelMethod _method, ByteCode _byteCode, ByteReader _byteReader, boolean _wide){
+         super(_method, _byteCode, _byteReader, _wide);
 
       }
 
@@ -1166,8 +1166,8 @@ class InstructionSet{
 
    static abstract class ConditionalBranch16 extends ConditionalBranch implements HasOperator{
 
-      ConditionalBranch16(MethodModel _methodPoolEntry, ByteCode _byteCode, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, _byteCode, _byteReader, _wide);
+      ConditionalBranch16(ClassModel.ClassModelMethod _method, ByteCode _byteCode, ByteReader _byteReader, boolean _wide){
+         super(_method, _byteCode, _byteReader, _wide);
          offset = _byteReader.s2();
 
       }
@@ -1180,8 +1180,8 @@ class InstructionSet{
 
    static abstract class UnconditionalBranch16 extends UnconditionalBranch{
 
-      UnconditionalBranch16(MethodModel _methodPoolEntry, ByteCode _byteCode, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, _byteCode, _byteReader, _wide);
+      UnconditionalBranch16(ClassModel.ClassModelMethod _method, ByteCode _byteCode, ByteReader _byteReader, boolean _wide){
+         super(_method, _byteCode, _byteReader, _wide);
          offset = _byteReader.s2();
 
       }
@@ -1189,8 +1189,8 @@ class InstructionSet{
    }
 
    static abstract class Branch32 extends UnconditionalBranch{
-      Branch32(MethodModel _methodPoolEntry, ByteCode _byteCode, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, _byteCode, _byteReader, _wide);
+      Branch32(ClassModel.ClassModelMethod _method, ByteCode _byteCode, ByteReader _byteReader, boolean _wide){
+         super(_method, _byteCode, _byteReader, _wide);
          offset = _byteReader.s4();
 
       }
@@ -1199,8 +1199,8 @@ class InstructionSet{
 
    static abstract class ArrayAccess extends Instruction{
 
-      protected ArrayAccess(MethodModel _methodPoolEntry, ByteCode _byteCode, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, _byteCode, _byteReader, _wide);
+      protected ArrayAccess(ClassModel.ClassModelMethod _method, ByteCode _byteCode, ByteReader _byteReader, boolean _wide){
+         super(_method, _byteCode, _byteReader, _wide);
 
       }
 
@@ -1215,14 +1215,14 @@ class InstructionSet{
    }
 
    static abstract class AccessArrayElement extends ArrayAccess{
-      protected AccessArrayElement(MethodModel _methodPoolEntry, ByteCode _byteCode, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, _byteCode, _byteReader, _wide);
+      protected AccessArrayElement(ClassModel.ClassModelMethod _method, ByteCode _byteCode, ByteReader _byteReader, boolean _wide){
+         super(_method, _byteCode, _byteReader, _wide);
       }
    }
 
    static class I_AALOAD extends AccessArrayElement{
-      I_AALOAD(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.AALOAD, _byteReader, _wide);
+      I_AALOAD(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.AALOAD, _byteReader, _wide);
 
       }
 
@@ -1238,16 +1238,16 @@ class InstructionSet{
          return (getFirstChild().getNextExpr().getNextExpr());
       }
 
-      protected AssignToArrayElement(MethodModel _methodPoolEntry, ByteCode _byteCode, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, _byteCode, _byteReader, _wide);
+      protected AssignToArrayElement(ClassModel.ClassModelMethod _method, ByteCode _byteCode, ByteReader _byteReader, boolean _wide){
+         super(_method, _byteCode, _byteReader, _wide);
 
       }
 
    }
 
    static class I_AASTORE extends AssignToArrayElement{
-      I_AASTORE(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.AASTORE, _byteReader, _wide);
+      I_AASTORE(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.AASTORE, _byteReader, _wide);
 
       }
 
@@ -1258,8 +1258,8 @@ class InstructionSet{
    }
 
    static class I_ACONST_NULL extends Instruction implements Constant<Object>{
-      I_ACONST_NULL(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.ACONST_NULL, _byteReader, _wide);
+      I_ACONST_NULL(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.ACONST_NULL, _byteReader, _wide);
 
       }
 
@@ -1275,9 +1275,9 @@ class InstructionSet{
    }
 
    static abstract class LocalVariableConstIndexAccessor extends IndexConst implements AccessLocalVariable{
-      LocalVariableConstIndexAccessor(MethodModel methodPoolEntry, ByteCode byteCode, ByteReader byteReader, boolean _wide,
+      LocalVariableConstIndexAccessor(ClassModel.ClassModelMethod _method, ByteCode byteCode, ByteReader byteReader, boolean _wide,
                                       int index){
-         super(methodPoolEntry, byteCode, byteReader, _wide, index);
+         super(_method, byteCode, byteReader, _wide, index);
       }
 
       @Override
@@ -1292,8 +1292,8 @@ class InstructionSet{
    }
 
    static abstract class LocalVariableConstIndexLoad extends LocalVariableConstIndexAccessor{
-      LocalVariableConstIndexLoad(MethodModel methodPoolEntry, ByteCode byteCode, ByteReader byteReader, boolean _wide, int index){
-         super(methodPoolEntry, byteCode, byteReader, _wide, index);
+      LocalVariableConstIndexLoad(ClassModel.ClassModelMethod _method, ByteCode byteCode, ByteReader byteReader, boolean _wide, int index){
+         super(_method, byteCode, byteReader, _wide, index);
       }
 
       @Override
@@ -1304,8 +1304,8 @@ class InstructionSet{
    }
 
    static abstract class LocalVariableConstIndexStore extends LocalVariableConstIndexAccessor implements AssignToLocalVariable{
-      LocalVariableConstIndexStore(MethodModel methodPoolEntry, ByteCode byteCode, ByteReader byteReader, boolean _wide, int index){
-         super(methodPoolEntry, byteCode, byteReader, _wide, index);
+      LocalVariableConstIndexStore(ClassModel.ClassModelMethod _method, ByteCode byteCode, ByteReader byteReader, boolean _wide, int index){
+         super(_method, byteCode, byteReader, _wide, index);
       }
 
       @Override
@@ -1322,8 +1322,8 @@ class InstructionSet{
    }
 
    static abstract class LocalVariableIndex08Accessor extends Index08 implements AccessLocalVariable{
-      LocalVariableIndex08Accessor(MethodModel methodPoolEntry, ByteCode byteCode, ByteReader byteReader, boolean _wide){
-         super(methodPoolEntry, byteCode, byteReader, _wide);
+      LocalVariableIndex08Accessor(ClassModel.ClassModelMethod _method, ByteCode byteCode, ByteReader byteReader, boolean _wide){
+         super(_method, byteCode, byteReader, _wide);
       }
 
       @Override
@@ -1339,8 +1339,8 @@ class InstructionSet{
    }
 
    static abstract class LocalVariableIndex08Load extends LocalVariableIndex08Accessor{
-      LocalVariableIndex08Load(MethodModel methodPoolEntry, ByteCode byteCode, ByteReader byteReader, boolean _wide){
-         super(methodPoolEntry, byteCode, byteReader, _wide);
+      LocalVariableIndex08Load(ClassModel.ClassModelMethod _method, ByteCode byteCode, ByteReader byteReader, boolean _wide){
+         super(_method, byteCode, byteReader, _wide);
       }
 
       @Override
@@ -1351,8 +1351,8 @@ class InstructionSet{
    }
 
    static abstract class LocalVariableIndex08Store extends LocalVariableIndex08Accessor implements AssignToLocalVariable{
-      LocalVariableIndex08Store(MethodModel methodPoolEntry, ByteCode byteCode, ByteReader byteReader, boolean _wide){
-         super(methodPoolEntry, byteCode, byteReader, _wide);
+      LocalVariableIndex08Store(ClassModel.ClassModelMethod _method, ByteCode byteCode, ByteReader byteReader, boolean _wide){
+         super(_method, byteCode, byteReader, _wide);
       }
 
       @Override
@@ -1371,43 +1371,43 @@ class InstructionSet{
    }
 
    static class I_ALOAD extends LocalVariableIndex08Load{
-      I_ALOAD(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.ALOAD, _byteReader, _wide);
+      I_ALOAD(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.ALOAD, _byteReader, _wide);
 
       }
 
    }
 
    static class I_ALOAD_0 extends LocalVariableConstIndexLoad{
-      I_ALOAD_0(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.ALOAD_0, _byteReader, _wide, 0);
+      I_ALOAD_0(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.ALOAD_0, _byteReader, _wide, 0);
       }
    }
 
    static class I_ALOAD_1 extends LocalVariableConstIndexLoad{
-      I_ALOAD_1(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.ALOAD_1, _byteReader, _wide, 1);
+      I_ALOAD_1(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.ALOAD_1, _byteReader, _wide, 1);
 
       }
 
    }
 
    static class I_ALOAD_2 extends LocalVariableConstIndexLoad{
-      I_ALOAD_2(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.ALOAD_2, _byteReader, _wide, 2);
+      I_ALOAD_2(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.ALOAD_2, _byteReader, _wide, 2);
       }
    }
 
    static class I_ALOAD_3 extends LocalVariableConstIndexLoad{
-      I_ALOAD_3(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.ALOAD_3, _byteReader, _wide, 3);
+      I_ALOAD_3(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.ALOAD_3, _byteReader, _wide, 3);
       }
    }
 
    static class I_ANEWARRAY extends Index16 implements New{
 
-      I_ANEWARRAY(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.ANEWARRAY, _byteReader, _wide);
+      I_ANEWARRAY(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.ANEWARRAY, _byteReader, _wide);
 
       }
 
@@ -1418,8 +1418,8 @@ class InstructionSet{
    }
 
    static class I_ARETURN extends Return{
-      I_ARETURN(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.ARETURN, _byteReader, _wide);
+      I_ARETURN(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.ARETURN, _byteReader, _wide);
 
       }
 
@@ -1430,8 +1430,8 @@ class InstructionSet{
    }
 
    static class I_ARRAYLENGTH extends Instruction{
-      I_ARRAYLENGTH(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.ARRAYLENGTH, _byteReader, _wide);
+      I_ARRAYLENGTH(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.ARRAYLENGTH, _byteReader, _wide);
 
       }
 
@@ -1441,48 +1441,48 @@ class InstructionSet{
    }
 
    static class I_ASTORE extends LocalVariableIndex08Store{
-      I_ASTORE(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.ASTORE, _byteReader, _wide);
+      I_ASTORE(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.ASTORE, _byteReader, _wide);
 
       }
 
    }
 
    static class I_ASTORE_0 extends LocalVariableConstIndexStore{
-      I_ASTORE_0(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.ASTORE_0, _byteReader, _wide, 0);
+      I_ASTORE_0(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.ASTORE_0, _byteReader, _wide, 0);
 
       }
 
    }
 
    static class I_ASTORE_1 extends LocalVariableConstIndexStore{
-      I_ASTORE_1(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.ASTORE_1, _byteReader, _wide, 1);
+      I_ASTORE_1(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.ASTORE_1, _byteReader, _wide, 1);
 
       }
 
    }
 
    static class I_ASTORE_2 extends LocalVariableConstIndexStore{
-      I_ASTORE_2(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.ASTORE_2, _byteReader, _wide, 2);
+      I_ASTORE_2(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.ASTORE_2, _byteReader, _wide, 2);
 
       }
 
    }
 
    static class I_ASTORE_3 extends LocalVariableConstIndexStore{
-      I_ASTORE_3(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.ASTORE_3, _byteReader, _wide, 3);
+      I_ASTORE_3(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.ASTORE_3, _byteReader, _wide, 3);
 
       }
 
    }
 
    static class I_ATHROW extends Instruction{
-      I_ATHROW(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.ATHROW, _byteReader, _wide);
+      I_ATHROW(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.ATHROW, _byteReader, _wide);
 
       }
 
@@ -1493,8 +1493,8 @@ class InstructionSet{
    }
 
    static class I_BALOAD extends AccessArrayElement{
-      I_BALOAD(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.BALOAD, _byteReader, _wide);
+      I_BALOAD(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.BALOAD, _byteReader, _wide);
 
       }
 
@@ -1505,8 +1505,8 @@ class InstructionSet{
    }
 
    static class I_BASTORE extends AssignToArrayElement{
-      I_BASTORE(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.BASTORE, _byteReader, _wide);
+      I_BASTORE(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.BASTORE, _byteReader, _wide);
 
       }
 
@@ -1518,8 +1518,8 @@ class InstructionSet{
 
    static class I_BIPUSH extends ImmediateConstant<Integer>{
 
-      I_BIPUSH(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.BIPUSH, _byteReader, _wide);
+      I_BIPUSH(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.BIPUSH, _byteReader, _wide);
          value = _byteReader.u1();
 
       }
@@ -1539,8 +1539,8 @@ class InstructionSet{
    }
 
    static class I_CALOAD extends AccessArrayElement{
-      I_CALOAD(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.CALOAD, _byteReader, _wide);
+      I_CALOAD(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.CALOAD, _byteReader, _wide);
 
       }
 
@@ -1551,8 +1551,8 @@ class InstructionSet{
    }
 
    static class I_CASTORE extends AssignToArrayElement{
-      I_CASTORE(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.CASTORE, _byteReader, _wide);
+      I_CASTORE(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.CASTORE, _byteReader, _wide);
 
       }
 
@@ -1562,8 +1562,8 @@ class InstructionSet{
    }
 
    static class I_CHECKCAST extends Index16{
-      I_CHECKCAST(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.CHECKCAST, _byteReader, _wide);
+      I_CHECKCAST(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.CHECKCAST, _byteReader, _wide);
 
       }
 
@@ -1574,8 +1574,8 @@ class InstructionSet{
    }
 
    static class I_D2F extends CastOperator{
-      I_D2F(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.D2F, _byteReader, _wide);
+      I_D2F(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.D2F, _byteReader, _wide);
 
       }
 
@@ -1586,8 +1586,8 @@ class InstructionSet{
    }
 
    static class I_D2I extends CastOperator{
-      I_D2I(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.D2I, _byteReader, _wide);
+      I_D2I(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.D2I, _byteReader, _wide);
 
       }
 
@@ -1598,8 +1598,8 @@ class InstructionSet{
    }
 
    static class I_D2L extends CastOperator{
-      I_D2L(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.D2L, _byteReader, _wide);
+      I_D2L(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.D2L, _byteReader, _wide);
 
       }
 
@@ -1610,8 +1610,8 @@ class InstructionSet{
    }
 
    static class I_DADD extends BinaryOperator{
-      I_DADD(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.DADD, _byteReader, _wide);
+      I_DADD(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.DADD, _byteReader, _wide);
 
       }
 
@@ -1622,8 +1622,8 @@ class InstructionSet{
    }
 
    static class I_DALOAD extends AccessArrayElement{
-      I_DALOAD(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.DALOAD, _byteReader, _wide);
+      I_DALOAD(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.DALOAD, _byteReader, _wide);
 
       }
 
@@ -1634,8 +1634,8 @@ class InstructionSet{
    }
 
    static class I_DASTORE extends AssignToArrayElement{
-      I_DASTORE(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.DASTORE, _byteReader, _wide);
+      I_DASTORE(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.DASTORE, _byteReader, _wide);
 
       }
 
@@ -1646,8 +1646,8 @@ class InstructionSet{
    }
 
    static class I_DCMPG extends Instruction{
-      I_DCMPG(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.DCMPG, _byteReader, _wide);
+      I_DCMPG(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.DCMPG, _byteReader, _wide);
 
       }
 
@@ -1658,8 +1658,8 @@ class InstructionSet{
    }
 
    static class I_DCMPL extends Instruction{
-      I_DCMPL(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.DCMPL, _byteReader, _wide);
+      I_DCMPL(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.DCMPL, _byteReader, _wide);
 
       }
 
@@ -1672,8 +1672,8 @@ class InstructionSet{
    static abstract class BytecodeEncodedConstant<T> extends Instruction implements Constant<T>{
       private T value;
 
-      BytecodeEncodedConstant(MethodModel _methodPoolEntry, ByteCode _byteCode, ByteReader _byteReader, boolean _wide, T _value){
-         super(_methodPoolEntry, _byteCode, _byteReader, _wide);
+      BytecodeEncodedConstant(ClassModel.ClassModelMethod _method, ByteCode _byteCode, ByteReader _byteReader, boolean _wide, T _value){
+         super(_method, _byteCode, _byteReader, _wide);
          value = _value;
 
       }
@@ -1688,8 +1688,8 @@ class InstructionSet{
    static abstract class ImmediateConstant<T> extends Instruction implements Constant<T>{
       protected T value;
 
-      ImmediateConstant(MethodModel _methodPoolEntry, ByteCode _byteCode, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, _byteCode, _byteReader, _wide);
+      ImmediateConstant(ClassModel.ClassModelMethod _method, ByteCode _byteCode, ByteReader _byteReader, boolean _wide){
+         super(_method, _byteCode, _byteReader, _wide);
 
       }
 
@@ -1701,8 +1701,8 @@ class InstructionSet{
    }
 
    static class I_DCONST_0 extends BytecodeEncodedConstant<Double>{
-      I_DCONST_0(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.DCONST_0, _byteReader, _wide, 0.0);
+      I_DCONST_0(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.DCONST_0, _byteReader, _wide, 0.0);
 
       }
 
@@ -1713,8 +1713,8 @@ class InstructionSet{
    }
 
    static class I_DCONST_1 extends BytecodeEncodedConstant<Double>{
-      I_DCONST_1(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.DCONST_1, _byteReader, _wide, 1.0);
+      I_DCONST_1(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.DCONST_1, _byteReader, _wide, 1.0);
 
       }
 
@@ -1725,8 +1725,8 @@ class InstructionSet{
    }
 
    static class I_DDIV extends BinaryOperator{
-      I_DDIV(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.DDIV, _byteReader, _wide);
+      I_DDIV(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.DDIV, _byteReader, _wide);
 
       }
 
@@ -1737,48 +1737,48 @@ class InstructionSet{
    }
 
    static class I_DLOAD extends LocalVariableIndex08Load{
-      I_DLOAD(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.DLOAD, _byteReader, _wide);
+      I_DLOAD(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.DLOAD, _byteReader, _wide);
 
       }
 
    }
 
    static class I_DLOAD_0 extends LocalVariableConstIndexLoad{
-      I_DLOAD_0(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.DLOAD_0, _byteReader, _wide, 0);
+      I_DLOAD_0(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.DLOAD_0, _byteReader, _wide, 0);
 
       }
 
    }
 
    static class I_DLOAD_1 extends LocalVariableConstIndexLoad{
-      I_DLOAD_1(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.DLOAD_1, _byteReader, _wide, 1);
+      I_DLOAD_1(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.DLOAD_1, _byteReader, _wide, 1);
 
       }
 
    }
 
    static class I_DLOAD_2 extends LocalVariableConstIndexLoad{
-      I_DLOAD_2(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.DLOAD_2, _byteReader, _wide, 2);
+      I_DLOAD_2(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.DLOAD_2, _byteReader, _wide, 2);
 
       }
 
    }
 
    static class I_DLOAD_3 extends LocalVariableConstIndexLoad{
-      I_DLOAD_3(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.DLOAD_3, _byteReader, _wide, 3);
+      I_DLOAD_3(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.DLOAD_3, _byteReader, _wide, 3);
 
       }
 
    }
 
    static class I_DMUL extends BinaryOperator{
-      I_DMUL(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.DMUL, _byteReader, _wide);
+      I_DMUL(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.DMUL, _byteReader, _wide);
 
       }
 
@@ -1789,8 +1789,8 @@ class InstructionSet{
    }
 
    static class I_DNEG extends UnaryOperator{
-      I_DNEG(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.DNEG, _byteReader, _wide);
+      I_DNEG(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.DNEG, _byteReader, _wide);
 
       }
 
@@ -1801,8 +1801,8 @@ class InstructionSet{
    }
 
    static class I_DREM extends BinaryOperator{
-      I_DREM(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.DREM, _byteReader, _wide);
+      I_DREM(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.DREM, _byteReader, _wide);
 
       }
 
@@ -1813,8 +1813,8 @@ class InstructionSet{
    }
 
    static class I_DRETURN extends Return{
-      I_DRETURN(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.DRETURN, _byteReader, _wide);
+      I_DRETURN(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.DRETURN, _byteReader, _wide);
 
       }
 
@@ -1825,48 +1825,48 @@ class InstructionSet{
    }
 
    static class I_DSTORE extends LocalVariableIndex08Store{
-      I_DSTORE(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.DSTORE, _byteReader, _wide);
+      I_DSTORE(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.DSTORE, _byteReader, _wide);
 
       }
 
    }
 
    static class I_DSTORE_0 extends LocalVariableConstIndexStore{
-      I_DSTORE_0(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.DSTORE_0, _byteReader, _wide, 0);
+      I_DSTORE_0(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.DSTORE_0, _byteReader, _wide, 0);
 
       }
 
    }
 
    static class I_DSTORE_1 extends LocalVariableConstIndexStore{
-      I_DSTORE_1(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.DSTORE_1, _byteReader, _wide, 1);
+      I_DSTORE_1(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.DSTORE_1, _byteReader, _wide, 1);
 
       }
 
    }
 
    static class I_DSTORE_2 extends LocalVariableConstIndexStore{
-      I_DSTORE_2(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.DSTORE_2, _byteReader, _wide, 2);
+      I_DSTORE_2(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.DSTORE_2, _byteReader, _wide, 2);
 
       }
 
    }
 
    static class I_DSTORE_3 extends LocalVariableConstIndexStore{
-      I_DSTORE_3(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.DSTORE_3, _byteReader, _wide, 3);
+      I_DSTORE_3(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.DSTORE_3, _byteReader, _wide, 3);
 
       }
 
    }
 
    static class I_DSUB extends BinaryOperator{
-      I_DSUB(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.DSUB, _byteReader, _wide);
+      I_DSUB(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.DSUB, _byteReader, _wide);
 
       }
 
@@ -1877,15 +1877,15 @@ class InstructionSet{
    }
 
    static abstract class DUP extends Instruction{
-      DUP(MethodModel _methodPoolEntry, ByteCode _byteCode, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, _byteCode, _byteReader, _wide);
+      DUP(ClassModel.ClassModelMethod _method, ByteCode _byteCode, ByteReader _byteReader, boolean _wide){
+         super(_method, _byteCode, _byteReader, _wide);
 
       }
    }
 
    static class I_DUP extends DUP{
-      I_DUP(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.DUP, _byteReader, _wide);
+      I_DUP(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.DUP, _byteReader, _wide);
 
       }
 
@@ -1896,8 +1896,8 @@ class InstructionSet{
    }
 
    static class I_DUP_X1 extends DUP{
-      I_DUP_X1(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.DUP_X1, _byteReader, _wide);
+      I_DUP_X1(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.DUP_X1, _byteReader, _wide);
 
       }
 
@@ -1908,8 +1908,8 @@ class InstructionSet{
    }
 
    static class I_DUP_X2 extends DUP{
-      I_DUP_X2(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.DUP_X2, _byteReader, _wide);
+      I_DUP_X2(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.DUP_X2, _byteReader, _wide);
 
       }
 
@@ -1920,8 +1920,8 @@ class InstructionSet{
    }
 
    static class I_DUP2 extends DUP{
-      I_DUP2(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.DUP2, _byteReader, _wide);
+      I_DUP2(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.DUP2, _byteReader, _wide);
 
       }
 
@@ -1932,8 +1932,8 @@ class InstructionSet{
    }
 
    static class I_DUP2_X1 extends DUP{
-      I_DUP2_X1(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.DUP2_X1, _byteReader, _wide);
+      I_DUP2_X1(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.DUP2_X1, _byteReader, _wide);
 
       }
 
@@ -1944,8 +1944,8 @@ class InstructionSet{
    }
 
    static class I_DUP2_X2 extends DUP{
-      I_DUP2_X2(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.DUP_X2, _byteReader, _wide);
+      I_DUP2_X2(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.DUP_X2, _byteReader, _wide);
 
       }
 
@@ -1956,8 +1956,8 @@ class InstructionSet{
    }
 
    static class I_F2D extends CastOperator{
-      I_F2D(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.F2D, _byteReader, _wide);
+      I_F2D(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.F2D, _byteReader, _wide);
 
       }
 
@@ -1968,8 +1968,8 @@ class InstructionSet{
    }
 
    static class I_F2I extends CastOperator{
-      I_F2I(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.F2I, _byteReader, _wide);
+      I_F2I(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.F2I, _byteReader, _wide);
 
       }
 
@@ -1980,8 +1980,8 @@ class InstructionSet{
    }
 
    static class I_F2L extends CastOperator{
-      I_F2L(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.F2L, _byteReader, _wide);
+      I_F2L(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.F2L, _byteReader, _wide);
 
       }
 
@@ -1992,8 +1992,8 @@ class InstructionSet{
    }
 
    static class I_FADD extends BinaryOperator{
-      I_FADD(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.FADD, _byteReader, _wide);
+      I_FADD(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.FADD, _byteReader, _wide);
 
       }
 
@@ -2004,8 +2004,8 @@ class InstructionSet{
    }
 
    static class I_FALOAD extends AccessArrayElement{
-      I_FALOAD(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.FALOAD, _byteReader, _wide);
+      I_FALOAD(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.FALOAD, _byteReader, _wide);
 
       }
 
@@ -2016,8 +2016,8 @@ class InstructionSet{
    }
 
    static class I_FASTORE extends AssignToArrayElement{
-      I_FASTORE(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.FASTORE, _byteReader, _wide);
+      I_FASTORE(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.FASTORE, _byteReader, _wide);
 
       }
 
@@ -2028,8 +2028,8 @@ class InstructionSet{
    }
 
    static class I_FCMPG extends BinaryOperator{
-      I_FCMPG(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.FCMPG, _byteReader, _wide);
+      I_FCMPG(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.FCMPG, _byteReader, _wide);
 
       }
 
@@ -2040,8 +2040,8 @@ class InstructionSet{
    }
 
    static class I_FCMPL extends BinaryOperator{
-      I_FCMPL(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.FCMPL, _byteReader, _wide);
+      I_FCMPL(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.FCMPL, _byteReader, _wide);
 
       }
 
@@ -2052,8 +2052,8 @@ class InstructionSet{
    }
 
    static class I_FCONST_0 extends BytecodeEncodedConstant<Float>{
-      I_FCONST_0(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.FCONST_0, _byteReader, _wide, 0f);
+      I_FCONST_0(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.FCONST_0, _byteReader, _wide, 0f);
 
       }
 
@@ -2064,8 +2064,8 @@ class InstructionSet{
    }
 
    static class I_FCONST_1 extends BytecodeEncodedConstant<Float>{
-      I_FCONST_1(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.FCONST_1, _byteReader, _wide, 1f);
+      I_FCONST_1(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.FCONST_1, _byteReader, _wide, 1f);
 
       }
 
@@ -2076,8 +2076,8 @@ class InstructionSet{
    }
 
    static class I_FCONST_2 extends BytecodeEncodedConstant<Float>{
-      I_FCONST_2(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.FCONST_2, _byteReader, _wide, 2f);
+      I_FCONST_2(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.FCONST_2, _byteReader, _wide, 2f);
 
       }
 
@@ -2088,8 +2088,8 @@ class InstructionSet{
    }
 
    static class I_FDIV extends BinaryOperator{
-      I_FDIV(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.FDIV, _byteReader, _wide);
+      I_FDIV(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.FDIV, _byteReader, _wide);
 
       }
 
@@ -2100,48 +2100,48 @@ class InstructionSet{
    }
 
    static class I_FLOAD extends LocalVariableIndex08Load{
-      I_FLOAD(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.FLOAD, _byteReader, _wide);
+      I_FLOAD(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.FLOAD, _byteReader, _wide);
 
       }
 
    }
 
    static class I_FLOAD_0 extends LocalVariableConstIndexLoad{
-      I_FLOAD_0(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.FLOAD_0, _byteReader, _wide, 0);
+      I_FLOAD_0(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.FLOAD_0, _byteReader, _wide, 0);
 
       }
 
    }
 
    static class I_FLOAD_1 extends LocalVariableConstIndexLoad{
-      I_FLOAD_1(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.FLOAD_1, _byteReader, _wide, 1);
+      I_FLOAD_1(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.FLOAD_1, _byteReader, _wide, 1);
 
       }
 
    }
 
    static class I_FLOAD_2 extends LocalVariableConstIndexLoad{
-      I_FLOAD_2(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.FLOAD_2, _byteReader, _wide, 2);
+      I_FLOAD_2(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.FLOAD_2, _byteReader, _wide, 2);
 
       }
 
    }
 
    static class I_FLOAD_3 extends LocalVariableConstIndexLoad{
-      I_FLOAD_3(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.FLOAD_3, _byteReader, _wide, 3);
+      I_FLOAD_3(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.FLOAD_3, _byteReader, _wide, 3);
 
       }
 
    }
 
    static class I_FMUL extends BinaryOperator{
-      I_FMUL(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.FMUL, _byteReader, _wide);
+      I_FMUL(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.FMUL, _byteReader, _wide);
 
       }
 
@@ -2152,8 +2152,8 @@ class InstructionSet{
    }
 
    static class I_FNEG extends UnaryOperator{
-      I_FNEG(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.FNEG, _byteReader, _wide);
+      I_FNEG(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.FNEG, _byteReader, _wide);
 
       }
 
@@ -2164,8 +2164,8 @@ class InstructionSet{
    }
 
    static class I_FREM extends BinaryOperator{
-      I_FREM(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.FREM, _byteReader, _wide);
+      I_FREM(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.FREM, _byteReader, _wide);
 
       }
 
@@ -2176,8 +2176,8 @@ class InstructionSet{
    }
 
    static class I_FRETURN extends Return{
-      I_FRETURN(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.FRETURN, _byteReader, _wide);
+      I_FRETURN(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.FRETURN, _byteReader, _wide);
 
       }
 
@@ -2188,48 +2188,48 @@ class InstructionSet{
    }
 
    static class I_FSTORE extends LocalVariableIndex08Store{
-      I_FSTORE(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.FSTORE, _byteReader, _wide);
+      I_FSTORE(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.FSTORE, _byteReader, _wide);
 
       }
 
    }
 
    static class I_FSTORE_0 extends LocalVariableConstIndexStore{
-      I_FSTORE_0(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.FSTORE_0, _byteReader, _wide, 0);
+      I_FSTORE_0(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.FSTORE_0, _byteReader, _wide, 0);
 
       }
 
    }
 
    static class I_FSTORE_1 extends LocalVariableConstIndexStore{
-      I_FSTORE_1(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.FSTORE_1, _byteReader, _wide, 1);
+      I_FSTORE_1(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.FSTORE_1, _byteReader, _wide, 1);
 
       }
 
    }
 
    static class I_FSTORE_2 extends LocalVariableConstIndexStore{
-      I_FSTORE_2(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.FSTORE_2, _byteReader, _wide, 2);
+      I_FSTORE_2(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.FSTORE_2, _byteReader, _wide, 2);
 
       }
 
    }
 
    static class I_FSTORE_3 extends LocalVariableConstIndexStore{
-      I_FSTORE_3(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.FSTORE_3, _byteReader, _wide, 3);
+      I_FSTORE_3(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.FSTORE_3, _byteReader, _wide, 3);
 
       }
 
    }
 
    static class I_FSUB extends BinaryOperator{
-      I_FSUB(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.FSUB, _byteReader, _wide);
+      I_FSUB(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.FSUB, _byteReader, _wide);
 
       }
 
@@ -2240,8 +2240,8 @@ class InstructionSet{
    }
 
    static class I_GETFIELD extends Index16 implements AccessInstanceField{
-      I_GETFIELD(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.GETFIELD, _byteReader, _wide);
+      I_GETFIELD(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.GETFIELD, _byteReader, _wide);
 
       }
 
@@ -2275,8 +2275,8 @@ class InstructionSet{
    }
 
    static class I_GETSTATIC extends Index16 implements AccessField{
-      I_GETSTATIC(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.GETSTATIC, _byteReader, _wide);
+      I_GETSTATIC(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.GETSTATIC, _byteReader, _wide);
 
       }
 
@@ -2304,8 +2304,8 @@ class InstructionSet{
    }
 
    static class I_GOTO extends UnconditionalBranch16{
-      I_GOTO(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.GOTO, _byteReader, _wide);
+      I_GOTO(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.GOTO, _byteReader, _wide);
 
       }
 
@@ -2316,8 +2316,8 @@ class InstructionSet{
    }
 
    static class I_GOTO_W extends Branch32{
-      I_GOTO_W(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.GOTO_W, _byteReader, _wide);
+      I_GOTO_W(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.GOTO_W, _byteReader, _wide);
 
       }
 
@@ -2328,8 +2328,8 @@ class InstructionSet{
    }
 
    static class I_I2B extends CastOperator{
-      I_I2B(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.I2B, _byteReader, _wide);
+      I_I2B(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.I2B, _byteReader, _wide);
 
       }
 
@@ -2340,8 +2340,8 @@ class InstructionSet{
    }
 
    static class I_I2C extends CastOperator{
-      I_I2C(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.I2C, _byteReader, _wide);
+      I_I2C(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.I2C, _byteReader, _wide);
 
       }
 
@@ -2352,8 +2352,8 @@ class InstructionSet{
    }
 
    static class I_I2D extends CastOperator{
-      I_I2D(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.I2D, _byteReader, _wide);
+      I_I2D(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.I2D, _byteReader, _wide);
 
       }
 
@@ -2364,8 +2364,8 @@ class InstructionSet{
    }
 
    static class I_I2F extends CastOperator{
-      I_I2F(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.I2F, _byteReader, _wide);
+      I_I2F(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.I2F, _byteReader, _wide);
 
       }
 
@@ -2376,8 +2376,8 @@ class InstructionSet{
    }
 
    static class I_I2L extends CastOperator{
-      I_I2L(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.I2L, _byteReader, _wide);
+      I_I2L(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.I2L, _byteReader, _wide);
 
       }
 
@@ -2388,8 +2388,8 @@ class InstructionSet{
    }
 
    static class I_I2S extends CastOperator{
-      I_I2S(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.I2S, _byteReader, _wide);
+      I_I2S(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.I2S, _byteReader, _wide);
 
       }
 
@@ -2400,8 +2400,8 @@ class InstructionSet{
    }
 
    static class I_IADD extends BinaryOperator{
-      I_IADD(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.IADD, _byteReader, _wide);
+      I_IADD(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.IADD, _byteReader, _wide);
 
       }
 
@@ -2412,8 +2412,8 @@ class InstructionSet{
    }
 
    static class I_IALOAD extends AccessArrayElement{
-      I_IALOAD(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.IALOAD, _byteReader, _wide);
+      I_IALOAD(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.IALOAD, _byteReader, _wide);
 
       }
 
@@ -2424,8 +2424,8 @@ class InstructionSet{
    }
 
    static class I_IAND extends BinaryOperator{
-      I_IAND(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.IAND, _byteReader, _wide);
+      I_IAND(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.IAND, _byteReader, _wide);
 
       }
 
@@ -2436,8 +2436,8 @@ class InstructionSet{
    }
 
    static class I_IASTORE extends AssignToArrayElement{
-      I_IASTORE(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.IASTORE, _byteReader, _wide);
+      I_IASTORE(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.IASTORE, _byteReader, _wide);
 
       }
 
@@ -2448,8 +2448,8 @@ class InstructionSet{
    }
 
    static class I_ICONST_0 extends BytecodeEncodedConstant<Integer>{
-      I_ICONST_0(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.ICONST_0, _byteReader, _wide, 0);
+      I_ICONST_0(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.ICONST_0, _byteReader, _wide, 0);
 
       }
 
@@ -2460,8 +2460,8 @@ class InstructionSet{
    }
 
    static class I_ICONST_1 extends BytecodeEncodedConstant<Integer>{
-      I_ICONST_1(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.ICONST_1, _byteReader, _wide, 1);
+      I_ICONST_1(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.ICONST_1, _byteReader, _wide, 1);
 
       }
 
@@ -2472,8 +2472,8 @@ class InstructionSet{
    }
 
    static class I_ICONST_2 extends BytecodeEncodedConstant<Integer>{
-      I_ICONST_2(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.ICONST_2, _byteReader, _wide, 2);
+      I_ICONST_2(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.ICONST_2, _byteReader, _wide, 2);
 
       }
 
@@ -2484,8 +2484,8 @@ class InstructionSet{
    }
 
    static class I_ICONST_3 extends BytecodeEncodedConstant<Integer>{
-      I_ICONST_3(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.ICONST_3, _byteReader, _wide, 3);
+      I_ICONST_3(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.ICONST_3, _byteReader, _wide, 3);
 
       }
 
@@ -2496,8 +2496,8 @@ class InstructionSet{
    }
 
    static class I_ICONST_4 extends BytecodeEncodedConstant<Integer>{
-      I_ICONST_4(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.ICONST_4, _byteReader, _wide, 4);
+      I_ICONST_4(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.ICONST_4, _byteReader, _wide, 4);
 
       }
 
@@ -2508,8 +2508,8 @@ class InstructionSet{
    }
 
    static class I_ICONST_5 extends BytecodeEncodedConstant<Integer>{
-      I_ICONST_5(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.ICONST_5, _byteReader, _wide, 5);
+      I_ICONST_5(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.ICONST_5, _byteReader, _wide, 5);
 
       }
 
@@ -2520,8 +2520,8 @@ class InstructionSet{
    }
 
    static class I_ICONST_M1 extends BytecodeEncodedConstant<Integer>{
-      I_ICONST_M1(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.ICONST_M1, _byteReader, _wide, -1);
+      I_ICONST_M1(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.ICONST_M1, _byteReader, _wide, -1);
 
       }
 
@@ -2532,8 +2532,8 @@ class InstructionSet{
    }
 
    static class I_IDIV extends BinaryOperator{
-      I_IDIV(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.IDIV, _byteReader, _wide);
+      I_IDIV(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.IDIV, _byteReader, _wide);
 
       }
 
@@ -2544,8 +2544,8 @@ class InstructionSet{
    }
 
    static class I_IF_ACMPEQ extends If{
-      I_IF_ACMPEQ(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.IF_ACMPEQ, _byteReader, _wide);
+      I_IF_ACMPEQ(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.IF_ACMPEQ, _byteReader, _wide);
 
       }
 
@@ -2556,8 +2556,8 @@ class InstructionSet{
    }
 
    static class I_IF_ACMPNE extends If{
-      I_IF_ACMPNE(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.IF_ACMPNE, _byteReader, _wide);
+      I_IF_ACMPNE(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.IF_ACMPNE, _byteReader, _wide);
 
       }
 
@@ -2568,8 +2568,8 @@ class InstructionSet{
    }
 
    static class I_IF_ICMPEQ extends If{
-      I_IF_ICMPEQ(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.IF_ICMPEQ, _byteReader, _wide);
+      I_IF_ICMPEQ(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.IF_ICMPEQ, _byteReader, _wide);
 
       }
 
@@ -2580,8 +2580,8 @@ class InstructionSet{
    }
 
    static class I_IF_ICMPGE extends If{
-      I_IF_ICMPGE(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.IF_ICMPGE, _byteReader, _wide);
+      I_IF_ICMPGE(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.IF_ICMPGE, _byteReader, _wide);
 
       }
 
@@ -2592,8 +2592,8 @@ class InstructionSet{
    }
 
    static class I_IF_ICMPGT extends If{
-      I_IF_ICMPGT(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.IF_ICMPGT, _byteReader, _wide);
+      I_IF_ICMPGT(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.IF_ICMPGT, _byteReader, _wide);
 
       }
 
@@ -2604,8 +2604,8 @@ class InstructionSet{
    }
 
    static class I_IF_ICMPLE extends If{
-      I_IF_ICMPLE(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.IF_ICMPLE, _byteReader, _wide);
+      I_IF_ICMPLE(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.IF_ICMPLE, _byteReader, _wide);
 
       }
 
@@ -2616,8 +2616,8 @@ class InstructionSet{
    }
 
    static class I_IF_ICMPLT extends If{
-      I_IF_ICMPLT(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.IF_ICMPLT, _byteReader, _wide);
+      I_IF_ICMPLT(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.IF_ICMPLT, _byteReader, _wide);
 
       }
 
@@ -2628,8 +2628,8 @@ class InstructionSet{
    }
 
    static class I_IF_ICMPNE extends If{
-      I_IF_ICMPNE(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.IF_ICMPNE, _byteReader, _wide);
+      I_IF_ICMPNE(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.IF_ICMPNE, _byteReader, _wide);
 
       }
 
@@ -2640,8 +2640,8 @@ class InstructionSet{
    }
 
    static class I_IFEQ extends IfUnary{
-      I_IFEQ(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.IFEQ, _byteReader, _wide);
+      I_IFEQ(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.IFEQ, _byteReader, _wide);
 
       }
 
@@ -2652,8 +2652,8 @@ class InstructionSet{
    }
 
    static class I_IFGE extends IfUnary{
-      I_IFGE(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.IFGE, _byteReader, _wide);
+      I_IFGE(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.IFGE, _byteReader, _wide);
 
       }
 
@@ -2664,8 +2664,8 @@ class InstructionSet{
    }
 
    static class I_IFGT extends IfUnary{
-      I_IFGT(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.IFGT, _byteReader, _wide);
+      I_IFGT(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.IFGT, _byteReader, _wide);
 
       }
 
@@ -2676,8 +2676,8 @@ class InstructionSet{
    }
 
    static class I_IFLE extends IfUnary{
-      I_IFLE(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.IFLE, _byteReader, _wide);
+      I_IFLE(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.IFLE, _byteReader, _wide);
 
       }
 
@@ -2688,8 +2688,8 @@ class InstructionSet{
    }
 
    static class I_IFLT extends IfUnary{
-      I_IFLT(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.IFLT, _byteReader, _wide);
+      I_IFLT(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.IFLT, _byteReader, _wide);
 
       }
 
@@ -2700,8 +2700,8 @@ class InstructionSet{
    }
 
    static class I_IFNE extends IfUnary{
-      I_IFNE(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.IFNE, _byteReader, _wide);
+      I_IFNE(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.IFNE, _byteReader, _wide);
 
       }
 
@@ -2712,8 +2712,8 @@ class InstructionSet{
    }
 
    static class I_IFNONNULL extends ConditionalBranch16{
-      I_IFNONNULL(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.IFNONNULL, _byteReader, _wide);
+      I_IFNONNULL(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.IFNONNULL, _byteReader, _wide);
 
       }
 
@@ -2724,8 +2724,8 @@ class InstructionSet{
    }
 
    static class I_IFNULL extends ConditionalBranch16{
-      I_IFNULL(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.IFNULL, _byteReader, _wide);
+      I_IFNULL(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.IFNULL, _byteReader, _wide);
 
       }
 
@@ -2735,13 +2735,13 @@ class InstructionSet{
 
    }
 
-   static class I_IINC extends Index08 implements  LocalVariableTableIndexAccessor{
+   static class I_IINC extends Index08 implements LocalVariableTableIndexAccessor{
       private int delta;
 
       private boolean wide;
 
-      I_IINC(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.IINC, _byteReader, _wide);
+      I_IINC(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.IINC, _byteReader, _wide);
          wide = _wide;
          if(wide){
             delta = _byteReader.u2();
@@ -2787,48 +2787,48 @@ class InstructionSet{
    }
 
    static class I_ILOAD extends LocalVariableIndex08Load{
-      I_ILOAD(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.ILOAD, _byteReader, _wide);
+      I_ILOAD(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.ILOAD, _byteReader, _wide);
 
       }
 
    }
 
    static class I_ILOAD_0 extends LocalVariableConstIndexLoad{
-      I_ILOAD_0(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.ILOAD_0, _byteReader, _wide, 0);
+      I_ILOAD_0(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.ILOAD_0, _byteReader, _wide, 0);
 
       }
 
    }
 
    static class I_ILOAD_1 extends LocalVariableConstIndexLoad{
-      I_ILOAD_1(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.ILOAD_1, _byteReader, _wide, 1);
+      I_ILOAD_1(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.ILOAD_1, _byteReader, _wide, 1);
 
       }
 
    }
 
    static class I_ILOAD_2 extends LocalVariableConstIndexLoad{
-      I_ILOAD_2(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.ILOAD_2, _byteReader, _wide, 2);
+      I_ILOAD_2(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.ILOAD_2, _byteReader, _wide, 2);
 
       }
 
    }
 
    static class I_ILOAD_3 extends LocalVariableConstIndexLoad{
-      I_ILOAD_3(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.ILOAD_3, _byteReader, _wide, 3);
+      I_ILOAD_3(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.ILOAD_3, _byteReader, _wide, 3);
 
       }
 
    }
 
    static class I_IMUL extends BinaryOperator{
-      I_IMUL(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.IMUL, _byteReader, _wide);
+      I_IMUL(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.IMUL, _byteReader, _wide);
 
       }
 
@@ -2839,8 +2839,8 @@ class InstructionSet{
    }
 
    static class I_INEG extends UnaryOperator{
-      I_INEG(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.INEG, _byteReader, _wide);
+      I_INEG(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.INEG, _byteReader, _wide);
 
       }
 
@@ -2851,8 +2851,8 @@ class InstructionSet{
    }
 
    static class I_INSTANCEOF extends Index16{
-      I_INSTANCEOF(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.INSTANCEOF, _byteReader, _wide);
+      I_INSTANCEOF(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.INSTANCEOF, _byteReader, _wide);
 
       }
 
@@ -2865,8 +2865,8 @@ class InstructionSet{
    static class I_INVOKEINTERFACE extends Index16 implements InterfaceConstantPoolMethodIndexAccessor{
       private int args;
 
-      I_INVOKEINTERFACE(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.INVOKEINTERFACE, _byteReader, _wide);
+      I_INVOKEINTERFACE(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.INVOKEINTERFACE, _byteReader, _wide);
          args = _byteReader.u1();
          @SuppressWarnings("unused") int zeroByte = _byteReader.u1();
 
@@ -2919,8 +2919,8 @@ class InstructionSet{
    static class I_INVOKEDYNAMIC extends Index16 implements InterfaceConstantPoolMethodIndexAccessor{
       private int args;
 
-      I_INVOKEDYNAMIC(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.INVOKEDYNAMIC, _byteReader, _wide);
+      I_INVOKEDYNAMIC(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.INVOKEDYNAMIC, _byteReader, _wide);
          args = _byteReader.u1();
          @SuppressWarnings("unused") int zeroByte = _byteReader.u1();
 
@@ -2972,8 +2972,8 @@ class InstructionSet{
 
    static class I_INVOKESPECIAL extends Index16 implements VirtualMethodCall{
 
-      I_INVOKESPECIAL(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.INVOKESPECIAL, _byteReader, _wide);
+      I_INVOKESPECIAL(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.INVOKESPECIAL, _byteReader, _wide);
 
       }
 
@@ -3018,8 +3018,8 @@ class InstructionSet{
    }
 
    static class I_INVOKESTATIC extends Index16 implements MethodCall{
-      I_INVOKESTATIC(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.INVOKESTATIC, _byteReader, _wide);
+      I_INVOKESTATIC(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.INVOKESTATIC, _byteReader, _wide);
 
       }
 
@@ -3058,8 +3058,8 @@ class InstructionSet{
    }
 
    static class I_INVOKEVIRTUAL extends Index16 implements VirtualMethodCall{
-      I_INVOKEVIRTUAL(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.INVOKEVIRTUAL, _byteReader, _wide);
+      I_INVOKEVIRTUAL(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.INVOKEVIRTUAL, _byteReader, _wide);
 
       }
 
@@ -3102,8 +3102,8 @@ class InstructionSet{
    }
 
    static class I_IOR extends BinaryOperator{
-      I_IOR(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.IOR, _byteReader, _wide);
+      I_IOR(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.IOR, _byteReader, _wide);
 
       }
 
@@ -3114,8 +3114,8 @@ class InstructionSet{
    }
 
    static class I_IREM extends BinaryOperator{
-      I_IREM(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.IREM, _byteReader, _wide);
+      I_IREM(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.IREM, _byteReader, _wide);
 
       }
 
@@ -3126,8 +3126,8 @@ class InstructionSet{
    }
 
    static class I_IRETURN extends Return{
-      I_IRETURN(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.IRETURN, _byteReader, _wide);
+      I_IRETURN(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.IRETURN, _byteReader, _wide);
 
       }
 
@@ -3138,8 +3138,8 @@ class InstructionSet{
    }
 
    static class I_ISHL extends BinaryOperator{
-      I_ISHL(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.ISHL, _byteReader, _wide);
+      I_ISHL(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.ISHL, _byteReader, _wide);
 
       }
 
@@ -3150,8 +3150,8 @@ class InstructionSet{
    }
 
    static class I_ISHR extends BinaryOperator{
-      I_ISHR(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.ISHR, _byteReader, _wide);
+      I_ISHR(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.ISHR, _byteReader, _wide);
 
       }
 
@@ -3162,48 +3162,48 @@ class InstructionSet{
    }
 
    static class I_ISTORE extends LocalVariableIndex08Store{
-      I_ISTORE(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.ISTORE, _byteReader, _wide);
+      I_ISTORE(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.ISTORE, _byteReader, _wide);
 
       }
 
    }
 
    static class I_ISTORE_0 extends LocalVariableConstIndexStore{
-      I_ISTORE_0(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.ISTORE_0, _byteReader, _wide, 0);
+      I_ISTORE_0(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.ISTORE_0, _byteReader, _wide, 0);
 
       }
 
    }
 
    static class I_ISTORE_1 extends LocalVariableConstIndexStore{
-      I_ISTORE_1(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.ISTORE_1, _byteReader, _wide, 1);
+      I_ISTORE_1(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.ISTORE_1, _byteReader, _wide, 1);
 
       }
 
    }
 
    static class I_ISTORE_2 extends LocalVariableConstIndexStore{
-      I_ISTORE_2(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.ISTORE_2, _byteReader, _wide, 2);
+      I_ISTORE_2(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.ISTORE_2, _byteReader, _wide, 2);
 
       }
 
    }
 
    static class I_ISTORE_3 extends LocalVariableConstIndexStore{
-      I_ISTORE_3(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.ISTORE_3, _byteReader, _wide, 3);
+      I_ISTORE_3(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.ISTORE_3, _byteReader, _wide, 3);
 
       }
 
    }
 
    static class I_ISUB extends BinaryOperator{
-      I_ISUB(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.ISUB, _byteReader, _wide);
+      I_ISUB(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.ISUB, _byteReader, _wide);
 
       }
 
@@ -3214,8 +3214,8 @@ class InstructionSet{
    }
 
    static class I_IUSHR extends BinaryOperator{
-      I_IUSHR(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.IUSHR, _byteReader, _wide);
+      I_IUSHR(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.IUSHR, _byteReader, _wide);
 
       }
 
@@ -3226,8 +3226,8 @@ class InstructionSet{
    }
 
    static class I_IXOR extends BinaryOperator{
-      I_IXOR(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.IXOR, _byteReader, _wide);
+      I_IXOR(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.IXOR, _byteReader, _wide);
 
       }
 
@@ -3238,8 +3238,8 @@ class InstructionSet{
    }
 
    static class I_JSR extends UnconditionalBranch16{
-      I_JSR(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.JSR, _byteReader, _wide);
+      I_JSR(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.JSR, _byteReader, _wide);
 
       }
 
@@ -3250,8 +3250,8 @@ class InstructionSet{
    }
 
    static class I_JSR_W extends Branch32{
-      I_JSR_W(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.JSR_W, _byteReader, _wide);
+      I_JSR_W(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.JSR_W, _byteReader, _wide);
 
       }
 
@@ -3262,8 +3262,8 @@ class InstructionSet{
    }
 
    static class I_L2D extends CastOperator{
-      I_L2D(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.L2D, _byteReader, _wide);
+      I_L2D(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.L2D, _byteReader, _wide);
 
       }
 
@@ -3274,8 +3274,8 @@ class InstructionSet{
    }
 
    static class I_L2F extends CastOperator{
-      I_L2F(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.L2F, _byteReader, _wide);
+      I_L2F(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.L2F, _byteReader, _wide);
 
       }
 
@@ -3286,8 +3286,8 @@ class InstructionSet{
    }
 
    static class I_L2I extends CastOperator{
-      I_L2I(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.L2I, _byteReader, _wide);
+      I_L2I(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.L2I, _byteReader, _wide);
 
       }
 
@@ -3298,8 +3298,8 @@ class InstructionSet{
    }
 
    static class I_LADD extends BinaryOperator{
-      I_LADD(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.LADD, _byteReader, _wide);
+      I_LADD(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.LADD, _byteReader, _wide);
 
       }
 
@@ -3310,8 +3310,8 @@ class InstructionSet{
    }
 
    static class I_LALOAD extends AccessArrayElement{
-      I_LALOAD(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.LALOAD, _byteReader, _wide);
+      I_LALOAD(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.LALOAD, _byteReader, _wide);
 
       }
 
@@ -3322,8 +3322,8 @@ class InstructionSet{
    }
 
    static class I_LAND extends BinaryOperator{
-      I_LAND(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.LAND, _byteReader, _wide);
+      I_LAND(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.LAND, _byteReader, _wide);
 
       }
 
@@ -3334,8 +3334,8 @@ class InstructionSet{
    }
 
    static class I_LASTORE extends AssignToArrayElement{
-      I_LASTORE(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.LASTORE, _byteReader, _wide);
+      I_LASTORE(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.LASTORE, _byteReader, _wide);
 
       }
 
@@ -3346,8 +3346,8 @@ class InstructionSet{
    }
 
    static class I_LCMP extends BinaryOperator{
-      I_LCMP(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.LCMP, _byteReader, _wide);
+      I_LCMP(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.LCMP, _byteReader, _wide);
 
       }
 
@@ -3358,8 +3358,8 @@ class InstructionSet{
    }
 
    static class I_LCONST_0 extends BytecodeEncodedConstant<Long>{
-      I_LCONST_0(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.LCONST_0, _byteReader, _wide, 0L);
+      I_LCONST_0(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.LCONST_0, _byteReader, _wide, 0L);
 
       }
 
@@ -3370,8 +3370,8 @@ class InstructionSet{
    }
 
    static class I_LCONST_1 extends BytecodeEncodedConstant<Long>{
-      I_LCONST_1(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.LCONST_1, _byteReader, _wide, 1L);
+      I_LCONST_1(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.LCONST_1, _byteReader, _wide, 1L);
 
       }
 
@@ -3382,8 +3382,8 @@ class InstructionSet{
    }
 
    static class I_LDC extends Index08 implements ConstantPoolEntryConstant{
-      I_LDC(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.LDC, _byteReader, _wide);
+      I_LDC(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.LDC, _byteReader, _wide);
 
       }
 
@@ -3410,8 +3410,8 @@ class InstructionSet{
    }
 
    static class I_LDC_W extends Index16 implements ConstantPoolEntryConstant{
-      I_LDC_W(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.LDC_W, _byteReader, _wide);
+      I_LDC_W(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.LDC_W, _byteReader, _wide);
 
       }
 
@@ -3438,8 +3438,8 @@ class InstructionSet{
    }
 
    static class I_LDC2_W extends Index16 implements ConstantPoolEntryConstant{
-      I_LDC2_W(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.LDC2_W, _byteReader, _wide);
+      I_LDC2_W(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.LDC2_W, _byteReader, _wide);
 
       }
 
@@ -3465,8 +3465,8 @@ class InstructionSet{
    }
 
    static class I_LDIV extends BinaryOperator{
-      I_LDIV(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.LDIV, _byteReader, _wide);
+      I_LDIV(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.LDIV, _byteReader, _wide);
 
       }
 
@@ -3477,48 +3477,48 @@ class InstructionSet{
    }
 
    static class I_LLOAD extends LocalVariableIndex08Load{
-      I_LLOAD(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.LLOAD, _byteReader, _wide);
+      I_LLOAD(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.LLOAD, _byteReader, _wide);
 
       }
 
    }
 
    static class I_LLOAD_0 extends LocalVariableConstIndexLoad{
-      I_LLOAD_0(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.LLOAD_0, _byteReader, _wide, 0);
+      I_LLOAD_0(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.LLOAD_0, _byteReader, _wide, 0);
 
       }
 
    }
 
    static class I_LLOAD_1 extends LocalVariableConstIndexLoad{
-      I_LLOAD_1(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.LLOAD_1, _byteReader, _wide, 1);
+      I_LLOAD_1(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.LLOAD_1, _byteReader, _wide, 1);
 
       }
 
    }
 
    static class I_LLOAD_2 extends LocalVariableConstIndexLoad{
-      I_LLOAD_2(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.LLOAD_2, _byteReader, _wide, 2);
+      I_LLOAD_2(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.LLOAD_2, _byteReader, _wide, 2);
 
       }
 
    }
 
    static class I_LLOAD_3 extends LocalVariableConstIndexLoad{
-      I_LLOAD_3(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.LLOAD_3, _byteReader, _wide, 3);
+      I_LLOAD_3(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.LLOAD_3, _byteReader, _wide, 3);
 
       }
 
    }
 
    static class I_LMUL extends BinaryOperator{
-      I_LMUL(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.LMUL, _byteReader, _wide);
+      I_LMUL(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.LMUL, _byteReader, _wide);
 
       }
 
@@ -3529,8 +3529,8 @@ class InstructionSet{
    }
 
    static class I_LNEG extends UnaryOperator{
-      I_LNEG(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.LNEG, _byteReader, _wide);
+      I_LNEG(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.LNEG, _byteReader, _wide);
 
       }
 
@@ -3545,8 +3545,8 @@ class InstructionSet{
 
       private int npairs;
 
-      I_LOOKUPSWITCH(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.LOOKUPSWITCH, _byteReader, _wide);
+      I_LOOKUPSWITCH(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.LOOKUPSWITCH, _byteReader, _wide);
          int operandStart = _byteReader.getOffset();
          int padLength = ((operandStart % 4) == 0) ? 0 : 4 - (operandStart % 4);
          _byteReader.bytes(padLength);
@@ -3576,8 +3576,8 @@ class InstructionSet{
    }
 
    static class I_LOR extends BinaryOperator{
-      I_LOR(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.LOR, _byteReader, _wide);
+      I_LOR(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.LOR, _byteReader, _wide);
 
       }
 
@@ -3588,8 +3588,8 @@ class InstructionSet{
    }
 
    static class I_LREM extends BinaryOperator{
-      I_LREM(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.LREM, _byteReader, _wide);
+      I_LREM(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.LREM, _byteReader, _wide);
 
       }
 
@@ -3600,8 +3600,8 @@ class InstructionSet{
    }
 
    static class I_LRETURN extends Return{
-      I_LRETURN(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.LRETURN, _byteReader, _wide);
+      I_LRETURN(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.LRETURN, _byteReader, _wide);
 
       }
 
@@ -3612,8 +3612,8 @@ class InstructionSet{
    }
 
    static class I_LSHL extends BinaryOperator{
-      I_LSHL(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.LSHL, _byteReader, _wide);
+      I_LSHL(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.LSHL, _byteReader, _wide);
 
       }
 
@@ -3624,8 +3624,8 @@ class InstructionSet{
    }
 
    static class I_LSHR extends BinaryOperator{
-      I_LSHR(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.LSHR, _byteReader, _wide);
+      I_LSHR(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.LSHR, _byteReader, _wide);
 
       }
 
@@ -3636,48 +3636,48 @@ class InstructionSet{
    }
 
    static class I_LSTORE extends LocalVariableIndex08Store{
-      I_LSTORE(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.LSTORE, _byteReader, _wide);
+      I_LSTORE(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.LSTORE, _byteReader, _wide);
 
       }
 
    }
 
    static class I_LSTORE_0 extends LocalVariableConstIndexStore{
-      I_LSTORE_0(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.LSTORE_0, _byteReader, _wide, 0);
+      I_LSTORE_0(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.LSTORE_0, _byteReader, _wide, 0);
 
       }
 
    }
 
    static class I_LSTORE_1 extends LocalVariableConstIndexStore{
-      I_LSTORE_1(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.LSTORE_1, _byteReader, _wide, 1);
+      I_LSTORE_1(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.LSTORE_1, _byteReader, _wide, 1);
 
       }
 
    }
 
    static class I_LSTORE_2 extends LocalVariableConstIndexStore{
-      I_LSTORE_2(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.LSTORE_2, _byteReader, _wide, 2);
+      I_LSTORE_2(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.LSTORE_2, _byteReader, _wide, 2);
 
       }
 
    }
 
    static class I_LSTORE_3 extends LocalVariableConstIndexStore{
-      I_LSTORE_3(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.LSTORE_3, _byteReader, _wide, 3);
+      I_LSTORE_3(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.LSTORE_3, _byteReader, _wide, 3);
 
       }
 
    }
 
    static class I_LSUB extends BinaryOperator{
-      I_LSUB(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.LSUB, _byteReader, _wide);
+      I_LSUB(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.LSUB, _byteReader, _wide);
 
       }
 
@@ -3688,8 +3688,8 @@ class InstructionSet{
    }
 
    static class I_LUSHR extends BinaryOperator{
-      I_LUSHR(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.LUSHR, _byteReader, _wide);
+      I_LUSHR(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.LUSHR, _byteReader, _wide);
 
       }
 
@@ -3700,8 +3700,8 @@ class InstructionSet{
    }
 
    static class I_LXOR extends BinaryOperator{
-      I_LXOR(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.LXOR, _byteReader, _wide);
+      I_LXOR(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.LXOR, _byteReader, _wide);
 
       }
 
@@ -3712,8 +3712,8 @@ class InstructionSet{
    }
 
    static class I_MONITORENTER extends Instruction{
-      I_MONITORENTER(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.MONITORENTER, _byteReader, _wide);
+      I_MONITORENTER(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.MONITORENTER, _byteReader, _wide);
 
       }
 
@@ -3724,8 +3724,8 @@ class InstructionSet{
    }
 
    static class I_MONITOREXIT extends Instruction{
-      I_MONITOREXIT(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.MONITOREXIT, _byteReader, _wide);
+      I_MONITOREXIT(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.MONITOREXIT, _byteReader, _wide);
 
       }
 
@@ -3738,8 +3738,8 @@ class InstructionSet{
    static class I_MULTIANEWARRAY extends Index16 implements New{
       private int dimensions;
 
-      I_MULTIANEWARRAY(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.MULTIANEWARRAY, _byteReader, _wide);
+      I_MULTIANEWARRAY(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.MULTIANEWARRAY, _byteReader, _wide);
          dimensions = _byteReader.u1();
 
       }
@@ -3755,8 +3755,8 @@ class InstructionSet{
    }
 
    static class I_NEW extends Index16 implements New{
-      I_NEW(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.NEW, _byteReader, _wide);
+      I_NEW(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.NEW, _byteReader, _wide);
 
       }
 
@@ -3769,8 +3769,8 @@ class InstructionSet{
    static class I_NEWARRAY extends Instruction implements New{
       private int type;
 
-      I_NEWARRAY(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.NEWARRAY, _byteReader, _wide);
+      I_NEWARRAY(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.NEWARRAY, _byteReader, _wide);
          type = _byteReader.u1();
 
       }
@@ -3786,8 +3786,8 @@ class InstructionSet{
    }
 
    static class I_NOP extends Instruction{
-      I_NOP(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.NOP, _byteReader, _wide);
+      I_NOP(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.NOP, _byteReader, _wide);
 
       }
 
@@ -3798,8 +3798,8 @@ class InstructionSet{
    }
 
    static class I_POP extends Instruction{
-      I_POP(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.POP, _byteReader, _wide);
+      I_POP(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.POP, _byteReader, _wide);
 
       }
 
@@ -3810,8 +3810,8 @@ class InstructionSet{
    }
 
    static class I_POP2 extends Instruction{
-      I_POP2(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.POP2, _byteReader, _wide);
+      I_POP2(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.POP2, _byteReader, _wide);
 
       }
 
@@ -3822,8 +3822,8 @@ class InstructionSet{
    }
 
    static class I_PUTFIELD extends Index16 implements AssignToInstanceField{
-      I_PUTFIELD(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.PUTFIELD, _byteReader, _wide);
+      I_PUTFIELD(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.PUTFIELD, _byteReader, _wide);
 
       }
 
@@ -3862,8 +3862,8 @@ class InstructionSet{
    }
 
    static class I_PUTSTATIC extends Index16 implements AssignToField{
-      I_PUTSTATIC(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.PUTSTATIC, _byteReader, _wide);
+      I_PUTSTATIC(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.PUTSTATIC, _byteReader, _wide);
 
       }
 
@@ -3896,8 +3896,8 @@ class InstructionSet{
    }
 
    static class I_RET extends Index08 implements AssignToLocalVariable{
-      I_RET(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.RET, _byteReader, _wide);
+      I_RET(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.RET, _byteReader, _wide);
 
       }
 
@@ -3927,8 +3927,8 @@ class InstructionSet{
    }
 
    static class I_RETURN extends Return{
-      I_RETURN(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.RETURN, _byteReader, _wide);
+      I_RETURN(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.RETURN, _byteReader, _wide);
 
       }
 
@@ -3939,8 +3939,8 @@ class InstructionSet{
    }
 
    static class I_SALOAD extends AccessArrayElement{
-      I_SALOAD(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.SALOAD, _byteReader, _wide);
+      I_SALOAD(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.SALOAD, _byteReader, _wide);
 
       }
 
@@ -3951,8 +3951,8 @@ class InstructionSet{
    }
 
    static class I_SASTORE extends AssignToArrayElement{
-      I_SASTORE(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.SASTORE, _byteReader, _wide);
+      I_SASTORE(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.SASTORE, _byteReader, _wide);
 
       }
 
@@ -3963,8 +3963,8 @@ class InstructionSet{
    }
 
    static class I_SIPUSH extends ImmediateConstant<Integer>{
-      I_SIPUSH(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.SIPUSH, _byteReader, _wide);
+      I_SIPUSH(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.SIPUSH, _byteReader, _wide);
          value = _byteReader.u2();
 
       }
@@ -3975,8 +3975,8 @@ class InstructionSet{
    }
 
    static class I_SWAP extends Instruction{
-      I_SWAP(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.SWAP, _byteReader, _wide);
+      I_SWAP(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.SWAP, _byteReader, _wide);
 
       }
 
@@ -3991,8 +3991,8 @@ class InstructionSet{
 
       private int low;
 
-      I_TABLESWITCH(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.TABLESWITCH, _byteReader, _wide);
+      I_TABLESWITCH(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.TABLESWITCH, _byteReader, _wide);
          int operandStart = _byteReader.getOffset();
          int padLength = ((operandStart % 4) == 0) ? 0 : 4 - (operandStart % 4);
          _byteReader.bytes(padLength);
@@ -4029,8 +4029,8 @@ class InstructionSet{
 
       private int wideopcode;
 
-      I_WIDE(MethodModel _methodPoolEntry, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, ByteCode.WIDE, _byteReader, _wide);
+      I_WIDE(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
+         super(_method, ByteCode.WIDE, _byteReader, _wide);
          wideopcode = _byteReader.u1();
          index = _byteReader.u2();
          if(((wideopcode >= 0x15 && wideopcode <= 0x19) || (wideopcode >= 0x36 && wideopcode <= 0x3a) || (wideopcode == 0xa9))){
@@ -4066,8 +4066,8 @@ class InstructionSet{
 
    static class I_END extends Instruction{
 
-      protected I_END(MethodModel method, int _pc){
-         super(method, ByteCode.NONE, _pc);
+      protected I_END(ClassModel.ClassModelMethod _method, int _pc){
+         super(_method, ByteCode.NONE, _pc);
       }
 
       @Override String getDescription(){
@@ -4078,8 +4078,8 @@ class InstructionSet{
    static abstract class Index extends Instruction{
       protected int index;
 
-      Index(MethodModel _methodPoolEntry, ByteCode _byteCode, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, _byteCode, _byteReader, _wide);
+      Index(ClassModel.ClassModelMethod _method, ByteCode _byteCode, ByteReader _byteReader, boolean _wide){
+         super(_method, _byteCode, _byteReader, _wide);
 
       }
 
@@ -4087,8 +4087,8 @@ class InstructionSet{
 
    static abstract class IndexConst extends Index{
 
-      IndexConst(MethodModel _methodPoolEntry, ByteCode _byteCode, ByteReader _byteReader, boolean _wide, int _index){
-         super(_methodPoolEntry, _byteCode, _byteReader, _wide);
+      IndexConst(ClassModel.ClassModelMethod _method, ByteCode _byteCode, ByteReader _byteReader, boolean _wide, int _index){
+         super(_method, _byteCode, _byteReader, _wide);
          index = _index;
 
       }
@@ -4096,8 +4096,8 @@ class InstructionSet{
    }
 
    static abstract class Index08 extends Index{
-      Index08(MethodModel _methodPoolEntry, ByteCode _byteCode, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, _byteCode, _byteReader, _wide);
+      Index08(ClassModel.ClassModelMethod _method, ByteCode _byteCode, ByteReader _byteReader, boolean _wide){
+         super(_method, _byteCode, _byteReader, _wide);
          if(_wide){
             index = _byteReader.u2();
          }else{
@@ -4108,8 +4108,8 @@ class InstructionSet{
    }
 
    static abstract class Index16 extends Index{
-      Index16(MethodModel _methodPoolEntry, ByteCode _byteCode, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, _byteCode, _byteReader, _wide);
+      Index16(ClassModel.ClassModelMethod _method, ByteCode _byteCode, ByteReader _byteReader, boolean _wide){
+         super(_method, _byteCode, _byteReader, _wide);
          index = _byteReader.u2();
 
       }
@@ -4118,8 +4118,8 @@ class InstructionSet{
 
    static abstract class Return extends Instruction{
 
-      Return(MethodModel _methodPoolEntry, ByteCode _byteCode, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, _byteCode, _byteReader, _wide);
+      Return(ClassModel.ClassModelMethod _method, ByteCode _byteCode, ByteReader _byteReader, boolean _wide){
+         super(_method, _byteCode, _byteReader, _wide);
 
       }
 
@@ -4127,8 +4127,8 @@ class InstructionSet{
 
    static abstract class Switch extends Branch{
 
-      Switch(MethodModel _methodPoolEntry, ByteCode _code, ByteReader _byteReader, boolean _wide){
-         super(_methodPoolEntry, _code, _byteReader, _wide);
+      Switch(ClassModel.ClassModelMethod _method, ByteCode _code, ByteReader _byteReader, boolean _wide){
+         super(_method, _code, _byteReader, _wide);
       }
 
       protected int[] offsets;
@@ -4255,8 +4255,8 @@ class InstructionSet{
    static class CloneInstruction extends Instruction{
       private Instruction cloning;
 
-      CloneInstruction(MethodModel method, Instruction _cloning){
-         super(method, ByteCode.CLONE, -1);
+      CloneInstruction(ClassModel.ClassModelMethod _method, Instruction _cloning){
+         super(_method, ByteCode.CLONE, -1);
          cloning = _cloning;
       }
 
@@ -4292,8 +4292,8 @@ class InstructionSet{
          return isPre;
       }
 
-      IncrementInstruction(MethodModel method, Instruction _fieldOrVariable, boolean _isInc, boolean _isPre){
-         super(method, ByteCode.INCREMENT, -1);
+      IncrementInstruction(ClassModel.ClassModelMethod _method, Instruction _fieldOrVariable, boolean _isInc, boolean _isPre){
+         super(_method, ByteCode.INCREMENT, -1);
 
          fieldOrVariable = _fieldOrVariable;
          isPre = _isPre;
@@ -4318,8 +4318,8 @@ class InstructionSet{
 
       Instruction rhs;
 
-      InlineAssignInstruction(MethodModel method, AssignToLocalVariable _assignToLocalVariable, Instruction _rhs){
-         super(method, ByteCode.INLINE_ASSIGN, -1);
+      InlineAssignInstruction(ClassModel.ClassModelMethod _method, AssignToLocalVariable _assignToLocalVariable, Instruction _rhs){
+         super(_method, ByteCode.INLINE_ASSIGN, -1);
          assignToLocalVariable = _assignToLocalVariable;
          rhs = _rhs;
 
@@ -4343,8 +4343,8 @@ class InstructionSet{
 
       Instruction rhs;
 
-      FieldArrayElementAssign(MethodModel method, AssignToArrayElement _assignToArrayElement, Instruction _rhs){
-         super(method, ByteCode.FIELD_ARRAY_ELEMENT_ASSIGN, -1);
+      FieldArrayElementAssign(ClassModel.ClassModelMethod _method, AssignToArrayElement _assignToArrayElement, Instruction _rhs){
+         super(_method, ByteCode.FIELD_ARRAY_ELEMENT_ASSIGN, -1);
          assignToArrayElement = _assignToArrayElement;
          rhs = _rhs;
 
@@ -4371,8 +4371,8 @@ class InstructionSet{
 
       boolean isInc;
 
-      FieldArrayElementIncrement(MethodModel method, AssignToArrayElement _assignToArrayElement, boolean _isInc, boolean _isPre){
-         super(method, ByteCode.FIELD_ARRAY_ELEMENT_INCREMENT, -1);
+      FieldArrayElementIncrement(ClassModel.ClassModelMethod _method, AssignToArrayElement _assignToArrayElement, boolean _isInc, boolean _isPre){
+         super(_method, ByteCode.FIELD_ARRAY_ELEMENT_INCREMENT, -1);
          assignToArrayElement = _assignToArrayElement;
          isPre = _isPre;
          isInc = _isInc;
@@ -4399,8 +4399,8 @@ class InstructionSet{
    static class MultiAssignInstruction extends Instruction{
       Instruction from, to, common;
 
-      MultiAssignInstruction(MethodModel method, Instruction _common, Instruction _from, Instruction _to){
-         super(method, ByteCode.MULTI_ASSIGN, -1);
+      MultiAssignInstruction(ClassModel.ClassModelMethod _method, Instruction _common, Instruction _from, Instruction _to){
+         super(_method, ByteCode.MULTI_ASSIGN, -1);
          common = _common;
          from = _from;
          to = _to;
@@ -4425,8 +4425,8 @@ class InstructionSet{
 
    static class FakeGoto extends UnconditionalBranch{
 
-      FakeGoto(MethodModel _methodPoolEntry, Instruction _target){
-         super(_methodPoolEntry, ByteCode.FAKEGOTO, _target);
+      FakeGoto(ClassModel.ClassModelMethod _method, Instruction _target){
+         super(_method, ByteCode.FAKEGOTO, _target);
       }
 
       @Override String getDescription(){

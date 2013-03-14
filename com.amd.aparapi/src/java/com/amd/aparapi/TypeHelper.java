@@ -1,7 +1,7 @@
 package com.amd.aparapi;
 
-import java.lang.reflect.Method;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
@@ -297,37 +297,36 @@ public class TypeHelper{
       public Type(Class<?> _clazz){
          Class componentType;
          String arrayPrefix = "";
-         if (_clazz.isArray()){
+         if(_clazz.isArray()){
             componentType = _clazz.getComponentType();
-            arrayDimensions = _clazz.getName().lastIndexOf('[')+1;
-            arrayPrefix=_clazz.getName().substring(0, arrayDimensions);
+            arrayDimensions = _clazz.getName().lastIndexOf('[') + 1;
+            arrayPrefix = _clazz.getName().substring(0, arrayDimensions);
          }else{
             componentType = _clazz;
          }
 
 
-
-         if (componentType == int.class){
-            type = arrayPrefix+"I";
-         }else if (componentType == float.class){
-            type = arrayPrefix+"F";
-         }else if (componentType == double.class){
-            type = arrayPrefix+"D";
-         }else if (componentType == long.class){
-            type = arrayPrefix+"J";
-         }else if (componentType == char.class){
-            type = arrayPrefix+"C";
-         }else if (componentType == byte.class){
-            type = arrayPrefix+"B";
-         }else if (componentType == short.class){
-            type = arrayPrefix+"S";
-         }else if (componentType == void.class){
-            type = arrayPrefix+"V";
-         }else if (componentType == boolean.class){
-            type = arrayPrefix+"Z";
+         if(componentType == int.class){
+            type = arrayPrefix + "I";
+         }else if(componentType == float.class){
+            type = arrayPrefix + "F";
+         }else if(componentType == double.class){
+            type = arrayPrefix + "D";
+         }else if(componentType == long.class){
+            type = arrayPrefix + "J";
+         }else if(componentType == char.class){
+            type = arrayPrefix + "C";
+         }else if(componentType == byte.class){
+            type = arrayPrefix + "B";
+         }else if(componentType == short.class){
+            type = arrayPrefix + "S";
+         }else if(componentType == void.class){
+            type = arrayPrefix + "V";
+         }else if(componentType == boolean.class){
+            type = arrayPrefix + "Z";
          }else{
             // its an object or an array of objects
-            type = arrayPrefix+"L"+dotClassNameToSlashClassName(_clazz.getName())+";";
+            type = arrayPrefix + "L" + dotClassNameToSlashClassName(_clazz.getName()) + ";";
          }
 
       }
@@ -475,6 +474,7 @@ public class TypeHelper{
          super(_signature.substring(_start, _pos + 1));
          argc = _argc;
       }
+
       Arg(Class _clazz, int _argc){
          super(_clazz);
          argc = _argc;
@@ -491,19 +491,22 @@ public class TypeHelper{
       ArgsAndReturnType argsAndReturnType;
       Type containingClass;
       String methodName;
+
       public MethodInfo(Method _method){
          argsAndReturnType = new ArgsAndReturnType(_method);
          containingClass = new Type(_method.getDeclaringClass());
          methodName = _method.getName();
       }
+
       public MethodInfo(ClassModel.ConstantPool.MethodEntry _methodEntry){
          argsAndReturnType = _methodEntry.getArgsAndReturnType();
          containingClass = _methodEntry.getContainingClass();
          methodName = _methodEntry.getName();
 
       }
+
       public boolean equals(MethodInfo _other){
-         return(_other.methodName.equals(methodName) && _other.containingClass.equals(containingClass) && _other.argsAndReturnType.equals(argsAndReturnType));
+         return (_other.methodName.equals(methodName) && _other.containingClass.equals(containingClass) && _other.argsAndReturnType.equals(argsAndReturnType));
       }
 
    }
@@ -512,18 +515,21 @@ public class TypeHelper{
       Type type;
       Type containingClass;
       String fieldName;
+
       FieldInfo(Field _field){
          type = new Type(_field);
          containingClass = new Type(_field.getDeclaringClass());
          fieldName = _field.getName();
       }
+
       FieldInfo(ClassModel.ConstantPool.FieldEntry _fieldEntry){
-          type = _fieldEntry.getType();
-          containingClass = _fieldEntry.getContainingClass();
-          fieldName = _fieldEntry.getName();
+         type = _fieldEntry.getType();
+         containingClass = _fieldEntry.getContainingClass();
+         fieldName = _fieldEntry.getName();
       }
+
       public boolean equals(FieldInfo _other){
-         return(_other.fieldName.equals(fieldName) && _other.containingClass.equals(containingClass) && _other.type.equals(type));
+         return (_other.fieldName.equals(fieldName) && _other.containingClass.equals(containingClass) && _other.type.equals(type));
       }
    }
 
@@ -534,7 +540,9 @@ public class TypeHelper{
          inClass,
          inArray,
          done;
-      };
+      }
+
+      ;
 
 
       Arg[] args;
@@ -620,8 +628,8 @@ public class TypeHelper{
 
       public ArgsAndReturnType(Method _method){
          args = new Arg[_method.getParameterCount()];
-         Class<?> argsAsClasses[]=_method.getParameterTypes();
-         for (int i=0;i<argsAsClasses.length; i++ ){
+         Class<?> argsAsClasses[] = _method.getParameterTypes();
+         for(int i = 0; i < argsAsClasses.length; i++){
             args[i] = new Arg(argsAsClasses[i], i);
          }
          returnType = new Type(_method.getReturnType());
