@@ -649,7 +649,7 @@ abstract class KernelWriter extends BlockWriter{
 
          boolean alreadyHasFirstArg = !mm.getMethod().isStatic();
 
-         LocalVariableTableEntry<LocalVariableInfo> lvte = mm.getLocalVariableTableEntry();
+         LocalVariableTableEntry<LocalVariableTableEntry, LocalVariableInfo> lvte = mm.getLocalVariableTableEntry();
          for(LocalVariableInfo lvi : lvte){
             if((lvi.getStart() == 0) && ((lvi.getVariableIndex() != 0) || mm.getMethod().isStatic())){ // full scope but skip this
                String descriptor = lvi.getVariableDescriptor();
@@ -722,7 +722,7 @@ abstract class KernelWriter extends BlockWriter{
    protected void doAccessLocalVariable(Instruction _instruction){
       AccessLocalVariable localVariableLoadInstruction = (AccessLocalVariable) _instruction;
       LocalVariableInfo localVariable = localVariableLoadInstruction.getLocalVariableInfo();
-      if((localVariable.getStart() == 0) && (_instruction.getMethod() == entryPoint.getMethodModel())){
+      if((localVariable.getStart() == 0) && (_instruction.getMethod() == entryPoint.getMethodModel().getMethod())){
          // This is a method parameter captured value into the lambda
          writeThisRef();
       }

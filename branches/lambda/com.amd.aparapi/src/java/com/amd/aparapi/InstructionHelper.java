@@ -83,13 +83,11 @@ class InstructionHelper{
       }
 
       void data(Object... args){
-
          cols.get(col++).format(args);
          if(col == cols.size()){
             col = 0;
             size++;
          }
-
       }
 
       @Override
@@ -434,7 +432,7 @@ class InstructionHelper{
 
          String label = InstructionHelper.getLabel(root, false, true, false);
          StringBuilder sb = new StringBuilder();
-         for(BranchVector branchInfo : getBranches(_methodModel)){
+         for(BranchVector branchInfo : getBranches(_methodModel.getMethod())){
             sb.append(branchInfo.render(root.getThisPC(), root.getStartPC()));
          }
          table.data(root.getStartPC(), root.getThisPC());
@@ -452,7 +450,7 @@ class InstructionHelper{
       for(Instruction root = _head; root != null; root = root.getNextExpr()){
          String label = InstructionHelper.getLabel(root, false, false, false);
          StringBuilder sb = new StringBuilder();
-         for(BranchVector branchInfo : getBranches(_methodModel)){
+         for(BranchVector branchInfo : getBranches(_methodModel.getMethod())){
             sb.append(branchInfo.render(root.getThisPC(), root.getStartPC()));
          }
          table.data(root.getStartPC(), root.getThisPC());
@@ -462,7 +460,7 @@ class InstructionHelper{
       }
       String label = InstructionHelper.getLabel(_tail, false, false, false);
       StringBuilder sb = new StringBuilder();
-      for(BranchVector branchInfo : getBranches(_methodModel)){
+      for(BranchVector branchInfo : getBranches(_methodModel.getMethod())){
          sb.append(branchInfo.render(_tail.getThisPC(), _tail.getStartPC()));
       }
       table.data(_tail.getStartPC(), _tail.getThisPC());
@@ -482,14 +480,11 @@ class InstructionHelper{
          table.data(stack);
          table.data(pc);
          table.data(InstructionHelper.getLabel(i, false, false, false));
-         if(true){
-            StringBuilder sb = new StringBuilder();
-            for(BranchVector branchInfo : getBranches(_methodModel)){
-               sb.append(branchInfo.render(pc));
-            }
-            table.data(sb);
+         StringBuilder sb = new StringBuilder();
+         for(BranchVector branchInfo : getBranches(_methodModel.getMethod())){
+            sb.append(branchInfo.render(pc));
          }
-
+         table.data(sb);
       }
       return (table.toString());
    }
@@ -503,10 +498,10 @@ class InstructionHelper{
 
    };
 
-   static List<BranchVector> getBranches(MethodModel _methodModel){
+   static List<BranchVector> getBranches(ClassModel.ClassModelMethod _method){
       List<BranchVector> branchVectors = new ArrayList<BranchVector>();
 
-      for(Instruction instruction = _methodModel.getPCHead(); instruction != null; instruction = instruction.getNextPC()){
+      for(Instruction instruction : _method.getInstructions().values()){
          if(instruction.isBranch()){
             Branch branch = (Branch) instruction;
             Instruction branchTarget = branch.getTarget();

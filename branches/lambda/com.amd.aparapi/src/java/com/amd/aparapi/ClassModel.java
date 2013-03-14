@@ -46,8 +46,12 @@ import com.amd.aparapi.TypeHelper.Type;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -84,8 +88,8 @@ class ClassModel{
 
    }
 
-   interface LocalVariableTableEntry<T extends LocalVariableInfo> extends Iterable<T>{
-      LocalVariableInfo getVariable(int _pc, int _index);
+   interface LocalVariableTableEntry<T extends LocalVariableTableEntry, I extends LocalVariableInfo> extends Iterable<LocalVariableInfo>{
+      I getVariable(int _pc, int _index);
 
    }
 
@@ -566,11 +570,11 @@ class ClassModel{
          }
 
          Type getContainingClass(){
-            return(new TypeHelper.Type(getClassEntry().getClassName()));
+            return (new TypeHelper.Type(getClassEntry().getClassName()));
          }
 
          String getName(){
-            return(getNameAndTypeEntry().getNameUTF8Entry().getUTF8());
+            return (getNameAndTypeEntry().getNameUTF8Entry().getUTF8());
          }
 
          int getClassIndex(){
@@ -1284,8 +1288,205 @@ class ClassModel{
 
       }
 
-      class RealLocalVariableTableEntry extends PoolEntry<RealLocalVariableTableEntry.RealLocalVariableInfo> implements
-            LocalVariableTableEntry<RealLocalVariableTableEntry.RealLocalVariableInfo>{
+      public class FakeLocalVariableTableEntry implements LocalVariableTableEntry<FakeLocalVariableTableEntry, FakeLocalVariableTableEntry.Var>, Iterable<LocalVariableInfo>{
+
+         class Var implements LocalVariableInfo{
+
+            int startPc = 0;
+
+            int endPc = 0;
+
+            String name = null;
+
+            boolean arg;
+
+            String descriptor = "";
+
+            int slotIndex;
+
+            Var(InstructionSet.StoreSpec _storeSpec, int _slotIndex, int _startPc, boolean _arg){
+               slotIndex = _slotIndex;
+               arg = _arg;
+               startPc = _startPc;
+               if(_storeSpec.equals(InstructionSet.StoreSpec.A)){
+                  name = "arr_" + _slotIndex;
+                  descriptor = "/* arg */";
+               }else{
+                  name = _storeSpec.toString().toLowerCase() + "_" + _slotIndex;
+                  descriptor = _storeSpec.toString();
+
+               }
+            }
+
+            Var(){
+               name = "NONE";
+            }
+
+            @Override
+            public boolean equals(Object object){
+               return (object instanceof Var && ((object == this) || ((Var) object).name.equals(name)));
+            }
+
+            public String toString(){
+               return (name + "[" + startPc + "-" + endPc + "]");
+            }
+
+            @Override
+            public int getStart(){
+               return startPc;
+            }
+
+            @Override
+            public boolean isArray(){
+               return name.startsWith("arr");
+            }
+
+            @Override
+            public boolean isObject(){
+               return name.startsWith("o");
+            }
+
+            @Override
+            public int getEnd(){
+               return endPc;
+            }
+
+            @Override
+            public int getLength(){
+               return endPc - startPc;
+            }
+
+            @Override
+            public String getVariableName(){
+               return (name);
+            }
+
+            @Override
+            public String getVariableDescriptor(){
+               return (descriptor);
+            }
+
+            @Override
+            public int getVariableIndex(){
+               return (slotIndex);
+            }
+         }
+
+         List<LocalVariableInfo> list = new ArrayList<LocalVariableInfo>();
+
+         public FakeLocalVariableTableEntry(Map<Integer, Instruction> _pcMap, ClassModelMethod _method){
+            int numberOfSlots = _method.getCodeEntry().getMaxLocals();
+
+            // MethodDescription description = TypeHelper.getMethodDescription(_method.getDescriptor());
+
+            ArgsAndReturnType argsAndReturnType = _method.getArgsAndReturnType();
+            TypeHelper.Arg[] args = argsAndReturnType.getArgs();
+
+            int thisOffset = _method.isStatic() ? 0 : 1;
+
+            Var[] vars = new Var[numberOfSlots + thisOffset];
+            InstructionSet.StoreSpec[] argsAsStoreSpecs = new InstructionSet.StoreSpec[args.length + thisOffset];
+            if(thisOffset == 1){
+               argsAsStoreSpecs[0] = InstructionSet.StoreSpec.O;
+               vars[0] = new Var(argsAsStoreSpecs[0], 0, 0, true);
+               list.add(vars[0]);
+
+            }
+
+            for(int i = 0; i < args.length; i++){
+               if(args[i].isArray()){
+                  argsAsStoreSpecs[i + thisOffset] = InstructionSet.StoreSpec.A;
+               }else if(args[i].isObject()){
+                  argsAsStoreSpecs[i + thisOffset] = InstructionSet.StoreSpec.O;
+               }else{
+                  argsAsStoreSpecs[i + thisOffset] = InstructionSet.StoreSpec.valueOf(args[i].getType().substring(0, 1));
+               }
+               vars[i + thisOffset] = new Var(argsAsStoreSpecs[i + thisOffset], i + thisOffset, 0, true);
+
+               // Preserve actual object type
+               if(argsAsStoreSpecs[i + thisOffset] == InstructionSet.StoreSpec.O || argsAsStoreSpecs[i + thisOffset] == InstructionSet.StoreSpec.A){
+                  vars[i + thisOffset].descriptor = args[i].getType();
+               }
+               list.add(vars[i + thisOffset]);
+            }
+            for(int i = args.length + thisOffset; i < numberOfSlots + thisOffset; i++){
+               vars[i] = new Var();
+            }
+
+            int pc = 0;
+            Instruction instruction = null;
+            for(Map.Entry<Integer, Instruction> entry : _pcMap.entrySet()){
+               pc = entry.getKey();
+               instruction = entry.getValue();
+               InstructionSet.StoreSpec storeSpec = instruction.getByteCode().getStore();
+               if(storeSpec != InstructionSet.StoreSpec.NONE){
+                  int slotIndex = ((InstructionSet.LocalVariableTableIndexAccessor) instruction).getLocalVariableTableIndex();
+                  Var prevVar = vars[slotIndex];
+                  Var var = new Var(storeSpec, slotIndex, pc + instruction.getLength(), false); // will get collected pretty soon if this is not the same as the previous in this slot
+                  if(!prevVar.equals(var)){
+                     prevVar.endPc = pc;
+                     vars[slotIndex] = var;
+                     list.add(vars[slotIndex]);
+                  }
+               }
+            }
+            for(int i = 0; i < numberOfSlots + thisOffset; i++){
+               vars[i].endPc = pc + instruction.getLength();
+            }
+            Collections.sort(list, new Comparator<LocalVariableInfo>(){
+               @Override
+               public int compare(LocalVariableInfo o1, LocalVariableInfo o2){
+                  return o1.getStart() - o2.getStart();
+               }
+            });
+            if(Config.enableShowFakeLocalVariableTable){
+               System.out.println("FakeLocalVariableTable:");
+               System.out.println(" Start  Length  Slot    Name   Signature");
+               for(LocalVariableInfo lvi : list){
+                  Var var = (Var) lvi;
+                  System.out.println(String.format(" %5d   %5d  %4d  %8s     %s", var.startPc, var.getLength(), var.slotIndex,
+                        var.name, var.descriptor));
+               }
+            }
+
+         }
+
+         @Override
+         public Var getVariable(int _pc, int _index){
+            Var returnValue = null;
+            //  System.out.println("pc = " + _pc + " index = " + _index);
+            for(LocalVariableInfo localVariableInfo : list){
+               // System.out.println("   start=" + localVariableInfo.getStart() + " length=" + localVariableInfo.getLength()
+               // + " varidx=" + localVariableInfo.getVariableIndex());
+               if(_pc >= localVariableInfo.getStart() - 1 && _pc <= (localVariableInfo.getStart() + localVariableInfo.getLength())
+                     && _index == localVariableInfo.getVariableIndex()){
+                  returnValue = (Var) localVariableInfo;
+                  break;
+               }
+            }
+            return (returnValue);
+         }
+
+         String getVariableName(int _pc, int _index){
+            String returnValue = "unknown";
+            LocalVariableInfo localVariableInfo = (LocalVariableInfo) getVariable(_pc, _index);
+            if(localVariableInfo != null){
+               returnValue = ((Var) localVariableInfo).name;
+            }
+            // System.out.println("returning " + returnValue);
+            return (returnValue);
+         }
+
+         @Override
+         public Iterator<LocalVariableInfo> iterator(){
+            return list.iterator();
+         }
+
+      }
+
+
+      class RealLocalVariableTableEntry extends PoolEntry<LocalVariableInfo> implements
+            LocalVariableTableEntry<RealLocalVariableTableEntry, RealLocalVariableTableEntry.RealLocalVariableInfo>{
 
          class RealLocalVariableInfo implements LocalVariableInfo{
             private int descriptorIndex;
@@ -1362,15 +1563,15 @@ class ClassModel{
             }
          }
 
-         public LocalVariableInfo getVariable(int _pc, int _index){
+         public RealLocalVariableInfo getVariable(int _pc, int _index){
             RealLocalVariableInfo returnValue = null;
             // System.out.println("pc = " + _pc + " index = " + _index);
-            for(RealLocalVariableInfo localVariableInfo : getPool()){
+            for(LocalVariableInfo localVariableInfo : getPool()){
                // System.out.println("   start=" + localVariableInfo.getStart() + " length=" + localVariableInfo.getLength()
                // + " varidx=" + localVariableInfo.getVariableIndex());
                if(_pc >= localVariableInfo.getStart() - 1 && _pc <= (localVariableInfo.getStart() + localVariableInfo.getLength())
                      && _index == localVariableInfo.getVariableIndex()){
-                  returnValue = localVariableInfo;
+                  returnValue = (RealLocalVariableInfo) localVariableInfo;
                   break;
                }
             }
@@ -1380,7 +1581,7 @@ class ClassModel{
 
          String getVariableName(int _pc, int _index){
             String returnValue = "unknown";
-            RealLocalVariableInfo localVariableInfo = (RealLocalVariableInfo) getVariable(_pc, _index);
+            RealLocalVariableInfo localVariableInfo = getVariable(_pc, _index);
             if(localVariableInfo != null){
                returnValue = TypeHelper.convert(constantPool.getUTF8Entry(localVariableInfo.getDescriptorIndex()).getUTF8(), constantPool
                      .getUTF8Entry(localVariableInfo.getNameIndex()).getUTF8());
@@ -1992,6 +2193,83 @@ class ClassModel{
          return getClassModel().getClassWeAreModelling().getName() + "." + getName() + " " + getDescriptor();
       }
 
+      Map<Integer, Instruction> pcMap;
+
+      /**
+       * Create a linked list of instructions (from pcHead to pcTail).
+       * <p/>
+       * Returns a map of int (pc) to Instruction which to allow us to quickly get from a bytecode offset to the appropriate instruction.
+       * <p/>
+       * Note that not all int values from 0 to code.length values will map to a valid instruction, if pcMap.get(n) == null then this implies
+       * that 'n' is not the start of an instruction
+       * <p/>
+       * So either pcMap.get(i)== null or pcMap.get(i).getThisPC()==i
+       *
+       * @return Map<Integer, Instruction> the returned pc to Instruction map
+       */
+      Map<Integer, Instruction> getInstructions(){
+         if(pcMap == null){
+            pcMap = new LinkedHashMap<Integer, Instruction>();
+            byte[] code = getCode();
+
+            // We create a byteReader for reading the bytes from the code array
+            ByteReader codeReader = new ByteReader(code);
+            while(codeReader.hasMore()){
+               // Create an instruction from code reader's current position
+               int pc = codeReader.getOffset();
+               Instruction instruction = InstructionSet.ByteCode.create(this, codeReader);
+
+               pcMap.put(pc, instruction);
+
+               // list maintenance, make this the pcHead if pcHead is null
+               if(pcHead == null){
+                  pcHead = instruction;
+               }
+
+               // extend the list of instructions here we make the new instruction point to previous tail
+               instruction.setPrevPC(pcTail);
+               // if tail exists (not the first instruction in the list) link it to the new instruction
+               if(pcTail != null){
+                  pcTail.setNextPC(instruction);
+               }
+               // now move the tail along
+               pcTail = instruction;
+
+            }
+            LocalVariableTableEntry localVariableTableEntry = getLocalVariableTableEntry();
+
+            if(localVariableTableEntry == null){
+               localVariableTableEntry = attributePool.new FakeLocalVariableTableEntry(pcMap, this);
+
+               setLocalVariableTableEntry(localVariableTableEntry);
+               logger.info("Method "
+                     + getName()
+                     + getDescriptor()
+                     + " does not contain a LocalVariableTable entry (source not compiled with -g) aparapi create a synthetic table based on bytecode");
+            }
+
+            // pass #2 build branch graph
+            for(Instruction instruction : pcMap.values()){
+               if(instruction.isBranch()){
+                  InstructionSet.Branch branch = instruction.asBranch();
+                  Instruction targetInstruction = pcMap.get(branch.getAbsolute());
+                  branch.setTarget(targetInstruction);
+               }
+            }
+
+            // Now all branches point to the instructions they branch to and all targets know who is branching to them
+
+         }
+         return (pcMap);
+      }
+
+      Instruction pcHead;
+      Instruction pcTail;
+
+      public Instruction getPCHead(){
+         getInstructions(); // in case we have not yet read the instructions
+         return (pcHead);
+      }
    }
 
    class ClassModelInterface{
