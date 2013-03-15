@@ -50,8 +50,11 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -2194,6 +2197,8 @@ class ClassModel{
       }
 
       Map<Integer, Instruction> pcMap;
+      Set<InstructionSet.Branch> branches;
+      Set<Instruction> branchTargets;
 
       /**
        * Create a linked list of instructions (from pcHead to pcTail).
@@ -2207,9 +2212,14 @@ class ClassModel{
        *
        * @return Map<Integer, Instruction> the returned pc to Instruction map
        */
-      Map<Integer, Instruction> getInstructions(){
+      Map<Integer, Instruction> getInstructionMap(){
+
          if(pcMap == null){
+            Instruction pcHead = null;
+            Instruction pcTail = null;
             pcMap = new LinkedHashMap<Integer, Instruction>();
+            branches = new LinkedHashSet<InstructionSet.Branch>();
+            branchTargets = new LinkedHashSet<Instruction>();
             byte[] code = getCode();
 
             // We create a byteReader for reading the bytes from the code array
@@ -2218,6 +2228,10 @@ class ClassModel{
                // Create an instruction from code reader's current position
                int pc = codeReader.getOffset();
                Instruction instruction = InstructionSet.ByteCode.create(this, codeReader);
+
+               if(instruction instanceof InstructionSet.Branch){
+                  branches.add(instruction.asBranch());
+               }
 
                pcMap.put(pc, instruction);
 
@@ -2249,27 +2263,38 @@ class ClassModel{
             }
 
             // pass #2 build branch graph
-            for(Instruction instruction : pcMap.values()){
-               if(instruction.isBranch()){
-                  InstructionSet.Branch branch = instruction.asBranch();
-                  Instruction targetInstruction = pcMap.get(branch.getAbsolute());
-                  branch.setTarget(targetInstruction);
-               }
+            for(InstructionSet.Branch branch : branches){
+
+               Instruction targetInstruction = pcMap.get(branch.getAbsolute());
+               branchTargets.add(targetInstruction);
+               branch.setTarget(targetInstruction);
+
             }
 
             // Now all branches point to the instructions they branch to and all targets know who is branching to them
+
+            // We need to remove some javac optimizations
+            // Javac optimizes some branches to avoid goto->goto, branch->goto etc.
+
+
+            for(InstructionSet.Branch branch : branches){
+               if(branch.isReverse()){
+                  Instruction target = branch.getTarget();
+                  LinkedList<InstructionSet.Branch> list = target.getReverseUnconditionalBranches();
+                  if((list != null) && (list.size() > 0) && (list.get(list.size() - 1) != branch)){
+                     InstructionSet.Branch unconditional = list.get(list.size() - 1).asBranch();
+                     branch.retarget(unconditional);
+
+                  }
+               }
+
+            }
 
          }
          return (pcMap);
       }
 
-      Instruction pcHead;
-      Instruction pcTail;
 
-      public Instruction getPCHead(){
-         getInstructions(); // in case we have not yet read the instructions
-         return (pcHead);
-      }
    }
 
    class ClassModelInterface{

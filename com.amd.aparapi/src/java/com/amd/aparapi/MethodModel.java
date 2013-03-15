@@ -87,7 +87,6 @@ import com.amd.aparapi.TypeHelper.Arg;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -221,7 +220,7 @@ class MethodModel{
     */
    Map<Integer, Instruction> createListOfInstructions() throws ClassParseException{
 
-      for(Instruction instruction : method.getInstructions().values()){
+      for(Instruction instruction : method.getInstructionMap().values()){
 
 
          if((!Config.enablePUTFIELD) && (instruction instanceof I_PUTFIELD)){
@@ -287,7 +286,7 @@ class MethodModel{
 
 
       }
-      return (method.getInstructions());
+      return (method.getInstructionMap());
    }
 
    /**
@@ -315,32 +314,6 @@ class MethodModel{
 
    }
 
-   /**
-    * Javac optimizes some branches to avoid goto->goto, branch->goto etc.
-    * <p/>
-    * This method specifically deals with reverse branches which are the result of such optimisations.
-    * <p/>
-    * <code><pre>
-    * <p/>
-    * </pre></code>
-    */
-   void deoptimizeReverseBranches(){
-
-      for(Instruction instruction : method.getInstructions().values()){
-         if(instruction.isBranch()){
-            Branch branch = instruction.asBranch();
-            if(branch.isReverse()){
-               Instruction target = branch.getTarget();
-               LinkedList<Branch> list = target.getReverseUnconditionalBranches();
-               if((list != null) && (list.size() > 0) && (list.get(list.size() - 1) != branch)){
-                  Branch unconditional = list.get(list.size() - 1).asBranch();
-                  branch.retarget(unconditional);
-
-               }
-            }
-         }
-      }
-   }
 
    /**
     * DUP family of instructions break our stack unwind model (whereby we treat instructions like the oeprands they create/consume).
@@ -533,7 +506,7 @@ class MethodModel{
 
       // we also populate a second list of expressions held between headTail.head and headTail.tail
 
-      for(Instruction instruction : method.getInstructions().values()){
+      for(Instruction instruction : method.getInstructionMap().values()){
 
          // Here we are going to extract loop/if/structure from the list that we have collected so far in the roots list
          // We are looking for a new instruction which is the target of a forward branch (this is why we collected forward branch counts) we only enter this loop
@@ -1469,16 +1442,12 @@ class MethodModel{
 
          // check if we have any local variables which are arrays.  This is an attempt to avoid aliasing field arrays
 
-         // We are going to make 4 passes.
+         // We are going to make 2 passes.
 
          // Pass #1 create a linked list of instructions from head to tail
-         Map<Integer, Instruction> pcMap = method.getInstructions();
+         Map<Integer, Instruction> pcMap = method.getInstructionMap();
 
-
-         // pass #3 build branch graph
-         deoptimizeReverseBranches();
-
-         // pass #4
+         // pass #2
 
          foldExpressions();
 
@@ -1515,11 +1484,6 @@ class MethodModel{
             checkForSetter(pcMap);
          }
 
-         // In order to allow inline access of object member fields, postpone this check
-         //if ((!Config.enablePUTFIELD) && usesPutfield && !isSetter()) {
-         //   throw new ClassParseException("We don't support putfield instructions beyond simple setters");
-         //}
-
          if(logger.isLoggable(Level.FINE)){
             logger.fine("end \n" + expressionList.dumpDiagram(null));
          }
@@ -1538,10 +1502,6 @@ class MethodModel{
 
    LocalVariableTableEntry getLocalVariableTableEntry(){
       return (method.getLocalVariableTableEntry());
-   }
-
-   Iterator<LocalVariableInfo> getLocalVariableTableEntryIterator(){
-      return (getLocalVariableTableEntry().iterator());
    }
 
    ConstantPool getConstantPool(){
@@ -1584,7 +1544,7 @@ class MethodModel{
    List<MethodCall> getMethodCalls(){
       List<MethodCall> methodCalls = new ArrayList<MethodCall>();
 
-      for(Instruction i = getPCHead(); i != null; i = i.getNextPC()){
+      for(Instruction i : method.getInstructionMap().values()){
          if(i instanceof MethodCall){
             MethodCall methodCall = (MethodCall) i;
             methodCalls.add(methodCall);
@@ -1596,7 +1556,7 @@ class MethodModel{
    List<AccessField> getFieldAccesses(){
       List<AccessField> accessedFields = new ArrayList<AccessField>();
 
-      for(Instruction i = getPCHead(); i != null; i = i.getNextPC()){
+      for(Instruction i : method.getInstructionMap().values()){
          if(i instanceof AccessField){
             AccessField accessField = (AccessField) i;
             accessedFields.add(accessField);
@@ -1605,15 +1565,7 @@ class MethodModel{
       return (accessedFields);
    }
 
-   Instruction getPCHead(){
-      return (method.getPCHead());
-   }
-
    Instruction getExprHead(){
       return (expressionList.getHead());
-   }
-
-   String getAutoGenMethodBody(){
-      return null;
    }
 }
