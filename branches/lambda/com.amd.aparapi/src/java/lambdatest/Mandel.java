@@ -241,27 +241,27 @@ public class Mandel{
             System.exit(0);
          }
       });
-      boolean allowZoom= false;
-      if (allowZoom){
-      // Wait until the user selects a zoom-in point on the Mandelbrot view.
-      while(true){
-         // Wait for the user to click somewhere
-         while(to == null){
-            synchronized(doorBell){
-               try{
-                  doorBell.wait();
-               }catch(InterruptedException ie){
-                  ie.getStackTrace();
+      boolean allowZoom = false;
+      if(allowZoom){
+         // Wait until the user selects a zoom-in point on the Mandelbrot view.
+         while(true){
+            // Wait for the user to click somewhere
+            while(to == null){
+               synchronized(doorBell){
+                  try{
+                     doorBell.wait();
+                  }catch(InterruptedException ie){
+                     ie.getStackTrace();
+                  }
                }
             }
-         }
 
-         long startMillis = System.currentTimeMillis();
-         zoomInAndOut(device, to, rgb, imageRgb);
-         long elapsedMillis = System.currentTimeMillis() - startMillis;
-         System.out.println("FPS = " + frames * 1000 / elapsedMillis);
-         to = null;
-      }
+            long startMillis = System.currentTimeMillis();
+            zoomInAndOut(device, to, rgb, imageRgb);
+            long elapsedMillis = System.currentTimeMillis() - startMillis;
+            System.out.println("FPS = " + frames * 1000 / elapsedMillis);
+            to = null;
+         }
       }
    }
 

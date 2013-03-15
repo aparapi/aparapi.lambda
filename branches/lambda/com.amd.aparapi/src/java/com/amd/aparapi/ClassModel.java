@@ -2199,26 +2199,34 @@ class ClassModel{
 
       Map<Integer, Instruction> pcMap;
       Set<InstructionSet.Branch> branches;
+
       Set<InstructionSet.Branch> getBranches(){
          getInstructionMap(); // remember it is lazy
-         return(branches);
+         return (branches);
       }
+
       Set<Instruction> branchTargets;
+
       Set<Instruction> getBrancheTargets(){
          getInstructionMap(); // remember it is lazy
-         return(branchTargets);
+         return (branchTargets);
       }
+
       Set<InstructionSet.MethodCall> methodCalls;
+
       public Set<InstructionSet.MethodCall> getMethodCalls(){
          getInstructionMap(); // remember it is lazy
          return (methodCalls);
       }
+
       Set<InstructionSet.AccessField> accessedFields = new LinkedHashSet<InstructionSet.AccessField>();
+
       public Set<InstructionSet.AccessField> getFieldAccesses(){
          getInstructionMap(); // remember it is lazy
 
          return (accessedFields);
       }
+
       /**
        * Create a linked list of instructions (from pcHead to pcTail).
        * <p/>
@@ -2329,14 +2337,12 @@ class ClassModel{
 
 
       public Collection<Instruction> getInstructions(){
-         return(getInstructionMap().values());
+         return (getInstructionMap().values());
       }
 
       public int getInstructionCount(){
          return getInstructionMap().size();
       }
-
-
 
 
    }
