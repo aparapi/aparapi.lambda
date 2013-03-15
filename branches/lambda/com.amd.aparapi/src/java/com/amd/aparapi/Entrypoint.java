@@ -583,7 +583,7 @@ class Entrypoint{
                }
             }
 
-            for(Instruction instruction = methodModel.getPCHead(); instruction != null; instruction = instruction.getNextPC()){
+            for(Instruction instruction : methodModel.getMethod().getInstructionMap().values()){
 
 
                if(instruction instanceof AssignToArrayElement){

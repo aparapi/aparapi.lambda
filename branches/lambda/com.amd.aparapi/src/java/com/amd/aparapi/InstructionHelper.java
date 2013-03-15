@@ -474,7 +474,7 @@ class InstructionHelper{
       Table table = new Table("%4d", "%4d", " %s", " %s");
       table.header("stack ", "pc ", " mnemonic", " branches");
       int stack = 0;
-      for(Instruction i = _methodModel.getPCHead(); i != null; i = i.getNextPC()){
+      for(Instruction i : _methodModel.getMethod().getInstructionMap().values()){
          stack += i.getStackDelta();
          int pc = i.getThisPC();
          table.data(stack);
@@ -501,7 +501,7 @@ class InstructionHelper{
    static List<BranchVector> getBranches(ClassModel.ClassModelMethod _method){
       List<BranchVector> branchVectors = new ArrayList<BranchVector>();
 
-      for(Instruction instruction : _method.getInstructions().values()){
+      for(Instruction instruction : _method.getInstructionMap().values()){
          if(instruction.isBranch()){
             Branch branch = (Branch) instruction;
             Instruction branchTarget = branch.getTarget();
