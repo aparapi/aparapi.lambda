@@ -241,7 +241,8 @@ public class Mandel{
             System.exit(0);
          }
       });
-
+      boolean allowZoom= false;
+      if (allowZoom){
       // Wait until the user selects a zoom-in point on the Mandelbrot view.
       while(true){
          // Wait for the user to click somewhere
@@ -261,7 +262,7 @@ public class Mandel{
          System.out.println("FPS = " + frames * 1000 / elapsedMillis);
          to = null;
       }
-
+      }
    }
 
    public static void main(String[] _args){

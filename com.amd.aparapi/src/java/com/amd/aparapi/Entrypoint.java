@@ -508,7 +508,7 @@ class Entrypoint{
       }
 
       // Collect all methods called directly from kernel's run method
-      for(MethodCall methodCall : methodModel.getMethodCalls()){
+      for(MethodCall methodCall : methodModel.getMethod().getMethodCalls()){
          ClassModelMethod m = resolveCalledMethod(methodCall, classModel);
          if(m != null && !methodMap.keySet().contains(m)){
             MethodModel target = new MethodModel(m, this);
@@ -523,7 +523,7 @@ class Entrypoint{
       while(!fallback && discovered){
          discovered = false;
          for(MethodModel mm : new ArrayList<MethodModel>(methodMap.values())){
-            for(MethodCall methodCall : mm.getMethodCalls()){
+            for(MethodCall methodCall : mm.getMethod().getMethodCalls()){
                ClassModelMethod m = resolveCalledMethod(methodCall, classModel);
                if(m != null){
                   MethodModel target = null;

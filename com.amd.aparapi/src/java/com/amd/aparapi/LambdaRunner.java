@@ -167,10 +167,10 @@ class LambdaRunner extends OpenCLRunner{
          MethodModel acceptModel = blockModel.getMethodModel("accept", acceptSignature);
          assert acceptModel != null : "acceptModel should not be null";
 
-         List<MethodCall> acceptCallSites = acceptModel.getMethodCalls();
+         Set<MethodCall> acceptCallSites = acceptModel.getMethod().getMethodCalls();
          assert acceptCallSites.size() == 1 : "Should only have one call site in this method";
 
-         MethodCall lambdaCallSite = acceptCallSites.get(0);
+         MethodCall lambdaCallSite = acceptCallSites.iterator().next();
          MethodEntry lambdaCallTarget = lambdaCallSite.getConstantPoolMethodEntry();
 
          String lambdaDotClassName = lambdaCallTarget.getClassEntry().getDotClassName();
