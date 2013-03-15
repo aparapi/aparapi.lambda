@@ -85,11 +85,12 @@ import com.amd.aparapi.InstructionSet.New;
 import com.amd.aparapi.InstructionSet.Return;
 import com.amd.aparapi.TypeHelper.Arg;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -220,7 +221,7 @@ class MethodModel{
     */
    Map<Integer, Instruction> createListOfInstructions() throws ClassParseException{
 
-      for(Instruction instruction : method.getInstructionMap().values()){
+      for(Instruction instruction : method.getInstructions()){
 
 
          if((!Config.enablePUTFIELD) && (instruction instanceof I_PUTFIELD)){
@@ -289,30 +290,7 @@ class MethodModel{
       return (method.getInstructionMap());
    }
 
-   /**
-    * Here we connect the branch nodes to the instruction that they branch to.
-    * <p/>
-    * Each branch node contains a 'target' field indended to reference the node that the branch targets. Each instruction also contain four seperate lists of branch nodes that reference it.
-    * These lists hold forwardConditional, forwardUnconditional, reverseConditional and revereseUnconditional branches that reference it.
-    * <p/>
-    * So assuming that we had a branch node at pc offset 100 which represented 'goto 200'.
-    * <p/>
-    * Following this call the branch node at pc offset 100 will have a 'target' field which actually references the instruction at pc offset 200, and the instruction at pc offset 200 will
-    * have the branch node (at 100) added to it's forwardUnconditional list.
-    *
-    * @see InstructionSet.Branch#getTarget()
-    */
-   void buildBranchGraphs(Map<Integer, Instruction> pcMap){
 
-      for(Instruction instruction : pcMap.values()){
-         if(instruction.isBranch()){
-            Branch branch = instruction.asBranch();
-            Instruction targetInstruction = pcMap.get(branch.getAbsolute());
-            branch.setTarget(targetInstruction);
-         }
-      }
-
-   }
 
 
    /**
@@ -506,7 +484,7 @@ class MethodModel{
 
       // we also populate a second list of expressions held between headTail.head and headTail.tail
 
-      for(Instruction instruction : method.getInstructionMap().values()){
+      for(Instruction instruction : method.getInstructions()){
 
          // Here we are going to extract loop/if/structure from the list that we have collected so far in the roots list
          // We are looking for a new instruction which is the target of a forward branch (this is why we collected forward branch counts) we only enter this loop
@@ -1287,7 +1265,7 @@ class MethodModel{
    /**
     * Determine if this method is a getter and record the accessed field if so
     */
-   void checkForGetter(Map<Integer, Instruction> pcMap) throws ClassParseException{
+   void checkForGetter() throws ClassParseException{
       String methodName = getMethod().getName();
       String rawVarNameCandidate = null;
       boolean mightBeSetter = true;
@@ -1302,7 +1280,7 @@ class MethodModel{
 
       // Getters should have 3 bcs: aload_0, getfield, ?return
       if(mightBeSetter){
-         if((rawVarNameCandidate != null) && (pcMap.size() == 3)){
+         if((rawVarNameCandidate != null) && (method.getInstructionCount() == 3)){
             String firstLetter = rawVarNameCandidate.substring(0, 1).toLowerCase();
             String varNameCandidateCamelCased = rawVarNameCandidate.replaceFirst(rawVarNameCandidate.substring(0, 1), firstLetter);
             String accessedFieldName = null;
@@ -1353,7 +1331,7 @@ class MethodModel{
    /**
     * Determine if this method is a setter and record the accessed field if so
     */
-   void checkForSetter(Map<Integer, Instruction> pcMap) throws ClassParseException{
+   void checkForSetter() throws ClassParseException{
       String methodName = getMethod().getName();
       if(methodName.startsWith("set")){
          String rawVarNameCandidate = methodName.substring(3);
@@ -1363,7 +1341,7 @@ class MethodModel{
          Instruction instruction = expressionList.getHead();
 
          // setters should be aload_0, ?load_1, putfield, return
-         if((instruction instanceof AssignToInstanceField) && (expressionList.getTail() instanceof Return) && (pcMap.size() == 4)){
+         if((instruction instanceof AssignToInstanceField) && (expressionList.getTail() instanceof Return) && (method.getInstructionCount() == 4)){
             Instruction prev = instruction.getPrevPC();
             if(prev instanceof AccessLocalVariable){
                FieldEntry field = ((AssignToInstanceField) instruction).getConstantPoolFieldEntry();
@@ -1445,7 +1423,7 @@ class MethodModel{
          // We are going to make 2 passes.
 
          // Pass #1 create a linked list of instructions from head to tail
-         Map<Integer, Instruction> pcMap = method.getInstructionMap();
+        // Map<Integer, Instruction> pcMap = method.getInstructionMap();
 
          // pass #2
 
@@ -1453,8 +1431,7 @@ class MethodModel{
 
          // Attempt to detect accesses through multi-dimension arrays.
          // This was issue 10 in open source release http://code.google.com/p/aparapi/issues/detail?id=10
-         for(Entry<Integer, Instruction> instructionEntry : pcMap.entrySet()){
-            Instruction instruction = instructionEntry.getValue();
+         for(Instruction instruction:method.getInstructions()){
             if(instruction instanceof AccessArrayElement){
                AccessArrayElement accessArrayElement = (AccessArrayElement) instruction;
                Instruction accessed = accessArrayElement.getArrayRef();
@@ -1480,8 +1457,8 @@ class MethodModel{
             if(logger.isLoggable(Level.FINE)){
                logger.fine("Considering accessor call: " + getName());
             }
-            checkForGetter(pcMap);
-            checkForSetter(pcMap);
+            checkForGetter();
+            checkForSetter();
          }
 
          if(logger.isLoggable(Level.FINE)){
@@ -1541,29 +1518,6 @@ class MethodModel{
       return (returnType.substring(index + 1));
    }
 
-   List<MethodCall> getMethodCalls(){
-      List<MethodCall> methodCalls = new ArrayList<MethodCall>();
-
-      for(Instruction i : method.getInstructionMap().values()){
-         if(i instanceof MethodCall){
-            MethodCall methodCall = (MethodCall) i;
-            methodCalls.add(methodCall);
-         }
-      }
-      return (methodCalls);
-   }
-
-   List<AccessField> getFieldAccesses(){
-      List<AccessField> accessedFields = new ArrayList<AccessField>();
-
-      for(Instruction i : method.getInstructionMap().values()){
-         if(i instanceof AccessField){
-            AccessField accessField = (AccessField) i;
-            accessedFields.add(accessField);
-         }
-      }
-      return (accessedFields);
-   }
 
    Instruction getExprHead(){
       return (expressionList.getHead());

@@ -46,6 +46,7 @@ import com.amd.aparapi.TypeHelper.Type;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -2198,8 +2199,26 @@ class ClassModel{
 
       Map<Integer, Instruction> pcMap;
       Set<InstructionSet.Branch> branches;
+      Set<InstructionSet.Branch> getBranches(){
+         getInstructionMap(); // remember it is lazy
+         return(branches);
+      }
       Set<Instruction> branchTargets;
+      Set<Instruction> getBrancheTargets(){
+         getInstructionMap(); // remember it is lazy
+         return(branchTargets);
+      }
+      Set<InstructionSet.MethodCall> methodCalls;
+      public Set<InstructionSet.MethodCall> getMethodCalls(){
+         getInstructionMap(); // remember it is lazy
+         return (methodCalls);
+      }
+      Set<InstructionSet.AccessField> accessedFields = new LinkedHashSet<InstructionSet.AccessField>();
+      public Set<InstructionSet.AccessField> getFieldAccesses(){
+         getInstructionMap(); // remember it is lazy
 
+         return (accessedFields);
+      }
       /**
        * Create a linked list of instructions (from pcHead to pcTail).
        * <p/>
@@ -2213,13 +2232,15 @@ class ClassModel{
        * @return Map<Integer, Instruction> the returned pc to Instruction map
        */
       Map<Integer, Instruction> getInstructionMap(){
-
+         // We build this lazily
          if(pcMap == null){
             Instruction pcHead = null;
             Instruction pcTail = null;
             pcMap = new LinkedHashMap<Integer, Instruction>();
             branches = new LinkedHashSet<InstructionSet.Branch>();
             branchTargets = new LinkedHashSet<Instruction>();
+            methodCalls = new LinkedHashSet<InstructionSet.MethodCall>();
+            accessedFields = new LinkedHashSet<InstructionSet.AccessField>();
             byte[] code = getCode();
 
             // We create a byteReader for reading the bytes from the code array
@@ -2232,7 +2253,14 @@ class ClassModel{
                if(instruction instanceof InstructionSet.Branch){
                   branches.add(instruction.asBranch());
                }
-
+               if(instruction instanceof InstructionSet.MethodCall){
+                  InstructionSet.MethodCall methodCall = (InstructionSet.MethodCall) instruction;
+                  methodCalls.add(methodCall);
+               }
+               if(instruction instanceof InstructionSet.AccessField){
+                  InstructionSet.AccessField accessField = (InstructionSet.AccessField) instruction;
+                  accessedFields.add(accessField);
+               }
                pcMap.put(pc, instruction);
 
                // list maintenance, make this the pcHead if pcHead is null
@@ -2262,16 +2290,23 @@ class ClassModel{
                      + " does not contain a LocalVariableTable entry (source not compiled with -g) aparapi create a synthetic table based on bytecode");
             }
 
-            // pass #2 build branch graph
-            for(InstructionSet.Branch branch : branches){
+            // Here we connect the branch nodes to the instruction that they branch to.
+            //
+            // Each branch node contains a 'target' field indended to reference the node that the branch targets. Each instruction also contain four separate lists of branch nodes that reference it.
+            // These lists hold forwardConditional, forwardUnconditional, reverseConditional and reverseUnconditional branches that reference it.
+            //
+            // So assuming that we had a branch node at pc offset 100 which represented 'goto 200'.
+            //
+            // Following this loop the branch node at pc offset 100 will have a 'target' field which actually references the instruction at pc offset 200, and the instruction at pc offset 200 will
+            // have the branch node (at 100) added to it's forwardUnconditional list.
+            //
+            // @see InstructionSet.Branch#getTarget()
 
+            for(InstructionSet.Branch branch : branches){
                Instruction targetInstruction = pcMap.get(branch.getAbsolute());
                branchTargets.add(targetInstruction);
                branch.setTarget(targetInstruction);
-
             }
-
-            // Now all branches point to the instructions they branch to and all targets know who is branching to them
 
             // We need to remove some javac optimizations
             // Javac optimizes some branches to avoid goto->goto, branch->goto etc.
@@ -2287,12 +2322,21 @@ class ClassModel{
 
                   }
                }
-
             }
-
          }
          return (pcMap);
       }
+
+
+      public Collection<Instruction> getInstructions(){
+         return(getInstructionMap().values());
+      }
+
+      public int getInstructionCount(){
+         return getInstructionMap().size();
+      }
+
+
 
 
    }
