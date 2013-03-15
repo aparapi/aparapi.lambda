@@ -51,7 +51,6 @@ import com.amd.aparapi.InstructionSet.AccessLocalVariable;
 import com.amd.aparapi.InstructionSet.AssignToArrayElement;
 import com.amd.aparapi.InstructionSet.AssignToInstanceField;
 import com.amd.aparapi.InstructionSet.AssignToLocalVariable;
-import com.amd.aparapi.InstructionSet.Branch;
 import com.amd.aparapi.InstructionSet.CastOperator;
 import com.amd.aparapi.InstructionSet.CloneInstruction;
 import com.amd.aparapi.InstructionSet.DUP;
@@ -84,12 +83,8 @@ import com.amd.aparapi.InstructionSet.MultiAssignInstruction;
 import com.amd.aparapi.InstructionSet.New;
 import com.amd.aparapi.InstructionSet.Return;
 import com.amd.aparapi.TypeHelper.Arg;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -289,8 +284,6 @@ class MethodModel{
       }
       return (method.getInstructionMap());
    }
-
-
 
 
    /**
@@ -1423,7 +1416,7 @@ class MethodModel{
          // We are going to make 2 passes.
 
          // Pass #1 create a linked list of instructions from head to tail
-        // Map<Integer, Instruction> pcMap = method.getInstructionMap();
+         // Map<Integer, Instruction> pcMap = method.getInstructionMap();
 
          // pass #2
 
@@ -1431,7 +1424,7 @@ class MethodModel{
 
          // Attempt to detect accesses through multi-dimension arrays.
          // This was issue 10 in open source release http://code.google.com/p/aparapi/issues/detail?id=10
-         for(Instruction instruction:method.getInstructions()){
+         for(Instruction instruction : method.getInstructions()){
             if(instruction instanceof AccessArrayElement){
                AccessArrayElement accessArrayElement = (AccessArrayElement) instruction;
                Instruction accessed = accessArrayElement.getArrayRef();
