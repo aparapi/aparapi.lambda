@@ -208,7 +208,6 @@ public class NBody{
 
       JPanel panel = new JPanel(new BorderLayout());
       JPanel controlPanel = new JPanel(new FlowLayout());
-      panel.add(controlPanel, BorderLayout.SOUTH);
 
       final JButton startButton = new JButton("Start");
 
@@ -366,6 +365,7 @@ public class NBody{
       });
 
       panel.add(canvas, BorderLayout.CENTER);
+      panel.add(controlPanel, BorderLayout.NORTH); // Why does SOUTH break on MacOSX?
       frame.getContentPane().add(panel, BorderLayout.CENTER);
       final FPSAnimator animator = new FPSAnimator(canvas, 100);
 
