@@ -40,6 +40,7 @@ package com.amd.aparapi;
 import com.amd.aparapi.ClassModel.ConstantPool.MethodReferenceEntry;
 import com.amd.aparapi.TypeHelper.ArgsAndReturnType;
 import com.amd.aparapi.TypeHelper.Type;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Method;

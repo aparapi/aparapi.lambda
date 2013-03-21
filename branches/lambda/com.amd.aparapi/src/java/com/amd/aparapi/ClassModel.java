@@ -43,19 +43,10 @@ import com.amd.aparapi.ClassModel.ConstantPool.MethodEntry;
 import com.amd.aparapi.InstructionSet.TypeSpec;
 import com.amd.aparapi.TypeHelper.ArgsAndReturnType;
 import com.amd.aparapi.TypeHelper.Type;
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -100,7 +91,9 @@ class ClassModel{
 
    private static Logger logger = Logger.getLogger(Config.getLoggerName());
 
-   private ClassModel superClazz = null;
+   private ClassModel superClazzModel = null;
+
+   private Class<?> clazz;
 
 
    ClassModel(Class<?> _clazz) throws ClassParseException{
@@ -116,10 +109,10 @@ class ClassModel{
     * @return true if 'this' a superclass of another named class
     */
    boolean isSuperClass(String otherClassName){
-      if(getClassWeAreModelling().getName().equals(otherClassName)){
+      if(getDotClassName().equals(otherClassName)){
          return true;
-      }else if(superClazz != null){
-         return superClazz.isSuperClass(otherClassName);
+      }else if(superClazzModel != null){
+         return superClazzModel.isSuperClass(otherClassName);
       }else{
          return false;
       }
@@ -134,7 +127,7 @@ class ClassModel{
    boolean isSuperClass(Class<?> other){
       Class<?> s = other.getSuperclass();
       while(s != null){
-         if(this.getClassWeAreModelling() == s || (this.getClassWeAreModelling().getName().equals(s.getName()))){
+         if(this.getDotClassName().equals(s.getName())){
             return true;
          }
          s = s.getSuperclass();
@@ -147,17 +140,17 @@ class ClassModel{
     *
     * @return the superClazz ClassModel
     */
-   ClassModel getSuperClazz(){
-      return superClazz;
+   ClassModel getSuperClazzModel(){
+      return superClazzModel;
    }
 
    @Annotations.DocMe void replaceSuperClazz(ClassModel c){
-      if(this.superClazz != null){
-         assert c.isSuperClass(this.getClassWeAreModelling()) == true : "not my super";
-         if(this.superClazz.getClassWeAreModelling().getName().equals(c.getClassWeAreModelling().getName())){
-            this.superClazz = c;
+      if(this.superClazzModel != null){
+         //  assert c.isSuperClass(this.getClassWeAreModelling()) == true : "not my super";
+         if(this.superClazzModel.getDotClassName().equals(c.getDotClassName())){
+            this.superClazzModel = c;
          }else{
-            this.superClazz.replaceSuperClazz(c);
+            this.superClazzModel.replaceSuperClazz(c);
          }
       }
    }
@@ -186,52 +179,65 @@ class ClassModel{
    private AttributePool attributePool;
 
    enum ConstantPoolType{
-      EMPTY, //0
-      UTF8, //1
-      UNICODE, //2
-      INTEGER, //3
-      FLOAT, //4
-      LONG, //5
-      DOUBLE, //6
-      CLASS, //7
-      STRING, //8
-      FIELD, //9
-      METHOD, //10
-      INTERFACEMETHOD, //11
-      NAMEANDTYPE, //12
-      UNUSED13,
-      UNUSED14,
-      METHODHANDLE, //15
-      METHODTYPE, //16
-      UNUSED17,
-      INVOKEDYNAMIC
-      //18
+      EMPTY(0, 1, "empty"), //0
+      UTF8(1, 1, "utf8"), //1
+      UNICODE(2, 1, "unicode"), //2
+      INTEGER(3, 1, "int"), //3
+      FLOAT(4, 1, "float"), //4
+      LONG(5, 2, "long"), //5
+      DOUBLE(6, 2, "double"), //6
+      CLASS(7, 1, "class"), //7
+      STRING(8, 1, "string"), //8
+      FIELD(9, 1, "field"), //9
+      METHOD(10, 1, "method"), //10
+      INTERFACEMETHOD(11, 1, "interface_method"), //11
+      NAMEANDTYPE(12, 1, "name and type"), //12
+      UNUSED13(13, 1, "unused13"),
+      UNUSED14(14, 1, "unused14"),
+      METHODHANDLE(15, 1, "method_handle"), //15
+      METHODTYPE(16, 1, "method_type"), //16
+      UNUSED17(17, 1, "unused17"), //17
+      INVOKEDYNAMIC(18, 1, "invoke_dynamic");//18
+
+      int index;
+      int slots;
+      String name;
+      ConstantPoolType[] types;
+
+      ConstantPoolType(int _index, int _slots, String _name, ConstantPoolType... _types){
+         index = _index;
+         slots = _slots;
+         name = _name;
+         types = _types;
+      }
    }
 
    ;
 
    enum Access{
-      PUBLIC(0x00000001),
-      PRIVATE(0x00000002),
-      PROTECTED(0x00000004),
-      STATIC(0x00000008),
-      FINAL(0x00000010),
-      ACC_SYNCHRONIZED(0x00000020),
-      ACC_VOLATILE(0x00000040),
-      BRIDGE(0x00000040),
-      TRANSIENT(0x00000080),
-      VARARGS(0x00000080),
-      NATIVE(0x00000100),
-      INTERFACE(0x00000200),
-      ABSTRACT(0x00000400),
-      SUPER(0x00000020),
-      STRICT(0x00000800),
-      ANNOTATION(0x00002000),
-      ACC_ENUM(0x00004000);
+      PUBLIC(0x00000001, "public"),
+      PRIVATE(0x00000002, "private"),
+      PROTECTED(0x00000004, "protected"),
+      STATIC(0x00000008, "static"),
+      FINAL(0x00000010, "final"),
+      ACC_SYNCHRONIZED(0x00000020, "synchronized"),
+      ACC_VOLATILE(0x00000040, "volatile"),
+      BRIDGE(0x00000040, "bridge"),
+      TRANSIENT(0x00000080, "transient"),
+      VARARGS(0x00000080, "varargs"),
+      NATIVE(0x00000100, "native"),
+      INTERFACE(0x00000200, "interface"),
+      ABSTRACT(0x00000400, "abstract"),
+      SUPER(0x00000020, "super"),
+      STRICT(0x00000800, "strict"),
+      ANNOTATION(0x00002000, "annotation"),
+      ACC_ENUM(0x00004000, "enum");
       int bits;
+      String name;
 
-      Access(int _bits){
+      Access(int _bits, String _name){
          bits = _bits;
+         name = _name;
       }
 
       boolean bitIsSet(int _accessFlags){
@@ -242,7 +248,7 @@ class ClassModel{
          StringBuffer stringBuffer = new StringBuffer();
          for(Access access : Access.values()){
             if(access.bitIsSet(_accessFlags)){
-               stringBuffer.append(" " + access.name().toLowerCase());
+               stringBuffer.append(" " + access.name);
             }
          }
          return (stringBuffer.toString());
@@ -304,17 +310,14 @@ class ClassModel{
          }
       }
 
-      class DoubleEntry extends Entry{
-         private double doubleValue;
+      class DoubleEntry extends ConstantEntry<Double>{
+
 
          DoubleEntry(ByteReader _byteReader, int _slot){
             super(_byteReader, _slot, ConstantPoolType.DOUBLE);
-            doubleValue = _byteReader.d8();
+            value = _byteReader.d8();
          }
 
-         double getDoubleValue(){
-            return (doubleValue);
-         }
 
       }
 
@@ -347,31 +350,37 @@ class ClassModel{
          }
       }
 
-      class FloatEntry extends Entry{
-         private float floatValue;
+      abstract class ConstantEntry<T> extends Entry{
+         protected T value;
 
-         FloatEntry(ByteReader _byteReader, int _slot){
-            super(_byteReader, _slot, ConstantPoolType.FLOAT);
-            floatValue = _byteReader.f4();
+         ConstantEntry(ByteReader _byteReader, int _slot, ConstantPoolType _type){
+            super(_byteReader, _slot, _type);
          }
 
-         float getFloatValue(){
-            return (floatValue);
+         T getValue(){
+            return value;
          }
 
       }
 
-      class IntegerEntry extends Entry{
-         private int intValue;
+      class FloatEntry extends ConstantEntry<Float>{
+
+
+         FloatEntry(ByteReader _byteReader, int _slot){
+            super(_byteReader, _slot, ConstantPoolType.FLOAT);
+            value = _byteReader.f4();
+         }
+
+
+      }
+
+      class IntegerEntry extends ConstantEntry<Integer>{
 
          IntegerEntry(ByteReader _byteReader, int _slot){
             super(_byteReader, _slot, ConstantPoolType.INTEGER);
-            intValue = _byteReader.u4();
+            value = _byteReader.u4();
          }
 
-         int getIntValue(){
-            return (intValue);
-         }
 
       }
 
@@ -381,17 +390,14 @@ class ClassModel{
          }
       }
 
-      class LongEntry extends Entry{
-         private long longValue;
+      class LongEntry extends ConstantEntry<Long>{
+
 
          LongEntry(ByteReader _byteReader, int _slot){
             super(_byteReader, _slot, ConstantPoolType.LONG);
-            longValue = _byteReader.u8();
+            value = _byteReader.u8();
          }
 
-         long getLongValue(){
-            return (longValue);
-         }
 
       }
 
@@ -604,7 +610,7 @@ class ClassModel{
 
       }
 
-      class StringEntry extends Entry{
+      class StringEntry extends ConstantEntry<String>{
          private int utf8Index;
 
          StringEntry(ByteReader _byteReader, int _slot){
@@ -619,6 +625,15 @@ class ClassModel{
          UTF8Entry getStringUTF8Entry(){
             return (ConstantPool.this.getUTF8Entry(utf8Index));
          }
+
+         String getValue(){
+            if(value == null){
+               value = getStringUTF8Entry().getUTF8();
+            }
+            return (super.getValue());
+         }
+
+
       }
 
       class UTF8Entry extends Entry{
@@ -805,16 +820,16 @@ class ClassModel{
             ;
          }else if(_entry instanceof ConstantPool.DoubleEntry){
             ConstantPool.DoubleEntry doubleEntry = (ConstantPool.DoubleEntry) _entry;
-            sb.append(doubleEntry.getDoubleValue());
+            sb.append(doubleEntry.getValue());
          }else if(_entry instanceof ConstantPool.FloatEntry){
             ConstantPool.FloatEntry floatEntry = (ConstantPool.FloatEntry) _entry;
-            sb.append(floatEntry.getFloatValue());
+            sb.append(floatEntry.getValue());
          }else if(_entry instanceof ConstantPool.IntegerEntry){
             ConstantPool.IntegerEntry integerEntry = (ConstantPool.IntegerEntry) _entry;
-            sb.append(integerEntry.getIntValue());
+            sb.append(integerEntry.getValue());
          }else if(_entry instanceof ConstantPool.LongEntry){
             ConstantPool.LongEntry longEntry = (ConstantPool.LongEntry) _entry;
-            sb.append(longEntry.getLongValue());
+            sb.append(longEntry.getValue());
          }else if(_entry instanceof ConstantPool.UTF8Entry){
             ConstantPool.UTF8Entry utf8Entry = (ConstantPool.UTF8Entry) _entry;
             sb.append(utf8Entry.getUTF8());
@@ -928,51 +943,22 @@ class ClassModel{
          return (references);
       }
 
-      String getType(ConstantPool.Entry _entry){
-         StringBuffer sb = new StringBuffer();
-         if(_entry instanceof ConstantPool.EmptyEntry){
-            sb.append("empty");
-         }else if(_entry instanceof ConstantPool.DoubleEntry){
-            sb.append("double");
-         }else if(_entry instanceof ConstantPool.FloatEntry){
-            sb.append("float");
-         }else if(_entry instanceof ConstantPool.IntegerEntry){
-            sb.append("int");
-         }else if(_entry instanceof ConstantPool.LongEntry){
-            sb.append("long");
-         }else if(_entry instanceof ConstantPool.UTF8Entry){
-            sb.append("utf8");
-         }else if(_entry instanceof ConstantPool.StringEntry){
-            sb.append("string");
-         }else if(_entry instanceof ConstantPool.ClassEntry){
-            sb.append("class");
-         }else if(_entry instanceof ConstantPool.NameAndTypeEntry){
-            sb.append("name/type");
-         }else if(_entry instanceof ConstantPool.MethodEntry){
-            sb.append("method");
-         }else if(_entry instanceof ConstantPool.InterfaceMethodEntry){
-            sb.append("interface method");
-         }else if(_entry instanceof ConstantPool.FieldEntry){
-            sb.append("field");
-         }
-         return (sb.toString());
-      }
 
       Object getConstantEntry(int _constantPoolIndex){
          Entry entry = get(_constantPoolIndex);
          Object object = null;
          switch(entry.getConstantPoolType()){
             case FLOAT:
-               object = ((FloatEntry) entry).getFloatValue();
+               object = ((FloatEntry) entry).getValue();
                break;
             case DOUBLE:
-               object = ((DoubleEntry) entry).getDoubleValue();
+               object = ((DoubleEntry) entry).getValue();
                break;
             case INTEGER:
-               object = ((IntegerEntry) entry).getIntValue();
+               object = ((IntegerEntry) entry).getValue();
                break;
             case LONG:
-               object = ((LongEntry) entry).getLongValue();
+               object = ((LongEntry) entry).getValue();
                break;
             case STRING:
                object = ((StringEntry) entry).getStringUTF8Entry().getUTF8();
@@ -1806,19 +1792,19 @@ class ClassModel{
                      case TypeHelper.FLOAT:
                      case TypeHelper.SHORT:
                      case TypeHelper.BOOLEAN:
-                     case 's': // special for String
+                     case TypeHelper.STRING: // special for String
                         value = new PrimitiveValue(tag, _byteReader);
                         break;
-                     case 'e': // special for Enum
+                     case TypeHelper.ENUM: // special for Enum
                         value = new EnumValue(tag, _byteReader);
                         break;
-                     case 'c': // special for class
+                     case TypeHelper.CLASS: // special for class
                         value = new ClassValue(tag, _byteReader);
                         break;
-                     case '@': // special for Annotation
+                     case TypeHelper.ANNOTATION: // special for Annotation
                         value = new AnnotationValue(tag, _byteReader);
                         break;
-                     case 'a': // special for array
+                     case TypeHelper.ARRAY: // special for array
                         value = new ArrayValue(tag, _byteReader);
                         break;
                   }
@@ -2082,16 +2068,7 @@ class ClassModel{
          return (type);
       }
 
-      Class<?> getDeclaringClass(){
-         String clazzName = getDescriptor().replaceAll("^L", "").replaceAll("/", ".").replaceAll(";$", "");
-         try{
-            return (Class.forName(clazzName, true, classModelLoader));
-         }catch(ClassNotFoundException e){
-            System.out.println("no class found for " + clazzName);
-            e.printStackTrace();
-            return null;
-         }
-      }
+
    }
 
    class ClassModelMethod{
@@ -2145,8 +2122,13 @@ class ClassModel{
          return (constantPool.getUTF8Entry(descriptorIndex));
       }
 
+      ArgsAndReturnType argsAndReturnType;
+
       ArgsAndReturnType getArgsAndReturnType(){
-         return (new ArgsAndReturnType(getDescriptor()));
+         if(argsAndReturnType == null){
+            argsAndReturnType = new ArgsAndReturnType(getDescriptor());
+         }
+         return (argsAndReturnType);
       }
 
       int getIndex(){
@@ -2194,7 +2176,7 @@ class ClassModel{
       }
 
       public String toString(){
-         return getClassModel().getClassWeAreModelling().getName() + "." + getName() + " " + getDescriptor();
+         return getClassModel().getDotClassName() + "." + getName() + " " + getDescriptor();
       }
 
       Map<Integer, Instruction> pcMap;
@@ -2207,7 +2189,7 @@ class ClassModel{
 
       Set<Instruction> branchTargets;
 
-      Set<Instruction> getBrancheTargets(){
+      Set<Instruction> getBranchTargets(){
          getInstructionMap(); // remember it is lazy
          return (branchTargets);
       }
@@ -2364,7 +2346,7 @@ class ClassModel{
 
    }
 
-   private Class<?> clazz;
+   //private Class<?> clazz;
 
 
    void parse(InputStream _inputStream) throws ClassParseException{
@@ -2442,7 +2424,7 @@ class ClassModel{
             return (entry);
          }
       }
-      return superClazz.getField(_name, _descriptor);
+      return superClazzModel.getField(_name, _descriptor);
    }
 
    ClassModelField getField(String _name){
@@ -2451,7 +2433,7 @@ class ClassModel{
             return (entry);
          }
       }
-      return superClazz.getField(_name);
+      return superClazzModel.getField(_name);
    }
 
    ClassModelMethod getMethod(String _name, String _descriptor){
@@ -2460,7 +2442,7 @@ class ClassModel{
             return (entry);
          }
       }
-      return superClazz != null ? superClazz.getMethod(_name, _descriptor) : (null);
+      return superClazzModel != null ? superClazzModel.getMethod(_name, _descriptor) : (null);
    }
 
    List<ClassModelField> getFieldPoolEntries(){
@@ -2478,26 +2460,27 @@ class ClassModel{
       String entryClassNameInDotForm = _methodEntry.getClassEntry().getDotClassName();
 
       // Shortcut direct calls to supers to allow "foo() { super.foo() }" type stuff to work
-      if(_isSpecial && (superClazz != null) && superClazz.isSuperClass(entryClassNameInDotForm)){
+      if(_isSpecial && (superClazzModel != null) && superClazzModel.isSuperClass(entryClassNameInDotForm)){
          if(logger.isLoggable(Level.FINE)){
-            logger.fine("going to look in super:" + superClazz.getClassWeAreModelling().getName() + " on behalf of "
+            logger.fine("going to look in super:" + superClazzModel.getDotClassName() + " on behalf of "
                   + entryClassNameInDotForm);
          }
-         return superClazz.getMethod(_methodEntry, false);
+         return superClazzModel.getMethod(_methodEntry, false);
       }
 
       for(ClassModelMethod entry : methods){
          if(entry.getName().equals(_methodEntry.getNameAndTypeEntry().getNameUTF8Entry().getUTF8())
                && entry.getDescriptor().equals(_methodEntry.getNameAndTypeEntry().getDescriptorUTF8Entry().getUTF8())){
             if(logger.isLoggable(Level.FINE)){
-               logger.fine("Found " + clazz.getName() + "." + entry.getName() + " " + entry.getDescriptor() + " for "
+               logger.fine("Found " + getDotClassName()
+                     + "." + entry.getName() + " " + entry.getDescriptor() + " for "
                      + entryClassNameInDotForm);
             }
             return (entry);
          }
       }
 
-      return superClazz != null ? superClazz.getMethod(_methodEntry, false) : (null);
+      return superClazzModel != null ? superClazzModel.getMethod(_methodEntry, false) : (null);
    }
 
    /**

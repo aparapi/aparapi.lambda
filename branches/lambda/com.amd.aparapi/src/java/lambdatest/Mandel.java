@@ -39,18 +39,15 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 package lambdatest;
 
 import com.amd.aparapi.Device;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Point;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
 
 public class Mandel{
 
