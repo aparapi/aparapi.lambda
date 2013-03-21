@@ -41,10 +41,9 @@ package kerneltest;
 import com.amd.aparapi.Kernel;
 import com.amd.aparapi.ProfileInfo;
 import com.amd.aparapi.Range;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Point;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
@@ -52,8 +51,6 @@ import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.util.List;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
 
 /**
  * An example Aparapi application which displays a view of the Mandelbrot set and lets the user zoom in to a particular point.

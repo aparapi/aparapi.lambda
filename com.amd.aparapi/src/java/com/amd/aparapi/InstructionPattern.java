@@ -37,19 +37,7 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 */
 package com.amd.aparapi;
 
-import com.amd.aparapi.InstructionSet.AccessArrayElement;
-import com.amd.aparapi.InstructionSet.AccessInstanceField;
-import com.amd.aparapi.InstructionSet.AccessLocalVariable;
-import com.amd.aparapi.InstructionSet.AssignToArrayElement;
-import com.amd.aparapi.InstructionSet.AssignToInstanceField;
-import com.amd.aparapi.InstructionSet.AssignToLocalVariable;
-import com.amd.aparapi.InstructionSet.CastOperator;
-import com.amd.aparapi.InstructionSet.Constant;
-import com.amd.aparapi.InstructionSet.I_IADD;
-import com.amd.aparapi.InstructionSet.I_ICONST_1;
-import com.amd.aparapi.InstructionSet.I_IINC;
-import com.amd.aparapi.InstructionSet.I_ISUB;
-import com.amd.aparapi.InstructionSet.MethodCall;
+import com.amd.aparapi.InstructionSet.*;
 
 class InstructionPattern{
 

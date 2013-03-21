@@ -39,15 +39,8 @@ package com.amd.aparapi;
 
 import com.amd.aparapi.ClassModel.LocalVariableInfo;
 import com.amd.aparapi.ClassModel.LocalVariableTableEntry;
-import com.amd.aparapi.InstructionSet.AssignToLocalVariable;
-import com.amd.aparapi.InstructionSet.Branch;
-import com.amd.aparapi.InstructionSet.ByteCode;
-import com.amd.aparapi.InstructionSet.CompositeArbitraryScopeInstruction;
-import com.amd.aparapi.InstructionSet.CompositeInstruction;
-import com.amd.aparapi.InstructionSet.ConditionalBranch;
-import com.amd.aparapi.InstructionSet.FakeGoto;
-import com.amd.aparapi.InstructionSet.Return;
-import com.amd.aparapi.InstructionSet.UnconditionalBranch;
+import com.amd.aparapi.InstructionSet.*;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -776,38 +769,40 @@ class ExpressionList{
             }
 
          }else{
+            if(false){ // disable composite
 
-            // might be end of arbitrary scope
-            LocalVariableTableEntry<LocalVariableTableEntry, LocalVariableInfo> localVariableTable = methodModel.getMethod().getLocalVariableTableEntry();
-            int startPc = Short.MAX_VALUE;
+               // might be end of arbitrary scope
+               LocalVariableTableEntry<LocalVariableTableEntry, LocalVariableInfo> localVariableTable = methodModel.getMethod().getLocalVariableTableEntry();
+               int startPc = Short.MAX_VALUE;
+               // try to find the earliest PC value
 
-            for(LocalVariableInfo localVariableInfo : localVariableTable){
+               for(LocalVariableInfo localVariableInfo : localVariableTable){
 
-               if(localVariableInfo.getEnd() == _instruction.getThisPC()){
-                  logger.fine(localVariableInfo.getVariableName() + "  scope  " + localVariableInfo.getStart() + " ,"
-                        + localVariableInfo.getEnd());
-                  if(localVariableInfo.getStart() < startPc){
-                     startPc = localVariableInfo.getStart();
+                  if(localVariableInfo.getEnd() == _instruction.getThisPC() - 1){   // if this is -1 it works.
+                     logger.fine(localVariableInfo.getVariableName() + "  scope  " + localVariableInfo.getStart() + " ,"
+                           + localVariableInfo.getEnd());
+                     if(localVariableInfo.getStart() < startPc){
+                        startPc = localVariableInfo.getStart();
+                     }
                   }
+
                }
 
-            }
+               if(startPc < Short.MAX_VALUE){
+                  logger.fine("Scope block from " + startPc + " to  " + (tail.getThisPC() + tail.getLength()));
+                  for(Instruction i = head; i != null; i = i.getNextPC()){
+                     if(i.getThisPC() == startPc){
+                        Instruction startInstruction = i.getRootExpr().getPrevExpr();
+                        logger.fine("Start = " + startInstruction);
 
-            if(startPc < Short.MAX_VALUE){
-               logger.fine("Scope block from " + startPc + " to  " + (tail.getThisPC() + tail.getLength()));
-               for(Instruction i = head; i != null; i = i.getNextPC()){
-                  if(i.getThisPC() == startPc){
-                     Instruction startInstruction = i.getRootExpr().getPrevExpr();
-                     logger.fine("Start = " + startInstruction);
-
-                     addAsComposites(ByteCode.COMPOSITE_ARBITRARY_SCOPE, startInstruction.getPrevExpr(), null);
-                     handled = true;
-                     break;
+                        addAsComposites(ByteCode.COMPOSITE_ARBITRARY_SCOPE, startInstruction.getPrevExpr(), null);
+                        handled = true;
+                        break;
+                     }
                   }
+
                }
-
             }
-
          }
 
          if(Config.instructionListener != null){

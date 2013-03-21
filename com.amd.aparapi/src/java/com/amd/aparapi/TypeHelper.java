@@ -13,6 +13,16 @@ public class TypeHelper{
 
    static final char BOOLEAN = 'Z';
 
+   static final char STRING = 's'; // Annotation constantpool entries use this
+
+   static final char ENUM = 'e'; // Annotation constantpool entries use this
+
+   static final char CLASS = 'c'; // Annotation constantpool entries use this
+
+   static final char ANNOTATION = '@'; // Annotation constantpool entries use this
+
+   static final char ARRAY = 'a'; // Annotation constantpool entries use this
+
    static final char BYTE = 'B';
 
    static final char CHAR = 'C';
@@ -27,7 +37,7 @@ public class TypeHelper{
 
    static final char DOUBLE = 'D';
 
-   static final char ARRAY = '[';
+   static final char ARRAY_DIM = '[';
 
    static final char CLASS_START = 'L';
 
@@ -145,9 +155,9 @@ public class TypeHelper{
                args++;
             }
             break;
-            case ARRAY:{
+            case ARRAY_DIM:{
                StringBuilder arrayDims = new StringBuilder();
-               while((i < length) && chars[i] == ARRAY){
+               while((i < length) && chars[i] == ARRAY_DIM){
                   arrayDims.append("[]");
                   i++;
                }
@@ -244,7 +254,7 @@ public class TypeHelper{
    public static String dotClassNameToSignature(String _dotClassName, int _dims){
       StringBuilder sb = new StringBuilder();
       for(int i = 0; i < _dims; i++){
-         sb.append(ARRAY);
+         sb.append(ARRAY_DIM);
       }
       sb.append(CLASS_START).append(dotClassNameToSlashClassName(_dotClassName)).append(CLASS_END);
       return (sb.toString());
@@ -284,7 +294,7 @@ public class TypeHelper{
       Type(String _type){
          type = _type;
 
-         while(type.charAt(arrayDimensions) == ARRAY){
+         while(type.charAt(arrayDimensions) == ARRAY_DIM){
             arrayDimensions++;
          }
          type = type.substring(arrayDimensions);
@@ -307,26 +317,26 @@ public class TypeHelper{
 
 
          if(componentType == int.class){
-            type = arrayPrefix + "I";
+            type = arrayPrefix + INT;
          }else if(componentType == float.class){
-            type = arrayPrefix + "F";
+            type = arrayPrefix + FLOAT;
          }else if(componentType == double.class){
-            type = arrayPrefix + "D";
+            type = arrayPrefix + DOUBLE;
          }else if(componentType == long.class){
-            type = arrayPrefix + "J";
+            type = arrayPrefix + LONG;
          }else if(componentType == char.class){
-            type = arrayPrefix + "C";
+            type = arrayPrefix + CHAR;
          }else if(componentType == byte.class){
-            type = arrayPrefix + "B";
+            type = arrayPrefix + BYTE;
          }else if(componentType == short.class){
-            type = arrayPrefix + "S";
+            type = arrayPrefix + SHORT;
          }else if(componentType == void.class){
-            type = arrayPrefix + "V";
+            type = arrayPrefix + VOID;
          }else if(componentType == boolean.class){
-            type = arrayPrefix + "Z";
+            type = arrayPrefix + BOOLEAN;
          }else{
             // its an object or an array of objects
-            type = arrayPrefix + "L" + dotClassNameToSlashClassName(_clazz.getName()) + ";";
+            type = arrayPrefix + CLASS_START + dotClassNameToSlashClassName(_clazz.getName()) + CLASS_END;
          }
 
       }
@@ -574,7 +584,7 @@ public class TypeHelper{
                   state = SignatureParseState.done;
                   returnType = new Type(_signature.substring(pos + 1));
                   break;
-               case ARRAY:
+               case ARRAY_DIM:
                   switch(state){
                      case counting:
                         state = SignatureParseState.inArray;

@@ -41,32 +41,13 @@ import com.amd.aparapi.ClassModel.ClassModelField;
 import com.amd.aparapi.ClassModel.ClassModelMethod;
 import com.amd.aparapi.ClassModel.ConstantPool.FieldEntry;
 import com.amd.aparapi.ClassModel.ConstantPool.MethodEntry;
-import com.amd.aparapi.InstructionSet.AccessArrayElement;
-import com.amd.aparapi.InstructionSet.AccessField;
-import com.amd.aparapi.InstructionSet.AssignToArrayElement;
-import com.amd.aparapi.InstructionSet.AssignToField;
-import com.amd.aparapi.InstructionSet.I_ARRAYLENGTH;
-import com.amd.aparapi.InstructionSet.I_GETFIELD;
-import com.amd.aparapi.InstructionSet.I_INVOKESPECIAL;
-import com.amd.aparapi.InstructionSet.I_INVOKESTATIC;
-import com.amd.aparapi.InstructionSet.I_INVOKEVIRTUAL;
-import com.amd.aparapi.InstructionSet.MethodCall;
-import com.amd.aparapi.InstructionSet.TypeSpec;
-import com.amd.aparapi.InstructionSet.VirtualMethodCall;
+import com.amd.aparapi.InstructionSet.*;
 import com.amd.aparapi.TypeHelper.Arg;
 import com.amd.aparapi.TypeHelper.Type;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -279,25 +260,25 @@ class Entrypoint{
                logger.finest("adding class " + className);
             }
             allFieldsClasses.put(className, memberClassModel);
-            ClassModel superModel = memberClassModel.getSuperClazz();
+            ClassModel superModel = memberClassModel.getSuperClazzModel();
             while(superModel != null){
                // See if super is already added
-               ClassModel oldSuper = allFieldsClasses.get(superModel.getClassWeAreModelling().getName());
+               ClassModel oldSuper = allFieldsClasses.get(superModel.getDotClassName());
                if(oldSuper != null){
                   if(oldSuper != superModel){
                      memberClassModel.replaceSuperClazz(oldSuper);
                      if(logger.isLoggable(Level.FINEST)){
-                        logger.finest("replaced super " + oldSuper.getClassWeAreModelling().getName() + " for " + className);
+                        logger.finest("replaced super " + oldSuper.getDotClassName() + " for " + className);
                      }
                   }
                }else{
-                  allFieldsClasses.put(superModel.getClassWeAreModelling().getName(), superModel);
+                  allFieldsClasses.put(superModel.getDotClassName(), superModel);
                   if(logger.isLoggable(Level.FINEST)){
-                     logger.finest("add new super " + superModel.getClassWeAreModelling().getName() + " for " + className);
+                     logger.finest("add new super " + superModel.getDotClassName() + " for " + className);
                   }
                }
 
-               superModel = superModel.getSuperClazz();
+               superModel = superModel.getSuperClazzModel();
             }
          }catch(Exception e){
             if(logger.isLoggable(Level.INFO)){
@@ -361,11 +342,11 @@ class Entrypoint{
       // No exact match, look for a superclass
       for(ClassModel c : allFieldsClasses.values()){
          if(logger.isLoggable(Level.FINEST)){
-            logger.finest(" super: " + c.getClassWeAreModelling().getName() + " for " + className);
+            logger.finest(" super: " + c.getDotClassName() + " for " + className);
          }
          if(c.isSuperClass(memberClass)){
             if(logger.isLoggable(Level.FINE)){
-               logger.fine("selected super: " + c.getClassWeAreModelling().getName() + " for " + className);
+               logger.fine("selected super: " + c.getDotClassName() + " for " + className);
             }
             superCandidate = c;
             break;
@@ -422,7 +403,7 @@ class Entrypoint{
             if(logger.isLoggable(Level.FINE)){
                logger.fine("Adding assigned field " + field.getNameAndTypeEntry().getNameUTF8Entry().getUTF8() + " type: "
                      + field.getNameAndTypeEntry().getDescriptorUTF8Entry().getUTF8() + " to "
-                     + memberClassModel.getClassWeAreModelling().getName());
+                     + memberClassModel.getDotClassName());
             }
          }
       }
@@ -534,7 +515,7 @@ class Entrypoint{
                      // declarations in the correct order.  We are trying to avoid creating forward references
                      target = methodMap.remove(m);
                      if(logger.isLoggable(Level.FINEST)){
-                        logger.fine("repositioning : " + m.getClassModel().getClassWeAreModelling().getName() + " " + m.getName()
+                        logger.fine("repositioning : " + m.getClassModel().getDotClassName() + " " + m.getName()
                               + " " + m.getDescriptor());
                      }
                   }else{
@@ -674,7 +655,7 @@ class Entrypoint{
                                  if(superModel.isSuperClass(memberClass)){
                                     throw new ClassParseException(ClassParseException.TYPE.ACCESSEDOBJECTFIELDNAMECONFLICT);
                                  }
-                                 superModel = superModel.getSuperClazz();
+                                 superModel = superModel.getSuperClazzModel();
                               }
                            }
 
@@ -687,7 +668,7 @@ class Entrypoint{
                   }else{
                      String dotClassName = (field.getClassEntry().getDotClassName());
                      // Look for object data member access
-                     if(!dotClassName.equals(this.getClassModel().getClassWeAreModelling().getName())
+                     if(!dotClassName.equals(this.getClassModel().getDotClassName())
                            && getFieldFromClassHierarchy(getClassModel().getClassWeAreModelling(), accessedFieldName) == null){
                         updateObjectMemberFieldAccesses(dotClassName, field);
                      }
@@ -702,7 +683,7 @@ class Entrypoint{
 
                   String dotClassName = field.getClassEntry().getDotClassName();
                   // Look for object data member access
-                  if(!dotClassName.equals(this.getClassModel().getClassWeAreModelling().getName())
+                  if(!dotClassName.equals(this.getClassModel().getDotClassName())
                         && getFieldFromClassHierarchy(getClassModel().getClassWeAreModelling(), assignedFieldName) == null){
                      updateObjectMemberFieldAccesses(dotClassName, field);
                   }else{
@@ -744,7 +725,7 @@ class Entrypoint{
          for(String referencedFieldName : referencedFieldNames){
 
             try{
-               Class<?> clazz = classModel.getClassWeAreModelling();
+               Class<?> clazz = Class.forName(classModel.getDotClassName());
                Field field = getFieldFromClassHierarchy(clazz, referencedFieldName);
                if(field != null){
                   referencedFields.add(field);
@@ -753,6 +734,8 @@ class Entrypoint{
                   referencedClassModelFields.add(ff);
                }
             }catch(SecurityException e){
+               e.printStackTrace();
+            }catch(ClassNotFoundException e){
                e.printStackTrace();
             }
          }
@@ -765,14 +748,14 @@ class Entrypoint{
                // At this point we have already done the field override safety check, so
                // add all the superclass fields into the kernel member class to be
                // sorted by size and emitted into the struct
-               ClassModel superModel = memberObjClass.getSuperClazz();
+               ClassModel superModel = memberObjClass.getSuperClazzModel();
                while(superModel != null){
                   if(logger.isLoggable(Level.FINEST)){
-                     logger.finest("adding = " + superModel.getClassWeAreModelling().getName() + " fields into "
-                           + memberObjClass.getClassWeAreModelling().getName());
+                     logger.finest("adding = " + superModel.getDotClassName() + " fields into "
+                           + memberObjClass.getDotClassName());
                   }
                   memberObjClass.getStructMembers().addAll(superModel.getStructMembers());
-                  superModel = superModel.getSuperClazz();
+                  superModel = superModel.getSuperClazzModel();
                }
             }
 
@@ -907,10 +890,10 @@ class Entrypoint{
          // Look for member obj accessor calls
          for(ClassModel memberObjClass : objectArrayFieldsClasses.values()){
             String entryDotClassName = _methodEntry.getClassEntry().getDotClassName();
-            if(entryDotClassName.equals(memberObjClass.getClassWeAreModelling().getName())){
+            if(entryDotClassName.equals(memberObjClass.getDotClassName())){
                if(logger.isLoggable(Level.FINE)){
                   logger.fine("Searching for call target: " + _methodEntry + " in "
-                        + memberObjClass.getClassWeAreModelling().getName());
+                        + memberObjClass.getDotClassName());
                }
 
                target = memberObjClass.getMethod(_methodEntry, false);
@@ -940,7 +923,7 @@ class Entrypoint{
          if(m.getMethod().getName().equals(_methodEntry.getNameAndTypeEntry().getNameUTF8Entry().getUTF8())
                && m.getMethod().getDescriptor().equals(_methodEntry.getNameAndTypeEntry().getDescriptorUTF8Entry().getUTF8())){
             if(logger.isLoggable(Level.FINE)){
-               logger.fine("Found " + m.getMethod().getClassModel().getClassWeAreModelling().getName() + "."
+               logger.fine("Found " + m.getMethod().getClassModel().getDotClassName() + "."
                      + m.getMethod().getName() + " " + m.getMethod().getDescriptor());
             }
             return m;

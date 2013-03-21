@@ -43,6 +43,7 @@ import com.amd.aparapi.ClassModel.ConstantPool.FieldEntry;
 import com.amd.aparapi.ClassModel.ConstantPool.MethodEntry;
 import com.amd.aparapi.ClassModel.LocalVariableInfo;
 import com.amd.aparapi.ClassModel.LocalVariableTableEntry;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
@@ -4351,7 +4352,7 @@ class InstructionSet{
       }
 
       @Override String getDescription(){
-         return ("FIELD ARRAY ELEMENT INCREMENT! " + getByteCode());
+         return ("FIELD ARRAY_DIM ELEMENT INCREMENT! " + getByteCode());
       }
 
       AssignToArrayElement getAssignToArrayElement(){
@@ -4380,7 +4381,7 @@ class InstructionSet{
       }
 
       @Override String getDescription(){
-         return ("FIELD ARRAY ELEMENT INCREMENT! " + getByteCode());
+         return ("FIELD ARRAY_DIM ELEMENT INCREMENT! " + getByteCode());
       }
 
       AssignToArrayElement getAssignToArrayElement(){
