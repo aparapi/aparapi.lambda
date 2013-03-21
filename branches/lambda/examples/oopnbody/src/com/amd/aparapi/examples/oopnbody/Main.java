@@ -223,7 +223,7 @@ public class Main {
 
     final JPanel panel = new JPanel(new BorderLayout());
     final JPanel controlPanel = new JPanel(new FlowLayout());
-    panel.add(controlPanel, BorderLayout.SOUTH);
+    panel.add(controlPanel, BorderLayout.NORTH);
 
     final JButton startButton = new JButton("Start");
 
