@@ -597,7 +597,7 @@ public class InstructionViewer implements Config.InstructionListener{
 
       try{
          Class clazz = Class.forName(_name);
-         classModel = new ClassModel(clazz);
+         classModel = ClassModel.getClassModel(clazz);
       }catch(ClassParseException e){
          // TODO Auto-generated catch block
          e.printStackTrace();
