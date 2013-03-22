@@ -95,8 +95,19 @@ class ClassModel{
 
    private Class<?> clazz;
 
+   static Map<String, ClassModel> map = new LinkedHashMap<String, ClassModel>();
 
-   ClassModel(Class<?> _clazz) throws ClassParseException{
+   static synchronized ClassModel getClassModel(Class<?> _clazz) throws ClassParseException{
+      ClassModel classModel = map.get(_clazz.getName());
+      if(classModel == null){
+         classModel = new ClassModel(_clazz);
+         map.put(_clazz.getName(), classModel);
+      }
+      return (classModel);
+   }
+
+
+   private ClassModel(Class<?> _clazz) throws ClassParseException{
       byte[] _bytes = OpenCLJNI.getJNI().getBytes(_clazz.getName());
       clazz = _clazz;
       parse(new ByteArrayInputStream(_bytes));
@@ -124,13 +135,13 @@ class ClassModel{
     * @param other The class to compare against
     * @return true if 'this' a superclass of another class
     */
-   boolean isSuperClass(Class<?> other){
-      Class<?> s = other.getSuperclass();
+   boolean isSuperClass(ClassModel _otherClassModel){
+      ClassModel s = _otherClassModel.getSuperClazzModel();
       while(s != null){
-         if(this.getDotClassName().equals(s.getName())){
+         if(getDotClassName().equals(s.getDotClassName())){
             return true;
          }
-         s = s.getSuperclass();
+         s = s.getSuperClazzModel();
       }
       return false;
    }
@@ -141,9 +152,23 @@ class ClassModel{
     * @return the superClazz ClassModel
     */
    ClassModel getSuperClazzModel(){
+      if(superClazzModel == null){
+         try{
+            superClazzModel = getClassModel(Class.forName(getSuperDotClassName()));
+         }catch(ClassNotFoundException cnf){
+
+         }catch(ClassParseException cpe){
+
+         }
+      }
       return superClazzModel;
    }
 
+   /**
+    * Dont think we need this.
+    *
+    * @param c
+    */
    @Annotations.DocMe void replaceSuperClazz(ClassModel c){
       if(this.superClazzModel != null){
          //  assert c.isSuperClass(this.getClassWeAreModelling()) == true : "not my super";

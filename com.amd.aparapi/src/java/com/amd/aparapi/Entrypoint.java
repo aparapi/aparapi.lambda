@@ -255,7 +255,7 @@ class Entrypoint{
             }
 
             // Immediately add this class and all its supers if necessary
-            memberClassModel = new ClassModel(memberClass);
+            memberClassModel = ClassModel.getClassModel(memberClass);
             if(logger.isLoggable(Level.FINEST)){
                logger.finest("adding class " + className);
             }
@@ -333,7 +333,7 @@ class Entrypoint{
       }
 
       ClassModel memberClassModel = getOrUpdateAllClassAccesses(className);
-      Class<?> memberClass = memberClassModel.getClassWeAreModelling();
+      //Class<?> memberClass = memberClassModel.getClassWeAreModelling();
       ClassModel superCandidate = null;
 
       // We may add this field if no superclass match
@@ -344,7 +344,7 @@ class Entrypoint{
          if(logger.isLoggable(Level.FINEST)){
             logger.finest(" super: " + c.getDotClassName() + " for " + className);
          }
-         if(c.isSuperClass(memberClass)){
+         if(c.isSuperClass(memberClassModel)){
             if(logger.isLoggable(Level.FINE)){
                logger.fine("selected super: " + c.getDotClassName() + " for " + className);
             }
@@ -353,7 +353,7 @@ class Entrypoint{
          }
 
          if(logger.isLoggable(Level.FINEST)){
-            logger.finest(" no super match for " + memberClass.getName());
+            logger.finest(" no super match for " + memberClassModel.getDotClassName());
          }
       }
 
@@ -374,7 +374,7 @@ class Entrypoint{
                   // Look up in class hierarchy to ensure it is the same field
                   Field superField = getFieldFromClassHierarchy(superCandidate.getClassWeAreModelling(), f.getNameAndTypeEntry()
                         .getNameUTF8Entry().getUTF8());
-                  Field classField = getFieldFromClassHierarchy(memberClass, f.getNameAndTypeEntry().getNameUTF8Entry().getUTF8());
+                  Field classField = getFieldFromClassHierarchy(memberClassModel.getClassWeAreModelling(), f.getNameAndTypeEntry().getNameUTF8Entry().getUTF8());
                   if(!superField.equals(classField)){
                      throw new ClassParseException(ClassParseException.TYPE.OVERRIDENFIELD);
                   }
@@ -639,8 +639,8 @@ class Entrypoint{
                      String className = accessedFieldType.getObjectClassName();
                      ClassModel arrayFieldModel = getOrUpdateAllClassAccesses(className);
                      if(arrayFieldModel != null){
-                        Class<?> memberClass = arrayFieldModel.getClassWeAreModelling();
-                        int modifiers = memberClass.getModifiers();
+                        // Class<?> memberClass = arrayFieldModel.getClassWeAreModelling();
+                        int modifiers = arrayFieldModel.getAccessFlags();
                         if(!Modifier.isFinal(modifiers)){
                            throw new ClassParseException(ClassParseException.TYPE.ACCESSEDOBJECTNONFINAL);
                         }
@@ -652,7 +652,7 @@ class Entrypoint{
                            for(ClassModel memberObjClass : objectArrayFieldsClasses.values()){
                               ClassModel superModel = memberObjClass;
                               while(superModel != null){
-                                 if(superModel.isSuperClass(memberClass)){
+                                 if(superModel.isSuperClass(arrayFieldModel)){
                                     throw new ClassParseException(ClassParseException.TYPE.ACCESSEDOBJECTFIELDNAMECONFLICT);
                                  }
                                  superModel = superModel.getSuperClazzModel();

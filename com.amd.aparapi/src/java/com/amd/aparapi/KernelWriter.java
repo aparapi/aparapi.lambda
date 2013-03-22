@@ -615,7 +615,7 @@ abstract class KernelWriter extends BlockWriter{
 
          if(!mm.getMethod().isStatic()){
             if((mm.getMethod().getClassModel() == _entryPoint.getClassModel())
-                  || mm.getMethod().getClassModel().isSuperClass(_entryPoint.getClassModel().getClassWeAreModelling())){
+                  || mm.getMethod().getClassModel().isSuperClass(_entryPoint.getClassModel())){
                write("This *this");
             }else{
                // Call to an object member or superclass of member
@@ -624,7 +624,7 @@ abstract class KernelWriter extends BlockWriter{
                      write("__global " + mm.getMethod().getClassModel().getMangledClassName()
                            + " *this");
                      break;
-                  }else if(mm.getMethod().getClassModel().isSuperClass(c.getClassWeAreModelling())){
+                  }else if(mm.getMethod().getClassModel().isSuperClass(c)){
                      write("__global " + c.getMangledClassName() + " *this");
                      break;
                   }

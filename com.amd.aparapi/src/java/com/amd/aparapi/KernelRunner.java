@@ -789,7 +789,7 @@ class KernelRunner extends OpenCLRunner{
                try{
                   ClassModel classModel = null;
 
-                  classModel = new ClassModel(kernel.getClass());
+                  classModel = ClassModel.getClassModel(kernel.getClass());
 
                   entryPoint = classModel.getKernelEntrypoint(_entrypointName, kernel);
                }catch(Exception exception){
