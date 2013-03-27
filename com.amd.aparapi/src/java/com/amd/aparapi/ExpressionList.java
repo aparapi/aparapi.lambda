@@ -46,6 +46,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.plaf.basic.BasicInternalFrameTitlePane;
 
 /**
  * Essentially a glorified linked list of Instructions plus some additional state to allow us to transform sequences.
@@ -628,7 +629,18 @@ class ExpressionList{
                         }
 
                         if(loopTop instanceof AssignToLocalVariable){
+                           System.out.println(loopTop.getMethod());
+                           LocalVariableTableEntry lvt = loopTop.getMethod().getLocalVariableTableEntry();
                            LocalVariableInfo localVariableInfo = ((AssignToLocalVariable) loopTop).getLocalVariableInfo();
+                           if (localVariableInfo == null){
+                              System.out.println("localVariableInfo is null!");
+                           }
+                           if (loopTop == null){
+                              System.out.println("looptop is null!");
+                           }
+                           if (loopTop.getNextExpr() == null){
+                              System.out.println("looptop.getNextExpr is null!");
+                           }
                            if(localVariableInfo.getStart() == loopTop.getNextExpr().getStartPC()
                                  && localVariableInfo.getEnd() == _instruction.getThisPC()){
                               loopTop = loopTop.getPrevExpr(); // back up over the initialization
