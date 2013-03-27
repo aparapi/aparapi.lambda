@@ -117,28 +117,29 @@ public class Mandel{
       }
    }
 
+   int getCount(float _x, float _y){
+      int count = 0;
+      float zx = _x;
+      float zy = _y;
+      float new_zx = 0f;
 
-   void getNextImage(Device device, float x, float y, float scale){
+      // Iterate until the algorithm converges or until maxIterations are reached.
+      while(count < maxIterations && zx * zx + zy * zy < 8){
+         new_zx = zx * zx - zy * zy + _x;
+         zy = 2 * zx * zy + _y;
+         zx = new_zx;
+         count++;
+      }
+      return(count);
+   }
+
+   void getNextImage(Device device, float x_offset, float y_offset, float scale){
 
       device.forEach(width * height, gid -> {
          /** Translate the gid into an x an y value. */
-         float lx = (((gid % width * scale) - ((scale / 2) * width)) / width) + x;
-         float ly = (((gid / width * scale) - ((scale / 2) * height)) / height) + y;
-
-         int count = 0;
-         float zx = lx;
-         float zy = ly;
-         float new_zx = 0f;
-
-         // Iterate until the algorithm converges or until maxIterations are reached.
-         while(count < maxIterations && zx * zx + zy * zy < 8){
-            new_zx = zx * zx - zy * zy + lx;
-            zy = 2 * zx * zy + ly;
-            zx = new_zx;
-            count++;
-         }
-         // Pull the value out of the palette for this iteration count.
-         rgb[gid] = pallette[count];
+         float lx = (((gid % width * scale) - ((scale / 2) * width)) / width) + x_offset;
+         float ly = (((gid / width * scale) - ((scale / 2) * height)) / height) + y_offset;
+         rgb[gid] = pallette[getCount(lx, ly)];
       });
    }
 
