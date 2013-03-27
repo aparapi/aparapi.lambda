@@ -238,7 +238,7 @@ public class Mandel{
             System.exit(0);
          }
       });
-      boolean allowZoom = false;
+      boolean allowZoom = true;
       if(allowZoom){
          // Wait until the user selects a zoom-in point on the Mandelbrot view.
          while(true){
