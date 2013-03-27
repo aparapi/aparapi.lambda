@@ -65,13 +65,18 @@ jint updateNonPrimitiveReferences(JNIEnv *jenv, jobject jobj, JNIContext* jniCon
 
 void profileFirstRun(JNIContext* jniContext);
 
-void updateObject(JNIEnv* jenv, JNIContext* jniContext, KernelArg* arg, int& argPos, int argIdx);
+void updateArray(JNIEnv* jenv, JNIContext* jniContext, KernelArg* arg, int& argPos, int argIdx);
+void updateBuffer(JNIEnv* jenv, JNIContext* jniContext, KernelArg* arg, int& argPos, int argIdx);
 
 void processObject(JNIEnv* jenv, JNIContext* jniContext, KernelArg* arg, int& argPos, int argIdx);
+void processArray(JNIEnv* jenv, JNIContext* jniContext, KernelArg* arg, int& argPos, int argIdx);
+void processBuffer(JNIEnv* jenv, JNIContext* jniContext, KernelArg* arg, int& argPos, int argIdx);
 
 void updateWriteEvents(JNIEnv* jenv, JNIContext* jniContext, KernelArg* arg, int argIdx, int& writeEventCount);
 
 void processLocal(JNIEnv* jenv, JNIContext* jniContext, KernelArg* arg, int& argPos, int argIdx);
+void processLocalArray(JNIEnv* jenv, JNIContext* jniContext, KernelArg* arg, int& argPos, int argIdx);
+void processLocalBuffer(JNIEnv* jenv, JNIContext* jniContext, KernelArg* arg, int& argPos, int argIdx);
 
 int processArgs(JNIEnv* jenv, JNIContext* jniContext, int& argPos, int& writeEventCount);
 
