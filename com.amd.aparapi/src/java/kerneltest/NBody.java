@@ -97,11 +97,11 @@ public class NBody{
       final int width = 768;
       final int height = 768;
       final int bodies = 1024;
-      final BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
       final BufferedImage offscreen = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
       // Draw Mandelbrot image
       JComponent viewer = new JComponent(){
          @Override public void paintComponent(Graphics g){
+            super.paintComponent(g);
             g.drawImage(offscreen, 0, 0, width, height, this);
          }
       };
@@ -110,10 +110,9 @@ public class NBody{
       frame.pack();
       frame.setVisible(true);
       final int[] rgb = ((DataBufferInt) offscreen.getRaster().getDataBuffer()).getData();
-      final int[] imageRgb = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
       final NBodyKernel kernel = new NBodyKernel(width, height, rgb, bodies);
       kernel.next();
-      viewer.repaint();
+     // viewer.repaint();
       frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
       while(true){
          kernel.next();
