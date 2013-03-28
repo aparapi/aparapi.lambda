@@ -101,7 +101,7 @@ public class NBody{
       final BufferedImage offscreen = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
       JComponent viewer = new JComponent(){
          @Override public void paintComponent(Graphics g){
-            if(kernel.done){
+            if(kernel != null && kernel.done){
 
                g.drawImage(offscreen, 0, 0, width, height, this);
             }
