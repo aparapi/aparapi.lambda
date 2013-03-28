@@ -2293,7 +2293,7 @@ class ClassModel{
                pcTail = instruction;
 
             }
-            LocalVariableTableEntry localVariableTableEntry = null;// getLocalVariableTableEntry();
+            LocalVariableTableEntry localVariableTableEntry = Config.enableAlwaysCreateFakeLocalVariableTable?null: getLocalVariableTableEntry();
 
             if(localVariableTableEntry == null){
                localVariableTableEntry = attributePool.new FakeLocalVariableTableEntry(pcMap, this);
