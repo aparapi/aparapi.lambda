@@ -1852,7 +1852,7 @@ public abstract class Kernel implements Cloneable{
       String mappedName = null;
       String methodName = _methodReferenceEntry.getNameAndTypeEntry().getNameUTF8Entry().getUTF8();
       String methodClass = _methodReferenceEntry.getClassEntry().getNameUTF8Entry().getUTF8();
-      if(methodClass.equals(Kernel.class.getName())){
+     // if(methodClass.equals(Kernel.class.getName())){
          ArgsAndReturnType methodArgsAndReturnType = _methodReferenceEntry.getArgsAndReturnType();
          Type methodReturnType = methodArgsAndReturnType.getReturnType();
 
@@ -1872,7 +1872,7 @@ public abstract class Kernel implements Cloneable{
 
             }
          }
-      }
+     // }
       // System.out.println("... in getMappedMethodName, returning = " + mappedName);
       return (mappedName);
    }
