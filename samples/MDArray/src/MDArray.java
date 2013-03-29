@@ -4,7 +4,7 @@ import com.amd.aparapi.Kernel.EXECUTION_MODE;
 class MDArray{
    static int N = 1 << 10;
 
-   static int M = 1 << 8;
+   static int M = 1 << 5;
 
    private static boolean[] matMull(boolean[] A, boolean[] B, int N) {
       boolean[] C = new boolean[N * N];
