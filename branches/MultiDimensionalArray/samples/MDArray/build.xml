@@ -13,7 +13,8 @@
 
    <target name="build" depends="clean">
       <mkdir dir="classes"/>
-      <javac srcdir="src" destdir="classes" debug="on" includeantruntime="false" >
+      <javac srcdir="src" destdir="classes" debug="on" includeantruntime="false" fork="true"
+          memorymaximumsize="3G" >
          <classpath>
             <pathelement path="../../com.amd.aparapi/dist/aparapi.jar"/>
          </classpath>
@@ -42,6 +43,8 @@
       <java classname="${ant.project.name}" fork="true">
          <classpath refid="runtime.class.path"/>
          <sysproperty key="java.library.path" path="../../com.amd.aparapi.jni/dist"/>
+         <jvmarg value="-Xmx5G"/>
+         <jvmarg value="-Xms5G"/>
          <sysproperty key="com.amd.aparapi.executionMode" value="GPU"/>
          <sysproperty key="com.amd.aparapi.logLevel" value="WARNING"/>
          <sysproperty key="com.amd.aparapi.enableVerboseJNI" value="false"/>

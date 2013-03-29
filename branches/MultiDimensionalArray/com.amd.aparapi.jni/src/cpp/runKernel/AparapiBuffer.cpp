@@ -117,6 +117,28 @@ AparapiBuffer* AparapiBuffer::flattenBoolean2D(JNIEnv* env, jobject arg) {
    long bitSize = totalSize * sizeof(jboolean);
 
    jboolean* array = new jboolean[totalSize];
+   /*
+   jbooleanArray* jArray = new jbooleanArray[dims[0]];
+   jboolean** elems = new jboolean*[dims[0]];
+
+   for(int i = 0; i < (int)dims[0]; i++) {
+      jArray[i] = (jbooleanArray)env->GetObjectArrayElement((jobjectArray)javaBuffer, i);
+      elems[i] = env->GetBooleanArrayElements(jArray[i],0);
+   }
+
+   #pragma omp parallel for
+   for(int i = 0; i < (int)dims[0]; i++) {
+      for(int j = 0; j < (int)dims[1]; j++) {
+         array[i*dims[1] + j] = elems[i][j];
+      }
+   }
+
+   for(int i = 0; i < (int)dims[0]; i++) {
+      env->ReleaseBooleanArrayElements(jArray[i], elems[i], 0);
+   }
+   delete[] jArray;
+   delete[] elems;
+   */
 
    for(int i = 0; i < (int)dims[0]; i++) {
       jbooleanArray jArray = (jbooleanArray)env->GetObjectArrayElement((jobjectArray)javaBuffer, i);
@@ -141,6 +163,28 @@ AparapiBuffer* AparapiBuffer::flattenByte2D(JNIEnv* env, jobject arg) {
    long bitSize = totalSize * sizeof(jbyte);
 
    jbyte* array = new jbyte[totalSize];
+   /*
+   jbyteArray* jArray = new jbyteArray[dims[0]];
+   jbyte** elems = new jbyte*[dims[0]];
+
+   for(int i = 0; i < (int)dims[0]; i++) {
+      jArray[i] = (jbyteArray)env->GetObjectArrayElement((jobjectArray)javaBuffer, i);
+      elems[i] = env->GetByteArrayElements(jArray[i],0);
+   }
+
+   #pragma omp parallel for
+   for(int i = 0; i < (int)dims[0]; i++) {
+      for(int j = 0; j < (int)dims[1]; j++) {
+         array[i*dims[1] + j] = elems[i][j];
+      }
+   }
+
+   for(int i = 0; i < (int)dims[0]; i++) {
+      env->ReleaseByteArrayElements(jArray[i], elems[i], 0);
+   }
+   delete[] jArray;
+   delete[] elems;
+   */
 
    for(int i = 0; i < (int)dims[0]; i++) {
       jbyteArray jArray = (jbyteArray)env->GetObjectArrayElement((jobjectArray)javaBuffer, i);
@@ -165,6 +209,28 @@ AparapiBuffer* AparapiBuffer::flattenShort2D(JNIEnv* env, jobject arg) {
    long bitSize = totalSize * sizeof(jshort);
 
    jshort* array = new jshort[totalSize];
+   /*
+   jshortArray* jArray = new jshortArray[dims[0]];
+   jshort** elems = new jshort*[dims[0]];
+
+   for(int i = 0; i < (int)dims[0]; i++) {
+      jArray[i] = (jshortArray)env->GetObjectArrayElement((jobjectArray)javaBuffer, i);
+      elems[i] = env->GetShortArrayElements(jArray[i],0);
+   }
+
+   #pragma omp parallel for
+   for(int i = 0; i < (int)dims[0]; i++) {
+      for(int j = 0; j < (int)dims[1]; j++) {
+         array[i*dims[1] + j] = elems[i][j];
+      }
+   }
+
+   for(int i = 0; i < (int)dims[0]; i++) {
+      env->ReleaseShortArrayElements(jArray[i], elems[i], 0);
+   }
+   delete[] jArray;
+   delete[] elems;
+   */
 
    for(int i = 0; i < (int)dims[0]; i++) {
       jshortArray jArray = (jshortArray)env->GetObjectArrayElement((jobjectArray)javaBuffer, i);
@@ -189,6 +255,28 @@ AparapiBuffer* AparapiBuffer::flattenInt2D(JNIEnv* env, jobject arg) {
    long bitSize = totalSize * sizeof(jint);
 
    jint* array = new jint[totalSize];
+   /*
+   jintArray* jArray = new jintArray[dims[0]];
+   jint** elems = new jint*[dims[0]];
+
+   for(int i = 0; i < (int)dims[0]; i++) {
+      jArray[i] = (jintArray)env->GetObjectArrayElement((jobjectArray)javaBuffer, i);
+      elems[i] = env->GetIntArrayElements(jArray[i],0);
+   }
+
+   #pragma omp parallel for
+   for(int i = 0; i < (int)dims[0]; i++) {
+      for(int j = 0; j < (int)dims[1]; j++) {
+         array[i*dims[1] + j] = elems[i][j];
+      }
+   }
+
+   for(int i = 0; i < (int)dims[0]; i++) {
+      env->ReleaseIntArrayElements(jArray[i], elems[i], 0);
+   }
+   delete[] jArray;
+   delete[] elems;
+   */
 
    for(int i = 0; i < (int)dims[0]; i++) {
       jintArray jArray = (jintArray)env->GetObjectArrayElement((jobjectArray)javaBuffer, i);
@@ -213,6 +301,28 @@ AparapiBuffer* AparapiBuffer::flattenLong2D(JNIEnv* env, jobject arg) {
    long bitSize = totalSize * sizeof(jlong);
 
    jlong* array = new jlong[totalSize];
+   /*
+   jlongArray* jArray = new jlongArray[dims[0]];
+   jlong** elems = new jlong*[dims[0]];
+
+   for(int i = 0; i < (int)dims[0]; i++) {
+      jArray[i] = (jlongArray)env->GetObjectArrayElement((jobjectArray)javaBuffer, i);
+      elems[i] = env->GetLongArrayElements(jArray[i],0);
+   }
+
+   #pragma omp parallel for
+   for(int i = 0; i < (int)dims[0]; i++) {
+      for(int j = 0; j < (int)dims[1]; j++) {
+         array[i*dims[1] + j] = elems[i][j];
+      }
+   }
+
+   for(int i = 0; i < (int)dims[0]; i++) {
+      env->ReleaseLongArrayElements(jArray[i], elems[i], 0);
+   }
+   delete[] jArray;
+   delete[] elems;
+   */
 
    for(int i = 0; i < (int)dims[0]; i++) {
       jlongArray jArray = (jlongArray)env->GetObjectArrayElement((jobjectArray)javaBuffer, i);
@@ -237,6 +347,28 @@ AparapiBuffer* AparapiBuffer::flattenFloat2D(JNIEnv* env, jobject arg) {
    long bitSize = totalSize * sizeof(jfloat);
 
    jfloat* array = new jfloat[totalSize];
+   /*
+   jfloatArray* jArray = new jfloatArray[dims[0]];
+   jfloat** elems = new jfloat*[dims[0]];
+
+   for(int i = 0; i < (int)dims[0]; i++) {
+      jArray[i] = (jfloatArray)env->GetObjectArrayElement((jobjectArray)javaBuffer, i);
+      elems[i] = env->GetFloatArrayElements(jArray[i],0);
+   }
+
+   #pragma omp parallel for
+   for(int i = 0; i < (int)dims[0]; i++) {
+      for(int j = 0; j < (int)dims[1]; j++) {
+         array[i*dims[1] + j] = elems[i][j];
+      }
+   }
+
+   for(int i = 0; i < (int)dims[0]; i++) {
+      env->ReleaseFloatArrayElements(jArray[i], elems[i], 0);
+   }
+   delete[] jArray;
+   delete[] elems;
+   */
 
    for(int i = 0; i < (int)dims[0]; i++) {
       jfloatArray jArray = (jfloatArray)env->GetObjectArrayElement((jobjectArray)javaBuffer, i);
@@ -261,6 +393,28 @@ AparapiBuffer* AparapiBuffer::flattenDouble2D(JNIEnv* env, jobject arg) {
    long bitSize = totalSize * sizeof(jdouble);
 
    jdouble* array = new jdouble[totalSize];
+   /*
+   jdoubleArray* jArray = new jdoubleArray[dims[0]];
+   jdouble** elems = new jdouble*[dims[0]];
+
+   for(int i = 0; i < (int)dims[0]; i++) {
+      jArray[i] = (jdoubleArray)env->GetObjectArrayElement((jobjectArray)javaBuffer, i);
+      elems[i] = env->GetDoubleArrayElements(jArray[i],0);
+   }
+
+   #pragma omp parallel for
+   for(int i = 0; i < (int)dims[0]; i++) {
+      for(int j = 0; j < (int)dims[1]; j++) {
+         array[i*dims[1] + j] = elems[i][j];
+      }
+   }
+
+   for(int i = 0; i < (int)dims[0]; i++) {
+      env->ReleaseDoubleArrayElements(jArray[i], elems[i], 0);
+   }
+   delete[] jArray;
+   delete[] elems;
+   */
 
    for(int i = 0; i < (int)dims[0]; i++) {
       jdoubleArray jArray = (jdoubleArray)env->GetObjectArrayElement((jobjectArray)javaBuffer, i);
@@ -291,6 +445,39 @@ AparapiBuffer* AparapiBuffer::flattenBoolean3D(JNIEnv* env, jobject arg) {
    long bitSize = totalSize * sizeof(jboolean);
 
    jboolean* array = new jboolean[totalSize];
+   /*
+   jbooleanArray** jArray = new jbooleanArray*[dims[0]];
+   jboolean*** elems = new jboolean**[dims[0]];
+
+   for(int i = 0; i < (int)dims[0]; i++) {
+      jArray[i] = new jbooleanArray[dims[1]];
+      elems[i] = new jboolean*[dims[1]];
+      jobjectArray jrow = (jobjectArray)env->GetObjectArrayElement((jobjectArray)javaBuffer, i);
+      for(int j = 0; j < (int)dims[1]; j++) {
+         jArray[i][j] = (jbooleanArray)env->GetObjectArrayElement(jrow, j);
+         elems[i][j] = env->GetBooleanArrayElements(jArray[i][j],0);
+      }
+   }
+
+   #pragma omp parallel for
+   for(int i = 0; i < (int)dims[0]; i++) {
+      for(int j = 0; j < (int)dims[1]; j++) {
+         for(int k = 0; k < (int)dims[2]; k++) {
+            array[i*dims[1]*dims[2] + j*dims[2] + k] = elems[i][j][k];
+         }
+      }
+   }
+
+   for(int i = 0; i < (int)dims[0]; i++) {
+      for(int j = 0; j < (int)dims[1]; j++) {
+         env->ReleaseBooleanArrayElements(jArray[i][j], elems[i][j], 0);
+      }
+      delete[] jArray[i];
+      delete[] elems[i];
+   }
+   delete[] jArray;
+   delete[] elems;
+   */
 
    for(int i = 0; i < (int)dims[0]; i++) {
       jobjectArray jrow = (jobjectArray)env->GetObjectArrayElement((jobjectArray)javaBuffer, i);
@@ -322,6 +509,39 @@ AparapiBuffer* AparapiBuffer::flattenByte3D(JNIEnv* env, jobject arg) {
    long bitSize = totalSize * sizeof(jbyte);
 
    jbyte* array = new jbyte[totalSize];
+   /*
+   jbyteArray** jArray = new jbyteArray*[dims[0]];
+   jbyte*** elems = new jbyte**[dims[0]];
+
+   for(int i = 0; i < (int)dims[0]; i++) {
+      jArray[i] = new jbyteArray[dims[1]];
+      elems[i] = new jbyte*[dims[1]];
+      jobjectArray jrow = (jobjectArray)env->GetObjectArrayElement((jobjectArray)javaBuffer, i);
+      for(int j = 0; j < (int)dims[1]; j++) {
+         jArray[i][j] = (jbyteArray)env->GetObjectArrayElement(jrow, j);
+         elems[i][j] = env->GetByteArrayElements(jArray[i][j],0);
+      }
+   }
+
+   #pragma omp parallel for
+   for(int i = 0; i < (int)dims[0]; i++) {
+      for(int j = 0; j < (int)dims[1]; j++) {
+         for(int k = 0; k < (int)dims[2]; k++) {
+            array[i*dims[1]*dims[2] + j*dims[2] + k] = elems[i][j][k];
+         }
+      }
+   }
+
+   for(int i = 0; i < (int)dims[0]; i++) {
+      for(int j = 0; j < (int)dims[1]; j++) {
+         env->ReleaseByteArrayElements(jArray[i][j], elems[i][j], 0);
+      }
+      delete[] jArray[i];
+      delete[] elems[i];
+   }
+   delete[] jArray;
+   delete[] elems;
+   */
 
    for(int i = 0; i < (int)dims[0]; i++) {
       jobjectArray jrow = (jobjectArray)env->GetObjectArrayElement((jobjectArray)javaBuffer, i);
@@ -353,6 +573,39 @@ AparapiBuffer* AparapiBuffer::flattenShort3D(JNIEnv* env, jobject arg) {
    long bitSize = totalSize * sizeof(jshort);
 
    jshort* array = new jshort[totalSize];
+   /*
+   jshortArray** jArray = new jshortArray*[dims[0]];
+   jshort*** elems = new jshort**[dims[0]];
+
+   for(int i = 0; i < (int)dims[0]; i++) {
+      jArray[i] = new jshortArray[dims[1]];
+      elems[i] = new jshort*[dims[1]];
+      jobjectArray jrow = (jobjectArray)env->GetObjectArrayElement((jobjectArray)javaBuffer, i);
+      for(int j = 0; j < (int)dims[1]; j++) {
+         jArray[i][j] = (jshortArray)env->GetObjectArrayElement(jrow, j);
+         elems[i][j] = env->GetShortArrayElements(jArray[i][j],0);
+      }
+   }
+
+   #pragma omp parallel for
+   for(int i = 0; i < (int)dims[0]; i++) {
+      for(int j = 0; j < (int)dims[1]; j++) {
+         for(int k = 0; k < (int)dims[2]; k++) {
+            array[i*dims[1]*dims[2] + j*dims[2] + k] = elems[i][j][k];
+         }
+      }
+   }
+
+   for(int i = 0; i < (int)dims[0]; i++) {
+      for(int j = 0; j < (int)dims[1]; j++) {
+         env->ReleaseShortArrayElements(jArray[i][j], elems[i][j], 0);
+      }
+      delete[] jArray[i];
+      delete[] elems[i];
+   }
+   delete[] jArray;
+   delete[] elems;
+   */
 
    for(int i = 0; i < (int)dims[0]; i++) {
       jobjectArray jrow = (jobjectArray)env->GetObjectArrayElement((jobjectArray)javaBuffer, i);
@@ -384,6 +637,39 @@ AparapiBuffer* AparapiBuffer::flattenInt3D(JNIEnv* env, jobject arg) {
    long bitSize = totalSize * sizeof(jint);
 
    jint* array = new jint[totalSize];
+   /*
+   jintArray** jArray = new jintArray*[dims[0]];
+   jint*** elems = new jint**[dims[0]];
+
+   for(int i = 0; i < (int)dims[0]; i++) {
+      jArray[i] = new jintArray[dims[1]];
+      elems[i] = new jint*[dims[1]];
+      jobjectArray jrow = (jobjectArray)env->GetObjectArrayElement((jobjectArray)javaBuffer, i);
+      for(int j = 0; j < (int)dims[1]; j++) {
+         jArray[i][j] = (jintArray)env->GetObjectArrayElement(jrow, j);
+         elems[i][j] = env->GetIntArrayElements(jArray[i][j],0);
+      }
+   }
+
+   #pragma omp parallel for
+   for(int i = 0; i < (int)dims[0]; i++) {
+      for(int j = 0; j < (int)dims[1]; j++) {
+         for(int k = 0; k < (int)dims[2]; k++) {
+            array[i*dims[1]*dims[2] + j*dims[2] + k] = elems[i][j][k];
+         }
+      }
+   }
+
+   for(int i = 0; i < (int)dims[0]; i++) {
+      for(int j = 0; j < (int)dims[1]; j++) {
+         env->ReleaseIntArrayElements(jArray[i][j], elems[i][j], 0);
+      }
+      delete[] jArray[i];
+      delete[] elems[i];
+   }
+   delete[] jArray;
+   delete[] elems;
+   */
 
    for(int i = 0; i < (int)dims[0]; i++) {
       jobjectArray jrow = (jobjectArray)env->GetObjectArrayElement((jobjectArray)javaBuffer, i);
@@ -415,6 +701,39 @@ AparapiBuffer* AparapiBuffer::flattenLong3D(JNIEnv* env, jobject arg) {
    jlong bitSize = totalSize * sizeof(jlong);
 
    jlong* array = new jlong[totalSize];
+   /*
+   jlongArray** jArray = new jlongArray*[dims[0]];
+   jlong*** elems = new jlong**[dims[0]];
+
+   for(int i = 0; i < (int)dims[0]; i++) {
+      jArray[i] = new jlongArray[dims[1]];
+      elems[i] = new jlong*[dims[1]];
+      jobjectArray jrow = (jobjectArray)env->GetObjectArrayElement((jobjectArray)javaBuffer, i);
+      for(int j = 0; j < (int)dims[1]; j++) {
+         jArray[i][j] = (jlongArray)env->GetObjectArrayElement(jrow, j);
+         elems[i][j] = env->GetLongArrayElements(jArray[i][j],0);
+      }
+   }
+
+   #pragma omp parallel for
+   for(int i = 0; i < (int)dims[0]; i++) {
+      for(int j = 0; j < (int)dims[1]; j++) {
+         for(int k = 0; k < (int)dims[2]; k++) {
+            array[i*dims[1]*dims[2] + j*dims[2] + k] = elems[i][j][k];
+         }
+      }
+   }
+
+   for(int i = 0; i < (int)dims[0]; i++) {
+      for(int j = 0; j < (int)dims[1]; j++) {
+         env->ReleaseLongArrayElements(jArray[i][j], elems[i][j], 0);
+      }
+      delete[] jArray[i];
+      delete[] elems[i];
+   }
+   delete[] jArray;
+   delete[] elems;
+   */
 
    for(int i = 0; i < (int)dims[0]; i++) {
       jobjectArray jrow = (jobjectArray)env->GetObjectArrayElement((jobjectArray)javaBuffer, i);
@@ -446,6 +765,39 @@ AparapiBuffer* AparapiBuffer::flattenFloat3D(JNIEnv* env, jobject arg) {
    long bitSize = totalSize * sizeof(jfloat);
 
    jfloat* array = new jfloat[totalSize];
+   /*
+   jfloatArray** jArray = new jfloatArray*[dims[0]];
+   jfloat*** elems = new jfloat**[dims[0]];
+
+   for(int i = 0; i < (int)dims[0]; i++) {
+      jArray[i] = new jfloatArray[dims[1]];
+      elems[i] = new jfloat*[dims[1]];
+      jobjectArray jrow = (jobjectArray)env->GetObjectArrayElement((jobjectArray)javaBuffer, i);
+      for(int j = 0; j < (int)dims[1]; j++) {
+         jArray[i][j] = (jfloatArray)env->GetObjectArrayElement(jrow, j);
+         elems[i][j] = env->GetFloatArrayElements(jArray[i][j],0);
+      }
+   }
+
+   #pragma omp parallel for
+   for(int i = 0; i < (int)dims[0]; i++) {
+      for(int j = 0; j < (int)dims[1]; j++) {
+         for(int k = 0; k < (int)dims[2]; k++) {
+            array[i*dims[1]*dims[2] + j*dims[2] + k] = elems[i][j][k];
+         }
+      }
+   }
+
+   for(int i = 0; i < (int)dims[0]; i++) {
+      for(int j = 0; j < (int)dims[1]; j++) {
+         env->ReleaseFloatArrayElements(jArray[i][j], elems[i][j], 0);
+      }
+      delete[] jArray[i];
+      delete[] elems[i];
+   }
+   delete[] jArray;
+   delete[] elems;
+   */
 
    for(int i = 0; i < (int)dims[0]; i++) {
       jobjectArray jrow = (jobjectArray)env->GetObjectArrayElement((jobjectArray)javaBuffer, i);
@@ -477,6 +829,39 @@ AparapiBuffer* AparapiBuffer::flattenDouble3D(JNIEnv* env, jobject arg) {
    long bitSize = totalSize * sizeof(jdouble);
 
    jdouble* array = new jdouble[totalSize];
+   /*
+   jdoubleArray** jArray = new jdoubleArray*[dims[0]];
+   jdouble*** elems = new jdouble**[dims[0]];
+
+   for(int i = 0; i < (int)dims[0]; i++) {
+      jArray[i] = new jdoubleArray[dims[1]];
+      elems[i] = new jdouble*[dims[1]];
+      jobjectArray jrow = (jobjectArray)env->GetObjectArrayElement((jobjectArray)javaBuffer, i);
+      for(int j = 0; j < (int)dims[1]; j++) {
+         jArray[i][j] = (jdoubleArray)env->GetObjectArrayElement(jrow, j);
+         elems[i][j] = env->GetDoubleArrayElements(jArray[i][j],0);
+      }
+   }
+
+   #pragma omp parallel for
+   for(int i = 0; i < (int)dims[0]; i++) {
+      for(int j = 0; j < (int)dims[1]; j++) {
+         for(int k = 0; k < (int)dims[2]; k++) {
+            array[i*dims[1]*dims[2] + j*dims[2] + k] = elems[i][j][k];
+         }
+      }
+   }
+
+   for(int i = 0; i < (int)dims[0]; i++) {
+      for(int j = 0; j < (int)dims[1]; j++) {
+         env->ReleaseDoubleArrayElements(jArray[i][j], elems[i][j], 0);
+      }
+      delete[] jArray[i];
+      delete[] elems[i];
+   }
+   delete[] jArray;
+   delete[] elems;
+   */
 
    for(int i = 0; i < (int)dims[0]; i++) {
       jobjectArray jrow = (jobjectArray)env->GetObjectArrayElement((jobjectArray)javaBuffer, i);
@@ -537,6 +922,28 @@ void AparapiBuffer::inflateBoolean2D(JNIEnv *env, KernelArg* arg) {
    
    jobjectArray buffer = (jobjectArray)javaObject;
    jboolean* array = (jboolean*)data;
+   /*
+   jbooleanArray* jArray = new jbooleanArray[lens[0]];
+   jboolean** body =  new jboolean*[lens[0]];
+
+   for(int i = 0; i < lens[0]; i++) {
+      jArray[i] = (jbooleanArray)env->GetObjectArrayElement(buffer, i);
+      body[i] = env->GetBooleanArrayElements(jArray[i],0);
+   }
+
+   #pragma omp parallel for
+   for(int i = 0; i < lens[0]; i++) {
+      for(int j = 0; j < lens[1]; j++) {
+         body[i][j] = array[i*dims[0] + j];
+      }
+   }
+
+   for(int i = 0; i < lens[0]; i++) {
+      env->ReleaseBooleanArrayElements(jArray[i], body[i], 0);
+   }
+   delete[] jArray;
+   delete[] body;
+   */
 
    for(int i = 0; i < lens[0]; i++) {
       jbooleanArray jArray = (jbooleanArray)env->GetObjectArrayElement(buffer, i);
@@ -552,6 +959,28 @@ void AparapiBuffer::inflateByte2D(JNIEnv *env, KernelArg* arg) {
    
    jobjectArray buffer = (jobjectArray)javaObject;
    jbyte* array = (jbyte*)data;
+   /*
+   jbyteArray* jArray = new jbyteArray[lens[0]];
+   jbyte** body =  new jbyte*[lens[0]];
+
+   for(int i = 0; i < lens[0]; i++) {
+      jArray[i] = (jbyteArray)env->GetObjectArrayElement(buffer, i);
+      body[i] = env->GetByteArrayElements(jArray[i],0);
+   }
+
+   #pragma omp parallel for
+   for(int i = 0; i < lens[0]; i++) {
+      for(int j = 0; j < lens[1]; j++) {
+         body[i][j] = array[i*dims[0] + j];
+      }
+   }
+
+   for(int i = 0; i < lens[0]; i++) {
+      env->ReleaseByteArrayElements(jArray[i], body[i], 0);
+   }
+   delete[] jArray;
+   delete[] body;
+   */
 
    for(int i = 0; i < lens[0]; i++) {
       jbyteArray jArray = (jbyteArray)env->GetObjectArrayElement(buffer, i);
@@ -567,6 +996,28 @@ void AparapiBuffer::inflateShort2D(JNIEnv *env, KernelArg* arg) {
    
    jobjectArray buffer = (jobjectArray)javaObject;
    jshort* array = (jshort*)data;
+   /*
+   jshortArray* jArray = new jshortArray[lens[0]];
+   jshort** body =  new jshort*[lens[0]];
+
+   for(int i = 0; i < lens[0]; i++) {
+      jArray[i] = (jshortArray)env->GetObjectArrayElement(buffer, i);
+      body[i] = env->GetShortArrayElements(jArray[i],0);
+   }
+
+   #pragma omp parallel for
+   for(int i = 0; i < lens[0]; i++) {
+      for(int j = 0; j < lens[1]; j++) {
+         body[i][j] = array[i*dims[0] + j];
+      }
+   }
+
+   for(int i = 0; i < lens[0]; i++) {
+      env->ReleaseShortArrayElements(jArray[i], body[i], 0);
+   }
+   delete[] jArray;
+   delete[] body;
+   */
 
    for(int i = 0; i < lens[0]; i++) {
       jshortArray jArray = (jshortArray)env->GetObjectArrayElement(buffer, i);
@@ -582,6 +1033,28 @@ void AparapiBuffer::inflateInt2D(JNIEnv *env, KernelArg* arg) {
    
    jobjectArray buffer = (jobjectArray)javaObject;
    jint* array = (jint*)data;
+   /*
+   jintArray* jArray = new jintArray[lens[0]];
+   jint** body =  new jint*[lens[0]];
+
+   for(int i = 0; i < lens[0]; i++) {
+      jArray[i] = (jintArray)env->GetObjectArrayElement(buffer, i);
+      body[i] = env->GetIntArrayElements(jArray[i],0);
+   }
+
+   #pragma omp parallel for
+   for(int i = 0; i < lens[0]; i++) {
+      for(int j = 0; j < lens[1]; j++) {
+         body[i][j] = array[i*dims[0] + j];
+      }
+   }
+
+   for(int i = 0; i < lens[0]; i++) {
+      env->ReleaseIntArrayElements(jArray[i], body[i], 0);
+   }
+   delete[] jArray;
+   delete[] body;
+   */
 
    for(int i = 0; i < lens[0]; i++) {
       jintArray jArray = (jintArray)env->GetObjectArrayElement(buffer, i);
@@ -597,6 +1070,28 @@ void AparapiBuffer::inflateLong2D(JNIEnv *env, KernelArg* arg) {
    
    jobjectArray buffer = (jobjectArray)javaObject;
    jlong* array = (jlong*)data;
+   /*
+   jlongArray* jArray = new jlongArray[lens[0]];
+   jlong** body =  new jlong*[lens[0]];
+
+   for(int i = 0; i < lens[0]; i++) {
+      jArray[i] = (jlongArray)env->GetObjectArrayElement(buffer, i);
+      body[i] = env->GetLongArrayElements(jArray[i],0);
+   }
+
+   #pragma omp parallel for
+   for(int i = 0; i < lens[0]; i++) {
+      for(int j = 0; j < lens[1]; j++) {
+         body[i][j] = array[i*dims[0] + j];
+      }
+   }
+
+   for(int i = 0; i < lens[0]; i++) {
+      env->ReleaseLongArrayElements(jArray[i], body[i], 0);
+   }
+   delete[] jArray;
+   delete[] body;
+   */
 
    for(int i = 0; i < lens[0]; i++) {
       jlongArray jArray = (jlongArray)env->GetObjectArrayElement(buffer, i);
@@ -612,6 +1107,28 @@ void AparapiBuffer::inflateFloat2D(JNIEnv *env, KernelArg* arg) {
    
    jobjectArray buffer = (jobjectArray)javaObject;
    jfloat* array = (jfloat*)data;
+   /*
+   jfloatArray* jArray = new jfloatArray[lens[0]];
+   jfloat** body =  new jfloat*[lens[0]];
+
+   for(int i = 0; i < lens[0]; i++) {
+      jArray[i] = (jfloatArray)env->GetObjectArrayElement(buffer, i);
+      body[i] = env->GetFloatArrayElements(jArray[i],0);
+   }
+
+   #pragma omp parallel for
+   for(int i = 0; i < lens[0]; i++) {
+      for(int j = 0; j < lens[1]; j++) {
+         body[i][j] = array[i*dims[0] + j];
+      }
+   }
+
+   for(int i = 0; i < lens[0]; i++) {
+      env->ReleaseFloatArrayElements(jArray[i], body[i], 0);
+   }
+   delete[] jArray;
+   delete[] body;
+   */
 
    for(int i = 0; i < lens[0]; i++) {
       jfloatArray jArray = (jfloatArray)env->GetObjectArrayElement(buffer, i);
@@ -627,6 +1144,28 @@ void AparapiBuffer::inflateDouble2D(JNIEnv *env, KernelArg* arg) {
    
    jobjectArray buffer = (jobjectArray)javaObject;
    jdouble* array = (jdouble*)data;
+   /*
+   jdoubleArray* jArray = new jdoubleArray[lens[0]];
+   jdouble** body =  new jdouble*[lens[0]];
+
+   for(int i = 0; i < lens[0]; i++) {
+      jArray[i] = (jdoubleArray)env->GetObjectArrayElement(buffer, i);
+      body[i] = env->GetDoubleArrayElements(jArray[i],0);
+   }
+
+   #pragma omp parallel for
+   for(int i = 0; i < lens[0]; i++) {
+      for(int j = 0; j < lens[1]; j++) {
+         body[i][j] = array[i*dims[0] + j];
+      }
+   }
+
+   for(int i = 0; i < lens[0]; i++) {
+      env->ReleaseDoubleArrayElements(jArray[i], body[i], 0);
+   }
+   delete[] jArray;
+   delete[] body;
+   */
 
    for(int i = 0; i < lens[0]; i++) {
       jdoubleArray jArray = (jdoubleArray)env->GetObjectArrayElement(buffer, i);
@@ -643,6 +1182,39 @@ void AparapiBuffer::inflateBoolean3D(JNIEnv *env, KernelArg* arg) {
    
    jobjectArray buffer = (jobjectArray)javaObject;
    jboolean* array = (jboolean*)data;
+   /*
+   jbooleanArray** jArray = new jbooleanArray*[lens[0]];
+   jboolean*** body =  new jboolean**[lens[0]];
+
+   for(int i = 0; i < lens[0]; i++) {
+      jobjectArray jrow = (jobjectArray)env->GetObjectArrayElement(buffer, i);
+      jArray[i] = new jbooleanArray[lens[0]];
+      body[i] =  new jboolean*[lens[0]];
+      for(int j = 0; j < lens[1]; j++) {
+         jArray[i][j] = (jbooleanArray)env->GetObjectArrayElement(jrow, j);
+         body[i][j] = env->GetBooleanArrayElements(jArray[i][j],0);
+      }
+   }
+
+   #pragma omp parallel for
+   for(int i = 0; i < lens[0]; i++) {
+      for(int j = 0; j < lens[1]; j++) {
+         for(int k = 0; k < lens[2]; k++) {
+            body[i][j][k] = array[i*dims[0] + j*dims[1] + k];
+         }
+      }
+   }
+
+   for(int i = 0; i < lens[0]; i++) {
+      for(int j = 0; j < lens[1]; j++) {
+         env->ReleaseBooleanArrayElements(jArray[i][j], body[i][j], 0);
+      }
+      delete[] jArray[i];
+      delete[] body[i];
+   }
+   delete[] jArray;
+   delete[] body;
+   */
 
    for(int i = 0; i < lens[0]; i++) {
       jobjectArray jrow = (jobjectArray)env->GetObjectArrayElement(buffer, i);
@@ -661,6 +1233,39 @@ void AparapiBuffer::inflateByte3D(JNIEnv *env, KernelArg* arg) {
    
    jobjectArray buffer = (jobjectArray)javaObject;
    jbyte* array = (jbyte*)data;
+   /*
+   jbyteArray** jArray = new jbyteArray*[lens[0]];
+   jbyte*** body =  new jbyte**[lens[0]];
+
+   for(int i = 0; i < lens[0]; i++) {
+      jobjectArray jrow = (jobjectArray)env->GetObjectArrayElement(buffer, i);
+      jArray[i] = new jbyteArray[lens[0]];
+      body[i] =  new jbyte*[lens[0]];
+      for(int j = 0; j < lens[1]; j++) {
+         jArray[i][j] = (jbyteArray)env->GetObjectArrayElement(jrow, j);
+         body[i][j] = env->GetByteArrayElements(jArray[i][j],0);
+      }
+   }
+
+   #pragma omp parallel for
+   for(int i = 0; i < lens[0]; i++) {
+      for(int j = 0; j < lens[1]; j++) {
+         for(int k = 0; k < lens[2]; k++) {
+            body[i][j][k] = array[i*dims[0] + j*dims[1] + k];
+         }
+      }
+   }
+
+   for(int i = 0; i < lens[0]; i++) {
+      for(int j = 0; j < lens[1]; j++) {
+         env->ReleaseByteArrayElements(jArray[i][j], body[i][j], 0);
+      }
+      delete[] jArray[i];
+      delete[] body[i];
+   }
+   delete[] jArray;
+   delete[] body;
+   */
 
    for(int i = 0; i < lens[0]; i++) {
       jobjectArray jrow = (jobjectArray)env->GetObjectArrayElement(buffer, i);
@@ -679,6 +1284,39 @@ void AparapiBuffer::inflateShort3D(JNIEnv *env, KernelArg* arg) {
    
    jobjectArray buffer = (jobjectArray)javaObject;
    jshort* array = (jshort*)data;
+   /*
+   jshortArray** jArray = new jshortArray*[lens[0]];
+   jshort*** body =  new jshort**[lens[0]];
+
+   for(int i = 0; i < lens[0]; i++) {
+      jobjectArray jrow = (jobjectArray)env->GetObjectArrayElement(buffer, i);
+      jArray[i] = new jshortArray[lens[0]];
+      body[i] =  new jshort*[lens[0]];
+      for(int j = 0; j < lens[1]; j++) {
+         jArray[i][j] = (jshortArray)env->GetObjectArrayElement(jrow, j);
+         body[i][j] = env->GetShortArrayElements(jArray[i][j],0);
+      }
+   }
+
+   #pragma omp parallel for
+   for(int i = 0; i < lens[0]; i++) {
+      for(int j = 0; j < lens[1]; j++) {
+         for(int k = 0; k < lens[2]; k++) {
+            body[i][j][k] = array[i*dims[0] + j*dims[1] + k];
+         }
+      }
+   }
+
+   for(int i = 0; i < lens[0]; i++) {
+      for(int j = 0; j < lens[1]; j++) {
+         env->ReleaseShortArrayElements(jArray[i][j], body[i][j], 0);
+      }
+      delete[] jArray[i];
+      delete[] body[i];
+   }
+   delete[] jArray;
+   delete[] body;
+   */
 
    for(int i = 0; i < lens[0]; i++) {
       jobjectArray jrow = (jobjectArray)env->GetObjectArrayElement(buffer, i);
@@ -697,6 +1335,39 @@ void AparapiBuffer::inflateInt3D(JNIEnv *env, KernelArg* arg) {
    
    jobjectArray buffer = (jobjectArray)javaObject;
    jint* array = (jint*)data;
+   /*
+   jintArray** jArray = new jintArray*[lens[0]];
+   jint*** body =  new jint**[lens[0]];
+
+   for(int i = 0; i < lens[0]; i++) {
+      jobjectArray jrow = (jobjectArray)env->GetObjectArrayElement(buffer, i);
+      jArray[i] = new jintArray[lens[0]];
+      body[i] =  new jint*[lens[0]];
+      for(int j = 0; j < lens[1]; j++) {
+         jArray[i][j] = (jintArray)env->GetObjectArrayElement(jrow, j);
+         body[i][j] = env->GetIntArrayElements(jArray[i][j],0);
+      }
+   }
+
+   #pragma omp parallel for
+   for(int i = 0; i < lens[0]; i++) {
+      for(int j = 0; j < lens[1]; j++) {
+         for(int k = 0; k < lens[2]; k++) {
+            body[i][j][k] = array[i*dims[0] + j*dims[1] + k];
+         }
+      }
+   }
+
+   for(int i = 0; i < lens[0]; i++) {
+      for(int j = 0; j < lens[1]; j++) {
+         env->ReleaseIntArrayElements(jArray[i][j], body[i][j], 0);
+      }
+      delete[] jArray[i];
+      delete[] body[i];
+   }
+   delete[] jArray;
+   delete[] body;
+   */
 
    for(int i = 0; i < lens[0]; i++) {
       jobjectArray jrow = (jobjectArray)env->GetObjectArrayElement(buffer, i);
@@ -715,6 +1386,39 @@ void AparapiBuffer::inflateLong3D(JNIEnv *env, KernelArg* arg) {
    
    jobjectArray buffer = (jobjectArray)javaObject;
    jlong* array = (jlong*)data;
+   /*
+   jlongArray** jArray = new jlongArray*[lens[0]];
+   jlong*** body =  new jlong**[lens[0]];
+
+   for(int i = 0; i < lens[0]; i++) {
+      jobjectArray jrow = (jobjectArray)env->GetObjectArrayElement(buffer, i);
+      jArray[i] = new jlongArray[lens[0]];
+      body[i] =  new jlong*[lens[0]];
+      for(int j = 0; j < lens[1]; j++) {
+         jArray[i][j] = (jlongArray)env->GetObjectArrayElement(jrow, j);
+         body[i][j] = env->GetLongArrayElements(jArray[i][j],0);
+      }
+   }
+
+   #pragma omp parallel for
+   for(int i = 0; i < lens[0]; i++) {
+      for(int j = 0; j < lens[1]; j++) {
+         for(int k = 0; k < lens[2]; k++) {
+            body[i][j][k] = array[i*dims[0] + j*dims[1] + k];
+         }
+      }
+   }
+
+   for(int i = 0; i < lens[0]; i++) {
+      for(int j = 0; j < lens[1]; j++) {
+         env->ReleaseLongArrayElements(jArray[i][j], body[i][j], 0);
+      }
+      delete[] jArray[i];
+      delete[] body[i];
+   }
+   delete[] jArray;
+   delete[] body;
+   */
 
    for(int i = 0; i < lens[0]; i++) {
       jobjectArray jrow = (jobjectArray)env->GetObjectArrayElement(buffer, i);
@@ -733,6 +1437,39 @@ void AparapiBuffer::inflateFloat3D(JNIEnv *env, KernelArg* arg) {
    
    jobjectArray buffer = (jobjectArray)javaObject;
    jfloat* array = (jfloat*)data;
+   /*
+   jfloatArray** jArray = new jfloatArray*[lens[0]];
+   jfloat*** body =  new jfloat**[lens[0]];
+
+   for(int i = 0; i < lens[0]; i++) {
+      jobjectArray jrow = (jobjectArray)env->GetObjectArrayElement(buffer, i);
+      jArray[i] = new jfloatArray[lens[0]];
+      body[i] =  new jfloat*[lens[0]];
+      for(int j = 0; j < lens[1]; j++) {
+         jArray[i][j] = (jfloatArray)env->GetObjectArrayElement(jrow, j);
+         body[i][j] = env->GetFloatArrayElements(jArray[i][j],0);
+      }
+   }
+
+   #pragma omp parallel for
+   for(int i = 0; i < lens[0]; i++) {
+      for(int j = 0; j < lens[1]; j++) {
+         for(int k = 0; k < lens[2]; k++) {
+            body[i][j][k] = array[i*dims[0] + j*dims[1] + k];
+         }
+      }
+   }
+
+   for(int i = 0; i < lens[0]; i++) {
+      for(int j = 0; j < lens[1]; j++) {
+         env->ReleaseFloatArrayElements(jArray[i][j], body[i][j], 0);
+      }
+      delete[] jArray[i];
+      delete[] body[i];
+   }
+   delete[] jArray;
+   delete[] body;
+   */
 
    for(int i = 0; i < lens[0]; i++) {
       jobjectArray jrow = (jobjectArray)env->GetObjectArrayElement(buffer, i);
@@ -751,6 +1488,39 @@ void AparapiBuffer::inflateDouble3D(JNIEnv *env, KernelArg* arg) {
    
    jobjectArray buffer = (jobjectArray)javaObject;
    jdouble* array = (jdouble*)data;
+   /*
+   jdoubleArray** jArray = new jdoubleArray*[lens[0]];
+   jdouble*** body =  new jdouble**[lens[0]];
+
+   for(int i = 0; i < lens[0]; i++) {
+      jobjectArray jrow = (jobjectArray)env->GetObjectArrayElement(buffer, i);
+      jArray[i] = new jdoubleArray[lens[0]];
+      body[i] =  new jdouble*[lens[0]];
+      for(int j = 0; j < lens[1]; j++) {
+         jArray[i][j] = (jdoubleArray)env->GetObjectArrayElement(jrow, j);
+         body[i][j] = env->GetDoubleArrayElements(jArray[i][j],0);
+      }
+   }
+
+   #pragma omp parallel for
+   for(int i = 0; i < lens[0]; i++) {
+      for(int j = 0; j < lens[1]; j++) {
+         for(int k = 0; k < lens[2]; k++) {
+            body[i][j][k] = array[i*dims[0] + j*dims[1] + k];
+         }
+      }
+   }
+
+   for(int i = 0; i < lens[0]; i++) {
+      for(int j = 0; j < lens[1]; j++) {
+         env->ReleaseDoubleArrayElements(jArray[i][j], body[i][j], 0);
+      }
+      delete[] jArray[i];
+      delete[] body[i];
+   }
+   delete[] jArray;
+   delete[] body;
+   */
 
    for(int i = 0; i < lens[0]; i++) {
       jobjectArray jrow = (jobjectArray)env->GetObjectArrayElement(buffer, i);
