@@ -75,13 +75,13 @@ abstract class Instruction{
 
    private Instruction parentExpr = null;
 
-   private LinkedList<ConditionalBranch> forwardConditionalBranchTargets;
+   private LinkedList<ConditionalBranch> forwardConditionalBranchTargets = new LinkedList<ConditionalBranch>();
 
-   private LinkedList<ConditionalBranch> reverseConditionalBranchTargets;
+   private LinkedList<ConditionalBranch> reverseConditionalBranchTargets= new LinkedList<ConditionalBranch>();
 
-   private LinkedList<Branch> forwardUnconditionalBranchTargets;
+   private LinkedList<Branch> forwardUnconditionalBranchTargets= new LinkedList<Branch>();
 
-   private LinkedList<Branch> reverseUnconditionalBranchTargets;
+   private LinkedList<Branch> reverseUnconditionalBranchTargets= new LinkedList<Branch>();
 
    private Instruction firstChild = null;
 
@@ -243,19 +243,19 @@ abstract class Instruction{
    }
 
    boolean isReverseConditionalBranchTarget(){
-      return (reverseConditionalBranchTargets != null && reverseConditionalBranchTargets.size() > 0);
+      return (reverseConditionalBranchTargets.size() > 0);
    }
 
    boolean isForwardConditionalBranchTarget(){
-      return (forwardConditionalBranchTargets != null && forwardConditionalBranchTargets.size() > 0);
+      return ( forwardConditionalBranchTargets.size() > 0);
    }
 
    boolean isReverseUnconditionalBranchTarget(){
-      return (reverseUnconditionalBranchTargets != null && reverseUnconditionalBranchTargets.size() > 0);
+      return ( reverseUnconditionalBranchTargets.size() > 0);
    }
 
    boolean isForwardUnconditionalBranchTarget(){
-      return (forwardUnconditionalBranchTargets != null && forwardUnconditionalBranchTargets.size() > 0);
+      return (forwardUnconditionalBranchTargets.size() > 0);
    }
 
    boolean isReverseBranchTarget(){
@@ -298,26 +298,14 @@ abstract class Instruction{
 
       if(_branch.isReverse()){
          if(_branch.isConditional()){
-            if(reverseConditionalBranchTargets == null){
-               reverseConditionalBranchTargets = new LinkedList<ConditionalBranch>();
-            }
             reverseConditionalBranchTargets.add((ConditionalBranch) _branch);
          }else{
-            if(reverseUnconditionalBranchTargets == null){
-               reverseUnconditionalBranchTargets = new LinkedList<Branch>();
-            }
             reverseUnconditionalBranchTargets.add(_branch);
          }
       }else{
          if(_branch.isConditional()){
-            if(forwardConditionalBranchTargets == null){
-               forwardConditionalBranchTargets = new LinkedList<ConditionalBranch>();
-            }
             forwardConditionalBranchTargets.add((ConditionalBranch) _branch);
          }else{
-            if(forwardUnconditionalBranchTargets == null){
-               forwardUnconditionalBranchTargets = new LinkedList<Branch>();
-            }
             forwardUnconditionalBranchTargets.add(_branch);
          }
       }
@@ -327,35 +315,27 @@ abstract class Instruction{
    void removeBranchTarget(Branch _branch){
       if(_branch.isReverse()){
          if(_branch.isConditional()){
-            if(reverseConditionalBranchTargets != null){
+
                reverseConditionalBranchTargets.remove(_branch);
-               if(reverseConditionalBranchTargets.size() == 0){
-                  reverseConditionalBranchTargets = null;
-               }
-            }
+
+
          }else{
-            if(reverseUnconditionalBranchTargets != null){
+
                reverseUnconditionalBranchTargets.remove(_branch);
-               if(reverseUnconditionalBranchTargets.size() == 0){
-                  reverseUnconditionalBranchTargets = null;
-               }
-            }
+
+
          }
       }else{
          if(_branch.isConditional()){
-            if(forwardConditionalBranchTargets != null){
+
                forwardConditionalBranchTargets.remove(_branch);
-               if(forwardConditionalBranchTargets.size() == 0){
-                  forwardConditionalBranchTargets = null;
-               }
-            }
+
+
          }else{
-            if(forwardUnconditionalBranchTargets != null){
+
                forwardUnconditionalBranchTargets.remove(_branch);
-               if(forwardUnconditionalBranchTargets.size() == 0){
-                  forwardUnconditionalBranchTargets = null;
-               }
-            }
+
+
          }
       }
    }

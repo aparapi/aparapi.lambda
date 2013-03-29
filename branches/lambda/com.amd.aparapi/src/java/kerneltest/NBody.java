@@ -75,6 +75,7 @@ public class NBody{
          vxyz[globalId + 1] = vxyz[globalId + 1] + accy;
          vxyz[globalId + 2] = vxyz[globalId + 2] + accz;
          int x = (int) xyz[globalId + 0];
+         float sample = 1f;
          int y = (int) xyz[globalId + 1];
          if(x < width && x >= 0 && y < height && y >= 0){
             rgb[y * width + x] = 0xffffff;
