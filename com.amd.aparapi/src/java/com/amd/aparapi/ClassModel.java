@@ -41,6 +41,8 @@ import com.amd.aparapi.ClassModel.AttributePool.CodeEntry;
 import com.amd.aparapi.ClassModel.ConstantPool.FieldEntry;
 import com.amd.aparapi.ClassModel.ConstantPool.MethodEntry;
 import com.amd.aparapi.InstructionSet.TypeSpec;
+import com.amd.aparapi.InstructionSet.ConditionalBranch;
+import com.amd.aparapi.InstructionSet.Branch;
 import com.amd.aparapi.TypeHelper.ArgsAndReturnType;
 import com.amd.aparapi.TypeHelper.Type;
 
@@ -1430,20 +1432,61 @@ class ClassModel{
 
             int pc = 0;
             Instruction instruction = null;
-            for(Map.Entry<Integer, Instruction> entry : _pcMap.entrySet()){
-               pc = entry.getKey();
-               instruction = entry.getValue();
-               InstructionSet.StoreSpec storeSpec = instruction.getByteCode().getStore();
+            for(Instruction i : _pcMap.values()){
+               instruction =i;
+               pc = i.getThisPC();
+               InstructionSet.StoreSpec storeSpec = i.getByteCode().getStore();
                if(storeSpec != InstructionSet.StoreSpec.NONE){
-                  int slotIndex = ((InstructionSet.LocalVariableTableIndexAccessor) instruction).getLocalVariableTableIndex();
+                  int slotIndex = ((InstructionSet.LocalVariableTableIndexAccessor) i).getLocalVariableTableIndex();
                   Var prevVar = vars[slotIndex];
-                  Var var = new Var(storeSpec, slotIndex, pc + instruction.getLength(), false); // will get collected pretty soon if this is not the same as the previous in this slot
+                  Var var = new Var(storeSpec, slotIndex, pc + i.getLength(), false); // will get collected pretty soon if this is not the same as the previous in this slot
                   if(!prevVar.equals(var)){
                      prevVar.endPc = pc;
                      vars[slotIndex] = var;
                      list.add(vars[slotIndex]);
                   }
                }
+               if (i.isForwardBranchTarget()){
+                  // we need to descope all vars declared between the brancher and here
+                  // this stops
+                  // if (){
+                  //    int var1=0;
+                  // }
+                  // int var2=0;
+                  // Turning into OpenCL
+                  // if (){
+                  //    int var=0;
+                  // }
+                  // var=0; // <- there is no var in scope for this
+
+                  LinkedList<ConditionalBranch> conditionalBranchersToHere = instruction.getForwardConditionalBranches();
+                  if (conditionalBranchersToHere.size()>0){
+                     for (ConditionalBranch cb:conditionalBranchersToHere){
+                        for (int slot=0; slot< numberOfSlots + thisOffset;slot++){
+                           if (vars[slot].endPc == 0 && cb.getThisPC()<vars[slot].startPc){
+                              vars[slot].endPc = pc;
+                           //   System.out.println("var "+vars[slot].getVariableName()+" is descoped!");
+                              vars[slot]= new Var();
+                           }
+                        }
+                     }
+                    // System.out.println("may need to descope!");
+                  }
+                  LinkedList<Branch> branchersToHere = instruction.getForwardUnconditionalBranches();
+                  if (branchersToHere.size()>0){
+                     for (Branch b:branchersToHere){
+                        for (int slot=0; slot< numberOfSlots + thisOffset;slot++){
+                           if (vars[slot].endPc == 0 && b.getThisPC()<vars[slot].startPc){
+                              vars[slot].endPc = pc;
+                             // System.out.println("var "+vars[slot].getVariableName()+" is descoped!");
+                              vars[slot]= new Var();
+                           }
+                        }
+                     }
+                  }
+               }
+
+
             }
             for(int i = 0; i < numberOfSlots + thisOffset; i++){
                vars[i].endPc = pc + instruction.getLength();
@@ -2293,17 +2336,6 @@ class ClassModel{
                pcTail = instruction;
 
             }
-            LocalVariableTableEntry localVariableTableEntry = Config.enableAlwaysCreateFakeLocalVariableTable?null: getLocalVariableTableEntry();
-
-            if(localVariableTableEntry == null){
-               localVariableTableEntry = attributePool.new FakeLocalVariableTableEntry(pcMap, this);
-
-               setLocalVariableTableEntry(localVariableTableEntry);
-               logger.info("Method "
-                     + getName()
-                     + getDescriptor()
-                     + " does not contain a LocalVariableTable entry (source not compiled with -g) aparapi create a synthetic table based on bytecode");
-            }
 
             // Here we connect the branch nodes to the instruction that they branch to.
             //
@@ -2338,6 +2370,19 @@ class ClassModel{
                   }
                }
             }
+
+            LocalVariableTableEntry localVariableTableEntry = Config.enableAlwaysCreateFakeLocalVariableTable?null: getLocalVariableTableEntry();
+
+            if(localVariableTableEntry == null){
+               localVariableTableEntry = attributePool.new FakeLocalVariableTableEntry(pcMap, this);
+
+               setLocalVariableTableEntry(localVariableTableEntry);
+               logger.info("Method "
+                     + getName()
+                     + getDescriptor()
+                     + " does not contain a LocalVariableTable entry (source not compiled with -g) aparapi create a synthetic table based on bytecode");
+            }
+
          }
          return (pcMap);
       }
