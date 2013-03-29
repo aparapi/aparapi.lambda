@@ -49,25 +49,6 @@ import java.lang.reflect.InvocationTargetException;
 
 class InstructionSet{
 
-   static enum LoadSpec{
-      NONE, //
-      F, // Float
-      D, // Double
-      I, // Integer
-      L, // Long
-      A, // Array
-      O, // Object
-   }
-
-   static enum StoreSpec{
-      NONE, //
-      F, // Float
-      D, // Double
-      I, // Integer
-      L, // Long
-      A, // Array
-      O, // Object
-   }
 
    static enum TypeSpec{
       NONE("none", "none", 0, 0), //
@@ -121,6 +102,41 @@ class InstructionSet{
       }
 
    }
+
+   static enum LoadSpec{
+      NONE(TypeSpec.NONE), //
+      F(TypeSpec.F), // Float
+      D(TypeSpec.D), // Double
+      I(TypeSpec.I), // Integer
+      L(TypeSpec.L), // Long
+      A(TypeSpec.A), // Array
+      O(TypeSpec.O); // Object
+      TypeSpec typeSpec=  TypeSpec.NONE;
+      LoadSpec(TypeSpec _typeSpec){
+         typeSpec= _typeSpec;
+      }
+      TypeSpec getTypeSpec(){
+         return(typeSpec);
+      }
+   }
+
+   static enum StoreSpec{
+      NONE(TypeSpec.NONE), //
+      F(TypeSpec.F), // Float
+      D(TypeSpec.D), // Double
+      I(TypeSpec.I), // Integer
+      L(TypeSpec.L), // Long
+      A(TypeSpec.A), // Array
+      O(TypeSpec.O); // Object
+      TypeSpec typeSpec=  TypeSpec.NONE;
+      StoreSpec(TypeSpec _typeSpec){
+         typeSpec= _typeSpec;
+      }
+      TypeSpec getTypeSpec(){
+         return(typeSpec);
+      }
+   }
+
 
    /**
     * Represents an Operator
