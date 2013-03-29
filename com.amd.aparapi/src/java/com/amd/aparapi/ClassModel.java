@@ -1457,8 +1457,7 @@ class ClassModel{
                      vars[slotIndex] = var;
                      list.add(vars[slotIndex]);
                   }
-               }
-               if(i.isForwardBranchTarget()){  // Is there an earlier branch branching here
+               } else if(i.isForwardBranchTarget()){  // Is there an earlier branch branching here
                   // we need to descope all vars declared between the brancher and here
                   // this stops
                   // if (){
@@ -1475,15 +1474,12 @@ class ClassModel{
                      for(int slot = 0; slot < numberOfSlots + thisOffset; slot++){
                         if(vars[slot].endPc == 0 && b.getThisPC() < vars[slot].startPc){
                            vars[slot].endPc = pc;
-                           //System.out.println("var "+vars[slot].getVariableName()+" is descoped!");
+                          // System.out.println("var "+vars[slot].getVariableName()+" is descoped!");
                            vars[slot] = new Var();
                         }
                      }
                   }
-
                }
-
-
             }
             for(int i = 0; i < numberOfSlots + thisOffset; i++){
                vars[i].endPc = pc + instruction.getLength();
@@ -2368,7 +2364,7 @@ class ClassModel{
                }
             }
 
-            LocalVariableTableEntry localVariableTableEntry = Config.enableAlwaysCreateFakeLocalVariableTable ? null : getLocalVariableTableEntry();
+            LocalVariableTableEntry localVariableTableEntry = null; //Config.enableAlwaysCreateFakeLocalVariableTable ? null : getLocalVariableTableEntry();
 
             if(localVariableTableEntry == null){
                localVariableTableEntry = attributePool.new FakeLocalVariableTableEntry(pcMap, this);
