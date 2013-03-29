@@ -40,15 +40,24 @@ package com.amd.aparapi;
 import com.amd.aparapi.ClassModel.AttributePool.CodeEntry;
 import com.amd.aparapi.ClassModel.ConstantPool.FieldEntry;
 import com.amd.aparapi.ClassModel.ConstantPool.MethodEntry;
-import com.amd.aparapi.InstructionSet.TypeSpec;
-import com.amd.aparapi.InstructionSet.ConditionalBranch;
 import com.amd.aparapi.InstructionSet.Branch;
+import com.amd.aparapi.InstructionSet.ConditionalBranch;
+import com.amd.aparapi.InstructionSet.TypeSpec;
 import com.amd.aparapi.TypeHelper.ArgsAndReturnType;
 import com.amd.aparapi.TypeHelper.Type;
-
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -1410,6 +1419,7 @@ class ClassModel{
 
             }
 
+            int currSlotIndex = thisOffset;
             for(int i = 0; i < args.length; i++){
                if(args[i].isArray()){
                   argsAsStoreSpecs[i + thisOffset] = InstructionSet.StoreSpec.A;
@@ -1418,7 +1428,9 @@ class ClassModel{
                }else{
                   argsAsStoreSpecs[i + thisOffset] = InstructionSet.StoreSpec.valueOf(args[i].getType().substring(0, 1));
                }
-               vars[i + thisOffset] = new Var(argsAsStoreSpecs[i + thisOffset], i + thisOffset, 0, true);
+               // Use slot size from TypeSpec to keep vars lined up
+               vars[i + thisOffset] = new Var(argsAsStoreSpecs[i + thisOffset], currSlotIndex, 0, true);
+               currSlotIndex += argsAsStoreSpecs[i + thisOffset].getTypeSpec().getSlots(); // 1 for most 2 for Long/Double
 
                // Preserve actual object type
                if(argsAsStoreSpecs[i + thisOffset] == InstructionSet.StoreSpec.O || argsAsStoreSpecs[i + thisOffset] == InstructionSet.StoreSpec.A){
@@ -1433,7 +1445,7 @@ class ClassModel{
             int pc = 0;
             Instruction instruction = null;
             for(Instruction i : _pcMap.values()){
-               instruction =i;
+               instruction = i;
                pc = i.getThisPC();
                InstructionSet.StoreSpec storeSpec = i.getByteCode().getStore();
                if(storeSpec != InstructionSet.StoreSpec.NONE){
@@ -1446,7 +1458,7 @@ class ClassModel{
                      list.add(vars[slotIndex]);
                   }
                }
-               if (i.isForwardBranchTarget()){
+               if(i.isForwardBranchTarget()){  // Is there an earlier branch branching here
                   // we need to descope all vars declared between the brancher and here
                   // this stops
                   // if (){
@@ -1459,31 +1471,16 @@ class ClassModel{
                   // }
                   // var=0; // <- there is no var in scope for this
 
-                  LinkedList<ConditionalBranch> conditionalBranchersToHere = instruction.getForwardConditionalBranches();
-                  if (conditionalBranchersToHere.size()>0){
-                     for (ConditionalBranch cb:conditionalBranchersToHere){
-                        for (int slot=0; slot< numberOfSlots + thisOffset;slot++){
-                           if (vars[slot].endPc == 0 && cb.getThisPC()<vars[slot].startPc){
-                              vars[slot].endPc = pc;
-                           //   System.out.println("var "+vars[slot].getVariableName()+" is descoped!");
-                              vars[slot]= new Var();
-                           }
-                        }
-                     }
-                    // System.out.println("may need to descope!");
-                  }
-                  LinkedList<Branch> branchersToHere = instruction.getForwardUnconditionalBranches();
-                  if (branchersToHere.size()>0){
-                     for (Branch b:branchersToHere){
-                        for (int slot=0; slot< numberOfSlots + thisOffset;slot++){
-                           if (vars[slot].endPc == 0 && b.getThisPC()<vars[slot].startPc){
-                              vars[slot].endPc = pc;
-                             // System.out.println("var "+vars[slot].getVariableName()+" is descoped!");
-                              vars[slot]= new Var();
-                           }
+                  for(Branch b : instruction.getForwardBranches()){
+                     for(int slot = 0; slot < numberOfSlots + thisOffset; slot++){
+                        if(vars[slot].endPc == 0 && b.getThisPC() < vars[slot].startPc){
+                           vars[slot].endPc = pc;
+                           //System.out.println("var "+vars[slot].getVariableName()+" is descoped!");
+                           vars[slot] = new Var();
                         }
                      }
                   }
+
                }
 
 
@@ -2371,7 +2368,7 @@ class ClassModel{
                }
             }
 
-            LocalVariableTableEntry localVariableTableEntry = Config.enableAlwaysCreateFakeLocalVariableTable?null: getLocalVariableTableEntry();
+            LocalVariableTableEntry localVariableTableEntry = Config.enableAlwaysCreateFakeLocalVariableTable ? null : getLocalVariableTableEntry();
 
             if(localVariableTableEntry == null){
                localVariableTableEntry = attributePool.new FakeLocalVariableTableEntry(pcMap, this);

@@ -41,7 +41,6 @@ import com.amd.aparapi.InstructionSet.Branch;
 import com.amd.aparapi.InstructionSet.ByteCode;
 import com.amd.aparapi.InstructionSet.CompositeInstruction;
 import com.amd.aparapi.InstructionSet.ConditionalBranch;
-
 import java.util.LinkedList;
 
 /**
@@ -75,13 +74,16 @@ abstract class Instruction{
 
    private Instruction parentExpr = null;
 
+   private LinkedList<Branch> forwardBranchTargets = new LinkedList<Branch>();
+   private LinkedList<Branch> reverseBranchTargets = new LinkedList<Branch>();
+
    private LinkedList<ConditionalBranch> forwardConditionalBranchTargets = new LinkedList<ConditionalBranch>();
 
-   private LinkedList<ConditionalBranch> reverseConditionalBranchTargets= new LinkedList<ConditionalBranch>();
+   private LinkedList<ConditionalBranch> reverseConditionalBranchTargets = new LinkedList<ConditionalBranch>();
 
-   private LinkedList<Branch> forwardUnconditionalBranchTargets= new LinkedList<Branch>();
+   private LinkedList<Branch> forwardUnconditionalBranchTargets = new LinkedList<Branch>();
 
-   private LinkedList<Branch> reverseUnconditionalBranchTargets= new LinkedList<Branch>();
+   private LinkedList<Branch> reverseUnconditionalBranchTargets = new LinkedList<Branch>();
 
    private Instruction firstChild = null;
 
@@ -247,11 +249,11 @@ abstract class Instruction{
    }
 
    boolean isForwardConditionalBranchTarget(){
-      return ( forwardConditionalBranchTargets.size() > 0);
+      return (forwardConditionalBranchTargets.size() > 0);
    }
 
    boolean isReverseUnconditionalBranchTarget(){
-      return ( reverseUnconditionalBranchTargets.size() > 0);
+      return (reverseUnconditionalBranchTargets.size() > 0);
    }
 
    boolean isForwardUnconditionalBranchTarget(){
@@ -259,7 +261,7 @@ abstract class Instruction{
    }
 
    boolean isReverseBranchTarget(){
-      return (isReverseConditionalBranchTarget() || isReverseUnconditionalBranchTarget());
+      return (reverseBranchTargets.size()>0);
    }
 
    boolean isConditionalBranchTarget(){
@@ -271,7 +273,7 @@ abstract class Instruction{
    }
 
    boolean isForwardBranchTarget(){
-      return (isForwardConditionalBranchTarget() || isForwardUnconditionalBranchTarget());
+      return (forwardBranchTargets.size()>0);
    }
 
    boolean isBranchTarget(){
@@ -297,12 +299,14 @@ abstract class Instruction{
    void addBranchTarget(Branch _branch){
 
       if(_branch.isReverse()){
+         reverseBranchTargets.add(_branch);
          if(_branch.isConditional()){
             reverseConditionalBranchTargets.add((ConditionalBranch) _branch);
          }else{
             reverseUnconditionalBranchTargets.add(_branch);
          }
       }else{
+         forwardBranchTargets.add(_branch);
          if(_branch.isConditional()){
             forwardConditionalBranchTargets.add((ConditionalBranch) _branch);
          }else{
@@ -314,32 +318,28 @@ abstract class Instruction{
 
    void removeBranchTarget(Branch _branch){
       if(_branch.isReverse()){
+         reverseBranchTargets.add(_branch);
          if(_branch.isConditional()){
-
-               reverseConditionalBranchTargets.remove(_branch);
-
-
+            reverseConditionalBranchTargets.remove(_branch);
          }else{
-
-               reverseUnconditionalBranchTargets.remove(_branch);
-
-
+            reverseUnconditionalBranchTargets.remove(_branch);
          }
       }else{
+         forwardBranchTargets.add(_branch);
          if(_branch.isConditional()){
-
-               forwardConditionalBranchTargets.remove(_branch);
-
-
+            forwardConditionalBranchTargets.remove(_branch);
          }else{
-
-               forwardUnconditionalBranchTargets.remove(_branch);
-
-
+            forwardUnconditionalBranchTargets.remove(_branch);
          }
       }
    }
 
+   LinkedList<Branch> getForwardBranches(){
+      return (forwardBranchTargets);
+   }
+   LinkedList<Branch> getReverseBranches(){
+      return (reverseBranchTargets);
+   }
    LinkedList<Branch> getForwardUnconditionalBranches(){
       return (forwardUnconditionalBranchTargets);
    }
