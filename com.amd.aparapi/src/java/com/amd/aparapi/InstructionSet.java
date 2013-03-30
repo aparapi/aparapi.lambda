@@ -42,7 +42,6 @@ import com.amd.aparapi.ClassModel.ConstantPool.Entry;
 import com.amd.aparapi.ClassModel.ConstantPool.FieldEntry;
 import com.amd.aparapi.ClassModel.ConstantPool.MethodEntry;
 import com.amd.aparapi.ClassModel.LocalVariableInfo;
-import com.amd.aparapi.ClassModel.LocalVariableTableEntry;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -1302,10 +1301,16 @@ class InstructionSet{
          return (index);
       }
 
-      @Override
-      public final LocalVariableInfo getLocalVariableInfo(){
-         return (method.getLocalVariableTableEntry().getVariable(getThisPC() + getLength(), getLocalVariableTableIndex()));
-      }
+       LocalVariableInfo localVariableInfo;
+       @Override
+       public final LocalVariableInfo getLocalVariableInfo(){
+
+           return (localVariableInfo);
+       }
+
+       public void setLocalVariableInfo(LocalVariableInfo _localVariableInfo){
+           localVariableInfo = _localVariableInfo;
+       }
    }
 
    static abstract class LocalVariableConstIndexLoad extends LocalVariableConstIndexAccessor{
@@ -1327,9 +1332,7 @@ class InstructionSet{
 
       @Override
       public boolean isDeclaration(){
-         LocalVariableInfo lvi = method.getLocalVariableTableEntry().getVariable(getThisPC() + getLength(),
-               getLocalVariableTableIndex());
-         return (lvi.getStart() == getThisPC() + getLength());
+         return (getLocalVariableInfo().getStart() == getThisPC() + getLength());
       }
 
       @Override
@@ -1339,6 +1342,8 @@ class InstructionSet{
    }
 
    static abstract class LocalVariableIndex08Accessor extends Index08 implements AccessLocalVariable{
+
+
       LocalVariableIndex08Accessor(ClassModel.ClassModelMethod _method, ByteCode byteCode, ByteReader byteReader, boolean _wide){
          super(_method, byteCode, byteReader, _wide);
       }
@@ -1347,12 +1352,16 @@ class InstructionSet{
       public final int getLocalVariableTableIndex(){
          return (index);
       }
-
+       LocalVariableInfo localVariableInfo;
       @Override
       public final LocalVariableInfo getLocalVariableInfo(){
 
-         return (method.getLocalVariableTableEntry().getVariable(getThisPC() + getLength(), getLocalVariableTableIndex()));
+         return (localVariableInfo);
       }
+
+      public void setLocalVariableInfo(LocalVariableInfo _localVariableInfo){
+         localVariableInfo = _localVariableInfo;
+       }
    }
 
    static abstract class LocalVariableIndex08Load extends LocalVariableIndex08Accessor{
@@ -1374,10 +1383,7 @@ class InstructionSet{
 
       @Override
       public boolean isDeclaration(){
-         LocalVariableTableEntry localVariableTableEntry = method.getLocalVariableTableEntry();
-         LocalVariableInfo localVarInfo = localVariableTableEntry.getVariable(getThisPC() + getLength(),
-               getLocalVariableTableIndex());
-         return (localVarInfo != null && localVarInfo.getStart() == getThisPC() + getLength());
+         return (getLocalVariableInfo().getStart()== getThisPC() + getLength());
       }
 
       @Override
@@ -2772,11 +2778,18 @@ class InstructionSet{
          return ("inc var index 08 bit by byte");
       }
 
-      public LocalVariableInfo getLocalVariableInfo(){
-         return (method.getLocalVariableTableEntry().getVariable(getThisPC(), getLocalVariableTableIndex()));
-      }
+       LocalVariableInfo localVariableInfo;
+       @Override
+       public final LocalVariableInfo getLocalVariableInfo(){
 
-      public int getLocalVariableTableIndex(){
+           return (localVariableInfo);
+       }
+
+       public void setLocalVariableInfo(LocalVariableInfo _localVariableInfo){
+           localVariableInfo = _localVariableInfo;
+       }
+
+      @Override public int getLocalVariableTableIndex(){
          return (index);
       }
 
@@ -3922,15 +3935,11 @@ class InstructionSet{
          return ("return to pc in local var index 08 bit");
       }
 
-      @Override
-      public LocalVariableInfo getLocalVariableInfo(){
-         return (method.getLocalVariableTableEntry().getVariable(getThisPC() + getLength(), getLocalVariableTableIndex()));
-      }
+
 
       @Override
       public boolean isDeclaration(){
-         return (method.getLocalVariableTableEntry().getVariable(getThisPC() + getLength(), getLocalVariableTableIndex())
-               .getStart() == getThisPC() + getLength());
+         return (localVariableInfo.getStart() == getThisPC() + getLength());
       }
 
       @Override
@@ -3938,9 +3947,16 @@ class InstructionSet{
          return (index);
       }
 
-      // @Override  Instruction getValue() {
-      //    return (getFirstChild());
-      //}
+       LocalVariableInfo localVariableInfo;
+       @Override
+       public final LocalVariableInfo getLocalVariableInfo(){
+
+           return (localVariableInfo);
+       }
+
+       public void setLocalVariableInfo(LocalVariableInfo _localVariableInfo){
+           localVariableInfo = _localVariableInfo;
+       }
    }
 
    static class I_RETURN extends Return{
@@ -4231,7 +4247,7 @@ class InstructionSet{
 
    interface LocalVariableTableIndexAccessor{
       int getLocalVariableTableIndex();
-
+      void setLocalVariableInfo(LocalVariableInfo _localVariableInfo);
       LocalVariableInfo getLocalVariableInfo();
    }
 

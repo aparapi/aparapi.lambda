@@ -312,7 +312,7 @@ abstract class KernelWriter extends BlockWriter{
             StringBuilder thisStructLine = new StringBuilder();
             StringBuilder argLine = new StringBuilder();
             StringBuilder assignLine = new StringBuilder();
-            if((lvi.getStart() == 0) && ((lvi.getVariableIndex() != 0) || mm.getMethod().isStatic())){ // full scope but skip this
+            if((lvi.getStart() == 0) && ((lvi.getSlot() != 0) || mm.getMethod().isStatic())){ // full scope but skip this
                // String descriptor = ;
 
                // For object stream lambdas, the lvi is the object type, but in
@@ -636,7 +636,7 @@ abstract class KernelWriter extends BlockWriter{
 
          LocalVariableTableEntry<LocalVariableTableEntry, LocalVariableInfo> lvte = mm.getLocalVariableTableEntry();
          for(LocalVariableInfo lvi : lvte){
-            if((lvi.getStart() == 0) && ((lvi.getVariableIndex() != 0) || mm.getMethod().isStatic())){ // full scope but skip this
+            if((lvi.getStart() == 0) && ((lvi.getSlot() != 0) || mm.getMethod().isStatic())){ // full scope but skip this
                String descriptor = lvi.getVariableDescriptor();
                if(alreadyHasFirstArg){
                   write(", ");
