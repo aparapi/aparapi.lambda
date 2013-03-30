@@ -630,7 +630,7 @@ class ExpressionList{
 
                         if(loopTop instanceof AssignToLocalVariable){
                            System.out.println(loopTop.getMethod());
-                           LocalVariableTableEntry lvt = loopTop.getMethod().getLocalVariableTableEntry();
+                          // LocalVariableTableEntry lvt = loopTop.getMethod().getLocalVariableTableEntry();
                            LocalVariableInfo localVariableInfo = ((AssignToLocalVariable) loopTop).getLocalVariableInfo();
                            if (localVariableInfo == null){
                               System.out.println("localVariableInfo is null!");

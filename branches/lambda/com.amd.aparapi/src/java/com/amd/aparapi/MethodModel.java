@@ -54,7 +54,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-class MethodModel{
+public class MethodModel{
    static Logger logger = Logger.getLogger(Config.getLoggerName());
 
    private ExpressionList expressionList;

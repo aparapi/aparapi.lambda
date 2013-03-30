@@ -165,6 +165,8 @@ class Config{
 
    public static boolean enableShowFakeLocalVariableTable = Boolean.getBoolean(propPkgName + ".enableShowFakeLocalVariableTable");
 
+   public static boolean enableShowRealLocalVariableTable = Boolean.getBoolean(propPkgName + ".enableRealFakeLocalVariableTable");
+
    // Logging setup
    private static final String logPropName = propPkgName + ".logLevel";
 

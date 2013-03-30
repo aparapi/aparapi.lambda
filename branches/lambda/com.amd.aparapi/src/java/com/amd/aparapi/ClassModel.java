@@ -72,9 +72,11 @@ import java.util.logging.Logger;
  * @see <a href="http://java.sun.com/docs/books/jvms/second_edition/ClassFileFormat-Java5.pdf">Java 5 Class File Format</a>
  * @see <a href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html"> Java 7 Class File Format</a>
  */
-class ClassModel{
+public class ClassModel{
 
-   interface LocalVariableInfo{
+
+
+    interface LocalVariableInfo{
 
       int getStart();
 
@@ -88,7 +90,7 @@ class ClassModel{
 
       String getVariableDescriptor();
 
-      int getVariableIndex();
+      int getSlot();
 
       int getLength();
 
@@ -108,7 +110,7 @@ class ClassModel{
 
    static Map<String, ClassModel> map = new LinkedHashMap<String, ClassModel>();
 
-   static synchronized ClassModel getClassModel(Class<?> _clazz) throws ClassParseException{
+   public static synchronized ClassModel getClassModel(Class<?> _clazz) throws ClassParseException{
       ClassModel classModel = map.get(_clazz.getName());
       if(classModel == null){
          classModel = new ClassModel(_clazz);
@@ -1328,17 +1330,17 @@ class ClassModel{
 
             String descriptor = "";
 
-            int slotIndex;
+            int slot;
 
-            Var(InstructionSet.StoreSpec _storeSpec, int _slotIndex, int _startPc, boolean _arg){
-               slotIndex = _slotIndex;
+            Var(InstructionSet.StoreSpec _storeSpec, int _slot, int _startPc, boolean _arg){
+               slot = _slot;
                arg = _arg;
                startPc = _startPc;
                if(_storeSpec.equals(InstructionSet.StoreSpec.A)){
-                  name = "arr_" + _slotIndex;
+                  name = "arr_" + _slot;
                   descriptor = "/* arg */";
                }else{
-                  name = _storeSpec.toString().toLowerCase() + "_" + _slotIndex;
+                  name = _storeSpec.toString().toLowerCase() + "_" + _slot;
                   descriptor = _storeSpec.toString();
 
                }
@@ -1393,8 +1395,8 @@ class ClassModel{
             }
 
             @Override
-            public int getVariableIndex(){
-               return (slotIndex);
+            public int getSlot(){
+               return (slot);
             }
          }
 
@@ -1490,27 +1492,19 @@ class ClassModel{
                   return o1.getStart() - o2.getStart();
                }
             });
-            if(Config.enableShowFakeLocalVariableTable){
-               System.out.println("FakeLocalVariableTable:");
-               System.out.println(" Start  Length  Slot    Name   Signature");
-               for(LocalVariableInfo lvi : list){
-                  Var var = (Var) lvi;
-                  System.out.println(String.format(" %5d   %5d  %4d  %8s     %s", var.startPc, var.getLength(), var.slotIndex,
-                        var.name, var.descriptor));
-               }
-            }
+
 
          }
 
          @Override
-         public Var getVariable(int _pc, int _index){
+         public Var getVariable(int _pc, int _slot){
             Var returnValue = null;
             //  System.out.println("pc = " + _pc + " index = " + _index);
             for(LocalVariableInfo localVariableInfo : list){
                // System.out.println("   start=" + localVariableInfo.getStart() + " length=" + localVariableInfo.getLength()
                // + " varidx=" + localVariableInfo.getVariableIndex());
                if(_pc >= localVariableInfo.getStart() - 1 && _pc <= (localVariableInfo.getStart() + localVariableInfo.getLength())
-                     && _index == localVariableInfo.getVariableIndex()){
+                     && _slot == localVariableInfo.getSlot()){
                   returnValue = (Var) localVariableInfo;
                   break;
                }
@@ -1537,25 +1531,25 @@ class ClassModel{
 
 
       class RealLocalVariableTableEntry extends PoolEntry<LocalVariableInfo> implements
-            LocalVariableTableEntry<RealLocalVariableTableEntry, RealLocalVariableTableEntry.RealLocalVariableInfo>{
+            LocalVariableTableEntry<RealLocalVariableTableEntry, RealLocalVariableTableEntry.Var>{
 
-         class RealLocalVariableInfo implements LocalVariableInfo{
+         class Var implements LocalVariableInfo{
             private int descriptorIndex;
 
             private int usageLength;
 
             private int variableNameIndex;
 
-            private int start;
+            private int startPc;
 
-            private int variableIndex;
+            private int slot;
 
-            RealLocalVariableInfo(ByteReader _byteReader){
-               start = _byteReader.u2();
+            Var(ByteReader _byteReader){
+               startPc = _byteReader.u2();
                usageLength = _byteReader.u2();
                variableNameIndex = _byteReader.u2();
                descriptorIndex = _byteReader.u2();
-               variableIndex = _byteReader.u2();
+               slot = _byteReader.u2();
             }
 
             int getDescriptorIndex(){
@@ -1572,12 +1566,12 @@ class ClassModel{
 
             @Override
             public int getStart(){
-               return (start);
+               return (startPc);
             }
 
             @Override
-            public int getVariableIndex(){
-               return (variableIndex);
+            public int getSlot(){
+               return (slot);
             }
 
             @Override
@@ -1592,7 +1586,7 @@ class ClassModel{
 
             @Override
             public int getEnd(){
-               return (start + usageLength);
+               return (startPc + usageLength);
             }
 
             @Override
@@ -1610,19 +1604,21 @@ class ClassModel{
             super(_byteReader, _nameIndex, _length);
             int localVariableTableLength = _byteReader.u2();
             for(int i = 0; i < localVariableTableLength; i++){
-               getPool().add(new RealLocalVariableInfo(_byteReader));
+               getPool().add(new Var(_byteReader));
             }
+
+
          }
 
-         public RealLocalVariableInfo getVariable(int _pc, int _index){
-            RealLocalVariableInfo returnValue = null;
+         public Var getVariable(int _pc, int _slot){
+            Var returnValue = null;
             // System.out.println("pc = " + _pc + " index = " + _index);
             for(LocalVariableInfo localVariableInfo : getPool()){
                // System.out.println("   start=" + localVariableInfo.getStart() + " length=" + localVariableInfo.getLength()
                // + " varidx=" + localVariableInfo.getVariableIndex());
                if(_pc >= localVariableInfo.getStart() - 1 && _pc <= (localVariableInfo.getStart() + localVariableInfo.getLength())
-                     && _index == localVariableInfo.getVariableIndex()){
-                  returnValue = (RealLocalVariableInfo) localVariableInfo;
+                     && _slot == localVariableInfo.getSlot()){
+                  returnValue = (Var) localVariableInfo;
                   break;
                }
             }
@@ -1632,7 +1628,7 @@ class ClassModel{
 
          String getVariableName(int _pc, int _index){
             String returnValue = "unknown";
-            RealLocalVariableInfo localVariableInfo = getVariable(_pc, _index);
+            Var localVariableInfo = getVariable(_pc, _index);
             if(localVariableInfo != null){
                returnValue = TypeHelper.convert(constantPool.getUTF8Entry(localVariableInfo.getDescriptorIndex()).getUTF8(), constantPool
                      .getUTF8Entry(localVariableInfo.getNameIndex()).getUTF8());
@@ -2262,13 +2258,19 @@ class ClassModel{
          return (methodCalls);
       }
 
-      Set<InstructionSet.AccessField> accessedFields = new LinkedHashSet<InstructionSet.AccessField>();
+      Set<InstructionSet.AccessField> accessedFields;
 
       public Set<InstructionSet.AccessField> getFieldAccesses(){
          getInstructionMap(); // remember it is lazy
 
          return (accessedFields);
       }
+       Set<InstructionSet.LocalVariableTableIndexAccessor> accessedLocalVariables;
+       public Set<InstructionSet.LocalVariableTableIndexAccessor> getLocalVariableAccesses(){
+           getInstructionMap(); // remember it is lazy
+
+           return (accessedLocalVariables);
+       }
 
       /**
        * Create a linked list of instructions (from pcHead to pcTail).
@@ -2292,6 +2294,7 @@ class ClassModel{
             branchTargets = new LinkedHashSet<Instruction>();
             methodCalls = new LinkedHashSet<InstructionSet.MethodCall>();
             accessedFields = new LinkedHashSet<InstructionSet.AccessField>();
+             accessedLocalVariables = new LinkedHashSet<InstructionSet.LocalVariableTableIndexAccessor>();
             byte[] code = getCode();
 
             // We create a byteReader for reading the bytes from the code array
@@ -2312,6 +2315,11 @@ class ClassModel{
                   InstructionSet.AccessField accessField = (InstructionSet.AccessField) instruction;
                   accessedFields.add(accessField);
                }
+
+                if(instruction instanceof InstructionSet.LocalVariableTableIndexAccessor){
+                    InstructionSet.LocalVariableTableIndexAccessor accessLocalVariable = (InstructionSet.LocalVariableTableIndexAccessor) instruction;
+                    accessedLocalVariables.add(accessLocalVariable);
+                }
                pcMap.put(pc, instruction);
 
                // list maintenance, make this the pcHead if pcHead is null
@@ -2364,16 +2372,55 @@ class ClassModel{
                }
             }
 
-            LocalVariableTableEntry localVariableTableEntry = null; //Config.enableAlwaysCreateFakeLocalVariableTable ? null : getLocalVariableTableEntry();
+            LocalVariableTableEntry localVariableTableEntry =  getLocalVariableTableEntry();
+
+             if(localVariableTableEntry != null && Config.enableShowRealLocalVariableTable){
+                 Table table = new Table("|  %3d","|  %3d",  "|   %3d", "|  %2d", "|%4s", "| %8s|");
+                 table.header("|Start","|  End", "|Length", "|Slot", "|Name", "|Signature|");
+                 AttributePool.RealLocalVariableTableEntry real =  (AttributePool.RealLocalVariableTableEntry )localVariableTableEntry;
+                 for(LocalVariableInfo var : real){
+                     table.data(var.getStart());
+                     table.data(var.getEnd());
+                     table.data(var.getLength());
+                     table.data(var.getSlot());
+                     table.data(var.getVariableName());
+                     table.data(var.getVariableDescriptor());
+                 }
+                 System.out.println("REAL!\n"+table);
+             }
+             if (Config.enableAlwaysCreateFakeLocalVariableTable){
+                localVariableTableEntry = null;
+             }
 
             if(localVariableTableEntry == null){
                localVariableTableEntry = attributePool.new FakeLocalVariableTableEntry(pcMap, this);
+                if(Config.enableShowFakeLocalVariableTable){
+                    Table table = new Table("|  %3d","|  %3d",  "|   %3d", "|  %2d", "|%4s", "| %8s|");
+                    table.header("|Start","|  End", "|Length", "|Slot", "|Name", "|Signature|");
+                    AttributePool.FakeLocalVariableTableEntry fake =  (AttributePool.FakeLocalVariableTableEntry )localVariableTableEntry;
+                    for(LocalVariableInfo var : fake){
+                        table.data(var.getStart());
+                        table.data(var.getEnd());
+                        table.data(var.getLength());
+                        table.data(var.getSlot());
+                        table.data(var.getVariableName());
+                        table.data(var.getVariableDescriptor());
+                    }
+                    System.out.println("FAKE!\n"+table);
+                }
 
-               setLocalVariableTableEntry(localVariableTableEntry);
-               logger.info("Method "
-                     + getName()
-                     + getDescriptor()
-                     + " does not contain a LocalVariableTable entry (source not compiled with -g) aparapi create a synthetic table based on bytecode");
+                setLocalVariableTableEntry(localVariableTableEntry);
+            }
+
+            for(InstructionSet.LocalVariableTableIndexAccessor instruction : accessedLocalVariables){
+                int pc = ((Instruction)instruction).getThisPC();
+                int len =  ((Instruction)instruction).getLength();
+                int varIndex = instruction.getLocalVariableTableIndex();
+                LocalVariableInfo var = localVariableTableEntry.getVariable(pc+len, varIndex);
+                if (var == null){
+                    System.out.println("Screwed!");
+                }
+                instruction.setLocalVariableInfo(var);
             }
 
          }
@@ -2555,7 +2602,7 @@ class ClassModel{
     * @throws AparapiException
     */
 
-   MethodModel getMethodModel(String _name, String _signature) throws AparapiException{
+   public MethodModel getMethodModel(String _name, String _signature) throws AparapiException{
       ClassModelMethod method = getMethod(_name, _signature);
       return new MethodModel(method);
    }
