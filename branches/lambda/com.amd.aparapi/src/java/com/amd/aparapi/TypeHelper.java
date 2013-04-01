@@ -239,11 +239,13 @@ public class TypeHelper{
     * @return
     */
    public static String signatureToDotClassName(String _signature, int _dims){
-      return (slashClassNameToDotClassName(_signature.substring(1 + _dims, _signature.length() - _dims - 1)));
+      String  dotClassName =  slashClassNameToDotClassName(_signature.substring(1 + _dims, _signature.length() - 1));
+      return (dotClassName);
    }
 
    public static String signatureToMangledClassName(String _signature, int _dims){
-      return (slashClassNameToMangledClassName(_signature.substring(1 + _dims, _signature.length() - _dims - 1)));
+      String mangledClassName =  slashClassNameToMangledClassName(_signature.substring(1 + _dims, _signature.length() - 1));
+      return (mangledClassName);
    }
 
    /**

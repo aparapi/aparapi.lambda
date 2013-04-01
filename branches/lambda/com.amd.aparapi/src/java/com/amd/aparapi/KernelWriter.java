@@ -614,8 +614,8 @@ abstract class KernelWriter extends BlockWriter{
          write(mm.getMangledName() + "(");
 
          if(!mm.getMethod().isStatic()){
-            if((mm.getMethod().getClassModel() == _entryPoint.getClassModel())
-                  || mm.getMethod().getClassModel().isSuperClass(_entryPoint.getClassModel())){
+            if((mm.getMethod().getClassModel() == _entryPoint.getClassModel()) ){
+               //  || mm.getMethod().getClassModel().isSuperClass(_entryPoint.getClassModel())){     Why this? GRF
                write("This *this");
             }else{
                // Call to an object member or superclass of member

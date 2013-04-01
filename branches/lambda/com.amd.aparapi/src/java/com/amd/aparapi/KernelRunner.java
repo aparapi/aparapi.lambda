@@ -380,8 +380,7 @@ class KernelRunner extends OpenCLRunner{
       boolean didReallocate = false;
 
       if(arg.objArrayElementModel == null){
-         String tmp = TypeHelper.signatureToDotClassName(arrayClass.getName(), 1);
-         String arrayClassInDotForm = tmp.substring(0, tmp.length() - 1);
+         String arrayClassInDotForm = TypeHelper.signatureToDotClassName(arrayClass.getName(), 1);
 
          if(logger.isLoggable(Level.FINE)){
             logger.fine("looking for type = " + arrayClassInDotForm);
