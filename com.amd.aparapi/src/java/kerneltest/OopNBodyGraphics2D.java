@@ -92,8 +92,8 @@ public class OopNBodyGraphics2D{
          bodyArr[globalId].setY( bodyArr[globalId].getY() + (bodyArr[globalId].getVY()*delT) + (accx * .5f * delT) ) ;
          bodyArr[globalId].setZ( bodyArr[globalId].getZ() + (bodyArr[globalId].getVZ()*delT) + (accx * .5f * delT) ) ;
          bodyArr[globalId].setVX( bodyArr[globalId].getVX() + accx);
-         bodyArr[globalId].setVY( bodyArr[globalId].getVY() + accx);
-         bodyArr[globalId].setVZ( bodyArr[globalId].getVZ() + accx);
+         bodyArr[globalId].setVY( bodyArr[globalId].getVY() + accy);
+         bodyArr[globalId].setVZ( bodyArr[globalId].getVZ() + accz);
 
       }
 
