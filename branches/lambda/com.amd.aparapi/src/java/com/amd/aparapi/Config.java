@@ -161,7 +161,9 @@ class Config{
 
    static final boolean enableSWITCH = Boolean.getBoolean(propPkgName + ".enable.SWITCH");
 
-   public static boolean enableAlwaysCreateFakeLocalVariableTable = Boolean.getBoolean(propPkgName + ".enableAlwaysCreateFakeLocalVariableTable");
+   //public static boolean enableAlwaysCreateFakeLocalVariableTable = Boolean.getBoolean(propPkgName + ".enableAlwaysCreateFakeLocalVariableTable");
+
+   public static boolean enableUseRealLocalVariableTableIfAvailable = Boolean.getBoolean(propPkgName + ".enableUseRealLocalVariableTableIfAvailable");
 
    public static boolean enableShowFakeLocalVariableTable = Boolean.getBoolean(propPkgName + ".enableShowFakeLocalVariableTable");
 
@@ -238,7 +240,7 @@ class Config{
                + enableVerboseJNIOpenCLResourceTracking);
          System.out.println(propPkgName + ".enableShowGeneratedOpenCL{true|false}=" + enableShowGeneratedOpenCL);
          System.out.println(propPkgName + ".enableExecutionModeReporting{true|false}=" + enableExecutionModeReporting);
-         System.out.println(propPkgName + ".enableAlwaysCreateFakeLocalVariableTable{true|false}="+enableAlwaysCreateFakeLocalVariableTable);
+         System.out.println(propPkgName + ".enableUseRealLocalVariableTableIfAvailable{true|false}="+enableUseRealLocalVariableTableIfAvailable);
          System.out.println(propPkgName + ".enableShowFakeLocalVariableTable{true|false}="+enableShowFakeLocalVariableTable);
          System.out.println(propPkgName + ".enableInstructionDecodeViewer{true|false}=" + enableInstructionDecodeViewer);
          System.out.println(propPkgName

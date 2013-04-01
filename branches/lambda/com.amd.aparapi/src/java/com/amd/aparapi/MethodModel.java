@@ -1434,8 +1434,8 @@ public class MethodModel{
       }
    }
 
-   LocalVariableTableEntry getLocalVariableTableEntry(){
-      return (method.getLocalVariableTableEntry());
+   LocalVariableTableEntry getPreferredLocalVariableTableEntry(){
+      return (method.getPreferredLocalVariableTableEntry());
    }
 
    ConstantPool getConstantPool(){

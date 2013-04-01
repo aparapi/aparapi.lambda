@@ -306,7 +306,7 @@ abstract class KernelWriter extends BlockWriter{
       {
          MethodModel mm = entryPoint.getMethodModel();
          int argsCount = 1;
-         Iterator<LocalVariableInfo> lvit = mm.getLocalVariableTableEntry().iterator();
+         Iterator<LocalVariableInfo> lvit = mm.getPreferredLocalVariableTableEntry().iterator();
          while(lvit.hasNext()){
             LocalVariableInfo lvi = lvit.next();
             StringBuilder thisStructLine = new StringBuilder();
@@ -634,7 +634,7 @@ abstract class KernelWriter extends BlockWriter{
 
          boolean alreadyHasFirstArg = !mm.getMethod().isStatic();
 
-         LocalVariableTableEntry<LocalVariableTableEntry, LocalVariableInfo> lvte = mm.getLocalVariableTableEntry();
+         LocalVariableTableEntry<LocalVariableTableEntry, LocalVariableInfo> lvte = mm.getPreferredLocalVariableTableEntry();
          for(LocalVariableInfo lvi : lvte){
             if((lvi.getStart() == 0) && ((lvi.getSlot() != 0) || mm.getMethod().isStatic())){ // full scope but skip this
                String descriptor = lvi.getVariableDescriptor();

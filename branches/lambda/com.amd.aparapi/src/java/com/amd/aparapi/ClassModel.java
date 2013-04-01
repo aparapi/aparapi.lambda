@@ -41,7 +41,6 @@ import com.amd.aparapi.ClassModel.AttributePool.CodeEntry;
 import com.amd.aparapi.ClassModel.ConstantPool.FieldEntry;
 import com.amd.aparapi.ClassModel.ConstantPool.MethodEntry;
 import com.amd.aparapi.InstructionSet.Branch;
-import com.amd.aparapi.InstructionSet.ConditionalBranch;
 import com.amd.aparapi.InstructionSet.TypeSpec;
 import com.amd.aparapi.TypeHelper.ArgsAndReturnType;
 import com.amd.aparapi.TypeHelper.Type;
@@ -145,7 +144,7 @@ public class ClassModel{
    /**
     * Determine if this is the superclass of some other class.
     *
-    * @param other The class to compare against
+    * @param _otherClassModel The classModel to compare against
     * @return true if 'this' a superclass of another class
     */
    boolean isSuperClass(ClassModel _otherClassModel){
@@ -1459,8 +1458,8 @@ public class ClassModel{
                      vars[slotIndex] = var;
                      list.add(vars[slotIndex]);
                   }
-               } else if(i.isForwardBranchTarget()){  // Is there an earlier branch branching here
-                  // we need to descope all vars declared between the brancher and here
+               } else if(i.isForwardBranchTarget()){  // Is there an earlier branch branching here   ?
+                  // If so we need to descope all vars declared between the brancher and here
                   // this stops
                   // if (){
                   //    int var1=0;
@@ -1910,7 +1909,9 @@ public class ClassModel{
 
       private LineNumberTableEntry lineNumberTableEntry = null;
 
-      private LocalVariableTableEntry localVariableTableEntry = null;
+      private RealLocalVariableTableEntry realLocalVariableTableEntry = null;
+
+      private FakeLocalVariableTableEntry fakeLocalVariableTableEntry = null;
 
       private RuntimeAnnotationsEntry runtimeVisibleAnnotationsEntry;
 
@@ -1963,8 +1964,8 @@ public class ClassModel{
             int length = _byteReader.u4();
             String attributeName = constantPool.getUTF8Entry(attributeNameIndex).getUTF8();
             if(attributeName.equals(LOCALVARIABLETABLE_TAG)){
-               localVariableTableEntry = new RealLocalVariableTableEntry(_byteReader, attributeNameIndex, length);
-               entry = (RealLocalVariableTableEntry) localVariableTableEntry;
+               realLocalVariableTableEntry = new RealLocalVariableTableEntry(_byteReader, attributeNameIndex, length);
+               entry = (RealLocalVariableTableEntry) realLocalVariableTableEntry;
             }else if(attributeName.equals(CONSTANTVALUE_TAG)){
                entry = new ConstantValueEntry(_byteReader, attributeNameIndex, length);
             }else if(attributeName.equals(LINENUMBERTABLE_TAG)){
@@ -2033,8 +2034,11 @@ public class ClassModel{
          return (lineNumberTableEntry);
       }
 
-      LocalVariableTableEntry getLocalVariableTableEntry(){
-         return (localVariableTableEntry);
+      LocalVariableTableEntry getRealLocalVariableTableEntry(){
+         return (realLocalVariableTableEntry);
+      }
+      LocalVariableTableEntry getFakeLocalVariableTableEntry(){
+         return (fakeLocalVariableTableEntry);
       }
 
       SourceFileEntry getSourceFileEntry(){
@@ -2211,17 +2215,28 @@ public class ClassModel{
       AttributePool.LineNumberTableEntry getLineNumberTableEntry(){
          return (getAttributePool().codeEntry.codeEntryAttributePool.lineNumberTableEntry);
       }
+      AttributePool.RealLocalVariableTableEntry getRealLocalVariableTableEntry(){
+            return (getAttributePool().codeEntry.codeEntryAttributePool.realLocalVariableTableEntry);
 
-      LocalVariableTableEntry getLocalVariableTableEntry(){
-         return (getAttributePool().codeEntry.codeEntryAttributePool.localVariableTableEntry);
+      }
+      AttributePool.FakeLocalVariableTableEntry getFakeLocalVariableTableEntry(){
+            return (getAttributePool().codeEntry.codeEntryAttributePool.fakeLocalVariableTableEntry);
+
+      }
+      LocalVariableTableEntry getPreferredLocalVariableTableEntry(){
+         if (Config.enableUseRealLocalVariableTableIfAvailable){
+            return ((LocalVariableTableEntry)getRealLocalVariableTableEntry());
+         }else{
+            return ((LocalVariableTableEntry)getFakeLocalVariableTableEntry());
+         }
       }
 
-      void setLocalVariableTableEntry(LocalVariableTableEntry _localVariableTableEntry){
-         getAttributePool().codeEntry.codeEntryAttributePool.localVariableTableEntry = _localVariableTableEntry;
+      void setFakeLocalVariableTableEntry(AttributePool.FakeLocalVariableTableEntry _localVariableTableEntry){
+         getAttributePool().codeEntry.codeEntryAttributePool.fakeLocalVariableTableEntry = _localVariableTableEntry;
       }
 
       LocalVariableInfo getLocalVariable(int _pc, int _index){
-         return (getLocalVariableTableEntry().getVariable(_pc, _index));
+         return (getPreferredLocalVariableTableEntry().getVariable(_pc, _index));
       }
 
       byte[] getCode(){
@@ -2372,12 +2387,12 @@ public class ClassModel{
                }
             }
 
-            LocalVariableTableEntry localVariableTableEntry =  getLocalVariableTableEntry();
+            AttributePool.RealLocalVariableTableEntry realLocalVariableTableEntry =  getRealLocalVariableTableEntry();
 
-             if(localVariableTableEntry != null && Config.enableShowRealLocalVariableTable){
+             if(realLocalVariableTableEntry != null && Config.enableShowRealLocalVariableTable){
                  Table table = new Table("|  %3d","|  %3d",  "|   %3d", "|  %2d", "|%4s", "| %8s|");
                  table.header("|Start","|  End", "|Length", "|Slot", "|Name", "|Signature|");
-                 AttributePool.RealLocalVariableTableEntry real =  (AttributePool.RealLocalVariableTableEntry )localVariableTableEntry;
+                 AttributePool.RealLocalVariableTableEntry real = realLocalVariableTableEntry;
                  for(LocalVariableInfo var : real){
                      table.data(var.getStart());
                      table.data(var.getEnd());
@@ -2388,16 +2403,16 @@ public class ClassModel{
                  }
                  System.out.println("REAL!\n"+table);
              }
-             if (Config.enableAlwaysCreateFakeLocalVariableTable){
-                localVariableTableEntry = null;
-             }
 
-            if(localVariableTableEntry == null){
-               localVariableTableEntry = attributePool.new FakeLocalVariableTableEntry(pcMap, this);
+
+
+               AttributePool.FakeLocalVariableTableEntry fakeLocalVariableTableEntry = attributePool.new FakeLocalVariableTableEntry(pcMap, this);
+
+               setFakeLocalVariableTableEntry(fakeLocalVariableTableEntry);
                 if(Config.enableShowFakeLocalVariableTable){
                     Table table = new Table("|  %3d","|  %3d",  "|   %3d", "|  %2d", "|%4s", "| %8s|");
                     table.header("|Start","|  End", "|Length", "|Slot", "|Name", "|Signature|");
-                    AttributePool.FakeLocalVariableTableEntry fake =  (AttributePool.FakeLocalVariableTableEntry )localVariableTableEntry;
+                    AttributePool.FakeLocalVariableTableEntry fake =  fakeLocalVariableTableEntry;
                     for(LocalVariableInfo var : fake){
                         table.data(var.getStart());
                         table.data(var.getEnd());
@@ -2409,8 +2424,8 @@ public class ClassModel{
                     System.out.println("FAKE!\n"+table);
                 }
 
-                setLocalVariableTableEntry(localVariableTableEntry);
-            }
+
+            LocalVariableTableEntry localVariableTableEntry = getPreferredLocalVariableTableEntry();
 
             for(InstructionSet.LocalVariableTableIndexAccessor instruction : accessedLocalVariables){
                 int pc = ((Instruction)instruction).getThisPC();
