@@ -1,15 +1,16 @@
+package gov.pnnl.aparapi.sample.mdarray;
 import com.amd.aparapi.Kernel;
 
-class FMatMul3D extends Kernel{
-   float[][][] A;
+class IMatMul3D extends Kernel{
+   int[][][] A;
 
-   float[][][] B;
+   int[][][] B;
 
-   float[][][] C;
+   int[][][] C;
 
    int N;
 
-   public FMatMul3D(float[][][] A, float[][][] B, float[][][] C, int N) {
+   public IMatMul3D(int[][][] A, int[][][] B, int[][][] C, int N) {
       this.A = A;
       this.B = B;
       this.C = C;

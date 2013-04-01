@@ -1,15 +1,16 @@
+package gov.pnnl.aparapi.sample.mdarray;
 import com.amd.aparapi.Kernel;
 
-class SMatMul1D extends Kernel{
-   short[] A;
+class IMatMul2D extends Kernel{
+   int[][] A;
 
-   short[] B;
+   int[][] B;
 
-   short[] C;
+   int[][] C;
 
    int N;
 
-   public SMatMul1D(short[] A, short[] B, short[] C, int N) {
+   public IMatMul2D(int[][] A, int[][] B, int[][] C, int N) {
       this.A = A;
       this.B = B;
       this.C = C;
@@ -21,7 +22,7 @@ class SMatMul1D extends Kernel{
       int i = id / N;
       int j = id % N;
       for (int k = 0; k < N; k++) {
-         C[i * N + j] += (short) (A[i * N + k] * B[k * N + j]);
+         C[i][j] += A[i][k] * B[k][j];
       }
    }
 }

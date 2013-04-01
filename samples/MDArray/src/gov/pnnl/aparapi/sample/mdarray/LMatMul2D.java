@@ -1,15 +1,16 @@
+package gov.pnnl.aparapi.sample.mdarray;
 import com.amd.aparapi.Kernel;
 
-class ZMatMul2D extends Kernel{
-   boolean[][] A;
+class LMatMul2D extends Kernel{
+   long[][] A;
 
-   boolean[][] B;
+   long[][] B;
 
-   boolean[][] C;
+   long[][] C;
 
    int N;
 
-   public ZMatMul2D(boolean[][] A, boolean[][] B, boolean[][] C, int N) {
+   public LMatMul2D(long[][] A, long[][] B, long[][] C, int N) {
       this.A = A;
       this.B = B;
       this.C = C;
@@ -21,7 +22,7 @@ class ZMatMul2D extends Kernel{
       int i = id / N;
       int j = id % N;
       for (int k = 0; k < N; k++) {
-         C[i][j] ^= A[i][k] & B[k][j];
+         C[i][j] += A[i][k] * B[k][j];
       }
    }
 }

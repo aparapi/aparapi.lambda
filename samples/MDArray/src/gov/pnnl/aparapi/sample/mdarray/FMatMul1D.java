@@ -1,15 +1,16 @@
+package gov.pnnl.aparapi.sample.mdarray;
 import com.amd.aparapi.Kernel;
 
-class IMatMul1D extends Kernel{
-   int[] A;
+class FMatMul1D extends Kernel{
+   float[] A;
 
-   int[] B;
+   float[] B;
 
-   int[] C;
+   float[] C;
 
    int N;
 
-   public IMatMul1D(int[] A, int[] B, int[] C, int N) {
+   public FMatMul1D(float[] A, float[] B, float[] C, int N) {
       this.A = A;
       this.B = B;
       this.C = C;

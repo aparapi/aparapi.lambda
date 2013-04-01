@@ -1,15 +1,16 @@
+package gov.pnnl.aparapi.sample.mdarray;
 import com.amd.aparapi.Kernel;
 
-class LMatMul2D extends Kernel{
-   long[][] A;
+class DMatMul2D extends Kernel{
+   double[][] A;
 
-   long[][] B;
+   double[][] B;
 
-   long[][] C;
+   double[][] C;
 
    int N;
 
-   public LMatMul2D(long[][] A, long[][] B, long[][] C, int N) {
+   public DMatMul2D(double[][] A, double[][] B, double[][] C, int N) {
       this.A = A;
       this.B = B;
       this.C = C;
