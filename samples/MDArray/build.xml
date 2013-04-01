@@ -28,7 +28,7 @@
    </target>
 
    <target name="run-jtp">
-      <java classname="${ant.project.name}" fork="true">
+      <java classname="gov.pnnl.aparapi.sample.mdarray.MDArray" fork="true">
          <classpath refid="runtime.class.path"/>
          <sysproperty key="java.library.path" path="../../com.amd.aparapi.jni/dist"/>
          <sysproperty key="com.amd.aparapi.executionMode" value="JTP"/>
@@ -40,7 +40,7 @@
    </target>
 
    <target name="run-gpu">
-      <java classname="${ant.project.name}" fork="true">
+      <java classname="gov.pnnl.aparapi.sample.mdarray.MDArray" fork="true">
          <classpath refid="runtime.class.path"/>
          <sysproperty key="java.library.path" path="../../com.amd.aparapi.jni/dist"/>
          <jvmarg value="-Xmx5G"/>
@@ -55,7 +55,7 @@
 
 
    <target name="run-gpuv">
-      <java classname="${ant.project.name}" fork="true">
+      <java classname="gov.pnnl.aparapi.sample.mdarray.MDArray" fork="true">
          <classpath refid="runtime.class.path"/>
          <sysproperty key="java.library.path" path="../../com.amd.aparapi.jni/dist"/>
          <sysproperty key="com.amd.aparapi.executionMode" value="GPU"/>
@@ -67,7 +67,7 @@
    </target>
 
    <target name="run-cpu">
-      <java classname="${ant.project.name}" fork="true">
+      <java classname="gov.pnnl.aparapi.sample.mdarray.MDArray" fork="true">
          <classpath refid="runtime.class.path"/>
          <sysproperty key="java.library.path" path="../../com.amd.aparapi.jni/dist"/>
          <sysproperty key="com.amd.aparapi.executionMode" value="CPU"/>
@@ -79,7 +79,7 @@
    </target>
 
    <target name="run-multi">
-      <java classname="${ant.project.name}" fork="true">
+      <java classname="gov.pnnl.aparapi.sample.mdarray.MDArray" fork="true">
          <classpath refid="runtime.class.path"/>
          <sysproperty key="java.library.path" path="../../com.amd.aparapi.jni/dist"/>
          <sysproperty key="com.amd.aparapi.executionMode" value="CPU,JTP"/>
@@ -92,14 +92,14 @@
 
 
    <target name="run">
-      <java classname="${ant.project.name}" fork="true">
+      <java classname="gov.pnnl.aparapi.sample.mdarray.MDArray" fork="true">
          <classpath refid="runtime.class.path"/>
          <sysproperty key="java.library.path" path="../../com.amd.aparapi.jni/dist"/>
       </java>
    </target>
 
    <target name="show">
-      <java classname="${ant.project.name}" fork="true">
+      <java classname="gov.pnnl.aparapi.sample.mdarray.MDArray" fork="true">
          <classpath refid="runtime.class.path"/>
          <sysproperty key="java.library.path" path="../../com.amd.aparapi.jni/dist"/>
          <sysproperty key="com.amd.aparapi.enableShowGeneratedOpenCL" value="true"/>
@@ -108,7 +108,7 @@
   </target>
 
    <target name="print">
-      <java classname="${ant.project.name}" fork="true">
+      <java classname="gov.pnnl.aparapi.sample.mdarray.MDArray" fork="true">
          <classpath refid="runtime.class.path"/>
          <sysproperty key="java.library.path" path="../../com.amd.aparapi.jni/dist"/>
          <sysproperty key="com.amd.aparapi.enableShowGeneratedOpenCL" value="true"/>
