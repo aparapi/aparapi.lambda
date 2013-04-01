@@ -784,7 +784,7 @@ class ExpressionList{
             if(false){ // disable composite
 
                // might be end of arbitrary scope
-               LocalVariableTableEntry<LocalVariableTableEntry, LocalVariableInfo> localVariableTable = methodModel.getMethod().getLocalVariableTableEntry();
+               LocalVariableTableEntry<LocalVariableTableEntry, LocalVariableInfo> localVariableTable = methodModel.getMethod().getPreferredLocalVariableTableEntry();
                int startPc = Short.MAX_VALUE;
                // try to find the earliest PC value
 
