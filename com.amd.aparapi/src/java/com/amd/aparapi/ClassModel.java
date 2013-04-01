@@ -165,12 +165,14 @@ public class ClassModel{
     */
    ClassModel getSuperClazzModel(){
       if(superClazzModel == null){
-         try{
-            superClazzModel = getClassModel(Class.forName(getSuperDotClassName()));
-         }catch(ClassNotFoundException cnf){
+         if(getSuperClassConstantPoolIndex()!=0) {
+            try{
+               superClazzModel = getClassModel(Class.forName(getSuperDotClassName()));
+            }catch(ClassNotFoundException cnf){
 
-         }catch(ClassParseException cpe){
+            }catch(ClassParseException cpe){
 
+            }
          }
       }
       return superClazzModel;
@@ -1962,7 +1964,11 @@ public class ClassModel{
          for(int i = 0; i < attributeCount; i++){
             int attributeNameIndex = _byteReader.u2();
             int length = _byteReader.u4();
-            String attributeName = constantPool.getUTF8Entry(attributeNameIndex).getUTF8();
+            ConstantPool.UTF8Entry utf8Entry= constantPool.getUTF8Entry(attributeNameIndex);
+            if (utf8Entry == null){
+               boolean breakpoint = true;
+            }
+            String attributeName = utf8Entry.getUTF8();
             if(attributeName.equals(LOCALVARIABLETABLE_TAG)){
                realLocalVariableTableEntry = new RealLocalVariableTableEntry(_byteReader, attributeNameIndex, length);
                entry = (RealLocalVariableTableEntry) realLocalVariableTableEntry;
@@ -2703,7 +2709,11 @@ public class ClassModel{
    }
 
    public String getSuperDotClassName(){
-      ConstantPool.ClassEntry superClassEntry = constantPool.getClassEntry(getSuperClassConstantPoolIndex());
+      int superClassConstantPoolIndex = getSuperClassConstantPoolIndex();
+      ConstantPool.ClassEntry superClassEntry = constantPool.getClassEntry(superClassConstantPoolIndex);
+      if (superClassEntry == null){
+         superClassEntry = superClassEntry;
+      }
       return (superClassEntry.getDotClassName());
    }
 
