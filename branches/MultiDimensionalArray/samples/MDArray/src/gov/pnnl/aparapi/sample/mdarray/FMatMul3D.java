@@ -1,15 +1,16 @@
+package gov.pnnl.aparapi.sample.mdarray;
 import com.amd.aparapi.Kernel;
 
-class SMatMul3D extends Kernel{
-   short[][][] A;
+class FMatMul3D extends Kernel{
+   float[][][] A;
 
-   short[][][] B;
+   float[][][] B;
 
-   short[][][] C;
+   float[][][] C;
 
    int N;
 
-   public SMatMul3D(short[][][] A, short[][][] B, short[][][] C, int N) {
+   public FMatMul3D(float[][][] A, float[][][] B, float[][][] C, int N) {
       this.A = A;
       this.B = B;
       this.C = C;
@@ -22,7 +23,7 @@ class SMatMul3D extends Kernel{
       int j = (id / N) % N;
       int k = id % N;
       for (int l = 0; l < N; l++) {
-         C[i][j][k] += (short) (A[i][j][l] * B[l][j][k]);
+         C[i][j][k] += A[i][j][l] * B[l][j][k];
       }
    }
 }

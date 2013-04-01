@@ -1,15 +1,16 @@
+package gov.pnnl.aparapi.sample.mdarray;
 import com.amd.aparapi.Kernel;
 
-class BMatMul3D extends Kernel{
-   byte[][][] A;
+class ZMatMul3D extends Kernel{
+   boolean[][][] A;
 
-   byte[][][] B;
+   boolean[][][] B;
 
-   byte[][][] C;
+   boolean[][][] C;
 
    int N;
 
-   public BMatMul3D(byte[][][] A, byte[][][] B, byte[][][] C, int N) {
+   public ZMatMul3D(boolean[][][] A, boolean[][][] B, boolean[][][] C, int N) {
       this.A = A;
       this.B = B;
       this.C = C;
@@ -21,11 +22,8 @@ class BMatMul3D extends Kernel{
       int i = id / (N * N);
       int j = (id / N) % N;
       int k = id % N;
-      int a0 = A.length;
-      int a1 = A[0].length;
-      int a2 = A[0][0].length;
       for (int l = 0; l < N; l++) {
-         C[i][j][k] += (byte) (A[i][j][l] * B[l][j][k]);
+         C[i][j][k] ^= A[i][j][l] & B[l][j][k];
       }
    }
 }

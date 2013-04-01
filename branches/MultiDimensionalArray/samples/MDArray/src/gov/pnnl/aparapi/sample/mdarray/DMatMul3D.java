@@ -1,3 +1,4 @@
+package gov.pnnl.aparapi.sample.mdarray;
 import com.amd.aparapi.Kernel;
 
 class DMatMul3D extends Kernel{

@@ -1,3 +1,4 @@
+package gov.pnnl.aparapi.sample.mdarray;
 import com.amd.aparapi.Kernel;
 
 class LMatMul3D extends Kernel{
