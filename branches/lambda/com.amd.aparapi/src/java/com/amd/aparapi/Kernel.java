@@ -140,7 +140,7 @@ import java.util.logging.Logger;
  */
 
 public abstract class Kernel implements Cloneable{
-   @Retention(RetentionPolicy.RUNTIME) @interface OpenCLMapping{
+   public @Retention(RetentionPolicy.RUNTIME) @interface OpenCLMapping{
       String mapTo() default "";
 
       boolean atomic32() default false;

@@ -150,11 +150,11 @@ public class BlackScholes{
 
       long totalExecTime = 0;
       long iterExecTime = 0;
-      /*
+
       for (int i = 0; i < iterations; i++) {
          iterExecTime = kernel.execute(size).getExecutionTime();
          totalExecTime += iterExecTime;
-      }*/
+      }
       kernel.execute(range, iterations);
       System.out.println("Average execution time " + kernel.getAccumulatedExecutionTime() / iterations);
       kernel.showResults(10);

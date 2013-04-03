@@ -467,7 +467,7 @@ public class TypeHelper{
 
       String getJavaName(){
          String javaName = "?";
-         if(isPrimitive()){
+         if(isPrimitive() || isVoid()){
             javaName = primitiveCharToJavaName(type.charAt(0));
          }else if(isObject()){
             javaName = getObjectClassName();
@@ -478,6 +478,14 @@ public class TypeHelper{
       public boolean matches(Class<?> _type){
          String javaName = getJavaName();
          return (_type.getName().equals(javaName));
+      }
+
+      @Override public String toString(){
+           StringBuilder sb = new StringBuilder(getJavaName());
+           for (int i=0; i<arrayDimensions; i++){
+              sb.append("[]");
+           }
+           return(sb.toString());
       }
    }
 
@@ -548,7 +556,7 @@ public class TypeHelper{
    public static class ArgsAndReturnType{
       private static enum SignatureParseState{
          skipping,
-         counting,
+         inArgs,
          inClass,
          inArray,
          done;
@@ -569,7 +577,7 @@ public class TypeHelper{
       }
 
 
-      ArgsAndReturnType(String _signature){
+      public ArgsAndReturnType(String _signature){
 
 
          SignatureParseState state = SignatureParseState.skipping;
@@ -580,7 +588,7 @@ public class TypeHelper{
             char ch = _signature.charAt(pos);
             switch(ch){
                case ARG_START:
-                  state = SignatureParseState.counting;
+                  state = SignatureParseState.inArgs;
                   break;
                case ARG_END:
                   state = SignatureParseState.done;
@@ -588,7 +596,7 @@ public class TypeHelper{
                   break;
                case ARRAY_DIM:
                   switch(state){
-                     case counting:
+                     case inArgs:
                         state = SignatureParseState.inArray;
                         start = pos;
                         break;
@@ -598,34 +606,31 @@ public class TypeHelper{
                   break;
                case CLASS_START:
                   // beginning of Ljava/lang/String; or something
-
                   switch(state){
-                     case counting:
+                     case inArgs:
                         start = pos;
-                        // fallthrough intended!!
+                        state = SignatureParseState.inClass;
+                        break;
                      case inArray:
                         state = SignatureParseState.inClass;
                         break;
                   }
                   break;
                case CLASS_END:
-                  // note we will only be in 'inclass' if we were previously counting, so this is safe
-                  switch(state){
-                     case inClass:
-                        argList.add(new Arg(_signature, start, pos, argList.size()));
-                        state = SignatureParseState.counting;
-                        break;
-                  }
+                  argList.add(new Arg(_signature, start, pos, argList.size()));
+                  state = SignatureParseState.inArgs;
                   break;
-
                default:
-                  // we have IJBZDF so inc counter if we are still counting
+                  // we have IJBZDF so inc counter if we are still inArgs
                   switch(state){
-                     case counting:
+                     case inArgs:
                         start = pos;
-                        // fallthrough intended!!
+                        argList.add(new Arg(_signature, start, pos, argList.size()));
+                        state = SignatureParseState.inArgs;
+                        break;
                      case inArray:
                         argList.add(new Arg(_signature, start, pos, argList.size()));
+                        state = SignatureParseState.inArgs;
                         break;
 
                   }
@@ -633,7 +638,7 @@ public class TypeHelper{
             }
 
          }
-         // System.out.println("method "+name+" has signature of "+signature+" which has "+count+" args");
+          System.out.println("method signature of "+_signature+" = "+returnType+" method( "+argList+")");
 
          args = argList.toArray(new Arg[0]);
       }

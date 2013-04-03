@@ -463,11 +463,11 @@ class Entrypoint{
       return m;
    }
 
-   Entrypoint(ClassModel _classModel, MethodModel _methodModel, Object _k, boolean _isLambda) throws AparapiException{
+   Entrypoint(ClassModel _classModel, MethodModel _methodModel, Object _kernelInstance, boolean _isLambda) throws AparapiException{
       isLambda = _isLambda;
       classModel = _classModel;
       methodModel = _methodModel;
-      kernelInstance = _k;
+      kernelInstance = _kernelInstance;
 
       Map<ClassModelMethod, MethodModel> methodMap = new LinkedHashMap<ClassModelMethod, MethodModel>();
 
