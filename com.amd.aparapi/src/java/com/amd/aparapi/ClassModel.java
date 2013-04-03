@@ -1786,17 +1786,17 @@ public class ClassModel{
                class PrimitiveValue extends Value{
                   private int typeNameIndex;
 
-                  private int constNameIndex;
+                //  private int constNameIndex;
 
                   PrimitiveValue(int _tag, ByteReader _byteReader){
                      super(_tag);
                      typeNameIndex = _byteReader.u2();
-                     constNameIndex = _byteReader.u2();
+                    // constNameIndex = _byteReader.u2();   GRF?
                   }
 
-                  int getConstNameIndex(){
-                     return (constNameIndex);
-                  }
+               //   int getConstNameIndex(){
+                 //    return (constNameIndex);
+               //   }
 
                   int getTypeNameIndex(){
                      return (typeNameIndex);
@@ -1966,9 +1966,12 @@ public class ClassModel{
             int length = _byteReader.u4();
             ConstantPool.UTF8Entry utf8Entry= constantPool.getUTF8Entry(attributeNameIndex);
             if (utf8Entry == null){
-               boolean breakpoint = true;
-            }
+               logger.warning("Found unexpected Attribute (name = NULL) attributeNameIndex = "+attributeNameIndex);
+               entry = new OtherEntry(_byteReader, attributeNameIndex, length);
+               attributePoolEntries.add(entry);
+            } else{
             String attributeName = utf8Entry.getUTF8();
+               System.out.println("Got "+attributeName);
             if(attributeName.equals(LOCALVARIABLETABLE_TAG)){
                realLocalVariableTableEntry = new RealLocalVariableTableEntry(_byteReader, attributeNameIndex, length);
                entry = (RealLocalVariableTableEntry) realLocalVariableTableEntry;
@@ -2020,6 +2023,8 @@ public class ClassModel{
                entry = new OtherEntry(_byteReader, attributeNameIndex, length);
                attributePoolEntries.add(entry);
             }
+            }
+
          }
 
       }

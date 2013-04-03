@@ -194,7 +194,7 @@ public class Mandel{
 //         at com.amd.aparapi.sample.mandel.Main.main(Main.java:361)
 
          doZoom(device, e.getSign(), tox, toy);
-         System.out.println("inner done, sign=" + e.getSign());
+         System.out.println("inner displaying, sign=" + e.getSign());
       }
    }
 
