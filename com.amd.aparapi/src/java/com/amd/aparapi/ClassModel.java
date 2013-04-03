@@ -1436,9 +1436,12 @@ public class ClassModel{
                currSlotIndex += argsAsStoreSpecs[i + thisOffset].getTypeSpec().getSlots(); // 1 for most 2 for Long/Double
 
                // Preserve actual object type
-               if(argsAsStoreSpecs[i + thisOffset] == InstructionSet.StoreSpec.O || argsAsStoreSpecs[i + thisOffset] == InstructionSet.StoreSpec.A){
+               if(argsAsStoreSpecs[i + thisOffset] == InstructionSet.StoreSpec.O ){
                   vars[i + thisOffset].descriptor = args[i].getType();
                }
+                if(argsAsStoreSpecs[i + thisOffset] == InstructionSet.StoreSpec.A){
+                    vars[i + thisOffset].descriptor = "["+args[i].getType();
+                }
                list.add(vars[i + thisOffset]);
             }
             for(int i = args.length + thisOffset; i < numberOfSlots + thisOffset; i++){
@@ -2420,7 +2423,7 @@ public class ClassModel{
                AttributePool.FakeLocalVariableTableEntry fakeLocalVariableTableEntry = attributePool.new FakeLocalVariableTableEntry(pcMap, this);
 
                setFakeLocalVariableTableEntry(fakeLocalVariableTableEntry);
-                if(Config.enableShowFakeLocalVariableTable){
+                if( Config.enableShowFakeLocalVariableTable){
                     Table table = new Table("|  %3d","|  %3d",  "|   %3d", "|  %2d", "|%4s", "| %8s|");
                     table.header("|Start","|  End", "|Length", "|Slot", "|Name", "|Signature|");
                     AttributePool.FakeLocalVariableTableEntry fake =  fakeLocalVariableTableEntry;

@@ -73,7 +73,7 @@ public class NBodyGraphics2D{
 
 
       jframe.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-      for(frame = 0; frame < 1; frame++){
+      for(frame = 0; frame < 10000; frame++){
          device.forEach(bodies, gid -> {
             final int count = bodies * 3;
             final int globalId = gid * 3;
