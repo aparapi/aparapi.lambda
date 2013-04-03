@@ -302,6 +302,13 @@ public class TypeHelper{
          type = type.substring(arrayDimensions);
       }
 
+      public Type(InstructionSet.StoreSpec _storeSpec) {
+         switch(_storeSpec){
+             case A:type = "[?"; arrayDimensions = 1; break;
+             default: type = _storeSpec.name();
+         }
+
+      }
       public Type(Field _field){
          this(_field.getType());
       }
@@ -343,7 +350,9 @@ public class TypeHelper{
 
       }
 
-      String getType(){
+
+
+       String getType(){
          return (type);
       }
 
