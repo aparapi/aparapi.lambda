@@ -166,6 +166,7 @@ class Config{
    public static boolean enableUseRealLocalVariableTableIfAvailable = Boolean.getBoolean(propPkgName + ".enableUseRealLocalVariableTableIfAvailable");
 
    public static boolean enableShowFakeLocalVariableTable = Boolean.getBoolean(propPkgName + ".enableShowFakeLocalVariableTable");
+   public static boolean enableShowJavaP = Boolean.getBoolean(propPkgName + ".enableShowJavaP");
 
    public static boolean enableShowRealLocalVariableTable = Boolean.getBoolean(propPkgName + ".enableRealFakeLocalVariableTable");
 
@@ -239,6 +240,7 @@ class Config{
          System.out.println(propPkgName + ".enableVerboseJNIOpenCLResourceTracking{true|false}="
                + enableVerboseJNIOpenCLResourceTracking);
          System.out.println(propPkgName + ".enableShowGeneratedOpenCL{true|false}=" + enableShowGeneratedOpenCL);
+         System.out.println(propPkgName + ".enableShowJavaP{true|false}=" + enableShowJavaP);
          System.out.println(propPkgName + ".enableExecutionModeReporting{true|false}=" + enableExecutionModeReporting);
          System.out.println(propPkgName + ".enableUseRealLocalVariableTableIfAvailable{true|false}="+enableUseRealLocalVariableTableIfAvailable);
          System.out.println(propPkgName + ".enableShowFakeLocalVariableTable{true|false}="+enableShowFakeLocalVariableTable);

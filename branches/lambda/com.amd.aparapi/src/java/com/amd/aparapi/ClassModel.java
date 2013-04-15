@@ -46,17 +46,7 @@ import com.amd.aparapi.TypeHelper.ArgsAndReturnType;
 import com.amd.aparapi.TypeHelper.Type;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -2301,6 +2291,56 @@ public class ClassModel{
            return (accessedLocalVariables);
        }
 
+      class PCStack{
+         int[] values;
+         int index = 0;
+         PCStack(int _length){
+            values= new int[_length];
+            Arrays.fill(values, -1);
+         }
+         int pop(){
+            int retValue = -1;
+            if (index>0){
+               retValue = values[--index];
+               values[index] = -1;
+            }
+            return(retValue);
+         }
+         int peek(){
+            int retValue = -1;
+            if (index>0){
+               retValue = values[index-1];
+            }
+            return(retValue);
+
+         }
+         void push(int _value){
+            if ((index+1)<values.length){
+               values[index++]=_value;
+            }
+         }
+
+         int get(int _index){
+            int retValue = -1;
+            if (_index < values.length){
+               retValue=values[_index];
+            }
+            return(retValue);
+
+         }
+
+         int getSize(){
+            return(values.length);
+         }
+         int getIndex(){
+            return(index);
+         }
+
+
+      }
+
+
+
       /**
        * Create a linked list of instructions (from pcHead to pcTail).
        * <p/>
@@ -2316,6 +2356,8 @@ public class ClassModel{
       Map<Integer, Instruction> getInstructionMap(){
          // We build this lazily
          if(pcMap == null){
+
+            PCStack pcStack = new PCStack(codeEntry.getMaxStack());
             Instruction pcHead = null;
             Instruction pcTail = null;
             pcMap = new LinkedHashMap<Integer, Instruction>();
@@ -2332,6 +2374,16 @@ public class ClassModel{
                // Create an instruction from code reader's current position
                int pc = codeReader.getOffset();
                Instruction instruction = InstructionSet.ByteCode.create(this, codeReader);
+               instruction.setStackBase(pcStack.getIndex());
+               int[] consumeIndices =  new  int[ instruction.getStackConsumeCount()];
+               for (int ci = 0; ci<consumeIndices.length; ci++){
+                 consumeIndices[ci]=pcStack.pop();
+               }
+               instruction.setConsumeIndices(consumeIndices);
+               for (int pi=0; pi<instruction.getStackProduceCount(); pi++){
+                  pcStack.push(pc);
+               }
+
 
                if(instruction instanceof InstructionSet.Branch){
                   branches.add(instruction.asBranch());
@@ -2450,6 +2502,36 @@ public class ClassModel{
                     System.out.println("Screwed!");
                 }
                 instruction.setLocalVariableInfo(var);
+            }
+
+            if (Config.enableShowJavaP){
+
+                  Table table = new Table("|%2d ", "|%s", "|%d", "|%-60s", "|%s");
+                  for (Instruction i:pcMap.values())  {
+
+                     String label = InstructionHelper.getLabel(i, false, false, false);
+                     StringBuilder consumes = new StringBuilder();
+                     for (int pc:i.getConsumeIndices()){
+                        consumes.append(pc).append(" ");
+                     }
+                     StringBuilder sb = new StringBuilder();
+                     for(InstructionHelper.BranchVector branchInfo : InstructionHelper.getBranches(this)){
+                        sb.append(branchInfo.render(i.getThisPC(), i.getStartPC()));
+                     }
+                     table.data( i.getThisPC());
+                     table.data(consumes);
+                     table.data(i.getStackBase());
+                     table.data(label);
+                     table.data(sb);
+
+                  }
+                  System.out.println("{\n" + table.toString() + "}\n");
+
+
+
+                  //System.out.println(InstructionHelper.getLabel(i,true, false, false));
+
+
             }
 
          }
