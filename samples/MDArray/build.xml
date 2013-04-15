@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<project name="MDArray" default="build" basedir=".">
+<project name="mdarray" default="build" basedir=".">
 
    <path id="compiler.class.path">
        <pathelement path="../../com.amd.aparapi/dist/aparapi.jar"/>
