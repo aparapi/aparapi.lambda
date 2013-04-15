@@ -62,6 +62,11 @@ abstract class Instruction{
 
    protected int pc;
 
+   protected int stackBase;
+
+   protected int[] consumeIndices;
+
+
    abstract String getDescription();
 
    private Instruction nextPC = null;
@@ -154,6 +159,26 @@ abstract class Instruction{
    int getStartPC(){
       return (getFirstChild() == null ? pc : getFirstChild().getStartPC());
    }
+
+   int getStackBase(){
+      return(stackBase);
+   }
+
+   void setStackBase(int _stackBase){
+      stackBase = _stackBase;
+   }
+
+   void setConsumeIndices(int[] _consumeIndices){
+      consumeIndices = _consumeIndices;
+   }
+
+   int[] getConsumeIndices(){
+      return(consumeIndices);
+   }
+
+
+
+
 
    protected Instruction(ClassModel.ClassModelMethod _method, ByteCode _byteCode, int _pc){
       method = _method;
