@@ -38,6 +38,10 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 package com.amd.aparapi;
 
 import com.amd.aparapi.InstructionSet.Branch;
+import com.amd.aparapi.InstructionSet.LocalVariableTableIndexAccessor;
+import com.amd.aparapi.InstructionSet.MethodCall;
+import com.amd.aparapi.InstructionSet.Constant;
+import com.amd.aparapi.InstructionSet.FieldReference;
 import com.amd.aparapi.InstructionSet.ByteCode;
 import com.amd.aparapi.InstructionSet.CompositeInstruction;
 import com.amd.aparapi.InstructionSet.ConditionalBranch;
@@ -65,6 +69,17 @@ abstract class Instruction{
    protected int stackBase;
 
    protected int[] consumeIndices;
+
+   protected boolean endOfTernary = false;
+
+   boolean isEndOfTernary(){
+      return(endOfTernary);
+   }
+
+   void setEndOfTernary(boolean _endOfTernary){
+      endOfTernary = _endOfTernary;
+   }
+
 
 
    abstract String getDescription();
@@ -208,6 +223,21 @@ abstract class Instruction{
       return (String.format("%d %s", pc, byteCode.getName()));
    }
 
+   boolean isMethodCall(){
+      return(this instanceof MethodCall);
+   }
+
+   boolean isConstant(){
+      return(this instanceof Constant);
+   }
+   Constant asConstant(){
+      return((Constant)this);
+   }
+
+   MethodCall asMethodCall(){
+      return( (MethodCall)this);
+   }
+
    boolean isBranch(){
       return (this instanceof Branch);
    }
@@ -316,7 +346,19 @@ abstract class Instruction{
    Branch asBranch(){
       return ((Branch) this);
    }
+   boolean isLocalVariableAccessor(){
+      return(this instanceof LocalVariableTableIndexAccessor);
+   }
+   FieldReference asFieldAccessor(){
+      return((FieldReference)this);
+   }
+   boolean isFieldAccessor(){
+      return (this instanceof FieldReference);
+   }
 
+   LocalVariableTableIndexAccessor asLocalVariableAccessor(){
+      return((LocalVariableTableIndexAccessor)this);
+   }
    boolean consumesStack(){
       return (getStackConsumeCount() > 0);
    }
