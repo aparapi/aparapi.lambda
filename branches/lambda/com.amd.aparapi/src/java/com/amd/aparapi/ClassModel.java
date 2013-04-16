@@ -2277,9 +2277,9 @@ public class ClassModel{
          return (methodCalls);
       }
 
-      Set<InstructionSet.AccessField> accessedFields;
+      Set<InstructionSet.FieldReference> accessedFields;
 
-      public Set<InstructionSet.AccessField> getFieldAccesses(){
+      public Set<InstructionSet.FieldReference> getFieldAccesses(){
          getInstructionMap(); // remember it is lazy
 
          return (accessedFields);
@@ -2357,14 +2357,14 @@ public class ClassModel{
          // We build this lazily
          if(pcMap == null){
 
-            PCStack pcStack = new PCStack(codeEntry.getMaxStack());
+
             Instruction pcHead = null;
             Instruction pcTail = null;
             pcMap = new LinkedHashMap<Integer, Instruction>();
             branches = new LinkedHashSet<InstructionSet.Branch>();
             branchTargets = new LinkedHashSet<Instruction>();
             methodCalls = new LinkedHashSet<InstructionSet.MethodCall>();
-            accessedFields = new LinkedHashSet<InstructionSet.AccessField>();
+            accessedFields = new LinkedHashSet<InstructionSet.FieldReference>();
              accessedLocalVariables = new LinkedHashSet<InstructionSet.LocalVariableTableIndexAccessor>();
             byte[] code = getCode();
 
@@ -2374,32 +2374,21 @@ public class ClassModel{
                // Create an instruction from code reader's current position
                int pc = codeReader.getOffset();
                Instruction instruction = InstructionSet.ByteCode.create(this, codeReader);
-               instruction.setStackBase(pcStack.getIndex());
-               int[] consumeIndices =  new  int[ instruction.getStackConsumeCount()];
-               for (int ci = 0; ci<consumeIndices.length; ci++){
-                 consumeIndices[ci]=pcStack.pop();
-               }
-               instruction.setConsumeIndices(consumeIndices);
-               for (int pi=0; pi<instruction.getStackProduceCount(); pi++){
-                  pcStack.push(pc);
-               }
+
 
 
                if(instruction instanceof InstructionSet.Branch){
                   branches.add(instruction.asBranch());
                }
-               if(instruction instanceof InstructionSet.MethodCall){
-                  InstructionSet.MethodCall methodCall = (InstructionSet.MethodCall) instruction;
-                  methodCalls.add(methodCall);
+               if(instruction.isMethodCall() ){
+                  methodCalls.add(instruction.asMethodCall());
                }
-               if(instruction instanceof InstructionSet.AccessField){
-                  InstructionSet.AccessField accessField = (InstructionSet.AccessField) instruction;
-                  accessedFields.add(accessField);
+               if(instruction.isFieldAccessor()){
+                  accessedFields.add(instruction.asFieldAccessor());
                }
 
-                if(instruction instanceof InstructionSet.LocalVariableTableIndexAccessor){
-                    InstructionSet.LocalVariableTableIndexAccessor accessLocalVariable = (InstructionSet.LocalVariableTableIndexAccessor) instruction;
-                    accessedLocalVariables.add(accessLocalVariable);
+               if(instruction.isLocalVariableAccessor()){
+                  accessedLocalVariables.add(instruction.asLocalVariableAccessor());
                 }
                pcMap.put(pc, instruction);
 
@@ -2453,6 +2442,69 @@ public class ClassModel{
                }
             }
 
+            PCStack pcStack = new PCStack(codeEntry.getMaxStack()+1);
+
+            for (Instruction i:pcMap.values()){
+              i.setStackBase(pcStack.getIndex());
+               int[] consumeIndices =  new  int[i.getStackConsumeCount()];
+               for (int ci = 0; ci<consumeIndices.length; ci++){
+                  consumeIndices[ci]=pcStack.pop();
+               }
+               i.setConsumeIndices(consumeIndices);
+               for (int pi=0; pi<i.getStackProduceCount(); pi++){
+                  pcStack.push(i.getThisPC());
+               }
+               // So Ternary operators have to be dealt with.
+               // If this is a forward conditional target whose stackbase is now greater than or equal to the branch
+               // then the block between produces stack.  So must be 'then' part of ternary
+               if (i.isForwardConditionalBranchTarget()){
+                  int maxStackBase = 0;
+                  System.out.print("Current stackBase = "+i.getStackBase()+" branchers are ");
+                  for (Branch b: i.getForwardBranches()){
+
+                     System.out.print(b.getStackBase()+ " ");
+                     maxStackBase  = Math.max(maxStackBase, b.getStackBase());
+                  }
+                  System.out.println(" max = "+maxStackBase);
+                  if (maxStackBase<=i.getStackBase()){
+                     // System.out.println("this is first expression in else of ternary");
+                     // we pop the stack and mark the instruction targetted by the prev goto.  Which is the end of
+                     // the ternary
+
+                     pcStack.pop();
+                     if (i.getPrevPC().isBranch()){
+                        Branch unconditional = i.getPrevPC().asBranch();
+                        unconditional.setEndOfTernary(true);
+                        unconditional.getTarget().setEndOfTernary(true);
+                        for (Branch b: i.getForwardBranches()){
+                           b.setEndOfTernary(true);
+                        }
+                     }else{
+                        throw new IllegalStateException("never!");
+                     }
+                  }
+               } else if (i.isEndOfTernary()){
+                  // the ternary created top of stack.  So we pop the top (currently referencing the else instruction
+                  // producer) and we treat the whole if{}else{} as a producer
+                  if (i.isForwardUnconditionalBranchTarget()){
+                     Branch fub = i.getForwardUnconditionalBranches().iterator().next(); // we assume this is the earliest
+                     if (fub.getNextPC().isForwardConditionalBranchTarget()){
+                          int pc = fub.getNextPC().getForwardConditionalBranches().iterator().next().getThisPC();
+                          pcStack.pop();
+                        //  pcStack.push(pc);
+                          i.getConsumeIndices()[0]=pc;
+                     }  else{
+                        throw new IllegalStateException("never!");
+                     }
+
+                  }  else{
+                     throw new IllegalStateException("never!");
+                  }
+               }
+
+            }
+
+
             AttributePool.RealLocalVariableTableEntry realLocalVariableTableEntry =  getRealLocalVariableTableEntry();
 
              if(realLocalVariableTableEntry != null && Config.enableShowRealLocalVariableTable){
@@ -2487,6 +2539,7 @@ public class ClassModel{
                         table.data(var.getVariableName());
                         table.data(var.getVariableDescriptor());
                     }
+
                     System.out.println("FAKE!\n"+table);
                 }
 
@@ -2505,27 +2558,11 @@ public class ClassModel{
             }
 
             if (Config.enableShowJavaP){
+               RegIsaWriter writer = new RegIsaWriter();
+               writer.write(this, codeEntry.getMaxLocals());
 
-                  Table table = new Table("|%2d ", "|%s", "|%d", "|%-60s", "|%s");
-                  for (Instruction i:pcMap.values())  {
 
-                     String label = InstructionHelper.getLabel(i, false, false, false);
-                     StringBuilder consumes = new StringBuilder();
-                     for (int pc:i.getConsumeIndices()){
-                        consumes.append(pc).append(" ");
-                     }
-                     StringBuilder sb = new StringBuilder();
-                     for(InstructionHelper.BranchVector branchInfo : InstructionHelper.getBranches(this)){
-                        sb.append(branchInfo.render(i.getThisPC(), i.getStartPC()));
-                     }
-                     table.data( i.getThisPC());
-                     table.data(consumes);
-                     table.data(i.getStackBase());
-                     table.data(label);
-                     table.data(sb);
 
-                  }
-                  System.out.println("{\n" + table.toString() + "}\n");
 
 
 
