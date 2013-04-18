@@ -1,5 +1,4 @@
 package com.amd.aparapi;
-import com.amd.aparapi.InstructionSet.LocalVariableTableIndexAccessor;
 
 /**
  * Created with IntelliJ IDEA.
@@ -9,51 +8,33 @@ import com.amd.aparapi.InstructionSet.LocalVariableTableIndexAccessor;
  * To change this template use File | Settings | File Templates.
  */
 public class RegIsaWriter{
+   private static final boolean regtop = true;
+   ClassModel.ClassModelMethod method;
+   int maxLocals;
+   int maxStack;
 
+   RegIsaWriter(ClassModel.ClassModelMethod _method, int _maxLocals, int _maxStack){
+      method = _method;
+      maxLocals = _maxLocals;
+      maxStack = _maxStack;
+   }
 
+   void write(){
 
-
-
-   void write(ClassModel.ClassModelMethod _method, int _maxLocals){
-
+      System.out.println("MaxLocals=" + maxLocals);
+      System.out.println("MaxStack=" + maxStack);
       Table table = new Table("|%2d ", "|%s", "|%d", "|%d", "|%-60s", "|%s");
       table.header("|PC ", "|Consumes + count", "|Produces", "|Base", "|Instruction", "|Branches");
 
-      for(Instruction i : _method.getInstructions()){
-         String label = i.getByteCode().getName();//InstructionHelper.getLabel(i, false, false, false);
-         if(i.isBranch()){
-            label += " " + i.asBranch().getAbsolute();
-         }else if(i.isFieldAccessor()){
-            label += " " + i.asFieldAccessor().getConstantPoolFieldEntry().getType();
-            label += " " + i.asFieldAccessor().getConstantPoolFieldEntry().getClassEntry().getDotClassName();
-            label += "." + i.asFieldAccessor().getConstantPoolFieldEntry().getName();
-         }else if(i.isLocalVariableAccessor()){
-            if (false){
-               label += " #" + i.asLocalVariableAccessor().getLocalVariableInfo().getSlot();
-               label += " " + i.asLocalVariableAccessor().getLocalVariableInfo().getVariableName();
-               label += " " + i.asLocalVariableAccessor().getLocalVariableInfo().getVariableDescriptor();
-            }else{
-               int slot = i.asLocalVariableAccessor().getLocalVariableInfo().getSlot();
-               String descriptor = i.asLocalVariableAccessor().getLocalVariableInfo().getVariableDescriptor();
-               if (i instanceof InstructionSet.AccessLocalVariable){
-                   label = renderLoad(i, slot, descriptor, _maxLocals);
+      for(Instruction i : method.getInstructions()){
+         String label = render(i);
 
-               }
-            }
-         }else if(i.isMethodCall()){
-            label += " " + i.asMethodCall().getConstantPoolMethodEntry().getArgsAndReturnType().getReturnType();
-            label += " " + i.asMethodCall().getConstantPoolMethodEntry().getClassEntry().getDotClassName();
-            label += "." + i.asMethodCall().getConstantPoolMethodEntry().getName();
-         }else if(i.isConstant() ){
-            InstructionSet.Constant c = ((InstructionSet.Constant) i);
-            label += " " + i.asConstant().getValue();
-         }
          StringBuilder consumes = new StringBuilder();
          for(int pc : i.getConsumeIndices()){
             consumes.append(pc).append(" ");
          }
          StringBuilder sb = new StringBuilder();
-         for(InstructionHelper.BranchVector branchInfo : InstructionHelper.getBranches(_method)){
+         for(InstructionHelper.BranchVector branchInfo : InstructionHelper.getBranches(method)){
             sb.append(branchInfo.render(i.getThisPC(), i.getStartPC()));
          }
          table.data(i.getThisPC());
@@ -66,8 +47,8 @@ public class RegIsaWriter{
       System.out.println("{\n" + table.toString() + "}\n");
    }
 
-   private String renderLoad(Instruction instruction, int slot, String descriptor, int maxLocals){
-      String returnString = instruction.getByteCode().toString();
+   private String render(Instruction instruction){
+      String returnString = null;
       switch(instruction.getByteCode()){
 
          case ACONST_NULL:
@@ -120,20 +101,13 @@ public class RegIsaWriter{
          case ALOAD:
             break;
          case ILOAD:
-            break;
          case ILOAD_0:
          case ILOAD_1:
          case ILOAD_2:
          case ILOAD_3:
-            returnString = "mov_32 "
-                  +getRegName(instruction.getStackBase()+maxLocals,    instruction.asLocalVariableAccessor().getLocalVariableInfo().getVariableDescriptor())
-                  +","
-                  +getRegName(instruction.asLocalVariableAccessor().getLocalVariableInfo().getSlot(),
-                  instruction.asLocalVariableAccessor().getLocalVariableInfo().getVariableDescriptor()) ;
-                 // +", "
-                //  +constantI32((Integer)instruction.asConstant().getValue());
-                    //  ((InstructionSet.LocalVariableConstIndexLoad)instruction).get
-
+            returnString = mov_s32(
+                  stack(instruction.getStackBase()),
+                  reg(instruction.asLocalVariableAccessor().getLocalVariableTableIndex()));
             break;
          case LLOAD_0:
             break;
@@ -168,6 +142,9 @@ public class RegIsaWriter{
          case ALOAD_3:
             break;
          case IALOAD:
+            returnString = load_s32(
+                  stack(instruction.getStackBase() + 0),   //index & value
+                  stack(instruction.getStackBase() + 1));  //array
             break;
          case LALOAD:
             break;
@@ -234,6 +211,10 @@ public class RegIsaWriter{
          case ASTORE_3:
             break;
          case IASTORE:
+            returnString = store_s32(
+                  stack(instruction.getStackBase() + 0), //value
+                  stack(instruction.getStackBase() + 1), //index
+                  stack(instruction.getStackBase() + 2));//array
             break;
          case LASTORE:
             break;
@@ -432,22 +413,17 @@ public class RegIsaWriter{
          case RETURN:
             break;
          case GETSTATIC:
-            break;
          case PUTSTATIC:
-            break;
          case GETFIELD:
-            break;
          case PUTFIELD:
+            returnString = field(instruction);
             break;
          case INVOKEVIRTUAL:
-            break;
          case INVOKESPECIAL:
-            break;
          case INVOKESTATIC:
-            break;
          case INVOKEINTERFACE:
-            break;
          case INVOKEDYNAMIC:
+            returnString = call(instruction);
             break;
          case NEW:
             break;
@@ -622,12 +598,178 @@ public class RegIsaWriter{
          case COMPOSITE_DO_WHILE:
             break;
       }
-      return(returnString);
+      if(returnString == null){
+         String label = instruction.getByteCode().getName();//InstructionHelper.getLabel(i, false, false, false);
+         if(instruction.isBranch()){
+            label += " " + instruction.asBranch().getAbsolute();
+         }else if(instruction.isFieldAccessor()){
+            label += " " + instruction.asFieldAccessor().getConstantPoolFieldEntry().getType();
+            label += " " + instruction.asFieldAccessor().getConstantPoolFieldEntry().getClassEntry().getDotClassName();
+            label += "." + instruction.asFieldAccessor().getConstantPoolFieldEntry().getName();
+         }else if(instruction.isLocalVariableAccessor()){
+            label += " #" + instruction.asLocalVariableAccessor().getLocalVariableInfo().getSlot();
+            label += " " + instruction.asLocalVariableAccessor().getLocalVariableInfo().getVariableName();
+            label += " " + instruction.asLocalVariableAccessor().getLocalVariableInfo().getVariableDescriptor();
+
+         }else if(instruction.isMethodCall()){
+            label += " " + instruction.asMethodCall().getConstantPoolMethodEntry().getArgsAndReturnType().getReturnType();
+            label += " " + instruction.asMethodCall().getConstantPoolMethodEntry().getClassEntry().getDotClassName();
+            label += "." + instruction.asMethodCall().getConstantPoolMethodEntry().getName();
+         }else if(instruction.isConstant()){
+            InstructionSet.Constant c = ((InstructionSet.Constant) instruction);
+            label += " " + instruction.asConstant().getValue();
+         }
+         returnString = label;
+      }
+      return (returnString);
    }
-   private String constantI32(int slot){
-      return("(i32)"+slot);
+
+   private String field(Instruction _i){
+      StringBuilder sb = new StringBuilder("field_");
+      TypeHelper.Type type = _i.asFieldAccessor().getConstantPoolFieldEntry().getType();
+      String dotClassName = _i.asFieldAccessor().getConstantPoolFieldEntry().getClassEntry().getDotClassName();
+      String name = _i.asFieldAccessor().getConstantPoolFieldEntry().getName();
+      if(_i instanceof InstructionSet.I_PUTFIELD || _i instanceof InstructionSet.I_PUTSTATIC){
+         if(type.isInt()){
+            sb.append("s32 " + dotClassName + "." + name + dest_separator() + s32Name(stack(_i.getStackBase())));
+         }
+      }else{
+         if(type.isArray()){
+            sb.append("arr_");
+         }
+         if(type.isInt()){
+            sb.append("s32 " + ((type.isArray())?"arr_":"")+s32Name(stack(_i.getStackBase())));
+         }
+         sb.append(dest_separator() + dotClassName + "." + name);
+      }
+      return (sb.toString());
    }
-   private String getRegName(int slot, String variableDescriptor){
-      return("i32_"+slot);
+
+   private String call(Instruction _i){
+      String dotClassName = _i.asMethodCall().getConstantPoolMethodEntry().getClassEntry().getDotClassName();
+      String name = _i.asMethodCall().getConstantPoolMethodEntry().getName();
+      TypeHelper.ArgsAndReturnType argsAndReturnType = _i.asMethodCall().getConstantPoolMethodEntry().getArgsAndReturnType();
+
+
+      TypeHelper.Type returnType = argsAndReturnType.getReturnType();
+      StringBuilder sb = new StringBuilder();
+
+      if(returnType.isVoid()){
+         sb.append("call_void VOID" + dest_separator() + dotClassName + "." + name + " " + sb);
+      }else if(returnType.isInt()){
+         sb.append("call_s32 " + s32Name(stack(_i.getStackBase())) + dest_separator() + dotClassName + "." + name + " " + sb);
+      }else if(returnType.isDouble()){
+         sb.append("call_f64 " + f64Name(stack(_i.getStackBase())) + dest_separator() + dotClassName + "." + name + " " + sb);
+
+      }
+      for(TypeHelper.Arg arg : argsAndReturnType.getArgs()){
+         if(arg.getArgc() > 0){
+            sb.append(", ");
+         }
+         if(arg.isDouble()){
+            sb.append(f64Name(stack(_i.getStackBase() + arg.getArgc())));
+         }else if(arg.isFloat()){
+            sb.append(f32Name(stack(_i.getStackBase() + arg.getArgc())));
+         }else if(arg.isInt()){
+            sb.append(s32Name(stack(_i.getStackBase() + arg.getArgc())));
+         }else if(arg.isLong()){
+            sb.append(s64Name(stack(_i.getStackBase() + arg.getArgc())));
+         }
+      }
+      return (sb.toString());
+   }
+
+   private String mov(){
+      return ("mov_");
+   }
+
+   private String load(){
+      return ("load_");
+   }
+
+   private String store(){
+      return ("store_");
+   }
+
+   private String mov_s32(int _dest, int _source){
+      return (mov() + "s32 " + s32Name(_dest) + dest_separator() + s32Name(_source));
+   }
+
+   private String load_s32(int _indexAndValue, int _array){
+      return (load() + "s32 " + s32Name(_indexAndValue) + dest_separator() + s32Array(_array, _indexAndValue));
+   }
+
+   private String store_s32(int _value, int _index, int _array){
+      return (store() + "s32 " + s32Array(_array, _index) + dest_separator() + s32Name(_value));
+   }
+
+   private String load_s64(int _indexAndValue, int _array){
+      return (load() + "s64 " + s64Name(_indexAndValue) + dest_separator() + s64Array(_array, _indexAndValue));
+   }
+
+   private String s32Array(int arr_reg, int index){
+      return ("*(s32_" + regNum(arr_reg) + " + " + array_len_offset() + " + " + sizeof_s32() + " * " + s32Name(index) + ")");
+   }
+
+   private String s64Array(int arr_reg, int index){
+      return ("*(s64_" + regNum(arr_reg) + " + " + array_len_offset() + " + " + sizeof_s64() + " * " + s64Name(index) + ")");
+   }
+
+   private String s32Name(int reg){
+      return ("s32_" + regNum(reg));
+   }
+
+   private String s64Name(int reg){
+      return ("s64_" + regNum(reg));
+   }
+
+   private String f64Name(int reg){
+      return ("f64_" + regNum(reg));
+   }
+
+   private String f32Name(int reg){
+      return ("f32_" + regNum(reg));
+   }
+
+
+   private String array_len_offset(){
+      return ("4");
+   }
+
+   private String sizeof_s32(){
+      return ("4");
+   }
+
+   private String sizeof_s64(){
+      return ("8");
+   }
+
+   private String regNum(int reg){
+      return (String.format("%02d", reg));
+   }
+
+   private int stack(int _reg){
+      if(regtop){
+         return (maxLocals + _reg);
+      }else{
+         return (_reg);
+      }
+   }
+
+   private int reg(int _reg){
+      if(regtop){
+         return (_reg);
+      }else{
+         return (maxStack + _reg);
+      }
+   }
+
+
+   private String dest_separator(){
+      return (separator());
+   }
+
+   private String separator(){
+      return (", ");
    }
 }
