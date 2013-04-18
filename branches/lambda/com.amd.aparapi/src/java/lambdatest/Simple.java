@@ -26,7 +26,7 @@ public class Simple{
          out[i] = in[i] * 2;
       });
       device.forEach(in.length, (i) -> {
-         in[i] = Math.abs(out[i]);
+         in[i] = Math.abs(out[i])*2;
       });
 
       for(int i = 0; i < 64; i++){
