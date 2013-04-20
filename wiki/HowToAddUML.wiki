@@ -1,10 +1,9 @@
-#How to add plantuml docs to wiki
+#summary How to add plantuml docs to wiki pages
 
+Go to http://www.plantuml.com/plantuml and type in the text for you diagram. 
 
+Once you are happy, so with something like
 {{{
-// Source for sequence
-// see http://www.plantuml.com/plantuml/form
-@startuml
 start
 :kernel.execute(range);
 if (?) then (first call for this instance)
@@ -28,9 +27,12 @@ else (false)
    : Execute using a Java Thread Pool;
 endif
 stop
-@enduml
-
 }}}
-Paste the resulting UML but append %20as.png
+
+Paste the resulting URL into the wiki page but append %20as.png at the end of the URL
+
+{{{http://www.plantuml.com:80/plantuml/img/BLAHBLAH%20as.png}}}
+
+To get this!
 
 http://www.plantuml.com:80/plantuml/img/TP5DJiGm38NtbNe7BziD1sWNI8mG4ZzY5Y3M9dNQQDAaYjE1u-CscJ8L8giep_RxyimHGooBvaJ1aRsXRr9pf2gWwwbkoy9eg6vhY0CvgBG9746XjQ1za4V3O1n7T8hgiW0v3HoyErE8y9GcXjbLqk_XTI9tU6vJcVEHqatE1m5Qzg1ovp9_4qUAW-yO0g4QyDCIwE37JJvTkQH7SjtL-1r_GcFZ7NmX0yzA4REURRtDM_Z7oOZDZdTLNd0InbNjihnyR8qX_JPNasNQkStkZvTW6bqMgLHuuJTSgSZgZZuxZZXDul_F0XguCn80XfwXuYKB8NmuljTjbk_JXdDmxOL0omQs4PUQcOth0U4HpmXlWwoWWwFtQrS2vEYd7m00%20&foo=as.png
