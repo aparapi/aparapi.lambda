@@ -2,6 +2,8 @@
 
 Go to http://www.plantuml.com/plantuml and type in the text for you diagram. 
 
+Hit submit and check out the diagram.
+
 Once you are happy, so with something like
 {{{
 start
