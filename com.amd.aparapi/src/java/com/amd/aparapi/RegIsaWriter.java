@@ -23,21 +23,23 @@ public class RegIsaWriter{
 
       System.out.println("MaxLocals=" + maxLocals);
       System.out.println("MaxStack=" + maxStack);
-      Table table = new Table("|%2d ", "|%s", "|%d", "|%d", "|%-60s", "|%s");
-      table.header("|PC ", "|Consumes + count", "|Produces", "|Base", "|Instruction", "|Branches");
+      Table table = new Table("|%2d ", "|%2d", "|%2d", "|%s", "|%d", "|%d", "|%-60s", "|%s");
+      table.header("|PC ", "|Depth", "|Block", "|Consumes + count", "|Produces", "|Base", "|Instruction", "|Branches");
 
       for(Instruction i : method.getInstructions()){
          String label = render(i);
 
          StringBuilder consumes = new StringBuilder();
-         for(int pc : i.getConsumeIndices()){
-            consumes.append(pc).append(" ");
+         for(Instruction.InstructionType instructionType : i.getConsumedInstructionTypes()){
+            consumes.append(instructionType.getInstruction().getThisPC()).append(" ");
          }
          StringBuilder sb = new StringBuilder();
          for(InstructionHelper.BranchVector branchInfo : InstructionHelper.getBranches(method)){
             sb.append(branchInfo.render(i.getThisPC(), i.getStartPC()));
          }
          table.data(i.getThisPC());
+          table.data(i.getDepth());
+          table.data(i.getBlock());
          table.data("" + i.getStackConsumeCount() + " {" + consumes + "}");
          table.data(i.getStackProduceCount());
          table.data(i.getStackBase());
