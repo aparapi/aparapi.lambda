@@ -58,6 +58,24 @@ import java.util.LinkedList;
  */
 abstract class Instruction{
 
+
+    static class InstructionType {
+        Instruction instruction=null;
+        TypeHelper.Type type=null;
+
+        public InstructionType(Instruction _instruction, TypeHelper.Type _type) {
+            type = _type;
+            instruction =_instruction;
+        }
+
+        public Instruction getInstruction() {
+            return(instruction);
+        }
+        public TypeHelper.Type getType() {
+            return(type);
+        }
+    }
+
    protected ClassModel.ClassModelMethod method;
 
    private ByteCode byteCode;
@@ -68,7 +86,7 @@ abstract class Instruction{
 
    protected int stackBase;
 
-   protected int[] consumeIndices;
+   protected InstructionType[] consumedInstructionTypes;
 
    protected boolean endOfTernary = false;
 
@@ -108,6 +126,9 @@ abstract class Instruction{
    private Instruction firstChild = null;
 
    private Instruction lastChild = null;
+
+    private int depth=0;
+    private int block;
 
    protected void setChildren(Instruction _firstChild, Instruction _lastChild){
 
@@ -183,12 +204,12 @@ abstract class Instruction{
       stackBase = _stackBase;
    }
 
-   void setConsumeIndices(int[] _consumeIndices){
-      consumeIndices = _consumeIndices;
+   void setConsumedInstructionTypes(InstructionType[] _consumedInstructionTypes){
+      consumedInstructionTypes = _consumedInstructionTypes;
    }
 
-   int[] getConsumeIndices(){
-      return(consumeIndices);
+    InstructionType[] getConsumedInstructionTypes(){
+      return(consumedInstructionTypes);
    }
 
 
@@ -431,4 +452,17 @@ abstract class Instruction{
       return (equals(_other));
    }
 
+    public void setBlock(int _block) {
+        block = _block;
+    }
+    public int getBlock(){
+        return(block);
+    }
+
+    public void setDepth(int _depth) {
+        depth = _depth;
+    }
+    public int getDepth(){
+        return(depth);
+    }
 }

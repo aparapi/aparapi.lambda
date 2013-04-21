@@ -2291,46 +2291,48 @@ public class ClassModel{
            return (accessedLocalVariables);
        }
 
-      class PCStack{
-         int[] values;
+      class ConsumedInstructionTypeStack {
+
+         Instruction.InstructionType[] instructionTypes;
          int index = 0;
-         PCStack(int _length){
-            values= new int[_length];
-            Arrays.fill(values, -1);
+         ConsumedInstructionTypeStack(int _length){
+            instructionTypes = new Instruction.InstructionType[_length];
+
+
          }
-         int pop(){
-            int retValue = -1;
+          Instruction.InstructionType pop(){
+              Instruction.InstructionType retValue = null;
             if (index>0){
-               retValue = values[--index];
-               values[index] = -1;
+               retValue = instructionTypes[--index];
+               instructionTypes[index] = null;
             }
             return(retValue);
          }
-         int peek(){
-            int retValue = -1;
+          Instruction.InstructionType peek(){
+              Instruction.InstructionType retValue = null;
             if (index>0){
-               retValue = values[index-1];
+               retValue = instructionTypes[index-1];
             }
             return(retValue);
 
          }
-         void push(int _value){
-            if ((index+1)<values.length){
-               values[index++]=_value;
+         void push(Instruction i, Type t){
+            if ((index+1)< instructionTypes.length){
+               instructionTypes[index++]=new Instruction.InstructionType(i,t);
             }
          }
 
-         int get(int _index){
-            int retValue = -1;
-            if (_index < values.length){
-               retValue=values[_index];
+          Instruction.InstructionType get(int _index){
+              Instruction.InstructionType retValue = null;
+            if (_index < instructionTypes.length){
+               retValue= instructionTypes[_index];
             }
             return(retValue);
 
          }
 
          int getSize(){
-            return(values.length);
+            return(instructionTypes.length);
          }
          int getIndex(){
             return(index);
@@ -2442,17 +2444,35 @@ public class ClassModel{
                }
             }
 
-            PCStack pcStack = new PCStack(codeEntry.getMaxStack()+1);
+             int block=0;
+             int depth=0;
+             for(Instruction i : pcMap.values()){
+                  if (i.isBranch()){
+                      block++;
+                      depth++;
+                  }
+                  if (i.isBranchTarget()){
+                      block++;
+                      depth--;
+                  }
+                  i.setBlock(block);
+                  i.setDepth(depth);
+
+
+             }
+
+
+             ConsumedInstructionTypeStack consumedInstructionTypeStack = new ConsumedInstructionTypeStack(codeEntry.getMaxStack()+1);
 
             for (Instruction i:pcMap.values()){
-              i.setStackBase(pcStack.getIndex());
-               int[] consumeIndices =  new  int[i.getStackConsumeCount()];
-               for (int ci = 0; ci<consumeIndices.length; ci++){
-                  consumeIndices[ci]=pcStack.pop();
+              i.setStackBase(consumedInstructionTypeStack.getIndex());
+                Instruction.InstructionType[] consumedInstructionTypes =  new Instruction.InstructionType[i.getStackConsumeCount()];
+               for (int ci = 0; ci<consumedInstructionTypes.length; ci++){
+                   consumedInstructionTypes[ci]=consumedInstructionTypeStack.pop();
                }
-               i.setConsumeIndices(consumeIndices);
+               i.setConsumedInstructionTypes(consumedInstructionTypes);
                for (int pi=0; pi<i.getStackProduceCount(); pi++){
-                  pcStack.push(i.getThisPC());
+                  consumedInstructionTypeStack.push(i, null);
                }
                // So Ternary operators have to be dealt with.
                // If this is a forward conditional target whose stackbase is now greater than or equal to the branch
@@ -2471,7 +2491,7 @@ public class ClassModel{
                      // we pop the stack and mark the instruction targetted by the prev goto.  Which is the end of
                      // the ternary
 
-                     pcStack.pop();
+                     consumedInstructionTypeStack.pop();
                      if (i.getPrevPC().isBranch()){
                         Branch unconditional = i.getPrevPC().asBranch();
                         unconditional.setEndOfTernary(true);
@@ -2489,10 +2509,10 @@ public class ClassModel{
                   if (i.isForwardUnconditionalBranchTarget()){
                      Branch fub = i.getForwardUnconditionalBranches().iterator().next(); // we assume this is the earliest
                      if (fub.getNextPC().isForwardConditionalBranchTarget()){
-                          int pc = fub.getNextPC().getForwardConditionalBranches().iterator().next().getThisPC();
-                          pcStack.pop();
-                        //  pcStack.push(pc);
-                          i.getConsumeIndices()[0]=pc;
+                          Instruction ins = fub.getNextPC().getForwardConditionalBranches().iterator().next();
+                          consumedInstructionTypeStack.pop();
+                        //  consumedInstructionTypeStack.push(pc);
+                         Instruction.InstructionType instructionType =  i.getConsumedInstructionTypes()[0] = new Instruction.InstructionType(ins, null);
                      }  else{
                         throw new IllegalStateException("never!");
                      }
@@ -2556,6 +2576,8 @@ public class ClassModel{
                 }
                 instruction.setLocalVariableInfo(var);
             }
+
+
 
             if (Config.enableShowJavaP){
                RegIsaWriter writer = new RegIsaWriter(this, codeEntry.getMaxLocals(), codeEntry.getMaxStack());
