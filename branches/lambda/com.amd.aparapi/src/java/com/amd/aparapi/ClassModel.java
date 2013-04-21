@@ -2447,14 +2447,19 @@ public class ClassModel{
              int block=0;
              int depth=0;
              for(Instruction i : pcMap.values()){
-                  if (i.isBranch()){
+                  if (i.isBranch()||i.isBranchTarget()){
                       block++;
+                  }
+                  if (i.isForwardBranch()){
                       depth++;
                   }
-                  if (i.isBranchTarget()){
-                      block++;
-                      depth--;
-                  }
+                 if (i.isReverseBranch()){
+                     depth--;
+                 }
+                 depth -= i.getForwardBranches().size();
+                 depth += i.getReverseBranches().size();
+
+
                   i.setBlock(block);
                   i.setDepth(depth);
 
