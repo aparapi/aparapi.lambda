@@ -448,6 +448,10 @@ abstract class Instruction{
       return (isBranch() && asBranch().isForward());
    }
 
+    boolean isReverseBranch(){
+        return (isBranch() && asBranch().isReverse());
+    }
+
    boolean sameAs(Instruction _other){
       return (equals(_other));
    }
