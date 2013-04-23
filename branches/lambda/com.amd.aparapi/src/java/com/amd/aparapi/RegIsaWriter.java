@@ -21,6 +21,8 @@ public class RegIsaWriter{
 
    void write(){
 
+      System.out.println(InstructionHelper.getJavapView(method));
+
       System.out.println("MaxLocals=" + maxLocals);
       System.out.println("MaxStack=" + maxStack);
       Table table = new Table("|%2d ", "|%2d", "|%2d", "|%s", "|%d", "|%d", "|%-60s", "|%s");
@@ -108,7 +110,7 @@ public class RegIsaWriter{
          case ILOAD_2:
          case ILOAD_3:
             returnString = mov_s32(
-                  stack(instruction.getStackBase()),
+                  stack(instruction.getStackBaseMinusConsumeCount()),
                   reg(instruction.asLocalVariableAccessor().getLocalVariableTableIndex()));
             break;
          case LLOAD_0:
@@ -145,8 +147,8 @@ public class RegIsaWriter{
             break;
          case IALOAD:
             returnString = load_s32(
-                  stack(instruction.getStackBase() + 0),   //index & value
-                  stack(instruction.getStackBase() + 1));  //array
+                  stack(instruction.getStackBaseMinusConsumeCount() + 1),   //index & value
+                  stack(instruction.getStackBaseMinusConsumeCount() + 0));  //array
             break;
          case LALOAD:
             break;
@@ -214,9 +216,9 @@ public class RegIsaWriter{
             break;
          case IASTORE:
             returnString = store_s32(
-                  stack(instruction.getStackBase() + 0), //value
-                  stack(instruction.getStackBase() + 1), //index
-                  stack(instruction.getStackBase() + 2));//array
+                  stack(instruction.getStackBaseMinusConsumeCount() + 2), //value
+                  stack(instruction.getStackBaseMinusConsumeCount() + 1), //index
+                  stack(instruction.getStackBaseMinusConsumeCount() + 0));//array
             break;
          case LASTORE:
             break;
@@ -267,6 +269,7 @@ public class RegIsaWriter{
          case DSUB:
             break;
          case IMUL:
+              returnString = "mul_s32 "+s32Name(stack(instruction.getStackBaseMinusConsumeCount()))+separator()+ s32Name(stack(instruction.getStackBaseMinusConsumeCount()))+separator()+s32Name(stack(instruction.getStackBaseMinusConsumeCount()+1));
             break;
          case LMUL:
             break;
@@ -633,16 +636,16 @@ public class RegIsaWriter{
       String name = _i.asFieldAccessor().getConstantPoolFieldEntry().getName();
       if(_i instanceof InstructionSet.I_PUTFIELD || _i instanceof InstructionSet.I_PUTSTATIC){
          if(type.isInt()){
-            sb.append("s32 " + dotClassName + "." + name + dest_separator() + s32Name(stack(_i.getStackBase())));
+            sb.append("s32 " + dotClassName + "." + name + separator() + s32Name(stack(_i.getStackBaseMinusConsumeCount())));
          }
       }else{
          if(type.isArray()){
             sb.append("arr_");
          }
          if(type.isInt()){
-            sb.append("s32 " + ((type.isArray())?"arr_":"")+s32Name(stack(_i.getStackBase())));
+            sb.append("s32 " + ((type.isArray())?"arr_":"")+s32Name(stack(_i.getStackBaseMinusConsumeCount())));
          }
-         sb.append(dest_separator() + dotClassName + "." + name);
+         sb.append(separator() + dotClassName + "." + name);
       }
       return (sb.toString());
    }
@@ -657,11 +660,11 @@ public class RegIsaWriter{
       StringBuilder sb = new StringBuilder();
 
       if(returnType.isVoid()){
-         sb.append("call_void VOID" + dest_separator() + dotClassName + "." + name + " " + sb);
+         sb.append("call_void VOID" + separator() + dotClassName + "." + name + " " + sb);
       }else if(returnType.isInt()){
-         sb.append("call_s32 " + s32Name(stack(_i.getStackBase())) + dest_separator() + dotClassName + "." + name + " " + sb);
+         sb.append("call_s32 " + s32Name(stack(_i.getStackBaseMinusConsumeCount())) + separator() + dotClassName + "." + name + " " + sb);
       }else if(returnType.isDouble()){
-         sb.append("call_f64 " + f64Name(stack(_i.getStackBase())) + dest_separator() + dotClassName + "." + name + " " + sb);
+         sb.append("call_f64 " + f64Name(stack(_i.getStackBaseMinusConsumeCount())) + separator() + dotClassName + "." + name + " " + sb);
 
       }
       for(TypeHelper.Arg arg : argsAndReturnType.getArgs()){
@@ -669,13 +672,13 @@ public class RegIsaWriter{
             sb.append(", ");
          }
          if(arg.isDouble()){
-            sb.append(f64Name(stack(_i.getStackBase() + arg.getArgc())));
+            sb.append(f64Name(stack(_i.getStackBaseMinusConsumeCount() + arg.getArgc())));
          }else if(arg.isFloat()){
-            sb.append(f32Name(stack(_i.getStackBase() + arg.getArgc())));
+            sb.append(f32Name(stack(_i.getStackBaseMinusConsumeCount() + arg.getArgc())));
          }else if(arg.isInt()){
-            sb.append(s32Name(stack(_i.getStackBase() + arg.getArgc())));
+            sb.append(s32Name(stack(_i.getStackBaseMinusConsumeCount() + arg.getArgc())));
          }else if(arg.isLong()){
-            sb.append(s64Name(stack(_i.getStackBase() + arg.getArgc())));
+            sb.append(s64Name(stack(_i.getStackBaseMinusConsumeCount() + arg.getArgc())));
          }
       }
       return (sb.toString());
@@ -686,51 +689,55 @@ public class RegIsaWriter{
    }
 
    private String load(){
-      return ("load_");
+      return ("ld_global_");
    }
 
    private String store(){
-      return ("store_");
+      return ("st_global_");
    }
 
    private String mov_s32(int _dest, int _source){
-      return (mov() + "s32 " + s32Name(_dest) + dest_separator() + s32Name(_source));
+      return (mov() + "s32 " + s32Name(_dest) + separator() + s32Name(_source));
    }
 
    private String load_s32(int _indexAndValue, int _array){
-      return (load() + "s32 " + s32Name(_indexAndValue) + dest_separator() + s32Array(_array, _indexAndValue));
+      return (load() + "s32 " + s32Name(_indexAndValue) + separator() + s32Array(_array, _indexAndValue));
    }
 
    private String store_s32(int _value, int _index, int _array){
-      return (store() + "s32 " + s32Array(_array, _index) + dest_separator() + s32Name(_value));
+      return (store() + "s32 " + s32Array(_array, _index) + separator() + s32Name(_value));
    }
 
    private String load_s64(int _indexAndValue, int _array){
-      return (load() + "s64 " + s64Name(_indexAndValue) + dest_separator() + s64Array(_array, _indexAndValue));
+      return (load() + "s64 " + s64Name(_indexAndValue) + separator() + s64Array(_array, _indexAndValue));
    }
 
    private String s32Array(int arr_reg, int index){
-      return ("*(s32_" + regNum(arr_reg) + " + " + array_len_offset() + " + " + sizeof_s32() + " * " + s32Name(index) + ")");
+      return ("["+s32Name(arr_reg) + " + " + array_len_offset() + " + " + sizeof_s32() + " * " + s32Name(index) + "]");
    }
 
    private String s64Array(int arr_reg, int index){
-      return ("*(s64_" + regNum(arr_reg) + " + " + array_len_offset() + " + " + sizeof_s64() + " * " + s64Name(index) + ")");
+      return ("["+s64Name(arr_reg) + " + " + array_len_offset() + " + " + sizeof_s64() + " * " + s64Name(index) + "]");
+   }
+
+   private String regPrefix(){
+      return("$");
    }
 
    private String s32Name(int reg){
-      return ("s32_" + regNum(reg));
+      return (regPrefix()+"s" + regNum(reg));
    }
 
    private String s64Name(int reg){
-      return ("s64_" + regNum(reg));
+      return (regPrefix()+"d" + regNum(reg));
    }
 
    private String f64Name(int reg){
-      return ("f64_" + regNum(reg));
+      return (regPrefix()+"d" + regNum(reg));
    }
 
    private String f32Name(int reg){
-      return ("f32_" + regNum(reg));
+      return (regPrefix()+"s" + regNum(reg));
    }
 
 
@@ -747,7 +754,7 @@ public class RegIsaWriter{
    }
 
    private String regNum(int reg){
-      return (String.format("%02d", reg));
+      return (String.format("%d", reg));
    }
 
    private int stack(int _reg){
@@ -767,9 +774,6 @@ public class RegIsaWriter{
    }
 
 
-   private String dest_separator(){
-      return (separator());
-   }
 
    private String separator(){
       return (", ");
