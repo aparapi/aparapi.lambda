@@ -200,6 +200,10 @@ abstract class Instruction{
       return(stackBase);
    }
 
+   int getStackBaseMinusConsumeCount(){
+      return(stackBase-getConsumedInstructionTypes().length);
+   }
+
    void setStackBase(int _stackBase){
       stackBase = _stackBase;
    }

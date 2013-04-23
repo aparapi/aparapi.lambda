@@ -218,6 +218,7 @@ public class InstructionHelper{
          if(!verboseBytecodeLabels){
             label.append(byteCodeName);
          }else{
+            label.append(byteCodeName).append(" ");
             if(instruction instanceof ConditionalBranch16){
                ConditionalBranch16 conditionalBranch16 = (ConditionalBranch16) instruction;
                label.append(conditionalBranch16.getOperator().getText());
@@ -276,8 +277,6 @@ public class InstructionHelper{
             }else if(instruction instanceof CompositeInstruction){
                label.append("composite ");
                label.append(instruction.getByteCode());
-            }else{
-               label.append(byteCodeName);
             }
          }
       }else{
@@ -368,23 +367,28 @@ public class InstructionHelper{
       return (_msg + "{\n" + table.toString() + "}\n");
    }
 
-   public static String getJavapView(MethodModel _methodModel){
+   public static String getJavapView(ClassModel.ClassModelMethod _method){
       Table table = new Table("%4d", "%4d", " %s", " %s");
       table.header("stack ", "pc ", " mnemonic", " branches");
       int stack = 0;
-      for(Instruction i : _methodModel.getMethod().getInstructionMap().values()){
+      for(Instruction i : _method.getInstructionMap().values()){
          stack += i.getStackDelta();
          int pc = i.getThisPC();
          table.data(stack);
          table.data(pc);
-         table.data(InstructionHelper.getLabel(i, false, false, false));
+         table.data(InstructionHelper.getLabel(i, false, false, true));
          StringBuilder sb = new StringBuilder();
-         for(BranchVector branchInfo : getBranches(_methodModel.getMethod())){
+         for(BranchVector branchInfo : getBranches(_method)){
             sb.append(branchInfo.render(pc));
          }
          table.data(sb);
       }
       return (table.toString());
+   }
+
+   public static String getJavapView(MethodModel _methodModel){
+      return(getJavapView(_methodModel.getMethod())) ;
+
    }
 
    private static Comparator<BranchVector> branchInfoComparator = new Comparator<BranchVector>(){

@@ -6,7 +6,6 @@ import com.amd.aparapi.Device;
 public class Squares{
 
 
-
    static int[] in = new int[10240];
    static int[] out = new int[10240];
 

@@ -2136,7 +2136,7 @@ public class ClassModel{
 
    }
 
-   class ClassModelMethod{
+   public class ClassModelMethod{
 
       private int methodAccessFlags;
 
@@ -2721,7 +2721,7 @@ public class ClassModel{
       return superClazzModel.getField(_name);
    }
 
-   ClassModelMethod getMethod(String _name, String _descriptor){
+   public ClassModelMethod getMethod(String _name, String _descriptor){
       for(ClassModelMethod entry : methods){
          if(entry.getName().equals(_name) && entry.getDescriptor().equals(_descriptor)){
             return (entry);
