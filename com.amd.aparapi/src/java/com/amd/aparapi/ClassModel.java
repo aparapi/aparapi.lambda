@@ -2470,7 +2470,7 @@ public class ClassModel{
              ConsumedInstructionTypeStack consumedInstructionTypeStack = new ConsumedInstructionTypeStack(codeEntry.getMaxStack()+1);
 
             for (Instruction i:pcMap.values()){
-              i.setStackBase(consumedInstructionTypeStack.getIndex());
+              i.setPostStackBase(consumedInstructionTypeStack.getIndex());
                 Instruction.InstructionType[] consumedInstructionTypes =  new Instruction.InstructionType[i.getStackConsumeCount()];
                for (int ci = 0; ci<consumedInstructionTypes.length; ci++){
                    consumedInstructionTypes[ci]=consumedInstructionTypeStack.pop();
@@ -2484,14 +2484,14 @@ public class ClassModel{
                // then the block between produces stack.  So must be 'then' part of ternary
                if (i.isForwardConditionalBranchTarget()){
                   int maxStackBase = 0;
-                  System.out.print("Current stackBase = "+i.getStackBase()+" branchers are ");
+                  System.out.print("Current postStackBase = "+i.getPostStackBase()+" branchers are ");
                   for (Branch b: i.getForwardBranches()){
 
-                     System.out.print(b.getStackBase()+ " ");
-                     maxStackBase  = Math.max(maxStackBase, b.getStackBase());
+                     System.out.print(b.getPostStackBase()+ " ");
+                     maxStackBase  = Math.max(maxStackBase, b.getPostStackBase());
                   }
                   System.out.println(" max = "+maxStackBase);
-                  if (maxStackBase<=i.getStackBase()){
+                  if (maxStackBase<=i.getPostStackBase()){
                      // System.out.println("this is first expression in else of ternary");
                      // we pop the stack and mark the instruction targetted by the prev goto.  Which is the end of
                      // the ternary

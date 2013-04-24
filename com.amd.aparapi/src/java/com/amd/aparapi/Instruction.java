@@ -84,7 +84,7 @@ abstract class Instruction{
 
    protected int pc;
 
-   protected int stackBase;
+   protected int postStackBase;
 
    protected InstructionType[] consumedInstructionTypes;
 
@@ -196,16 +196,16 @@ abstract class Instruction{
       return (getFirstChild() == null ? pc : getFirstChild().getStartPC());
    }
 
-   int getStackBase(){
-      return(stackBase);
+   int getPostStackBase(){
+      return(postStackBase);
    }
 
-   int getStackBaseMinusConsumeCount(){
-      return(stackBase-getConsumedInstructionTypes().length);
+   int getPreStackBase(){
+      return(postStackBase -getConsumedInstructionTypes().length);
    }
 
-   void setStackBase(int _stackBase){
-      stackBase = _stackBase;
+   void setPostStackBase(int _postStackBase){
+      postStackBase = _postStackBase;
    }
 
    void setConsumedInstructionTypes(InstructionType[] _consumedInstructionTypes){

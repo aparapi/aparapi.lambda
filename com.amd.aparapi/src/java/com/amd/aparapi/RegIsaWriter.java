@@ -19,14 +19,76 @@ public class RegIsaWriter{
       maxStack = _maxStack;
    }
 
-   void write(){
+   String argType(TypeHelper.Arg _arg){
+      if (_arg.isArray()){
+          return("u64");
+      }else if (_arg.isInt()){
+          return("s32");
+      }else if (_arg.isFloat()){
+          return("f32");
+      }else{
+          return("?");
+      }
+   }
+    String regType(TypeHelper.Arg _arg){
+        if (_arg.isArray()){
+            return("d");
+        }else if (_arg.isInt()){
+            return("s");
+        }else if (_arg.isFloat()){
+            return("s");
+        }else{
+            return("?");
+        }
+    }
 
+   String indent = "    ";
+
+   void writeInstruction(Instruction i){
+
+           if (i.isBranchTarget()){
+               System.out.println(label(i.getThisPC()));
+           }
+           System.out.println(indent+render(i));
+
+   }
+   void writePrologue(){
+       System.out.println("version 1:0");
+       System.out.print("kernel &"+method.getName()+"(");
+       int argOffset = method.isStatic()?0:1;
+       if (!method.isStatic()){
+           System.out.print("\n"+indent+"kernarg_u64 %_arg0");
+       }
+
+       for (TypeHelper.Arg arg:method.argsAndReturnType.getArgs()){
+           if ((method.isStatic() && arg.getArgc()==0) ){
+               System.out.println();
+           }           else{
+               System.out.println(",");
+           }
+           System.out.print(indent+"kernarg_"+argType(arg)+" %_arg"+(arg.getArgc()+argOffset));
+
+       }
+       System.out.println("\n"+indent+"){");
+       if (!method.isStatic()){
+           System.out.println(indent+"ld_kernarg_u64 $d"+reg(0)+", [%_arg0];");
+       }
+       for (TypeHelper.Arg arg:method.argsAndReturnType.getArgs()){
+           System.out.println(indent+"ld_kernarg_"+argType(arg)+" "+"$"+regType(arg)+reg(arg.getArgc()+argOffset)+", [%_arg"+(arg.getArgc()+argOffset)+"];");
+       }
+
+   }
+   void writeEpilogue(){
+       System.out.println("};");
+   }
+   void write(){
       System.out.println(InstructionHelper.getJavapView(method));
+
 
       System.out.println("MaxLocals=" + maxLocals);
       System.out.println("MaxStack=" + maxStack);
-      Table table = new Table("|%2d ", "|%2d", "|%2d", "|%s", "|%d", "|%d", "|%-60s", "|%s");
-      table.header("|PC ", "|Depth", "|Block", "|Consumes + count", "|Produces", "|Base", "|Instruction", "|Branches");
+      Table table = new Table("|%2d ", "|%2d", "|%2d", "|%s", "|%d", "|%d","|%d", "|%-60s", "|%s");
+      table.header("|PC ", "|Depth", "|Block", "|Consumes + count", "|Produces", "|PreStackBase","|PostStackBase", "|Instruction", "|Branches");
 
       for(Instruction i : method.getInstructions()){
          String label = render(i);
@@ -44,11 +106,17 @@ public class RegIsaWriter{
           table.data(i.getBlock());
          table.data("" + i.getStackConsumeCount() + " {" + consumes + "}");
          table.data(i.getStackProduceCount());
-         table.data(i.getStackBase());
+          table.data(i.getPreStackBase());
+         table.data(i.getPostStackBase());
          table.data(label);
          table.data(sb + (i.isEndOfTernary() ? "*" : ""));
       }
-      System.out.println("{\n" + table.toString() + "}\n");
+       System.out.println("{\n" + table.toString() + "}\n");
+      writePrologue();
+       for(Instruction i : method.getInstructions()){
+      writeInstruction(i);
+       }
+      writeEpilogue();
    }
 
    private String render(Instruction instruction){
@@ -57,102 +125,126 @@ public class RegIsaWriter{
 
          case ACONST_NULL:
             break;
-         case ICONST_M1:
-            break;
-         case ICONST_0:
-            break;
-         case ICONST_1:
-            break;
-         case ICONST_2:
-            break;
-         case ICONST_3:
-            break;
-         case ICONST_4:
-            break;
-         case ICONST_5:
-            break;
+          case ICONST_M1:
+          case ICONST_0:
+          case ICONST_1:
+          case ICONST_2:
+          case ICONST_3:
+          case ICONST_4:
+          case ICONST_5:
+          case BIPUSH:
+          case SIPUSH:  {
+          InstructionSet.Constant<Integer> c = ( InstructionSet.Constant) instruction;
+          returnString = mov_s32_const(stack(instruction.getPreStackBase()), c.getValue());
+          }
+          break;
          case LCONST_0:
-            break;
          case LCONST_1:
+         {
+             InstructionSet.Constant<Long> c = ( InstructionSet.Constant) instruction;
+             returnString = mov_s64_const(stack(instruction.getPreStackBase()), c.getValue());
+         }
             break;
          case FCONST_0:
-            break;
          case FCONST_1:
-            break;
-         case FCONST_2:
+          case FCONST_2:
+          {
+             InstructionSet.Constant<Float> c = ( InstructionSet.Constant) instruction;
+             returnString = mov_f32_const(stack(instruction.getPreStackBase()), c.getValue());
+         }
+
             break;
          case DCONST_0:
-            break;
          case DCONST_1:
+         {
+             InstructionSet.Constant<Double> c = ( InstructionSet.Constant) instruction;
+             returnString = mov_f64_const(stack(instruction.getPreStackBase()), c.getValue());
+         }
             break;
-         case BIPUSH:
-            break;
-         case SIPUSH:
-            break;
-         case LDC:
-            break;
-         case LDC_W:
-            break;
-         case LDC2_W:
-            break;
+         // case BIPUSH: moved up
+         // case SIPUSH: moved up
 
-         case LLOAD:
+         case LDC:
+         case LDC_W:
+         case LDC2_W: {
+             InstructionSet.ConstantPoolEntryConstant cpe = (InstructionSet.ConstantPoolEntryConstant )instruction;
+
+             ClassModel.ConstantPool.ConstantEntry e= (ClassModel.ConstantPool.ConstantEntry )cpe.getConstantPoolEntry() ;
+             if (e instanceof ClassModel.ConstantPool.DoubleEntry){
+                 returnString = mov_f64_const(stack(instruction.getPreStackBase()),  ((ClassModel.ConstantPool.DoubleEntry)e).getValue());
+             } else if (e instanceof ClassModel.ConstantPool.FloatEntry){
+                 returnString = mov_f32_const(stack(instruction.getPreStackBase()),  ((ClassModel.ConstantPool.FloatEntry)e).getValue());
+             }  else if (e instanceof ClassModel.ConstantPool.IntegerEntry){
+                 returnString = mov_s32_const(stack(instruction.getPreStackBase()),  ((ClassModel.ConstantPool.IntegerEntry)e).getValue());
+             }  else if (e instanceof ClassModel.ConstantPool.LongEntry){
+                 returnString = mov_s64_const(stack(instruction.getPreStackBase()),  ((ClassModel.ConstantPool.LongEntry)e).getValue());
+             }
+
+         }
             break;
-         case FLOAD:
-            break;
-         case DLOAD:
-            break;
-         case ALOAD:
-            break;
+         // case LLOAD: moved down
+         // case FLOAD: moved down
+         // case DLOAD: moved down
+         //case ALOAD: moved down
          case ILOAD:
          case ILOAD_0:
          case ILOAD_1:
          case ILOAD_2:
          case ILOAD_3:
             returnString = mov_s32(
-                  stack(instruction.getStackBaseMinusConsumeCount()),
+                  stack(instruction.getPreStackBase()),
                   reg(instruction.asLocalVariableAccessor().getLocalVariableTableIndex()));
             break;
+         case LLOAD:
          case LLOAD_0:
-            break;
          case LLOAD_1:
-            break;
          case LLOAD_2:
-            break;
          case LLOAD_3:
-            break;
+             returnString = mov_s64(
+                     stack(instruction.getPreStackBase()),
+                     reg(instruction.asLocalVariableAccessor().getLocalVariableTableIndex()));
+             break;
+          case FLOAD:
          case FLOAD_0:
-            break;
          case FLOAD_1:
-            break;
          case FLOAD_2:
-            break;
          case FLOAD_3:
-            break;
+             returnString = mov_f32(
+                     stack(instruction.getPreStackBase()),
+                     reg(instruction.asLocalVariableAccessor().getLocalVariableTableIndex()));
+             break;
+          case DLOAD:
          case DLOAD_0:
-            break;
          case DLOAD_1:
-            break;
          case DLOAD_2:
-            break;
          case DLOAD_3:
+             returnString = mov_f64(
+                     stack(instruction.getPreStackBase()),
+                     reg(instruction.asLocalVariableAccessor().getLocalVariableTableIndex()));
             break;
+         case ALOAD:
          case ALOAD_0:
-            break;
          case ALOAD_1:
-            break;
          case ALOAD_2:
-            break;
          case ALOAD_3:
+             returnString = mov_u64(
+                     stack(instruction.getPreStackBase()),
+                     reg(instruction.asLocalVariableAccessor().getLocalVariableTableIndex()));
             break;
-         case IALOAD:
+         case IALOAD:   //arraref, index -> value
             returnString = load_s32(
-                  stack(instruction.getStackBaseMinusConsumeCount() + 1),   //index & value
-                  stack(instruction.getStackBaseMinusConsumeCount() + 0));  //array
+                  stack(instruction.getPreStackBase() + 0),   //array & value
+                  stack(instruction.getPreStackBase() + 1));  //index
             break;
          case LALOAD:
-            break;
+             returnString = load_s64(
+                     stack(instruction.getPreStackBase() + 0),   //array & value
+                     stack(instruction.getPreStackBase() + 1));  //index
+             break;
          case FALOAD:
+             returnString = load_f32(
+                     stack(instruction.getPreStackBase() + 0),   //array & value
+                     stack(instruction.getPreStackBase() + 1));  //index
             break;
          case DALOAD:
             break;
@@ -164,61 +256,62 @@ public class RegIsaWriter{
             break;
          case SALOAD:
             break;
-         case ISTORE:
-            break;
-         case LSTORE:
-            break;
-         case FSTORE:
-            break;
-         case DSTORE:
-            break;
-         case ASTORE:
-            break;
+         //case ISTORE: moved down
+         // case LSTORE:  moved down
+          //case FSTORE: moved down
+         //case DSTORE:  moved down
+         // case ASTORE: moved down
+          case ISTORE:
          case ISTORE_0:
-            break;
          case ISTORE_1:
-            break;
          case ISTORE_2:
-            break;
          case ISTORE_3:
+             returnString = mov_s32(
+                     reg(instruction.asLocalVariableAccessor().getLocalVariableTableIndex()),
+                     stack(instruction.getPreStackBase())
+             );
             break;
+          case LSTORE:
          case LSTORE_0:
-            break;
          case LSTORE_1:
-            break;
          case LSTORE_2:
-            break;
          case LSTORE_3:
+             returnString = mov_s64(
+                     reg(instruction.asLocalVariableAccessor().getLocalVariableTableIndex()),
+                     stack(instruction.getPreStackBase())
+             );
             break;
-         case FSTORE_0:
-            break;
-         case FSTORE_1:
-            break;
-         case FSTORE_2:
-            break;
-         case FSTORE_3:
-            break;
+          case FSTORE:
+          case FSTORE_0:
+          case FSTORE_1:
+          case FSTORE_2:
+          case FSTORE_3:
+              returnString = mov_f32(
+                      reg(instruction.asLocalVariableAccessor().getLocalVariableTableIndex()),
+                      stack(instruction.getPreStackBase())
+              );
+              break;
+          case DSTORE:
          case DSTORE_0:
-            break;
          case DSTORE_1:
-            break;
          case DSTORE_2:
-            break;
          case DSTORE_3:
+             returnString = mov_f64(
+                     reg(instruction.asLocalVariableAccessor().getLocalVariableTableIndex()),
+                     stack(instruction.getPreStackBase())
+             );
             break;
+          case ASTORE:
          case ASTORE_0:
-            break;
          case ASTORE_1:
-            break;
          case ASTORE_2:
-            break;
          case ASTORE_3:
-            break;
+             break;
          case IASTORE:
             returnString = store_s32(
-                  stack(instruction.getStackBaseMinusConsumeCount() + 2), //value
-                  stack(instruction.getStackBaseMinusConsumeCount() + 1), //index
-                  stack(instruction.getStackBaseMinusConsumeCount() + 0));//array
+                  stack(instruction.getPreStackBase() + 2), //value
+                  stack(instruction.getPreStackBase() + 1), //index
+                  stack(instruction.getPreStackBase() + 0));//array
             break;
          case LASTORE:
             break;
@@ -243,8 +336,16 @@ public class RegIsaWriter{
          case DUP_X1:
             break;
          case DUP_X2:
-            break;
+             returnString = mov_s32(stack(instruction.getPreStackBase()+3), stack(instruction.getPreStackBase()+2) )
+                    + "\n"+indent+mov_s32(stack(instruction.getPreStackBase()+2), stack(instruction.getPreStackBase()+1))
+                     + "\n"+indent+mov_s32(stack(instruction.getPreStackBase()+1), stack(instruction.getPreStackBase()+0))
+                     + "\n"+indent+mov_s32(stack(instruction.getPreStackBase()+0), stack(instruction.getPreStackBase()+3)) ;
+
+
+             break;
          case DUP2:
+             returnString = mov_s32(stack(instruction.getPreStackBase()+2), stack(instruction.getPreStackBase())) +
+                     "\n"+indent+mov_s32(stack(instruction.getPreStackBase()+3), stack(instruction.getPreStackBase()+1));
             break;
          case DUP2_X1:
             break;
@@ -253,11 +354,15 @@ public class RegIsaWriter{
          case SWAP:
             break;
          case IADD:
-            break;
+             returnString = "add_s32 "+f32Name(stack(instruction.getPreStackBase()))+separator()+ s32Name(stack(instruction.getPreStackBase()))+separator()+s32Name(stack(instruction.getPreStackBase()+1));
+
+             break;
          case LADD:
             break;
          case FADD:
-            break;
+             returnString = "add_f32 "+f32Name(stack(instruction.getPreStackBase()))+separator()+ f32Name(stack(instruction.getPreStackBase()))+separator()+f32Name(stack(instruction.getPreStackBase()+1));
+
+             break;
          case DADD:
             break;
          case ISUB:
@@ -265,28 +370,38 @@ public class RegIsaWriter{
          case LSUB:
             break;
          case FSUB:
-            break;
+             returnString = "sub_f32 "+f32Name(stack(instruction.getPreStackBase()))+separator()+ f32Name(stack(instruction.getPreStackBase()))+separator()+f32Name(stack(instruction.getPreStackBase()+1));
+
+             break;
          case DSUB:
             break;
          case IMUL:
-              returnString = "mul_s32 "+s32Name(stack(instruction.getStackBaseMinusConsumeCount()))+separator()+ s32Name(stack(instruction.getStackBaseMinusConsumeCount()))+separator()+s32Name(stack(instruction.getStackBaseMinusConsumeCount()+1));
+              returnString = "mul_s32 "+s32Name(stack(instruction.getPreStackBase()))+separator()+ s32Name(stack(instruction.getPreStackBase()))+separator()+s32Name(stack(instruction.getPreStackBase()+1));
             break;
          case LMUL:
             break;
          case FMUL:
-            break;
+             returnString = "mul_f32 "+f32Name(stack(instruction.getPreStackBase()))+separator()+ f32Name(stack(instruction.getPreStackBase()))+separator()+f32Name(stack(instruction.getPreStackBase()+1));
+
+             break;
          case DMUL:
             break;
          case IDIV:
-            break;
+             returnString = "div_s32 "+s32Name(stack(instruction.getPreStackBase()))+separator()+ s32Name(stack(instruction.getPreStackBase()))+separator()+s32Name(stack(instruction.getPreStackBase()+1));
+
+             break;
          case LDIV:
             break;
          case FDIV:
-            break;
+             returnString = "div_f32 "+f32Name(stack(instruction.getPreStackBase()))+separator()+ f32Name(stack(instruction.getPreStackBase()))+separator()+f32Name(stack(instruction.getPreStackBase()+1));
+
+             break;
          case DDIV:
             break;
          case IREM:
-            break;
+             returnString = "rem_s32 "+s32Name(stack(instruction.getPreStackBase()))+separator()+ s32Name(stack(instruction.getPreStackBase()))+separator()+s32Name(stack(instruction.getPreStackBase()+1));
+
+             break;
          case LREM:
             break;
          case FREM:
@@ -326,10 +441,13 @@ public class RegIsaWriter{
          case LXOR:
             break;
          case IINC:
+
+             returnString = "add_s32 "+s32Name(reg(((InstructionSet.I_IINC)instruction).getLocalVariableTableIndex()))+separator()+ s32Name(reg(((InstructionSet.I_IINC)instruction).getLocalVariableTableIndex()))+separator()+ ((InstructionSet.I_IINC)instruction).getDelta();
             break;
          case I2L:
             break;
          case I2F:
+             returnString="cvt_s32_f32 "+s32Name(stack(instruction.getPreStackBase()))+separator()+f32Name(stack(instruction.getPreStackBase()));
             break;
          case I2D:
             break;
@@ -368,34 +486,49 @@ public class RegIsaWriter{
          case DCMPG:
             break;
          case IFEQ:
+             returnString = branch(instruction.getByteCode().getName(), instruction.asBranch().getAbsolute());
             break;
          case IFNE:
+             returnString = branch(instruction.getByteCode().getName(), instruction.asBranch().getAbsolute());
             break;
          case IFLT:
+             returnString = branch(instruction.getByteCode().getName(), instruction.asBranch().getAbsolute());
             break;
          case IFGE:
+             returnString = branch(instruction.getByteCode().getName(), instruction.asBranch().getAbsolute());
             break;
          case IFGT:
+             returnString = branch(instruction.getByteCode().getName(), instruction.asBranch().getAbsolute());
             break;
          case IFLE:
+             returnString = branch(instruction.getByteCode().getName(), instruction.asBranch().getAbsolute());
             break;
          case IF_ICMPEQ:
+             returnString = branch(instruction.getByteCode().getName(), instruction.asBranch().getAbsolute());
             break;
          case IF_ICMPNE:
+             returnString = branch(instruction.getByteCode().getName(), instruction.asBranch().getAbsolute());
             break;
          case IF_ICMPLT:
+             returnString = branch(instruction.getByteCode().getName(), instruction.asBranch().getAbsolute());
             break;
          case IF_ICMPGE:
+             returnString = branch(instruction.getByteCode().getName(), instruction.asBranch().getAbsolute());
             break;
          case IF_ICMPGT:
+             returnString = branch(instruction.getByteCode().getName(), instruction.asBranch().getAbsolute());
             break;
          case IF_ICMPLE:
+             returnString = branch(instruction.getByteCode().getName(), instruction.asBranch().getAbsolute());
             break;
          case IF_ACMPEQ:
+             returnString = branch(instruction.getByteCode().getName(), instruction.asBranch().getAbsolute());
             break;
          case IF_ACMPNE:
+             returnString = branch(instruction.getByteCode().getName(), instruction.asBranch().getAbsolute());
             break;
          case GOTO:
+            returnString = branch("jmp", instruction.asBranch().getAbsolute());
             break;
          case JSR:
             break;
@@ -453,10 +586,13 @@ public class RegIsaWriter{
          case MULTIANEWARRAY:
             break;
          case IFNULL:
+             returnString = branch(instruction.getByteCode().getName(), instruction.asBranch().getAbsolute());
             break;
          case IFNONNULL:
+             returnString = branch(instruction.getByteCode().getName(), instruction.asBranch().getAbsolute());
             break;
          case GOTO_W:
+             returnString = branch(instruction.getByteCode().getName(), instruction.asBranch().getAbsolute());
             break;
          case JSR_W:
             break;
@@ -635,16 +771,26 @@ public class RegIsaWriter{
       String dotClassName = _i.asFieldAccessor().getConstantPoolFieldEntry().getClassEntry().getDotClassName();
       String name = _i.asFieldAccessor().getConstantPoolFieldEntry().getName();
       if(_i instanceof InstructionSet.I_PUTFIELD || _i instanceof InstructionSet.I_PUTSTATIC){
+          if(type.isArray()){
+              sb.append("arr_");
+          }
          if(type.isInt()){
-            sb.append("s32 " + dotClassName + "." + name + separator() + s32Name(stack(_i.getStackBaseMinusConsumeCount())));
+            sb.append("s32 " + dotClassName + "." + name + separator() + s32Name(stack(_i.getPreStackBase())));
          }
+          if(type.isFloat()){
+              sb.append("f32 " + dotClassName + "." + name + separator() + f32Name(stack(_i.getPreStackBase())));
+          }
       }else{
          if(type.isArray()){
             sb.append("arr_");
          }
          if(type.isInt()){
-            sb.append("s32 " + ((type.isArray())?"arr_":"")+s32Name(stack(_i.getStackBaseMinusConsumeCount())));
+            sb.append("s32 " + ((type.isArray())?"arr_":"")+s32Name(stack(_i.getPreStackBase())));
          }
+          if(type.isFloat()){
+              sb.append("f32 " + ((type.isArray())?"arr_":"")+f32Name(stack(_i.getPreStackBase())));
+          }
+         sb.append(separator() + u64Name(stack(_i.getPreStackBase())));
          sb.append(separator() + dotClassName + "." + name);
       }
       return (sb.toString());
@@ -662,9 +808,9 @@ public class RegIsaWriter{
       if(returnType.isVoid()){
          sb.append("call_void VOID" + separator() + dotClassName + "." + name + " " + sb);
       }else if(returnType.isInt()){
-         sb.append("call_s32 " + s32Name(stack(_i.getStackBaseMinusConsumeCount())) + separator() + dotClassName + "." + name + " " + sb);
+         sb.append("call_s32 " + s32Name(stack(_i.getPreStackBase())) + separator() + dotClassName + "." + name + " " + sb);
       }else if(returnType.isDouble()){
-         sb.append("call_f64 " + f64Name(stack(_i.getStackBaseMinusConsumeCount())) + separator() + dotClassName + "." + name + " " + sb);
+         sb.append("call_f64 " + f64Name(stack(_i.getPreStackBase())) + separator() + dotClassName + "." + name + " " + sb);
 
       }
       for(TypeHelper.Arg arg : argsAndReturnType.getArgs()){
@@ -672,13 +818,13 @@ public class RegIsaWriter{
             sb.append(", ");
          }
          if(arg.isDouble()){
-            sb.append(f64Name(stack(_i.getStackBaseMinusConsumeCount() + arg.getArgc())));
+            sb.append(f64Name(stack(_i.getPreStackBase() + arg.getArgc())));
          }else if(arg.isFloat()){
-            sb.append(f32Name(stack(_i.getStackBaseMinusConsumeCount() + arg.getArgc())));
+            sb.append(f32Name(stack(_i.getPreStackBase() + arg.getArgc())));
          }else if(arg.isInt()){
-            sb.append(s32Name(stack(_i.getStackBaseMinusConsumeCount() + arg.getArgc())));
+            sb.append(s32Name(stack(_i.getPreStackBase() + arg.getArgc())));
          }else if(arg.isLong()){
-            sb.append(s64Name(stack(_i.getStackBaseMinusConsumeCount() + arg.getArgc())));
+            sb.append(s64Name(stack(_i.getPreStackBase() + arg.getArgc())));
          }
       }
       return (sb.toString());
@@ -699,26 +845,68 @@ public class RegIsaWriter{
    private String mov_s32(int _dest, int _source){
       return (mov() + "s32 " + s32Name(_dest) + separator() + s32Name(_source));
    }
+    private String mov_f32(int _dest, int _source){
+        return (mov() + "f32 " + f32Name(_dest) + separator() + f32Name(_source));
+    }
+    private String mov_s32_const(int _dest, int _const){
+        return (mov() + "s32 " + s32Name(_dest) + separator() + _const);
+    }
+    private String mov_f32_const(int _dest, float _const){
+        return (mov() + "f32 " + f32Name(_dest) + separator() + _const);
+    }
+    private String mov_f64_const(int _dest, double _const){
+        return (mov() + "f64 " + f64Name(_dest) + separator() + _const);
+    }
+    private String mov_s64_const(int _dest, long _const){
+        return (mov() + "s64 " + s64Name(_dest) + separator() + _const);
+    }
+    private String mov_s64(int _dest, int _source){
+        return (mov() + "s64 " + s64Name(_dest) + separator() + s64Name(_source));
+    }
 
-   private String load_s32(int _indexAndValue, int _array){
-      return (load() + "s32 " + s32Name(_indexAndValue) + separator() + s32Array(_array, _indexAndValue));
+    private String mov_f64(int _dest, int _source){
+        return (mov() + "f64 " + f64Name(_dest) + separator() + f64Name(_source));
+    }
+
+    private String mov_u64(int _dest, int _source){
+        return (mov() + "u64 " + u64Name(_dest) + separator() + u64Name(_source));
+    }
+
+   private String load_s32(int _arrayAndValue, int _index){
+      return (load() + "s32 " + s32Name(_arrayAndValue) + separator() + s32Array(_arrayAndValue, _index));
    }
 
    private String store_s32(int _value, int _index, int _array){
       return (store() + "s32 " + s32Array(_array, _index) + separator() + s32Name(_value));
    }
 
-   private String load_s64(int _indexAndValue, int _array){
-      return (load() + "s64 " + s64Name(_indexAndValue) + separator() + s64Array(_array, _indexAndValue));
+   private String load_s64(int _arrayAndValue, int _index){
+      return (load() + "s64 " + s64Name(_arrayAndValue) + separator() + s64Array(_arrayAndValue, _index));
    }
 
+    private String load_f64(int _arrayAndValue, int _index){
+        return (load() + "f64 " + f64Name(_arrayAndValue) + separator() + f64Array(_arrayAndValue, _index));
+    }
+
+    private String load_f32(int _arrayAndValue, int _index){
+        return (load() + "f32 " + f32Name(_arrayAndValue) + separator() + f32Array(_arrayAndValue, _index));
+    }
+
    private String s32Array(int arr_reg, int index){
-      return ("["+s32Name(arr_reg) + " + " + array_len_offset() + " + " + sizeof_s32() + " * " + s32Name(index) + "]");
+      return ("["+u64Name(arr_reg) + " + " + array_len_offset() + " + " + sizeof_s32() + " * " + s32Name(index) + "]");
    }
 
    private String s64Array(int arr_reg, int index){
-      return ("["+s64Name(arr_reg) + " + " + array_len_offset() + " + " + sizeof_s64() + " * " + s64Name(index) + "]");
+      return ("["+u64Name(arr_reg) + " + " + array_len_offset() + " + " + sizeof_s64() + " * " + s64Name(index) + "]");
    }
+
+    private String f64Array(int arr_reg, int index){
+        return ("["+u64Name(arr_reg) + " + " + array_len_offset() + " + " + sizeof_f64() + " * " + f64Name(index) + "]");
+    }
+
+    private String f32Array(int arr_reg, int index){
+        return ("["+u64Name(arr_reg) + " + " + array_len_offset() + " + " + sizeof_f32() + " * " + f32Name(index) + "]");
+    }
 
    private String regPrefix(){
       return("$");
@@ -731,6 +919,9 @@ public class RegIsaWriter{
    private String s64Name(int reg){
       return (regPrefix()+"d" + regNum(reg));
    }
+    private String u64Name(int reg){
+        return (regPrefix()+"d" + regNum(reg));
+    }
 
    private String f64Name(int reg){
       return (regPrefix()+"d" + regNum(reg));
@@ -753,6 +944,14 @@ public class RegIsaWriter{
       return ("8");
    }
 
+    private String sizeof_f32(){
+        return ("4");
+    }
+
+    private String sizeof_f64(){
+        return ("8");
+    }
+
    private String regNum(int reg){
       return (String.format("%d", reg));
    }
@@ -774,7 +973,13 @@ public class RegIsaWriter{
    }
 
 
+   private String branch(String type, int _pc){
+       return(type+" "+label(_pc));
+   }
 
+   private String label(int _pc){
+       return(String.format("@L%d", _pc));
+   }
    private String separator(){
       return (", ");
    }

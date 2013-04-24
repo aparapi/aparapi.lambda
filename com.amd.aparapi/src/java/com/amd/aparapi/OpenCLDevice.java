@@ -385,6 +385,10 @@ public class OpenCLDevice extends Device{
       OpenCLDevice select(OpenCLDevice _deviceLhs, OpenCLDevice _deviceRhs);
    }
 
+    public interface PlatformDeviceVisitor{
+        boolean select(OpenCLPlatform _platform, OpenCLDevice _device);
+    }
+
    public static OpenCLDevice select(DeviceSelector _deviceSelector){
       OpenCLDevice device = null;
       for(OpenCLPlatform p : OpenCLPlatform.getPlatforms()){
@@ -413,6 +417,19 @@ public class OpenCLDevice extends Device{
          }
       }
       return (device);
+   }
+
+
+   public static OpenCLDevice get(PlatformDeviceVisitor _platformDeviceVisitor){
+       for(OpenCLPlatform p : OpenCLPlatform.getPlatforms()){
+           for(OpenCLDevice d : p.getDevices()){
+               if  (_platformDeviceVisitor.select(p,d))   {
+
+                   return(d);
+               }
+           }
+       }
+       return (null);
    }
 
    public OpenCLProgram createProgram(String source){
