@@ -2585,7 +2585,7 @@ public class ClassModel{
 
 
             if (Config.enableShowJavaP){
-               RegIsaWriter writer = new RegIsaWriter(this, codeEntry.getMaxLocals(), codeEntry.getMaxStack());
+               RegIsaWriter writer = new RegIsaWriter(this);
                writer.write();
 
 

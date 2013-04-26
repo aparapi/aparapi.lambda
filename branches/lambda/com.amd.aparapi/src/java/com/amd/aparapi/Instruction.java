@@ -200,8 +200,12 @@ abstract class Instruction{
       return(postStackBase);
    }
 
-   int getPreStackBase(){
+   int getPreStackBaseN(){
       return(postStackBase -getConsumedInstructionTypes().length);
+   }
+
+   int getPreStackBaseOnLocals(){
+      return(getPreStackBaseN()+method.getCodeEntry().getMaxLocals());
    }
 
    void setPostStackBase(int _postStackBase){
