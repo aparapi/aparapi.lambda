@@ -302,6 +302,17 @@ public class RegIsaWriter{
       public Renderer semicolon(){
          return(append(";"));
       }
+
+      public Renderer dot(){
+         return(append("."));
+      }
+
+      public Renderer field(){
+         return(append("field_"));
+      }
+      public Renderer call(){
+         return(append("call_"));
+      }
    }
 
    static abstract class RegInstruction{
@@ -345,7 +356,7 @@ public class RegIsaWriter{
       }
 
       @Override void renderMe(Renderer r){
-            r.append("field_");
+            r.field();
             TypeHelper.Type type = from.asFieldAccessor().getConstantPoolFieldEntry().getType();
             String dotClassName = from.asFieldAccessor().getConstantPoolFieldEntry().getClassEntry().getDotClassName();
             String name = from.asFieldAccessor().getConstantPoolFieldEntry().getName();
@@ -354,14 +365,10 @@ public class RegIsaWriter{
                   r.append("arr_");
                }
                if(type.isInt()){
-                  r.append("s32 " + dotClassName + "." + name);
-                  r.separator();
-                  r.s32Name(from.getPreStackBaseOnLocals());
+                  r.s32().space().append(dotClassName).dot().append(name).separator().s32Name(from.getPreStackBaseOnLocals());
                }
                if(type.isFloat()){
-                  r.append("f32 " + dotClassName + "." + name) ;
-                  r.separator();
-                  r.f32Name(from.getPreStackBaseOnLocals());
+                  r.f32().space().append(dotClassName).dot().append(name).separator().f32Name(from.getPreStackBaseOnLocals());
                }
             }else{
                if(type.isArray()){
@@ -375,10 +382,7 @@ public class RegIsaWriter{
                   r.append("f32 " + ((type.isArray())?"arr_":""));
                   r.f32Name(from.getPreStackBaseOnLocals());
                }
-               r.separator();
-               r.u64Name(from.getPreStackBaseOnLocals());
-               r.separator();
-               r.append(dotClassName + "." + name);
+               r.separator().u64Name(from.getPreStackBaseOnLocals()).separator().append(dotClassName).dot().append(name);
             }
       }
 
@@ -399,24 +403,20 @@ public class RegIsaWriter{
 
 
             if(returnType.isVoid()){
-               r.append("call_void VOID");
-               r.separator();
-               r.append(dotClassName + "." + name + " ");
+               r.call().append("void").space().append("VOID");
             }else if(returnType.isInt()){
-               r.append("call_s32 ");
-                r.s32Name( from.getPreStackBaseOnLocals());
-                r.separator();
-                r.append(dotClassName + "." + name + " ");
+               r.call().s32().space().s32Name(from.getPreStackBaseOnLocals());
+
             }else if(returnType.isDouble()){
-               r.append("call_f64 ");
-               r.f64Name(from.getPreStackBaseOnLocals());
-              r.separator();
-              r.append(dotClassName + "." + name + " ");
+               r.call().f64().space().f64Name(from.getPreStackBaseOnLocals());
+
 
             }
+            r.separator().append(dotClassName).dot().append(name).space();
+
             for(TypeHelper.Arg arg : argsAndReturnType.getArgs()){
                if(arg.getArgc() > 0){
-                  r.append(", ");
+                  r.separator();
                }
                if(arg.isDouble()){
                   r.f64Name(from.getPreStackBaseOnLocals() + arg.getArgc());
