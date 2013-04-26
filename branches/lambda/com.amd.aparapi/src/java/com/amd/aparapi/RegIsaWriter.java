@@ -270,7 +270,7 @@ public class RegIsaWriter{
 
       void writePrologue(ClassModel.ClassModelMethod method){
          append("version 1:0").nl();
-         append("kernel &"+method.getName()+"(").nl();
+         append("kernel &"+method.getName()+"(");
          int argOffset = method.isStatic()?0:1;
          if (!method.isStatic()){
             nl().indent().append("kernarg_u64 %_arg0");
@@ -285,12 +285,12 @@ public class RegIsaWriter{
             indent().append("kernarg_"+argType(arg)+" %_arg"+(arg.getArgc()+argOffset));
 
          }
-         nl().indent().append("{");
+         nl().indent().append("){").nl();
          if (!method.isStatic()){
             indent().append("ld_kernarg_u64 $d"+0+", [%_arg0];").nl();
          }
          for (TypeHelper.Arg arg:method.argsAndReturnType.getArgs()){
-            indent().append("ld_kernarg_"+argType(arg)+" "+"$"+regType(arg)+(arg.getArgc()+argOffset)+", [%_arg"+(arg.getArgc()+argOffset)+"];");
+            indent().append("ld_kernarg_"+argType(arg)+" "+"$"+regType(arg)+(arg.getArgc()+argOffset)+", [%_arg"+(arg.getArgc()+argOffset)+"];").nl();
          }
 
       }
@@ -299,6 +299,9 @@ public class RegIsaWriter{
       }
 
 
+      public Renderer semicolon(){
+         return(append(";"));
+      }
    }
 
    static abstract class RegInstruction{
@@ -310,9 +313,12 @@ public class RegIsaWriter{
 
        final void render(Renderer r){
           if (from.isBranchTarget()){
+             r.nl();
              r.label(from.getThisPC());
           }
+          r.indent();
           renderMe(r);
+          r.semicolon();
        }
        abstract void renderMe(Renderer r);
 
@@ -904,7 +910,7 @@ public class RegIsaWriter{
        r.writePrologue(method);
        for(RegInstruction i : regISA){
           i.render(r);
-          r.append(";").nl();
+          r.nl();
        }
       r.writeEpilogue(method);
       System.out.println(r.sb.toString());
