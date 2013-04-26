@@ -23,6 +23,36 @@ public class RegIsaWriter{
        }
    }
 
+   static class branch extends RegInstruction{
+      String name;
+      int pc;
+      branch(Instruction _from, String _name, int _pc){
+         super(_from);
+         name = _name;
+         pc = _pc;
+      }
+   }
+
+   static class field extends RegInstruction{
+
+      field(Instruction _from){
+         super(_from);
+      }
+   }
+   static class call extends RegInstruction{
+
+      call(Instruction _from){
+         super(_from);
+      }
+   }
+
+   static class nyi extends RegInstruction{
+
+      nyi(Instruction _from){
+         super(_from);
+      }
+   }
+
    static abstract class ld_kernarg extends RegInstruction{
       int reg, argc;
 
@@ -413,6 +443,7 @@ public class RegIsaWriter{
       switch(instruction.getByteCode()){
 
          case ACONST_NULL:
+            regInstructions.add(new nyi(instruction));
             break;
           case ICONST_M1:
           case ICONST_0:
@@ -566,14 +597,19 @@ public class RegIsaWriter{
                      stack(instruction.getPreStackBase() + 1));  //index
             break;
          case DALOAD:
+            regInstructions.add(new nyi(instruction));
             break;
          case AALOAD:
+            regInstructions.add(new nyi(instruction));
             break;
          case BALOAD:
+            regInstructions.add(new nyi(instruction));
             break;
          case CALOAD:
+            regInstructions.add(new nyi(instruction));
             break;
          case SALOAD:
+            regInstructions.add(new nyi(instruction));
             break;
          //case ISTORE: moved down
          // case LSTORE:  moved down
@@ -651,28 +687,45 @@ public class RegIsaWriter{
                   stack(instruction.getPreStackBase() + 0));//array
             break;
          case LASTORE:
+            regInstructions.add(new nyi(instruction));
             break;
          case FASTORE:
+            regInstructions.add(new nyi(instruction));
             break;
          case DASTORE:
+            regInstructions.add(new nyi(instruction));
             break;
          case AASTORE:
+            regInstructions.add(new nyi(instruction));
             break;
          case BASTORE:
+            regInstructions.add(new nyi(instruction));
             break;
          case CASTORE:
+            regInstructions.add(new nyi(instruction));
             break;
          case SASTORE:
+            regInstructions.add(new nyi(instruction));
             break;
          case POP:
+            regInstructions.add(new nyi(instruction));
             break;
          case POP2:
+            regInstructions.add(new nyi(instruction));
             break;
          case DUP:
+            regInstructions.add(new nyi(instruction));
             break;
          case DUP_X1:
+            regInstructions.add(new nyi(instruction));
             break;
          case DUP_X2:
+             regInstructions.add(new mov_s32(instruction, stack(instruction.getPreStackBase()+3), stack(instruction.getPreStackBase()+2) )) ;
+            regInstructions.add(new mov_s32(instruction, stack(instruction.getPreStackBase()+2), stack(instruction.getPreStackBase()+1) )) ;
+
+            regInstructions.add(new mov_s32(instruction, stack(instruction.getPreStackBase()+1), stack(instruction.getPreStackBase()+0) )) ;
+
+            regInstructions.add(new mov_s32(instruction, stack(instruction.getPreStackBase()+0), stack(instruction.getPreStackBase()+3) )) ;
              returnString = mov_s32(stack(instruction.getPreStackBase()+3), stack(instruction.getPreStackBase()+2) )
                     + "\n"+indent+mov_s32(stack(instruction.getPreStackBase()+2), stack(instruction.getPreStackBase()+1))
                      + "\n"+indent+mov_s32(stack(instruction.getPreStackBase()+1), stack(instruction.getPreStackBase()+0))
@@ -681,14 +734,20 @@ public class RegIsaWriter{
 
              break;
          case DUP2:
+
+            regInstructions.add(new mov_s32(instruction, stack(instruction.getPreStackBase()+2), stack(instruction.getPreStackBase()+0) )) ;
+            regInstructions.add(new mov_s32(instruction, stack(instruction.getPreStackBase()+3), stack(instruction.getPreStackBase()+1) )) ;
              returnString = mov_s32(stack(instruction.getPreStackBase()+2), stack(instruction.getPreStackBase())) +
                      "\n"+indent+mov_s32(stack(instruction.getPreStackBase()+3), stack(instruction.getPreStackBase()+1));
             break;
          case DUP2_X1:
+            regInstructions.add(new nyi(instruction));
             break;
          case DUP2_X2:
+            regInstructions.add(new nyi(instruction));
             break;
          case SWAP:
+            regInstructions.add(new nyi(instruction));
             break;
          case IADD:
              regInstructions.add(new add_s32(instruction,stack(instruction.getPreStackBase()), stack(instruction.getPreStackBase()), stack(instruction.getPreStackBase()+1)));
@@ -708,6 +767,7 @@ public class RegIsaWriter{
 
              break;
          case DADD:
+            regInstructions.add(new nyi(instruction));
             break;
          case ISUB:
             regInstructions.add(new sub_s32(instruction,stack(instruction.getPreStackBase()), stack(instruction.getPreStackBase()), stack(instruction.getPreStackBase()+1)));
@@ -716,6 +776,7 @@ public class RegIsaWriter{
 
             break;
          case LSUB:
+            regInstructions.add(new nyi(instruction));
             break;
          case FSUB:
             regInstructions.add(new sub_f32(instruction,stack(instruction.getPreStackBase()), stack(instruction.getPreStackBase()), stack(instruction.getPreStackBase()+1)));
@@ -724,6 +785,7 @@ public class RegIsaWriter{
 
              break;
          case DSUB:
+            regInstructions.add(new nyi(instruction));
             break;
          case IMUL:
             regInstructions.add(new mul_s32(instruction,stack(instruction.getPreStackBase()), stack(instruction.getPreStackBase()), stack(instruction.getPreStackBase()+1)));
@@ -731,6 +793,7 @@ public class RegIsaWriter{
             returnString = "mul_s32 "+s32Name(stack(instruction.getPreStackBase()))+separator()+ s32Name(stack(instruction.getPreStackBase()))+separator()+s32Name(stack(instruction.getPreStackBase()+1));
             break;
          case LMUL:
+            regInstructions.add(new nyi(instruction));
             break;
          case FMUL:
             regInstructions.add(new mul_f32(instruction,stack(instruction.getPreStackBase()), stack(instruction.getPreStackBase()), stack(instruction.getPreStackBase()+1)));
@@ -739,6 +802,7 @@ public class RegIsaWriter{
 
              break;
          case DMUL:
+            regInstructions.add(new nyi(instruction));
             break;
          case IDIV:
             regInstructions.add(new div_s32(instruction,stack(instruction.getPreStackBase()), stack(instruction.getPreStackBase()), stack(instruction.getPreStackBase()+1)));
@@ -747,6 +811,7 @@ public class RegIsaWriter{
 
              break;
          case LDIV:
+            regInstructions.add(new nyi(instruction));
             break;
          case FDIV:
             regInstructions.add(new div_f32(instruction,stack(instruction.getPreStackBase()), stack(instruction.getPreStackBase()), stack(instruction.getPreStackBase()+1)));
@@ -755,6 +820,7 @@ public class RegIsaWriter{
 
              break;
          case DDIV:
+            regInstructions.add(new nyi(instruction));
             break;
          case IREM:
             regInstructions.add(new rem_s32(instruction,stack(instruction.getPreStackBase()), stack(instruction.getPreStackBase()), stack(instruction.getPreStackBase()+1)));
@@ -763,42 +829,61 @@ public class RegIsaWriter{
 
              break;
          case LREM:
+            regInstructions.add(new nyi(instruction));
             break;
          case FREM:
+            regInstructions.add(new nyi(instruction));
             break;
          case DREM:
+            regInstructions.add(new nyi(instruction));
             break;
          case INEG:
+            regInstructions.add(new nyi(instruction));
             break;
          case LNEG:
+            regInstructions.add(new nyi(instruction));
             break;
          case FNEG:
+            regInstructions.add(new nyi(instruction));
             break;
          case DNEG:
+            regInstructions.add(new nyi(instruction));
             break;
          case ISHL:
+            regInstructions.add(new nyi(instruction));
             break;
          case LSHL:
+            regInstructions.add(new nyi(instruction));
             break;
          case ISHR:
+            regInstructions.add(new nyi(instruction));
             break;
          case LSHR:
+            regInstructions.add(new nyi(instruction));
             break;
          case IUSHR:
+            regInstructions.add(new nyi(instruction));
             break;
          case LUSHR:
+            regInstructions.add(new nyi(instruction));
             break;
          case IAND:
+            regInstructions.add(new nyi(instruction));
             break;
          case LAND:
+            regInstructions.add(new nyi(instruction));
             break;
          case IOR:
+            regInstructions.add(new nyi(instruction));
             break;
          case LOR:
+            regInstructions.add(new nyi(instruction));
             break;
          case IXOR:
+            regInstructions.add(new nyi(instruction));
             break;
          case LXOR:
+            regInstructions.add(new nyi(instruction));
             break;
          case IINC:
             regInstructions.add(new add_const_s32(instruction, reg(((InstructionSet.I_IINC)instruction).getLocalVariableTableIndex()),reg(((InstructionSet.I_IINC)instruction).getLocalVariableTableIndex()), ((InstructionSet.I_IINC)instruction).getDelta()));
@@ -806,6 +891,7 @@ public class RegIsaWriter{
             returnString = "add_s32 "+s32Name(reg(((InstructionSet.I_IINC)instruction).getLocalVariableTableIndex()))+separator()+ s32Name(reg(((InstructionSet.I_IINC)instruction).getLocalVariableTableIndex()))+separator()+ ((InstructionSet.I_IINC)instruction).getDelta();
             break;
          case I2L:
+            regInstructions.add(new nyi(instruction));
             break;
          case I2F:
             regInstructions.add(new cvt_s32_f32(instruction, stack(instruction.getPreStackBase()),stack(instruction.getPreStackBase())));
@@ -813,40 +899,58 @@ public class RegIsaWriter{
             returnString="cvt_s32_f32 "+s32Name(stack(instruction.getPreStackBase()))+separator()+f32Name(stack(instruction.getPreStackBase()));
             break;
          case I2D:
+            regInstructions.add(new nyi(instruction));
             break;
          case L2I:
+            regInstructions.add(new nyi(instruction));
             break;
          case L2F:
+            regInstructions.add(new nyi(instruction));
             break;
          case L2D:
+            regInstructions.add(new nyi(instruction));
             break;
          case F2I:
+            regInstructions.add(new nyi(instruction));
             break;
          case F2L:
+            regInstructions.add(new nyi(instruction));
             break;
          case F2D:
+            regInstructions.add(new nyi(instruction));
             break;
          case D2I:
+            regInstructions.add(new nyi(instruction));
             break;
          case D2L:
+            regInstructions.add(new nyi(instruction));
             break;
          case D2F:
+            regInstructions.add(new nyi(instruction));
             break;
          case I2B:
+            regInstructions.add(new nyi(instruction));
             break;
          case I2C:
+            regInstructions.add(new nyi(instruction));
             break;
          case I2S:
+            regInstructions.add(new nyi(instruction));
             break;
          case LCMP:
+            regInstructions.add(new nyi(instruction));
             break;
          case FCMPL:
+            regInstructions.add(new nyi(instruction));
             break;
          case FCMPG:
+            regInstructions.add(new nyi(instruction));
             break;
          case DCMPL:
+            regInstructions.add(new nyi(instruction));
             break;
          case DCMPG:
+            regInstructions.add(new nyi(instruction));
             break;
          case IFEQ:
          case IFNE:
@@ -863,32 +967,47 @@ public class RegIsaWriter{
          case IF_ACMPEQ:
          case IF_ACMPNE:
          case GOTO:
+         case IFNULL:
+         case IFNONNULL:
+         case GOTO_W:
+            regInstructions.add(new branch(instruction, instruction.getByteCode().getName(), instruction.asBranch().getAbsolute()));
             returnString = branch(instruction.getByteCode().getName(), instruction.asBranch().getAbsolute());
             break;
          case JSR:
+            regInstructions.add(new nyi(instruction));
             break;
          case RET:
+            regInstructions.add(new nyi(instruction));
             break;
          case TABLESWITCH:
+            regInstructions.add(new nyi(instruction));
             break;
          case LOOKUPSWITCH:
+            regInstructions.add(new nyi(instruction));
             break;
          case IRETURN:
+            regInstructions.add(new nyi(instruction));
             break;
          case LRETURN:
+            regInstructions.add(new nyi(instruction));
             break;
          case FRETURN:
+            regInstructions.add(new nyi(instruction));
             break;
          case DRETURN:
+            regInstructions.add(new nyi(instruction));
             break;
          case ARETURN:
+            regInstructions.add(new nyi(instruction));
             break;
          case RETURN:
+            regInstructions.add(new nyi(instruction));
             break;
          case GETSTATIC:
          case PUTSTATIC:
          case GETFIELD:
          case PUTFIELD:
+            regInstructions.add(new field(instruction));
             returnString = field(instruction);
             break;
          case INVOKEVIRTUAL:
@@ -896,40 +1015,44 @@ public class RegIsaWriter{
          case INVOKESTATIC:
          case INVOKEINTERFACE:
          case INVOKEDYNAMIC:
+            regInstructions.add(new call(instruction));
             returnString = call(instruction);
             break;
          case NEW:
+            regInstructions.add(new nyi(instruction));
             break;
          case NEWARRAY:
+            regInstructions.add(new nyi(instruction));
             break;
          case ANEWARRAY:
+            regInstructions.add(new nyi(instruction));
             break;
          case ARRAYLENGTH:
+            regInstructions.add(new nyi(instruction));
             break;
          case ATHROW:
+            regInstructions.add(new nyi(instruction));
             break;
          case CHECKCAST:
+            regInstructions.add(new nyi(instruction));
             break;
          case INSTANCEOF:
+            regInstructions.add(new nyi(instruction));
             break;
          case MONITORENTER:
+            regInstructions.add(new nyi(instruction));
             break;
          case MONITOREXIT:
+            regInstructions.add(new nyi(instruction));
             break;
          case WIDE:
+            regInstructions.add(new nyi(instruction));
             break;
          case MULTIANEWARRAY:
-            break;
-         case IFNULL:
-             returnString = branch(instruction.getByteCode().getName(), instruction.asBranch().getAbsolute());
-            break;
-         case IFNONNULL:
-             returnString = branch(instruction.getByteCode().getName(), instruction.asBranch().getAbsolute());
-            break;
-         case GOTO_W:
-             returnString = branch(instruction.getByteCode().getName(), instruction.asBranch().getAbsolute());
+            regInstructions.add(new nyi(instruction));
             break;
          case JSR_W:
+            regInstructions.add(new nyi(instruction));
             break;
 
       }
