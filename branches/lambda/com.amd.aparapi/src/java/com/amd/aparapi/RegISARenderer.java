@@ -211,6 +211,12 @@ public class RegISARenderer {
     public RegISARenderer add(){
         return(append("add_"));
     }
+   public RegISARenderer arg(){
+      return(append("ld_kernarg_"));
+   }
+   public RegISARenderer argRef(int _argc){
+     return(append("[%_argc").append(_argc).append("]"));
+   }
     public RegISARenderer sub(){
         return(append("sub_"));
     }
