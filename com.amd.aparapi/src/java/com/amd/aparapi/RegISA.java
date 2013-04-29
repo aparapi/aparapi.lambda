@@ -150,32 +150,38 @@ public class RegISA {
     }
 
     static abstract class ld_kernarg extends RegInstruction{
-        int reg, argc;
+        int argc;
 
-        ld_kernarg(Instruction _from){
+        ld_kernarg(Instruction _from, int _argc){
             super(_from);
+           argc = _argc;
         }
     }
 
-    /*
+
  
     static class ld_kernarg_u64 extends ld_kernarg{
  
-       ld_kernarg_u64(Instruction _from){
-          super(_from);
+       ld_kernarg_u64(Instruction _from, int _argc){
+          super(_from, _argc);
        }
- 
-       @Override void render(StringBuilder _sb){
+
+       @Override void render(RegISARenderer r){
+          r.arg().u64().space().u64Name(argc).separator().argRef(argc);
        }
     }
  
     static class ld_kernarg_s32 extends ld_kernarg{
  
-       ld_kernarg_s32(Instruction _from){
-          super(_from);
+       ld_kernarg_s32(Instruction _from, int _argc){
+          super(_from, _argc);
+       }
+
+       @Override void render(RegISARenderer r){
+          r.arg().s32().space().s32Name(argc).separator().argRef(argc);
        }
     }
-    */
+
     static class add_const_s32 extends RegInstruction{
         int reg_dest, reg_src, value;
         add_const_s32(Instruction _from, int _reg_dest, int _reg_src, int _value){
@@ -589,12 +595,6 @@ public class RegISA {
 
         }
         r.nl().indent().append("){").nl();
-        if (!method.isStatic()){
-            r.indent().append("ld_kernarg_u64 $d"+0+", [%_arg0];").nl();
-        }
-        for (TypeHelper.Arg arg:method.argsAndReturnType.getArgs()){
-            r.indent().append("ld_kernarg_"+argType(arg)+" "+"$"+regType(arg)+(arg.getArgc()+argOffset)+", [%_arg"+(arg.getArgc()+argOffset)+"];").nl();
-        }
 
         java.util.Set<Instruction> s = new java.util.HashSet<Instruction>();
 
@@ -1149,8 +1149,30 @@ public class RegISA {
     }
 
     RegISA(ClassModel.ClassModelMethod _method){
-        method = _method;
-        for(Instruction i : method.getInstructions()){
+
+
+       method = _method;
+
+
+
+
+       for(Instruction i : method.getInstructions()){
+            if (i.getThisPC()==0){
+               int argOffset = 0;
+               if (!method.isStatic()){
+                  add(new ld_kernarg_u64(i, 0));
+                  argOffset++;
+               }
+               for (TypeHelper.Arg arg:method.argsAndReturnType.getArgs()){
+                  if (arg.isArray()){
+                     add(new ld_kernarg_u64(i, arg.getArgc()+argOffset));
+                  }else if (arg.isInt()){
+                     add(new ld_kernarg_s32(i, arg.getArgc()+argOffset));
+
+
+                  }
+               }
+            }
             add( i);
         }
     }
