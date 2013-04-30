@@ -11,6 +11,120 @@ import java.util.List;
  * To change this template use File | Settings | File Templates.
  */
 public class RegISA {
+   static abstract class Type {
+      static final u1 u1 = new u1();
+      static final u8 u8 = new u8();
+      static final u16 u16 = new u16();
+      static final u32 u32 = new u32();
+      static final u64 u64 = new u64();
+      static final s8 s8 = new s8();
+      static final s16 s16 = new s16();
+      static final s32 s32 = new s32();
+      static final s64 s64 = new s64();
+
+      static final f16 f16 = new f16();
+      static final f32 f32 = new f32();
+      static final f64 f64 = new f64();
+      int bits;
+      public int getBits(){
+         return (bits);
+      }
+      String sizeType; // s,d
+      public String getSizeType(){
+         return(sizeType);
+      }
+      String type; // u,f,s
+
+      public String getType(){
+         return(type);
+      }
+      Type(int _bits, String _sizeType, String _type){
+          bits = _bits;
+         sizeType = _sizeType;
+         type = _type;
+      }
+
+      String getRegName(int i){
+         return("$"+sizeType+""+i);
+      }
+      String getTypeName(){
+         return(type+bits);
+      }
+
+
+   };
+   static class u1 extends Type{
+
+      u1(){
+         super(1, "?", "u");
+      }
+   }
+   static class u8 extends Type{
+      u8(){
+         super(8, "?", "u");
+      }
+
+   }
+   static class s8 extends Type{
+      s8(){
+         super(8, "?", "s");
+      }
+   }
+   static class u16 extends Type{
+      u16(){
+         super(16, "?", "u");
+      }
+   }
+   static class s16 extends Type{
+      s16(){
+         super(16, "?", "s");
+      }
+   }
+   static class f16 extends Type{
+      f16(){
+         super(16, "?", "f");
+      }
+   }
+   static class u32 extends Type{
+      u32(){
+         super(32, "s", "u");
+      }
+   }
+   static class s32 extends Type{
+      s32(){
+         super(32, "s", "s");
+      }
+   }
+   static class f32 extends Type{
+      f32(){
+         super(32, "s", "f");
+      }
+   }
+   static class u64 extends Type{
+      u64(){
+         super(64, "d", "u");
+      }
+   }
+   static class s64 extends Type{
+      s64(){
+         super(64, "d", "s");
+      }
+   }
+   static class f64 extends Type{
+      f64(){
+         super(64, "d", "f");
+      }
+   }
+
+    static class Reg{
+       int index;
+       Type type;
+       Reg(int _index, Type _type){
+          index = _index;
+          type = _type;
+       }
+      
+    }
 
 
     static abstract class RegInstruction{
@@ -149,38 +263,23 @@ public class RegISA {
         }
     }
 
-    static abstract class ld_kernarg extends RegInstruction{
+    static class ld_kernarg<T extends Type> extends RegInstruction{
+        T type;
         int argc;
 
-        ld_kernarg(Instruction _from, int _argc){
+        ld_kernarg(Instruction _from, T _type, int _argc){
             super(_from);
+           type = _type;
            argc = _argc;
         }
-    }
-
-
- 
-    static class ld_kernarg_u64 extends ld_kernarg{
- 
-       ld_kernarg_u64(Instruction _from, int _argc){
-          super(_from, _argc);
-       }
 
        @Override void render(RegISARenderer r){
-          r.arg().u64().space().u64Name(argc).separator().argRef(argc);
+          r.arg().append(type.getTypeName()).space().append(type.getRegName(argc)).separator().argRef(argc);
        }
     }
- 
-    static class ld_kernarg_s32 extends ld_kernarg{
- 
-       ld_kernarg_s32(Instruction _from, int _argc){
-          super(_from, _argc);
-       }
 
-       @Override void render(RegISARenderer r){
-          r.arg().s32().space().s32Name(argc).separator().argRef(argc);
-       }
-    }
+
+ 
 
     static class add_const_s32 extends RegInstruction{
         int reg_dest, reg_src, value;
@@ -218,62 +317,63 @@ public class RegISA {
    }
 
     static abstract class store extends RegInstruction{
-        int reg_src, memptr;
-        store(Instruction _from, int _memptr, int _reg_src){
+        Type type;
+        Reg reg_src, reg_mem;
+        store(Instruction _from, Reg _reg_mem, Reg _reg_src){
             super(_from);
 
-            memptr = _memptr;
-             reg_src = _reg_src;
+            reg_mem = _reg_mem;
+            reg_src = _reg_src;
         }
     }
 
     static class store_s32 extends store{
 
-        store_s32(Instruction _from,  int _memptr, int _reg_src){
-            super(_from, _memptr, _reg_src);
+        store_s32(Instruction _from,  Reg _reg_mem, Reg _reg_src){
+            super(_from, _reg_mem, _reg_src);
         }
 
         @Override void render(RegISARenderer r){
-            r.store().s32().space().s32Array(memptr).separator().s32Name(reg_src);
+            r.store().s32().space().s32Array(reg_mem.index).separator().s32Name(reg_src.index);
         }
     }
 
 
     static abstract class load extends RegInstruction{
-        int memptr;
+        int reg_mem;
          int reg_dest;
-        load(Instruction _from, int _reg_dest, int _memptr){
+        load(Instruction _from, int _reg_dest, int _reg_mem){
             super(_from);
             reg_dest = _reg_dest;
-            memptr = _memptr;
+            reg_mem = _reg_mem;
         }
     }
     static class load_s32 extends load{
 
-        load_s32(Instruction _from, int _reg_dest, int _memptr){
-            super(_from, _reg_dest, _memptr);
+        load_s32(Instruction _from, int _reg_dest, int _reg_mem){
+            super(_from, _reg_dest, _reg_mem);
         }
 
         @Override void render(RegISARenderer r){
-            r.load().s32().space().s32Name(reg_dest).separator().s32Array(memptr);
+            r.load().s32().space().s32Name(reg_dest).separator().s32Array(reg_mem);
         }
     }
     static class load_f32 extends load{
 
-        load_f32(Instruction _from, int _reg_dest, int _memptr){
-            super(_from, _reg_dest, _memptr);
+        load_f32(Instruction _from, int _reg_dest, int _reg_mem){
+            super(_from, _reg_dest, _reg_mem);
         }
         @Override void render(RegISARenderer r){
-            r.load().f32().space().f32Name(reg_dest).separator().f32Array(memptr);
+            r.load().f32().space().f32Name(reg_dest).separator().f32Array(reg_mem);
         }
     }
     static class load_s64 extends load{
 
-        load_s64(Instruction _from, int _reg_dest, int _memptr){
-            super(_from, _reg_dest, _memptr);
+        load_s64(Instruction _from, int _reg_dest, int _reg_mem){
+            super(_from, _reg_dest, _reg_mem);
         }
         @Override void render(RegISARenderer r){
-            r.load().s64().space().s64Name(reg_dest).separator().s64Array(memptr);
+            r.load().s64().space().s64Name(reg_dest).separator().s64Array(reg_mem);
         }
     }
 
@@ -900,9 +1000,8 @@ public class RegISA {
                 add(new mul_u64(instruction,instruction.getPreStackBaseOnLocals() + 1, instruction.getPreStackBaseOnLocals() + 1, instruction.getPostStackBaseOnLocals() ));
                 add(new add_u64(instruction, instruction.getPreStackBaseOnLocals()+1,  instruction.getPreStackBaseOnLocals() + 0, instruction.getPreStackBaseOnLocals()+1 )) ;
                 add(new store_s32(instruction,
-
-                        instruction.getPreStackBaseOnLocals() + 1, //mem
-                      instruction.getPreStackBaseOnLocals()+ 2 //reg
+                        new Reg(instruction.getPreStackBaseOnLocals() + 1, Type.u64), //mem
+                        new Reg(instruction.getPreStackBaseOnLocals()+ 2 , Type.s32)//reg
                       ));
             }
                 break;
@@ -1257,14 +1356,14 @@ public class RegISA {
             if (i.getThisPC()==0){
                int argOffset = 0;
                if (!method.isStatic()){
-                  add(new ld_kernarg_u64(i, 0));
+                  add(new ld_kernarg(i, Type.u64, 0));
                   argOffset++;
                }
                for (TypeHelper.Arg arg:method.argsAndReturnType.getArgs()){
                   if (arg.isArray()){
-                     add(new ld_kernarg_u64(i, arg.getArgc()+argOffset));
+                     add(new ld_kernarg(i, Type.u64, arg.getArgc()+argOffset));
                   }else if (arg.isInt()){
-                     add(new ld_kernarg_s32(i, arg.getArgc()+argOffset));
+                     add(new ld_kernarg(i, Type.s32, arg.getArgc()+argOffset));
 
 
                   }
