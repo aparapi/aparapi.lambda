@@ -37,7 +37,7 @@ public class RegISARenderer {
 
 
     public RegISARenderer array_len_offset(){
-        append(4);
+        append(24);
         return(this);
     }
 
@@ -115,55 +115,40 @@ public class RegISARenderer {
         return(this);
     }
 
-    public RegISARenderer s32Array(int arr_reg, int index){
+    public RegISARenderer s32Array(int _memptr){
         append("[");
-        u64Name(arr_reg);
+        u64Name(_memptr);
         append("+");
-        array_len_offset();
-        append("+(");
-        sizeof_s32();
-        append("*");
-        s32Name(index);
-        append(")]");
+        array_len_offset()   ;
+        append("]");
         return(this);
     }
 
-    public RegISARenderer s64Array(int arr_reg, int index){
+    public RegISARenderer s64Array(int _memptr){
         append("[");
-        u64Name(arr_reg);
+        u64Name(_memptr);
         append("+");
-        array_len_offset();
-        append("+(");
-        sizeof_s64();
-        append("*");
-        s64Name(index);
-        append(")]");
+        append("+");
+       array_len_offset()  ;
+        append("]");
         return(this);
     }
 
-    public RegISARenderer f64Array(int arr_reg, int index){
+    public RegISARenderer f64Array(int _memptr){
         append("[");
-        u64Name(arr_reg);
+        u64Name(_memptr);
         append("+");
         array_len_offset();
-        append("+(");
-        sizeof_f64();
-        append("*");
-        f64Name(index);
-        append(")]");
+        append("]");
         return(this);
     }
 
-    public RegISARenderer f32Array(int arr_reg, int index){
+    public RegISARenderer f32Array(int memptr){
         append("[");
-        u64Name(arr_reg);
+        u64Name(memptr);
         append("+");
-        array_len_offset();
-        append("+(");
-        sizeof_f32();
-        append("*");
-        f32Name(index);
-        append(")]");
+        array_len_offset() ;
+        append("]");
         return(this);
     }
 
