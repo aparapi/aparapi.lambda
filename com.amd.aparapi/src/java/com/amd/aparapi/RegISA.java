@@ -116,10 +116,10 @@ public class RegISA {
       }
    }
 
-    static class Reg{
+    static class Reg<T>{
        int index;
-       Type type;
-       Reg(int _index, Type _type){
+       T type;
+       Reg(int _index, T _type){
           index = _index;
           type = _type;
        }
@@ -295,14 +295,21 @@ public class RegISA {
     }
 
 
-    static abstract class cvt extends RegInstruction{
-        int reg_dest, reg_src;
-        cvt(Instruction _from, int _reg_dest, int _reg_src){
+    static class cvt<T1 extends Type, T2 extends Type> extends RegInstruction{
+        Reg<T1> dest;
+        Reg<T2> src;
+        cvt(Instruction _from,  Reg<T1> _dest, Reg<T2> _src){
             super(_from);
-            reg_dest=_reg_dest;
-            reg_src = _reg_src;
+            dest=_dest;
+            src = _src;
+        }
+        @Override void render(RegISARenderer r){
+            r.cvt().append(dest.type.getTypeName()).append("_").append(src.type.getTypeName()).space()
+                    .append(dest.type.getRegName(dest.index)).separator().append(src.type.getRegName(src.index));
         }
     }
+
+
 
    static class ret extends RegInstruction{
 
@@ -377,23 +384,7 @@ public class RegISA {
         }
     }
 
-    static class cvt_s32_f32 extends cvt{
-        cvt_s32_f32(Instruction _from, int _reg_dest, int _reg_src){
-            super(_from, _reg_dest, _reg_src);
-        }
-        @Override void render(RegISARenderer r){
-            r.cvt().s32().append("_").f32().space().s32Name(reg_dest).separator().f32Name(reg_src);
-        }
-    }
 
-   static class cvt_u64_s32 extends cvt{
-      cvt_u64_s32(Instruction _from, int _reg_dest, int _reg_src){
-         super(_from, _reg_dest, _reg_src);
-      }
-      @Override void render(RegISARenderer r){
-         r.cvt().u64().append("_").s32().space().u64Name(reg_dest).separator().s32Name(reg_src);
-      }
-   }
 
     static abstract class mov extends RegInstruction{
         int reg_dest, reg_src;
@@ -598,71 +589,24 @@ public class RegISA {
     }
 
 
-    static abstract class mov_const<T> extends RegInstruction{
-        int reg_dest;
+    static  class mov_const<R extends Type,T> extends RegInstruction{
+        Reg<R> dest;
         T value;
 
-        public mov_const(Instruction _from,int _reg_dest, T _value){
+        public mov_const(Instruction _from,Reg<R> _dest, T _value){
             super(_from);
-            reg_dest = _reg_dest;
+            dest = _dest;
             value = _value;
         }
-    }
 
-    static class mov_s32_const extends mov_const<Integer>{
-
-        public mov_s32_const(Instruction _from,int _reg_dest, int _value){
-            super(_from, _reg_dest, _value);
-        }
         @Override void render(RegISARenderer r){
-            r.mov().s32().space().s32Name(reg_dest).separator().append(value);
-
-        }
-    }
-    static class mov_s64_const extends mov_const<Long>{
-
-        public mov_s64_const(Instruction _from,int _reg_dest, long _value){
-            super(_from,_reg_dest, _value);
-        }
-        @Override void render(RegISARenderer r){
-            r.mov().s64().space().s64Name(reg_dest).separator().append(value);
+            r.mov().append(dest.type.getTypeName()).space().append(dest.type.getRegName(dest.index)).separator().append(value.toString());
 
         }
     }
 
-   static class mov_u64_const extends mov_const<Long>{
-
-      public mov_u64_const(Instruction _from,int _reg_dest, long _value){
-         super(_from,_reg_dest, _value);
-      }
-      @Override void render(RegISARenderer r){
-         r.mov().u64().space().u64Name(reg_dest).separator().append(value);
-
-      }
-   }
 
 
-   static class mov_f32_const extends mov_const<Float>{
-
-        public mov_f32_const(Instruction _from,int _reg_dest, float _value){
-            super(_from,_reg_dest, _value);
-        }
-        @Override void render(RegISARenderer r){
-            r.mov().f32().space().f32Name(reg_dest).separator().append(value);
-
-        }
-    }
-
-    static class mov_f64_const extends mov_const<Double>{
-
-        public mov_f64_const(Instruction _from,int _reg_dest, double _value){
-            super(_from,_reg_dest, _value);
-        }
-        @Override void render(RegISARenderer r){
-            r.mov().f64().space().f64Name(reg_dest).separator().append(value);
-
-        }
-    }
     static class mov_s32 extends mov{
 
         public mov_s32(Instruction _from,int _reg_dest, int _reg_src){
@@ -804,14 +748,14 @@ public class RegISA {
             case BIPUSH:
             case SIPUSH:  {
                 InstructionSet.Constant<Integer> c = ( InstructionSet.Constant) instruction;
-                add(new mov_s32_const(instruction, instruction.getPreStackBaseOnLocals(), c.getValue()));
+                add(new mov_const<s32, Integer>(instruction, new Reg<s32>(instruction.getPreStackBaseOnLocals(), Type.s32), c.getValue()));
             }
             break;
             case LCONST_0:
             case LCONST_1:
             {
                 InstructionSet.Constant<Long> c = ( InstructionSet.Constant) instruction;
-                add(new mov_s64_const(instruction,instruction.getPreStackBaseOnLocals(), c.getValue()));
+                add(new mov_const<s64, Long>(instruction, new Reg<s64>(instruction.getPreStackBaseOnLocals(), Type.s64), c.getValue()));
             }
             break;
             case FCONST_0:
@@ -819,7 +763,7 @@ public class RegISA {
             case FCONST_2:
             {
                 InstructionSet.Constant<Float> c = ( InstructionSet.Constant) instruction;
-                add(new mov_f32_const(instruction,instruction.getPreStackBaseOnLocals(), c.getValue()));
+                add(new mov_const<f32, Float>(instruction,new Reg<f32>(instruction.getPreStackBaseOnLocals(), Type.f32), c.getValue()));
             }
 
             break;
@@ -827,7 +771,7 @@ public class RegISA {
             case DCONST_1:
             {
                 InstructionSet.Constant<Double> c = ( InstructionSet.Constant) instruction;
-                add(new mov_f64_const(instruction,instruction.getPreStackBaseOnLocals(), c.getValue()));
+                add(new mov_const<f64, Double>(instruction, new Reg<f64>(instruction.getPreStackBaseOnLocals(), Type.f64), c.getValue()));
 
             }
             break;
@@ -841,14 +785,18 @@ public class RegISA {
 
                 ClassModel.ConstantPool.ConstantEntry e= (ClassModel.ConstantPool.ConstantEntry )cpe.getConstantPoolEntry() ;
                 if (e instanceof ClassModel.ConstantPool.DoubleEntry){
-                    add(new mov_f64_const(instruction,instruction.getPreStackBaseOnLocals(), ((ClassModel.ConstantPool.DoubleEntry)e).getValue()));
+                    add(new mov_const<f64, Double>(instruction, new Reg<f64>(instruction.getPreStackBaseOnLocals(), Type.f64), ((ClassModel.ConstantPool.DoubleEntry)e).getValue()));
+
                 } else if (e instanceof ClassModel.ConstantPool.FloatEntry){
-                    add(new mov_f32_const(instruction,instruction.getPreStackBaseOnLocals(), ((ClassModel.ConstantPool.FloatEntry)e).getValue()));
+                    add(new mov_const<f32, Float>(instruction, new Reg<f32>(instruction.getPreStackBaseOnLocals(), Type.f32), ((ClassModel.ConstantPool.FloatEntry)e).getValue()));
+
 
                 }  else if (e instanceof ClassModel.ConstantPool.IntegerEntry){
-                    add(new mov_s32_const(instruction,instruction.getPreStackBaseOnLocals(), ((ClassModel.ConstantPool.IntegerEntry)e).getValue()));
+                    add(new mov_const<s32, Integer>(instruction, new Reg<s32>(instruction.getPreStackBaseOnLocals(), Type.s32), ((ClassModel.ConstantPool.IntegerEntry)e).getValue()));
+
                 }  else if (e instanceof ClassModel.ConstantPool.LongEntry){
-                    add(new mov_s64_const(instruction,instruction.getPreStackBaseOnLocals(), ((ClassModel.ConstantPool.LongEntry)e).getValue()));
+                    add(new mov_const<s64, Long>(instruction, new Reg<s64>(instruction.getPreStackBaseOnLocals(), Type.s64), ((ClassModel.ConstantPool.LongEntry)e).getValue()));
+
                 }
 
             }
@@ -900,8 +848,12 @@ public class RegISA {
                 break;
             case IALOAD:
             {
-               add(new cvt_u64_s32(instruction,instruction.getPreStackBaseOnLocals() + 1, instruction.getPreStackBaseOnLocals() + 1 )) ;  // index converted to 64 bit
-               add(new mov_s64_const(instruction, instruction.getPostStackBaseOnLocals(), 4));                                            // load 4 into scratch
+               add(new cvt<u64,s32>(instruction,new Reg<u64>(instruction.getPreStackBaseOnLocals() + 1, Type.u64),
+                       new Reg<s32>(instruction.getPreStackBaseOnLocals() + 1, Type.s32 ))) ;  // index converted to 64 bit
+
+                add(new mov_const<s64, Long>(instruction, new Reg<s64>(instruction.getPostStackBaseOnLocals(), Type.s64), (long)4));
+
+                                                      // load 4 into scratch
                add(new mul_u64(instruction,instruction.getPreStackBaseOnLocals() + 1, instruction.getPreStackBaseOnLocals() + 1, instruction.getPostStackBaseOnLocals() ));
                add(new add_u64(instruction, instruction.getPreStackBaseOnLocals()+1,  instruction.getPreStackBaseOnLocals() + 0, instruction.getPreStackBaseOnLocals()+1 )) ;
                add(new load_s32( instruction,
@@ -994,9 +946,10 @@ public class RegISA {
                 add_u64 $d(index), $d(index), $d{array};
                 st_global_s32 $s3, [$d6 + 24];
                  */
+                add(new cvt<u64,s32>(instruction,new Reg<u64>(instruction.getPreStackBaseOnLocals() + 1, Type.u64),
+                        new Reg<s32>(instruction.getPreStackBaseOnLocals() + 1, Type.s32 ))) ;  // index converted to 64 bit
 
-                add(new cvt_u64_s32(instruction,instruction.getPreStackBaseOnLocals() + 1, instruction.getPreStackBaseOnLocals() + 1 )) ;  // index converted to 64 bit
-                add(new mov_s64_const(instruction, instruction.getPostStackBaseOnLocals(), 4));                                            // load 4 into scratch
+                 add(new mov_const<s64, Long>(instruction, new Reg<s64>(instruction.getPostStackBaseOnLocals(), Type.s64), (long)4));                                           // load 4 into scratch
                 add(new mul_u64(instruction,instruction.getPreStackBaseOnLocals() + 1, instruction.getPreStackBaseOnLocals() + 1, instruction.getPostStackBaseOnLocals() ));
                 add(new add_u64(instruction, instruction.getPreStackBaseOnLocals()+1,  instruction.getPreStackBaseOnLocals() + 0, instruction.getPreStackBaseOnLocals()+1 )) ;
                 add(new store_s32(instruction,
@@ -1183,7 +1136,10 @@ public class RegISA {
                 add(new nyi(instruction));
                 break;
             case I2F:
-                add(new cvt_s32_f32(instruction, instruction.getPreStackBaseOnLocals(),instruction.getPreStackBaseOnLocals()));
+                add(new cvt<s32,f32>(instruction,new Reg<s32>(instruction.getPreStackBaseOnLocals(), Type.s32),
+                        new Reg<f32>(instruction.getPreStackBaseOnLocals(), Type.f32 ))) ;  // index converted to 64 bit
+
+
 
                 break;
             case I2D:
