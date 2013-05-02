@@ -10,8 +10,8 @@ import java.util.List;
  * Time: 9:48 AM
  * To change this template use File | Settings | File Templates.
  */
-public class RegISA {
-   static abstract class Type {
+public class RegISA{
+   public static abstract class Type{
       static final u1 u1 = new u1();
       static final u8 u8 = new u8();
       static final u16 u16 = new u16();
@@ -26,295 +26,522 @@ public class RegISA {
       static final f32 f32 = new f32();
       static final f64 f64 = new f64();
       int bits;
+
       public int getBits(){
          return (bits);
       }
+
       String sizeType; // s,d
+
       public String getSizeType(){
-         return(sizeType);
+         return (sizeType);
       }
+
       String type; // u,f,s
 
       public String getType(){
-         return(type);
+         return (type);
       }
+
       Type(int _bits, String _sizeType, String _type){
-          bits = _bits;
+         bits = _bits;
          sizeType = _sizeType;
          type = _type;
       }
 
-      String getRegName(int i){
-         return("$"+sizeType+""+i);
+      public String getRegName(int i){
+         return ("$" + sizeType + "" + i);
       }
-      String getTypeName(){
-         return(type+bits);
+
+      public String getTypeName(){
+         return (type + bits);
+      }
+
+      public static Type forJavaType(TypeHelper.Type javaType){
+         if(javaType.isArray()){
+            return (u64);
+         } else if(javaType.isInt()){
+            return (s32);
+         }else if(javaType.isFloat()){
+            return (f32);
+         } else if(javaType.isLong()){
+            return (s64);
+         }else if(javaType.isDouble()){
+            return (f64);
+         }else{
+            throw new IllegalArgumentException("no mapping for "+javaType);
+
+         }
       }
 
 
-   };
+   }
+
+   ;
+
    static class u1 extends Type{
 
       u1(){
          super(1, "?", "u");
       }
    }
+
    static class u8 extends Type{
       u8(){
          super(8, "?", "u");
       }
 
    }
+
    static class s8 extends Type{
       s8(){
          super(8, "?", "s");
       }
    }
+
    static class u16 extends Type{
       u16(){
          super(16, "?", "u");
       }
    }
+
    static class s16 extends Type{
       s16(){
          super(16, "?", "s");
       }
    }
+
    static class f16 extends Type{
       f16(){
          super(16, "?", "f");
       }
    }
+
    static class u32 extends Type{
       u32(){
          super(32, "s", "u");
       }
    }
+
    static class s32 extends Type{
       s32(){
          super(32, "s", "s");
       }
    }
+
    static class f32 extends Type{
       f32(){
          super(32, "s", "f");
       }
    }
+
    static class u64 extends Type{
       u64(){
          super(64, "d", "u");
       }
    }
+
    static class s64 extends Type{
       s64(){
          super(64, "d", "s");
       }
    }
+
    static class f64 extends Type{
       f64(){
          super(64, "d", "f");
       }
    }
 
-    static class Reg<T>{
-       int index;
-       T type;
-       Reg(int _index, T _type){
-          index = _index;
-          type = _type;
-       }
-      
-    }
+   public abstract static class Reg<T extends Type> {
+      int index;
+      public T type;
+      public boolean stack;
+
+      Reg(int _index, T _type, boolean _stack){
+         index = _index;
+         type = _type;
+         stack = _stack;
+      }
+      public boolean isStack(){
+         return(stack);
+      }
+
+      @Override public boolean equals(Object _other){
+         if (_other instanceof Reg){
+            Reg otherReg = (Reg)_other;
+            return(type.equals(otherReg.type) && index == otherReg.index);
+         }
+         return false;
+      }
+
+   }
+
+   public abstract static class Reg_f64 extends Reg<f64>{
+      Reg_f64(int _index, boolean _stack){
+         super(_index, Type.f64, _stack);
+      }
+   }
+   public abstract static class Reg_u64 extends Reg<u64>{
+      Reg_u64(int _index, boolean _stack){
+         super(_index, Type.u64, _stack);
+      }
+   }
+   public abstract static class Reg_s64 extends Reg<s64>{
+      Reg_s64(int _index, boolean _stack){
+         super(_index, Type.s64, _stack);
+      }
+   }
+   public abstract static class Reg_s32 extends Reg<s32>{
+      Reg_s32(int _index, boolean _stack){
+         super(_index, Type.s32, _stack);
+      }
+   }
+   public abstract static class Reg_f32 extends Reg<f32>{
+      Reg_f32(int _index, boolean _stack){
+         super(_index, Type.f32, _stack);
+      }
+   }
+
+   public static class StackReg_f64 extends Reg_f64{
+      StackReg_f64(Instruction _from, int _offset){
+         super(_from.getPreStackBase()+_from.getMethod().getCodeEntry().getMaxLocals()+_offset, true);
+      }
+   }
+
+   public static class StackReg_f32 extends Reg_f32{
+      StackReg_f32(Instruction _from, int _offset){
+         super(_from.getPreStackBase()+_from.getMethod().getCodeEntry().getMaxLocals()+_offset, true);
+      }
+   }
+   public static class StackReg_s64 extends Reg_s64{
+      StackReg_s64(Instruction _from, int _offset){
+         super(_from.getPreStackBase()+_from.getMethod().getCodeEntry().getMaxLocals()+_offset, true);
+      }
+   }
+
+   public static class StackReg_s32 extends Reg_s32{
+      StackReg_s32(Instruction _from, int _offset){
+         super(_from.getPreStackBase()+_from.getMethod().getCodeEntry().getMaxLocals()+_offset, true);
+      }
+   }
+
+   public static class StackReg_u64 extends Reg_u64{
+      StackReg_u64(Instruction _from, int _offset){
+         super(_from.getPreStackBase()+_from.getMethod().getCodeEntry().getMaxLocals()+_offset, true);
+      }
+   }
+   public static class VarReg_f64 extends Reg_f64{
+      VarReg_f64(Instruction _from){
+         super(_from.asLocalVariableAccessor().getLocalVariableTableIndex(), false);
+      }
+   }
+   public static class VarReg_s64 extends Reg_s64{
+      VarReg_s64(Instruction _from){
+         super(_from.asLocalVariableAccessor().getLocalVariableTableIndex(), false);
+      }
+   }
+   public static class VarReg_u64 extends Reg_u64{
+      VarReg_u64(Instruction _from){
+         super(_from.asLocalVariableAccessor().getLocalVariableTableIndex(), false);
+      }
+
+      public VarReg_u64(int _index){
+         super(_index, false);
+      }
+   }
+   public static class VarReg_s32 extends Reg_s32{
+      VarReg_s32(Instruction _from){
+         super(_from.asLocalVariableAccessor().getLocalVariableTableIndex(), false);
+      }
+
+      public VarReg_s32(int _index){
+         super(_index, false);
+      }
+   }
+   public static class VarReg_f32 extends Reg_f32{
+      VarReg_f32(Instruction _from){
+         super(_from.asLocalVariableAccessor().getLocalVariableTableIndex(), false);
+      }
+   }
 
 
-    static abstract class RegInstruction{
-        Instruction from;
-        RegInstruction(Instruction _from){
-            from = _from;
-        }
+   static abstract class RegInstruction{
+      Instruction from;
+      Reg[] dests=null;
+      Reg[] sources=null;
 
-        abstract void render(RegISARenderer r);
 
-    }
+      RegInstruction(Instruction _from, int _destCount, int _sourceCount){
+         from = _from;
+         dests = new Reg[_destCount];
+         sources= new Reg[_sourceCount];
+      }
 
-    static class branch extends RegInstruction{
-        String name;
-        int pc;
-        branch(Instruction _from, String _name, int _pc){
-            super(_from);
-            name = _name;
-            pc = _pc;
-        }
-        @Override public void render(RegISARenderer r){
-            r.append(name+" ");
-            r.label(pc);
-        }
-    }
+      abstract void render(RegISARenderer r);
 
-    static class field extends RegInstruction{
-        field(Instruction _from){
-            super(_from);
-        }
+   }
+   static abstract class RegInstructionWithDest<T extends Type> extends RegInstruction{
 
-        @Override void render(RegISARenderer r){
-            r.field();
-            TypeHelper.Type type = from.asFieldAccessor().getConstantPoolFieldEntry().getType();
-            String dotClassName = from.asFieldAccessor().getConstantPoolFieldEntry().getClassEntry().getDotClassName();
-            String name = from.asFieldAccessor().getConstantPoolFieldEntry().getName();
-            if(from instanceof InstructionSet.I_PUTFIELD || from instanceof InstructionSet.I_PUTSTATIC){
-                if(type.isArray()){
-                    r.append("arr_");
-                }
-                if(type.isInt()){
-                    r.s32().space().append(dotClassName).dot().append(name).separator().s32Name(from.getPreStackBaseOnLocals());
-                }
-                if(type.isFloat()){
-                    r.f32().space().append(dotClassName).dot().append(name).separator().f32Name(from.getPreStackBaseOnLocals());
-                }
-            }else{
-                if(type.isArray()){
-                    r.append("arr_");
-                }
-                if(type.isInt()){
-                    r.append("s32 " + ((type.isArray())?"arr_":""));
-                    r.s32Name(from.getPreStackBaseOnLocals());
-                }
-                if(type.isFloat()){
-                    r.append("f32 " + ((type.isArray())?"arr_":""));
-                    r.f32Name(from.getPreStackBaseOnLocals());
-                }
-                r.separator().u64Name(from.getPreStackBaseOnLocals()).separator().append(dotClassName).dot().append(name);
+
+      RegInstructionWithDest(Instruction _from, Reg<T> _dest){
+         super(_from, 1, 0);
+         dests[0] = _dest;
+
+      }
+      Reg<T> getDest(){
+         return((Reg<T>)dests[0]);
+      }
+   }
+   static abstract class RegInstructionWithSrc<T extends Type> extends RegInstruction{
+
+      RegInstructionWithSrc(Instruction _from, Reg<T> _src){
+         super(_from, 0, 1);
+         sources[0] = _src;
+      }
+      Reg<T> getSrc(){
+         return((Reg<T>)sources[0]);
+      }
+   }
+
+   static abstract class RegInstructionWithDestSrc<T extends Type> extends RegInstruction{
+
+      RegInstructionWithDestSrc(Instruction _from, Reg<T> _dest, Reg<T> _src){
+         super(_from, 1, 1);
+         dests[0]=_dest;
+         sources[0]=_src;
+      }
+      Reg<T> getDest(){
+         return((Reg<T>)dests[0]);
+      }
+      Reg<T> getSrc(){
+         return((Reg<T>)sources[0]);
+      }
+   }
+
+   static class branch extends RegInstruction{
+      String name;
+      int pc;
+
+      branch(Instruction _from, String _name, int _pc){
+         super(_from, 0, 0);
+         name = _name;
+         pc = _pc;
+      }
+
+      @Override public void render(RegISARenderer r){
+         r.append(name + " ");
+         r.label(pc);
+      }
+   }
+
+   static class put_field<T extends Type> extends RegInstructionWithSrc<T>{
+      boolean isStatic;
+
+      put_field(Instruction _from, Reg<T> _src){
+         super(_from, _src);
+         isStatic = (_from instanceof InstructionSet.I_PUTSTATIC);
+      }
+
+      @Override void render(RegISARenderer r){
+         r.append("store_");
+         if(isStatic){
+            r.append("static_");
+         }
+         r.append("field_");
+         String dotClassName = from.asFieldAccessor().getConstantPoolFieldEntry().getClassEntry().getDotClassName();
+         String name = from.asFieldAccessor().getConstantPoolFieldEntry().getName();
+
+
+         r.typeName(getSrc());
+         if(!isStatic){
+            r.separator().append("$d").append(getSrc().index);
+         }
+         r.space().append(dotClassName).dot().append(name).separator().regName(getSrc());
+
+
+      }
+
+   }
+
+   static class get_field<T extends Type> extends RegInstructionWithDest<T>{
+
+      boolean isStatic;
+
+      get_field(Instruction _from, Reg<T> _dest){
+         super(_from, _dest);
+         isStatic = (_from instanceof InstructionSet.I_GETSTATIC);
+      }
+
+      @Override void render(RegISARenderer r){
+         r.append("load_");
+         if(isStatic){
+            r.append("static_");
+         }
+         r.append("field_");
+         String dotClassName = from.asFieldAccessor().getConstantPoolFieldEntry().getClassEntry().getDotClassName();
+         String name = from.asFieldAccessor().getConstantPoolFieldEntry().getName();
+
+
+         r.typeName(getDest()).space().regName(getDest());
+         if(!isStatic){
+            r.separator().append("$d").append(getDest().index);
+         }
+         r.separator().append(dotClassName).dot().append(name);
+
+      }
+
+   }
+
+   static class call extends RegInstruction{
+
+      call(Instruction _from){
+         super(_from, 0, 0);
+      }
+
+      @Override void render(RegISARenderer r){
+         String dotClassName = from.asMethodCall().getConstantPoolMethodEntry().getClassEntry().getDotClassName();
+         String name = from.asMethodCall().getConstantPoolMethodEntry().getName();
+         TypeHelper.ArgsAndReturnType argsAndReturnType = from.asMethodCall().getConstantPoolMethodEntry().getArgsAndReturnType();
+
+
+         TypeHelper.Type returnType = argsAndReturnType.getReturnType();
+
+
+         if(returnType.isVoid()){
+            r.append("call_").append("void").space().append("VOID");
+         }else if(returnType.isInt()){
+            r.append("call_").append("s64").space().append("$s").append(from.getPreStackBase()+from.getMethod().getCodeEntry().getMaxLocals());
+
+         }else if(returnType.isDouble()){
+            r.append("call_").append("f64").space().append("$d").append(from.getPreStackBase()+from.getMethod().getCodeEntry().getMaxLocals());
+
+
+         }
+
+
+         r.separator().append(dotClassName).dot().append(name).space();
+
+         for(TypeHelper.Arg arg : argsAndReturnType.getArgs()){
+            if(arg.getArgc() > 0){
+               r.separator();
             }
-        }
-
-    }
-    static class call extends RegInstruction{
-
-        call(Instruction _from){
-            super(_from);
-        }
-
-        @Override void render(RegISARenderer r){
-            String dotClassName = from.asMethodCall().getConstantPoolMethodEntry().getClassEntry().getDotClassName();
-            String name = from.asMethodCall().getConstantPoolMethodEntry().getName();
-            TypeHelper.ArgsAndReturnType argsAndReturnType = from.asMethodCall().getConstantPoolMethodEntry().getArgsAndReturnType();
-
-
-            TypeHelper.Type returnType = argsAndReturnType.getReturnType();
-
-
-            if(returnType.isVoid()){
-                r.call().append("void").space().append("VOID");
-            }else if(returnType.isInt()){
-                r.call().s32().space().s32Name(from.getPreStackBaseOnLocals());
-
-            }else if(returnType.isDouble()){
-                r.call().f64().space().f64Name(from.getPreStackBaseOnLocals());
-
-
+            if(arg.isDouble()){
+               r.append("$d").append(from.getPreStackBase()+from.getMethod().getCodeEntry().getMaxLocals() + arg.getArgc());
+            }else if(arg.isFloat()){
+               r.append("$s").append(from.getPreStackBase()+from.getMethod().getCodeEntry().getMaxLocals() + arg.getArgc());
+            }else if(arg.isInt()){
+               r.append("$s").append(from.getPreStackBase()+from.getMethod().getCodeEntry().getMaxLocals() + arg.getArgc());
+            }else if(arg.isLong()){
+               r.append("$d").append(from.getPreStackBase()+from.getMethod().getCodeEntry().getMaxLocals() + arg.getArgc());
             }
-            r.separator().append(dotClassName).dot().append(name).space();
+         }
+      }
+   }
 
-            for(TypeHelper.Arg arg : argsAndReturnType.getArgs()){
-                if(arg.getArgc() > 0){
-                    r.separator();
-                }
-                if(arg.isDouble()){
-                    r.f64Name(from.getPreStackBaseOnLocals() + arg.getArgc());
-                }else if(arg.isFloat()){
-                    r.f32Name( from.getPreStackBaseOnLocals() + arg.getArgc());
-                }else if(arg.isInt()){
-                    r.s32Name( from.getPreStackBaseOnLocals() + arg.getArgc());
-                }else if(arg.isLong()){
-                    r.s64Name( from.getPreStackBaseOnLocals() + arg.getArgc());
-                }
-            }
-        }
-    }
+   static class nyi extends RegInstruction{
 
-    static class nyi extends RegInstruction{
+      nyi(Instruction _from){
+         super(_from, 0, 0);
+      }
 
-        nyi(Instruction _from){
-            super(_from);
-        }
+      @Override void render(RegISARenderer r){
 
-        @Override void render(RegISARenderer r){
+         r.append("NYI " + from.getByteCode().getName());//InstructionHelper.getLabel(i, false, false, false);
+         if(from.isBranch()){
+            r.append(" " + from.asBranch().getAbsolute());
+         }else if(from.isFieldAccessor()){
+            r.append(" " + from.asFieldAccessor().getConstantPoolFieldEntry().getType());
+            r.append(" " + from.asFieldAccessor().getConstantPoolFieldEntry().getClassEntry().getDotClassName());
+            r.append(" " + from.asFieldAccessor().getConstantPoolFieldEntry().getName());
+         }else if(from.isLocalVariableAccessor()){
+            r.append(" #" + from.asLocalVariableAccessor().getLocalVariableInfo().getSlot());
+            r.append(" " + from.asLocalVariableAccessor().getLocalVariableInfo().getVariableName());
+            r.append(" " + from.asLocalVariableAccessor().getLocalVariableInfo().getVariableDescriptor());
 
-            r.append("NYI "+from.getByteCode().getName());//InstructionHelper.getLabel(i, false, false, false);
-            if(from.isBranch()){
-                r.append(" " + from.asBranch().getAbsolute());
-            }else if(from.isFieldAccessor()){
-                r.append(" " + from.asFieldAccessor().getConstantPoolFieldEntry().getType());
-                r.append(" " + from.asFieldAccessor().getConstantPoolFieldEntry().getClassEntry().getDotClassName());
-                r.append(" " + from.asFieldAccessor().getConstantPoolFieldEntry().getName());
-            }else if(from.isLocalVariableAccessor()){
-                r.append(" #" + from.asLocalVariableAccessor().getLocalVariableInfo().getSlot());
-                r.append(" " + from.asLocalVariableAccessor().getLocalVariableInfo().getVariableName());
-                r.append(" " + from.asLocalVariableAccessor().getLocalVariableInfo().getVariableDescriptor());
+         }else if(from.isMethodCall()){
+            r.append(" " + from.asMethodCall().getConstantPoolMethodEntry().getArgsAndReturnType().getReturnType());
+            r.append(" " + from.asMethodCall().getConstantPoolMethodEntry().getClassEntry().getDotClassName());
+            r.append("." + from.asMethodCall().getConstantPoolMethodEntry().getName());
+         }else if(from.isConstant()){
+            r.append("." + from.asConstant().getValue());
+         }
 
-            }else if(from.isMethodCall()){
-                r.append(" " + from.asMethodCall().getConstantPoolMethodEntry().getArgsAndReturnType().getReturnType());
-                r.append(" " + from.asMethodCall().getConstantPoolMethodEntry().getClassEntry().getDotClassName());
-                r.append("." + from.asMethodCall().getConstantPoolMethodEntry().getName());
-            }else if(from.isConstant()){
-                r.append("." + from.asConstant().getValue());
-            }
+      }
+   }
 
-        }
-    }
-
-    static class ld_kernarg<T extends Type> extends RegInstruction{
-        T type;
-        int argc;
-
-        ld_kernarg(Instruction _from, T _type, int _argc){
-            super(_from);
-           type = _type;
-           argc = _argc;
-        }
-
-       @Override void render(RegISARenderer r){
-          r.arg().append(type.getTypeName()).space().append(type.getRegName(argc)).separator().argRef(argc);
-       }
-    }
+   static class ld_kernarg<T extends Type> extends RegInstructionWithDest<T>{
 
 
- 
+      ld_kernarg(Instruction _from, Reg<T> _dest){
+         super(_from, _dest);
+      }
 
-    static class add_const_s32 extends RegInstruction{
-        int reg_dest, reg_src, value;
-        add_const_s32(Instruction _from, int _reg_dest, int _reg_src, int _value){
-            super(_from);
-            reg_dest=_reg_dest;
-            reg_src = _reg_src;
-            value = _value;
-        }
-        @Override void render(RegISARenderer r){
-            r.add().s32().space().s32Name(reg_dest).separator().s32Name(reg_src).separator().append(value);
-        }
-    }
+      @Override void render(RegISARenderer r){
+         r.append("ld_kernarg_").typeName(getDest()).space().regName(getDest()).separator().append("[%_arg").append(getDest().index).append("]");
+      }
+   }
+
+   static abstract class binary_const<T extends Type, C> extends RegInstructionWithDestSrc<T>{
+      C value;
+      String op;
+
+      binary_const(Instruction _from, String _op, Reg<T> _dest, Reg _src, C _value){
+         super(_from, _dest, _src);
+         value = _value;
+         op = _op;
+      }
+
+      @Override void render(RegISARenderer r){
+         r.append(op).typeName(getDest()).space().regName(getDest()).separator().regName(getSrc()).separator().append(value.toString());
+      }
+   }
+
+   static class add_const<T extends Type, C> extends binary_const<T, C>{
+
+      add_const(Instruction _from, Reg<T> _dest, Reg _src, C _value){
+         super(_from, "add_", _dest, _src, _value);
+
+      }
+
+   }
+
+   static class mul_const<T extends Type, C> extends binary_const<T, C>{
+
+      mul_const(Instruction _from, Reg<T> _dest, Reg _src, C _value){
+         super(_from, "mul_", _dest, _src, _value);
+
+      }
+
+   }
 
 
-    static class cvt<T1 extends Type, T2 extends Type> extends RegInstruction{
-        Reg<T1> dest;
-        Reg<T2> src;
-        cvt(Instruction _from,  Reg<T1> _dest, Reg<T2> _src){
-            super(_from);
-            dest=_dest;
-            src = _src;
-        }
-        @Override void render(RegISARenderer r){
-            r.cvt().append(dest.type.getTypeName()).append("_").append(src.type.getTypeName()).space()
-                    .append(dest.type.getRegName(dest.index)).separator().append(src.type.getRegName(src.index));
-        }
-    }
+   static class cvt<T1 extends Type, T2 extends Type> extends RegInstruction{
 
 
+      cvt(Instruction _from, Reg<T1> _dest, Reg<T2> _src){
+         super(_from, 1, 1);
+         dests[0] = _dest;
+         sources[0]= _src;
+      }
 
-   static class ret extends RegInstruction{
+      Reg<T1> getDest(){
+         return((Reg<T1>)dests[0]);
+      }
+      Reg<T2> getSrc(){
+         return((Reg<T2>)sources[0]);
+      }
 
-      ret(Instruction _from){
-         super(_from);
+      @Override void render(RegISARenderer r){
+         r.append("cvt_").typeName(getDest()).append("_").typeName(getSrc()).space().regName(getDest()).separator().regName(getSrc());
+      }
+   }
+
+
+   static class retvoid extends RegInstruction{
+
+      retvoid(Instruction _from){
+         super(_from, 0, 0);
 
       }
 
@@ -322,623 +549,415 @@ public class RegISA {
          r.append("ret");
       }
    }
+   static class ret<T extends Type> extends RegInstructionWithSrc<T>{
 
-    static abstract class store extends RegInstruction{
-        Type type;
-        Reg reg_src, reg_mem;
-        store(Instruction _from, Reg _reg_mem, Reg _reg_src){
-            super(_from);
+      ret(Instruction _from, Reg<T> _src){
+         super(_from, _src);
 
-            reg_mem = _reg_mem;
-            reg_src = _reg_src;
-        }
-    }
+      }
 
-    static class store_s32 extends store{
+      @Override void render(RegISARenderer r){
+         r.append("ret_").typeName(getSrc()).space().regName(getSrc());
+      }
+   }
 
-        store_s32(Instruction _from,  Reg _reg_mem, Reg _reg_src){
-            super(_from, _reg_mem, _reg_src);
-        }
+   static class store<T extends Type> extends RegInstructionWithSrc<T>{
 
-        @Override void render(RegISARenderer r){
-            r.store().s32().space().s32Array(reg_mem.index).separator().s32Name(reg_src.index);
-        }
-    }
+      Reg_u64 mem;
 
+      store(Instruction _from, Reg_u64 _mem, Reg<T> _src){
+         super(_from, _src);
 
-    static abstract class load extends RegInstruction{
-        int reg_mem;
-         int reg_dest;
-        load(Instruction _from, int _reg_dest, int _reg_mem){
-            super(_from);
-            reg_dest = _reg_dest;
-            reg_mem = _reg_mem;
-        }
-    }
-    static class load_s32 extends load{
-
-        load_s32(Instruction _from, int _reg_dest, int _reg_mem){
-            super(_from, _reg_dest, _reg_mem);
-        }
-
-        @Override void render(RegISARenderer r){
-            r.load().s32().space().s32Name(reg_dest).separator().s32Array(reg_mem);
-        }
-    }
-    static class load_f32 extends load{
-
-        load_f32(Instruction _from, int _reg_dest, int _reg_mem){
-            super(_from, _reg_dest, _reg_mem);
-        }
-        @Override void render(RegISARenderer r){
-            r.load().f32().space().f32Name(reg_dest).separator().f32Array(reg_mem);
-        }
-    }
-    static class load_s64 extends load{
-
-        load_s64(Instruction _from, int _reg_dest, int _reg_mem){
-            super(_from, _reg_dest, _reg_mem);
-        }
-        @Override void render(RegISARenderer r){
-            r.load().s64().space().s64Name(reg_dest).separator().s64Array(reg_mem);
-        }
-    }
+         mem = _mem;
+      }
+      @Override void render(RegISARenderer r){
+         r.append("st_global_").typeName(getSrc()).space(). append("["). regName(mem). append("+"). array_len_offset(). append("]").separator().regName(getSrc());
+      }
+   }
 
 
 
-    static abstract class mov extends RegInstruction{
-        int reg_dest, reg_src;
+   static class load<T extends Type> extends RegInstructionWithDest<T>{
+      Reg_u64 mem;
 
-        public mov(Instruction _from, int _reg_dest, int _reg_src){
-            super(_from);
-            reg_dest = _reg_dest;
-            reg_src = _reg_src;
-        }
-    }
 
-    static abstract class binary extends RegInstruction{
-        int reg_dest, reg_lhs, reg_rhs;
+      load(Instruction _from, Reg<T> _dest, Reg_u64 _mem){
+         super(_from, _dest);
 
-        public binary(Instruction _from, int _reg_dest, int _reg_lhs, int _reg_rhs){
-            super(_from);
-            reg_dest = _reg_dest;
-            reg_lhs = _reg_lhs;
-            reg_rhs = _reg_rhs;
-        }
-    }
+         mem = _mem;
+      }
+      @Override void render(RegISARenderer r){
+         r.append("ld_global" ).typeName(getDest()).space().regName(getDest()).separator(). append("["). regName(mem). append("+"). array_len_offset(). append("]");
+      }
+   }
 
-   static abstract class binaryRegConst<T> extends RegInstruction{
-      int reg_dest, reg_lhs;
-      T value_rhs;
 
-      public binaryRegConst(Instruction _from, int _reg_dest, int _reg_lhs, T _value_rhs){
+
+   static final class mov<T extends Type> extends RegInstructionWithDestSrc{
+
+      public mov(Instruction _from, Reg<T> _dest, Reg<T> _src){
+         super(_from, _dest, _src);
+      }
+
+      @Override void render(RegISARenderer r){
+         r.append("mov_").typeName(getDest()).space().regName(getDest()).separator().regName(getSrc());
+
+      }
+   }
+
+   static abstract class binary<T extends Type> extends RegInstruction{
+
+      String op;
+      public binary(Instruction _from, String _op, Reg<T> _dest, Reg<T> _lhs, Reg<T> _rhs){
+         super(_from, 1, 2);
+         dests[0] = _dest;
+         sources[0] = _lhs;
+         sources[1] = _rhs;
+         op = _op;
+      }
+
+         @Override void render(RegISARenderer r){
+            r.append(op).typeName(getDest()).space().regName(getDest()).separator().regName(getLhs()).separator().regName(getRhs());
+         }
+      Reg<T> getDest(){
+         return((Reg<T>)dests[0]);
+      }
+      Reg<T> getRhs(){
+         return((Reg<T>)sources[1]);
+      }
+      Reg<T> getLhs(){
+         return((Reg<T>)sources[0]);
+      }
+
+   }
+
+  /* static abstract class binaryRegConst<T extends Type, C> extends RegInstruction{
+      Reg<T> dest, lhs;
+      C value;
+      String op;
+
+      public binaryRegConst(Instruction _from, String _op,  Reg<T> _dest, Reg<T> _lhs, C _value){
          super(_from);
-         reg_dest = _reg_dest;
-         reg_lhs = _reg_lhs;
-         value_rhs = _value_rhs;
-      }
-   }
-
-   static abstract class addConst<T> extends binaryRegConst<T>{
-
-      public addConst(Instruction _from,int _reg_dest, int _reg_lhs, T _value_rhs){
-         super(_from, _reg_dest, _reg_lhs, _value_rhs);
-      }
-   }
-
-    static abstract class add extends binary{
-        public add(Instruction _from,int _reg_dest, int _reg_lhs, int _reg_rhs){
-            super(_from, _reg_dest, _reg_lhs, _reg_rhs);
-        }
-    }
-
-    static class add_s32 extends add{
-
-        public add_s32(Instruction _from,int _reg_dest, int _reg_lhs, int _reg_rhs){
-            super(_from,_reg_dest, _reg_lhs, _reg_rhs);
-        }
-
-        @Override void render(RegISARenderer r){
-            r.add().s32().space().s32Name(reg_dest).separator().s32Name(reg_lhs).separator().s32Name(reg_rhs);
-        }
-    }
-
-    static  class add_s64 extends add{
-
-        public add_s64(Instruction _from,int _reg_dest, int _reg_lhs, int _reg_rhs){
-            super(_from,_reg_dest, _reg_lhs, _reg_rhs);
-        }
-        @Override void render(RegISARenderer r){
-            r.add().s64().space().s64Name(reg_dest).separator().s64Name(reg_lhs).separator().s64Name(reg_rhs);
-        }
-    }
-
-   static  class add_u64 extends add{
-      public add_u64(Instruction _from,int _reg_dest, int _reg_lhs, int _reg_rhs){
-         super(_from,_reg_dest, _reg_lhs, _reg_rhs);
+         dest = _dest;
+         lhs = _lhs;
+         value = _value;
+         op = _op;
       }
       @Override void render(RegISARenderer r){
-         r.add().u64().space().u64Name(reg_dest).separator().u64Name(reg_lhs).separator().u64Name(reg_rhs);
+         r.append(op).typeName(dest).space().regName(dest).separator().regName(lhs).separator().append(value.toString());
       }
    }
-    static  class add_f32 extends add{
 
-        public add_f32(Instruction _from,int _reg_dest, int _reg_lhs, int _reg_rhs){
-            super(_from,_reg_dest, _reg_lhs, _reg_rhs);
-        }
-        @Override void render(RegISARenderer r){
-            r.add().f32().space().f32Name(reg_dest).separator().f32Name(reg_lhs).separator().f32Name(reg_rhs);
-        }
-    }
-    static  class add_f64 extends add{
+   static  class addConst<T extends Type, C> extends binaryRegConst<T, C>{
 
-        public add_f64(Instruction _from,int _reg_dest, int _reg_lhs, int _reg_rhs){
-            super(_from,_reg_dest, _reg_lhs, _reg_rhs);
-        }
-        @Override void render(RegISARenderer r){
-            r.add().f64().space().f64Name(reg_dest).separator().f64Name(reg_lhs).separator().f64Name(reg_rhs);
-        }
-    }
-    static abstract class sub extends binary{
-
-        public sub(Instruction _from,int _reg_dest, int _reg_lhs, int _reg_rhs){
-            super(_from,_reg_dest, _reg_lhs, _reg_rhs);
-        }
-
-    }
-    static class sub_s32 extends sub{
-
-        public sub_s32(Instruction _from,int _reg_dest, int _reg_lhs, int _reg_rhs){
-            super(_from,_reg_dest, _reg_lhs, _reg_rhs);
-        }
-        @Override void render(RegISARenderer r){
-            r.sub().s32().space().s32Name(reg_dest).separator().s32Name(reg_lhs).separator().s32Name(reg_rhs);
-        }
-    }
-
-    static class sub_f64 extends sub{
-
-        public sub_f64(Instruction _from,int _reg_dest, int _reg_lhs, int _reg_rhs){
-            super(_from,_reg_dest, _reg_lhs, _reg_rhs);
-        }
-        @Override void render(RegISARenderer r){
-            r.sub().f64().space().f64Name(reg_dest).separator().f64Name(reg_lhs).separator().f64Name(reg_rhs);
-        }
-    }
-
-    static class sub_f32 extends sub{
-
-        public sub_f32(Instruction _from,int _reg_dest, int _reg_lhs, int _reg_rhs){
-            super(_from,_reg_dest, _reg_lhs, _reg_rhs);
-        }
-        @Override void render(RegISARenderer r){
-            r.sub().f32().space().f32Name(reg_dest).separator().f32Name(reg_lhs).separator().f32Name(reg_rhs);
-        }
-    }
-    static abstract class div extends binary{
-
-        public div(Instruction _from,int _reg_dest, int _reg_lhs, int _reg_rhs){
-            super(_from,_reg_dest, _reg_lhs, _reg_rhs);
-        }
-    }
-    static class div_s32 extends div{
-
-        public div_s32(Instruction _from,int _reg_dest, int _reg_lhs, int _reg_rhs){
-            super(_from,_reg_dest, _reg_lhs, _reg_rhs);
-        }
-        @Override void render(RegISARenderer r){
-            r.div().s32().space().s32Name(reg_dest).separator().s32Name(reg_lhs).separator().s32Name(reg_rhs);
-        }
-    }
-    static class div_f32 extends div{
-
-        public div_f32(Instruction _from,int _reg_dest, int _reg_lhs, int _reg_rhs){
-            super(_from,_reg_dest, _reg_lhs, _reg_rhs);
-        }
-        @Override void render(RegISARenderer r){
-            r.div().f32().space().f32Name(reg_dest).separator().f32Name(reg_lhs).separator().f32Name(reg_rhs);
-        }
-    }
-    static abstract class mul extends binary{
-
-        public mul(Instruction _from,int _reg_dest, int _reg_lhs, int _reg_rhs){
-            super(_from,_reg_dest, _reg_lhs, _reg_rhs);
-        }
-    }
-    static class mul_s32 extends mul{
-
-        public mul_s32(Instruction _from,int _reg_dest, int _reg_lhs, int _reg_rhs){
-            super(_from,_reg_dest, _reg_lhs, _reg_rhs);
-        }
-        @Override void render(RegISARenderer r){
-            r.mul().s32().space().s32Name(reg_dest).separator().s32Name(reg_lhs).separator().s32Name(reg_rhs);
-        }
-    }
-   static class mul_u64 extends mul{
-
-      public mul_u64(Instruction _from,int _reg_dest, int _reg_lhs, int _reg_rhs){
-         super(_from,_reg_dest, _reg_lhs, _reg_rhs);
+      public addConst(Instruction _from,   Reg<T> _dest, Reg<T> _lhs, C _value_rhs){
+         super(_from, "add_", _dest, _lhs, _value_rhs);
       }
+   }
+   */
+
+   static  class add<T extends Type> extends binary<T>{
+      public add(Instruction _from,  Reg<T> _dest, Reg<T> _lhs, Reg<T>  _rhs){
+         super(_from, "add_", _dest, _lhs, _rhs);
+      }
+
+   }
+
+   static  class sub<T extends Type> extends binary<T>{
+      public sub(Instruction _from,  Reg<T> _dest, Reg<T> _lhs, Reg<T>  _rhs){
+         super(_from, "sub_", _dest, _lhs, _rhs);
+      }
+
+   }
+   static  class div<T extends Type> extends binary<T>{
+      public div(Instruction _from,  Reg<T> _dest, Reg<T> _lhs, Reg<T>  _rhs){
+         super(_from, "div_", _dest, _lhs, _rhs);
+      }
+
+   }
+   static  class mul<T extends Type> extends binary<T>{
+      public mul(Instruction _from,  Reg<T> _dest, Reg<T> _lhs, Reg<T>  _rhs){
+         super(_from, "mul_", _dest, _lhs, _rhs);
+      }
+
+   }
+   static  class rem<T extends Type> extends binary<T>{
+      public rem(Instruction _from,  Reg<T> _dest, Reg<T> _lhs, Reg<T>  _rhs){
+         super(_from, "rem_", _dest, _lhs, _rhs);
+      }
+
+   }
+
+   static class mov_const<T extends Type, V> extends RegInstructionWithDest<T>{
+
+      V value;
+
+      public mov_const(Instruction _from, Reg<T> _dest, V _value){
+         super(_from, _dest);
+         value = _value;
+      }
+
       @Override void render(RegISARenderer r){
-         r.mul().u64().space().u64Name(reg_dest).separator().u64Name(reg_lhs).separator().u64Name(reg_rhs);
+         r.append("mov_").typeName(getDest()).space().regName(getDest()).separator().append(value.toString());
+
       }
    }
-   static class mul_f32 extends mul{
 
-        public mul_f32(Instruction _from,int _reg_dest, int _reg_lhs, int _reg_rhs){
-            super(_from,_reg_dest, _reg_lhs, _reg_rhs);
-        }
-        @Override void render(RegISARenderer r){
-            r.mul().f32().space().f32Name(reg_dest).separator().f32Name(reg_lhs).separator().f32Name(reg_rhs);
-        }
-    }
-    static abstract class rem extends binary{
+   List<RegInstruction> instructions = new ArrayList<RegInstruction>();
+   ClassModel.ClassModelMethod method;
 
-        public rem(Instruction _from,int _reg_dest, int _reg_lhs, int _reg_rhs){
-            super(_from,_reg_dest, _reg_lhs, _reg_rhs);
-        }
-    }
-    static class rem_s32 extends rem{
+   boolean optimizeMoves = true;
 
-        public rem_s32(Instruction _from,int _reg_dest, int _reg_lhs, int _reg_rhs){
-            super(_from,_reg_dest, _reg_lhs, _reg_rhs);
-        }
-        @Override void render(RegISARenderer r){
-            r.rem().s32().space().s32Name(reg_dest).separator().s32Name(reg_lhs).separator().s32Name(reg_rhs);
-        }
-    }
-
-
-    static  class mov_const<R extends Type,T> extends RegInstruction{
-        Reg<R> dest;
-        T value;
-
-        public mov_const(Instruction _from,Reg<R> _dest, T _value){
-            super(_from);
-            dest = _dest;
-            value = _value;
-        }
-
-        @Override void render(RegISARenderer r){
-            r.mov().append(dest.type.getTypeName()).space().append(dest.type.getRegName(dest.index)).separator().append(value.toString());
-
-        }
-    }
-
-
-
-    static class mov_s32 extends mov{
-
-        public mov_s32(Instruction _from,int _reg_dest, int _reg_src){
-            super(_from,_reg_dest, _reg_src);
-        }
-
-        @Override void render(RegISARenderer r){
-            r.mov().s32().space().s32Name(reg_dest).separator().s32Name(reg_src);
-
-        }
-    }
-
-    static class mov_s64 extends mov{
-
-        public mov_s64(Instruction _from,int _reg_dest, int _reg_src){
-            super(_from,_reg_dest, _reg_src);
-        }
-        @Override void render(RegISARenderer r){
-            r.mov().s64().space().s64Name(reg_dest).separator().s64Name(reg_src);
-
-        }
-    }
-    static class mov_f64 extends mov{
-        public mov_f64(Instruction _from,int _reg_dest, int _reg_src){
-            super(_from,_reg_dest, _reg_src);
-        }
-        @Override void render(RegISARenderer r){
-            r.mov().f64().space().f64Name(reg_dest).separator().f64Name(reg_src);
-
-        }
-    }
-    static class mov_f32 extends mov{
-        public mov_f32(Instruction _from,int _reg_dest, int _reg_src){
-            super(_from,_reg_dest, _reg_src);
-        }
-        @Override void render(RegISARenderer r){
-            r.mov().f32().space().f32Name(reg_dest).separator().f32Name(reg_src);
-
-        }
-    }
-    static class mov_u64 extends mov{
-        public mov_u64(Instruction _from,int _reg_dest, int _reg_src){
-            super(_from,_reg_dest, _reg_src);
-        }
-        @Override void render(RegISARenderer r){
-            r.mov().u64().space().u64Name(reg_dest).separator().u64Name(reg_src);
-
-        }
-    }
-
-    List<RegInstruction> instructions = new ArrayList<RegInstruction>();
-    ClassModel.ClassModelMethod method;
-
-    void add(RegInstruction _regInstruction){
-        instructions.add(_regInstruction);
-    }
-
-
-
-
-    String argType(TypeHelper.Arg _arg){
-        if (_arg.isArray()){
-            return("u64");
-        }else if (_arg.isInt()){
-            return("s32");
-        }else if (_arg.isFloat()){
-            return("f32");
-        }else{
-            return("?");
-        }
-    }
-    String regType(TypeHelper.Arg _arg){
-        if (_arg.isArray()){
-            return("d");
-        }else if (_arg.isInt()){
-            return("s");
-        }else if (_arg.isFloat()){
-            return("s");
-        }else{
-            return("?");
-        }
-    }
-
-
-
-
-    RegISARenderer render(RegISARenderer r){
-        r.append("version 1:0").nl();
-        r.append("kernel &"+method.getName()+"(");
-        int argOffset = method.isStatic()?0:1;
-        if (!method.isStatic()){
-            r.nl().indent().append("kernarg_u64 %_arg0");
-        }
-
-        for (TypeHelper.Arg arg:method.argsAndReturnType.getArgs()){
-            if ((method.isStatic() && arg.getArgc()==0) ){
-                r.nl();
-            }           else{
-                r.separator().nl();
+   void add(RegInstruction _regInstruction){
+      // before we add lets see if this is a redundant mov
+      if (optimizeMoves && _regInstruction.sources != null && _regInstruction.sources.length>0){
+         for (int regIndex = 0; regIndex <_regInstruction.sources.length; regIndex++){
+            Reg r = _regInstruction.sources[regIndex];
+            if (r.isStack()){
+               // look up the list of reg instructions for the last mov which assigns to r
+               int i=instructions.size();
+               while((--i)>=0){
+                  if (instructions.get(i) instanceof mov){
+                     // we have found a move
+                     mov candidateForRemoval = (mov)instructions.get(i);
+                     if (candidateForRemoval.from.getBlock() == _regInstruction.from.getBlock()
+                           && candidateForRemoval.getDest().isStack() && candidateForRemoval.getDest().equals(r)){
+                        // so i may be a candidate if between i and instruction.size() i.dest() is not mutated
+                        boolean mutated = false;
+                        for (int x=i+1; !mutated && x<instructions.size(); x++){
+                           if (instructions.get(x).dests.length>0 && instructions.get(x).dests[0].equals(candidateForRemoval.getSrc())){
+                              mutated = true;
+                           }
+                        }
+                        if (!mutated){
+                        instructions.remove(i);
+                        // removed mov
+                        _regInstruction.sources[regIndex] = candidateForRemoval.getSrc();
+                        break;
+                        }
+                     }
+                  }
+               }
             }
-            r.indent().append("kernarg_"+argType(arg)+" %_arg"+(arg.getArgc()+argOffset));
+         }
+      }
 
-        }
-        r.nl().indent().append("){").nl();
+      instructions.add(_regInstruction);
+   }
 
-        java.util.Set<Instruction> s = new java.util.HashSet<Instruction>();
 
-        for(RegInstruction i : instructions){
-            if (i.from.isBranchTarget() && !s.contains(i.from)){
-                s.add(i.from);
-                r.label(i.from.getThisPC());
-                r.nl();
-            }
-            r.indent();
-            i.render(r);
-            r.semicolon();
+
+   RegISARenderer render(RegISARenderer r){
+      r.append("version 1:0").nl();
+      r.append("kernel &" + method.getName() + "(");
+      int argOffset = method.isStatic() ? 0 : 1;
+      if(!method.isStatic()){
+         r.nl().indent().append("kernarg_u64 %_arg0");
+      }
+
+      for(TypeHelper.Arg arg : method.argsAndReturnType.getArgs()){
+         if((method.isStatic() && arg.getArgc() == 0)){
             r.nl();
-        }
-        r.append("};");
-        return(r);
-    }
+         }else{
+            r.separator().nl();
+         }
+
+         Type type = Type.forJavaType(arg);
+
+         r.indent().append("kernarg_").append(type.getTypeName()).append(" %_arg" + (arg.getArgc() + argOffset));
+
+      }
+      r.nl().indent().append("){").nl();
+
+      java.util.Set<Instruction> s = new java.util.HashSet<Instruction>();
+
+      for(RegInstruction i : instructions){
+         if(i.from.isBranchTarget() && !s.contains(i.from)){
+            s.add(i.from);
+            r.label(i.from.getThisPC());
+            r.nl();
+         }
+         r.indent();
+         i.render(r);
+         r.semicolon();
+        // r.append("//"+InstructionHelper.getLabel(i.from, false, false, false));
+         r.nl();
+      }
+      r.append("};");
+      return (r);
+   }
 
 
+   private void add(Instruction _i){
 
-    private void add(Instruction instruction){
+      switch(_i.getByteCode()){
 
-        switch(instruction.getByteCode()){
-
-            case ACONST_NULL:
-                add(new nyi(instruction));
-                break;
-            case ICONST_M1:
-            case ICONST_0:
-            case ICONST_1:
-            case ICONST_2:
-            case ICONST_3:
-            case ICONST_4:
-            case ICONST_5:
-            case BIPUSH:
-            case SIPUSH:  {
-                InstructionSet.Constant<Integer> c = ( InstructionSet.Constant) instruction;
-                add(new mov_const<s32, Integer>(instruction, new Reg<s32>(instruction.getPreStackBaseOnLocals(), Type.s32), c.getValue()));
-            }
+         case ACONST_NULL:
+            add(new nyi(_i));
             break;
-            case LCONST_0:
-            case LCONST_1:
-            {
-                InstructionSet.Constant<Long> c = ( InstructionSet.Constant) instruction;
-                add(new mov_const<s64, Long>(instruction, new Reg<s64>(instruction.getPreStackBaseOnLocals(), Type.s64), c.getValue()));
-            }
+         case ICONST_M1:
+         case ICONST_0:
+         case ICONST_1:
+         case ICONST_2:
+         case ICONST_3:
+         case ICONST_4:
+         case ICONST_5:
+         case BIPUSH:
+         case SIPUSH:
+            add(new mov_const<s32, Integer>(_i, new StackReg_s32(_i, 0), _i.asIntegerConstant().getValue()));
             break;
-            case FCONST_0:
-            case FCONST_1:
-            case FCONST_2:
-            {
-                InstructionSet.Constant<Float> c = ( InstructionSet.Constant) instruction;
-                add(new mov_const<f32, Float>(instruction,new Reg<f32>(instruction.getPreStackBaseOnLocals(), Type.f32), c.getValue()));
+         case LCONST_0:
+         case LCONST_1:
+            add(new mov_const<s64, Long>(_i, new StackReg_s64(_i, 0), _i.asLongConstant().getValue()));
+            break;
+         case FCONST_0:
+         case FCONST_1:
+         case FCONST_2:
+            add(new mov_const<f32, Float>(_i,  new StackReg_f32(_i, 0), _i.asFloatConstant().getValue()));
+         break;
+         case DCONST_0:
+         case DCONST_1:
+            add(new mov_const<f64, Double>(_i,  new StackReg_f64(_i, 0), _i.asDoubleConstant().getValue()));
+            break;
+         // case BIPUSH: moved up
+         // case SIPUSH: moved up
+
+         case LDC:
+         case LDC_W:
+         case LDC2_W:{
+            InstructionSet.ConstantPoolEntryConstant cpe = (InstructionSet.ConstantPoolEntryConstant) _i;
+
+            ClassModel.ConstantPool.ConstantEntry e = (ClassModel.ConstantPool.ConstantEntry) cpe.getConstantPoolEntry();
+            if(e instanceof ClassModel.ConstantPool.DoubleEntry){
+               add(new mov_const<f64, Double>(_i, new StackReg_f64(_i, 0), ((ClassModel.ConstantPool.DoubleEntry) e).getValue()));
+            }else if(e instanceof ClassModel.ConstantPool.FloatEntry){
+               add(new mov_const<f32, Float>(_i, new StackReg_f32(_i, 0), ((ClassModel.ConstantPool.FloatEntry) e).getValue()));
+            }else if(e instanceof ClassModel.ConstantPool.IntegerEntry){
+               add(new mov_const<s32, Integer>(_i, new StackReg_s32(_i, 0), ((ClassModel.ConstantPool.IntegerEntry) e).getValue()));
+            }else if(e instanceof ClassModel.ConstantPool.LongEntry){
+               add(new mov_const<s64, Long>(_i, new StackReg_s64(_i, 0), ((ClassModel.ConstantPool.LongEntry) e).getValue()));
+
             }
+
+         }
+         break;
+         // case LLOAD: moved down
+         // case FLOAD: moved down
+         // case DLOAD: moved down
+         //case ALOAD: moved down
+         case ILOAD:
+         case ILOAD_0:
+         case ILOAD_1:
+         case ILOAD_2:
+         case ILOAD_3:
+            add(new mov<s32>(_i, new StackReg_s32(_i, 0), new VarReg_s32(_i)));
 
             break;
-            case DCONST_0:
-            case DCONST_1:
-            {
-                InstructionSet.Constant<Double> c = ( InstructionSet.Constant) instruction;
-                add(new mov_const<f64, Double>(instruction, new Reg<f64>(instruction.getPreStackBaseOnLocals(), Type.f64), c.getValue()));
-
-            }
+         case LLOAD:
+         case LLOAD_0:
+         case LLOAD_1:
+         case LLOAD_2:
+         case LLOAD_3:
+            add(new mov<s64>(_i, new StackReg_s64(_i, 0),new VarReg_s64(_i)));
             break;
-            // case BIPUSH: moved up
-            // case SIPUSH: moved up
-
-            case LDC:
-            case LDC_W:
-            case LDC2_W: {
-                InstructionSet.ConstantPoolEntryConstant cpe = (InstructionSet.ConstantPoolEntryConstant )instruction;
-
-                ClassModel.ConstantPool.ConstantEntry e= (ClassModel.ConstantPool.ConstantEntry )cpe.getConstantPoolEntry() ;
-                if (e instanceof ClassModel.ConstantPool.DoubleEntry){
-                    add(new mov_const<f64, Double>(instruction, new Reg<f64>(instruction.getPreStackBaseOnLocals(), Type.f64), ((ClassModel.ConstantPool.DoubleEntry)e).getValue()));
-
-                } else if (e instanceof ClassModel.ConstantPool.FloatEntry){
-                    add(new mov_const<f32, Float>(instruction, new Reg<f32>(instruction.getPreStackBaseOnLocals(), Type.f32), ((ClassModel.ConstantPool.FloatEntry)e).getValue()));
-
-
-                }  else if (e instanceof ClassModel.ConstantPool.IntegerEntry){
-                    add(new mov_const<s32, Integer>(instruction, new Reg<s32>(instruction.getPreStackBaseOnLocals(), Type.s32), ((ClassModel.ConstantPool.IntegerEntry)e).getValue()));
-
-                }  else if (e instanceof ClassModel.ConstantPool.LongEntry){
-                    add(new mov_const<s64, Long>(instruction, new Reg<s64>(instruction.getPreStackBaseOnLocals(), Type.s64), ((ClassModel.ConstantPool.LongEntry)e).getValue()));
-
-                }
-
-            }
+         case FLOAD:
+         case FLOAD_0:
+         case FLOAD_1:
+         case FLOAD_2:
+         case FLOAD_3:
+            add(new mov<f32>(_i, new StackReg_f32(_i, 0), new VarReg_f32(_i)));
             break;
-            // case LLOAD: moved down
-            // case FLOAD: moved down
-            // case DLOAD: moved down
-            //case ALOAD: moved down
-            case ILOAD:
-            case ILOAD_0:
-            case ILOAD_1:
-            case ILOAD_2:
-            case ILOAD_3:
-                add(new mov_s32(instruction,instruction.getPreStackBaseOnLocals(),
-                        instruction.asLocalVariableAccessor().getLocalVariableTableIndex()));
-
-                break;
-            case LLOAD:
-            case LLOAD_0:
-            case LLOAD_1:
-            case LLOAD_2:
-            case LLOAD_3:
-                add(new mov_s64(instruction,instruction.getPreStackBaseOnLocals(),
-                        instruction.asLocalVariableAccessor().getLocalVariableTableIndex()));
-                break;
-            case FLOAD:
-            case FLOAD_0:
-            case FLOAD_1:
-            case FLOAD_2:
-            case FLOAD_3:
-                add(new mov_f32(instruction,instruction.getPreStackBaseOnLocals(),
-                        instruction.asLocalVariableAccessor().getLocalVariableTableIndex()));
-                break;
-            case DLOAD:
-            case DLOAD_0:
-            case DLOAD_1:
-            case DLOAD_2:
-            case DLOAD_3:
-                add(new mov_f64(instruction,instruction.getPreStackBaseOnLocals(),
-                        instruction.asLocalVariableAccessor().getLocalVariableTableIndex()));
-                break;
-            case ALOAD:
-            case ALOAD_0:
-            case ALOAD_1:
-            case ALOAD_2:
-            case ALOAD_3:
-                add(new mov_u64(instruction,instruction.getPreStackBaseOnLocals(),
-                        instruction.asLocalVariableAccessor().getLocalVariableTableIndex()));
-                break;
-            case IALOAD:
-            {
-               add(new cvt<u64,s32>(instruction,new Reg<u64>(instruction.getPreStackBaseOnLocals() + 1, Type.u64),
-                       new Reg<s32>(instruction.getPreStackBaseOnLocals() + 1, Type.s32 ))) ;  // index converted to 64 bit
-
-                add(new mov_const<s64, Long>(instruction, new Reg<s64>(instruction.getPostStackBaseOnLocals(), Type.s64), (long)4));
-
-                                                      // load 4 into scratch
-               add(new mul_u64(instruction,instruction.getPreStackBaseOnLocals() + 1, instruction.getPreStackBaseOnLocals() + 1, instruction.getPostStackBaseOnLocals() ));
-               add(new add_u64(instruction, instruction.getPreStackBaseOnLocals()+1,  instruction.getPreStackBaseOnLocals() + 0, instruction.getPreStackBaseOnLocals()+1 )) ;
-               add(new load_s32( instruction,
-                     instruction.getPreStackBaseOnLocals(),   //dest
-                     instruction.getPreStackBaseOnLocals()+ 1)); //mem
-            }
+         case DLOAD:
+         case DLOAD_0:
+         case DLOAD_1:
+         case DLOAD_2:
+         case DLOAD_3:
+            add(new mov<f64>(_i,  new StackReg_f64(_i, 0),new VarReg_f64(_i)));
+            break;
+         case ALOAD:
+         case ALOAD_0:
+         case ALOAD_1:
+         case ALOAD_2:
+         case ALOAD_3:
+            add(new mov<u64>(_i, new StackReg_u64(_i, 0), new VarReg_u64(_i)));
+            break;
+         case IALOAD:{
+            add(new cvt<u64, s32>(_i, new StackReg_u64(_i, 1), new StackReg_s32(_i, 1)));  // index converted to 64 bit
+            add(new mul_const<u64, Long>(_i, new StackReg_u64(_i, 1), new StackReg_u64(_i, 1),  (long) 4));
+            add(new add<u64>(_i, new StackReg_u64(_i, 1), new StackReg_u64(_i, 0), new StackReg_u64(_i, 1)));
+            add(new load<s32>(_i, new StackReg_s32(_i, 0), new StackReg_u64(_i, 1)));
+         }
 
 
-                break;
-            case LALOAD:
-                add(new load_s64( instruction,
-                        instruction.getPreStackBaseOnLocals(),   //array & value
-                        instruction.getPreStackBaseOnLocals()+ 1)); //index
-                break;
-            case FALOAD:
-                add(new load_f32( instruction,
-                        instruction.getPreStackBaseOnLocals(),   //array & value
-                        instruction.getPreStackBaseOnLocals() + 1)); //index
-                break;
-            case DALOAD:
-                add(new nyi(instruction));
-                break;
-            case AALOAD:
-                add(new nyi(instruction));
-                break;
-            case BALOAD:
-                add(new nyi(instruction));
-                break;
-            case CALOAD:
-                add(new nyi(instruction));
-                break;
-            case SALOAD:
-                add(new nyi(instruction));
-                break;
-            //case ISTORE: moved down
-            // case LSTORE:  moved down
-            //case FSTORE: moved down
-            //case DSTORE:  moved down
-            // case ASTORE: moved down
-            case ISTORE:
-            case ISTORE_0:
-            case ISTORE_1:
-            case ISTORE_2:
-            case ISTORE_3:
-                add(new mov_s32(instruction, instruction.asLocalVariableAccessor().getLocalVariableTableIndex(),
-                        instruction.getPreStackBaseOnLocals()));
+         break;
+         case LALOAD:
+            add(new nyi(_i));
+            break;
+         case FALOAD:
+            add(new nyi(_i));
+            break;
+         case DALOAD:
+            add(new nyi(_i));
+            break;
+         case AALOAD:
+            add(new nyi(_i));
+            break;
+         case BALOAD:
+            add(new nyi(_i));
+            break;
+         case CALOAD:
+            add(new nyi(_i));
+            break;
+         case SALOAD:
+            add(new nyi(_i));
+            break;
+         //case ISTORE: moved down
+         // case LSTORE:  moved down
+         //case FSTORE: moved down
+         //case DSTORE:  moved down
+         // case ASTORE: moved down
+         case ISTORE:
+         case ISTORE_0:
+         case ISTORE_1:
+         case ISTORE_2:
+         case ISTORE_3:
+            add(new mov<s32>(_i, new VarReg_s32(_i), new StackReg_s32(_i, 0)));
 
-                break;
-            case LSTORE:
-            case LSTORE_0:
-            case LSTORE_1:
-            case LSTORE_2:
-            case LSTORE_3:
-                add(new mov_s64(instruction, instruction.asLocalVariableAccessor().getLocalVariableTableIndex(),
-                        instruction.getPreStackBaseOnLocals()));
+            break;
+         case LSTORE:
+         case LSTORE_0:
+         case LSTORE_1:
+         case LSTORE_2:
+         case LSTORE_3:
+            add(new mov<s64>(_i, new VarReg_s64(_i), new StackReg_s64(_i, 0)));
 
-                break;
-            case FSTORE:
-            case FSTORE_0:
-            case FSTORE_1:
-            case FSTORE_2:
-            case FSTORE_3:
-                add(new mov_f32(instruction, instruction.asLocalVariableAccessor().getLocalVariableTableIndex(),
-                        instruction.getPreStackBaseOnLocals()));
-                break;
-            case DSTORE:
-            case DSTORE_0:
-            case DSTORE_1:
-            case DSTORE_2:
-            case DSTORE_3:
-                add(new mov_f64(instruction, instruction.asLocalVariableAccessor().getLocalVariableTableIndex(),
-                        instruction.getPreStackBaseOnLocals()));
-                break;
-            case ASTORE:
-            case ASTORE_0:
-            case ASTORE_1:
-            case ASTORE_2:
-            case ASTORE_3:
-                add(new mov_u64(instruction, instruction.asLocalVariableAccessor().getLocalVariableTableIndex(),
-                        instruction.getPreStackBaseOnLocals()));
-                break;
-            case IASTORE:
+            break;
+         case FSTORE:
+         case FSTORE_0:
+         case FSTORE_1:
+         case FSTORE_2:
+         case FSTORE_3:
+            add(new mov<f32>(_i, new VarReg_f32(_i), new StackReg_f32(_i, 0)));
+            break;
+         case DSTORE:
+         case DSTORE_0:
+         case DSTORE_1:
+         case DSTORE_2:
+         case DSTORE_3:
+            add(new mov<f64>(_i, new VarReg_f64(_i), new StackReg_f64(_i, 0)));
+            break;
+         case ASTORE:
+         case ASTORE_0:
+         case ASTORE_1:
+         case ASTORE_2:
+         case ASTORE_3:
+            add(new mov<u64>(_i, new VarReg_u64(_i), new StackReg_u64(_i, 0)));
 
-            {
-               // int scratchBase = instruction.getPostStackBase()+method.getCodeEntry().getMaxLocals(); // we are safe using any register above this
+            break;
+         case IASTORE:
+
+         {
+
                 /*
 
                 cvt_u64_s32 $d(index), $s(index)
@@ -946,386 +965,403 @@ public class RegISA {
                 add_u64 $d(index), $d(index), $d{array};
                 st_global_s32 $s3, [$d6 + 24];
                  */
-                add(new cvt<u64,s32>(instruction,new Reg<u64>(instruction.getPreStackBaseOnLocals() + 1, Type.u64),
-                        new Reg<s32>(instruction.getPreStackBaseOnLocals() + 1, Type.s32 ))) ;  // index converted to 64 bit
+            add(new cvt<u64, s32>(_i, new StackReg_u64(_i, 1), new StackReg_s32(_i, 1)));
+            add(new mul_const<u64, Long>(_i, new StackReg_u64(_i, 1), new StackReg_u64(_i, 1), (long)4));
+            add(new add<u64>(_i,  new StackReg_u64(_i, 1),  new StackReg_u64(_i, 0), new StackReg_u64(_i, 1)));  ;
+            add(new store<s32>(_i,new StackReg_u64(_i, 1), new StackReg_s32(_i, 2)));
 
-                 add(new mov_const<s64, Long>(instruction, new Reg<s64>(instruction.getPostStackBaseOnLocals(), Type.s64), (long)4));                                           // load 4 into scratch
-                add(new mul_u64(instruction,instruction.getPreStackBaseOnLocals() + 1, instruction.getPreStackBaseOnLocals() + 1, instruction.getPostStackBaseOnLocals() ));
-                add(new add_u64(instruction, instruction.getPreStackBaseOnLocals()+1,  instruction.getPreStackBaseOnLocals() + 0, instruction.getPreStackBaseOnLocals()+1 )) ;
-                add(new store_s32(instruction,
-                        new Reg(instruction.getPreStackBaseOnLocals() + 1, Type.u64), //mem
-                        new Reg(instruction.getPreStackBaseOnLocals()+ 2 , Type.s32)//reg
-                      ));
+         }
+         break;
+         case LASTORE:
+            add(new nyi(_i));
+            break;
+         case FASTORE:
+            add(new nyi(_i));
+            break;
+         case DASTORE:
+            add(new nyi(_i));
+            break;
+         case AASTORE:
+            add(new nyi(_i));
+            break;
+         case BASTORE:
+            add(new nyi(_i));
+            break;
+         case CASTORE:
+            add(new nyi(_i));
+            break;
+         case SASTORE:
+            add(new nyi(_i));
+            break;
+         case POP:
+            add(new nyi(_i));
+            break;
+         case POP2:
+            add(new nyi(_i));
+            break;
+         case DUP:
+            add(new nyi(_i));
+            break;
+         case DUP_X1:
+            add(new nyi(_i));
+            break;
+         case DUP_X2:
+            add(new mov<s32>(_i, new StackReg_s32(_i, 3), new StackReg_s32(_i, 2)));
+            add(new mov<s32>(_i, new StackReg_s32(_i, 2),new StackReg_s32(_i, 1)));
+
+            add(new mov<s32>(_i, new StackReg_s32(_i, 1), new StackReg_s32(_i, 0)));
+
+            add(new mov<s32>(_i, new StackReg_s32(_i, 0), new StackReg_s32(_i, 3)));
+            break;
+         case DUP2:
+
+            add(new mov<s32>(_i, new StackReg_s32(_i, 2), new StackReg_s32(_i, 0)));
+            add(new mov<s32>(_i, new StackReg_s32(_i, 3), new StackReg_s32(_i, 1)));
+            break;
+         case DUP2_X1:
+            add(new nyi(_i));
+            break;
+         case DUP2_X2:
+            add(new nyi(_i));
+            break;
+         case SWAP:
+            add(new nyi(_i));
+            break;
+         case IADD:
+            add(new add<s32>(_i, new StackReg_s32(_i, 0), new StackReg_s32(_i, 0), new StackReg_s32(_i, 1)));
+
+
+            break;
+         case LADD:
+            add(new add<s64>(_i, new StackReg_s64(_i, 0), new StackReg_s64(_i, 0), new StackReg_s64(_i, 1)));
+
+
+            break;
+         case FADD:
+            add(new add<f32>(_i, new StackReg_f32(_i, 0), new StackReg_f32(_i, 0), new StackReg_f32(_i, 1)));
+            break;
+         case DADD:
+            add(new add<f64>(_i, new StackReg_f64(_i, 0), new StackReg_f64(_i, 0), new StackReg_f64(_i, 1)));
+
+            break;
+         case ISUB:
+            add(new sub<s32>(_i, new StackReg_s32(_i, 0), new StackReg_s32(_i, 0), new StackReg_s32(_i, 1)));
+
+            break;
+         case LSUB:
+            add(new sub<s64>(_i, new StackReg_s64(_i, 0), new StackReg_s64(_i, 0), new StackReg_s64(_i, 1)));
+
+            break;
+         case FSUB:
+            add(new sub<f32>(_i, new StackReg_f32(_i, 0), new StackReg_f32(_i, 0), new StackReg_f32(_i, 1)));
+
+            break;
+         case DSUB:
+            add(new sub<f64>(_i, new StackReg_f64(_i, 0), new StackReg_f64(_i, 0), new StackReg_f64(_i, 1)));
+
+            break;
+         case IMUL:
+            add(new mul<s32>(_i, new StackReg_s32(_i, 0), new StackReg_s32(_i, 0), new StackReg_s32(_i, 1)));
+
+            break;
+         case LMUL:
+            add(new mul<s64>(_i, new StackReg_s64(_i, 0), new StackReg_s64(_i, 0), new StackReg_s64(_i, 1)));
+
+            break;
+         case FMUL:
+            add(new mul<f32>(_i, new StackReg_f32(_i, 0), new StackReg_f32(_i, 0), new StackReg_f32(_i, 1)));
+
+            break;
+         case DMUL:
+            add(new mul<f64>(_i, new StackReg_f64(_i, 0), new StackReg_f64(_i, 0), new StackReg_f64(_i, 1)));
+            break;
+         case IDIV:
+            add(new div<s32>(_i, new StackReg_s32(_i, 0), new StackReg_s32(_i, 0), new StackReg_s32(_i, 1)));
+
+            break;
+         case LDIV:
+            add(new div<s64>(_i, new StackReg_s64(_i, 0), new StackReg_s64(_i, 0), new StackReg_s64(_i, 1)));
+
+            break;
+         case FDIV:
+            add(new div<f32>(_i, new StackReg_f32(_i, 0), new StackReg_f32(_i, 0), new StackReg_f32(_i, 1)));
+
+            break;
+         case DDIV:
+            add(new div<f64>(_i, new StackReg_f64(_i, 0), new StackReg_f64(_i, 0), new StackReg_f64(_i, 1)));
+
+            break;
+         case IREM:
+            add(new rem<s32>(_i, new StackReg_s32(_i, 0), new StackReg_s32(_i, 0), new StackReg_s32(_i, 1)));
+
+            break;
+         case LREM:
+            add(new rem<s64>(_i, new StackReg_s64(_i, 0), new StackReg_s64(_i, 0), new StackReg_s64(_i, 1)));
+
+            break;
+         case FREM:
+            add(new rem<f32>(_i, new StackReg_f32(_i, 0), new StackReg_f32(_i, 0), new StackReg_f32(_i, 1)));
+
+            break;
+         case DREM:
+            add(new rem<f64>(_i, new StackReg_f64(_i, 0), new StackReg_f64(_i, 0), new StackReg_f64(_i, 1)));
+
+            break;
+         case INEG:
+            add(new nyi(_i));
+            break;
+         case LNEG:
+            add(new nyi(_i));
+            break;
+         case FNEG:
+            add(new nyi(_i));
+            break;
+         case DNEG:
+            add(new nyi(_i));
+            break;
+         case ISHL:
+            add(new nyi(_i));
+            break;
+         case LSHL:
+            add(new nyi(_i));
+            break;
+         case ISHR:
+            add(new nyi(_i));
+            break;
+         case LSHR:
+            add(new nyi(_i));
+            break;
+         case IUSHR:
+            add(new nyi(_i));
+            break;
+         case LUSHR:
+            add(new nyi(_i));
+            break;
+         case IAND:
+            add(new nyi(_i));
+            break;
+         case LAND:
+            add(new nyi(_i));
+            break;
+         case IOR:
+            add(new nyi(_i));
+            break;
+         case LOR:
+            add(new nyi(_i));
+            break;
+         case IXOR:
+            add(new nyi(_i));
+            break;
+         case LXOR:
+            add(new nyi(_i));
+            break;
+         case IINC:
+            add(new add_const<s32, Integer>(_i, new VarReg_s32(_i),  new VarReg_s32(_i),  ((InstructionSet.I_IINC) _i).getDelta()));
+
+            break;
+         case I2L:
+            add(new cvt<s64, s32>(_i, new StackReg_s64(_i, 0), new StackReg_s32(_i, 0)));
+            break;
+         case I2F:
+            add(new cvt<f32, s32>(_i, new StackReg_f32(_i, 0), new StackReg_s32(_i, 0)));
+            break;
+         case I2D:
+            add(new cvt<f64, s32>(_i, new StackReg_f64(_i, 0), new StackReg_s32(_i, 0)));
+            break;
+         case L2I:
+            add(new nyi(_i));
+            break;
+         case L2F:
+            add(new nyi(_i));
+            break;
+         case L2D:
+            add(new nyi(_i));
+            break;
+         case F2I:
+            add(new nyi(_i));
+            break;
+         case F2L:
+            add(new nyi(_i));
+            break;
+         case F2D:
+            add(new nyi(_i));
+            break;
+         case D2I:
+            add(new nyi(_i));
+            break;
+         case D2L:
+            add(new nyi(_i));
+            break;
+         case D2F:
+            add(new nyi(_i));
+            break;
+         case I2B:
+            add(new nyi(_i));
+            break;
+         case I2C:
+            add(new nyi(_i));
+            break;
+         case I2S:
+            add(new nyi(_i));
+            break;
+         case LCMP:
+            add(new nyi(_i));
+            break;
+         case FCMPL:
+            add(new nyi(_i));
+            break;
+         case FCMPG:
+            add(new nyi(_i));
+            break;
+         case DCMPL:
+            add(new nyi(_i));
+            break;
+         case DCMPG:
+            add(new nyi(_i));
+            break;
+         case IFEQ:
+         case IFNE:
+         case IFLT:
+         case IFGE:
+         case IFGT:
+         case IFLE:
+         case IF_ICMPEQ:
+         case IF_ICMPNE:
+         case IF_ICMPLT:
+         case IF_ICMPGE:
+         case IF_ICMPGT:
+         case IF_ICMPLE:
+         case IF_ACMPEQ:
+         case IF_ACMPNE:
+         case GOTO:
+         case IFNULL:
+         case IFNONNULL:
+         case GOTO_W:
+            add(new branch(_i, _i.getByteCode().getName(), _i.asBranch().getAbsolute()));
+            break;
+         case JSR:
+            add(new nyi(_i));
+            break;
+         case RET:
+            add(new nyi(_i));
+            break;
+         case TABLESWITCH:
+            add(new nyi(_i));
+            break;
+         case LOOKUPSWITCH:
+            add(new nyi(_i));
+            break;
+         case IRETURN:
+            add(new ret<s32>(_i, new StackReg_s32(_i, 0)));
+            break;
+         case LRETURN:
+            add(new ret<s64>(_i, new StackReg_s64(_i, 0)));
+            break;
+         case FRETURN:
+            add(new ret<f32>(_i, new StackReg_f32(_i, 0)));
+            break;
+         case DRETURN:
+            add(new ret<f64>(_i, new StackReg_f64(_i, 0)));
+            break;
+         case ARETURN:
+            add(new nyi(_i));
+            break;
+         case RETURN:
+            add(new retvoid(_i));
+            break;
+         case GETSTATIC:
+         case GETFIELD:{
+            TypeHelper.Type type = _i.asFieldAccessor().getConstantPoolFieldEntry().getType();
+            if(type.isArray()){
+               add(new get_field<u64>(_i, new StackReg_u64(_i, 0)));
+            }else if(type.isInt()){
+               add(new get_field<s32>(_i, new StackReg_s32(_i, 0)));
+            }else if(type.isFloat()){
+               add(new get_field<f32>(_i, new StackReg_f32(_i, 0)));
             }
-                break;
-            case LASTORE:
-                add(new nyi(instruction));
-                break;
-            case FASTORE:
-                add(new nyi(instruction));
-                break;
-            case DASTORE:
-                add(new nyi(instruction));
-                break;
-            case AASTORE:
-                add(new nyi(instruction));
-                break;
-            case BASTORE:
-                add(new nyi(instruction));
-                break;
-            case CASTORE:
-                add(new nyi(instruction));
-                break;
-            case SASTORE:
-                add(new nyi(instruction));
-                break;
-            case POP:
-                add(new nyi(instruction));
-                break;
-            case POP2:
-                add(new nyi(instruction));
-                break;
-            case DUP:
-                add(new nyi(instruction));
-                break;
-            case DUP_X1:
-                add(new nyi(instruction));
-                break;
-            case DUP_X2:
-                add(new mov_s32(instruction, instruction.getPreStackBaseOnLocals()+3, instruction.getPreStackBaseOnLocals()+2) ) ;
-                add(new mov_s32(instruction, instruction.getPreStackBaseOnLocals()+2, instruction.getPreStackBaseOnLocals()+1) ) ;
+         }
+         break;
+         case PUTSTATIC:
+         case PUTFIELD:{
+            TypeHelper.Type type = _i.asFieldAccessor().getConstantPoolFieldEntry().getType();
+            if(type.isArray()){
+               add(new put_field<u64>(_i, new StackReg_u64(_i, 0)));
+            }else if(type.isInt()){
+               add(new put_field<s32>(_i, new StackReg_s32(_i, 0)));
+            }else if(type.isFloat()){
+               add(new put_field<f32>(_i, new StackReg_f32(_i, 0)));
+            }
 
-                add(new mov_s32(instruction, instruction.getPreStackBaseOnLocals()+1, instruction.getPreStackBaseOnLocals()+0)) ;
+         }
+         break;
+         case INVOKEVIRTUAL:
+         case INVOKESPECIAL:
+         case INVOKESTATIC:
+         case INVOKEINTERFACE:
+         case INVOKEDYNAMIC:
+            add(new call(_i));
+            break;
+         case NEW:
+            add(new nyi(_i));
+            break;
+         case NEWARRAY:
+            add(new nyi(_i));
+            break;
+         case ANEWARRAY:
+            add(new nyi(_i));
+            break;
+         case ARRAYLENGTH:
+            add(new nyi(_i));
+            break;
+         case ATHROW:
+            add(new nyi(_i));
+            break;
+         case CHECKCAST:
+            add(new nyi(_i));
+            break;
+         case INSTANCEOF:
+            add(new nyi(_i));
+            break;
+         case MONITORENTER:
+            add(new nyi(_i));
+            break;
+         case MONITOREXIT:
+            add(new nyi(_i));
+            break;
+         case WIDE:
+            add(new nyi(_i));
+            break;
+         case MULTIANEWARRAY:
+            add(new nyi(_i));
+            break;
+         case JSR_W:
+            add(new nyi(_i));
+            break;
 
-                add(new mov_s32(instruction, instruction.getPreStackBaseOnLocals()+0, instruction.getPreStackBaseOnLocals()+3 )) ;
-                break;
-            case DUP2:
+      }
 
-                add(new mov_s32(instruction, instruction.getPreStackBaseOnLocals()+2, instruction.getPreStackBaseOnLocals()+0) ) ;
-                add(new mov_s32(instruction, instruction.getPreStackBaseOnLocals()+3, instruction.getPreStackBaseOnLocals()+1) ) ;
-                break;
-            case DUP2_X1:
-                add(new nyi(instruction));
-                break;
-            case DUP2_X2:
-                add(new nyi(instruction));
-                break;
-            case SWAP:
-                add(new nyi(instruction));
-                break;
-            case IADD:
-                add(new add_s32(instruction,instruction.getPreStackBaseOnLocals(), instruction.getPreStackBaseOnLocals(), instruction.getPreStackBaseOnLocals()+1));
+   }
 
-                break;
-            case LADD:
-                add(new add_s64(instruction,instruction.getPreStackBaseOnLocals(), instruction.getPreStackBaseOnLocals(), instruction.getPreStackBaseOnLocals()+1));
-                break;
-            case FADD:
-                add(new add_f32(instruction,instruction.getPreStackBaseOnLocals(),instruction.getPreStackBaseOnLocals(),instruction.getPreStackBaseOnLocals()+1));
-                break;
-            case DADD:
-                add(new nyi(instruction));
-                break;
-            case ISUB:
-                add(new sub_s32(instruction,instruction.getPreStackBaseOnLocals(), instruction.getPreStackBaseOnLocals(), instruction.getPreStackBaseOnLocals()+1));
-
-                break;
-            case LSUB:
-                add(new nyi(instruction));
-                break;
-            case FSUB:
-                add(new sub_f32(instruction,instruction.getPreStackBaseOnLocals(), instruction.getPreStackBaseOnLocals(), instruction.getPreStackBaseOnLocals()+1));
-                break;
-            case DSUB:
-                add(new nyi(instruction));
-                break;
-            case IMUL:
-                add(new mul_s32(instruction,instruction.getPreStackBaseOnLocals(), instruction.getPreStackBaseOnLocals(), instruction.getPreStackBaseOnLocals()+1));
-
-                break;
-            case LMUL:
-                add(new nyi(instruction));
-                break;
-            case FMUL:
-                add(new mul_f32(instruction,instruction.getPreStackBaseOnLocals(), instruction.getPreStackBaseOnLocals(), instruction.getPreStackBaseOnLocals()+1));
-
-                break;
-            case DMUL:
-                add(new nyi(instruction));
-                break;
-            case IDIV:
-                add(new div_s32(instruction,instruction.getPreStackBaseOnLocals(), instruction.getPreStackBaseOnLocals(), instruction.getPreStackBaseOnLocals()+1));
-
-                break;
-            case LDIV:
-                add(new nyi(instruction));
-                break;
-            case FDIV:
-                add(new div_f32(instruction,instruction.getPreStackBaseOnLocals(), instruction.getPreStackBaseOnLocals(), instruction.getPreStackBaseOnLocals()+1));
-
-                break;
-            case DDIV:
-                add(new nyi(instruction));
-                break;
-            case IREM:
-                add(new rem_s32(instruction,instruction.getPreStackBaseOnLocals(), instruction.getPreStackBaseOnLocals(), instruction.getPreStackBaseOnLocals()+1));
-
-                break;
-            case LREM:
-                add(new nyi(instruction));
-                break;
-            case FREM:
-                add(new nyi(instruction));
-                break;
-            case DREM:
-                add(new nyi(instruction));
-                break;
-            case INEG:
-                add(new nyi(instruction));
-                break;
-            case LNEG:
-                add(new nyi(instruction));
-                break;
-            case FNEG:
-                add(new nyi(instruction));
-                break;
-            case DNEG:
-                add(new nyi(instruction));
-                break;
-            case ISHL:
-                add(new nyi(instruction));
-                break;
-            case LSHL:
-                add(new nyi(instruction));
-                break;
-            case ISHR:
-                add(new nyi(instruction));
-                break;
-            case LSHR:
-                add(new nyi(instruction));
-                break;
-            case IUSHR:
-                add(new nyi(instruction));
-                break;
-            case LUSHR:
-                add(new nyi(instruction));
-                break;
-            case IAND:
-                add(new nyi(instruction));
-                break;
-            case LAND:
-                add(new nyi(instruction));
-                break;
-            case IOR:
-                add(new nyi(instruction));
-                break;
-            case LOR:
-                add(new nyi(instruction));
-                break;
-            case IXOR:
-                add(new nyi(instruction));
-                break;
-            case LXOR:
-                add(new nyi(instruction));
-                break;
-            case IINC:
-                add(new add_const_s32(instruction, ((InstructionSet.I_IINC)instruction).getLocalVariableTableIndex(),((InstructionSet.I_IINC)instruction).getLocalVariableTableIndex(), ((InstructionSet.I_IINC)instruction).getDelta()));
-
-                break;
-            case I2L:
-                add(new nyi(instruction));
-                break;
-            case I2F:
-                add(new cvt<s32,f32>(instruction,new Reg<s32>(instruction.getPreStackBaseOnLocals(), Type.s32),
-                        new Reg<f32>(instruction.getPreStackBaseOnLocals(), Type.f32 ))) ;  // index converted to 64 bit
+   RegISA(ClassModel.ClassModelMethod _method){
+      method = _method;
+      for(Instruction i : method.getInstructions()){
+         if(i.getThisPC() == 0){
+            int argOffset = 0;
+            if(!method.isStatic()){
+               add(new ld_kernarg(i, new VarReg_u64(0)));
+               argOffset++;
+            }
+            for(TypeHelper.Arg arg : method.argsAndReturnType.getArgs()){
+               if(arg.isArray()){
+                  add(new ld_kernarg(i, new VarReg_u64(arg.getArgc() + argOffset)));
+               }else if(arg.isInt()){
+                  add(new ld_kernarg(i, new VarReg_s32(arg.getArgc() + argOffset)));
 
 
-
-                break;
-            case I2D:
-                add(new nyi(instruction));
-                break;
-            case L2I:
-                add(new nyi(instruction));
-                break;
-            case L2F:
-                add(new nyi(instruction));
-                break;
-            case L2D:
-                add(new nyi(instruction));
-                break;
-            case F2I:
-                add(new nyi(instruction));
-                break;
-            case F2L:
-                add(new nyi(instruction));
-                break;
-            case F2D:
-                add(new nyi(instruction));
-                break;
-            case D2I:
-                add(new nyi(instruction));
-                break;
-            case D2L:
-                add(new nyi(instruction));
-                break;
-            case D2F:
-                add(new nyi(instruction));
-                break;
-            case I2B:
-                add(new nyi(instruction));
-                break;
-            case I2C:
-                add(new nyi(instruction));
-                break;
-            case I2S:
-                add(new nyi(instruction));
-                break;
-            case LCMP:
-                add(new nyi(instruction));
-                break;
-            case FCMPL:
-                add(new nyi(instruction));
-                break;
-            case FCMPG:
-                add(new nyi(instruction));
-                break;
-            case DCMPL:
-                add(new nyi(instruction));
-                break;
-            case DCMPG:
-                add(new nyi(instruction));
-                break;
-            case IFEQ:
-            case IFNE:
-            case IFLT:
-            case IFGE:
-            case IFGT:
-            case IFLE:
-            case IF_ICMPEQ:
-            case IF_ICMPNE:
-            case IF_ICMPLT:
-            case IF_ICMPGE:
-            case IF_ICMPGT:
-            case IF_ICMPLE:
-            case IF_ACMPEQ:
-            case IF_ACMPNE:
-            case GOTO:
-            case IFNULL:
-            case IFNONNULL:
-            case GOTO_W:
-                add(new branch(instruction, instruction.getByteCode().getName(), instruction.asBranch().getAbsolute()));
-                break;
-            case JSR:
-                add(new nyi(instruction));
-                break;
-            case RET:
-                add(new nyi(instruction));
-                break;
-            case TABLESWITCH:
-                add(new nyi(instruction));
-                break;
-            case LOOKUPSWITCH:
-                add(new nyi(instruction));
-                break;
-            case IRETURN:
-                add(new nyi(instruction));
-                break;
-            case LRETURN:
-                add(new nyi(instruction));
-                break;
-            case FRETURN:
-                add(new nyi(instruction));
-                break;
-            case DRETURN:
-                add(new nyi(instruction));
-                break;
-            case ARETURN:
-                add(new nyi(instruction));
-                break;
-            case RETURN:
-                add(new ret(instruction));
-                break;
-            case GETSTATIC:
-            case PUTSTATIC:
-            case GETFIELD:
-            case PUTFIELD:
-                add(new field(instruction));
-                break;
-            case INVOKEVIRTUAL:
-            case INVOKESPECIAL:
-            case INVOKESTATIC:
-            case INVOKEINTERFACE:
-            case INVOKEDYNAMIC:
-                add(new call(instruction));
-                break;
-            case NEW:
-                add(new nyi(instruction));
-                break;
-            case NEWARRAY:
-                add(new nyi(instruction));
-                break;
-            case ANEWARRAY:
-                add(new nyi(instruction));
-                break;
-            case ARRAYLENGTH:
-                add(new nyi(instruction));
-                break;
-            case ATHROW:
-                add(new nyi(instruction));
-                break;
-            case CHECKCAST:
-                add(new nyi(instruction));
-                break;
-            case INSTANCEOF:
-                add(new nyi(instruction));
-                break;
-            case MONITORENTER:
-                add(new nyi(instruction));
-                break;
-            case MONITOREXIT:
-                add(new nyi(instruction));
-                break;
-            case WIDE:
-                add(new nyi(instruction));
-                break;
-            case MULTIANEWARRAY:
-                add(new nyi(instruction));
-                break;
-            case JSR_W:
-                add(new nyi(instruction));
-                break;
-
-        }
-
-    }
-
-    RegISA(ClassModel.ClassModelMethod _method){
-
-
-       method = _method;
-
-
-
-
-       for(Instruction i : method.getInstructions()){
-            if (i.getThisPC()==0){
-               int argOffset = 0;
-               if (!method.isStatic()){
-                  add(new ld_kernarg(i, Type.u64, 0));
-                  argOffset++;
-               }
-               for (TypeHelper.Arg arg:method.argsAndReturnType.getArgs()){
-                  if (arg.isArray()){
-                     add(new ld_kernarg(i, Type.u64, arg.getArgc()+argOffset));
-                  }else if (arg.isInt()){
-                     add(new ld_kernarg(i, Type.s32, arg.getArgc()+argOffset));
-
-
-                  }
                }
             }
-            add( i);
-        }
-    }
+         }
+         add(i);
+      }
+   }
 }

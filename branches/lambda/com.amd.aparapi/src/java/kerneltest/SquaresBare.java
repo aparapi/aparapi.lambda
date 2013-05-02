@@ -13,7 +13,7 @@ public class SquaresBare{
 
 
    void run (int[] in, int[] out, int gid){
-         out[gid] = in[gid]++ * in[gid];
+         out[gid] = in[gid] * in[gid];
       }
 
 

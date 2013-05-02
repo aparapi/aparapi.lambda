@@ -204,15 +204,10 @@ abstract class Instruction{
       return(postStackBase -getConsumedInstructionTypes().length);
    }
 
-   int getPreStackBaseOnLocals(){
-      return(getPreStackBase()+method.getCodeEntry().getMaxLocals());
-   }
+
 
    void setPostStackBase(int _postStackBase){
       postStackBase = _postStackBase;
-   }
-   int getPostStackBaseOnLocals(){
-      return(getPostStackBase()+method.getCodeEntry().getMaxLocals());
    }
 
    void setConsumedInstructionTypes(InstructionType[] _consumedInstructionTypes){
@@ -264,6 +259,18 @@ abstract class Instruction{
    }
    Constant asConstant(){
       return((Constant)this);
+   }
+   Constant<Double> asDoubleConstant(){
+      return((Constant<Double>)this);
+   }
+   Constant<Float> asFloatConstant(){
+      return((Constant<Float>)this);
+   }
+   Constant<Integer> asIntegerConstant(){
+      return((Constant<Integer>)this);
+   }
+   Constant<Long> asLongConstant(){
+      return((Constant<Long>)this);
    }
 
    MethodCall asMethodCall(){
