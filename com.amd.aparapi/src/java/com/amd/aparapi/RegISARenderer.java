@@ -9,6 +9,7 @@ package com.amd.aparapi;
  */
 public class RegISARenderer{
    StringBuilder sb = new StringBuilder();
+   int lastNewLineIndex = 0;
 
    public RegISARenderer label(int _pc){
       sb.append(String.format("@L%d", _pc));
@@ -52,6 +53,7 @@ public class RegISARenderer{
 
    public RegISARenderer nl(){
       append("\n");
+      lastNewLineIndex = sb.length();
       return (this);
    }
 
@@ -59,6 +61,18 @@ public class RegISARenderer{
       append("      ");
       return (this);
    }
+
+   public  RegISARenderer pad(int n){
+       while (sb.length() - lastNewLineIndex < n){
+           sb.append(" ");
+       }
+       return(this);
+   }
+
+    public RegISARenderer comment(String _comment){
+        sb.append("// " + _comment);
+        return (this);
+    }
 
    public RegISARenderer space(){
       return (append(" "));

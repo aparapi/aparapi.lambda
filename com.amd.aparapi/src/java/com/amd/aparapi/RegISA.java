@@ -706,7 +706,7 @@ public class RegISA{
    List<RegInstruction> instructions = new ArrayList<RegInstruction>();
    ClassModel.ClassModelMethod method;
 
-   boolean optimizeMoves = true;
+   boolean optimizeMoves = false|| Config.enableOptimizeRegMoves;
 
    void add(RegInstruction _regInstruction){
       // before we add lets see if this is a redundant mov
@@ -780,14 +780,51 @@ public class RegISA{
          r.indent();
          i.render(r);
          r.semicolon();
-        // r.append("//"+InstructionHelper.getLabel(i.from, false, false, false));
+         r.pad(40).comment(InstructionHelper.getLabel(i.from, false, false, false));
          r.nl();
       }
       r.append("};");
       return (r);
    }
 
+   public Reg getRegOfLastWriteToIndex(int _index){
 
+       int idx=instructions.size();
+       while (--idx>=0){
+           RegInstruction i = instructions.get(idx);
+           if (i.dests != null){
+               for (Reg d:i.dests){
+                  if (d.index == _index){
+                      return(d);
+                  }
+               }
+           }
+       }
+
+
+       return(null);
+   }
+
+   public void addmov(Instruction _i, Type _type, int _from, int _to){
+       if (_type.equals(Type.u64) ||_type.getBits()==32 ){
+           if (_type.equals(Type.u64)){
+               add(new mov<u64>(_i, new StackReg_u64(_i, _to), new StackReg_u64(_i, _from)));
+           }else if (_type.equals(Type.s32)){
+               add(new mov<s32>(_i, new StackReg_s32(_i, _to), new StackReg_s32(_i, _from)));
+           } else{
+               throw new IllegalStateException (" unknown type 1 type for first of DUP2");
+           }
+
+       }else{
+           throw new IllegalStateException (" unknown type 2 type for DUP2");
+       }
+   }
+
+   public Reg addmov(Instruction _i, int _from, int _to){
+       Reg r= getRegOfLastWriteToIndex(_i.getPreStackBase()+_i.getMethod().getCodeEntry().getMaxLocals()+_from);
+       addmov(_i, r.type, _from, _to);
+       return(r);
+   }
    private void add(Instruction _i){
 
       switch(_i.getByteCode()){
@@ -1005,18 +1042,28 @@ public class RegISA{
          case DUP_X1:
             add(new nyi(_i));
             break;
-         case DUP_X2:
-            add(new mov<s32>(_i, new StackReg_s32(_i, 3), new StackReg_s32(_i, 2)));
-            add(new mov<s32>(_i, new StackReg_s32(_i, 2),new StackReg_s32(_i, 1)));
+         case DUP_X2:  {
+            // Reg r = getRegOfLastWriteToIndex(_i.getPreStackBase()+_i.getMethod().getCodeEntry().getMaxLocals()+3);
+            // addmov(_i, 2, 4);
+             addmov(_i, 2, 3);
+             addmov(_i, 1, 2);
+             addmov(_i, 0, 1);
+             addmov(_i, 3, 0);
+           // add(new mov<s32>(_i, new StackReg_s32(_i, 3), new StackReg_s32(_i, 2)));
+           // add(new mov<s32>(_i, new StackReg_s32(_i, 2),new StackReg_s32(_i, 1)));
 
-            add(new mov<s32>(_i, new StackReg_s32(_i, 1), new StackReg_s32(_i, 0)));
+           // add(new mov<s32>(_i, new StackReg_s32(_i, 1), new StackReg_s32(_i, 0)));
 
-            add(new mov<s32>(_i, new StackReg_s32(_i, 0), new StackReg_s32(_i, 3)));
+           // add(new mov<s32>(_i, new StackReg_s32(_i, 0), new StackReg_s32(_i, 3)));
+         }
             break;
-         case DUP2:
-
-            add(new mov<s32>(_i, new StackReg_s32(_i, 2), new StackReg_s32(_i, 0)));
-            add(new mov<s32>(_i, new StackReg_s32(_i, 3), new StackReg_s32(_i, 1)));
+         case DUP2:  {
+            // DUP2 is problematic. DUP2 either dups top two items or one depending on the 'type' of the stack items.
+            // To complicate this further HSA large model wants object/mem references to be 64 bits (type 2 in Java) whereas
+             // in java object/array refs are 32 bits (type 1).
+            addmov(_i, 0,  2);
+            addmov(_i, 1,  3);
+            }
             break;
          case DUP2_X1:
             add(new nyi(_i));
