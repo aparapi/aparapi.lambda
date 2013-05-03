@@ -170,7 +170,9 @@ class Config{
 
    public static boolean enableShowRealLocalVariableTable = Boolean.getBoolean(propPkgName + ".enableRealFakeLocalVariableTable");
 
-   // Logging setup
+   public static boolean enableOptimizeRegMoves = Boolean.getBoolean(propPkgName + ".enableOptimizeRegMoves");
+
+    // Logging setup
    private static final String logPropName = propPkgName + ".logLevel";
 
    static String getLoggerName(){

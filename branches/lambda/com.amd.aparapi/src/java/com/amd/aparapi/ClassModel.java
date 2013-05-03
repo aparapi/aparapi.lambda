@@ -2467,11 +2467,11 @@ public class ClassModel{
              }
 
 
-             ConsumedInstructionTypeStack consumedInstructionTypeStack = new ConsumedInstructionTypeStack(codeEntry.getMaxStack()+1);
+            ConsumedInstructionTypeStack consumedInstructionTypeStack = new ConsumedInstructionTypeStack(codeEntry.getMaxStack()+1);
 
             for (Instruction i:pcMap.values()){
-              i.setPostStackBase(consumedInstructionTypeStack.getIndex());
-                Instruction.InstructionType[] consumedInstructionTypes =  new Instruction.InstructionType[i.getStackConsumeCount()];
+               i.setPostStackBase(consumedInstructionTypeStack.getIndex());
+               Instruction.InstructionType[] consumedInstructionTypes =  new Instruction.InstructionType[i.getStackConsumeCount()];
                for (int ci = 0; ci<consumedInstructionTypes.length; ci++){
                    consumedInstructionTypes[ci]=consumedInstructionTypeStack.pop();
                }
