@@ -439,33 +439,19 @@ public class RegISA{
       }
    }
 
+
+
    static class nyi extends RegInstruction{
 
       nyi(Instruction _from){
          super(_from, 0, 0);
       }
 
+
+
       @Override void render(RegISARenderer r){
 
-         r.append("NYI " + from.getByteCode().getName());//InstructionHelper.getLabel(i, false, false, false);
-         if(from.isBranch()){
-            r.append(" " + from.asBranch().getAbsolute());
-         }else if(from.isFieldAccessor()){
-            r.append(" " + from.asFieldAccessor().getConstantPoolFieldEntry().getType());
-            r.append(" " + from.asFieldAccessor().getConstantPoolFieldEntry().getClassEntry().getDotClassName());
-            r.append(" " + from.asFieldAccessor().getConstantPoolFieldEntry().getName());
-         }else if(from.isLocalVariableAccessor()){
-            r.append(" #" + from.asLocalVariableAccessor().getLocalVariableInfo().getSlot());
-            r.append(" " + from.asLocalVariableAccessor().getLocalVariableInfo().getVariableName());
-            r.append(" " + from.asLocalVariableAccessor().getLocalVariableInfo().getVariableDescriptor());
-
-         }else if(from.isMethodCall()){
-            r.append(" " + from.asMethodCall().getConstantPoolMethodEntry().getArgsAndReturnType().getReturnType());
-            r.append(" " + from.asMethodCall().getConstantPoolMethodEntry().getClassEntry().getDotClassName());
-            r.append("." + from.asMethodCall().getConstantPoolMethodEntry().getName());
-         }else if(from.isConstant()){
-            r.append("." + from.asConstant().getValue());
-         }
+         r.append("NYI ").i(from);
 
       }
    }
@@ -752,7 +738,7 @@ public class RegISA{
       r.append("kernel &" + method.getName() + "(");
       int argOffset = method.isStatic() ? 0 : 1;
       if(!method.isStatic()){
-         r.nl().indent().append("kernarg_u64 %_arg0");
+         r.nl().pad(3).append("kernarg_u64 %_arg0");
       }
 
       for(TypeHelper.Arg arg : method.argsAndReturnType.getArgs()){
@@ -764,23 +750,27 @@ public class RegISA{
 
          Type type = Type.forJavaType(arg);
 
-         r.indent().append("kernarg_").append(type.getTypeName()).append(" %_arg" + (arg.getArgc() + argOffset));
+         r.pad(3).append("kernarg_").append(type.getTypeName()).append(" %_arg" + (arg.getArgc() + argOffset));
 
       }
-      r.nl().indent().append("){").nl();
+      r.nl().pad(3).append("){").nl();
 
       java.util.Set<Instruction> s = new java.util.HashSet<Instruction>();
 
       for(RegInstruction i : instructions){
-         if(i.from.isBranchTarget() && !s.contains(i.from)){
+         if(!(i instanceof ld_kernarg) && !s.contains(i.from)){
             s.add(i.from);
+            if (i.from.isBranchTarget()){
+
             r.label(i.from.getThisPC());
             r.nl();
+            }
+            r.nl().pad(1).append("// ").mark().append(i.from.getThisPC()).relpad(2).space().i(i.from).nl();
          }
-         r.indent();
+         r.pad(9);
          i.render(r);
          r.semicolon();
-         r.pad(40).comment(InstructionHelper.getLabel(i.from, false, false, false));
+
          r.nl();
       }
       r.append("};");
