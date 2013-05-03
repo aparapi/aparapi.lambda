@@ -79,6 +79,8 @@ public class ClassModel{
 
       String getVariableDescriptor();
 
+      Type getType();
+
       int getSlot();
 
       int getLength();
@@ -1321,6 +1323,8 @@ public class ClassModel{
 
             String descriptor = "";
 
+            TypeHelper.Type type;
+
             int slot;
 
             Var(InstructionSet.StoreSpec _storeSpec, int _slot, int _startPc, boolean _arg){
@@ -1333,6 +1337,7 @@ public class ClassModel{
                }else{
                   name = _storeSpec.toString().toLowerCase() + "_" + _slot;
                   descriptor = _storeSpec.toString();
+                  type = new TypeHelper.Type(descriptor);
 
                }
             }
@@ -1385,6 +1390,10 @@ public class ClassModel{
                return (descriptor);
             }
 
+            @Override
+            public TypeHelper.Type getType(){
+               return (type);
+            }
             @Override
             public int getSlot(){
                return (slot);
@@ -1538,11 +1547,21 @@ public class ClassModel{
 
             private int slot;
 
+            private TypeHelper.Type type;
+
+            String variableDescriptor;
+
+            String variableName;
+
             Var(ByteReader _byteReader){
                startPc = _byteReader.u2();
                usageLength = _byteReader.u2();
                variableNameIndex = _byteReader.u2();
                descriptorIndex = _byteReader.u2();
+               variableName = constantPool.getUTF8Entry(variableNameIndex).getUTF8();
+               variableDescriptor = constantPool.getUTF8Entry(descriptorIndex).getUTF8();
+               type = new TypeHelper.Type(variableDescriptor);
+
                slot = _byteReader.u2();
             }
 
@@ -1570,12 +1589,17 @@ public class ClassModel{
 
             @Override
             public String getVariableName(){
-               return (constantPool.getUTF8Entry(variableNameIndex).getUTF8());
+               return (variableName);
             }
 
             @Override
             public String getVariableDescriptor(){
-               return (constantPool.getUTF8Entry(descriptorIndex).getUTF8());
+               return (variableDescriptor);
+            }
+
+            @Override
+            public TypeHelper.Type getType(){
+               return (type);
             }
 
             @Override
