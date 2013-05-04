@@ -58,8 +58,7 @@ class InstructionSet{
       B("B", "byte", 1, 1), //
       S("S", "short", 2, 1), //
       I("I", "int", 4, 1), //
-      L("L", "long", 8, 2), // 
-      J("J", "long", 8, 2), // Note J is the java code for 'long' type
+      L("J", "long", 8, 2), //
       A("A", "array", 4, 1), //
       O("O", "object", 4, 1),
       N("N", "null", 4, 1),
@@ -262,6 +261,10 @@ class InstructionSet{
 
       int getStackAdjust(){
          return (types.length);
+      }
+
+      TypeSpec[] getTypes(){
+          return(types);
       }
    }
 
