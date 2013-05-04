@@ -290,7 +290,9 @@ public class TypeHelper{
       return (_slashClassName.replace(SLASH, UNDERSCORE));
    }
 
-   static class Type{
+
+
+    static class Type{
       private int arrayDimensions = 0;
 
       Type(String _type){
@@ -302,13 +304,15 @@ public class TypeHelper{
          type = type.substring(arrayDimensions);
       }
 
-      public Type(InstructionSet.StoreSpec _storeSpec) {
-         switch(_storeSpec){
-             case A:type = "[?"; arrayDimensions = 1; break;
-             default: type = _storeSpec.name();
-         }
+        public Type(InstructionSet.TypeSpec _typeSpec) {
+            switch(_typeSpec){
+                case A:type = "[?"; arrayDimensions = 1; break;
+                case O:type = "L/java/lang/Object;"; arrayDimensions = 0; break;
+                default: type = _typeSpec.name();
+            }
 
-      }
+        }
+
       public Type(Field _field){
          this(_field.getType());
       }

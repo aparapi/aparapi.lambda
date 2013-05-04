@@ -2500,8 +2500,16 @@ public class ClassModel{
                    consumedInstructionTypes[ci]=consumedInstructionTypeStack.pop();
                }
                i.setConsumedInstructionTypes(consumedInstructionTypes);
-               for (int pi=0; pi<i.getStackProduceCount(); pi++){
-                  consumedInstructionTypeStack.push(i, null);
+                InstructionSet.PushSpec push = i.getByteCode().getPush();
+                TypeSpec[] typeSpecs = push.getTypes();
+                int prodcount = i.getStackProduceCount();
+              //  if (typeSpecs.length != prodcount){
+              //      throw new IllegalStateException("what?") ;
+              //  }
+
+               for (int pi=0; pi<prodcount; pi++){
+                 // TypeSpec typeSpec = typeSpecs[pi];
+                  consumedInstructionTypeStack.push(i, null);//new TypeHelper.Type(typeSpec));
                }
                // So Ternary operators have to be dealt with.
                // If this is a forward conditional target whose stackbase is now greater than or equal to the branch

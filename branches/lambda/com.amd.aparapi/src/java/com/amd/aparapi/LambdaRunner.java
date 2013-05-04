@@ -461,7 +461,7 @@ class LambdaRunner extends OpenCLRunner{
                   sizeWritten += t.getSize();
                   break;
                }
-               case J:{
+               case L:{
                   long x = UnsafeWrapper.getLong(object, offset);
                   arg.objArrayByteBuffer.putLong(x);
                   sizeWritten += t.getSize();
@@ -569,7 +569,7 @@ class LambdaRunner extends OpenCLRunner{
                   sizeWritten += t.getSize();
                   break;
                }
-               case J:{
+               case L:{
                   long x = arg.objArrayByteBuffer.getLong();
                   if(logger.isLoggable(Level.FINEST)){
                      logger.finest("fType = " + t.getShortName() + " x= " + x);
