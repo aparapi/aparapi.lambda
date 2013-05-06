@@ -324,7 +324,7 @@ abstract class KernelWriter extends BlockWriter{
                // where elements_array_index is the get_global_id index into the elements array
 
 
-               TypeHelper.Type type = new TypeHelper.Type(lvi.getVariableDescriptor());
+               TypeHelper.Type type = TypeHelper.getType(lvi.getVariableDescriptor());
                // String classModelType = type.getType();
                String output;
                boolean isObjectLambda = false;

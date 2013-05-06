@@ -2,9 +2,7 @@ package com.amd.aparapi;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 
 
 public class TypeHelper{
@@ -291,11 +289,31 @@ public class TypeHelper{
    }
 
 
+   static final Map<String, Type> typeMap = new HashMap<String, Type>();
+   static synchronized Type getType(String _signature){
+      Type type = typeMap.get(_signature);
+      if (type == null){
+         type = new Type(_signature);
+         typeMap.put(_signature, type)  ;
+      }
+      return(type);
+   }
+
+   static synchronized Type getType(Class _class){
+      Type newType = new Type(_class);
+      Type type = typeMap.get(newType.getType());
+      if (type == null){
+
+         typeMap.put(type.getType(), type)  ;
+      }
+      return(type);
+   }
+
 
     static class Type{
       private int arrayDimensions = 0;
 
-      Type(String _type){
+      private Type (String _type){
          type = _type;
 
          while(type.charAt(arrayDimensions) == ARRAY_DIM){
@@ -313,11 +331,11 @@ public class TypeHelper{
 
         }
 
-      public Type(Field _field){
-         this(_field.getType());
-      }
+    //  private  Type(Field _field, boolean no){
+    //     this(_field.getType(), no);
+     // }
 
-      public Type(Class<?> _clazz){
+      private  Type(Class<?> _clazz){
          Class componentType;
          String arrayPrefix = "";
          if(_clazz.isArray()){
@@ -502,14 +520,15 @@ public class TypeHelper{
       }
    }
 
-   public static class Arg extends Type{
+   public static class Arg {
+      Type type;
       Arg(String _signature, int _start, int _pos, int _argc){
-         super(_signature.substring(_start, _pos + 1));
+         type = TypeHelper.getType(_signature.substring(_start, _pos + 1));
          argc = _argc;
       }
 
       Arg(Class _clazz, int _argc){
-         super(_clazz);
+         type = TypeHelper.getType(_clazz);
          argc = _argc;
       }
 
@@ -517,6 +536,10 @@ public class TypeHelper{
 
       int getArgc(){
          return (argc);
+      }
+
+      public Type getType(){
+         return(type);
       }
    }
 
@@ -527,7 +550,7 @@ public class TypeHelper{
 
       public MethodInfo(Method _method){
          argsAndReturnType = new ArgsAndReturnType(_method);
-         containingClass = new Type(_method.getDeclaringClass());
+         containingClass = TypeHelper.getType(_method.getDeclaringClass());
          methodName = _method.getName();
       }
 
@@ -550,8 +573,8 @@ public class TypeHelper{
       String fieldName;
 
       FieldInfo(Field _field){
-         type = new Type(_field);
-         containingClass = new Type(_field.getDeclaringClass());
+         type = TypeHelper.getType(_field.getType());
+         containingClass = TypeHelper.getType(_field.getDeclaringClass());
          fieldName = _field.getName();
       }
 
@@ -605,7 +628,7 @@ public class TypeHelper{
                   break;
                case ARG_END:
                   state = SignatureParseState.done;
-                  returnType = new Type(_signature.substring(pos + 1));
+                  returnType = TypeHelper.getType(_signature.substring(pos + 1));
                   break;
                case ARRAY_DIM:
                   switch(state){
@@ -662,7 +685,7 @@ public class TypeHelper{
          for(int i = 0; i < argsAsClasses.length; i++){
             args[i] = new Arg(argsAsClasses[i], i);
          }
-         returnType = new Type(_method.getReturnType());
+         returnType = TypeHelper.getType(_method.getReturnType());
       }
 
       public boolean matches(Method _method){

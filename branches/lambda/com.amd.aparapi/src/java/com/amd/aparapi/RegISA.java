@@ -263,6 +263,9 @@ public class RegISA{
       VarReg_f32(Instruction _from){
          super(_from.asLocalVariableAccessor().getLocalVariableTableIndex(), false);
       }
+      public VarReg_f32(int _index){
+         super(_index, false);
+      }
    }
 
 
@@ -426,13 +429,13 @@ public class RegISA{
             if(arg.getArgc() > 0){
                r.separator();
             }
-            if(arg.isDouble()){
+            if(arg.getType().isDouble()){
                r.append("$d").append(from.getPreStackBase()+from.getMethod().getCodeEntry().getMaxLocals() + arg.getArgc());
-            }else if(arg.isFloat()){
+            }else if(arg.getType().isFloat()){
                r.append("$s").append(from.getPreStackBase()+from.getMethod().getCodeEntry().getMaxLocals() + arg.getArgc());
-            }else if(arg.isInt()){
+            }else if(arg.getType().isInt()){
                r.append("$s").append(from.getPreStackBase()+from.getMethod().getCodeEntry().getMaxLocals() + arg.getArgc());
-            }else if(arg.isLong()){
+            }else if(arg.getType().isLong()){
                r.append("$d").append(from.getPreStackBase()+from.getMethod().getCodeEntry().getMaxLocals() + arg.getArgc());
             }
          }
@@ -748,7 +751,7 @@ public class RegISA{
             r.separator().nl();
          }
 
-         Type type = Type.forJavaType(arg);
+         Type type = Type.forJavaType(arg.getType());
 
          r.pad(3).append("kernarg_").append(type.getTypeName()).append(" %_arg" + (arg.getArgc() + argOffset));
 
@@ -1389,12 +1392,13 @@ public class RegISA{
                argOffset++;
             }
             for(TypeHelper.Arg arg : method.argsAndReturnType.getArgs()){
-               if(arg.isArray()){
+               if(arg.getType().isArray()){
                   add(new ld_kernarg(i, new VarReg_u64(arg.getArgc() + argOffset)));
-               }else if(arg.isInt()){
+               }else if(arg.getType().isInt()){
                   add(new ld_kernarg(i, new VarReg_s32(arg.getArgc() + argOffset)));
 
-
+               }else if(arg.getType().isFloat()){
+                  add(new ld_kernarg(i, new VarReg_f32(arg.getArgc() + argOffset)));
                }
             }
          }
