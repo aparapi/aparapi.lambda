@@ -704,7 +704,7 @@ class Entrypoint{
                      }
 
                      Arg methodArgs[] = methodEntry.getArgsAndReturnType().getArgs();
-                     if(methodArgs.length > 0 && methodArgs[0].isArray()){ //currently array arg can only take slot 0
+                     if(methodArgs.length > 0 && methodArgs[0].getType().isArray()){ //currently array arg can only take slot 0
                         Instruction arrInstruction = invokeInstruction.getArg(0);
                         if(arrInstruction instanceof AccessField){
                            AccessField access = (AccessField) arrInstruction;

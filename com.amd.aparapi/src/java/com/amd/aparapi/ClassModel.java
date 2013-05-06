@@ -373,7 +373,7 @@ public class ClassModel{
 
 
                String signature = nameAndTypeEntry.getDescriptorUTF8Entry().getUTF8();
-               type = new Type(signature);
+               type = TypeHelper.getType(signature);
 
             }
             return (type);
@@ -611,7 +611,7 @@ public class ClassModel{
          }
 
          Type getContainingClass(){
-            return (new TypeHelper.Type(getClassEntry().getClassName()));
+            return (TypeHelper.getType(getClassEntry().getClassName()));
          }
 
          String getName(){
@@ -1337,7 +1337,7 @@ public class ClassModel{
                }else{
                   name = _storeSpec.toString().toLowerCase() + "_" + _slot;
                   descriptor = _storeSpec.toString();
-                  type = new TypeHelper.Type(descriptor);
+                  type = TypeHelper.getType(descriptor);
 
                }
             }
@@ -1423,12 +1423,12 @@ public class ClassModel{
 
             int currSlotIndex = thisOffset;
             for(int i = 0; i < args.length; i++){
-               if(args[i].isArray()){
+               if(args[i].getType().isArray()){
                   argsAsStoreSpecs[i + thisOffset] = InstructionSet.StoreSpec.A;
-               }else if(args[i].isObject()){
+               }else if(args[i].getType().isObject()){
                   argsAsStoreSpecs[i + thisOffset] = InstructionSet.StoreSpec.O;
                }else{
-                  argsAsStoreSpecs[i + thisOffset] = InstructionSet.StoreSpec.valueOf(args[i].getType().substring(0, 1));
+                  argsAsStoreSpecs[i + thisOffset] = InstructionSet.StoreSpec.valueOf(args[i].getType().getType().substring(0, 1));
                }
                // Use slot size from TypeSpec to keep vars lined up
                vars[i + thisOffset] = new Var(argsAsStoreSpecs[i + thisOffset], currSlotIndex, 0, true);
@@ -1436,7 +1436,7 @@ public class ClassModel{
 
                // Preserve actual object type
                if(argsAsStoreSpecs[i + thisOffset] == InstructionSet.StoreSpec.O ){
-                  vars[i + thisOffset].descriptor = args[i].getType();
+                  vars[i + thisOffset].descriptor = args[i].getType().getType();
                }
                 if(argsAsStoreSpecs[i + thisOffset] == InstructionSet.StoreSpec.A){
                     vars[i + thisOffset].descriptor = "["+args[i].getType();
@@ -1560,7 +1560,7 @@ public class ClassModel{
                descriptorIndex = _byteReader.u2();
                variableName = constantPool.getUTF8Entry(variableNameIndex).getUTF8();
                variableDescriptor = constantPool.getUTF8Entry(descriptorIndex).getUTF8();
-               type = new TypeHelper.Type(variableDescriptor);
+               type = TypeHelper.getType(variableDescriptor);
 
                slot = _byteReader.u2();
             }
@@ -2152,7 +2152,7 @@ public class ClassModel{
 
       Type getType(){
          if(type == null){
-            type = new Type(getDescriptor());
+            type = TypeHelper.getType(getDescriptor());
          }
          return (type);
       }
@@ -2501,16 +2501,31 @@ public class ClassModel{
                }
                i.setConsumedInstructionTypes(consumedInstructionTypes);
                 InstructionSet.PushSpec push = i.getByteCode().getPush();
-                TypeSpec[] typeSpecs = push.getTypes();
-                int prodcount = i.getStackProduceCount();
-              //  if (typeSpecs.length != prodcount){
-              //      throw new IllegalStateException("what?") ;
-              //  }
 
-               for (int pi=0; pi<prodcount; pi++){
-                 // TypeSpec typeSpec = typeSpecs[pi];
-                  consumedInstructionTypeStack.push(i, null);//new TypeHelper.Type(typeSpec));
-               }
+                if (push.equals(InstructionSet.PushSpec.UNKNOWN)){
+                    // method call ?
+                    if (i.isMethodCall()){
+                       ArgsAndReturnType calledArgsAndReturnType = i.asMethodCall().getConstantPoolMethodEntry().getArgsAndReturnType();
+                       consumedInstructionTypeStack.push(i, calledArgsAndReturnType.getReturnType());
+                    }else   if (i.isFieldAccessor()){
+                       Type assignedFieldType = i.asFieldAccessor().getConstantPoolFieldEntry().getType();
+                          consumedInstructionTypeStack.push(i, assignedFieldType);
+                    } else{
+                       throw new IllegalStateException("how did we get here!");
+                    }
+                } else{
+                   TypeSpec[] typeSpecs  = push.getTypes();
+                   int prodcount = i.getStackProduceCount();
+                    if (typeSpecs.length != prodcount){
+                         throw new IllegalStateException("what?") ;
+                     }
+
+                   for (int pi=0; pi<prodcount; pi++){
+                      TypeSpec typeSpec = typeSpecs[pi];
+                      consumedInstructionTypeStack.push(i, new TypeHelper.Type(typeSpec));
+                   }
+                }
+
                // So Ternary operators have to be dealt with.
                // If this is a forward conditional target whose stackbase is now greater than or equal to the branch
                // then the block between produces stack.  So must be 'then' part of ternary
