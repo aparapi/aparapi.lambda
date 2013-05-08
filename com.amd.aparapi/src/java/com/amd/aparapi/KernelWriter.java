@@ -45,7 +45,7 @@ import com.amd.aparapi.ClassModel.ConstantPool.MethodEntry;
 import com.amd.aparapi.ClassModel.LocalVariableInfo;
 import com.amd.aparapi.ClassModel.LocalVariableTableEntry;
 import com.amd.aparapi.InstructionSet.*;
-import com.amd.aparapi.TypeHelper.Type;
+import com.amd.aparapi.TypeHelper.JavaType;
 
 import java.util.*;
 
@@ -324,8 +324,8 @@ abstract class KernelWriter extends BlockWriter{
                // where elements_array_index is the get_global_id index into the elements array
 
 
-               TypeHelper.Type type = TypeHelper.getType(lvi.getVariableDescriptor());
-               // String classModelType = type.getType();
+               JavaType type = TypeHelper.getJavaType(lvi.getVariableDescriptor());
+               // String classModelType = type.getSignature();
                String output;
                boolean isObjectLambda = false;
                if(type.isArray()){
@@ -336,7 +336,7 @@ abstract class KernelWriter extends BlockWriter{
                      output = __global + " " + type.getMangledClassName();
                   }else{
                      // Basic type array
-                     output = __global + " " + type.getJavaName();
+                     output = __global + " " + type.getJavaName()    ;
                   }
                }else if(type.isPrimitive()){
                   output = type.getJavaName();
@@ -434,7 +434,7 @@ abstract class KernelWriter extends BlockWriter{
          StringBuilder argLine = new StringBuilder();
          StringBuilder assignLine = new StringBuilder();
 
-         Type fieldType = field.getType();
+         TypeHelper.JavaType fieldType = field.getType();
 
 
          // check the suffix
@@ -468,8 +468,8 @@ abstract class KernelWriter extends BlockWriter{
             thisStructLine.append(className);
          }else{
             //argLine.append(TypeHelper.openCLName(fieldType));
-            argLine.append(convertType(TypeHelper.typeName(fieldType.getType().charAt(0)), false));
-            thisStructLine.append(convertType(TypeHelper.typeName(fieldType.getType().charAt(0)), false));
+            argLine.append(convertType(TypeHelper.typeName(fieldType.getSignature().charAt(0)), false));
+            thisStructLine.append(convertType(TypeHelper.typeName(fieldType.getSignature().charAt(0)), false));
          }
 
          argLine.append(" ");

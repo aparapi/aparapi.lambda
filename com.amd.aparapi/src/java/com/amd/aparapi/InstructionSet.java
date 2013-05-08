@@ -60,7 +60,7 @@ class InstructionSet{
       I("I", "int", 4, 1), //
       L("J", "long", 8, 2), //
       A("A", "array", 4, 1), //
-      O("O", "object", 4, 1),
+      //O("O", "object", 4, 1),
       N("N", "null", 4, 1),
       IorForS("IorForS", "int, float or String depending on constant pool entry", 4, 1),
       LorD("LorD", "long or float depending upon the constant pool entry", 8, 2),
@@ -107,8 +107,8 @@ class InstructionSet{
       D(TypeSpec.D), // Double
       I(TypeSpec.I), // Integer
       L(TypeSpec.L), // Long
-      A(TypeSpec.A), // Array
-      O(TypeSpec.O); // Object
+      A(TypeSpec.A); // Array
+    //  O(TypeSpec.O); // Object
       TypeSpec typeSpec=  TypeSpec.NONE;
       LoadSpec(TypeSpec _typeSpec){
          typeSpec= _typeSpec;
@@ -124,8 +124,8 @@ class InstructionSet{
       D(TypeSpec.D), // Double
       I(TypeSpec.I), // Integer
       L(TypeSpec.L), // Long
-      A(TypeSpec.A), // Array
-      O(TypeSpec.O); // Object
+      A(TypeSpec.A); // Array
+      //O(TypeSpec.O); // Object
       TypeSpec typeSpec=  TypeSpec.NONE;
       StoreSpec(TypeSpec _typeSpec){
          typeSpec= _typeSpec;
@@ -246,7 +246,7 @@ class InstructionSet{
       L(TypeSpec.L), //
       F(TypeSpec.F), //
       D(TypeSpec.D), //
-      O(TypeSpec.O), //
+     // O(TypeSpec.O), //
       A(TypeSpec.A), //
       N(TypeSpec.N), //
       IorForS(TypeSpec.IorForS), //
@@ -282,8 +282,8 @@ class InstructionSet{
       FF(TypeSpec.F, TypeSpec.F), //
       D(TypeSpec.D), //
       DD(TypeSpec.D, TypeSpec.D), //
-      O(TypeSpec.O), //
-      OO(TypeSpec.O, TypeSpec.O), //
+     // O(TypeSpec.O), //
+      AA(TypeSpec.A, TypeSpec.A), //
       A(TypeSpec.A), //
       AI(TypeSpec.A, TypeSpec.I), //
       AII(TypeSpec.A, TypeSpec.I, TypeSpec.I), //
@@ -293,11 +293,11 @@ class InstructionSet{
       AIC(TypeSpec.A, TypeSpec.I, TypeSpec.C), //
       AIS(TypeSpec.A, TypeSpec.I, TypeSpec.S), //
       AIB(TypeSpec.A, TypeSpec.I, TypeSpec.B), //
-      AIO(TypeSpec.A, TypeSpec.I, TypeSpec.O), //
+      AIA(TypeSpec.A, TypeSpec.I, TypeSpec.A), //
       LI(TypeSpec.L, TypeSpec.I), //
-      OUNKNOWN(TypeSpec.O, TypeSpec.UNKNOWN), //
+      OUNKNOWN(TypeSpec.A, TypeSpec.UNKNOWN), //
       ARGS(TypeSpec.ARGS), //
-      OARGS(TypeSpec.O, TypeSpec.ARGS), //
+      OARGS(TypeSpec.A, TypeSpec.ARGS), //
       ;
 
       PopSpec(TypeSpec... _types){
@@ -376,7 +376,7 @@ class InstructionSet{
       LLOAD(I_LLOAD.class, LoadSpec.L, ImmediateSpec.Blvti, PushSpec.L), //
       FLOAD(I_FLOAD.class, LoadSpec.F, ImmediateSpec.Blvti, PushSpec.F), //
       DLOAD(I_DLOAD.class, LoadSpec.F, ImmediateSpec.Blvti, PushSpec.D), //
-      ALOAD(I_ALOAD.class, LoadSpec.A, ImmediateSpec.Blvti, PushSpec.O), //
+      ALOAD(I_ALOAD.class, LoadSpec.A, ImmediateSpec.Blvti, PushSpec.A), //
       ILOAD_0(I_ILOAD_0.class, LoadSpec.I, PushSpec.I), //
       ILOAD_1(I_ILOAD_1.class, LoadSpec.I, PushSpec.I), //
       ILOAD_2(I_ILOAD_2.class, LoadSpec.I, PushSpec.I), //
@@ -393,10 +393,10 @@ class InstructionSet{
       DLOAD_1(I_DLOAD_1.class, LoadSpec.D, PushSpec.D), //
       DLOAD_2(I_DLOAD_2.class, LoadSpec.D, PushSpec.D), //
       DLOAD_3(I_DLOAD_3.class, LoadSpec.D, PushSpec.D), //
-      ALOAD_0(I_ALOAD_0.class, LoadSpec.A, PushSpec.O), //
-      ALOAD_1(I_ALOAD_1.class, LoadSpec.A, PushSpec.O), //
-      ALOAD_2(I_ALOAD_2.class, LoadSpec.A, PushSpec.O), //
-      ALOAD_3(I_ALOAD_3.class, LoadSpec.A, PushSpec.O), //
+      ALOAD_0(I_ALOAD_0.class, LoadSpec.A, PushSpec.A), //
+      ALOAD_1(I_ALOAD_1.class, LoadSpec.A, PushSpec.A), //
+      ALOAD_2(I_ALOAD_2.class, LoadSpec.A, PushSpec.A), //
+      ALOAD_3(I_ALOAD_3.class, LoadSpec.A, PushSpec.A), //
       IALOAD(I_IALOAD.class, PopSpec.AI, PushSpec.I), //
       LALOAD(I_LALOAD.class, PopSpec.AI, PushSpec.L), //
       FALOAD(I_FALOAD.class, PopSpec.AI, PushSpec.F), //
@@ -409,7 +409,7 @@ class InstructionSet{
       LSTORE(I_LSTORE.class, StoreSpec.L, ImmediateSpec.Blvti, PopSpec.L), //
       FSTORE(I_FSTORE.class, StoreSpec.F, ImmediateSpec.Blvti, PopSpec.F), //
       DSTORE(I_DSTORE.class, StoreSpec.D, ImmediateSpec.Blvti, PopSpec.D), //
-      ASTORE(I_ASTORE.class, StoreSpec.A, ImmediateSpec.Blvti, PopSpec.O), //
+      ASTORE(I_ASTORE.class, StoreSpec.A, ImmediateSpec.Blvti, PopSpec.A), //
       ISTORE_0(I_ISTORE_0.class, StoreSpec.I, PopSpec.I), //
       ISTORE_1(I_ISTORE_1.class, StoreSpec.I, PopSpec.I), //
       ISTORE_2(I_ISTORE_2.class, StoreSpec.I, PopSpec.I), //
@@ -426,15 +426,15 @@ class InstructionSet{
       DSTORE_1(I_DSTORE_1.class, StoreSpec.D, PopSpec.D), //
       DSTORE_2(I_DSTORE_2.class, StoreSpec.D, PopSpec.D), //
       DSTORE_3(I_DSTORE_3.class, StoreSpec.D, PopSpec.D), //
-      ASTORE_0(I_ASTORE_0.class, StoreSpec.A, PopSpec.O), //
-      ASTORE_1(I_ASTORE_1.class, StoreSpec.A, PopSpec.O), //
-      ASTORE_2(I_ASTORE_2.class, StoreSpec.A, PopSpec.O), //
-      ASTORE_3(I_ASTORE_3.class, StoreSpec.A, PopSpec.O), //
+      ASTORE_0(I_ASTORE_0.class, StoreSpec.A, PopSpec.A), //
+      ASTORE_1(I_ASTORE_1.class, StoreSpec.A, PopSpec.A), //
+      ASTORE_2(I_ASTORE_2.class, StoreSpec.A, PopSpec.A), //
+      ASTORE_3(I_ASTORE_3.class, StoreSpec.A, PopSpec.A), //
       IASTORE(I_IASTORE.class, PopSpec.AII), //
       LASTORE(I_LASTORE.class, PopSpec.AIL), //
       FASTORE(I_FASTORE.class, PopSpec.AIF), //
       DASTORE(I_DASTORE.class, PopSpec.AID), //
-      AASTORE(I_AASTORE.class, PopSpec.AIO), //
+      AASTORE(I_AASTORE.class, PopSpec.AIA), //
       BASTORE(I_BASTORE.class, PopSpec.AIB), //
       CASTORE(I_CASTORE.class, PopSpec.AIC), //
       SASTORE(I_SASTORE.class, PopSpec.AIS), //
@@ -517,8 +517,8 @@ class InstructionSet{
       IF_ICMPGE(I_IF_ICMPGE.class, ImmediateSpec.Spc, PopSpec.II, Operator.GreaterThanOrEqual), //
       IF_ICMPGT(I_IF_ICMPGT.class, ImmediateSpec.Spc, PopSpec.II, Operator.GreaterThan), //
       IF_ICMPLE(I_IF_ICMPLE.class, ImmediateSpec.Spc, PopSpec.II, Operator.LessThanOrEqual), //
-      IF_ACMPEQ(I_IF_ACMPEQ.class, ImmediateSpec.Spc, PopSpec.OO, Operator.Equal), //
-      IF_ACMPNE(I_IF_ACMPNE.class, ImmediateSpec.Spc, PopSpec.OO, Operator.NotEqual), //
+      IF_ACMPEQ(I_IF_ACMPEQ.class, ImmediateSpec.Spc, PopSpec.AA, Operator.Equal), //
+      IF_ACMPNE(I_IF_ACMPNE.class, ImmediateSpec.Spc, PopSpec.AA, Operator.NotEqual), //
       GOTO(I_GOTO.class, ImmediateSpec.Spc), //
       JSR(I_JSR.class, ImmediateSpec.Spc, PushSpec.RA), //
       RET(I_RET.class, ImmediateSpec.Bconst), //
@@ -528,11 +528,11 @@ class InstructionSet{
       LRETURN(I_LRETURN.class, PopSpec.L), //
       FRETURN(I_FRETURN.class, PopSpec.F), //
       DRETURN(I_DRETURN.class, PopSpec.D), //
-      ARETURN(I_ARETURN.class, PopSpec.O), //
+      ARETURN(I_ARETURN.class, PopSpec.A), //
       RETURN(I_RETURN.class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.NONE, PopSpec.NONE, PushSpec.NONE, Operator.NONE), //
       GETSTATIC(I_GETSTATIC.class, ImmediateSpec.Scpfi, PushSpec.UNKNOWN), //
       PUTSTATIC(I_PUTSTATIC.class, ImmediateSpec.Scpfi, PopSpec.UNKNOWN), //
-      GETFIELD(I_GETFIELD.class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.Scpfi, PopSpec.O, PushSpec.UNKNOWN, Operator.NONE), //
+      GETFIELD(I_GETFIELD.class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.Scpfi, PopSpec.A, PushSpec.UNKNOWN, Operator.NONE), //
       PUTFIELD(I_PUTFIELD.class, ImmediateSpec.Scpfi, PopSpec.OUNKNOWN), //
       INVOKEVIRTUAL(I_INVOKEVIRTUAL.class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.Scpmi, PopSpec.OARGS, PushSpec.UNKNOWN,
             Operator.NONE), //
@@ -545,20 +545,20 @@ class InstructionSet{
       INVOKEDYNAMIC(I_INVOKEDYNAMIC.class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.ScpmiBB, PopSpec.OARGS, PushSpec.UNKNOWN,
             Operator.NONE), //
 
-      NEW(I_NEW.class, ImmediateSpec.Scpci, PushSpec.O), //
+      NEW(I_NEW.class, ImmediateSpec.Scpci, PushSpec.A), //
       NEWARRAY(I_NEWARRAY.class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.Bconst, PopSpec.I, PushSpec.A, Operator.NONE), //
       ANEWARRAY(I_ANEWARRAY.class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.Sconst, PopSpec.I, PushSpec.A, Operator.NONE), // 189
       ARRAYLENGTH(I_ARRAYLENGTH.class, PopSpec.A, PushSpec.I), // 190
-      ATHROW(I_ATHROW.class, PopSpec.O, PushSpec.O), // 191
-      CHECKCAST(I_CHECKCAST.class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.Scpci, PopSpec.O, PushSpec.O, Operator.NONE), // 192
-      INSTANCEOF(I_INSTANCEOF.class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.Scpci, PopSpec.O, PushSpec.I, Operator.NONE), // 193
-      MONITORENTER(I_MONITORENTER.class, PopSpec.O), // 194
-      MONITOREXIT(I_MONITOREXIT.class, PopSpec.O), // 195
+      ATHROW(I_ATHROW.class, PopSpec.A, PushSpec.A), // 191
+      CHECKCAST(I_CHECKCAST.class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.Scpci, PopSpec.A, PushSpec.A, Operator.NONE), // 192
+      INSTANCEOF(I_INSTANCEOF.class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.Scpci, PopSpec.A, PushSpec.I, Operator.NONE), // 193
+      MONITORENTER(I_MONITORENTER.class, PopSpec.A), // 194
+      MONITOREXIT(I_MONITOREXIT.class, PopSpec.A), // 195
       WIDE(I_WIDE.class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.UNKNOWN, PopSpec.UNKNOWN, PushSpec.UNKNOWN, Operator.NONE), // 196
       MULTIANEWARRAY(I_MULTIANEWARRAY.class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.ScpciBdim, PopSpec.UNKNOWN, PushSpec.A,
             Operator.NONE), // 197
-      IFNULL(I_IFNULL.class, ImmediateSpec.Spc, PopSpec.O, Operator.EqualNULL), // 198
-      IFNONNULL(I_IFNONNULL.class, ImmediateSpec.Spc, PopSpec.O, Operator.NotEqualNULL), // 199
+      IFNULL(I_IFNULL.class, ImmediateSpec.Spc, PopSpec.A, Operator.EqualNULL), // 198
+      IFNONNULL(I_IFNONNULL.class, ImmediateSpec.Spc, PopSpec.A, Operator.NotEqualNULL), // 199
       GOTO_W(I_GOTO_W.class, ImmediateSpec.Ipc), // 200
       JSR_W(I_JSR_W.class, ImmediateSpec.Ipc, PushSpec.RA), // 201
       ILLEGAL_202, // BREAKPOINT("breakpoint"),

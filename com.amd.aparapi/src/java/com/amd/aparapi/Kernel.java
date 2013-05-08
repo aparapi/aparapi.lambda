@@ -39,7 +39,7 @@ package com.amd.aparapi;
 
 import com.amd.aparapi.ClassModel.ConstantPool.MethodReferenceEntry;
 import com.amd.aparapi.TypeHelper.ArgsAndReturnType;
-import com.amd.aparapi.TypeHelper.Type;
+import com.amd.aparapi.TypeHelper.JavaType;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -1854,7 +1854,7 @@ public abstract class Kernel implements Cloneable{
       String methodClass = _methodReferenceEntry.getClassEntry().getNameUTF8Entry().getUTF8();
      // if(methodClass.equals(Kernel.class.getName())){
          ArgsAndReturnType methodArgsAndReturnType = _methodReferenceEntry.getArgsAndReturnType();
-         Type methodReturnType = methodArgsAndReturnType.getReturnType();
+         JavaType methodReturnType = methodArgsAndReturnType.getReturnType();
 
          for(Method kernelMethod : Kernel.class.getDeclaredMethods()){
             if(kernelMethod.isAnnotationPresent(OpenCLMapping.class)){

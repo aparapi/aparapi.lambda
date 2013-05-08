@@ -57,7 +57,7 @@ public class RegISA{
          return (type + bits);
       }
 
-      public static Type forJavaType(TypeHelper.Type javaType){
+      public static Type forJavaType(TypeHelper.JavaType javaType){
          if(javaType.isArray()){
             return (u64);
          } else if(javaType.isInt()){
@@ -408,7 +408,7 @@ public class RegISA{
          TypeHelper.ArgsAndReturnType argsAndReturnType = from.asMethodCall().getConstantPoolMethodEntry().getArgsAndReturnType();
 
 
-         TypeHelper.Type returnType = argsAndReturnType.getReturnType();
+         TypeHelper.JavaType returnType = argsAndReturnType.getReturnType();
 
 
          if(returnType.isVoid()){
@@ -429,13 +429,13 @@ public class RegISA{
             if(arg.getArgc() > 0){
                r.separator();
             }
-            if(arg.getType().isDouble()){
+            if(arg.getJavaType().isDouble()){
                r.append("$d").append(from.getPreStackBase()+from.getMethod().getCodeEntry().getMaxLocals() + arg.getArgc());
-            }else if(arg.getType().isFloat()){
+            }else if(arg.getJavaType().isFloat()){
                r.append("$s").append(from.getPreStackBase()+from.getMethod().getCodeEntry().getMaxLocals() + arg.getArgc());
-            }else if(arg.getType().isInt()){
+            }else if(arg.getJavaType().isInt()){
                r.append("$s").append(from.getPreStackBase()+from.getMethod().getCodeEntry().getMaxLocals() + arg.getArgc());
-            }else if(arg.getType().isLong()){
+            }else if(arg.getJavaType().isLong()){
                r.append("$d").append(from.getPreStackBase()+from.getMethod().getCodeEntry().getMaxLocals() + arg.getArgc());
             }
          }
@@ -620,7 +620,7 @@ public class RegISA{
 
    }
 
-  /* static abstract class binaryRegConst<T extends Type, C> extends RegInstruction{
+  /* static abstract class binaryRegConst<T extends JavaType, C> extends RegInstruction{
       Reg<T> dest, lhs;
       C value;
       String op;
@@ -637,7 +637,7 @@ public class RegISA{
       }
    }
 
-   static  class addConst<T extends Type, C> extends binaryRegConst<T, C>{
+   static  class addConst<T extends JavaType, C> extends binaryRegConst<T, C>{
 
       public addConst(Instruction _from,   Reg<T> _dest, Reg<T> _lhs, C _value_rhs){
          super(_from, "add_", _dest, _lhs, _value_rhs);
@@ -751,7 +751,7 @@ public class RegISA{
             r.separator().nl();
          }
 
-         Type type = Type.forJavaType(arg.getType());
+         Type type = Type.forJavaType(arg.getJavaType());
 
          r.pad(3).append("kernarg_").append(type.getTypeName()).append(" %_arg" + (arg.getArgc() + argOffset));
 
@@ -1311,7 +1311,7 @@ public class RegISA{
             break;
          case GETSTATIC:
          case GETFIELD:{
-            TypeHelper.Type type = _i.asFieldAccessor().getConstantPoolFieldEntry().getType();
+            TypeHelper.JavaType type = _i.asFieldAccessor().getConstantPoolFieldEntry().getType();
             if(type.isArray()){
                add(new get_field<u64>(_i, new StackReg_u64(_i, 0)));
             }else if(type.isInt()){
@@ -1323,7 +1323,7 @@ public class RegISA{
          break;
          case PUTSTATIC:
          case PUTFIELD:{
-            TypeHelper.Type type = _i.asFieldAccessor().getConstantPoolFieldEntry().getType();
+            TypeHelper.JavaType type = _i.asFieldAccessor().getConstantPoolFieldEntry().getType();
             if(type.isArray()){
                add(new put_field<u64>(_i, new StackReg_u64(_i, 0)));
             }else if(type.isInt()){
@@ -1392,12 +1392,12 @@ public class RegISA{
                argOffset++;
             }
             for(TypeHelper.Arg arg : method.argsAndReturnType.getArgs()){
-               if(arg.getType().isArray()){
+               if(arg.getJavaType().isArray()){
                   add(new ld_kernarg(i, new VarReg_u64(arg.getArgc() + argOffset)));
-               }else if(arg.getType().isInt()){
+               }else if(arg.getJavaType().isInt()){
                   add(new ld_kernarg(i, new VarReg_s32(arg.getArgc() + argOffset)));
 
-               }else if(arg.getType().isFloat()){
+               }else if(arg.getJavaType().isFloat()){
                   add(new ld_kernarg(i, new VarReg_f32(arg.getArgc() + argOffset)));
                }
             }
