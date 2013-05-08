@@ -48,7 +48,7 @@ public class CodeGenJUnitBase{
 
          //  String expected = source.getOpenCLString();
 
-         ClassModel classModel = new ClassModel(_class);
+         ClassModel classModel = ClassModel.getClassModel(_class);
 
          // construct an artficial instance of our class here
          // we assume the specified class will have a null constructor
