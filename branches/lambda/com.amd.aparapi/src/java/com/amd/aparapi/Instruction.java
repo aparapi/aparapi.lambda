@@ -61,9 +61,9 @@ abstract class Instruction{
 
     static class InstructionType {
         Instruction instruction=null;
-        TypeHelper.Type type=null;
+        TypeHelper.JavaType type=null;
 
-        public InstructionType(Instruction _instruction, TypeHelper.Type _type) {
+        public InstructionType(Instruction _instruction, TypeHelper.JavaType _type) {
             type = _type;
             instruction =_instruction;
         }
@@ -71,7 +71,7 @@ abstract class Instruction{
         public Instruction getInstruction() {
             return(instruction);
         }
-        public TypeHelper.Type getType() {
+        public TypeHelper.JavaType getType() {
             return(type);
         }
     }

@@ -112,7 +112,7 @@ public class RegISARenderer{
    }else if(from.isLocalVariableAccessor()){
       append(" var#" + from.asLocalVariableAccessor().getLocalVariableInfo().getSlot());
       append("(" + from.asLocalVariableAccessor().getLocalVariableInfo().getVariableName());
-      TypeHelper.Type type = from.asLocalVariableAccessor().getLocalVariableInfo().getType();
+      TypeHelper.JavaType type = from.asLocalVariableAccessor().getLocalVariableInfo().getType();
       append(" ");
       if (type == null){
          // trust me it's an array

@@ -397,7 +397,9 @@ abstract class BlockWriter{
             if(descriptor.startsWith("[")){
                write(" __global ");
             }
+
             write(convertType(descriptor, true));
+
          }
          if(localVariableInfo == null){
             throw new CodeGenException("outOfScope" + _instruction.getThisPC() + " = ");
@@ -688,6 +690,8 @@ abstract class BlockWriter{
       }else if(_instruction instanceof I_POP){
          //POP discarded void call return?
          writeInstruction(_instruction.getFirstChild());
+      }else if(_instruction instanceof I_NEWARRAY){
+         throw new CodeGenException(String.format("can't create a new array inside a kernel!"));
       }else{
          throw new CodeGenException(String.format("%s", _instruction.getByteCode().toString().toLowerCase()));
       }

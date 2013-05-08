@@ -43,7 +43,7 @@ import com.amd.aparapi.ClassModel.ConstantPool.MethodEntry;
 import com.amd.aparapi.InstructionSet.Branch;
 import com.amd.aparapi.InstructionSet.TypeSpec;
 import com.amd.aparapi.TypeHelper.ArgsAndReturnType;
-import com.amd.aparapi.TypeHelper.Type;
+import com.amd.aparapi.TypeHelper.JavaType;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.*;
@@ -79,7 +79,7 @@ public class ClassModel{
 
       String getVariableDescriptor();
 
-      Type getType();
+      JavaType getType();
 
       int getSlot();
 
@@ -365,15 +365,15 @@ public class ClassModel{
             super(_byteReader, _slot, ConstantPoolType.FIELD);
          }
 
-         private Type type;
+         private JavaType type;
 
-         Type getType(){
+         JavaType getType(){
             if(type == null){
                NameAndTypeEntry nameAndTypeEntry = getNameAndTypeEntry();
 
 
                String signature = nameAndTypeEntry.getDescriptorUTF8Entry().getUTF8();
-               type = TypeHelper.getType(signature);
+               type = TypeHelper.getJavaType(signature);
 
             }
             return (type);
@@ -610,8 +610,8 @@ public class ClassModel{
             return (ConstantPool.this.getClassEntry(referenceClassIndex));
          }
 
-         Type getContainingClass(){
-            return (TypeHelper.getType(getClassEntry().getClassName()));
+         JavaType getContainingClass(){
+            return (TypeHelper.getJavaType(getClassEntry().getClassName()));
          }
 
          String getName(){
@@ -1323,7 +1323,7 @@ public class ClassModel{
 
             String descriptor = "";
 
-            TypeHelper.Type type;
+            TypeHelper.JavaType type;
 
             int slot;
 
@@ -1337,7 +1337,7 @@ public class ClassModel{
                }else{
                   name = _storeSpec.toString().toLowerCase() + "_" + _slot;
                   descriptor = _storeSpec.toString();
-                  type = TypeHelper.getType(descriptor);
+                  type = TypeHelper.getJavaType(descriptor);
 
                }
             }
@@ -1391,7 +1391,7 @@ public class ClassModel{
             }
 
             @Override
-            public TypeHelper.Type getType(){
+            public JavaType getType(){
                return (type);
             }
             @Override
@@ -1415,7 +1415,7 @@ public class ClassModel{
             Var[] vars = new Var[numberOfSlots + thisOffset];
             InstructionSet.StoreSpec[] argsAsStoreSpecs = new InstructionSet.StoreSpec[args.length + thisOffset];
             if(thisOffset == 1){
-               argsAsStoreSpecs[0] = InstructionSet.StoreSpec.O;
+               argsAsStoreSpecs[0] = InstructionSet.StoreSpec.A;
                vars[0] = new Var(argsAsStoreSpecs[0], 0, 0, true);
                list.add(vars[0]);
 
@@ -1423,23 +1423,27 @@ public class ClassModel{
 
             int currSlotIndex = thisOffset;
             for(int i = 0; i < args.length; i++){
-               if(args[i].getType().isArray()){
+               if(args[i].getJavaType().isArray()){
                   argsAsStoreSpecs[i + thisOffset] = InstructionSet.StoreSpec.A;
-               }else if(args[i].getType().isObject()){
-                  argsAsStoreSpecs[i + thisOffset] = InstructionSet.StoreSpec.O;
+               }else if(args[i].getJavaType().isObject()){
+                  argsAsStoreSpecs[i + thisOffset] = InstructionSet.StoreSpec.A;
                }else{
-                  argsAsStoreSpecs[i + thisOffset] = InstructionSet.StoreSpec.valueOf(args[i].getType().getType().substring(0, 1));
+                  argsAsStoreSpecs[i + thisOffset] = InstructionSet.StoreSpec.valueOf(args[i].getJavaType().getSignature().substring(0, 1));
                }
                // Use slot size from TypeSpec to keep vars lined up
                vars[i + thisOffset] = new Var(argsAsStoreSpecs[i + thisOffset], currSlotIndex, 0, true);
                currSlotIndex += argsAsStoreSpecs[i + thisOffset].getTypeSpec().getSlots(); // 1 for most 2 for Long/Double
 
                // Preserve actual object type
-               if(argsAsStoreSpecs[i + thisOffset] == InstructionSet.StoreSpec.O ){
-                  vars[i + thisOffset].descriptor = args[i].getType().getType();
+               if(argsAsStoreSpecs[i + thisOffset] == InstructionSet.StoreSpec.A ){
+                  vars[i + thisOffset].descriptor = args[i].getJavaType().getSignature();
                }
                 if(argsAsStoreSpecs[i + thisOffset] == InstructionSet.StoreSpec.A){
-                    vars[i + thisOffset].descriptor = "["+args[i].getType();
+                    vars[i + thisOffset].descriptor = "";
+                    for (int c=0; c<args[i].getJavaType().getArrayDimensions(); c++){
+                        vars[i + thisOffset].descriptor += "[";
+                    }
+                    vars[i + thisOffset].descriptor +=args[i].getJavaType();
                 }
                list.add(vars[i + thisOffset]);
             }
@@ -1547,7 +1551,7 @@ public class ClassModel{
 
             private int slot;
 
-            private TypeHelper.Type type;
+            private JavaType type;
 
             String variableDescriptor;
 
@@ -1560,7 +1564,7 @@ public class ClassModel{
                descriptorIndex = _byteReader.u2();
                variableName = constantPool.getUTF8Entry(variableNameIndex).getUTF8();
                variableDescriptor = constantPool.getUTF8Entry(descriptorIndex).getUTF8();
-               type = TypeHelper.getType(variableDescriptor);
+               type = TypeHelper.getJavaType(variableDescriptor);
 
                slot = _byteReader.u2();
             }
@@ -1598,7 +1602,7 @@ public class ClassModel{
             }
 
             @Override
-            public TypeHelper.Type getType(){
+            public TypeHelper.JavaType getType(){
                return (type);
             }
 
@@ -2148,11 +2152,11 @@ public class ClassModel{
          return (constantPool.getUTF8Entry(nameIndex));
       }
 
-      Type type;
+      TypeHelper.JavaType type;
 
-      Type getType(){
+      JavaType getType(){
          if(type == null){
-            type = TypeHelper.getType(getDescriptor());
+            type = TypeHelper.getJavaType(getDescriptor());
          }
          return (type);
       }
@@ -2340,7 +2344,7 @@ public class ClassModel{
             return(retValue);
 
          }
-         void push(Instruction i, Type t){
+         void push(Instruction i, TypeHelper.JavaType t){
             if ((index+1)< instructionTypes.length){
                instructionTypes[index++]=new Instruction.InstructionType(i,t);
             }
@@ -2508,7 +2512,7 @@ public class ClassModel{
                        ArgsAndReturnType calledArgsAndReturnType = i.asMethodCall().getConstantPoolMethodEntry().getArgsAndReturnType();
                        consumedInstructionTypeStack.push(i, calledArgsAndReturnType.getReturnType());
                     }else   if (i.isFieldAccessor()){
-                       Type assignedFieldType = i.asFieldAccessor().getConstantPoolFieldEntry().getType();
+                       JavaType assignedFieldType = i.asFieldAccessor().getConstantPoolFieldEntry().getType();
                           consumedInstructionTypeStack.push(i, assignedFieldType);
                     } else{
                        throw new IllegalStateException("how did we get here!");
@@ -2522,7 +2526,7 @@ public class ClassModel{
 
                    for (int pi=0; pi<prodcount; pi++){
                       TypeSpec typeSpec = typeSpecs[pi];
-                      consumedInstructionTypeStack.push(i, new TypeHelper.Type(typeSpec));
+                      consumedInstructionTypeStack.push(i, TypeHelper.getJavaType(typeSpec));
                    }
                 }
 

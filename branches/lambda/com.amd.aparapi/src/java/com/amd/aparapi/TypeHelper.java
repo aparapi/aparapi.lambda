@@ -53,10 +53,10 @@ public class TypeHelper{
 
 
    /**
-    * Convert a given JNI character type (say 'I') to its type name ('int').
+    * Convert a given JNI character signature (say 'I') to its signature name ('int').
     *
     * @param _typeChar
-    * @return either a mapped type name or null if no mapping exists.
+    * @return either a mapped signature name or null if no mapping exists.
     */
    static String typeName(char _typeChar){
       String returnName = null;
@@ -206,6 +206,8 @@ public class TypeHelper{
                i++; // step over this
             }
             break;
+            default:
+               throw new IllegalStateException("invalid type!");
          }
       }
 
@@ -289,53 +291,63 @@ public class TypeHelper{
    }
 
 
-   static final Map<String, Type> typeMap = new HashMap<String, Type>();
-   static synchronized Type getType(String _signature){
-      Type type = typeMap.get(_signature);
+   static final Map<String, JavaType> typeMap = new HashMap<String, JavaType>();
+
+   static synchronized JavaType getJavaType(String _signature){
+      JavaType type = typeMap.get(_signature);
       if (type == null){
-         type = new Type(_signature);
+         type = new JavaType(_signature);
          typeMap.put(_signature, type)  ;
       }
       return(type);
    }
 
-   static synchronized Type getType(Class _class){
-      Type newType = new Type(_class);
-      Type type = typeMap.get(newType.getType());
+   static synchronized JavaType getJavaType(Class _class){
+      JavaType newType = new JavaType(_class);
+      JavaType type = typeMap.get(newType.getSignature());
       if (type == null){
 
-         typeMap.put(type.getType(), type)  ;
+         typeMap.put(newType.getSignature(), newType)  ;
       }
       return(type);
    }
 
+    static synchronized JavaType getJavaType(InstructionSet.TypeSpec _typeSpec){
+        JavaType newType = new JavaType(_typeSpec);
+        JavaType type = typeMap.get(newType.getSignature());
+        if (type == null){
 
-    static class Type{
+            typeMap.put(newType.getSignature(), newType)  ;
+        }
+        return(type);
+    }
+
+
+    static class JavaType {
       private int arrayDimensions = 0;
+      private String signature;
 
-      private Type (String _type){
-         type = _type;
+      private JavaType(String _signature){
+         signature = _signature;
 
-         while(type.charAt(arrayDimensions) == ARRAY_DIM){
+         while(signature.charAt(arrayDimensions) == ARRAY_DIM){
             arrayDimensions++;
          }
-         type = type.substring(arrayDimensions);
+         signature = signature.substring(arrayDimensions);
       }
 
-        public Type(InstructionSet.TypeSpec _typeSpec) {
+        private JavaType(InstructionSet.TypeSpec _typeSpec) {
             switch(_typeSpec){
-                case A:type = "[?"; arrayDimensions = 1; break;
-                case O:type = "L/java/lang/Object;"; arrayDimensions = 0; break;
-                default: type = _typeSpec.name();
+                case A:
+                    signature = "?"; arrayDimensions = 1; break;
+
+                default: signature = _typeSpec.name();
             }
 
         }
 
-    //  private  Type(Field _field, boolean no){
-    //     this(_field.getType(), no);
-     // }
 
-      private  Type(Class<?> _clazz){
+      private JavaType(Class<?> _clazz){
          Class componentType;
          String arrayPrefix = "";
          if(_clazz.isArray()){
@@ -348,85 +360,84 @@ public class TypeHelper{
 
 
          if(componentType == int.class){
-            type = arrayPrefix + INT;
+            signature = arrayPrefix + INT;
          }else if(componentType == float.class){
-            type = arrayPrefix + FLOAT;
+            signature = arrayPrefix + FLOAT;
          }else if(componentType == double.class){
-            type = arrayPrefix + DOUBLE;
+            signature = arrayPrefix + DOUBLE;
          }else if(componentType == long.class){
-            type = arrayPrefix + LONG;
+            signature = arrayPrefix + LONG;
          }else if(componentType == char.class){
-            type = arrayPrefix + CHAR;
+            signature = arrayPrefix + CHAR;
          }else if(componentType == byte.class){
-            type = arrayPrefix + BYTE;
+            signature = arrayPrefix + BYTE;
          }else if(componentType == short.class){
-            type = arrayPrefix + SHORT;
+            signature = arrayPrefix + SHORT;
          }else if(componentType == void.class){
-            type = arrayPrefix + VOID;
+            signature = arrayPrefix + VOID;
          }else if(componentType == boolean.class){
-            type = arrayPrefix + BOOLEAN;
+            signature = arrayPrefix + BOOLEAN;
          }else{
             // its an object or an array of objects
-            type = arrayPrefix + CLASS_START + dotClassNameToSlashClassName(_clazz.getName()) + CLASS_END;
+            signature = arrayPrefix + CLASS_START + dotClassNameToSlashClassName(_clazz.getName()) + CLASS_END;
          }
 
       }
 
 
 
-       String getType(){
-         return (type);
+      String getSignature(){
+         return (signature);
       }
 
       boolean isVoid(){
-         return (type.charAt(0) == VOID);
+         return (signature.charAt(0) == VOID);
       }
 
       boolean isInt(){
-         return (type.charAt(0) == INT);
+         return (signature.charAt(0) == INT);
       }
 
       boolean isLong(){
-         return (type.charAt(0) == LONG);
+         return (signature.charAt(0) == LONG);
       }
 
       boolean isShort(){
-         return (type.charAt(0) == SHORT);
+         return (signature.charAt(0) == SHORT);
       }
 
       boolean isBoolean(){
-         return (type.charAt(0) == BOOLEAN);
+         return (signature.charAt(0) == BOOLEAN);
       }
 
       boolean isChar(){
-         return (type.charAt(0) == CHAR);
+         return (signature.charAt(0) == CHAR);
       }
 
       boolean isFloat(){
-         return (type.charAt(0) == FLOAT);
+         return (signature.charAt(0) == FLOAT);
       }
 
       boolean isDouble(){
-         return (type.charAt(0) == DOUBLE);
+         return (signature.charAt(0) == DOUBLE);
       }
 
       boolean isByte(){
-         return (type.charAt(0) == BYTE);
+         return (signature.charAt(0) == BYTE);
       }
 
       boolean isObject(){
-         return (type.charAt(0) == CLASS_START);
+         return (signature.charAt(0) == CLASS_START);
       }
 
       String getObjectClassName(){
-         return (TypeHelper.signatureToDotClassName(type, 0));
+         return (TypeHelper.signatureToDotClassName(signature, 0));
       }
 
       String getMangledClassName(){
-         return (TypeHelper.signatureToMangledClassName(type, 0));
+         return (TypeHelper.signatureToMangledClassName(signature, 0));
       }
 
-      private String type;
 
       final boolean isArray(){
          return (arrayDimensions > 0);
@@ -498,8 +509,10 @@ public class TypeHelper{
 
       String getJavaName(){
          String javaName = "?";
-         if(isPrimitive() || isVoid()){
-            javaName = primitiveCharToJavaName(type.charAt(0));
+          if(isArray()){
+              javaName = primitiveCharToJavaName(signature.charAt(0));
+          }else if(isPrimitive() || isVoid()){
+            javaName = primitiveCharToJavaName(signature.charAt(0));
          }else if(isObject()){
             javaName = getObjectClassName();
          }
@@ -521,14 +534,14 @@ public class TypeHelper{
    }
 
    public static class Arg {
-      Type type;
+      JavaType type;
       Arg(String _signature, int _start, int _pos, int _argc){
-         type = TypeHelper.getType(_signature.substring(_start, _pos + 1));
+         type = TypeHelper.getJavaType(_signature.substring(_start, _pos + 1));
          argc = _argc;
       }
 
       Arg(Class _clazz, int _argc){
-         type = TypeHelper.getType(_clazz);
+         type = TypeHelper.getJavaType(_clazz);
          argc = _argc;
       }
 
@@ -538,19 +551,19 @@ public class TypeHelper{
          return (argc);
       }
 
-      public Type getType(){
+      public JavaType getJavaType(){
          return(type);
       }
    }
 
    public static class MethodInfo{
       ArgsAndReturnType argsAndReturnType;
-      Type containingClass;
+      JavaType containingClass;
       String methodName;
 
       public MethodInfo(Method _method){
          argsAndReturnType = new ArgsAndReturnType(_method);
-         containingClass = TypeHelper.getType(_method.getDeclaringClass());
+         containingClass = TypeHelper.getJavaType(_method.getDeclaringClass());
          methodName = _method.getName();
       }
 
@@ -568,13 +581,13 @@ public class TypeHelper{
    }
 
    public static class FieldInfo{
-      Type type;
-      Type containingClass;
+      JavaType type;
+      JavaType containingClass;
       String fieldName;
 
       FieldInfo(Field _field){
-         type = TypeHelper.getType(_field.getType());
-         containingClass = TypeHelper.getType(_field.getDeclaringClass());
+         type = TypeHelper.getJavaType(_field.getType());
+         containingClass = TypeHelper.getJavaType(_field.getDeclaringClass());
          fieldName = _field.getName();
       }
 
@@ -602,13 +615,13 @@ public class TypeHelper{
 
 
       Arg[] args;
-      Type returnType;
+      JavaType returnType;
 
       public Arg[] getArgs(){
          return (args);
       }
 
-      public Type getReturnType(){
+      public JavaType getReturnType(){
          return (returnType);
       }
 
@@ -628,7 +641,7 @@ public class TypeHelper{
                   break;
                case ARG_END:
                   state = SignatureParseState.done;
-                  returnType = TypeHelper.getType(_signature.substring(pos + 1));
+                  returnType = TypeHelper.getJavaType(_signature.substring(pos + 1));
                   break;
                case ARRAY_DIM:
                   switch(state){
@@ -685,7 +698,7 @@ public class TypeHelper{
          for(int i = 0; i < argsAsClasses.length; i++){
             args[i] = new Arg(argsAsClasses[i], i);
          }
-         returnType = TypeHelper.getType(_method.getReturnType());
+         returnType = TypeHelper.getJavaType(_method.getReturnType());
       }
 
       public boolean matches(Method _method){

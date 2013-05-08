@@ -43,7 +43,6 @@ import com.amd.aparapi.ClassModel.ConstantPool.FieldEntry;
 import com.amd.aparapi.ClassModel.ConstantPool.MethodEntry;
 import com.amd.aparapi.InstructionSet.*;
 import com.amd.aparapi.TypeHelper.Arg;
-import com.amd.aparapi.TypeHelper.Type;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -623,7 +622,7 @@ class Entrypoint{
                }else if(instruction instanceof AccessField){
                   AccessField access = (AccessField) instruction;
                   FieldEntry field = access.getConstantPoolFieldEntry();
-                  Type accessedFieldType = field.getType();
+                  TypeHelper.JavaType accessedFieldType = field.getType();
                   String accessedFieldName = field.getNameAndTypeEntry().getNameUTF8Entry().getUTF8();
                   fieldAccesses.add(accessedFieldName);
                   referencedFieldNames.add(accessedFieldName);
@@ -704,7 +703,7 @@ class Entrypoint{
                      }
 
                      Arg methodArgs[] = methodEntry.getArgsAndReturnType().getArgs();
-                     if(methodArgs.length > 0 && methodArgs[0].getType().isArray()){ //currently array arg can only take slot 0
+                     if(methodArgs.length > 0 && methodArgs[0].getJavaType().isArray()){ //currently array arg can only take slot 0
                         Instruction arrInstruction = invokeInstruction.getArg(0);
                         if(arrInstruction instanceof AccessField){
                            AccessField access = (AccessField) arrInstruction;
