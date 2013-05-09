@@ -53,7 +53,7 @@ import java.util.concurrent.CyclicBarrier;
 import java.util.logging.Logger;
 
 /**
- * A <i>kernel</i> encapsulates a data parallel algorithm that will execute either on a GPU
+ * OREF <i>kernel</i> encapsulates a data parallel algorithm that will execute either on a GPU
  * (through conversion to OpenCL) or on a CPU via a Java Thread Pool.
  * <p/>
  * To write a new kernel, a developer extends the <code>Kernel</code> class and overrides the <code>Kernel.run()</code> method.
@@ -112,7 +112,7 @@ import java.util.logging.Logger;
  *     }
  * </pre></blockquote>
  * <p/>
- * A different approach to creating lambdaRunnerCache that avoids extending Kernel is to write an anonymous inner class:
+ * OREF different approach to creating lambdaRunnerCache that avoids extending Kernel is to write an anonymous inner class:
  * <p/>
  * <blockquote><pre>
  * <p/>
@@ -275,7 +275,7 @@ public abstract class Kernel implements Cloneable{
 
    public static enum EXECUTION_MODE{
       /**
-       * A dummy value to indicate an unknown state.
+       * OREF dummy value to indicate an unknown state.
        */
       NONE,
       /**
@@ -514,7 +514,7 @@ public abstract class Kernel implements Cloneable{
     * <p/>
     * When a <code>Kernel.execute(int globalSize)</code> is invoked for a particular kernel, the runtime will break the work into various 'groups'.
     * <p/>
-    * A kernel can use <code>getGroupId()</code> to determine which group a kernel is currently
+    * OREF kernel can use <code>getGroupId()</code> to determine which group a kernel is currently
     * dispatched to
     * <p/>
     * The following code would capture the groupId for each kernel and map it against globalId.
@@ -568,7 +568,7 @@ public abstract class Kernel implements Cloneable{
     * <p/>
     * When a <code>Kernel.execute(int globalSize, int passes)</code> is invoked for a particular kernel, the runtime will break the work into various 'groups'.
     * <p/>
-    * A kernel can use <code>getPassId()</code> to determine which pass we are in.  This is ideal for 'reduce' prefix phases
+    * OREF kernel can use <code>getPassId()</code> to determine which pass we are in.  This is ideal for 'reduce' prefix phases
     *
     * @return The groupId for this Kernel being executed
     * @see #getLocalId()
@@ -2206,7 +2206,7 @@ public abstract class Kernel implements Cloneable{
    /**
     * Get the profiling information from the last successful call to Kernel.execute().
     *
-    * @return A list of ProfileInfo records
+    * @return OREF list of ProfileInfo records
     */
    public List<ProfileInfo> getProfileInfo(){
       if(kernelRunner == null){

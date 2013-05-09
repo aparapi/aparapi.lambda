@@ -128,6 +128,121 @@ public class RegISA{
       }
    }
 
+   static class State{
+      int s32[];
+      float f32[];
+      long s64[];
+      double f64[];
+      Object u64[];
+      PrimitiveType typeInfo[];
+      int maxLocals;
+      State(int _maxReg, int _maxLocals){
+                    maxLocals = _maxLocals;
+
+      s32 = new int[_maxReg];
+      f32 = new float[_maxReg];
+         s64 = new long[_maxReg];
+       f64 = new double[_maxReg];
+       u64 = new Object[_maxReg];
+         typeInfo = new PrimitiveType[_maxReg];
+         for (int i=0; i< _maxReg; i++){
+            typeInfo[i]=PrimitiveType.none;
+         }
+      }
+      void s32Set(int _index, int _value){
+         s32[_index]=_value;
+         typeInfo[_index]=PrimitiveType.s32;
+      }
+      void f32Set(int _index, float _value){
+         f32[_index]=_value;
+         typeInfo[_index]=PrimitiveType.f32;
+      }
+      void s64Set(int _index, long _value){
+         s64[_index]=_value;
+         typeInfo[_index]=PrimitiveType.s64;
+      }
+      void f64Set(int _index, double _value){
+         f64[_index]=_value;
+         typeInfo[_index]=PrimitiveType.f64;
+      }
+      void u64Set(int _index, Object _value){
+         u64[_index]=_value;
+         typeInfo[_index]=PrimitiveType.u64;
+      }
+      int s32Get(int _index){
+         int value = 0;
+         if (typeInfo[_index]==PrimitiveType.s32){
+            value = s32[_index];
+            if (_index>=maxLocals){
+               //clobber
+               typeInfo[_index]=PrimitiveType.none;
+            }
+         }else{
+            throw new IllegalStateException("invalid type for reg "+_index);
+         }
+         return(value);
+      }
+      float f32Get(int _index){
+        float value = 0;
+         if (typeInfo[_index]==PrimitiveType.f32){
+            value = f32[_index];
+            if (_index>=maxLocals){
+               //clobber
+               typeInfo[_index]=PrimitiveType.none;
+            }
+         }else{
+            throw new IllegalStateException("invalid type for reg "+_index);
+         }
+         return(value);
+      }
+      double f64Get(int _index){
+         double value = 0;
+         if (typeInfo[_index]==PrimitiveType.f64){
+            value = f64[_index];
+            if (_index>=maxLocals){
+               //clobber
+               typeInfo[_index]=PrimitiveType.none;
+            }
+         }else{
+            throw new IllegalStateException("invalid type for reg "+_index);
+         }
+         return(value);
+      }
+      long s64Get(int _index){
+         long value = 0;
+         if (typeInfo[_index]==PrimitiveType.s64){
+            value = s64[_index];
+            if (_index>=maxLocals){
+               //clobber
+               typeInfo[_index]=PrimitiveType.none;
+            }
+         }else{
+            throw new IllegalStateException("invalid type for reg "+_index);
+         }
+         return(value);
+      }
+      Object u64Get(int _index){
+         Object value = 0;
+         if (typeInfo[_index]==PrimitiveType.u64){
+            value = u64[_index];
+            if (_index>=maxLocals){
+               //clobber
+               typeInfo[_index]=PrimitiveType.none;
+            }
+         }else{
+            throw new IllegalStateException("invalid type for reg "+_index);
+         }
+         return(value);
+      }
+
+
+
+   }
+
+   static class Delta{
+
+   }
+
 
    static abstract class RegInstruction{
       Instruction from;
@@ -140,6 +255,8 @@ public class RegISA{
          dests = new Reg[_destCount];
          sources= new Reg[_sourceCount];
       }
+
+      abstract public Delta execute( State state);
 
       abstract void render(RegISARenderer r);
 
@@ -182,14 +299,19 @@ public class RegISA{
       }
    }
 
-   static class branch extends RegInstruction{
+   static class branch extends RegInstructionWithSrc<s32>{
       String name;
       int pc;
 
-      branch(Instruction _from, String _name, int _pc){
-         super(_from, 0, 0);
+      branch(Instruction _from, Reg<s32> _src, String _name, int _pc){
+         super(_from, _src);
          name = _name;
          pc = _pc;
+      }
+
+      @Override public Delta execute(State state){
+         System.out.println("branch "+name);
+         return(null);
       }
 
       @Override public void render(RegISARenderer r){
@@ -222,6 +344,10 @@ public class RegISA{
          }
          r.space().append(dotClassName).dot().append(name).separator().regName(getSrc());
       }
+      @Override public Delta execute(State state){
+         System.out.println("put_field ");
+         return(null);
+      }
 
    }
 
@@ -251,7 +377,10 @@ public class RegISA{
          r.separator().append(dotClassName).dot().append(name);
 
       }
-
+      @Override public Delta execute(State state){
+         System.out.println("get_field ");
+         return(null);
+      }
    }
 
    static class call extends RegInstruction{
@@ -298,6 +427,10 @@ public class RegISA{
             }
          }
       }
+      @Override public Delta execute(State state){
+         System.out.println("call ");
+         return(null);
+      }
    }
 
 
@@ -308,7 +441,10 @@ public class RegISA{
          super(_from, 0, 0);
       }
 
-
+      @Override public Delta execute(State state){
+         System.out.println("nyi ");
+         return(null);
+      }
 
       @Override void render(RegISARenderer r){
 
@@ -327,6 +463,11 @@ public class RegISA{
       @Override void render(RegISARenderer r){
          r.append("ld_kernarg_").typeName(getDest()).space().regName(getDest()).separator().append("[%_arg").append(getDest().index).append("]");
       }
+
+      @Override public Delta execute(State state){
+         System.out.println("ld_kernarg ");
+         return(null);
+      }
    }
 
    static abstract class binary_const<T extends PrimitiveType, C> extends RegInstructionWithDestSrc<T>{
@@ -341,6 +482,11 @@ public class RegISA{
 
       @Override void render(RegISARenderer r){
          r.append(op).typeName(getDest()).space().regName(getDest()).separator().regName(getSrc()).separator().append(value.toString());
+      }
+
+      @Override public Delta execute(State state){
+         System.out.println(op+" ");
+         return(null);
       }
    }
 
@@ -382,6 +528,10 @@ public class RegISA{
       @Override void render(RegISARenderer r){
          r.append("cvt_").typeName(getDest()).append("_").typeName(getSrc()).space().regName(getDest()).separator().regName(getSrc());
       }
+      @Override public Delta execute(State state){
+         System.out.println("cvt ");
+         return(null);
+      }
    }
 
 
@@ -395,6 +545,10 @@ public class RegISA{
       @Override void render(RegISARenderer r){
          r.append("ret");
       }
+      @Override public Delta execute(State state){
+         System.out.println("ret ");
+         return(null);
+      }
    }
    static class ret<T extends PrimitiveType> extends RegInstructionWithSrc<T>{
 
@@ -405,6 +559,10 @@ public class RegISA{
 
       @Override void render(RegISARenderer r){
          r.append("ret_").typeName(getSrc()).space().regName(getSrc());
+      }
+      @Override public Delta execute(State state){
+         System.out.println("ret ");
+         return(null);
       }
    }
 
@@ -419,6 +577,10 @@ public class RegISA{
       }
       @Override void render(RegISARenderer r){
          r.append("st_global_").typeName(getSrc()).space(). append("["). regName(mem). append("+"). array_len_offset(). append("]").separator().regName(getSrc());
+      }
+      @Override public Delta execute(State state){
+         System.out.println("store ");
+         return(null);
       }
    }
 
@@ -436,6 +598,10 @@ public class RegISA{
       @Override void render(RegISARenderer r){
          r.append("ld_global" ).typeName(getDest()).space().regName(getDest()).separator(). append("["). regName(mem). append("+"). array_len_offset(). append("]");
       }
+      @Override public Delta execute(State state){
+         System.out.println("load ");
+         return(null);
+      }
    }
 
 
@@ -449,6 +615,10 @@ public class RegISA{
       @Override void render(RegISARenderer r){
          r.append("mov_").typeName(getDest()).space().regName(getDest()).separator().regName(getSrc());
 
+      }
+      @Override public Delta execute(State state){
+         System.out.println("mov ");
+         return(null);
       }
    }
 
@@ -474,6 +644,10 @@ public class RegISA{
       }
       Reg<T> getLhs(){
          return((Reg<T>)sources[0]);
+      }
+      @Override public Delta execute(State state){
+         System.out.println(op+" ");
+         return(null);
       }
 
    }
@@ -547,6 +721,10 @@ public class RegISA{
       @Override void render(RegISARenderer r){
          r.append("mov_").typeName(getDest()).space().regName(getDest()).separator().append(value.toString());
 
+      }
+      @Override public Delta execute(State state){
+         System.out.println("mov const ");
+         return(null);
       }
    }
 
@@ -1139,7 +1317,7 @@ public class RegISA{
          case IFNULL:
          case IFNONNULL:
          case GOTO_W:
-            add(new branch(_i, _i.getByteCode().getName(), _i.asBranch().getAbsolute()));
+            add(new branch(_i, new StackReg_s32(_i, 0), _i.getByteCode().getName(), _i.asBranch().getAbsolute()));
             break;
          case JSR:
             add(new nyi(_i));

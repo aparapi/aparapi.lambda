@@ -336,6 +336,9 @@ abstract class KernelWriter extends BlockWriter{
                      output = __global + " " + type.getMangledClassName();
                   }else{
                      // Basic prefix array
+                     // how do we know the type of the array.
+                     String jn = type.getJavaName() ;
+                     String sig = type.getSignature();
                      output = __global + " " + type.getJavaName()    ;
                   }
                }else if(type.isPrimitive()){

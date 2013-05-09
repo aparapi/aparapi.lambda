@@ -62,7 +62,7 @@ import java.util.stream.Stream;
  * <code>KernelRunner</code> to encapsulate state and to help coordinate interactions between the <code>Kernel</code>
  * and it's execution logic.<br/>
  * <p/>
- * The <code>KernelRunner</code> is created <i>lazily</i> as a result of calling <code>Kernel.execute()</code>. A this
+ * The <code>KernelRunner</code> is created <i>lazily</i> as a result of calling <code>Kernel.execute()</code>. OREF this
  * time the <code>ExecutionMode</code> is consulted to determine the default requested mode.  This will dictate how
  * the <code>KernelRunner</code> will attempt to execute the <code>Kernel</code>
  *

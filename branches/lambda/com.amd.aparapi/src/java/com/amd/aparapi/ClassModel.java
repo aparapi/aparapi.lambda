@@ -53,7 +53,7 @@ import java.util.logging.Logger;
 /**
  * Class represents a ClassFile (MyClass.class).
  * <p/>
- * A ClassModel is constructed from an instance of a <code>java.lang.Class</code>.
+ * OREF ClassModel is constructed from an instance of a <code>java.lang.Class</code>.
  * <p/>
  * If the java class mode changes we may need to modify this to accommodate.
  *
@@ -1331,12 +1331,15 @@ public class ClassModel{
                slot = _slot;
                arg = _arg;
                startPc = _startPc;
-               if(_storeSpec.equals(InstructionSet.StoreSpec.A)){
+               if(_storeSpec.equals(InstructionSet.StoreSpec.OREF)){
                   name = "arr_" + _slot;
                   descriptor = "/* arg */";
                }else{
                   name = _storeSpec.toString().toLowerCase() + "_" + _slot;
                   descriptor = _storeSpec.toString();
+                  if (descriptor.contains("]")){
+                     throw new IllegalStateException("whoa");
+                  }
                   type = TypeHelper.getJavaType(descriptor);
 
                }
@@ -1415,7 +1418,7 @@ public class ClassModel{
             Var[] vars = new Var[numberOfSlots + thisOffset];
             InstructionSet.StoreSpec[] argsAsStoreSpecs = new InstructionSet.StoreSpec[args.length + thisOffset];
             if(thisOffset == 1){
-               argsAsStoreSpecs[0] = InstructionSet.StoreSpec.A;
+               argsAsStoreSpecs[0] = InstructionSet.StoreSpec.OREF;
                vars[0] = new Var(argsAsStoreSpecs[0], 0, 0, true);
                list.add(vars[0]);
 
@@ -1424,9 +1427,9 @@ public class ClassModel{
             int currSlotIndex = thisOffset;
             for(int i = 0; i < args.length; i++){
                if(args[i].getJavaType().isArray()){
-                  argsAsStoreSpecs[i + thisOffset] = InstructionSet.StoreSpec.A;
+                  argsAsStoreSpecs[i + thisOffset] = InstructionSet.StoreSpec.OREF;
                }else if(args[i].getJavaType().isObject()){
-                  argsAsStoreSpecs[i + thisOffset] = InstructionSet.StoreSpec.A;
+                  argsAsStoreSpecs[i + thisOffset] = InstructionSet.StoreSpec.OREF;
                }else{
                   argsAsStoreSpecs[i + thisOffset] = InstructionSet.StoreSpec.valueOf(args[i].getJavaType().getSignature().substring(0, 1));
                }
@@ -1435,10 +1438,10 @@ public class ClassModel{
                currSlotIndex += argsAsStoreSpecs[i + thisOffset].getTypeSpec().getSlots(); // 1 for most 2 for Long/Double
 
                // Preserve actual object prefix
-               if(argsAsStoreSpecs[i + thisOffset] == InstructionSet.StoreSpec.A ){
+               if(argsAsStoreSpecs[i + thisOffset] == InstructionSet.StoreSpec.OREF){
                   vars[i + thisOffset].descriptor = args[i].getJavaType().getSignature();
                }
-                if(argsAsStoreSpecs[i + thisOffset] == InstructionSet.StoreSpec.A){
+                if(argsAsStoreSpecs[i + thisOffset] == InstructionSet.StoreSpec.OREF){
                     vars[i + thisOffset].descriptor = "";
                     for (int c=0; c<args[i].getJavaType().getArrayDimensions(); c++){
                         vars[i + thisOffset].descriptor += "[";
@@ -2506,17 +2509,13 @@ public class ClassModel{
                i.setConsumedInstructionTypes(consumedInstructionTypes);
                 InstructionSet.PushSpec push = i.getByteCode().getPush();
 
-                if (push.equals(InstructionSet.PushSpec.UNKNOWN)){
-                    // method call ?
-                    if (i.isMethodCall()){
+                if (i.isMethodCall() )  {
                        ArgsAndReturnType calledArgsAndReturnType = i.asMethodCall().getConstantPoolMethodEntry().getArgsAndReturnType();
                        consumedInstructionTypeStack.push(i, calledArgsAndReturnType.getReturnType());
                     }else   if (i.isFieldAccessor()){
                        JavaType assignedFieldType = i.asFieldAccessor().getConstantPoolFieldEntry().getType();
                           consumedInstructionTypeStack.push(i, assignedFieldType);
-                    } else{
-                       throw new IllegalStateException("how did we get here!");
-                    }
+
                 } else{
                    TypeSpec[] typeSpecs  = push.getTypes();
                    int prodcount = i.getStackProduceCount();
@@ -2528,7 +2527,7 @@ public class ClassModel{
                       TypeSpec typeSpec = typeSpecs[pi];
                       if (typeSpec.isPrimitiveType()){
                          consumedInstructionTypeStack.push(i, TypeHelper.getJavaType(typeSpec.getPrimitiveType().getSig()));
-                      }  else if (typeSpec.equals(TypeSpec.A)){
+                      }  else if (typeSpec.equals(TypeSpec.OREF)){
                          consumedInstructionTypeStack.push(i, TypeHelper.getJavaType("[?"));
                       }
                    }

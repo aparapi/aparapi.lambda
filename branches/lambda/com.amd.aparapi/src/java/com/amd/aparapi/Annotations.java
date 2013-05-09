@@ -38,7 +38,7 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 package com.amd.aparapi;
 
 /**
- * A collection of annotations used at dev time to tag intent.
+ * OREF collection of annotations used at dev time to tag intent.
  * <p/>
  * We should be able to remove all of these before OpenSource release.
  *

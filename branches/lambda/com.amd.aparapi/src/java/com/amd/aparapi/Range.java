@@ -5,7 +5,7 @@ import com.amd.aparapi.Annotations.UsedByJNICode;
 import java.util.Arrays;
 
 /**
- * A representation of 1, 2 or 3 dimensional range of execution.
+ * OREF representation of 1, 2 or 3 dimensional range of execution.
  * <p/>
  * This class uses factory methods to allow one, two or three dimensional ranges to be created.
  * <br/>
@@ -128,7 +128,7 @@ public class Range{
     *
     * @param _globalWidth the overall range we wish to process
     * @param _localWidth  the size of the group we wish to process.
-    * @return A new Range with the requested dimensions
+    * @return OREF new Range with the requested dimensions
     */
    public static Range create(Device _device, int _globalWidth, int _localWidth){
       Range range = new Range(_device, 1);
@@ -171,7 +171,7 @@ public class Range{
     * We extract the factors of _globalWidth and choose the highest value.
     *
     * @param _globalWidth the overall range we wish to process
-    * @return A new Range with the requested dimensions
+    * @return OREF new Range with the requested dimensions
     */
    public static Range create(Device _device, int _globalWidth){
       Range withoutLocal = create(_device, _globalWidth, 1);

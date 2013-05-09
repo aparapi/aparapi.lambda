@@ -505,7 +505,7 @@ public class MethodModel{
             /**
              *
              * <pre><code>
-             *                 A                                     A
+             *                 OREF                                     OREF
              *                 |                                     |
              *         +1, 0  getfield<f>                            |
              *                 |              / getfield<f>         Increment(fieldref<f>++)
@@ -513,7 +513,7 @@ public class MethodModel{
              *                 |              \ i_const_1            |
              *                 B                                     B
              *
-             *                 A                                     A
+             *                 OREF                                     OREF
              *                 |                                     |
              *         +1, 0  getfield<f>                            |
              *                 |                      / getfield<f>  Increment(fieldRef<f>++)
@@ -561,7 +561,7 @@ public class MethodModel{
          new InstructionTransformer("long hand pre increment of field"){
             /**
              * <pre>
-             *                 A                                     A
+             *                 OREF                                     OREF
              *                 |                                     |
              *                 |  / getfield<f>                      |
              *         +1, -2 iadd                                   |
@@ -619,7 +619,7 @@ public class MethodModel{
          new InstructionTransformer("long hand post increment of local variable"){
             /**
              * <pre>
-             *                 A                                     A
+             *                 OREF                                     OREF
              *                 |                                     |
              *         +1, 0  iload&ltn&gt                               |
              *                 |              / iload&ltn&gt            Increment(varref&ltn&gt++)
@@ -627,7 +627,7 @@ public class MethodModel{
              *                 |              \ i_const_1            |
              *                 B                                     B
              *
-             *                 A                                     A
+             *                 OREF                                     OREF
              *                 |                                     |
              *         +1, 0  &ltt&gtload&ltn&gt                             |
              *                 |                      / iload&ltn&gt    Increment( varref&ltn&gt++)
@@ -657,7 +657,7 @@ public class MethodModel{
          new InstructionTransformer("long hand post decrement of local variable"){
             /**
              * <pre>
-             *                 A                                     A
+             *                 OREF                                     OREF
              *                 |                                     |
              *         +1, 0  iload<n>                               |
              *                 |              / iload<n>            Decrement(varref<n>--)
@@ -665,7 +665,7 @@ public class MethodModel{
              *                 |              \ i_const_1            |
              *                 B                                     B
              *
-             *                 A                                     A
+             *                 OREF                                     OREF
              *                 |                                     |
              *         +1, 0  <t>load<n>                             |
              *                 |                      / iload<n>    Decrement( varref<n>--)
@@ -695,7 +695,7 @@ public class MethodModel{
          new InstructionTransformer("long hand pre increment of local variable"){
             /**
              * <pre>
-             *                 A                                     A
+             *                 OREF                                     OREF
              *                 |              / iload<n>             |
              *          0, 0  istore<n> - iadd                       |
              *                 |              \ i_const_1            Increment(++varref<n>)
@@ -703,7 +703,7 @@ public class MethodModel{
              *                 |                                     |
              *                 B                                     B
              *
-             *                 A                                     A
+             *                 OREF                                     OREF
              *                 |                      / iload<n>     |
              *          0, 0  <t>store<n> - i2<t> iadd               |
              *                 |                      \ i_const_1    Increment( ++varref<n>)
@@ -736,7 +736,7 @@ public class MethodModel{
          new InstructionTransformer("inline assign - say for methiod call or logical expression - "){
             /**
              * <pre>
-             *                 A                                     A
+             *                 OREF                                     OREF
              *                 |                                     |
              *          0, 0  iload<n>                               |
              *                 |       / iload<n>               InlineAssign(istore<?>, iload<n>)
@@ -816,7 +816,7 @@ public class MethodModel{
          new InstructionTransformer("inline assign of local variable (with cast)"){
             /**
              * <pre>
-             *                 A                                     A
+             *                 OREF                                     OREF
              *                 |      /exp                           |
              *          0, 0  cast<n>                                |
              *                 |       / iload<n>               InlineAssign(istore<?>, cast)
@@ -847,7 +847,7 @@ public class MethodModel{
          new InstructionTransformer("field array element pre increment with nested index (local variable) pre increment"){
             /**
              * <pre>
-             *                 A                                     A
+             *                 OREF                                     OREF
              *                 |            / getfield - aload       |
              *                 |    / iaload                         |
              *                 |   /        \ i_aload1               |
@@ -887,7 +887,7 @@ public class MethodModel{
          new InstructionTransformer("field array element pre decrement with nested index (local variable) pre decrement"){
             /**
              * <pre>
-             *                 A                                     A
+             *                 OREF                                     OREF
              *                 |            / getfield - aload       |
              *                 |    / iaload                         |
              *                 |   /        \ i_aload1               |
@@ -933,7 +933,7 @@ public class MethodModel{
                      InstructionPattern.longHandFieldArrayElementIncrement)).ok){
                   /**
                    * <pre>
-                   *                 A                                     A
+                   *                 OREF                                     OREF
                    *                 |     / getfield<f> - aload           |
                    *                iaload                                 |
                    *                 |     \ i_load                        |
@@ -975,7 +975,7 @@ public class MethodModel{
          new InstructionTransformer("field array element post decrement with nested index (local variable) "){
             /**
              * <pre>
-             *                 A                                     A
+             *                 OREF                                     OREF
              *                 |     / getfield<f> - aload           |
              *                iaload                                 |
              *                 |     \ i_load                        |
@@ -1023,7 +1023,7 @@ public class MethodModel{
          new InstructionTransformer("inline assign (for method call or logical expression)"){
             /**
              * <pre>
-             *                 A                                     A
+             *                 OREF                                     OREF
              *                 |                                     |
              *          0, 0  invoke<n>                              |
              *                 |       / invoke()               InlineAssign(istore<?>, invoke)
@@ -1055,7 +1055,7 @@ public class MethodModel{
          new InstructionTransformer("incline assign from constant (method call or logical expression)"){
             /**
              * <pre>
-             *                 A                                     A
+             *                 OREF                                     OREF
              *                 |                                     |
              *          0, 0  invoke<n>                              |
              *                 |       / invoke()               InlineAssign(istore<?>, invoke)
@@ -1090,7 +1090,7 @@ public class MethodModel{
          new InstructionTransformer("inline array assignment as part of a method call"){
             /**
              * <pre>
-             *                 A                                     A
+             *                 OREF                                     OREF
              *                 |                                     |
              *          0, 0  invoke<n>                              |
              *                 |       / invoke()               InlineAssign(istore<?>, invoke)
@@ -1122,7 +1122,7 @@ public class MethodModel{
          new InstructionTransformer("inline array element increment as as part of a method call "){
             /**
              * <pre>
-             *                 A                                     A
+             *                 OREF                                     OREF
              *                 |                                     |
              *          0, 0  invoke<n>                              |
              *                 |       / invoke()               InlineAssign(istore<?>, invoke)
