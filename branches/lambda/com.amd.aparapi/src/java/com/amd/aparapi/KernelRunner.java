@@ -383,7 +383,7 @@ class KernelRunner extends OpenCLRunner{
          String arrayClassInDotForm = TypeHelper.signatureToDotClassName(arrayClass.getName(), 1);
 
          if(logger.isLoggable(Level.FINE)){
-            logger.fine("looking for type = " + arrayClassInDotForm);
+            logger.fine("looking for prefix = " + arrayClassInDotForm);
          }
 
          // get ClassModel of obj array from entrypt.objectArrayFieldsClasses
@@ -398,7 +398,7 @@ class KernelRunner extends OpenCLRunner{
       int arrayScale = UnsafeWrapper.arrayIndexScale(arrayClass);
 
       if(logger.isLoggable(Level.FINEST)){
-         logger.finest("Syncing obj array type = " + arrayClass + " cvtd= " + c.getClassWeAreModelling().getName()
+         logger.finest("Syncing obj array prefix = " + arrayClass + " cvtd= " + c.getClassWeAreModelling().getName()
                + "arrayBaseOffset=" + arrayBaseOffset + " arrayScale=" + arrayScale);
       }
 
@@ -485,7 +485,7 @@ class KernelRunner extends OpenCLRunner{
                }
                default:
                   assert true == false : "typespec did not match anything";
-                  throw new AparapiException("Unhandled type in buffer conversion");
+                  throw new AparapiException("Unhandled prefix in buffer conversion");
             }
          }
 
@@ -519,7 +519,7 @@ class KernelRunner extends OpenCLRunner{
       int arrayBaseOffset = UnsafeWrapper.arrayBaseOffset(arrayClass);
       int arrayScale = UnsafeWrapper.arrayIndexScale(arrayClass);
       if(logger.isLoggable(Level.FINEST)){
-         logger.finest("Syncing field:" + arg.name + ", bb=" + arg.objArrayByteBuffer + ", type = " + arrayClass);
+         logger.finest("Syncing field:" + arg.name + ", bb=" + arg.objArrayByteBuffer + ", prefix = " + arrayClass);
       }
 
       int objArraySize = 0;
@@ -596,7 +596,7 @@ class KernelRunner extends OpenCLRunner{
                }
                default:
                   assert true == false : "typespec did not match anything";
-                  throw new AparapiException("Unhandled type in buffer conversion");
+                  throw new AparapiException("Unhandled prefix in buffer conversion");
             }
          }
 
@@ -931,7 +931,7 @@ class KernelRunner extends OpenCLRunner{
                            args[i].type |= entryPoint.getArrayFieldAssignments().contains(field.getName()) ? (ARG_WRITE | ARG_READ)
                                  : 0;
                            args[i].type |= entryPoint.getArrayFieldAccesses().contains(field.getName()) ? ARG_READ : 0;
-                           // args[i].type |= ARG_GLOBAL;
+                           // args[i].prefix |= ARG_GLOBAL;
                            args[i].type |= type.isAssignableFrom(float[].class) ? ARG_FLOAT : 0;
 
                            args[i].type |= type.isAssignableFrom(int[].class) ? ARG_INT : 0;
@@ -985,7 +985,7 @@ class KernelRunner extends OpenCLRunner{
                            args[i].type |= ARG_PRIMITIVE;
                            args[i].type |= ARG_SHORT;
                         }
-                        // System.out.printf("in execute, arg %d %s %08x\n", i,args[i].name,args[i].type );
+                        // System.out.printf("in execute, arg %d %s %08x\n", i,args[i].name,args[i].prefix );
                      }catch(IllegalArgumentException e){
                         e.printStackTrace();
                      }
@@ -996,7 +996,7 @@ class KernelRunner extends OpenCLRunner{
                            : (args[i].type & ARG_LONG) != 0 ? 8 : (args[i].type & ARG_DOUBLE) != 0 ? 8 : 0);
 
                      if(logger.isLoggable(Level.FINE)){
-                        logger.fine("arg " + i + ", " + args[i].name + ", type=" + Integer.toHexString(args[i].type)
+                        logger.fine("arg " + i + ", " + args[i].name + ", prefix=" + Integer.toHexString(args[i].type)
                               + ", primitiveSize=" + args[i].primitiveSize);
                      }
 
@@ -1052,7 +1052,7 @@ class KernelRunner extends OpenCLRunner{
    /**
     * Enqueue a request to return this array from the GPU. This method blocks until the array is available.
     * <br/>
-    * Note that <code>Kernel.put(type [])</code> calls will delegate to this call.
+    * Note that <code>Kernel.put(prefix [])</code> calls will delegate to this call.
     * <br/>
     * Package protected
     *
@@ -1084,7 +1084,7 @@ class KernelRunner extends OpenCLRunner{
 
    /**
     * Tag this array so that it is explicitly enqueued before the kernel is executed. <br/>
-    * Note that <code>Kernel.put(type [])</code> calls will delegate to this call. <br/>
+    * Note that <code>Kernel.put(prefix [])</code> calls will delegate to this call. <br/>
     * Package protected
     *
     * @param array It is assumed that this parameter is indeed an array (of int, float, short etc).

@@ -11,149 +11,9 @@ import java.util.List;
  * To change this template use File | Settings | File Templates.
  */
 public class RegISA{
-   public static abstract class Type{
-      static final u1 u1 = new u1();
-      static final u8 u8 = new u8();
-      static final u16 u16 = new u16();
-      static final u32 u32 = new u32();
-      static final u64 u64 = new u64();
-      static final s8 s8 = new s8();
-      static final s16 s16 = new s16();
-      static final s32 s32 = new s32();
-      static final s64 s64 = new s64();
-
-      static final f16 f16 = new f16();
-      static final f32 f32 = new f32();
-      static final f64 f64 = new f64();
-      int bits;
-
-      public int getBits(){
-         return (bits);
-      }
-
-      String sizeType; // s,d
-
-      public String getSizeType(){
-         return (sizeType);
-      }
-
-      String type; // u,f,s
-
-      public String getType(){
-         return (type);
-      }
-
-      Type(int _bits, String _sizeType, String _type){
-         bits = _bits;
-         sizeType = _sizeType;
-         type = _type;
-      }
-
-      public String getRegName(int i){
-         return ("$" + sizeType + "" + i);
-      }
-
-      public String getTypeName(){
-         return (type + bits);
-      }
-
-      public static Type forJavaType(TypeHelper.JavaType javaType){
-         if(javaType.isArray()){
-            return (u64);
-         } else if(javaType.isInt()){
-            return (s32);
-         }else if(javaType.isFloat()){
-            return (f32);
-         } else if(javaType.isLong()){
-            return (s64);
-         }else if(javaType.isDouble()){
-            return (f64);
-         }else{
-            throw new IllegalArgumentException("no mapping for "+javaType);
-
-         }
-      }
 
 
-   }
-
-   ;
-
-   static class u1 extends Type{
-
-      u1(){
-         super(1, "?", "u");
-      }
-   }
-
-   static class u8 extends Type{
-      u8(){
-         super(8, "?", "u");
-      }
-
-   }
-
-   static class s8 extends Type{
-      s8(){
-         super(8, "?", "s");
-      }
-   }
-
-   static class u16 extends Type{
-      u16(){
-         super(16, "?", "u");
-      }
-   }
-
-   static class s16 extends Type{
-      s16(){
-         super(16, "?", "s");
-      }
-   }
-
-   static class f16 extends Type{
-      f16(){
-         super(16, "?", "f");
-      }
-   }
-
-   static class u32 extends Type{
-      u32(){
-         super(32, "s", "u");
-      }
-   }
-
-   static class s32 extends Type{
-      s32(){
-         super(32, "s", "s");
-      }
-   }
-
-   static class f32 extends Type{
-      f32(){
-         super(32, "s", "f");
-      }
-   }
-
-   static class u64 extends Type{
-      u64(){
-         super(64, "d", "u");
-      }
-   }
-
-   static class s64 extends Type{
-      s64(){
-         super(64, "d", "s");
-      }
-   }
-
-   static class f64 extends Type{
-      f64(){
-         super(64, "d", "f");
-      }
-   }
-
-   public abstract static class Reg<T extends Type> {
+   public abstract static class Reg<T extends PrimitiveType> {
       int index;
       public T type;
       public boolean stack;
@@ -179,27 +39,27 @@ public class RegISA{
 
    public abstract static class Reg_f64 extends Reg<f64>{
       Reg_f64(int _index, boolean _stack){
-         super(_index, Type.f64, _stack);
+         super(_index, PrimitiveType.f64, _stack);
       }
    }
    public abstract static class Reg_u64 extends Reg<u64>{
       Reg_u64(int _index, boolean _stack){
-         super(_index, Type.u64, _stack);
+         super(_index, PrimitiveType.u64, _stack);
       }
    }
    public abstract static class Reg_s64 extends Reg<s64>{
       Reg_s64(int _index, boolean _stack){
-         super(_index, Type.s64, _stack);
+         super(_index, PrimitiveType.s64, _stack);
       }
    }
    public abstract static class Reg_s32 extends Reg<s32>{
       Reg_s32(int _index, boolean _stack){
-         super(_index, Type.s32, _stack);
+         super(_index, PrimitiveType.s32, _stack);
       }
    }
    public abstract static class Reg_f32 extends Reg<f32>{
       Reg_f32(int _index, boolean _stack){
-         super(_index, Type.f32, _stack);
+         super(_index, PrimitiveType.f32, _stack);
       }
    }
 
@@ -284,7 +144,7 @@ public class RegISA{
       abstract void render(RegISARenderer r);
 
    }
-   static abstract class RegInstructionWithDest<T extends Type> extends RegInstruction{
+   static abstract class RegInstructionWithDest<T extends PrimitiveType> extends RegInstruction{
 
 
       RegInstructionWithDest(Instruction _from, Reg<T> _dest){
@@ -296,7 +156,7 @@ public class RegISA{
          return((Reg<T>)dests[0]);
       }
    }
-   static abstract class RegInstructionWithSrc<T extends Type> extends RegInstruction{
+   static abstract class RegInstructionWithSrc<T extends PrimitiveType> extends RegInstruction{
 
       RegInstructionWithSrc(Instruction _from, Reg<T> _src){
          super(_from, 0, 1);
@@ -307,7 +167,7 @@ public class RegISA{
       }
    }
 
-   static abstract class RegInstructionWithDestSrc<T extends Type> extends RegInstruction{
+   static abstract class RegInstructionWithDestSrc<T extends PrimitiveType> extends RegInstruction{
 
       RegInstructionWithDestSrc(Instruction _from, Reg<T> _dest, Reg<T> _src){
          super(_from, 1, 1);
@@ -338,7 +198,7 @@ public class RegISA{
       }
    }
 
-   static class put_field<T extends Type> extends RegInstructionWithSrc<T>{
+   static class put_field<T extends PrimitiveType> extends RegInstructionWithSrc<T>{
       boolean isStatic;
 
       put_field(Instruction _from, Reg<T> _src){
@@ -361,13 +221,11 @@ public class RegISA{
             r.separator().append("$d").append(getSrc().index);
          }
          r.space().append(dotClassName).dot().append(name).separator().regName(getSrc());
-
-
       }
 
    }
 
-   static class get_field<T extends Type> extends RegInstructionWithDest<T>{
+   static class get_field<T extends PrimitiveType> extends RegInstructionWithDest<T>{
 
       boolean isStatic;
 
@@ -459,7 +317,7 @@ public class RegISA{
       }
    }
 
-   static class ld_kernarg<T extends Type> extends RegInstructionWithDest<T>{
+   static class ld_kernarg<T extends PrimitiveType> extends RegInstructionWithDest<T>{
 
 
       ld_kernarg(Instruction _from, Reg<T> _dest){
@@ -471,7 +329,7 @@ public class RegISA{
       }
    }
 
-   static abstract class binary_const<T extends Type, C> extends RegInstructionWithDestSrc<T>{
+   static abstract class binary_const<T extends PrimitiveType, C> extends RegInstructionWithDestSrc<T>{
       C value;
       String op;
 
@@ -486,7 +344,7 @@ public class RegISA{
       }
    }
 
-   static class add_const<T extends Type, C> extends binary_const<T, C>{
+   static class add_const<T extends PrimitiveType, C> extends binary_const<T, C>{
 
       add_const(Instruction _from, Reg<T> _dest, Reg _src, C _value){
          super(_from, "add_", _dest, _src, _value);
@@ -495,7 +353,7 @@ public class RegISA{
 
    }
 
-   static class mul_const<T extends Type, C> extends binary_const<T, C>{
+   static class mul_const<T extends PrimitiveType, C> extends binary_const<T, C>{
 
       mul_const(Instruction _from, Reg<T> _dest, Reg _src, C _value){
          super(_from, "mul_", _dest, _src, _value);
@@ -505,7 +363,7 @@ public class RegISA{
    }
 
 
-   static class cvt<T1 extends Type, T2 extends Type> extends RegInstruction{
+   static class cvt<T1 extends PrimitiveType, T2 extends PrimitiveType> extends RegInstruction{
 
 
       cvt(Instruction _from, Reg<T1> _dest, Reg<T2> _src){
@@ -538,7 +396,7 @@ public class RegISA{
          r.append("ret");
       }
    }
-   static class ret<T extends Type> extends RegInstructionWithSrc<T>{
+   static class ret<T extends PrimitiveType> extends RegInstructionWithSrc<T>{
 
       ret(Instruction _from, Reg<T> _src){
          super(_from, _src);
@@ -550,7 +408,7 @@ public class RegISA{
       }
    }
 
-   static class store<T extends Type> extends RegInstructionWithSrc<T>{
+   static class store<T extends PrimitiveType> extends RegInstructionWithSrc<T>{
 
       Reg_u64 mem;
 
@@ -566,7 +424,7 @@ public class RegISA{
 
 
 
-   static class load<T extends Type> extends RegInstructionWithDest<T>{
+   static class load<T extends PrimitiveType> extends RegInstructionWithDest<T>{
       Reg_u64 mem;
 
 
@@ -582,7 +440,7 @@ public class RegISA{
 
 
 
-   static final class mov<T extends Type> extends RegInstructionWithDestSrc{
+   static final class mov<T extends PrimitiveType> extends RegInstructionWithDestSrc{
 
       public mov(Instruction _from, Reg<T> _dest, Reg<T> _src){
          super(_from, _dest, _src);
@@ -594,7 +452,7 @@ public class RegISA{
       }
    }
 
-   static abstract class binary<T extends Type> extends RegInstruction{
+   static abstract class binary<T extends PrimitiveType> extends RegInstruction{
 
       String op;
       public binary(Instruction _from, String _op, Reg<T> _dest, Reg<T> _lhs, Reg<T> _rhs){
@@ -645,39 +503,39 @@ public class RegISA{
    }
    */
 
-   static  class add<T extends Type> extends binary<T>{
+   static  class add<T extends PrimitiveType> extends binary<T>{
       public add(Instruction _from,  Reg<T> _dest, Reg<T> _lhs, Reg<T>  _rhs){
          super(_from, "add_", _dest, _lhs, _rhs);
       }
 
    }
 
-   static  class sub<T extends Type> extends binary<T>{
+   static  class sub<T extends PrimitiveType> extends binary<T>{
       public sub(Instruction _from,  Reg<T> _dest, Reg<T> _lhs, Reg<T>  _rhs){
          super(_from, "sub_", _dest, _lhs, _rhs);
       }
 
    }
-   static  class div<T extends Type> extends binary<T>{
+   static  class div<T extends PrimitiveType> extends binary<T>{
       public div(Instruction _from,  Reg<T> _dest, Reg<T> _lhs, Reg<T>  _rhs){
          super(_from, "div_", _dest, _lhs, _rhs);
       }
 
    }
-   static  class mul<T extends Type> extends binary<T>{
+   static  class mul<T extends PrimitiveType> extends binary<T>{
       public mul(Instruction _from,  Reg<T> _dest, Reg<T> _lhs, Reg<T>  _rhs){
          super(_from, "mul_", _dest, _lhs, _rhs);
       }
 
    }
-   static  class rem<T extends Type> extends binary<T>{
+   static  class rem<T extends PrimitiveType> extends binary<T>{
       public rem(Instruction _from,  Reg<T> _dest, Reg<T> _lhs, Reg<T>  _rhs){
          super(_from, "rem_", _dest, _lhs, _rhs);
       }
 
    }
 
-   static class mov_const<T extends Type, V> extends RegInstructionWithDest<T>{
+   static class mov_const<T extends PrimitiveType, V> extends RegInstructionWithDest<T>{
 
       V value;
 
@@ -751,10 +609,14 @@ public class RegISA{
             r.separator().nl();
          }
 
-         Type type = Type.forJavaType(arg.getJavaType());
-
-         r.pad(3).append("kernarg_").append(type.getTypeName()).append(" %_arg" + (arg.getArgc() + argOffset));
-
+         PrimitiveType type = arg.getJavaType().getPrimitiveType();
+          r.pad(3).append("kernarg_");
+         if (type == null){
+             r.append("u64");
+         } else{
+           r.append(type.getHSAName());
+         }
+          r.append(" %_arg" + (arg.getArgc() + argOffset));
       }
       r.nl().pad(3).append("){").nl();
 
@@ -798,18 +660,18 @@ public class RegISA{
        return(null);
    }
 
-   public void addmov(Instruction _i, Type _type, int _from, int _to){
-       if (_type.equals(Type.u64) ||_type.getBits()==32 ){
-           if (_type.equals(Type.u64)){
+   public void addmov(Instruction _i, PrimitiveType _type, int _from, int _to){
+       if (_type.equals(PrimitiveType.u64) ||_type.getBits()==32 ){
+           if (_type.equals(PrimitiveType.u64)){
                add(new mov<u64>(_i, new StackReg_u64(_i, _to), new StackReg_u64(_i, _from)));
-           }else if (_type.equals(Type.s32)){
+           }else if (_type.equals(PrimitiveType.s32)){
                add(new mov<s32>(_i, new StackReg_s32(_i, _to), new StackReg_s32(_i, _from)));
            } else{
-               throw new IllegalStateException (" unknown type 1 type for first of DUP2");
+               throw new IllegalStateException (" unknown prefix 1 prefix for first of DUP2");
            }
 
        }else{
-           throw new IllegalStateException (" unknown type 2 type for DUP2");
+           throw new IllegalStateException (" unknown prefix 2 prefix for DUP2");
        }
    }
 
@@ -1051,9 +913,9 @@ public class RegISA{
          }
             break;
          case DUP2:  {
-            // DUP2 is problematic. DUP2 either dups top two items or one depending on the 'type' of the stack items.
-            // To complicate this further HSA large model wants object/mem references to be 64 bits (type 2 in Java) whereas
-             // in java object/array refs are 32 bits (type 1).
+            // DUP2 is problematic. DUP2 either dups top two items or one depending on the 'prefix' of the stack items.
+            // To complicate this further HSA large model wants object/mem references to be 64 bits (prefix 2 in Java) whereas
+             // in java object/array refs are 32 bits (prefix 1).
             addmov(_i, 0,  2);
             addmov(_i, 1,  3);
             }

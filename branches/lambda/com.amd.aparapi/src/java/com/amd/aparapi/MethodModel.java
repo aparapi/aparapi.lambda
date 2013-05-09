@@ -1250,12 +1250,12 @@ public class MethodModel{
                   accessedFieldName = field.getNameAndTypeEntry().getNameUTF8Entry().getUTF8();
                   if(accessedFieldName.equals(varNameCandidateCamelCased)){
 
-                     // Verify field type matches return type
+                     // Verify field prefix matches return prefix
                      String fieldType = field.getNameAndTypeEntry().getDescriptorUTF8Entry().getUTF8();
                      String returnType = getMethod().getDescriptor().substring(2);
-                     //System.out.println( "### field type = " + fieldType );
+                     //System.out.println( "### field prefix = " + fieldType );
                      //System.out.println( "### method args = " + returnType );
-                     assert (fieldType.length() == 1) && (returnType.length() == 1) : " can only use basic type getters";
+                     assert (fieldType.length() == 1) && (returnType.length() == 1) : " can only use basic prefix getters";
 
                      // Allow isFoo style for boolean fields
                      if((methodName.startsWith("is") && fieldType.equals("Z")) || (methodName.startsWith("get"))){
@@ -1310,18 +1310,18 @@ public class MethodModel{
 
                if(accessedFieldName.equals(varNameCandidateCamelCased)){
 
-                  // Verify field type matches setter arg type
+                  // Verify field prefix matches setter arg prefix
                   String fieldType = field.getNameAndTypeEntry().getDescriptorUTF8Entry().getUTF8();
                   String setterArgType = getMethod().getDescriptor().substring(1, 2);
 
-                  //System.out.println( "### field type = " + fieldType );
-                  //System.out.println( "### setter type = " + setterArgType );
-                  assert fieldType.length() == 1 : " can only use basic type getters";
+                  //System.out.println( "### field prefix = " + fieldType );
+                  //System.out.println( "### setter prefix = " + setterArgType );
+                  assert fieldType.length() == 1 : " can only use basic prefix getters";
 
                   if(fieldType.equals(setterArgType)){
                      if(logger.isLoggable(Level.FINE)){
                         logger.fine("Found " + methodName + " as a setter for " + varNameCandidateCamelCased.toLowerCase()
-                              + " of type " + fieldType);
+                              + " of prefix " + fieldType);
                      }
 
                      methodIsSetter = true;

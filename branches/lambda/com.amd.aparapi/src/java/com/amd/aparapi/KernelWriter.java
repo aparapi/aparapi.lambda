@@ -127,7 +127,7 @@ abstract class KernelWriter extends BlockWriter{
 
    /**
     * These three convert functions are here to perform
-    * any type conversion that may be required between
+    * any prefix conversion that may be required between
     * Java and OpenCL.
     *
     * @param _typeDesc String in the Java JNI notation, [I, etc
@@ -315,7 +315,7 @@ abstract class KernelWriter extends BlockWriter{
             if((lvi.getStart() == 0) && ((lvi.getSlot() != 0) || mm.getMethod().isStatic())){ // full scope but skip this
                // String descriptor = ;
 
-               // For object stream lambdas, the lvi is the object type, but in
+               // For object stream lambdas, the lvi is the object prefix, but in
                // the kernel we will need something like:
                //
                // __global com_amd_aparapi_examples_oopnbody_Body *elements,
@@ -325,7 +325,7 @@ abstract class KernelWriter extends BlockWriter{
 
 
                JavaType type = TypeHelper.getJavaType(lvi.getVariableDescriptor());
-               // String classModelType = type.getSignature();
+               // String classModelType = prefix.getSignature();
                String output;
                boolean isObjectLambda = false;
                if(type.isArray()){
@@ -335,7 +335,7 @@ abstract class KernelWriter extends BlockWriter{
                      //classModelType = __global + " " + (classModelType.substring(2, classModelType.length() - 1)).replace("/", "_");
                      output = __global + " " + type.getMangledClassName();
                   }else{
-                     // Basic type array
+                     // Basic prefix array
                      output = __global + " " + type.getJavaName()    ;
                   }
                }else if(type.isPrimitive()){
@@ -429,7 +429,7 @@ abstract class KernelWriter extends BlockWriter{
       }
 
       for(ClassModelField field : _entryPoint.getReferencedClassModelFields()){
-         // Field field = _entryPoint.getClassModel().getField(f.getName());
+         // Field field = _entryPoint.getClassModel().getField(f.getHSAName());
          StringBuilder thisStructLine = new StringBuilder();
          StringBuilder argLine = new StringBuilder();
          StringBuilder assignLine = new StringBuilder();
@@ -559,7 +559,7 @@ abstract class KernelWriter extends BlockWriter{
                totalSize += fSize;
 
                String cType = convertType(field.getNameAndTypeEntry().getDescriptorUTF8Entry().getUTF8(), true);
-               assert cType != null : "could not find type for " + field.getNameAndTypeEntry().getDescriptorUTF8Entry().getUTF8();
+               assert cType != null : "could not find prefix for " + field.getNameAndTypeEntry().getDescriptorUTF8Entry().getUTF8();
                writeLn(cType + " " + field.getNameAndTypeEntry().getNameUTF8Entry().getUTF8() + ";");
             }
 

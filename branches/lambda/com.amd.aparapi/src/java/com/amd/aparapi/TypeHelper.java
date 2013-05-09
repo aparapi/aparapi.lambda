@@ -207,7 +207,7 @@ public class TypeHelper{
             }
             break;
             default:
-               throw new IllegalStateException("invalid type!");
+               throw new IllegalStateException("invalid prefix!");
          }
       }
 
@@ -292,138 +292,122 @@ public class TypeHelper{
 
 
    static final Map<String, JavaType> typeMap = new HashMap<String, JavaType>();
-
-   static synchronized JavaType getJavaType(String _signature){
-      JavaType type = typeMap.get(_signature);
-      if (type == null){
-         type = new JavaType(_signature);
-         typeMap.put(_signature, type)  ;
-      }
-      return(type);
-   }
-
-   static synchronized JavaType getJavaType(Class _class){
-      JavaType newType = new JavaType(_class);
-      JavaType type = typeMap.get(newType.getSignature());
-      if (type == null){
-
-         typeMap.put(newType.getSignature(), newType)  ;
-      }
-      return(type);
-   }
-
-    static synchronized JavaType getJavaType(InstructionSet.TypeSpec _typeSpec){
-        JavaType newType = new JavaType(_typeSpec);
-        JavaType type = typeMap.get(newType.getSignature());
-        if (type == null){
-
-            typeMap.put(newType.getSignature(), newType)  ;
-        }
-        return(type);
+    static{
+        typeMap.put(PrimitiveType.u1.getSig(), new JavaType(PrimitiveType.u1));// boolean
+        typeMap.put(PrimitiveType.s8.getSig(), new JavaType(PrimitiveType.s8));// byte
+        typeMap.put(PrimitiveType.s16.getSig(), new JavaType(PrimitiveType.s16));// short
+        typeMap.put(PrimitiveType.u16.getSig(), new JavaType(PrimitiveType.u16));// char
+        typeMap.put(PrimitiveType.s32.getSig(), new JavaType(PrimitiveType.s32));// int
+        typeMap.put(PrimitiveType.f32.getSig(), new JavaType(PrimitiveType.f32));// float
+        typeMap.put(PrimitiveType.s64.getSig(), new JavaType(PrimitiveType.s64));// long
+        typeMap.put(PrimitiveType.f64.getSig(), new JavaType(PrimitiveType.f64));// double
     }
 
+
+   static String createSignature(Class _clazz){
+       String arrayPrefix = "";
+       String signature = null;
+       Class componentType = _clazz;
+       if(_clazz.isArray()){
+
+           componentType = _clazz.getComponentType();
+           int arrayDimensions = _clazz.getName().lastIndexOf('[') + 1;
+           arrayPrefix = _clazz.getName().substring(0, arrayDimensions);
+       }
+       for (PrimitiveType p:PrimitiveType.javaPrimitiveTypes){
+           if (p.getClazz().equals(componentType)){
+               signature = arrayPrefix+p.getSig();
+               break;
+           }
+       }
+       if (signature == null){
+           signature = arrayPrefix + CLASS_START + dotClassNameToSlashClassName(_clazz.getName()) + CLASS_END;
+       }
+       return(signature);
+   }
+
+    static String createSignature(PrimitiveType _primitiveType){
+       return(_primitiveType.getSig());
+    }
+
+
+    static synchronized JavaType getJavaType(String _signature){
+       JavaType type = typeMap.get(_signature);
+           if (type == null){
+               type = new JavaType(_signature);
+               typeMap.put(_signature, type)  ;
+           }
+
+      return(type);
+   }
+
+   static synchronized JavaType getJavaType(Class _clazz){
+      String signature = createSignature(_clazz);
+      return(getJavaType(signature));
+   }
 
     static class JavaType {
       private int arrayDimensions = 0;
       private String signature;
+      private Type type;
 
-      private JavaType(String _signature){
-         signature = _signature;
-
-         while(signature.charAt(arrayDimensions) == ARRAY_DIM){
-            arrayDimensions++;
-         }
-         signature = signature.substring(arrayDimensions);
-      }
-
-        private JavaType(InstructionSet.TypeSpec _typeSpec) {
-            switch(_typeSpec){
-                case A:
-                    signature = "?"; arrayDimensions = 1; break;
-
-                default: signature = _typeSpec.name();
-            }
+        private JavaType(PrimitiveType _primitiveType){
+            signature = createSignature(_primitiveType);
+            arrayDimensions =  signature.startsWith("[")? signature.lastIndexOf('[')+1:0;
+            type = _primitiveType;
 
         }
 
+        PrimitiveType getPrimitiveType(){
+            return((PrimitiveType)type);
+        }
 
-      private JavaType(Class<?> _clazz){
-         Class componentType;
-         String arrayPrefix = "";
-         if(_clazz.isArray()){
-            componentType = _clazz.getComponentType();
-            arrayDimensions = _clazz.getName().lastIndexOf('[') + 1;
-            arrayPrefix = _clazz.getName().substring(0, arrayDimensions);
-         }else{
-            componentType = _clazz;
-         }
-
-
-         if(componentType == int.class){
-            signature = arrayPrefix + INT;
-         }else if(componentType == float.class){
-            signature = arrayPrefix + FLOAT;
-         }else if(componentType == double.class){
-            signature = arrayPrefix + DOUBLE;
-         }else if(componentType == long.class){
-            signature = arrayPrefix + LONG;
-         }else if(componentType == char.class){
-            signature = arrayPrefix + CHAR;
-         }else if(componentType == byte.class){
-            signature = arrayPrefix + BYTE;
-         }else if(componentType == short.class){
-            signature = arrayPrefix + SHORT;
-         }else if(componentType == void.class){
-            signature = arrayPrefix + VOID;
-         }else if(componentType == boolean.class){
-            signature = arrayPrefix + BOOLEAN;
-         }else{
-            // its an object or an array of objects
-            signature = arrayPrefix + CLASS_START + dotClassNameToSlashClassName(_clazz.getName()) + CLASS_END;
-         }
-
+        Type getType(){
+            return(type);
+        }
+      private JavaType(String _signature){
+         arrayDimensions =  _signature.startsWith("[")? _signature.lastIndexOf('[')+1:0;
+         signature = _signature.substring(arrayDimensions);
       }
-
-
 
       String getSignature(){
          return (signature);
       }
 
       boolean isVoid(){
-         return (signature.charAt(0) == VOID);
+         return (type instanceof v);
       }
 
       boolean isInt(){
-         return (signature.charAt(0) == INT);
+         return (type instanceof s32);
       }
 
       boolean isLong(){
-         return (signature.charAt(0) == LONG);
+         return (type instanceof s64);
       }
 
       boolean isShort(){
-         return (signature.charAt(0) == SHORT);
+         return (type instanceof s16);
       }
 
       boolean isBoolean(){
-         return (signature.charAt(0) == BOOLEAN);
+         return (type instanceof u1);
       }
 
       boolean isChar(){
-         return (signature.charAt(0) == CHAR);
+         return (type instanceof u16);
       }
 
       boolean isFloat(){
-         return (signature.charAt(0) == FLOAT);
+         return (type instanceof f32);
       }
 
       boolean isDouble(){
-         return (signature.charAt(0) == DOUBLE);
+         return (type instanceof f64);
       }
 
       boolean isByte(){
-         return (signature.charAt(0) == BYTE);
+         return (type instanceof s8);
       }
 
       boolean isObject(){
@@ -512,17 +496,18 @@ public class TypeHelper{
           if(isArray()){
               javaName = primitiveCharToJavaName(signature.charAt(0));
           }else if(isPrimitive() || isVoid()){
-            javaName = primitiveCharToJavaName(signature.charAt(0));
+            javaName = getPrimitiveType().getJavaName();
          }else if(isObject()){
             javaName = getObjectClassName();
          }
          return (javaName);
       }
 
-      public boolean matches(Class<?> _type){
-         String javaName = getJavaName();
-         return (_type.getName().equals(javaName));
-      }
+     //We should not need this now.  Object identity is guarenteed because we use a factory...
+    //  @Override public boolean equals(Object _other){
+    //     return (_other instanceof JavaType && ((JavaType)_other).signature==signature);
+
+    //  }
 
       @Override public String toString(){
            StringBuilder sb = new StringBuilder(getJavaName());
@@ -687,8 +672,6 @@ public class TypeHelper{
             }
 
          }
-          System.out.println("method signature of "+_signature+" = "+returnType+" method( "+argList+")");
-
          args = argList.toArray(new Arg[0]);
       }
 
@@ -702,7 +685,7 @@ public class TypeHelper{
       }
 
       public boolean matches(Method _method){
-         return (returnType.matches(_method.getReturnType()));
+         return(returnType == getJavaType(_method.getReturnType()));
       }
 
    }

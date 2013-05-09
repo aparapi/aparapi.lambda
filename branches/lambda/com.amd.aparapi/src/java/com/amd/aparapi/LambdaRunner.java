@@ -372,7 +372,7 @@ class LambdaRunner extends OpenCLRunner{
       boolean didReallocate = false;
 
       if(lambdaKernelCall.isObjectLambda()){
-         // Use the actual type of the object stream source array
+         // Use the actual prefix of the object stream source array
          arrayClass = objectLambdaSourceArray.getClass();
       }else{
          arrayClass = arg.field.getType();
@@ -383,7 +383,7 @@ class LambdaRunner extends OpenCLRunner{
 
 
          if(logger.isLoggable(Level.FINE)){
-            logger.fine("looking for type = " + arrayClassInDotForm);
+            logger.fine("looking for prefix = " + arrayClassInDotForm);
          }
 
          // get ClassModel of obj array from entrypt.objectArrayFieldsClasses
@@ -398,7 +398,7 @@ class LambdaRunner extends OpenCLRunner{
       int arrayScale = UnsafeWrapper.arrayIndexScale(arrayClass);
 
       if(logger.isLoggable(Level.FINEST)){
-         logger.finest("Syncing obj array type = " + arrayClass + " cvtd= " + c.getDotClassName()
+         logger.finest("Syncing obj array prefix = " + arrayClass + " cvtd= " + c.getDotClassName()
                + "arrayBaseOffset=" + arrayBaseOffset + " arrayScale=" + arrayScale);
       }
 
@@ -485,7 +485,7 @@ class LambdaRunner extends OpenCLRunner{
                }
                default:
                   assert true == false : "typespec did not match anything";
-                  throw new AparapiException("Unhandled type in buffer conversion");
+                  throw new AparapiException("Unhandled prefix in buffer conversion");
             }
          }
 
@@ -514,7 +514,7 @@ class LambdaRunner extends OpenCLRunner{
       Class<?> arrayClass = null;
 
       if(lambdaKernelCall.isObjectLambda()){
-         // Use the actual type of the object stream source array
+         // Use the actual prefix of the object stream source array
          arrayClass = objectLambdaSourceArray.getClass();
       }else{
          arrayClass = arg.field.getType();
@@ -527,7 +527,7 @@ class LambdaRunner extends OpenCLRunner{
       int arrayBaseOffset = UnsafeWrapper.arrayBaseOffset(arrayClass);
       int arrayScale = UnsafeWrapper.arrayIndexScale(arrayClass);
       if(logger.isLoggable(Level.FINEST)){
-         logger.finest("Syncing field:" + arg.name + ", bb=" + arg.objArrayByteBuffer + ", type = " + arrayClass);
+         logger.finest("Syncing field:" + arg.name + ", bb=" + arg.objArrayByteBuffer + ", prefix = " + arrayClass);
       }
 
       int objArraySize = 0;
@@ -602,7 +602,7 @@ class LambdaRunner extends OpenCLRunner{
                }
                default:
                   assert true == false : "typespec did not match anything";
-                  throw new AparapiException("Unhandled type in buffer conversion");
+                  throw new AparapiException("Unhandled prefix in buffer conversion");
             }
          }
 
@@ -652,8 +652,8 @@ class LambdaRunner extends OpenCLRunner{
                   arg.numElements = Array.getLength(newArrayRef);
                   arg.sizeInBytes = arg.numElements * arg.primitiveSize;
 
-                  //                  if (((args[i].type & ARG_EXPLICIT) != 0) && puts.contains(newArrayRef)) {
-                  //                     args[i].type |= ARG_EXPLICIT_WRITE;
+                  //                  if (((args[i].prefix & ARG_EXPLICIT) != 0) && puts.contains(newArrayRef)) {
+                  //                     args[i].prefix |= ARG_EXPLICIT_WRITE;
                   //                     // System.out.println("detected an explicit write " + args[i].name);
                   //                     puts.remove(newArrayRef);
                   //                  }
@@ -811,7 +811,7 @@ class LambdaRunner extends OpenCLRunner{
             : (currArg.type & ARG_LONG) != 0 ? 8 : (currArg.type & ARG_DOUBLE) != 0 ? 8 : 0);
 
       if(logger.isLoggable(Level.FINE)){
-         logger.fine("prepareOneArg : " + currArg.name + ", type=" + Integer.toHexString(currArg.type)
+         logger.fine("prepareOneArg : " + currArg.name + ", prefix=" + Integer.toHexString(currArg.type)
                + ", primitiveSize=" + currArg.primitiveSize);
       }
 

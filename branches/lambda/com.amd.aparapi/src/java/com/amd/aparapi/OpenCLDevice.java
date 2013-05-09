@@ -82,7 +82,7 @@ public class OpenCLDevice extends Device{
          s.append(workItemSize);
       }
       s.append("}");
-      return ("Device " + deviceId + "\n  type:" + type + "\n  maxComputeUnits=" + maxComputeUnits + "\n  maxWorkItemDimensions="
+      return ("Device " + deviceId + "\n  prefix:" + type + "\n  maxComputeUnits=" + maxComputeUnits + "\n  maxWorkItemDimensions="
             + maxWorkItemDimensions + "\n  maxWorkItemSizes=" + s + "\n  maxWorkWorkGroupSize=" + maxWorkGroupSize
             + "\n  globalMemSize=" + globalMemSize + "\n  localMemSize=" + localMemSize);
    }
@@ -319,7 +319,7 @@ public class OpenCLDevice extends Device{
                if(!isReservedInterfaceMethod(m)){
                   for(Annotation a : m.getAnnotations()){
                      //  System.out.println("   annotation "+a);
-                     // System.out.println("   annotation type " + a.annotationType());
+                     // System.out.println("   annotation prefix " + a.annotationType());
                      if(a instanceof OpenCL.Kernel){
                         sourceBuilder.append("__kernel void " + m.getName() + "(");
                         List<OpenCLArgDescriptor> args = getArgs(m);

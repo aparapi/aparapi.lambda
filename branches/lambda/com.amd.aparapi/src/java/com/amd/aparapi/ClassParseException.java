@@ -61,10 +61,10 @@ public class ClassParseException extends AparapiException{
       RECURSION("We don't support recursion"), //
       UNSUPPORTEDBYTECODE("This bytecode is not supported"), //
       OPERANDCONSUMERPRODUCERMISSMATCH("Detected an non-reducable operand consumer/producer mismatch"), //
-      BADGETTERTYPEMISMATCH("Getter return type does not match field var type"), //
+      BADGETTERTYPEMISMATCH("Getter return prefix does not match field var prefix"), //
       BADGETTERNAMEMISMATCH("Getter name does not match fiels name"), //
       BADGETTERNAMENOTFOUND("Getter not found"), //
-      BADSETTERTYPEMISMATCH("Setter arg type does not match field var type"), //
+      BADSETTERTYPEMISMATCH("Setter arg prefix does not match field var prefix"), //
       EXCEPTION("We don't support catch blocks"), //
       ARRAYLOCALVARIABLE("Found an array local variable which assumes that we will alias a field array"), //
       CONFUSINGBRANCHESPOSSIBLYCONTINUE("we don't support continue"), //
