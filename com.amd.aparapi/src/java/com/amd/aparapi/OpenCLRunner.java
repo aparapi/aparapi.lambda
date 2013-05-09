@@ -66,7 +66,7 @@ class OpenCLRunner{
    protected static Logger logger = Logger.getLogger(Config.getLoggerName());
 
    /**
-    * This 'bit' indicates that a particular <code>KernelArg</code> represents a <code>boolean</code> type (array or primitive).
+    * This 'bit' indicates that a particular <code>KernelArg</code> represents a <code>boolean</code> prefix (array or primitive).
     *
     * @author gfrost
     * @see com.amd.aparapi.Annotations.UsedByJNICode
@@ -76,7 +76,7 @@ class OpenCLRunner{
    public static final int ARG_BOOLEAN = 1 << 0;
 
    /**
-    * This 'bit' indicates that a particular <code>KernelArg</code> represents a <code>byte</code> type (array or primitive).
+    * This 'bit' indicates that a particular <code>KernelArg</code> represents a <code>byte</code> prefix (array or primitive).
     *
     * @author gfrost
     * @see com.amd.aparapi.Annotations.UsedByJNICode
@@ -86,7 +86,7 @@ class OpenCLRunner{
    public static final int ARG_BYTE = 1 << 1;
 
    /**
-    * This 'bit' indicates that a particular <code>KernelArg</code> represents a <code>float</code> type (array or primitive).
+    * This 'bit' indicates that a particular <code>KernelArg</code> represents a <code>float</code> prefix (array or primitive).
     *
     * @author gfrost
     * @see com.amd.aparapi.Annotations.UsedByJNICode
@@ -96,7 +96,7 @@ class OpenCLRunner{
    public static final int ARG_FLOAT = 1 << 2;
 
    /**
-    * This 'bit' indicates that a particular <code>KernelArg</code> represents a <code>int</code> type (array or primitive).
+    * This 'bit' indicates that a particular <code>KernelArg</code> represents a <code>int</code> prefix (array or primitive).
     *
     * @author gfrost
     * @see com.amd.aparapi.Annotations.UsedByJNICode
@@ -106,7 +106,7 @@ class OpenCLRunner{
    public static final int ARG_INT = 1 << 3;
 
    /**
-    * This 'bit' indicates that a particular <code>KernelArg</code> represents a <code>double</code> type (array or primitive).
+    * This 'bit' indicates that a particular <code>KernelArg</code> represents a <code>double</code> prefix (array or primitive).
     *
     * @author gfrost
     * @see com.amd.aparapi.Annotations.UsedByJNICode
@@ -116,7 +116,7 @@ class OpenCLRunner{
    public static final int ARG_DOUBLE = 1 << 4;
 
    /**
-    * This 'bit' indicates that a particular <code>KernelArg</code> represents a <code>long</code> type (array or primitive).
+    * This 'bit' indicates that a particular <code>KernelArg</code> represents a <code>long</code> prefix (array or primitive).
     *
     * @author gfrost
     * @see com.amd.aparapi.Annotations.UsedByJNICode
@@ -286,7 +286,7 @@ class OpenCLRunner{
    // @UsedByJNICode public static final int ARG_APARAPI_BUF_IS_DIRECT = 1 << 20;
 
    /**
-    * This 'bit' indicates that a particular <code>KernelArg</code> represents a <code>char</code> type (array or primitive).
+    * This 'bit' indicates that a particular <code>KernelArg</code> represents a <code>char</code> prefix (array or primitive).
     *
     * @author rlamothe
     * @see com.amd.aparapi.Annotations.UsedByJNICode
@@ -418,7 +418,7 @@ class OpenCLRunner{
    static protected class KernelArg{
 
       /**
-       * The type of this KernelArg. Created by oring appropriate flags
+       * The prefix of this KernelArg. Created by oring appropriate flags
        */
       @UsedByJNICode
       public int type;

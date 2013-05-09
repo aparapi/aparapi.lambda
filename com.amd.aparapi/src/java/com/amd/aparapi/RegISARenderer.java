@@ -92,11 +92,16 @@ public class RegISARenderer{
    }
 
    public RegISARenderer typeName(RegISA.Reg _reg){
-      return (this.append(_reg.type.getTypeName()));
+      return (this.append(_reg.type.getHSAName()));
    }
 
    public RegISARenderer regName(RegISA.Reg _reg){
-      return (this.append(_reg.type.getRegName(_reg.index)));
+      switch (_reg.type.getBits()){
+          case 32: append("s");break;
+          case 64: append("d");break;
+          default: append("?");break;
+      }
+      return (this.append(_reg.index));
    }
 
    public RegISARenderer i(Instruction from){

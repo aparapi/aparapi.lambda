@@ -186,12 +186,12 @@ class Entrypoint{
             return field;
          }
          if(logger.isLoggable(Level.FINE)){
-            logger.fine("field type is " + type.getName());
+            logger.fine("field prefix is " + type.getName());
          }
          throw new ClassParseException(ClassParseException.TYPE.OBJECTFIELDREFERENCE);
       }catch(NoSuchFieldException nsfe){
          // This should be looger fine...
-         //System.out.println("no " + _name + " in " + _clazz.getName());
+         //System.out.println("no " + _name + " in " + _clazz.getHSAName());
       }
 
       Class<?> mySuper = _clazz.getSuperclass();
@@ -204,14 +204,14 @@ class Entrypoint{
 
       // For the jambi demo, we are not operating on Kernel subclass, keep looking
       while((!mySuper.getName().equals(Object.class.getName())) /* &&
-            (!mySuper.getName().equals(Kernel.class.getName())) */){
+            (!mySuper.getHSAName().equals(Kernel.class.getHSAName())) */){
          try{
             field = mySuper.getDeclaredField(_name);
             int modifiers = field.getModifiers();
             if((Modifier.isStatic(modifiers) == false) && (Modifier.isPrivate(modifiers) == false)){
                Class<?> type = field.getType();
                if(logger.isLoggable(Level.FINE)){
-                  logger.fine("field type is " + type.getName());
+                  logger.fine("field prefix is " + type.getName());
                }
                if(type.isPrimitive() || type.isArray()){
                   return field;
@@ -400,7 +400,7 @@ class Entrypoint{
          if(!found){
             structMemberSet.add(field);
             if(logger.isLoggable(Level.FINE)){
-               logger.fine("Adding assigned field " + field.getNameAndTypeEntry().getNameUTF8Entry().getUTF8() + " type: "
+               logger.fine("Adding assigned field " + field.getNameAndTypeEntry().getNameUTF8Entry().getUTF8() + " prefix: "
                      + field.getNameAndTypeEntry().getDescriptorUTF8Entry().getUTF8() + " to "
                      + memberClassModel.getDotClassName());
             }
@@ -449,7 +449,7 @@ class Entrypoint{
          ClassModel otherClassModel = getOrUpdateAllClassAccesses(otherDotClassName);
 
          //if (logger.isLoggable(Level.FINE)) {
-         //   logger.fine("Looking for: " + methodEntry + " in other class " + otherClass.getName());
+         //   logger.fine("Looking for: " + methodEntry + " in other class " + otherClass.getHSAName());
          //}
          // false because INVOKESPECIAL not allowed here
          m = otherClassModel.getMethod(methodEntry, false);
@@ -629,7 +629,7 @@ class Entrypoint{
 
                   // String signature = field.getNameAndTypeEntry().getDescriptorUTF8Entry().getUTF8();
                   if(logger.isLoggable(Level.FINE)){
-                     logger.fine("AccessField field type= " + accessedFieldType + " in " + methodModel.getName());
+                     logger.fine("AccessField field prefix= " + accessedFieldType + " in " + methodModel.getName());
                   }
 
                   // Add the class model for the referenced obj array

@@ -222,7 +222,7 @@ public class ClassModel{
       FIELD(9, 1, "field"), //9
       METHOD(10, 1, "method"), //10
       INTERFACEMETHOD(11, 1, "interface_method"), //11
-      NAMEANDTYPE(12, 1, "name and type"), //12
+      NAMEANDTYPE(12, 1, "name and prefix"), //12
       UNUSED13(13, 1, "unused13"),
       UNUSED14(14, 1, "unused14"),
       METHODHANDLE(15, 1, "method_handle"), //15
@@ -1434,7 +1434,7 @@ public class ClassModel{
                vars[i + thisOffset] = new Var(argsAsStoreSpecs[i + thisOffset], currSlotIndex, 0, true);
                currSlotIndex += argsAsStoreSpecs[i + thisOffset].getTypeSpec().getSlots(); // 1 for most 2 for Long/Double
 
-               // Preserve actual object type
+               // Preserve actual object prefix
                if(argsAsStoreSpecs[i + thisOffset] == InstructionSet.StoreSpec.A ){
                   vars[i + thisOffset].descriptor = args[i].getJavaType().getSignature();
                }
@@ -2526,7 +2526,11 @@ public class ClassModel{
 
                    for (int pi=0; pi<prodcount; pi++){
                       TypeSpec typeSpec = typeSpecs[pi];
-                      consumedInstructionTypeStack.push(i, TypeHelper.getJavaType(typeSpec));
+                      if (typeSpec.isPrimitiveType()){
+                         consumedInstructionTypeStack.push(i, TypeHelper.getJavaType(typeSpec.getPrimitiveType().getSig()));
+                      }  else if (typeSpec.equals(TypeSpec.A)){
+                         consumedInstructionTypeStack.push(i, TypeHelper.getJavaType("[?"));
+                      }
                    }
                 }
 
@@ -2794,7 +2798,7 @@ public class ClassModel{
    ClassModelMethod getMethod(MethodEntry _methodEntry, boolean _isSpecial){
       String entryClassNameInDotForm = _methodEntry.getClassEntry().getDotClassName();
 
-      // Shortcut direct calls to supers to allow "foo() { super.foo() }" type stuff to work
+      // Shortcut direct calls to supers to allow "foo() { super.foo() }" prefix stuff to work
       if(_isSpecial && (superClazzModel != null) && superClazzModel.isSuperClass(entryClassNameInDotForm)){
          if(logger.isLoggable(Level.FINE)){
             logger.fine("going to look in super:" + superClazzModel.getDotClassName() + " on behalf of "

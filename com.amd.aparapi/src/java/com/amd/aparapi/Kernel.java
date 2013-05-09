@@ -568,7 +568,7 @@ public abstract class Kernel implements Cloneable{
     * <p/>
     * When a <code>Kernel.execute(int globalSize, int passes)</code> is invoked for a particular kernel, the runtime will break the work into various 'groups'.
     * <p/>
-    * A kernel can use <code>getPassId()</code> to determine which pass we are in.  This is ideal for 'reduce' type phases
+    * A kernel can use <code>getPassId()</code> to determine which pass we are in.  This is ideal for 'reduce' prefix phases
     *
     * @return The groupId for this Kernel being executed
     * @see #getLocalId()
@@ -1852,7 +1852,7 @@ public abstract class Kernel implements Cloneable{
       String mappedName = null;
       String methodName = _methodReferenceEntry.getNameAndTypeEntry().getNameUTF8Entry().getUTF8();
       String methodClass = _methodReferenceEntry.getClassEntry().getNameUTF8Entry().getUTF8();
-     // if(methodClass.equals(Kernel.class.getName())){
+     // if(methodClass.equals(Kernel.class.getHSAName())){
          ArgsAndReturnType methodArgsAndReturnType = _methodReferenceEntry.getArgsAndReturnType();
          JavaType methodReturnType = methodArgsAndReturnType.getReturnType();
 
@@ -1921,7 +1921,7 @@ public abstract class Kernel implements Cloneable{
    static boolean usesAtomic64(MethodReferenceEntry methodReferenceEntry){
       //for (java.lang.reflect.Method kernelMethod : Kernel.class.getDeclaredMethods()) {
       //   if (kernelMethod.isAnnotationPresent(Kernel.OpenCLMapping.class)) {
-      //      if (methodReferenceEntry.getNameAndTypeEntry().getNameUTF8Entry().getUTF8().equals(kernelMethod.getName())) {
+      //      if (methodReferenceEntry.getNameAndTypeEntry().getNameUTF8Entry().getUTF8().equals(kernelMethod.getHSAName())) {
       //         OpenCLMapping annotation = kernelMethod.getAnnotation(Kernel.OpenCLMapping.class);
       //           return annotation.atomic64();
       //      }

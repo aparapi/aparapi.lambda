@@ -50,23 +50,23 @@ class InstructionSet{
 
 
    static enum TypeSpec{
-      NONE("none", "none", 0, 0), //
-      Z("Z", "boolean", 4, 1), // Note 'Z' is the java code for 'boolean' type
-      C("C", "char", 2, 1), //
-      F("F", "float", 4, 1), //
-      D("D", "double", 8, 2), //
-      B("B", "byte", 1, 1), //
-      S("S", "short", 2, 1), //
-      I("I", "int", 4, 1), //
-      L("J", "long", 8, 2), //
+      NONE("none", "none", 0, 0, PrimitiveType.none), //
+      V("V", "void", 0, 0, PrimitiveType.v), //
+      Z("Z", "boolean", 4, 1, PrimitiveType.u1), //
+      C("C", "char", 2, 1, PrimitiveType.u16), //
+      F("F", "float", 4, 1,  PrimitiveType.f32), //
+      D("D", "double", 8, 2,  PrimitiveType.f64), //
+      B("B", "byte", 1, 1,  PrimitiveType.s8), //
+      S("S", "short", 2, 1,  PrimitiveType.s16), //
+      I("I", "int", 4, 1,   PrimitiveType.s32), //
+      L("J", "long", 8, 2,   PrimitiveType.s64), //
       A("A", "array", 4, 1), //
-      //O("O", "object", 4, 1),
-      N("N", "null", 4, 1),
-      IorForS("IorForS", "int, float or String depending on constant pool entry", 4, 1),
-      LorD("LorD", "long or float depending upon the constant pool entry", 8, 2),
-      RA("RA", "return address", 4, 1),
-      UNKNOWN("UNKNOWN", "unknown", -1, -1),
-      ARGS("ARGS", "args to method call", -1, -1);
+      N("N", "null", 4, 1), //
+      IorForS("IorForS", "int, float or String depending on constant pool entry", 4, 1),   //
+      LorD("LorD", "long or float depending upon the constant pool entry", 8, 2),  //
+      RA("RA", "return address", 4, 1), //
+      UNKNOWN("UNKNOWN", "unknown", -1, -1), //
+      ARGS("ARGS", "args to method call", -1, -1);   //
 
       private String longName;
 
@@ -76,12 +76,20 @@ class InstructionSet{
 
       private int slots;
 
-      TypeSpec(String _shortName, String _longName, int _size, int _slots){
+      PrimitiveType primitiveType;
+
+
+      TypeSpec(String _shortName, String _longName, int _size, int _slots, PrimitiveType _primitiveType){
          shortName = _shortName;
          longName = _longName;
          size = _size;
          slots = _slots;
+         primitiveType = _primitiveType;
       }
+
+       TypeSpec(String _shortName, String _longName, int _size, int _slots){
+          this (_shortName, _longName, _size, _slots, null);
+       }
 
       int getSize(){
          return (size);
@@ -99,6 +107,13 @@ class InstructionSet{
          return (shortName);
       }
 
+       public PrimitiveType getPrimitiveType() {
+           return primitiveType;
+       }
+
+       public boolean isPrimitiveType() {
+           return primitiveType != null;
+       }
    }
 
    static enum LoadSpec{
@@ -350,7 +365,7 @@ class InstructionSet{
    }
 
    static enum ByteCode{
-      // name, operation type, immediateOperands, pop operands, push operands
+      // name, operation prefix, immediateOperands, pop operands, push operands
       NOP(null, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.NONE, PopSpec.NONE, PushSpec.NONE, Operator.NONE), //
       ACONST_NULL(I_ACONST_NULL.class, PushSpec.N), //
       ICONST_M1(I_ICONST_M1.class, PushSpec.I), //
@@ -3809,7 +3824,7 @@ class InstructionSet{
       }
 
       @Override String getDescription(){
-         return ("new array simple type");
+         return ("new array simple prefix");
       }
 
       int getType(){
