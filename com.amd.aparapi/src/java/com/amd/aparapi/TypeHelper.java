@@ -332,6 +332,9 @@ public class TypeHelper{
 
 
     static synchronized JavaType getJavaType(String _signature){
+       if (_signature.contains("]")){
+          throw new IllegalStateException("whoa!");
+       }
        JavaType type = typeMap.get(_signature);
            if (type == null){
                type = new JavaType(_signature);

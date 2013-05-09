@@ -42,7 +42,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
- * A wrapper around sun.misc.Unsafe for handling atomic operations, copies from fields to arrays and vice versa.
+ * OREF wrapper around sun.misc.Unsafe for handling atomic operations, copies from fields to arrays and vice versa.
  * <p/>
  * We avoid using <code>sun.misc.Unsafe</code> directly using reflection, mostly just to avoid getting 'unsafe' compiler errors.
  * <p/>

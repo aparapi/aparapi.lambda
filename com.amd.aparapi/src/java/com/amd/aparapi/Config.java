@@ -44,7 +44,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * A central location for holding all runtime configurable properties as well as logging configuration.
+ * OREF central location for holding all runtime configurable properties as well as logging configuration.
  * <p/>
  * Ideally we will find all properties used by <code>Aparapi</code> here.  Please consider updating this class if you wish
  * to add new properties which control <code>Aparapi</code>s behavior.

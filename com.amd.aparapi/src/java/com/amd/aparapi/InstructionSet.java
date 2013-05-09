@@ -60,14 +60,14 @@ class InstructionSet{
       S("S", "short", 2, 1,  PrimitiveType.s16), //
       I("I", "int", 4, 1,   PrimitiveType.s32), //
       L("J", "long", 8, 2,   PrimitiveType.s64), //
-      A("A", "array", 4, 1), //
+      OREF("REF", "ref (array or object) ref", 4, 1, PrimitiveType.u64), //
       N("N", "null", 4, 1), //
       IorForS("IorForS", "int, float or String depending on constant pool entry", 4, 1),   //
       LorD("LorD", "long or float depending upon the constant pool entry", 8, 2),  //
       RA("RA", "return address", 4, 1), //
-      UNKNOWN("UNKNOWN", "unknown", -1, -1), //
-      ARGS("ARGS", "args to method call", -1, -1);   //
-
+      ANY("ANY", "any primitive or reference type", -1, -1),//
+      ARGS("ARGS", "args to method call", -1, -1),   //
+      DIMS("DIMS", "dims for multi array new", -1, -1); //
       private String longName;
 
       private String shortName;
@@ -122,8 +122,7 @@ class InstructionSet{
       D(TypeSpec.D), // Double
       I(TypeSpec.I), // Integer
       L(TypeSpec.L), // Long
-      A(TypeSpec.A); // Array
-    //  O(TypeSpec.O); // Object
+      OREF(TypeSpec.OREF); // Array or Object
       TypeSpec typeSpec=  TypeSpec.NONE;
       LoadSpec(TypeSpec _typeSpec){
          typeSpec= _typeSpec;
@@ -139,8 +138,7 @@ class InstructionSet{
       D(TypeSpec.D), // Double
       I(TypeSpec.I), // Integer
       L(TypeSpec.L), // Long
-      A(TypeSpec.A); // Array
-      //O(TypeSpec.O); // Object
+      OREF(TypeSpec.OREF); // Array or Object
       TypeSpec typeSpec=  TypeSpec.NONE;
       StoreSpec(TypeSpec _typeSpec){
          typeSpec= _typeSpec;
@@ -251,7 +249,6 @@ class InstructionSet{
 
    static enum PushSpec{
       NONE, //
-      UNKNOWN, //
       I(TypeSpec.I), //
       II(TypeSpec.I, TypeSpec.I), //
       III(TypeSpec.I, TypeSpec.I, TypeSpec.I), //
@@ -261,13 +258,12 @@ class InstructionSet{
       L(TypeSpec.L), //
       F(TypeSpec.F), //
       D(TypeSpec.D), //
-     // O(TypeSpec.O), //
-      A(TypeSpec.A), //
+      OREF(TypeSpec.OREF), //
       N(TypeSpec.N), //
       IorForS(TypeSpec.IorForS), //
       LorD(TypeSpec.LorD), //
-      RA(TypeSpec.RA);
-
+      RA(TypeSpec.RA),//
+      ANY(TypeSpec.ANY);//
       PushSpec(TypeSpec... _types){
          types = _types;
       }
@@ -285,7 +281,6 @@ class InstructionSet{
 
    static enum PopSpec{
       NONE, //
-      UNKNOWN(TypeSpec.UNKNOWN), //
       I(TypeSpec.I), //
       II(TypeSpec.I, TypeSpec.I), //
       III(TypeSpec.I, TypeSpec.I, TypeSpec.I), //
@@ -298,21 +293,23 @@ class InstructionSet{
       D(TypeSpec.D), //
       DD(TypeSpec.D, TypeSpec.D), //
      // O(TypeSpec.O), //
-      AA(TypeSpec.A, TypeSpec.A), //
-      A(TypeSpec.A), //
-      AI(TypeSpec.A, TypeSpec.I), //
-      AII(TypeSpec.A, TypeSpec.I, TypeSpec.I), //
-      AIF(TypeSpec.A, TypeSpec.I, TypeSpec.F), //
-      AID(TypeSpec.A, TypeSpec.I, TypeSpec.D), //
-      AIL(TypeSpec.A, TypeSpec.I, TypeSpec.L), //
-      AIC(TypeSpec.A, TypeSpec.I, TypeSpec.C), //
-      AIS(TypeSpec.A, TypeSpec.I, TypeSpec.S), //
-      AIB(TypeSpec.A, TypeSpec.I, TypeSpec.B), //
-      AIA(TypeSpec.A, TypeSpec.I, TypeSpec.A), //
+      AA(TypeSpec.OREF, TypeSpec.OREF), //
+      A(TypeSpec.OREF), //
+      AI(TypeSpec.OREF, TypeSpec.I), //
+      AII(TypeSpec.OREF, TypeSpec.I, TypeSpec.I), //
+      AIF(TypeSpec.OREF, TypeSpec.I, TypeSpec.F), //
+      AID(TypeSpec.OREF, TypeSpec.I, TypeSpec.D), //
+      AIL(TypeSpec.OREF, TypeSpec.I, TypeSpec.L), //
+      AIC(TypeSpec.OREF, TypeSpec.I, TypeSpec.C), //
+      AIS(TypeSpec.OREF, TypeSpec.I, TypeSpec.S), //
+      AIB(TypeSpec.OREF, TypeSpec.I, TypeSpec.B), //
+      AIA(TypeSpec.OREF, TypeSpec.I, TypeSpec.OREF), //
       LI(TypeSpec.L, TypeSpec.I), //
-      OUNKNOWN(TypeSpec.A, TypeSpec.UNKNOWN), //
+      OREF_ANY(TypeSpec.OREF, TypeSpec.ANY), //
       ARGS(TypeSpec.ARGS), //
-      OARGS(TypeSpec.A, TypeSpec.ARGS), //
+      OREFARGS(TypeSpec.OREF, TypeSpec.ARGS), //
+      DIMS(TypeSpec.DIMS),//
+      ANY(TypeSpec.ANY),//
       ;
 
       PopSpec(TypeSpec... _types){
@@ -329,7 +326,7 @@ class InstructionSet{
 
    static enum ImmediateSpec{
       NONE("NONE"), //
-      UNKNOWN("UNKNOWN"), //
+     // UNKNOWN("UNKNOWN"), //
       Bconst("byte constant value", TypeSpec.B), //
       Sconst("short constant value", TypeSpec.S), //
       Bcpci("byte constant pool constant index", TypeSpec.B), //
@@ -391,7 +388,7 @@ class InstructionSet{
       LLOAD(I_LLOAD.class, LoadSpec.L, ImmediateSpec.Blvti, PushSpec.L), //
       FLOAD(I_FLOAD.class, LoadSpec.F, ImmediateSpec.Blvti, PushSpec.F), //
       DLOAD(I_DLOAD.class, LoadSpec.F, ImmediateSpec.Blvti, PushSpec.D), //
-      ALOAD(I_ALOAD.class, LoadSpec.A, ImmediateSpec.Blvti, PushSpec.A), //
+      ALOAD(I_ALOAD.class, LoadSpec.OREF, ImmediateSpec.Blvti, PushSpec.OREF), //
       ILOAD_0(I_ILOAD_0.class, LoadSpec.I, PushSpec.I), //
       ILOAD_1(I_ILOAD_1.class, LoadSpec.I, PushSpec.I), //
       ILOAD_2(I_ILOAD_2.class, LoadSpec.I, PushSpec.I), //
@@ -408,15 +405,15 @@ class InstructionSet{
       DLOAD_1(I_DLOAD_1.class, LoadSpec.D, PushSpec.D), //
       DLOAD_2(I_DLOAD_2.class, LoadSpec.D, PushSpec.D), //
       DLOAD_3(I_DLOAD_3.class, LoadSpec.D, PushSpec.D), //
-      ALOAD_0(I_ALOAD_0.class, LoadSpec.A, PushSpec.A), //
-      ALOAD_1(I_ALOAD_1.class, LoadSpec.A, PushSpec.A), //
-      ALOAD_2(I_ALOAD_2.class, LoadSpec.A, PushSpec.A), //
-      ALOAD_3(I_ALOAD_3.class, LoadSpec.A, PushSpec.A), //
+      ALOAD_0(I_ALOAD_0.class, LoadSpec.OREF, PushSpec.OREF), //
+      ALOAD_1(I_ALOAD_1.class, LoadSpec.OREF, PushSpec.OREF), //
+      ALOAD_2(I_ALOAD_2.class, LoadSpec.OREF, PushSpec.OREF), //
+      ALOAD_3(I_ALOAD_3.class, LoadSpec.OREF, PushSpec.OREF), //
       IALOAD(I_IALOAD.class, PopSpec.AI, PushSpec.I), //
       LALOAD(I_LALOAD.class, PopSpec.AI, PushSpec.L), //
       FALOAD(I_FALOAD.class, PopSpec.AI, PushSpec.F), //
       DALOAD(I_DALOAD.class, PopSpec.AI, PushSpec.D), //
-      AALOAD(I_AALOAD.class, PopSpec.AI, PushSpec.A), //
+      AALOAD(I_AALOAD.class, PopSpec.AI, PushSpec.OREF), //
       BALOAD(I_BALOAD.class, PopSpec.AI, PushSpec.I), //
       CALOAD(I_CALOAD.class, PopSpec.AI, PushSpec.I), //
       SALOAD(I_SALOAD.class, PopSpec.AI, PushSpec.I), //
@@ -424,7 +421,7 @@ class InstructionSet{
       LSTORE(I_LSTORE.class, StoreSpec.L, ImmediateSpec.Blvti, PopSpec.L), //
       FSTORE(I_FSTORE.class, StoreSpec.F, ImmediateSpec.Blvti, PopSpec.F), //
       DSTORE(I_DSTORE.class, StoreSpec.D, ImmediateSpec.Blvti, PopSpec.D), //
-      ASTORE(I_ASTORE.class, StoreSpec.A, ImmediateSpec.Blvti, PopSpec.A), //
+      ASTORE(I_ASTORE.class, StoreSpec.OREF, ImmediateSpec.Blvti, PopSpec.A), //
       ISTORE_0(I_ISTORE_0.class, StoreSpec.I, PopSpec.I), //
       ISTORE_1(I_ISTORE_1.class, StoreSpec.I, PopSpec.I), //
       ISTORE_2(I_ISTORE_2.class, StoreSpec.I, PopSpec.I), //
@@ -441,10 +438,10 @@ class InstructionSet{
       DSTORE_1(I_DSTORE_1.class, StoreSpec.D, PopSpec.D), //
       DSTORE_2(I_DSTORE_2.class, StoreSpec.D, PopSpec.D), //
       DSTORE_3(I_DSTORE_3.class, StoreSpec.D, PopSpec.D), //
-      ASTORE_0(I_ASTORE_0.class, StoreSpec.A, PopSpec.A), //
-      ASTORE_1(I_ASTORE_1.class, StoreSpec.A, PopSpec.A), //
-      ASTORE_2(I_ASTORE_2.class, StoreSpec.A, PopSpec.A), //
-      ASTORE_3(I_ASTORE_3.class, StoreSpec.A, PopSpec.A), //
+      ASTORE_0(I_ASTORE_0.class, StoreSpec.OREF, PopSpec.A), //
+      ASTORE_1(I_ASTORE_1.class, StoreSpec.OREF, PopSpec.A), //
+      ASTORE_2(I_ASTORE_2.class, StoreSpec.OREF, PopSpec.A), //
+      ASTORE_3(I_ASTORE_3.class, StoreSpec.OREF, PopSpec.A), //
       IASTORE(I_IASTORE.class, PopSpec.AII), //
       LASTORE(I_LASTORE.class, PopSpec.AIL), //
       FASTORE(I_FASTORE.class, PopSpec.AIF), //
@@ -537,40 +534,40 @@ class InstructionSet{
       GOTO(I_GOTO.class, ImmediateSpec.Spc), //
       JSR(I_JSR.class, ImmediateSpec.Spc, PushSpec.RA), //
       RET(I_RET.class, ImmediateSpec.Bconst), //
-      TABLESWITCH(I_TABLESWITCH.class, ImmediateSpec.UNKNOWN, PopSpec.I), //
-      LOOKUPSWITCH(I_LOOKUPSWITCH.class, ImmediateSpec.UNKNOWN, PopSpec.I), //
+      TABLESWITCH(I_TABLESWITCH.class, ImmediateSpec.NONE, PopSpec.I), //
+      LOOKUPSWITCH(I_LOOKUPSWITCH.class, ImmediateSpec.NONE, PopSpec.I), //
       IRETURN(I_IRETURN.class, PopSpec.I), //
       LRETURN(I_LRETURN.class, PopSpec.L), //
       FRETURN(I_FRETURN.class, PopSpec.F), //
       DRETURN(I_DRETURN.class, PopSpec.D), //
       ARETURN(I_ARETURN.class, PopSpec.A), //
       RETURN(I_RETURN.class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.NONE, PopSpec.NONE, PushSpec.NONE, Operator.NONE), //
-      GETSTATIC(I_GETSTATIC.class, ImmediateSpec.Scpfi, PushSpec.UNKNOWN), //
-      PUTSTATIC(I_PUTSTATIC.class, ImmediateSpec.Scpfi, PopSpec.UNKNOWN), //
-      GETFIELD(I_GETFIELD.class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.Scpfi, PopSpec.A, PushSpec.UNKNOWN, Operator.NONE), //
-      PUTFIELD(I_PUTFIELD.class, ImmediateSpec.Scpfi, PopSpec.OUNKNOWN), //
-      INVOKEVIRTUAL(I_INVOKEVIRTUAL.class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.Scpmi, PopSpec.OARGS, PushSpec.UNKNOWN,
+      GETSTATIC(I_GETSTATIC.class, ImmediateSpec.Scpfi, PushSpec.ANY), //
+      PUTSTATIC(I_PUTSTATIC.class, ImmediateSpec.Scpfi, PopSpec.ANY), //
+      GETFIELD(I_GETFIELD.class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.Scpfi, PopSpec.A, PushSpec.ANY, Operator.NONE), //
+      PUTFIELD(I_PUTFIELD.class, ImmediateSpec.Scpfi, PopSpec.OREF_ANY), //
+      INVOKEVIRTUAL(I_INVOKEVIRTUAL.class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.Scpmi, PopSpec.OREFARGS, PushSpec.ANY,
             Operator.NONE), //
-      INVOKESPECIAL(I_INVOKESPECIAL.class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.Scpmi, PopSpec.OARGS, PushSpec.UNKNOWN,
+      INVOKESPECIAL(I_INVOKESPECIAL.class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.Scpmi, PopSpec.OREFARGS, PushSpec.ANY,
             Operator.NONE), //
-      INVOKESTATIC(I_INVOKESTATIC.class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.Scpmi, PopSpec.ARGS, PushSpec.UNKNOWN,
+      INVOKESTATIC(I_INVOKESTATIC.class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.Scpmi, PopSpec.ARGS, PushSpec.ANY,
             Operator.NONE), //
-      INVOKEINTERFACE(I_INVOKEINTERFACE.class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.ScpmiBB, PopSpec.OARGS,
-            PushSpec.UNKNOWN, Operator.NONE), //
-      INVOKEDYNAMIC(I_INVOKEDYNAMIC.class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.ScpmiBB, PopSpec.OARGS, PushSpec.UNKNOWN,
+      INVOKEINTERFACE(I_INVOKEINTERFACE.class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.ScpmiBB, PopSpec.OREFARGS,
+            PushSpec.ANY, Operator.NONE), //
+      INVOKEDYNAMIC(I_INVOKEDYNAMIC.class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.ScpmiBB, PopSpec.OREFARGS, PushSpec.ANY,
             Operator.NONE), //
 
-      NEW(I_NEW.class, ImmediateSpec.Scpci, PushSpec.A), //
-      NEWARRAY(I_NEWARRAY.class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.Bconst, PopSpec.I, PushSpec.A, Operator.NONE), //
-      ANEWARRAY(I_ANEWARRAY.class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.Sconst, PopSpec.I, PushSpec.A, Operator.NONE), // 189
+      NEW(I_NEW.class, ImmediateSpec.Scpci, PushSpec.OREF), //
+      NEWARRAY(I_NEWARRAY.class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.Bconst, PopSpec.I, PushSpec.OREF, Operator.NONE), //
+      ANEWARRAY(I_ANEWARRAY.class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.Sconst, PopSpec.I, PushSpec.OREF, Operator.NONE), // 189
       ARRAYLENGTH(I_ARRAYLENGTH.class, PopSpec.A, PushSpec.I), // 190
-      ATHROW(I_ATHROW.class, PopSpec.A, PushSpec.A), // 191
-      CHECKCAST(I_CHECKCAST.class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.Scpci, PopSpec.A, PushSpec.A, Operator.NONE), // 192
+      ATHROW(I_ATHROW.class, PopSpec.A, PushSpec.OREF), // 191
+      CHECKCAST(I_CHECKCAST.class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.Scpci, PopSpec.A, PushSpec.OREF, Operator.NONE), // 192
       INSTANCEOF(I_INSTANCEOF.class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.Scpci, PopSpec.A, PushSpec.I, Operator.NONE), // 193
       MONITORENTER(I_MONITORENTER.class, PopSpec.A), // 194
       MONITOREXIT(I_MONITOREXIT.class, PopSpec.A), // 195
-      WIDE(I_WIDE.class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.UNKNOWN, PopSpec.UNKNOWN, PushSpec.UNKNOWN, Operator.NONE), // 196
-      MULTIANEWARRAY(I_MULTIANEWARRAY.class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.ScpciBdim, PopSpec.UNKNOWN, PushSpec.A,
+      WIDE(I_WIDE.class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.NONE, PopSpec.NONE, PushSpec.NONE, Operator.NONE), // 196
+      MULTIANEWARRAY(I_MULTIANEWARRAY.class, LoadSpec.NONE, StoreSpec.NONE, ImmediateSpec.ScpciBdim, PopSpec.DIMS, PushSpec.OREF,
             Operator.NONE), // 197
       IFNULL(I_IFNULL.class, ImmediateSpec.Spc, PopSpec.A, Operator.EqualNULL), // 198
       IFNONNULL(I_IFNONNULL.class, ImmediateSpec.Spc, PopSpec.A, Operator.NotEqualNULL), // 199

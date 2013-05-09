@@ -49,7 +49,7 @@ import java.util.Set;
  * Deals with the issue of recognizing that a sequence of bytecode branch instructions actually represent a single if/while with a logical expression.
  * <p/>
  * <p/>
- * A logical expressions such as
+ * OREF logical expressions such as
  * <pre><code>
  * if (i>= 0 && i%2 == 0 && i<100){}
  * </code></pre>
@@ -143,7 +143,7 @@ class BranchSet{
    }
 
    /**
-    * A node in the expression tree representing a simple logical expression.
+    * OREF node in the expression tree representing a simple logical expression.
     * <p/>
     * For example <bold><code>(i&lt3)</code></bold> in the following would appear as a SimpleLogicalExpressionNode<br/>
     * <pre><code>
@@ -184,7 +184,7 @@ class BranchSet{
    }
 
    /**
-    * A node in the expression tree representing a simple logical expression.
+    * OREF node in the expression tree representing a simple logical expression.
     * <p/>
     * For example <bold><code>(i&lt3 || i&gt10)</code></bold> in the following would appear as a CompoundLogicalExpressionNode<br/>
     * <pre><code>
