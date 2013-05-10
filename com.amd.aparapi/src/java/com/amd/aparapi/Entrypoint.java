@@ -50,7 +50,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-class Entrypoint{
+public class Entrypoint{
 
    private boolean isLambda;
 

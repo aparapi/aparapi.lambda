@@ -81,7 +81,11 @@ public class ClassModel{
 
       JavaType getType();
 
+      JavaType getRealType();
+
       int getSlot();
+
+      boolean isArg();
 
       int getLength();
 
@@ -1319,34 +1323,37 @@ public class ClassModel{
 
             String name = null;
 
-            boolean arg;
 
-            String descriptor = "";
+            final String descriptor ;
 
             TypeHelper.JavaType type;
+            TypeHelper.JavaType realType;
 
             int slot;
 
             Var(InstructionSet.StoreSpec _storeSpec, int _slot, int _startPc, boolean _arg){
                slot = _slot;
-               arg = _arg;
+
                startPc = _startPc;
-               if(_storeSpec.equals(InstructionSet.StoreSpec.OREF)){
-                  name = "arr_" + _slot;
-                  descriptor = "/* arg */";
-               }else{
+             //  if(_storeSpec.equals(InstructionSet.StoreSpec.OREF)){
+              //    name = "arr_" + _slot;
+                //  descriptor = "OREF";
+                //  type = TypeHelper.getJavaType(descriptor);
+             //  }else{
                   name = _storeSpec.toString().toLowerCase() + "_" + _slot;
                   descriptor = _storeSpec.toString();
-                  if (descriptor.contains("]")){
-                     throw new IllegalStateException("whoa");
-                  }
-                  type = TypeHelper.getJavaType(descriptor);
+                  realType = type = TypeHelper.getJavaType(descriptor);
 
-               }
+              // }
+            }
+
+            @Override public boolean isArg(){
+               return(startPc == 0);
             }
 
             Var(){
                name = "NONE";
+               descriptor = null;
             }
 
             @Override
@@ -1397,6 +1404,11 @@ public class ClassModel{
             public JavaType getType(){
                return (type);
             }
+
+            @Override
+            public JavaType getRealType(){
+               return (realType);
+            }
             @Override
             public int getSlot(){
                return (slot);
@@ -1416,39 +1428,46 @@ public class ClassModel{
             int thisOffset = _method.isStatic() ? 0 : 1;
 
             Var[] vars = new Var[numberOfSlots + thisOffset];
-            InstructionSet.StoreSpec[] argsAsStoreSpecs = new InstructionSet.StoreSpec[args.length + thisOffset];
-            if(thisOffset == 1){
-               argsAsStoreSpecs[0] = InstructionSet.StoreSpec.OREF;
-               vars[0] = new Var(argsAsStoreSpecs[0], 0, 0, true);
+         //   InstructionSet.StoreSpec[] argsAsStoreSpecs = new InstructionSet.StoreSpec[args.length + thisOffset];
+            if(_method.isVirtual()){
+               //argsAsStoreSpecs[0] = InstructionSet.StoreSpec.OREF;
+               vars[0] = new Var(InstructionSet.StoreSpec.OREF, 0, 0, true);
                list.add(vars[0]);
 
             }
 
             int currSlotIndex = thisOffset;
             for(int i = 0; i < args.length; i++){
-               if(args[i].getJavaType().isArray()){
-                  argsAsStoreSpecs[i + thisOffset] = InstructionSet.StoreSpec.OREF;
-               }else if(args[i].getJavaType().isObject()){
-                  argsAsStoreSpecs[i + thisOffset] = InstructionSet.StoreSpec.OREF;
+               InstructionSet.StoreSpec storeSpec = null;
+               if(args[i].getJavaType().isArray() || args[i].getJavaType().isObject()){
+                  storeSpec = InstructionSet.StoreSpec.OREF;
                }else{
-                  argsAsStoreSpecs[i + thisOffset] = InstructionSet.StoreSpec.valueOf(args[i].getJavaType().getSignature().substring(0, 1));
+                  storeSpec = InstructionSet.StoreSpec.valueOf(args[i].getJavaType().getPrimitiveType().getSig());
                }
+
+             //  argsAsStoreSpecs[i + thisOffset] = storeSpec;
+               Var var  =  new Var(storeSpec, currSlotIndex, 0, true);
                // Use slot size from TypeSpec to keep vars lined up
-               vars[i + thisOffset] = new Var(argsAsStoreSpecs[i + thisOffset], currSlotIndex, 0, true);
-               currSlotIndex += argsAsStoreSpecs[i + thisOffset].getTypeSpec().getSlots(); // 1 for most 2 for Long/Double
+               vars[i + thisOffset] =  var;
+               currSlotIndex += storeSpec.getTypeSpec().getSlots(); // 1 for most 2 for Long/Double
 
                // Preserve actual object prefix
-               if(argsAsStoreSpecs[i + thisOffset] == InstructionSet.StoreSpec.OREF){
-                  vars[i + thisOffset].descriptor = args[i].getJavaType().getSignature();
+
+               if(storeSpec == InstructionSet.StoreSpec.OREF){
+                  var.realType = args[i].getJavaType();
+                 // var.descriptor = args[i].getJavaType().getSignature();
                }
-                if(argsAsStoreSpecs[i + thisOffset] == InstructionSet.StoreSpec.OREF){
-                    vars[i + thisOffset].descriptor = "";
+               /*
+                if(storeSpec == InstructionSet.StoreSpec.OREF){
+                    var.descriptor = "";
                     for (int c=0; c<args[i].getJavaType().getArrayDimensions(); c++){
-                        vars[i + thisOffset].descriptor += "[";
+                        var.descriptor += "[";
                     }
-                    vars[i + thisOffset].descriptor +=args[i].getJavaType();
+                    var.descriptor +=args[i].getJavaType();
                 }
-               list.add(vars[i + thisOffset]);
+                */
+
+               list.add(var);
             }
             for(int i = args.length + thisOffset; i < numberOfSlots + thisOffset; i++){
                vars[i] = new Var();
@@ -1572,6 +1591,9 @@ public class ClassModel{
                slot = _byteReader.u2();
             }
 
+
+
+
             int getDescriptorIndex(){
                return (descriptorIndex);
             }
@@ -1583,7 +1605,10 @@ public class ClassModel{
             int getNameIndex(){
                return (variableNameIndex);
             }
-
+            @Override
+            public boolean isArg(){
+               return (startPc==0);
+            }
             @Override
             public int getStart(){
                return (startPc);
@@ -1606,6 +1631,11 @@ public class ClassModel{
 
             @Override
             public TypeHelper.JavaType getType(){
+               return (type);
+            }
+
+            @Override
+            public TypeHelper.JavaType getRealType(){
                return (type);
             }
 
@@ -2196,6 +2226,9 @@ public class ClassModel{
 
       public boolean isStatic(){
          return (Access.STATIC.bitIsSet(methodAccessFlags));
+      }
+      public boolean isVirtual(){
+         return (!Access.STATIC.bitIsSet(methodAccessFlags));
       }
 
       AttributePool getAttributePool(){
@@ -2869,7 +2902,7 @@ public class ClassModel{
       return (new Entrypoint(this, method, _k, true));
    }
 
-   Entrypoint getKernelEntrypoint(String _entrypointName, String _descriptor, Object _k) throws AparapiException{
+   public Entrypoint getKernelEntrypoint(String _entrypointName, String _descriptor, Object _k) throws AparapiException{
       MethodModel method = getMethodModel(_entrypointName, _descriptor);
       return (new Entrypoint(this, method, _k, false));
    }
