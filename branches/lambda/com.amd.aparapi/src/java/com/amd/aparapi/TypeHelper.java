@@ -491,18 +491,21 @@ public class TypeHelper{
             case BOOLEAN:
                return ("boolean");
          }
-         return ("?");
+         throw new IllegalStateException("primitiveCharToJavaName?") ;
+        // return ("?");
       }
 
       String getJavaName(){
-         String javaName = "?";
+         String javaName=null;
           if(isArray()){
               javaName = primitiveCharToJavaName(signature.charAt(0));
           }else if(isPrimitive() || isVoid()){
             javaName = getPrimitiveType().getJavaName();
          }else if(isObject()){
             javaName = getObjectClassName();
-         }
+         } else{
+             throw new IllegalStateException("getJavaName");
+          }
          return (javaName);
       }
 

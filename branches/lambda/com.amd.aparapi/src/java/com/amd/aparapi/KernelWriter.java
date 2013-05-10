@@ -49,7 +49,7 @@ import com.amd.aparapi.TypeHelper.JavaType;
 
 import java.util.*;
 
-abstract class KernelWriter extends BlockWriter{
+public abstract class KernelWriter extends BlockWriter{
 
    final static String cvtBooleanToChar = "char ";
 
@@ -306,13 +306,12 @@ abstract class KernelWriter extends BlockWriter{
       {
          MethodModel mm = entryPoint.getMethodModel();
          int argsCount = 1;
-         Iterator<LocalVariableInfo> lvit = mm.getPreferredLocalVariableTableEntry().iterator();
-         while(lvit.hasNext()){
+         for (Iterator<LocalVariableInfo> lvit = mm.getPreferredLocalVariableTableEntry().iterator();  lvit.hasNext(); )  {
             LocalVariableInfo lvi = lvit.next();
             StringBuilder thisStructLine = new StringBuilder();
             StringBuilder argLine = new StringBuilder();
             StringBuilder assignLine = new StringBuilder();
-            if((lvi.getStart() == 0) && ((lvi.getSlot() != 0) || mm.getMethod().isStatic())){ // full scope but skip this
+            if(lvi.isArg() && ((lvi.getSlot() != 0) || mm.getMethod().isStatic())){ // full scope but skip this
                // String descriptor = ;
 
                // For object stream lambdas, the lvi is the object prefix, but in
@@ -324,29 +323,30 @@ abstract class KernelWriter extends BlockWriter{
                // where elements_array_index is the get_global_id index into the elements array
 
 
-               JavaType type = TypeHelper.getJavaType(lvi.getVariableDescriptor());
+            //   JavaType type = TypeHelper.getJavaType(lvi.getVariableDescriptor());
                // String classModelType = prefix.getSignature();
                String output;
                boolean isObjectLambda = false;
-               if(type.isArray()){
+               if(lvi.getType().isArray()){
+                  int dim= lvi.getType().getArrayDimensions();
                   // This is a local array captured from the caller method and
                   // passed in from the Block/Consumer
-                  if(type.isObject()){
+                  if(lvi.getType().isArrayOfObjects(dim)){    // an array of objects
                      //classModelType = __global + " " + (classModelType.substring(2, classModelType.length() - 1)).replace("/", "_");
-                     output = __global + " " + type.getMangledClassName();
+                     output = __global + " " + lvi.getRealType().getMangledClassName();
                   }else{
                      // Basic prefix array
-                     // how do we know the type of the array.
-                     String jn = type.getJavaName() ;
-                     String sig = type.getSignature();
-                     output = __global + " " + type.getJavaName()    ;
+                     // how do we know the type of the array ?
+                    // String jn = type.getJavaName() ;
+                    // String sig = type.getSignature();
+                     output = __global + " " + lvi.getRealType().getJavaName()    ;
                   }
-               }else if(type.isPrimitive()){
-                  output = type.getJavaName();
+               }else if(lvi.getType().isPrimitive()){
+                  output = lvi.getType().getJavaName();
                }else{
                   // This must be the iteration object
                   // Turn Lcom/amd/javalabs/opencl/demo/DummyOOA; into com_amd_javalabs_opencl_demo_DummyOOA for example
-                  output = __global + " " + type.getMangledClassName();
+                  output = __global + " " + lvi.getType().getMangledClassName();
                   isObjectLambda = true;
 
                   // Insert the source object array and integer index here
@@ -752,7 +752,7 @@ abstract class KernelWriter extends BlockWriter{
       }
    }
 
-   static String writeToString(Entrypoint _entrypoint) throws CodeGenException{
+   public static String writeToString(Entrypoint _entrypoint) throws CodeGenException{
       final StringBuilder openCLStringBuilder = new StringBuilder();
       KernelWriter openCLWriter = new KernelWriter(){
          @Override void write(String _string){

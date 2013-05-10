@@ -3950,8 +3950,6 @@ class InstructionSet{
          return ("return to pc in local var index 08 bit");
       }
 
-
-
       @Override
       public boolean isDeclaration(){
          return (localVariableInfo.getStart() == getThisPC() + getLength());
@@ -4081,6 +4079,7 @@ class InstructionSet{
          super(_method, ByteCode.WIDE, _byteReader, _wide);
          wideopcode = _byteReader.u1();
          index = _byteReader.u2();
+
          if(((wideopcode >= 0x15 && wideopcode <= 0x19) || (wideopcode >= 0x36 && wideopcode <= 0x3a) || (wideopcode == 0xa9))){
             iinc = false;
          }else{
