@@ -45,87 +45,87 @@ package com.amd.aparapi;
  * @see com.amd.aparapi.AparapiException
  */
 @SuppressWarnings("serial")
-public class ClassParseException extends AparapiException{
-   public static enum TYPE{
-      NONE("none"), //
-      ARRAY_RETURN("We don't support areturn instructions"), //
-      PUTFIELD("We don't support putstatic instructions"), //
-      INVOKEINTERFACE("We don't support invokeinterface instructions"), //
-      GETSTATIC("We don't support getstatic instructions"), //
-      ATHROW("We don't support athrow instructions"), //
-      SYNCHRONIZE("We don't support monitorenter or monitorexit instructions"), //
-      NEW("We don't support new instructions"), //
-      ARRAYALIAS("We don't support copying refs in lambdaRunnerCache"), //
-      SWITCH("We don't support lookupswitch or tableswitch instructions"), //
-      METHODARRAYARG("We don't support passing arrays as method args"), //
-      RECURSION("We don't support recursion"), //
-      UNSUPPORTEDBYTECODE("This bytecode is not supported"), //
-      OPERANDCONSUMERPRODUCERMISSMATCH("Detected an non-reducable operand consumer/producer mismatch"), //
-      BADGETTERTYPEMISMATCH("Getter return prefix does not match field var prefix"), //
-      BADGETTERNAMEMISMATCH("Getter name does not match fiels name"), //
-      BADGETTERNAMENOTFOUND("Getter not found"), //
-      BADSETTERTYPEMISMATCH("Setter arg prefix does not match field var prefix"), //
-      EXCEPTION("We don't support catch blocks"), //
-      ARRAYLOCALVARIABLE("Found an array local variable which assumes that we will alias a field array"), //
-      CONFUSINGBRANCHESPOSSIBLYCONTINUE("we don't support continue"), //
-      CONFUSINGBRANCHESPOSSIBLYBREAK("we don't support break"), //
-      OBJECTFIELDREFERENCE("Using java objects inside lambdaRunnerCache is not supported"), //
-      OBJECTARRAYFIELDREFERENCE("Object array elements cannot contain"), //
-      OVERRIDENFIELD("Found overidden field"), //
-      LOCALARRAYLENGTHACCESS("Found array length access on local array. Might be a result of using ForEach()"), //
-      ACCESSEDOBJECTNONFINAL("Kernel array object member class must be final."), //
-      ACCESSEDOBJECTFIELDNAMECONFLICT("Conflicting fields found in class hierarchy"), //
-      ACCESSEDOBJECTONLYSUPPORTSSIMPLEPUTFIELD("We don't support putfield instructions beyond simple setters"), //
-      ACCESSEDOBJECTSETTERARRAY("Passing array arguments to Intrinsics in expression form is not supported"), //
-      MULTIDIMENSIONARRAYASSIGN("Can't assign to two dimension array"), //
-      MULTIDIMENSIONARRAYACCESS("Can't access through a two dimensional array"), //
-      MISSINGLOCALVARIABLETABLE("Method does not contain a local variable table (recompile with -g?)"),
-      UNHANDLEDMAPPEDMETHOD("Unhandled JDK mapped method ");
+public class ClassParseException extends AparapiException {
+    public static enum TYPE {
+        NONE("none"), //
+        ARRAY_RETURN("We don't support areturn instructions"), //
+        PUTFIELD("We don't support putstatic instructions"), //
+        INVOKEINTERFACE("We don't support invokeinterface instructions"), //
+        GETSTATIC("We don't support getstatic instructions"), //
+        ATHROW("We don't support athrow instructions"), //
+        SYNCHRONIZE("We don't support monitorenter or monitorexit instructions"), //
+        NEW("We don't support new instructions"), //
+        ARRAYALIAS("We don't support copying refs in lambdaRunnerCache"), //
+        SWITCH("We don't support lookupswitch or tableswitch instructions"), //
+        METHODARRAYARG("We don't support passing arrays as method args"), //
+        RECURSION("We don't support recursion"), //
+        UNSUPPORTEDBYTECODE("This bytecode is not supported"), //
+        OPERANDCONSUMERPRODUCERMISSMATCH("Detected an non-reducable operand consumer/producer mismatch"), //
+        BADGETTERTYPEMISMATCH("Getter return prefix does not match field var prefix"), //
+        BADGETTERNAMEMISMATCH("Getter name does not match fiels name"), //
+        BADGETTERNAMENOTFOUND("Getter not found"), //
+        BADSETTERTYPEMISMATCH("Setter arg prefix does not match field var prefix"), //
+        EXCEPTION("We don't support catch blocks"), //
+        ARRAYLOCALVARIABLE("Found an array local variable which assumes that we will alias a field array"), //
+        CONFUSINGBRANCHESPOSSIBLYCONTINUE("we don't support continue"), //
+        CONFUSINGBRANCHESPOSSIBLYBREAK("we don't support break"), //
+        OBJECTFIELDREFERENCE("Using java objects inside lambdaRunnerCache is not supported"), //
+        OBJECTARRAYFIELDREFERENCE("Object array elements cannot contain"), //
+        OVERRIDENFIELD("Found overidden field"), //
+        LOCALARRAYLENGTHACCESS("Found array length access on local array. Might be a result of using ForEach()"), //
+        ACCESSEDOBJECTNONFINAL("Kernel array object member class must be final."), //
+        ACCESSEDOBJECTFIELDNAMECONFLICT("Conflicting fields found in class hierarchy"), //
+        ACCESSEDOBJECTONLYSUPPORTSSIMPLEPUTFIELD("We don't support putfield instructions beyond simple setters"), //
+        ACCESSEDOBJECTSETTERARRAY("Passing array arguments to Intrinsics in expression form is not supported"), //
+        MULTIDIMENSIONARRAYASSIGN("Can't assign to two dimension array"), //
+        MULTIDIMENSIONARRAYACCESS("Can't access through a two dimensional array"), //
+        MISSINGLOCALVARIABLETABLE("Method does not contain a local variable table (recompile with -g?)"),
+        UNHANDLEDMAPPEDMETHOD("Unhandled JDK mapped method ");
 
-      private String description;
+        private String description;
 
-      TYPE(final String _description){
-         description = _description;
-      }
+        TYPE(final String _description) {
+            description = _description;
+        }
 
-      public String getDescription(){
-         return (description);
-      }
-   }
+        public String getDescription() {
+            return (description);
+        }
+    }
 
-   ;
+    ;
 
-   Instruction instruction;
+    Instruction instruction;
 
-   TYPE type;
+    TYPE type;
 
-   ClassParseException(final TYPE _type){
-      super(_type.getDescription());
-      type = _type;
-      instruction = null;
-   }
+    ClassParseException(final TYPE _type) {
+        super(_type.getDescription());
+        type = _type;
+        instruction = null;
+    }
 
-   ClassParseException(final Instruction _instruction, final TYPE _type){
-      super("@" + _instruction.getThisPC() + " " + _instruction.getByteCode() + " " + _type.getDescription());
-      type = _type;
-      instruction = _instruction;
-   }
+    ClassParseException(final Instruction _instruction, final TYPE _type) {
+        super("@" + _instruction.getThisPC() + " " + _instruction.getByteCode() + " " + _type.getDescription());
+        type = _type;
+        instruction = _instruction;
+    }
 
-   ClassParseException(final TYPE _type, final String _methodName){
-      super("@" + _methodName + " " + _type.getDescription());
-      type = _type;
-      instruction = null;
-   }
+    ClassParseException(final TYPE _type, final String _methodName) {
+        super("@" + _methodName + " " + _type.getDescription());
+        type = _type;
+        instruction = null;
+    }
 
-   public Instruction getInstruction(){
-      return (instruction);
-   }
+    public Instruction getInstruction() {
+        return (instruction);
+    }
 
-   public TYPE getType(){
-      return (type);
-   }
+    public TYPE getType() {
+        return (type);
+    }
 
-   ClassParseException(final Throwable _t){
-      super(_t);
-   }
+    ClassParseException(final Throwable _t) {
+        super(_t);
+    }
 }

@@ -50,14 +50,14 @@ package com.amd.aparapi;
  */
 
 @SuppressWarnings("serial")
-public class AparapiException extends Exception{
+public class AparapiException extends Exception {
 
-   AparapiException(String _msg){
-      super(_msg);
-   }
+    AparapiException(String _msg) {
+        super(_msg);
+    }
 
-   AparapiException(Throwable _t){
-      super(_t);
-   }
+    AparapiException(Throwable _t) {
+        super(_t);
+    }
 
 }

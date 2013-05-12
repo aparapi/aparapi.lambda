@@ -51,207 +51,207 @@ import java.util.logging.Logger;
  *
  * @author gfrost
  */
-class Config{
+class Config {
 
-   private static final String propPkgName = Config.class.getPackage().getName();
+    private static final String propPkgName = Config.class.getPackage().getName();
 
-   /**
-    * Allows the user to request to use a jvmti agent to access JNI code rather than loading explicitly.
-    * <p/>
-    * Usage -agentpath=/full/path/to/agent.dll -Dcom.amd.aparapi.useAgent=true
-    */
+    /**
+     * Allows the user to request to use a jvmti agent to access JNI code rather than loading explicitly.
+     * <p/>
+     * Usage -agentpath=/full/path/to/agent.dll -Dcom.amd.aparapi.useAgent=true
+     */
 
-   static final boolean useAgent = Boolean.getBoolean(propPkgName + ".useAgent");
+    static final boolean useAgent = Boolean.getBoolean(propPkgName + ".useAgent");
 
-   static final boolean disableUnsafe = Boolean.getBoolean(propPkgName + ".disableUnsafe");
+    static final boolean disableUnsafe = Boolean.getBoolean(propPkgName + ".disableUnsafe");
 
-   /**
-    * Allows the user to request a specific Kernel.EXECUTION_MODE enum value for all Kernels.
-    * <p/>
-    * Usage -Dcom.amd.aparapi.executionMode={SEQ|JTP|CPU|GPU}
-    *
-    * @see com.amd.aparapi.Kernel.EXECUTION_MODE
-    */
-   static final String executionMode = System.getProperty(propPkgName + ".executionMode");
+    /**
+     * Allows the user to request a specific Kernel.EXECUTION_MODE enum value for all Kernels.
+     * <p/>
+     * Usage -Dcom.amd.aparapi.executionMode={SEQ|JTP|CPU|GPU}
+     *
+     * @see com.amd.aparapi.Kernel.EXECUTION_MODE
+     */
+    static final String executionMode = System.getProperty(propPkgName + ".executionMode");
 
-   /**
-    * Allows the user to turn on OpenCL profiling for the JNI/OpenCL layer.
-    * <p/>
-    * Usage -Dcom.amd.aparapi.enableProfiling={true|false}
-    */
-   @UsedByJNICode
-   static final boolean enableProfiling = Boolean.getBoolean(propPkgName + ".enableProfiling");
+    /**
+     * Allows the user to turn on OpenCL profiling for the JNI/OpenCL layer.
+     * <p/>
+     * Usage -Dcom.amd.aparapi.enableProfiling={true|false}
+     */
+    @UsedByJNICode
+    static final boolean enableProfiling = Boolean.getBoolean(propPkgName + ".enableProfiling");
 
-   /**
-    * Allows the user to turn on OpenCL profiling for the JNI/OpenCL layer, this information will be written to CSV file
-    * <p/>
-    * Usage -Dcom.amd.aparapi.enableProfiling={true|false}
-    */
-   @UsedByJNICode
-   static final boolean enableProfilingCSV = Boolean.getBoolean(propPkgName + ".enableProfilingCSV");
+    /**
+     * Allows the user to turn on OpenCL profiling for the JNI/OpenCL layer, this information will be written to CSV file
+     * <p/>
+     * Usage -Dcom.amd.aparapi.enableProfiling={true|false}
+     */
+    @UsedByJNICode
+    static final boolean enableProfilingCSV = Boolean.getBoolean(propPkgName + ".enableProfilingCSV");
 
-   /**
-    * Allows the user to request that verbose JNI messages be dumped to stderr.
-    * <p/>
-    * Usage -Dcom.amd.aparapi.enableVerboseJNI={true|false}
-    */
-   @UsedByJNICode
-   static final boolean enableVerboseJNI = Boolean.getBoolean(propPkgName + ".enableVerboseJNI");
+    /**
+     * Allows the user to request that verbose JNI messages be dumped to stderr.
+     * <p/>
+     * Usage -Dcom.amd.aparapi.enableVerboseJNI={true|false}
+     */
+    @UsedByJNICode
+    static final boolean enableVerboseJNI = Boolean.getBoolean(propPkgName + ".enableVerboseJNI");
 
-   /**
-    * Allows the user to request tracking of opencl resources.
-    * <p/>
-    * This is really a debugging option to help locate leaking OpenCL resources, this will be dumped to stderr.
-    * <p/>
-    * Usage -Dcom.amd.aparapi.enableOpenCLResourceTracking={true|false}
-    */
-   @UsedByJNICode
-   static final boolean enableVerboseJNIOpenCLResourceTracking = Boolean.getBoolean(propPkgName
-         + ".enableVerboseJNIOpenCLResourceTracking");
+    /**
+     * Allows the user to request tracking of opencl resources.
+     * <p/>
+     * This is really a debugging option to help locate leaking OpenCL resources, this will be dumped to stderr.
+     * <p/>
+     * Usage -Dcom.amd.aparapi.enableOpenCLResourceTracking={true|false}
+     */
+    @UsedByJNICode
+    static final boolean enableVerboseJNIOpenCLResourceTracking = Boolean.getBoolean(propPkgName
+            + ".enableVerboseJNIOpenCLResourceTracking");
 
-   /**
-    * Allows the user to request that the execution mode of each kernel invocation be reported to stdout.
-    * <p/>
-    * Usage -Dcom.amd.aparapi.enableExecutionModeReporting={true|false}
-    */
-   static final boolean enableExecutionModeReporting = Boolean.getBoolean(propPkgName + ".enableExecutionModeReporting");
+    /**
+     * Allows the user to request that the execution mode of each kernel invocation be reported to stdout.
+     * <p/>
+     * Usage -Dcom.amd.aparapi.enableExecutionModeReporting={true|false}
+     */
+    static final boolean enableExecutionModeReporting = Boolean.getBoolean(propPkgName + ".enableExecutionModeReporting");
 
-   /**
-    * Allows the user to request that generated OpenCL code is dumped to standard out.
-    * <p/>
-    * Usage -Dcom.amd.aparapi.enableShowGeneratedOpenCL={true|false}
-    */
-   static final boolean enableShowGeneratedOpenCL = Boolean.getBoolean(propPkgName + ".enableShowGeneratedOpenCL");
+    /**
+     * Allows the user to request that generated OpenCL code is dumped to standard out.
+     * <p/>
+     * Usage -Dcom.amd.aparapi.enableShowGeneratedOpenCL={true|false}
+     */
+    static final boolean enableShowGeneratedOpenCL = Boolean.getBoolean(propPkgName + ".enableShowGeneratedOpenCL");
 
-   // Pragma/OpenCL codegen related flags
-   static final boolean enableAtomic32 = Boolean.getBoolean(propPkgName + ".enableAtomic32");
+    // Pragma/OpenCL codegen related flags
+    static final boolean enableAtomic32 = Boolean.getBoolean(propPkgName + ".enableAtomic32");
 
-   static final boolean enableAtomic64 = Boolean.getBoolean(propPkgName + ".enableAtomic64");
+    static final boolean enableAtomic64 = Boolean.getBoolean(propPkgName + ".enableAtomic64");
 
-   static final boolean enableByteWrites = Boolean.getBoolean(propPkgName + ".enableByteWrites");
+    static final boolean enableByteWrites = Boolean.getBoolean(propPkgName + ".enableByteWrites");
 
-   public static final boolean enableDoubles = Boolean.getBoolean(propPkgName + ".enableDoubles");
+    public static final boolean enableDoubles = Boolean.getBoolean(propPkgName + ".enableDoubles");
 
-   // Debugging related flags
-   static final boolean verboseComparitor = Boolean.getBoolean(propPkgName + ".verboseComparitor");
+    // Debugging related flags
+    static final boolean verboseComparitor = Boolean.getBoolean(propPkgName + ".verboseComparitor");
 
-   static final boolean dumpFlags = Boolean.getBoolean(propPkgName + ".dumpFlags");
+    static final boolean dumpFlags = Boolean.getBoolean(propPkgName + ".dumpFlags");
 
-   // Individual bytecode support related flags
-   static final boolean enablePUTFIELD = Boolean.getBoolean(propPkgName + ".enable.PUTFIELD");
+    // Individual bytecode support related flags
+    static final boolean enablePUTFIELD = Boolean.getBoolean(propPkgName + ".enable.PUTFIELD");
 
-   static final boolean enableARETURN = !Boolean.getBoolean(propPkgName + ".disable.ARETURN");
+    static final boolean enableARETURN = !Boolean.getBoolean(propPkgName + ".disable.ARETURN");
 
-   static final boolean enablePUTSTATIC = Boolean.getBoolean(propPkgName + ".enable.PUTSTATIC");
+    static final boolean enablePUTSTATIC = Boolean.getBoolean(propPkgName + ".enable.PUTSTATIC");
 
-   // Allow static array accesses
-   static final boolean enableGETSTATIC = true; //Boolean.getBoolean(propPkgName + ".enable.GETSTATIC");
+    // Allow static array accesses
+    static final boolean enableGETSTATIC = true; //Boolean.getBoolean(propPkgName + ".enable.GETSTATIC");
 
-   static final boolean enableINVOKEINTERFACE = Boolean.getBoolean(propPkgName + ".enable.INVOKEINTERFACE");
+    static final boolean enableINVOKEINTERFACE = Boolean.getBoolean(propPkgName + ".enable.INVOKEINTERFACE");
 
-   static final boolean enableMONITOR = Boolean.getBoolean(propPkgName + ".enable.MONITOR");
+    static final boolean enableMONITOR = Boolean.getBoolean(propPkgName + ".enable.MONITOR");
 
-   static final boolean enableNEW = Boolean.getBoolean(propPkgName + ".enable.NEW");
+    static final boolean enableNEW = Boolean.getBoolean(propPkgName + ".enable.NEW");
 
-   static final boolean enableATHROW = Boolean.getBoolean(propPkgName + ".enable.ATHROW");
+    static final boolean enableATHROW = Boolean.getBoolean(propPkgName + ".enable.ATHROW");
 
-   static final boolean enableMETHODARRAYPASSING = !Boolean.getBoolean(propPkgName + ".disable.METHODARRAYPASSING");
+    static final boolean enableMETHODARRAYPASSING = !Boolean.getBoolean(propPkgName + ".disable.METHODARRAYPASSING");
 
-   static final boolean enableARRAYLENGTH = Boolean.getBoolean(propPkgName + ".enable.ARRAYLENGTH");
+    static final boolean enableARRAYLENGTH = Boolean.getBoolean(propPkgName + ".enable.ARRAYLENGTH");
 
-   static final boolean enableSWITCH = Boolean.getBoolean(propPkgName + ".enable.SWITCH");
+    static final boolean enableSWITCH = Boolean.getBoolean(propPkgName + ".enable.SWITCH");
 
-   //public static boolean enableAlwaysCreateFakeLocalVariableTable = Boolean.getBoolean(propPkgName + ".enableAlwaysCreateFakeLocalVariableTable");
+    //public static boolean enableAlwaysCreateFakeLocalVariableTable = Boolean.getBoolean(propPkgName + ".enableAlwaysCreateFakeLocalVariableTable");
 
-   public static boolean enableUseRealLocalVariableTableIfAvailable = Boolean.getBoolean(propPkgName + ".enableUseRealLocalVariableTableIfAvailable");
+    // public static boolean enableUseRealLocalVariableTableIfAvailable = Boolean.getBoolean(propPkgName + ".enableUseRealLocalVariableTableIfAvailable");
 
-   public static boolean enableShowFakeLocalVariableTable = Boolean.getBoolean(propPkgName + ".enableShowFakeLocalVariableTable");
-   public static boolean enableShowJavaP = Boolean.getBoolean(propPkgName + ".enableShowJavaP");
+    public static boolean enableShowLocalVariableTable = Boolean.getBoolean(propPkgName + ".enableShowLocalVariableTable");
+    public static boolean enableShowJavaP = Boolean.getBoolean(propPkgName + ".enableShowJavaP");
 
-   public static boolean enableShowRealLocalVariableTable = Boolean.getBoolean(propPkgName + ".enableRealFakeLocalVariableTable");
+    //public static boolean enableShowRealLocalVariableTable = Boolean.getBoolean(propPkgName + ".enableRealFakeLocalVariableTable");
 
-   public static boolean enableOptimizeRegMoves = Boolean.getBoolean(propPkgName + ".enableOptimizeRegMoves");
+    public static boolean enableOptimizeRegMoves = Boolean.getBoolean(propPkgName + ".enableOptimizeRegMoves");
 
     // Logging setup
-   private static final String logPropName = propPkgName + ".logLevel";
+    private static final String logPropName = propPkgName + ".logLevel";
 
-   static String getLoggerName(){
-      return logPropName;
-   }
+    static String getLoggerName() {
+        return logPropName;
+    }
 
-   static Logger logger = Logger.getLogger(Config.getLoggerName());
+    static Logger logger = Logger.getLogger(Config.getLoggerName());
 
-   static{
+    static {
 
-      try{
+        try {
 
-         Level level = Level.parse(System.getProperty(getLoggerName(), "WARNING"));
+            Level level = Level.parse(System.getProperty(getLoggerName(), "WARNING"));
 
-         Handler[] handlers = Logger.getLogger("").getHandlers();
-         for(int index = 0; index < handlers.length; index++){
-            handlers[index].setLevel(level);
-         }
+            Handler[] handlers = Logger.getLogger("").getHandlers();
+            for (int index = 0; index < handlers.length; index++) {
+                handlers[index].setLevel(level);
+            }
 
-         logger.setLevel(level);
+            logger.setLevel(level);
 
-      }catch(Exception e){
-         System.out.println("Exception " + e + " in Aparapi logging setup.");
-         e.printStackTrace();
-      }
-
-   }
-
-   ;
-
-   public interface InstructionListener{
-      void showAndTell(String message, Instruction _start, Instruction _instruction);
-   }
-
-   static final boolean enableInstructionDecodeViewer = Boolean.getBoolean(propPkgName + ".enableInstructionDecodeViewer");
-
-   static String instructionListenerClassName = System.getProperty(propPkgName + ".instructionListenerClass");
-
-   static public InstructionListener instructionListener = null;
-
-   static{
-      if(enableInstructionDecodeViewer && (instructionListenerClassName == null || instructionListenerClassName.equals(""))){
-         instructionListenerClassName = InstructionViewer.class.getName();
-      }
-      if(instructionListenerClassName != null && !instructionListenerClassName.equals("")){
-         try{
-            Class<?> instructionListenerClass = Class.forName(instructionListenerClassName);
-            instructionListener = (InstructionListener) instructionListenerClass.newInstance();
-         }catch(ClassNotFoundException e){
-            // TODO Auto-generated catch block
+        } catch (Exception e) {
+            System.out.println("Exception " + e + " in Aparapi logging setup.");
             e.printStackTrace();
-         }catch(InstantiationException e){
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-         }catch(IllegalAccessException e){
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-         }
-      }
-      if(dumpFlags){
+        }
 
-         System.out.println(propPkgName + ".executionMode{GPU|CPU|JTP|SEQ}=" + executionMode);
-         System.out.println(propPkgName + ".logLevel{OFF|FINEST|FINER|FINE|WARNING|SEVERE|ALL}=" + logger.getLevel());
-         System.out.println(propPkgName + ".enableProfiling{true|false}=" + enableProfiling);
-         System.out.println(propPkgName + ".enableProfilingCSV{true|false}=" + enableProfilingCSV);
-         System.out.println(propPkgName + ".enableVerboseJNI{true|false}=" + enableVerboseJNI);
-         System.out.println(propPkgName + ".enableVerboseJNIOpenCLResourceTracking{true|false}="
-               + enableVerboseJNIOpenCLResourceTracking);
-         System.out.println(propPkgName + ".enableShowGeneratedOpenCL{true|false}=" + enableShowGeneratedOpenCL);
-         System.out.println(propPkgName + ".enableShowJavaP{true|false}=" + enableShowJavaP);
-         System.out.println(propPkgName + ".enableExecutionModeReporting{true|false}=" + enableExecutionModeReporting);
-         System.out.println(propPkgName + ".enableUseRealLocalVariableTableIfAvailable{true|false}="+enableUseRealLocalVariableTableIfAvailable);
-         System.out.println(propPkgName + ".enableShowFakeLocalVariableTable{true|false}="+enableShowFakeLocalVariableTable);
-         System.out.println(propPkgName + ".enableInstructionDecodeViewer{true|false}=" + enableInstructionDecodeViewer);
-         System.out.println(propPkgName
-               + ".instructionListenerClassName{<class name which extends com.amd.aparapi.Config.InstructionListener>}="
-               + instructionListenerClassName);
+    }
 
-      }
-   }
+    ;
+
+    public interface InstructionListener {
+        void showAndTell(String message, Instruction _start, Instruction _instruction);
+    }
+
+    static final boolean enableInstructionDecodeViewer = Boolean.getBoolean(propPkgName + ".enableInstructionDecodeViewer");
+
+    static String instructionListenerClassName = System.getProperty(propPkgName + ".instructionListenerClass");
+
+    static public InstructionListener instructionListener = null;
+
+    static {
+        if (enableInstructionDecodeViewer && (instructionListenerClassName == null || instructionListenerClassName.equals(""))) {
+            instructionListenerClassName = InstructionViewer.class.getName();
+        }
+        if (instructionListenerClassName != null && !instructionListenerClassName.equals("")) {
+            try {
+                Class<?> instructionListenerClass = Class.forName(instructionListenerClassName);
+                instructionListener = (InstructionListener) instructionListenerClass.newInstance();
+            } catch (ClassNotFoundException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (InstantiationException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+        if (dumpFlags) {
+
+            System.out.println(propPkgName + ".executionMode{GPU|CPU|JTP|SEQ}=" + executionMode);
+            System.out.println(propPkgName + ".logLevel{OFF|FINEST|FINER|FINE|WARNING|SEVERE|ALL}=" + logger.getLevel());
+            System.out.println(propPkgName + ".enableProfiling{true|false}=" + enableProfiling);
+            System.out.println(propPkgName + ".enableProfilingCSV{true|false}=" + enableProfilingCSV);
+            System.out.println(propPkgName + ".enableVerboseJNI{true|false}=" + enableVerboseJNI);
+            System.out.println(propPkgName + ".enableVerboseJNIOpenCLResourceTracking{true|false}="
+                    + enableVerboseJNIOpenCLResourceTracking);
+            System.out.println(propPkgName + ".enableShowGeneratedOpenCL{true|false}=" + enableShowGeneratedOpenCL);
+            System.out.println(propPkgName + ".enableShowJavaP{true|false}=" + enableShowJavaP);
+            System.out.println(propPkgName + ".enableExecutionModeReporting{true|false}=" + enableExecutionModeReporting);
+            //    System.out.println(propPkgName + ".enableUseRealLocalVariableTableIfAvailable{true|false}="+enableUseRealLocalVariableTableIfAvailable);
+            System.out.println(propPkgName + ".enableShowLocalVariableTable{true|false}=" + enableShowLocalVariableTable);
+            System.out.println(propPkgName + ".enableInstructionDecodeViewer{true|false}=" + enableInstructionDecodeViewer);
+            System.out.println(propPkgName
+                    + ".instructionListenerClassName{<class name which extends com.amd.aparapi.Config.InstructionListener>}="
+                    + instructionListenerClassName);
+
+        }
+    }
 
 }

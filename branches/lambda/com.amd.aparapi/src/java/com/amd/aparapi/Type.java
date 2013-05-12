@@ -11,20 +11,24 @@ public abstract class Type {
     protected Class clazz;
     protected int javaSlots;
 
-    Class getClazz(){
-        return(clazz);
+    Class getClazz() {
+        return (clazz);
     }
-    int getJavaSlots(){
-        return(javaSlots);
+
+    int getJavaSlots() {
+        return (javaSlots);
     }
-    String getJavaName(){
-        return(clazz.getName());
+
+    String getJavaName() {
+        return (clazz.getName());
     }
-    Type(Class _clazz, int _javaSlots){
+
+    Type(Class _clazz, int _javaSlots) {
         clazz = _clazz;
         javaSlots = _javaSlots;
 
     }
+
     abstract String getHSAName();
 
 }

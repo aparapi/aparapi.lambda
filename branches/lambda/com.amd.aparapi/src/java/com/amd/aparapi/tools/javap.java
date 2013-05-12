@@ -1,4 +1,5 @@
 package com.amd.aparapi.tools;
+
 import com.amd.aparapi.AparapiException;
 import com.amd.aparapi.ClassModel;
 import com.amd.aparapi.MethodModel;

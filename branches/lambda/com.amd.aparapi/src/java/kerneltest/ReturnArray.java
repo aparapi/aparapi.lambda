@@ -11,21 +11,22 @@ import com.amd.aparapi.Kernel;
  * Time: 4:35 PM
  * To change this template use File | Settings | File Templates.
  */
-public class ReturnArray extends Kernel{
+public class ReturnArray extends Kernel {
 
-   float[] returnFloatArrayVar() {
-      float[] floats = new float[1024];
-      return floats;
-   }
+    float[] returnFloatArrayVar() {
+        float[] floats = new float[1024];
+        return floats;
+    }
 
-   @Override public void run() {
+    @Override
+    public void run() {
 
-      returnFloatArrayVar();
-   }
+        returnFloatArrayVar();
+    }
 
-   public static void main(String[] args) throws AparapiException{
-       ReturnArray ra = new ReturnArray();
-       ra.execute(1);
-   }
+    public static void main(String[] args) throws AparapiException {
+        ReturnArray ra = new ReturnArray();
+        ra.execute(1);
+    }
 }
 

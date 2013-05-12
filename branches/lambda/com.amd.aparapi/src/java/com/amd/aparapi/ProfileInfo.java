@@ -37,62 +37,62 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 */
 package com.amd.aparapi;
 
-public class ProfileInfo{
-   private enum TYPE{
-      R,
-      X,
-      W
-   }
+public class ProfileInfo {
+    private enum TYPE {
+        R,
+        X,
+        W
+    }
 
-   ; // 0 = write, 1 = execute, 2 = read
+    ; // 0 = write, 1 = execute, 2 = read
 
-   TYPE type;
+    TYPE type;
 
-   private String label;
+    private String label;
 
-   private long start;
+    private long start;
 
-   private long end;
+    private long end;
 
-   private long submit;
+    private long submit;
 
-   private long queued;
+    private long queued;
 
-   public ProfileInfo(String _label, int _type, long _start, long _end, long _submit, long _queued){
-      type = TYPE.values()[_type];
-      label = _label == null ? "exec()" : _label;
-      start = _start;
-      end = _end;
-      submit = _submit;
-      queued = _queued;
-   }
+    public ProfileInfo(String _label, int _type, long _start, long _end, long _submit, long _queued) {
+        type = TYPE.values()[_type];
+        label = _label == null ? "exec()" : _label;
+        start = _start;
+        end = _end;
+        submit = _submit;
+        queued = _queued;
+    }
 
-   public long getStart(){
-      return start;
-   }
+    public long getStart() {
+        return start;
+    }
 
-   public long getEnd(){
-      return end;
-   }
+    public long getEnd() {
+        return end;
+    }
 
-   public long getSubmit(){
-      return submit;
-   }
+    public long getSubmit() {
+        return submit;
+    }
 
-   public long getQueued(){
-      return queued;
-   }
+    public long getQueued() {
+        return queued;
+    }
 
-   public String toString(){
-      return "ProfileInfo[" + type + " '" + label + "' start=" + start + ", end=" + end + ", submit=" + submit + ", queued="
-            + queued + ", duration=" + (end - start) + "]";
-   }
+    public String toString() {
+        return "ProfileInfo[" + type + " '" + label + "' start=" + start + ", end=" + end + ", submit=" + submit + ", queued="
+                + queued + ", duration=" + (end - start) + "]";
+    }
 
-   public String getLabel(){
-      return (label);
-   }
+    public String getLabel() {
+        return (label);
+    }
 
-   public TYPE getType(){
-      return (type);
-   }
+    public TYPE getType() {
+        return (type);
+    }
 }
