@@ -14,17 +14,21 @@ public class ClassType extends Type {
     ClassType(Class _clazz) {
         super(_clazz, 1);
     }
-    @Override public String getHSAName(){
-        return("u64");
+
+    @Override
+    public String getHSAName() {
+        return ("u64");
     }
+
     static Map<Class, ClassType> map = new HashMap<Class, ClassType>();
-    static synchronized ClassType getClassType(Class _clazz){
+
+    static synchronized ClassType getClassType(Class _clazz) {
         ClassType classType = map.get(_clazz);
-        if (classType == null){
+        if (classType == null) {
             classType = new ClassType(_clazz);
             map.put(_clazz, classType);
 
         }
-        return(classType);
+        return (classType);
     }
 }

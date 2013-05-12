@@ -98,272 +98,278 @@ import java.util.Set;
  * @author gfrost
  */
 
-class BranchSet{
-   /**
-    * Base abstract class used to hold information used to construct node tree for logical expressions.
-    *
-    * @author gfrost
-    * @see SimpleLogicalExpressionNode
-    * @see CompoundLogicalExpressionNode
-    */
-   static abstract class LogicalExpressionNode{
-      private LogicalExpressionNode next = null;
+class BranchSet {
+    /**
+     * Base abstract class used to hold information used to construct node tree for logical expressions.
+     *
+     * @author gfrost
+     * @see SimpleLogicalExpressionNode
+     * @see CompoundLogicalExpressionNode
+     */
+    static abstract class LogicalExpressionNode {
+        private LogicalExpressionNode next = null;
 
-      private LogicalExpressionNode parent = null;
+        private LogicalExpressionNode parent = null;
 
-      void setParent(LogicalExpressionNode _parent){
-         parent = _parent;
-      }
+        void setParent(LogicalExpressionNode _parent) {
+            parent = _parent;
+        }
 
-      abstract int getTarget();
+        abstract int getTarget();
 
-      abstract int getFallThrough();
+        abstract int getFallThrough();
 
-      abstract void invert();
+        abstract void invert();
 
-      LogicalExpressionNode getRoot(){
-         if(parent != null){
-            return (parent);
-         }else{
-            return (this);
-         }
-      }
-
-      LogicalExpressionNode getNext(){
-         return (next == null ? next : next.getRoot());
-      }
-
-      void setNext(LogicalExpressionNode _next){
-         next = _next == null ? _next : _next.getRoot();
-      }
-
-      LogicalExpressionNode getParent(){
-         return (parent);
-      }
-   }
-
-   /**
-    * OREF node in the expression tree representing a simple logical expression.
-    * <p/>
-    * For example <bold><code>(i&lt3)</code></bold> in the following would appear as a SimpleLogicalExpressionNode<br/>
-    * <pre><code>
-    * if (i<3){}
-    * </code></pre>
-    *
-    * @author gfrost
-    */
-   static class SimpleLogicalExpressionNode extends LogicalExpressionNode{
-      private ConditionalBranch branch;
-
-      protected boolean invert = false;
-
-      SimpleLogicalExpressionNode(ConditionalBranch _branch){
-         branch = _branch;
-      }
-
-      @Override int getTarget(){
-         return (getBranch().getTarget().getThisPC());
-      }
-
-      @Override void invert(){
-         invert = !invert;
-      }
-
-      @Override int getFallThrough(){
-         return (getBranch().getNextPC().getThisPC());
-      }
-
-      boolean isInvert(){
-         return (invert);
-      }
-
-      ConditionalBranch getBranch(){
-         return branch;
-      }
-
-   }
-
-   /**
-    * OREF node in the expression tree representing a simple logical expression.
-    * <p/>
-    * For example <bold><code>(i&lt3 || i&gt10)</code></bold> in the following would appear as a CompoundLogicalExpressionNode<br/>
-    * <pre><code>
-    * if (i<3 || i>10){}
-    * </code></pre>
-    *
-    * @author gfrost
-    */
-   static class CompoundLogicalExpressionNode extends LogicalExpressionNode{
-      private LogicalExpressionNode lhs;
-
-      private LogicalExpressionNode rhs;
-
-      private boolean and;
-
-      CompoundLogicalExpressionNode(boolean _and, LogicalExpressionNode _lhs, LogicalExpressionNode _rhs){
-         lhs = _lhs;
-         and = _and;
-         rhs = _rhs;
-         setNext(_rhs.getNext());
-         if(and){
-            lhs.invert();
-            // rhs.invert();
-         }
-         rhs.setParent(this);
-         lhs.setParent(this);
-      }
-
-      @Override int getTarget(){
-         return (rhs.getTarget());
-      }
-
-      @Override void invert(){
-         and = !and;
-         lhs.invert();
-         rhs.invert();
-      }
-
-      boolean isAnd(){
-         return (and);
-      }
-
-      @Override int getFallThrough(){
-         return (rhs.getFallThrough());
-      }
-
-      LogicalExpressionNode getLhs(){
-
-         return lhs;
-      }
-
-      LogicalExpressionNode getRhs(){
-
-         return rhs;
-      }
-   }
-
-   private List<ConditionalBranch> set = new ArrayList<ConditionalBranch>();
-
-   private Instruction fallThrough;
-
-   private Instruction target;
-
-   private Branch last;
-
-   private Branch first;
-
-   private LogicalExpressionNode logicalExpressionNode = null;
-
-   /**
-    * We construct a branch set with the 'last' branch.  It is assumed that all nodes prior to <code>_branch</code> are folded.
-    * <p/>
-    * This will walk backwards until it finds a non-branch or until it finds a branch that does not below to this set.
-    *
-    * @param _branch
-    */
-   BranchSet(Branch _branch){
-      target = _branch.getTarget();
-      last = _branch;
-
-      Set<Branch> expandedSet = new LinkedHashSet<Branch>();
-      Instruction fallThroughRoot = last.getNextExpr();
-      fallThrough = fallThroughRoot == null ? last.getNextPC() : fallThroughRoot.getStartInstruction();
-      first = last;
-      while(first.getPrevExpr() != null && first.getPrevExpr().isBranch() && first.getPrevExpr().asBranch().isConditional()){
-         Instruction prevBranchTarget = first.getPrevExpr().asBranch().getTarget();
-         Instruction prevBranchTargetRoot = prevBranchTarget.getRootExpr();
-         if(prevBranchTarget == target || prevBranchTarget == fallThrough || expandedSet.contains(prevBranchTargetRoot)){
-            expandedSet.add(first);
-            first = first.getPrevExpr().asBranch();
-         }else{
-            break;
-         }
-      }
-      for(Instruction i = first; i != fallThroughRoot; i = i.getNextExpr()){
-         set.add((ConditionalBranch) i.asBranch());
-         ((ConditionalBranch) i.asBranch()).setBranchSet(this);
-      }
-
-      //   ConditionalBranch16 branches[] = set.toArray(new ConditionalBranch16[0]);
-
-      LogicalExpressionNode end = null;
-      for(ConditionalBranch cb : set){
-         SimpleLogicalExpressionNode sn = new SimpleLogicalExpressionNode(cb);
-         if(logicalExpressionNode == null){
-            logicalExpressionNode = sn;
-         }else{
-            end.setNext(sn);
-         }
-         end = sn;
-      }
-      int count = 0;
-      while(logicalExpressionNode.next != null){
-         if(++count > 20){
-            throw new IllegalStateException("Sanity check, we seem to have >20 iterations collapsing logical expression");
-         }
-         LogicalExpressionNode n = logicalExpressionNode;
-         LogicalExpressionNode prev = null;
-         int i = 0;
-
-         while(n != null && n.getNext() != null){
-            if(n.getTarget() == n.getNext().getTarget() || n.getTarget() == n.getNext().getFallThrough()){
-               LogicalExpressionNode newNode = null;
-               if(n.getTarget() == n.getNext().getTarget()){
-                  // lhs(n) and rhs(n.next) are branching to the same location so we replace (lhs ?? rhs) with (lhs || rhs)
-                  // System.out.println("exp["+i+"] exp["+(i+1)+"] replaced by (exp["+i+"] || exp["+(i+1)+"])");
-                  newNode = new CompoundLogicalExpressionNode(false, n, n.getNext());
-               }else if(n.getTarget() == n.getNext().getFallThrough()){
-                  // lhs(n) target and rhs(n.next) fallthrough are the same so we replace (lhs ?? rhs) with !(lhs && rhs)
-                  // System.out.println("exp["+i+"] exp["+(i+1)+"] replaced by (!exp["+i+"] && exp["+(i+1)+"])");
-                  newNode = new CompoundLogicalExpressionNode(true, n, n.getNext());
-               }
-               if(n == logicalExpressionNode){
-                  logicalExpressionNode = newNode;
-               }
-               if(prev != null){
-                  prev.setNext(newNode);
-               }
-               break;
-            }else{
-               prev = n;
-               n = n.getNext();
-               i++;
+        LogicalExpressionNode getRoot() {
+            if (parent != null) {
+                return (parent);
+            } else {
+                return (this);
             }
-         }
+        }
 
-      }
+        LogicalExpressionNode getNext() {
+            return (next == null ? next : next.getRoot());
+        }
 
-   }
+        void setNext(LogicalExpressionNode _next) {
+            next = _next == null ? _next : _next.getRoot();
+        }
 
-   List<ConditionalBranch> getBranches(){
-      return (set);
-   }
+        LogicalExpressionNode getParent() {
+            return (parent);
+        }
+    }
 
-   Branch getFirst(){
-      return (first);
-   }
+    /**
+     * OREF node in the expression tree representing a simple logical expression.
+     * <p/>
+     * For example <bold><code>(i&lt3)</code></bold> in the following would appear as a SimpleLogicalExpressionNode<br/>
+     * <pre><code>
+     * if (i<3){}
+     * </code></pre>
+     *
+     * @author gfrost
+     */
+    static class SimpleLogicalExpressionNode extends LogicalExpressionNode {
+        private ConditionalBranch branch;
 
-   Branch getLast(){
+        protected boolean invert = false;
 
-      return (last);
-   }
+        SimpleLogicalExpressionNode(ConditionalBranch _branch) {
+            branch = _branch;
+        }
 
-   void unhook(){
-      for(Branch b : set){
-         b.unhook();
-      }
-   }
+        @Override
+        int getTarget() {
+            return (getBranch().getTarget().getThisPC());
+        }
 
-   Instruction getTarget(){
-      return (target);
-   }
+        @Override
+        void invert() {
+            invert = !invert;
+        }
 
-   Instruction getFallThrough(){
-      return (fallThrough);
-   }
+        @Override
+        int getFallThrough() {
+            return (getBranch().getNextPC().getThisPC());
+        }
 
-   LogicalExpressionNode getLogicalExpression(){
-      return (logicalExpressionNode);
+        boolean isInvert() {
+            return (invert);
+        }
 
-   }
+        ConditionalBranch getBranch() {
+            return branch;
+        }
+
+    }
+
+    /**
+     * OREF node in the expression tree representing a simple logical expression.
+     * <p/>
+     * For example <bold><code>(i&lt3 || i&gt10)</code></bold> in the following would appear as a CompoundLogicalExpressionNode<br/>
+     * <pre><code>
+     * if (i<3 || i>10){}
+     * </code></pre>
+     *
+     * @author gfrost
+     */
+    static class CompoundLogicalExpressionNode extends LogicalExpressionNode {
+        private LogicalExpressionNode lhs;
+
+        private LogicalExpressionNode rhs;
+
+        private boolean and;
+
+        CompoundLogicalExpressionNode(boolean _and, LogicalExpressionNode _lhs, LogicalExpressionNode _rhs) {
+            lhs = _lhs;
+            and = _and;
+            rhs = _rhs;
+            setNext(_rhs.getNext());
+            if (and) {
+                lhs.invert();
+                // rhs.invert();
+            }
+            rhs.setParent(this);
+            lhs.setParent(this);
+        }
+
+        @Override
+        int getTarget() {
+            return (rhs.getTarget());
+        }
+
+        @Override
+        void invert() {
+            and = !and;
+            lhs.invert();
+            rhs.invert();
+        }
+
+        boolean isAnd() {
+            return (and);
+        }
+
+        @Override
+        int getFallThrough() {
+            return (rhs.getFallThrough());
+        }
+
+        LogicalExpressionNode getLhs() {
+
+            return lhs;
+        }
+
+        LogicalExpressionNode getRhs() {
+
+            return rhs;
+        }
+    }
+
+    private List<ConditionalBranch> set = new ArrayList<ConditionalBranch>();
+
+    private Instruction fallThrough;
+
+    private Instruction target;
+
+    private Branch last;
+
+    private Branch first;
+
+    private LogicalExpressionNode logicalExpressionNode = null;
+
+    /**
+     * We construct a branch set with the 'last' branch.  It is assumed that all nodes prior to <code>_branch</code> are folded.
+     * <p/>
+     * This will walk backwards until it finds a non-branch or until it finds a branch that does not below to this set.
+     *
+     * @param _branch
+     */
+    BranchSet(Branch _branch) {
+        target = _branch.getTarget();
+        last = _branch;
+
+        Set<Branch> expandedSet = new LinkedHashSet<Branch>();
+        Instruction fallThroughRoot = last.getNextExpr();
+        fallThrough = fallThroughRoot == null ? last.getNextPC() : fallThroughRoot.getStartInstruction();
+        first = last;
+        while (first.getPrevExpr() != null && first.getPrevExpr().isBranch() && first.getPrevExpr().asBranch().isConditional()) {
+            Instruction prevBranchTarget = first.getPrevExpr().asBranch().getTarget();
+            Instruction prevBranchTargetRoot = prevBranchTarget.getRootExpr();
+            if (prevBranchTarget == target || prevBranchTarget == fallThrough || expandedSet.contains(prevBranchTargetRoot)) {
+                expandedSet.add(first);
+                first = first.getPrevExpr().asBranch();
+            } else {
+                break;
+            }
+        }
+        for (Instruction i = first; i != fallThroughRoot; i = i.getNextExpr()) {
+            set.add((ConditionalBranch) i.asBranch());
+            ((ConditionalBranch) i.asBranch()).setBranchSet(this);
+        }
+
+        //   ConditionalBranch16 branches[] = set.toArray(new ConditionalBranch16[0]);
+
+        LogicalExpressionNode end = null;
+        for (ConditionalBranch cb : set) {
+            SimpleLogicalExpressionNode sn = new SimpleLogicalExpressionNode(cb);
+            if (logicalExpressionNode == null) {
+                logicalExpressionNode = sn;
+            } else {
+                end.setNext(sn);
+            }
+            end = sn;
+        }
+        int count = 0;
+        while (logicalExpressionNode.next != null) {
+            if (++count > 20) {
+                throw new IllegalStateException("Sanity check, we seem to have >20 iterations collapsing logical expression");
+            }
+            LogicalExpressionNode n = logicalExpressionNode;
+            LogicalExpressionNode prev = null;
+            int i = 0;
+
+            while (n != null && n.getNext() != null) {
+                if (n.getTarget() == n.getNext().getTarget() || n.getTarget() == n.getNext().getFallThrough()) {
+                    LogicalExpressionNode newNode = null;
+                    if (n.getTarget() == n.getNext().getTarget()) {
+                        // lhs(n) and rhs(n.next) are branching to the same location so we replace (lhs ?? rhs) with (lhs || rhs)
+                        // System.out.println("exp["+i+"] exp["+(i+1)+"] replaced by (exp["+i+"] || exp["+(i+1)+"])");
+                        newNode = new CompoundLogicalExpressionNode(false, n, n.getNext());
+                    } else if (n.getTarget() == n.getNext().getFallThrough()) {
+                        // lhs(n) target and rhs(n.next) fallthrough are the same so we replace (lhs ?? rhs) with !(lhs && rhs)
+                        // System.out.println("exp["+i+"] exp["+(i+1)+"] replaced by (!exp["+i+"] && exp["+(i+1)+"])");
+                        newNode = new CompoundLogicalExpressionNode(true, n, n.getNext());
+                    }
+                    if (n == logicalExpressionNode) {
+                        logicalExpressionNode = newNode;
+                    }
+                    if (prev != null) {
+                        prev.setNext(newNode);
+                    }
+                    break;
+                } else {
+                    prev = n;
+                    n = n.getNext();
+                    i++;
+                }
+            }
+
+        }
+
+    }
+
+    List<ConditionalBranch> getBranches() {
+        return (set);
+    }
+
+    Branch getFirst() {
+        return (first);
+    }
+
+    Branch getLast() {
+
+        return (last);
+    }
+
+    void unhook() {
+        for (Branch b : set) {
+            b.unhook();
+        }
+    }
+
+    Instruction getTarget() {
+        return (target);
+    }
+
+    Instruction getFallThrough() {
+        return (fallThrough);
+    }
+
+    LogicalExpressionNode getLogicalExpression() {
+        return (logicalExpressionNode);
+
+    }
 }

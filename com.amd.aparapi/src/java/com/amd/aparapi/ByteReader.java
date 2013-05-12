@@ -49,116 +49,116 @@ import java.io.InputStream;
  * @author gfrost
  * @see com.amd.aparapi.ByteBuffer
  */
-class ByteReader{
-   private final ByteBuffer byteBuffer;
+class ByteReader {
+    private final ByteBuffer byteBuffer;
 
-   private int offset;
+    private int offset;
 
-   /**
-    * Construct form a given ByteBuffer.
-    *
-    * @param _byteBuffer an existing <code>ByteBuffer</code>
-    */
-   ByteReader(ByteBuffer _byteBuffer){
-      byteBuffer = _byteBuffer;
-   }
+    /**
+     * Construct form a given ByteBuffer.
+     *
+     * @param _byteBuffer an existing <code>ByteBuffer</code>
+     */
+    ByteReader(ByteBuffer _byteBuffer) {
+        byteBuffer = _byteBuffer;
+    }
 
-   /**
-    * Construct form an array of bytes.
-    *
-    * @param _bytes an existing byte array
-    */
-   ByteReader(byte[] _bytes){
-      this(new ByteBuffer(_bytes));
-   }
+    /**
+     * Construct form an array of bytes.
+     *
+     * @param _bytes an existing byte array
+     */
+    ByteReader(byte[] _bytes) {
+        this(new ByteBuffer(_bytes));
+    }
 
-   /**
-    * Construct form an input stream (say a ClassFile).
-    *
-    * @param _inputStream a stream of bytes
-    */
-   ByteReader(InputStream _inputStream){
-      this(new ByteBuffer(_inputStream));
-   }
+    /**
+     * Construct form an input stream (say a ClassFile).
+     *
+     * @param _inputStream a stream of bytes
+     */
+    ByteReader(InputStream _inputStream) {
+        this(new ByteBuffer(_inputStream));
+    }
 
-   int u1(){
-      int value = byteBuffer.u1(offset);
-      offset += 1;
-      return (value);
-   }
+    int u1() {
+        int value = byteBuffer.u1(offset);
+        offset += 1;
+        return (value);
+    }
 
-   int u2(){
-      int value = byteBuffer.u2(offset);
-      offset += 2;
-      return (value);
-   }
+    int u2() {
+        int value = byteBuffer.u2(offset);
+        offset += 2;
+        return (value);
+    }
 
-   int s2(){
-      int value = byteBuffer.s2(offset);
-      offset += 2;
-      return (value);
-   }
+    int s2() {
+        int value = byteBuffer.s2(offset);
+        offset += 2;
+        return (value);
+    }
 
-   int peekU2(){
-      return (byteBuffer.u2(offset));
-   }
+    int peekU2() {
+        return (byteBuffer.u2(offset));
+    }
 
-   int u4(){
-      int value = byteBuffer.u4(offset);
-      offset += 4;
-      return (value);
-   }
+    int u4() {
+        int value = byteBuffer.u4(offset);
+        offset += 4;
+        return (value);
+    }
 
-   int s4(){
-      int value = byteBuffer.s4(offset);
-      offset += 4;
-      return (value);
-   }
+    int s4() {
+        int value = byteBuffer.s4(offset);
+        offset += 4;
+        return (value);
+    }
 
-   long u8(){
-      long value = byteBuffer.u8(offset);
-      offset += 8;
-      return (value);
-   }
+    long u8() {
+        long value = byteBuffer.u8(offset);
+        offset += 8;
+        return (value);
+    }
 
-   float f4(){
-      float value = byteBuffer.f4(offset);
-      offset += 4;
-      return (value);
-   }
+    float f4() {
+        float value = byteBuffer.f4(offset);
+        offset += 4;
+        return (value);
+    }
 
-   double d8(){
-      double value = byteBuffer.d8(offset);
-      offset += 8;
-      return (value);
-   }
+    double d8() {
+        double value = byteBuffer.d8(offset);
+        offset += 8;
+        return (value);
+    }
 
-   String utf8(){
-      String utf8 = byteBuffer.utf8(offset);
-      offset += byteBuffer.utf8bytes(offset);
-      return (utf8);
-   }
+    String utf8() {
+        String utf8 = byteBuffer.utf8(offset);
+        offset += byteBuffer.utf8bytes(offset);
+        return (utf8);
+    }
 
-   byte[] bytes(int _length){
-      byte[] bytes = byteBuffer.bytes(offset, _length);
-      offset += _length;
-      return (bytes);
-   }
+    byte[] bytes(int _length) {
+        byte[] bytes = byteBuffer.bytes(offset, _length);
+        offset += _length;
+        return (bytes);
+    }
 
-   void skip(int _length){
-      offset += _length;
-   }
+    void skip(int _length) {
+        offset += _length;
+    }
 
-   int getOffset(){
-      return (offset);
-   }
+    int getOffset() {
+        return (offset);
+    }
 
-   void setOffset(int _offset){
-      offset = _offset;
-   }
+    void setOffset(int _offset) {
+        offset = _offset;
+    }
 
-   boolean hasMore(){
-      return (getOffset() < byteBuffer.size());
-   }
+    boolean hasMore() {
+        return (getOffset() < byteBuffer.size());
+    }
 
 }
