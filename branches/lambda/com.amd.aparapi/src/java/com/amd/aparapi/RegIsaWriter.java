@@ -7,19 +7,19 @@ package com.amd.aparapi;
  * Time: 4:25 PM
  * To change this template use File | Settings | File Templates.
  */
-public class RegIsaWriter {
+public class RegIsaWriter{
 
 
-    static void write(RegISA regISA) {
+   static void write(RegISA regISA){
 
 
-        // System.out.println(InstructionHelper.getJavapView(method));
+      // System.out.println(InstructionHelper.getJavapView(method));
 
 
-        //System.out.println("MaxLocals=" + method.getCodeEntry().getMaxLocals());
-        //System.out.println("MaxStack=" + method.getCodeEntry().getMaxStack());
-        // Table table = new Table("|%2d ", "|%2d", "|%2d", "|%s", "|%d", "|%d","|%d", "|%-60s", "|%s");
-        // table.header("|PC ", "|Depth", "|Block", "|Consumes + count", "|Produces", "|PreStackBase","|PostStackBase", "|Instruction", "|Branches");
+      //System.out.println("MaxLocals=" + method.getCodeEntry().getMaxLocals());
+      //System.out.println("MaxStack=" + method.getCodeEntry().getMaxStack());
+      // Table table = new Table("|%2d ", "|%2d", "|%2d", "|%s", "|%d", "|%d","|%d", "|%-60s", "|%s");
+      // table.header("|PC ", "|Depth", "|Block", "|Consumes + count", "|Produces", "|PreStackBase","|PostStackBase", "|Instruction", "|Branches");
 
 
 
@@ -46,10 +46,10 @@ public class RegIsaWriter {
       }
        System.out.println("{\n" + table.toString() + "}\n");
        */
-        ;
+      ;
 
-        System.out.println(regISA.render(new RegISARenderer()));
-    }
+      System.out.println(regISA.render(new RegISARenderer()));
+   }
 
 
 }

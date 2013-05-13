@@ -38,13 +38,13 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 package com.amd.aparapi;
 
 @SuppressWarnings("serial")
-public class CodeGenException extends AparapiException {
+public class CodeGenException extends AparapiException{
 
-    CodeGenException(String msg) {
-        super(msg);
-    }
+   CodeGenException(String msg){
+      super(msg);
+   }
 
-    CodeGenException(Throwable t) {
-        super(t);
-    }
+   CodeGenException(Throwable t){
+      super(t);
+   }
 }
