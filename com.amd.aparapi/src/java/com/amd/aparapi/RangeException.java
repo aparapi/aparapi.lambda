@@ -37,11 +37,10 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 */
 package com.amd.aparapi;
 
-@SuppressWarnings("serial")
-class RangeException extends AparapiException {
+@SuppressWarnings("serial") class RangeException extends AparapiException{
 
-    RangeException(String msg) {
-        super(msg);
-    }
+   RangeException(String msg){
+      super(msg);
+   }
 
 }

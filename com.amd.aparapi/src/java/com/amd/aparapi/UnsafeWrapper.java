@@ -51,365 +51,365 @@ import java.lang.reflect.Method;
  * @author gfrost
  */
 
-class UnsafeWrapper {
+class UnsafeWrapper{
 
-    private static Object unsafe;
+   private static Object unsafe;
 
-    private static Method getIntVolatileMethod;
+   private static Method getIntVolatileMethod;
 
-    private static Method arrayBaseOffsetMethod;
+   private static Method arrayBaseOffsetMethod;
 
-    private static Method arrayIndexScaleMethod;
+   private static Method arrayIndexScaleMethod;
 
-    private static Method getObjectMethod;
+   private static Method getObjectMethod;
 
-    private static Method getIntMethod;
+   private static Method getIntMethod;
 
-    private static Method getFloatMethod;
+   private static Method getFloatMethod;
 
-    private static Method getByteMethod;
+   private static Method getByteMethod;
 
-    private static Method getBooleanMethod;
+   private static Method getBooleanMethod;
 
-    private static Method getLongMethod;
+   private static Method getLongMethod;
 
-    private static Method objectFieldOffsetMethod;
+   private static Method objectFieldOffsetMethod;
 
-    private static Method putBooleanMethod;
+   private static Method putBooleanMethod;
 
-    private static Method putIntMethod;
+   private static Method putIntMethod;
 
-    private static Method putFloatMethod;
+   private static Method putFloatMethod;
 
-    private static Method putDoubleMethod;
+   private static Method putDoubleMethod;
 
-    private static Method putByteMethod;
+   private static Method putByteMethod;
 
-    private static Method putLongMethod;
+   private static Method putLongMethod;
 
-    private static Method compareAndSwapIntMethod;
+   private static Method compareAndSwapIntMethod;
 
-    static {
-        try {
-            Class<?> uc = Class.forName("sun.misc.Unsafe");
+   static{
+      try{
+         Class<?> uc = Class.forName("sun.misc.Unsafe");
 
-            Field field = uc.getDeclaredField("theUnsafe");
-            field.setAccessible(true);
-            unsafe = field.get(uc);
-            getIntVolatileMethod = uc.getDeclaredMethod("getIntVolatile", Object.class, long.class);
-            arrayBaseOffsetMethod = uc.getDeclaredMethod("arrayBaseOffset", Class.class);
-            arrayIndexScaleMethod = uc.getDeclaredMethod("arrayIndexScale", Class.class);
-            getObjectMethod = uc.getDeclaredMethod("getObject", Object.class, long.class);
-            getIntMethod = uc.getDeclaredMethod("getInt", Object.class, long.class);
-            getFloatMethod = uc.getDeclaredMethod("getFloat", Object.class, long.class);
-            getByteMethod = uc.getDeclaredMethod("getByte", Object.class, long.class);
-            getBooleanMethod = uc.getDeclaredMethod("getBoolean", Object.class, long.class);
-            getLongMethod = uc.getDeclaredMethod("getLong", Object.class, long.class);
-            objectFieldOffsetMethod = uc.getDeclaredMethod("objectFieldOffset", Field.class);
-            putBooleanMethod = uc.getDeclaredMethod("putBoolean", Object.class, long.class, boolean.class);
-            putIntMethod = uc.getDeclaredMethod("putInt", Object.class, long.class, int.class);
-            putFloatMethod = uc.getDeclaredMethod("putFloat", Object.class, long.class, float.class);
-            putDoubleMethod = uc.getDeclaredMethod("putDouble", Object.class, long.class, double.class);
-            putLongMethod = uc.getDeclaredMethod("putLong", Object.class, long.class, long.class);
-            putByteMethod = uc.getDeclaredMethod("putByte", Object.class, long.class, byte.class);
-            compareAndSwapIntMethod = uc.getDeclaredMethod("compareAndSwapInt", Object.class, long.class, int.class, int.class);
-        } catch (SecurityException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (NoSuchFieldException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IllegalArgumentException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (NoSuchMethodException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+         Field field = uc.getDeclaredField("theUnsafe");
+         field.setAccessible(true);
+         unsafe = field.get(uc);
+         getIntVolatileMethod = uc.getDeclaredMethod("getIntVolatile", Object.class, long.class);
+         arrayBaseOffsetMethod = uc.getDeclaredMethod("arrayBaseOffset", Class.class);
+         arrayIndexScaleMethod = uc.getDeclaredMethod("arrayIndexScale", Class.class);
+         getObjectMethod = uc.getDeclaredMethod("getObject", Object.class, long.class);
+         getIntMethod = uc.getDeclaredMethod("getInt", Object.class, long.class);
+         getFloatMethod = uc.getDeclaredMethod("getFloat", Object.class, long.class);
+         getByteMethod = uc.getDeclaredMethod("getByte", Object.class, long.class);
+         getBooleanMethod = uc.getDeclaredMethod("getBoolean", Object.class, long.class);
+         getLongMethod = uc.getDeclaredMethod("getLong", Object.class, long.class);
+         objectFieldOffsetMethod = uc.getDeclaredMethod("objectFieldOffset", Field.class);
+         putBooleanMethod = uc.getDeclaredMethod("putBoolean", Object.class, long.class, boolean.class);
+         putIntMethod = uc.getDeclaredMethod("putInt", Object.class, long.class, int.class);
+         putFloatMethod = uc.getDeclaredMethod("putFloat", Object.class, long.class, float.class);
+         putDoubleMethod = uc.getDeclaredMethod("putDouble", Object.class, long.class, double.class);
+         putLongMethod = uc.getDeclaredMethod("putLong", Object.class, long.class, long.class);
+         putByteMethod = uc.getDeclaredMethod("putByte", Object.class, long.class, byte.class);
+         compareAndSwapIntMethod = uc.getDeclaredMethod("compareAndSwapInt", Object.class, long.class, int.class, int.class);
+      }catch(SecurityException e){
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }catch(NoSuchFieldException e){
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }catch(IllegalArgumentException e){
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }catch(IllegalAccessException e){
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }catch(ClassNotFoundException e){
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }catch(NoSuchMethodException e){
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }
 
-    }
+   }
 
-    static int atomicAdd(int[] _arr, int _index, int _delta) {
-        if (_index < 0 || _index >= _arr.length) {
-            throw new IndexOutOfBoundsException("index " + _index);
-        }
+   static int atomicAdd(int[] _arr, int _index, int _delta){
+      if(_index < 0 || _index >= _arr.length){
+         throw new IndexOutOfBoundsException("index " + _index);
+      }
 
-        long rawIndex = intArrayBase + (long) _index * intArrayScale;
-        while (true) {
-            int current;
-            try {
-                current = (Integer) getIntVolatileMethod.invoke(unsafe, _arr, rawIndex);
-                int next = current + _delta;
-                if ((Boolean) compareAndSwapIntMethod.invoke(unsafe, _arr, rawIndex, current, next)) {
-                    return current;
-                }
-            } catch (IllegalArgumentException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+      long rawIndex = intArrayBase + (long) _index * intArrayScale;
+      while(true){
+         int current;
+         try{
+            current = (Integer) getIntVolatileMethod.invoke(unsafe, _arr, rawIndex);
+            int next = current + _delta;
+            if((Boolean) compareAndSwapIntMethod.invoke(unsafe, _arr, rawIndex, current, next)){
+               return current;
             }
+         }catch(IllegalArgumentException e){
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+         }catch(IllegalAccessException e){
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+         }catch(InvocationTargetException e){
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+         }
 
-        }
+      }
 
-    }
+   }
 
-    static int arrayBaseOffset(Class<?> _arrayClass) {
-        int offset = 0;
+   static int arrayBaseOffset(Class<?> _arrayClass){
+      int offset = 0;
 
-        try {
-            offset = (Integer) (arrayBaseOffsetMethod.invoke(unsafe, _arrayClass));
-        } catch (IllegalArgumentException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+      try{
+         offset = (Integer) (arrayBaseOffsetMethod.invoke(unsafe, _arrayClass));
+      }catch(IllegalArgumentException e){
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }catch(IllegalAccessException e){
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }catch(InvocationTargetException e){
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }
 
-        return (offset);
-    }
+      return (offset);
+   }
 
-    static int arrayIndexScale(Class<?> _arrayClass) {
-        int scale = 0;
-        try {
-            scale = (Integer) (arrayIndexScaleMethod.invoke(unsafe, _arrayClass));
-        } catch (IllegalArgumentException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return scale;
-    }
+   static int arrayIndexScale(Class<?> _arrayClass){
+      int scale = 0;
+      try{
+         scale = (Integer) (arrayIndexScaleMethod.invoke(unsafe, _arrayClass));
+      }catch(IllegalArgumentException e){
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }catch(IllegalAccessException e){
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }catch(InvocationTargetException e){
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }
+      return scale;
+   }
 
-    private static int intArrayBase = arrayBaseOffset(int[].class);
+   private static int intArrayBase = arrayBaseOffset(int[].class);
 
-    private static int intArrayScale = arrayIndexScale(int[].class);
+   private static int intArrayScale = arrayIndexScale(int[].class);
 
-    static Object getObject(Object _object, long _offset) {
-        Object object = null;
-        try {
-            object = getObjectMethod.invoke(unsafe, _object, _offset);
-        } catch (IllegalArgumentException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return (object);
-    }
+   static Object getObject(Object _object, long _offset){
+      Object object = null;
+      try{
+         object = getObjectMethod.invoke(unsafe, _object, _offset);
+      }catch(IllegalArgumentException e){
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }catch(IllegalAccessException e){
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }catch(InvocationTargetException e){
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }
+      return (object);
+   }
 
-    static int getInt(Object _object, long _offset) {
-        int value = 0;
-        try {
-            value = (Integer) getIntMethod.invoke(unsafe, _object, _offset);
-        } catch (IllegalArgumentException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return value;
-    }
+   static int getInt(Object _object, long _offset){
+      int value = 0;
+      try{
+         value = (Integer) getIntMethod.invoke(unsafe, _object, _offset);
+      }catch(IllegalArgumentException e){
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }catch(IllegalAccessException e){
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }catch(InvocationTargetException e){
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }
+      return value;
+   }
 
-    static float getFloat(Object _object, long _offset) {
-        float value = 0;
-        try {
-            value = (Float) getFloatMethod.invoke(unsafe, _object, _offset);
-        } catch (IllegalArgumentException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return value;
-    }
+   static float getFloat(Object _object, long _offset){
+      float value = 0;
+      try{
+         value = (Float) getFloatMethod.invoke(unsafe, _object, _offset);
+      }catch(IllegalArgumentException e){
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }catch(IllegalAccessException e){
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }catch(InvocationTargetException e){
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }
+      return value;
+   }
 
-    static byte getByte(Object _object, long _offset) {
-        byte value = 0;
-        try {
-            value = (Byte) getByteMethod.invoke(unsafe, _object, _offset);
-        } catch (IllegalArgumentException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return value;
-    }
+   static byte getByte(Object _object, long _offset){
+      byte value = 0;
+      try{
+         value = (Byte) getByteMethod.invoke(unsafe, _object, _offset);
+      }catch(IllegalArgumentException e){
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }catch(IllegalAccessException e){
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }catch(InvocationTargetException e){
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }
+      return value;
+   }
 
-    static boolean getBoolean(Object _object, long _offset) {
-        boolean value = false;
-        try {
-            value = (Boolean) getBooleanMethod.invoke(unsafe, _object, _offset);
-        } catch (IllegalArgumentException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return value;
-    }
+   static boolean getBoolean(Object _object, long _offset){
+      boolean value = false;
+      try{
+         value = (Boolean) getBooleanMethod.invoke(unsafe, _object, _offset);
+      }catch(IllegalArgumentException e){
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }catch(IllegalAccessException e){
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }catch(InvocationTargetException e){
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }
+      return value;
+   }
 
-    static long getLong(Object _object, long _offset) {
-        long value = 0;
-        try {
-            value = (Long) getLongMethod.invoke(unsafe, _object, _offset);
-        } catch (IllegalArgumentException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return value;
-    }
+   static long getLong(Object _object, long _offset){
+      long value = 0;
+      try{
+         value = (Long) getLongMethod.invoke(unsafe, _object, _offset);
+      }catch(IllegalArgumentException e){
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }catch(IllegalAccessException e){
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }catch(InvocationTargetException e){
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }
+      return value;
+   }
 
-    static void putBoolean(Object _object, long _offset, boolean _boolean) {
-        try {
-            putBooleanMethod.invoke(unsafe, _object, _offset, _boolean);
-        } catch (IllegalArgumentException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-    }
+   static void putBoolean(Object _object, long _offset, boolean _boolean){
+      try{
+         putBooleanMethod.invoke(unsafe, _object, _offset, _boolean);
+      }catch(IllegalArgumentException e){
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }catch(IllegalAccessException e){
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }catch(InvocationTargetException e){
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }
+   }
 
-    static void putFloat(Object _object, long _offset, float _float) {
-        try {
-            putFloatMethod.invoke(unsafe, _object, _offset, _float);
-        } catch (IllegalArgumentException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-    }
+   static void putFloat(Object _object, long _offset, float _float){
+      try{
+         putFloatMethod.invoke(unsafe, _object, _offset, _float);
+      }catch(IllegalArgumentException e){
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }catch(IllegalAccessException e){
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }catch(InvocationTargetException e){
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }
+   }
 
-    static void putInt(Object _object, long _offset, int _int) {
-        try {
-            putIntMethod.invoke(unsafe, _object, _offset, _int);
-        } catch (IllegalArgumentException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-    }
+   static void putInt(Object _object, long _offset, int _int){
+      try{
+         putIntMethod.invoke(unsafe, _object, _offset, _int);
+      }catch(IllegalArgumentException e){
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }catch(IllegalAccessException e){
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }catch(InvocationTargetException e){
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }
+   }
 
-    static void putDouble(Object _object, long _offset, double _double) {
-        try {
-            putDoubleMethod.invoke(unsafe, _object, _offset, _double);
-        } catch (IllegalArgumentException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-    }
+   static void putDouble(Object _object, long _offset, double _double){
+      try{
+         putDoubleMethod.invoke(unsafe, _object, _offset, _double);
+      }catch(IllegalArgumentException e){
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }catch(IllegalAccessException e){
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }catch(InvocationTargetException e){
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }
+   }
 
-    static void putByte(Object _object, long _offset, byte _byte) {
-        try {
-            putByteMethod.invoke(unsafe, _object, _offset, _byte);
-        } catch (IllegalArgumentException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-    }
+   static void putByte(Object _object, long _offset, byte _byte){
+      try{
+         putByteMethod.invoke(unsafe, _object, _offset, _byte);
+      }catch(IllegalArgumentException e){
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }catch(IllegalAccessException e){
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }catch(InvocationTargetException e){
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }
+   }
 
-    static void putLong(Object _object, long _offset, long _long) {
-        try {
-            putLongMethod.invoke(unsafe, _object, _offset, _long);
-        } catch (IllegalArgumentException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-    }
+   static void putLong(Object _object, long _offset, long _long){
+      try{
+         putLongMethod.invoke(unsafe, _object, _offset, _long);
+      }catch(IllegalArgumentException e){
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }catch(IllegalAccessException e){
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }catch(InvocationTargetException e){
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }
+   }
 
-    static long objectFieldOffset(Field _field) {
-        long offset = 0l;
-        try {
-            offset = (Long) objectFieldOffsetMethod.invoke(unsafe, _field);
-        } catch (IllegalArgumentException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return offset;
-    }
+   static long objectFieldOffset(Field _field){
+      long offset = 0l;
+      try{
+         offset = (Long) objectFieldOffsetMethod.invoke(unsafe, _field);
+      }catch(IllegalArgumentException e){
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }catch(IllegalAccessException e){
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }catch(InvocationTargetException e){
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }
+      return offset;
+   }
 }
