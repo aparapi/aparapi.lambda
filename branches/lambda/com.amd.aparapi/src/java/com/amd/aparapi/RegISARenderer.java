@@ -134,7 +134,7 @@ public class RegISARenderer{
             append(" ");
 
             if(typeSpec.getPrimitiveType().equals(PrimitiveType.ref)){
-               append(typeSpec.getShortName());
+               append(typeSpec.getPrimitiveType().getJavaName());
             }else{
                append("call to type.toString()");
             }
