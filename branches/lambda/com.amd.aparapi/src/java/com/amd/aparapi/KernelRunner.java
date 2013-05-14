@@ -452,32 +452,32 @@ class KernelRunner extends OpenCLRunner{
                case I:{
                   int x = UnsafeWrapper.getInt(object, offset);
                   arg.objArrayByteBuffer.putInt(x);
-                  sizeWritten += t.getSize();
+                  sizeWritten += t.getPrimitiveType().getJavaBytes();
                   break;
                }
                case F:{
                   float x = UnsafeWrapper.getFloat(object, offset);
                   arg.objArrayByteBuffer.putFloat(x);
-                  sizeWritten += t.getSize();
+                  sizeWritten += t.getPrimitiveType().getJavaBytes();
                   break;
                }
                case L:{
                   long x = UnsafeWrapper.getLong(object, offset);
                   arg.objArrayByteBuffer.putLong(x);
-                  sizeWritten += t.getSize();
+                  sizeWritten += t.getPrimitiveType().getJavaBytes();
                   break;
                }
                case Z:{
                   boolean x = UnsafeWrapper.getBoolean(object, offset);
                   arg.objArrayByteBuffer.put(x == true ? (byte) 1 : (byte) 0);
                   // Booleans converted to 1 byte C chars for opencl
-                  sizeWritten += TypeSpec.B.getSize();
+                  sizeWritten += t.getPrimitiveType().getJavaBytes();
                   break;
                }
                case B:{
                   byte x = UnsafeWrapper.getByte(object, offset);
                   arg.objArrayByteBuffer.put(x);
-                  sizeWritten += t.getSize();
+                  sizeWritten += t.getPrimitiveType().getJavaBytes();
                   break;
                }
                case D:{
@@ -551,7 +551,7 @@ class KernelRunner extends OpenCLRunner{
                      logger.finest("fType = " + t.getPrimitiveType().getJavaName() + " x= " + x);
                   }
                   UnsafeWrapper.putInt(object, offset, x);
-                  sizeWritten += t.getSize();
+                  sizeWritten += t.getPrimitiveType().getJavaBytes();
                   break;
                }
                case F:{
@@ -560,7 +560,7 @@ class KernelRunner extends OpenCLRunner{
                      logger.finest("fType = " + t.getPrimitiveType().getJavaName() + " x= " + x);
                   }
                   UnsafeWrapper.putFloat(object, offset, x);
-                  sizeWritten += t.getSize();
+                  sizeWritten += t.getPrimitiveType().getJavaBytes();
                   break;
                }
                case L:{
@@ -569,7 +569,7 @@ class KernelRunner extends OpenCLRunner{
                      logger.finest("fType = " + t.getPrimitiveType().getJavaName() + " x= " + x);
                   }
                   UnsafeWrapper.putLong(object, offset, x);
-                  sizeWritten += t.getSize();
+                  sizeWritten += t.getPrimitiveType().getJavaBytes();
                   break;
                }
                case Z:{
@@ -579,7 +579,7 @@ class KernelRunner extends OpenCLRunner{
                   }
                   UnsafeWrapper.putBoolean(object, offset, (x == 1 ? true : false));
                   // Booleans converted to 1 byte C chars for open cl
-                  sizeWritten += TypeSpec.B.getSize();
+                  sizeWritten += t.getPrimitiveType().getJavaBytes();
                   break;
                }
                case B:{
@@ -588,7 +588,7 @@ class KernelRunner extends OpenCLRunner{
                      logger.finest("fType = " + t.getPrimitiveType().getJavaName() + " x= " + x);
                   }
                   UnsafeWrapper.putByte(object, offset, x);
-                  sizeWritten += t.getSize();
+                  sizeWritten += t.getPrimitiveType().getJavaBytes();
                   break;
                }
                case D:{

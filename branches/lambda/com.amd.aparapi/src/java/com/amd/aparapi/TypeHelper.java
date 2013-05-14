@@ -294,14 +294,14 @@ public class TypeHelper{
    static final Map<String, JavaType> typeMap = new HashMap<String, JavaType>();
 
    static{
-      typeMap.put(PrimitiveType.u1.getSig(), new JavaType(PrimitiveType.u1));// boolean
-      typeMap.put(PrimitiveType.s8.getSig(), new JavaType(PrimitiveType.s8));// byte
-      typeMap.put(PrimitiveType.s16.getSig(), new JavaType(PrimitiveType.s16));// short
-      typeMap.put(PrimitiveType.u16.getSig(), new JavaType(PrimitiveType.u16));// char
-      typeMap.put(PrimitiveType.s32.getSig(), new JavaType(PrimitiveType.s32));// int
-      typeMap.put(PrimitiveType.f32.getSig(), new JavaType(PrimitiveType.f32));// float
-      typeMap.put(PrimitiveType.s64.getSig(), new JavaType(PrimitiveType.s64));// long
-      typeMap.put(PrimitiveType.f64.getSig(), new JavaType(PrimitiveType.f64));// double
+      typeMap.put(PrimitiveType.u1.getJavaSig(), new JavaType(PrimitiveType.u1));// boolean
+      typeMap.put(PrimitiveType.s8.getJavaSig(), new JavaType(PrimitiveType.s8));// byte
+      typeMap.put(PrimitiveType.s16.getJavaSig(), new JavaType(PrimitiveType.s16));// short
+      typeMap.put(PrimitiveType.u16.getJavaSig(), new JavaType(PrimitiveType.u16));// char
+      typeMap.put(PrimitiveType.s32.getJavaSig(), new JavaType(PrimitiveType.s32));// int
+      typeMap.put(PrimitiveType.f32.getJavaSig(), new JavaType(PrimitiveType.f32));// float
+      typeMap.put(PrimitiveType.s64.getJavaSig(), new JavaType(PrimitiveType.s64));// long
+      typeMap.put(PrimitiveType.f64.getJavaSig(), new JavaType(PrimitiveType.f64));// double
    }
 
 
@@ -317,7 +317,7 @@ public class TypeHelper{
       }
       for(PrimitiveType p : PrimitiveType.javaPrimitiveTypes){
          if(p.getClazz().equals(componentType)){
-            signature = arrayPrefix + p.getSig();
+            signature = arrayPrefix + p.getJavaSig();
             break;
          }
       }
@@ -328,7 +328,7 @@ public class TypeHelper{
    }
 
    static String createSignature(PrimitiveType _primitiveType){
-      return (_primitiveType.getSig());
+      return (_primitiveType.getJavaSig());
    }
 
 

@@ -902,7 +902,7 @@ public class RegISA{
    }
 
    public void addmov(Instruction _i, PrimitiveType _type, int _from, int _to){
-      if(_type.equals(PrimitiveType.ref) || _type.getBits() == 32){
+      if(_type.equals(PrimitiveType.ref) || _type.getHsaBits() == 32){
          if(_type.equals(PrimitiveType.ref)){
             add(new mov<ref>(_i, new StackReg_ref(_i, _to), new StackReg_ref(_i, _from)));
          }else if(_type.equals(PrimitiveType.s32)){
