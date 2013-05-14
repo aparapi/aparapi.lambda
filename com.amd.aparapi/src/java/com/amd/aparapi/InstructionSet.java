@@ -52,58 +52,45 @@ class InstructionSet{
 
 
    static enum TypeSpec{
-      NONE("none", "none", 0, 0), //
-      V("V", "void", 0, 0, PrimitiveType.v), //
-      Z("Z", "boolean", 4, 1, PrimitiveType.u1), //
-      C("C", "char", 2, 1, PrimitiveType.u16), //
-      F("F", "float", 4, 1, PrimitiveType.f32), //
-      D("D", "double", 8, 2, PrimitiveType.f64), //
-      B("B", "byte", 1, 1, PrimitiveType.s8), //
-      S("S", "short", 2, 1, PrimitiveType.s16), //
-      I("I", "int", 4, 1, PrimitiveType.s32), //
-      L("J", "long", 8, 2, PrimitiveType.s64), //
-      OREF("R", "ref (array or object) ref", 4, 1, PrimitiveType.ref), //
-      N("N", "null", 4, 1), //
-      IorForS("IorForS", "int, float or String depending on constant pool entry", 4, 1),   //
-      LorD("LorD", "long or float depending upon the constant pool entry", 8, 2),  //
-      RA("RA", "return address", 4, 1), //
-      ANY("ANY", "any primitive or reference type", -1, -1),//
-      ARGS("ARGS", "args to method call", -1, -1),   //
-      DIMS("DIMS", "dims for multi array new", -1, -1); //
-      private String longName;
+      NONE( 0), //
+      V(  0, PrimitiveType.v), //     void
+      Z(  4, PrimitiveType.u1), // boolean
+      C(  2, PrimitiveType.u16), //   char
+      F(  4, PrimitiveType.f32), //  float
+      D(  8, PrimitiveType.f64), // double
+      B(  1, PrimitiveType.s8), //     byte
+      S(  2, PrimitiveType.s16), //  short
+      I(  4, PrimitiveType.s32), //    int
+      L(  8, PrimitiveType.s64), //   long
+      OREF(  4,  PrimitiveType.ref), // ref (array or object) ref
+      N( 4), // null
+      IorForS( 4),   // int, float or String depending on constant pool entry
+      LorD( 8),  //  long or double depending upon the constant pool entry
+      RA(  4), // return address
+      ANY( -1),// any primitive or reference type
+      ARGS(  -1),   // args to method call
+      DIMS( -1); // dims for multiarraynew
 
-      private String shortName;
 
       private int size;
 
-      //private int slots;
-
-      PrimitiveType primitiveType;
+      private PrimitiveType primitiveType;
 
 
-      TypeSpec(String _shortName, String _longName, int _size, int _slots, PrimitiveType _primitiveType){
-         shortName = _shortName;
-         longName = _longName;
-         size = _size;
-         //slots = _slots;
+      TypeSpec(int _size,  PrimitiveType _primitiveType){
          primitiveType = _primitiveType;
+         size = _size;
       }
 
-      TypeSpec(String _shortName, String _longName, int _size, int _slots){
-         this(_shortName, _longName, _size, _slots, PrimitiveType.none);
+      TypeSpec( int _size){
+         this(_size, PrimitiveType.none);
       }
 
       int getSize(){
          return (size);
       }
 
-      String getLongName(){
-         return (longName);
-      }
 
-      String getShortName(){
-         return (shortName);
-      }
 
       public PrimitiveType getPrimitiveType(){
          return primitiveType;
