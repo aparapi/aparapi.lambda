@@ -575,7 +575,7 @@ class KernelRunner extends OpenCLRunner{
                case Z:{
                   byte x = arg.objArrayByteBuffer.get();
                   if(logger.isLoggable(Level.FINEST)){
-                     logger.finest("fType = " + t.getPrimitiveType().getJavaName()+ " x= " + x);
+                     logger.finest("fType = " + t.getPrimitiveType().getJavaName() + " x= " + x);
                   }
                   UnsafeWrapper.putBoolean(object, offset, (x == 1 ? true : false));
                   // Booleans converted to 1 byte C chars for open cl

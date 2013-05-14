@@ -52,24 +52,24 @@ class InstructionSet{
 
 
    static enum TypeSpec{
-      NONE( 0), //
-      V(  0, PrimitiveType.v), //     void
-      Z(  4, PrimitiveType.u1), // boolean
-      C(  2, PrimitiveType.u16), //   char
-      F(  4, PrimitiveType.f32), //  float
-      D(  8, PrimitiveType.f64), // double
-      B(  1, PrimitiveType.s8), //     byte
-      S(  2, PrimitiveType.s16), //  short
-      I(  4, PrimitiveType.s32), //    int
-      L(  8, PrimitiveType.s64), //   long
-      OREF(  4,  PrimitiveType.ref), // ref (array or object) ref
-      N( 4), // null
-      IorForS( 4),   // int, float or String depending on constant pool entry
-      LorD( 8),  //  long or double depending upon the constant pool entry
-      RA(  4), // return address
-      ANY( -1),// any primitive or reference type
-      ARGS(  -1),   // args to method call
-      DIMS( -1); // dims for multiarraynew
+      NONE(0), //
+      V(0, PrimitiveType.v), //     void
+      Z(4, PrimitiveType.u1), // boolean
+      C(2, PrimitiveType.u16), //   char
+      F(4, PrimitiveType.f32), //  float
+      D(8, PrimitiveType.f64), // double
+      B(1, PrimitiveType.s8), //     byte
+      S(2, PrimitiveType.s16), //  short
+      I(4, PrimitiveType.s32), //    int
+      L(8, PrimitiveType.s64), //   long
+      OREF(4, PrimitiveType.ref), // ref (array or object) ref
+      N(4), // null
+      IorForS(4),   // int, float or String depending on constant pool entry
+      LorD(8),  //  long or double depending upon the constant pool entry
+      RA(4), // return address
+      ANY(-1),// any primitive or reference type
+      ARGS(-1),   // args to method call
+      DIMS(-1); // dims for multiarraynew
 
 
       private int size;
@@ -77,19 +77,18 @@ class InstructionSet{
       private PrimitiveType primitiveType;
 
 
-      TypeSpec(int _size,  PrimitiveType _primitiveType){
+      TypeSpec(int _size, PrimitiveType _primitiveType){
          primitiveType = _primitiveType;
          size = _size;
       }
 
-      TypeSpec( int _size){
+      TypeSpec(int _size){
          this(_size, PrimitiveType.none);
       }
 
       int getSize(){
          return (size);
       }
-
 
 
       public PrimitiveType getPrimitiveType(){
