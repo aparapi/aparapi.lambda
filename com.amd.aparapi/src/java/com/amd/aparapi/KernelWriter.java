@@ -138,6 +138,9 @@ public abstract class KernelWriter extends BlockWriter{
    }
 
    public static String convertType0(String _typeDesc, boolean useClassModel){
+      if(_typeDesc == null){
+         _typeDesc = _typeDesc;
+      }
       if(_typeDesc.equals("Z") || _typeDesc.equals("boolean")){
          return (cvtBooleanToChar);
       }else if(_typeDesc.equals("[Z") || _typeDesc.equals("boolean[]")){
@@ -469,18 +472,19 @@ public abstract class KernelWriter extends BlockWriter{
             argLine.append(className);
             thisStructLine.append(className);
          }else{
-            //argLine.append(TypeHelper.openCLName(fieldType));
-            argLine.append(convertType(TypeHelper.typeName(fieldType.getSignature().charAt(0)), false));
-            thisStructLine.append(convertType(TypeHelper.typeName(fieldType.getSignature().charAt(0)), false));
+            argLine.append(fieldType.getOpenCLName());
+            thisStructLine.append(fieldType.getOpenCLName());
+            // argLine.append(convertType(TypeHelper.typeName(fieldType.getSignature().charAt(0)), false));
+            //  thisStructLine.append(convertType(TypeHelper.typeName(fieldType.getSignature().charAt(0)), false));
          }
 
          argLine.append(" ");
          thisStructLine.append(" ");
 
-         if(fieldType.isArray()){
-            argLine.append("*");
-            thisStructLine.append("*");
-         }
+         //  if(fieldType.isArray()){
+         //     argLine.append("*");
+         //    thisStructLine.append("*");
+         //  }
          assignLine.append("this->");
          assignLine.append(field.getName());
          assignLine.append(" = ");

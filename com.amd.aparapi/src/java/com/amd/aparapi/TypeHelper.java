@@ -294,6 +294,7 @@ public class TypeHelper{
    static final Map<String, JavaType> typeMap = new HashMap<String, JavaType>();
 
    static{
+      typeMap.put(PrimitiveType.v.getJavaSig(), new JavaType(PrimitiveType.v));// boolean
       typeMap.put(PrimitiveType.u1.getJavaSig(), new JavaType(PrimitiveType.u1));// boolean
       typeMap.put(PrimitiveType.s8.getJavaSig(), new JavaType(PrimitiveType.s8));// byte
       typeMap.put(PrimitiveType.s16.getJavaSig(), new JavaType(PrimitiveType.s16));// short
@@ -302,6 +303,7 @@ public class TypeHelper{
       typeMap.put(PrimitiveType.f32.getJavaSig(), new JavaType(PrimitiveType.f32));// float
       typeMap.put(PrimitiveType.s64.getJavaSig(), new JavaType(PrimitiveType.s64));// long
       typeMap.put(PrimitiveType.f64.getJavaSig(), new JavaType(PrimitiveType.f64));// double
+      typeMap.put(PrimitiveType.ref.getJavaSig(), new JavaType(PrimitiveType.ref));// double
    }
 
 
@@ -333,6 +335,9 @@ public class TypeHelper{
 
 
    static synchronized JavaType getJavaType(String _signature){
+      if(_signature == null){
+         throw new IllegalStateException("null!");
+      }
       if(_signature.contains("]")){
          throw new IllegalStateException("whoa!");
       }
@@ -357,8 +362,14 @@ public class TypeHelper{
 
       private JavaType(PrimitiveType _primitiveType){
          signature = createSignature(_primitiveType);
+         if(signature == null){
+            signature = signature;
+         }
          arrayDimensions = 0;
          type = _primitiveType;
+         if(signature.equals("I")){
+            signature = signature;
+         }
 
       }
 
@@ -370,6 +381,9 @@ public class TypeHelper{
          arrayDimensions = _signature.startsWith("[") ? _signature.lastIndexOf('[') + 1 : 0;
          signature = _signature;
          type = PrimitiveType.ref;
+         if(signature.equals("I")){
+            signature = signature;
+         }
       }
 
       String getSignature(){

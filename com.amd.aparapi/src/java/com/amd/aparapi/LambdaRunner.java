@@ -554,7 +554,7 @@ class LambdaRunner extends OpenCLRunner{
                   // read int value from buffer and store into obj in the array
                   int x = arg.objArrayByteBuffer.getInt();
                   if(logger.isLoggable(Level.FINEST)){
-                     logger.finest("fType = " + t.getPrimitiveType().getJavaName() + " x= " + x);
+                     logger.finest("fType = " + t.getPrimitiveType().getJavaTypeName() + " x= " + x);
                   }
                   UnsafeWrapper.putInt(object, offset, x);
                   sizeWritten += t.getPrimitiveType().getJavaBytes();
@@ -563,7 +563,7 @@ class LambdaRunner extends OpenCLRunner{
                case F:{
                   float x = arg.objArrayByteBuffer.getFloat();
                   if(logger.isLoggable(Level.FINEST)){
-                     logger.finest("fType = " + t.getPrimitiveType().getJavaName() + " x= " + x);
+                     logger.finest("fType = " + t.getPrimitiveType().getJavaTypeName() + " x= " + x);
                   }
                   UnsafeWrapper.putFloat(object, offset, x);
                   sizeWritten += t.getPrimitiveType().getJavaBytes();
@@ -572,7 +572,7 @@ class LambdaRunner extends OpenCLRunner{
                case L:{
                   long x = arg.objArrayByteBuffer.getLong();
                   if(logger.isLoggable(Level.FINEST)){
-                     logger.finest("fType = " + t.getPrimitiveType().getJavaName() + " x= " + x);
+                     logger.finest("fType = " + t.getPrimitiveType().getJavaTypeName() + " x= " + x);
                   }
                   UnsafeWrapper.putLong(object, offset, x);
                   sizeWritten += t.getPrimitiveType().getJavaBytes();
@@ -581,7 +581,7 @@ class LambdaRunner extends OpenCLRunner{
                case Z:{
                   byte x = arg.objArrayByteBuffer.get();
                   if(logger.isLoggable(Level.FINEST)){
-                     logger.finest("fType = " + t.getPrimitiveType().getJavaName() + " x= " + x);
+                     logger.finest("fType = " + t.getPrimitiveType().getJavaTypeName() + " x= " + x);
                   }
                   UnsafeWrapper.putBoolean(object, offset, (x == 1 ? true : false));
                   // Booleans converted to 1 byte C chars for open cl
@@ -591,7 +591,7 @@ class LambdaRunner extends OpenCLRunner{
                case B:{
                   byte x = arg.objArrayByteBuffer.get();
                   if(logger.isLoggable(Level.FINEST)){
-                     logger.finest("fType = " + t.getPrimitiveType().getJavaName() + " x= " + x);
+                     logger.finest("fType = " + t.getPrimitiveType().getJavaTypeName() + " x= " + x);
                   }
                   UnsafeWrapper.putByte(object, offset, x);
                   sizeWritten += t.getPrimitiveType().getJavaBytes();
