@@ -2339,9 +2339,9 @@ public class ClassModel{
 
          }
 
-         void push(Instruction i, TypeHelper.JavaType t){
+         void push(Instruction _i, PrimitiveType _primitiveType){
             if((index + 1) < instructionTypes.length){
-               instructionTypes[index++] = new Instruction.InstructionType(i, t);
+               instructionTypes[index++] = new Instruction.InstructionType(_i, _primitiveType);
             }
          }
 
@@ -2502,21 +2502,18 @@ public class ClassModel{
 
                if(i.isMethodCall()){
                   ArgsAndReturnType calledArgsAndReturnType = i.asMethodCall().getConstantPoolMethodEntry().getArgsAndReturnType();
-                  consumedInstructionTypeStack.push(i, calledArgsAndReturnType.getReturnType());
+                  consumedInstructionTypeStack.push(i, calledArgsAndReturnType.getReturnType().getPrimitiveType());
                }else if(i.isFieldAccessor()){
                   JavaType assignedFieldType = i.asFieldAccessor().getConstantPoolFieldEntry().getType();
-                  consumedInstructionTypeStack.push(i, assignedFieldType);
+                  consumedInstructionTypeStack.push(i, assignedFieldType.getPrimitiveType());
 
                }else{
                   TypeSpec[] typeSpecs = push.getTypes();
-                  int prodcount = i.getStackProduceCount();
-                  if(typeSpecs.length != prodcount){
-                     throw new IllegalStateException("what?");
-                  }
+                  int prodCount = i.getStackProduceCount();
 
-                  for(int pi = 0; pi < prodcount; pi++){
+                  for(int pi = 0; pi < prodCount; pi++){
                      TypeSpec typeSpec = typeSpecs[pi];
-                     consumedInstructionTypeStack.push(i, TypeHelper.getJavaType(TypeHelper.createSignature(typeSpec.getPrimitiveType())));
+                     consumedInstructionTypeStack.push(i, typeSpec.getPrimitiveType());
 
                   }
                }
