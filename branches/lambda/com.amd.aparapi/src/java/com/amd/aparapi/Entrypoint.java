@@ -766,7 +766,7 @@ public class Entrypoint{
 
                   // Booleans get converted down to bytes
                   int aSize = InstructionSet.TypeSpec.valueOf(aType).getPrimitiveType().getJavaBytes();
-                  int bSize =InstructionSet.TypeSpec.valueOf(bType).getPrimitiveType().getJavaBytes();
+                  int bSize = InstructionSet.TypeSpec.valueOf(bType).getPrimitiveType().getJavaBytes();
 
                   if(logger.isLoggable(Level.FINEST)){
                      logger.finest("aType= " + aType + " aSize= " + aSize + " . . bType= " + bType + " bSize= " + bSize);
@@ -803,7 +803,7 @@ public class Entrypoint{
                      String fType = f.getNameAndTypeEntry().getDescriptorUTF8Entry().getUTF8();
                      //c.getStructMemberTypes().add(TypeSpec.valueOf(fType.equals("Z") ? "B" : fType));
                      c.getStructMemberTypes().add(TypeSpec.valueOf(fType));
-                     int fSize = InstructionSet.TypeSpec.valueOf(fType).getPrimitiveType().getJavaBytes() ;
+                     int fSize = InstructionSet.TypeSpec.valueOf(fType).getPrimitiveType().getJavaBytes();
                      if(fSize > alignTo){
                         alignTo = fSize;
                      }

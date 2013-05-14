@@ -74,12 +74,12 @@ class InstructionSet{
       private PrimitiveType primitiveType;
 
 
-      TypeSpec( PrimitiveType _primitiveType){
+      TypeSpec(PrimitiveType _primitiveType){
          primitiveType = _primitiveType;
       }
 
       TypeSpec(){
-         this( PrimitiveType.none);
+         this(PrimitiveType.none);
       }
 
       public PrimitiveType getPrimitiveType(){
