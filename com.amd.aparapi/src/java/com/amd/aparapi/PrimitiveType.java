@@ -23,6 +23,7 @@ public abstract class PrimitiveType{
    static final f16 f16 = new f16();
    static final f32 f32 = new f32();
    static final f64 f64 = new f64();
+   static final u64 u64 = new u64();
    static final ref ref = new ref();
 
 
@@ -51,32 +52,38 @@ public abstract class PrimitiveType{
    }
 
 
-   int bits;
-   String prefix; // u,f,s
-   char sigChar;
+   int hsaBits;
+   int javaBits;
+   String hsaPrefix; // u,f,s
+   String javaSig;
 
-   public int getBits(){
-      return (bits);
+   public int getHsaBits(){
+      return (hsaBits);
    }
 
-   PrimitiveType(Class _clazz, int _bits, char _sigChar, String _prefix, int _javaSlots){
+   PrimitiveType(Class _clazz, int _hsaBits, int _javaBits, String _javaSig, String _hsaPrefix, int _javaSlots){
       clazz = _clazz;
       javaSlots = _javaSlots;
-      sigChar = _sigChar;
-      bits = _bits;
-      prefix = _prefix;
+      javaSig = _javaSig;
+      hsaBits = _hsaBits;
+      javaBits = _javaBits;
+      hsaPrefix = _hsaPrefix;
    }
 
    public String getHSAName(){
-      return (prefix + bits);
+      return (hsaPrefix + hsaBits);
    }
 
-   public char getSigChar(){
-      return (sigChar);
+
+   public String getJavaSig(){
+      return (javaSig);
    }
 
-   public String getSig(){
-      return ("" + sigChar);
+   public int getJavaBits(){
+      return(javaBits);
+   }
+   public int getJavaBytes(){
+      return(javaBits/8);
    }
 
 
@@ -87,92 +94,92 @@ public abstract class PrimitiveType{
 class u1 extends PrimitiveType{
 
    u1(){
-      super(boolean.class, 1, 'Z', "u", 1);
+      super(boolean.class, 1, 8,"Z", "u", 1);
    }
 }
 
 class u8 extends PrimitiveType{
    u8(){
-      super(byte.class, 8, 'B', "u", 1);
+      super(byte.class, 8, 8, "B", "u", 1);
    }
 
 }
 
 class s8 extends PrimitiveType{
    s8(){
-      super(null, 8, '?', "s", -1);
+      super(null, 8,8,  null, "s", -1);
    }
 }
 
 class u16 extends PrimitiveType{
    u16(){
-      super(char.class, 16, 'C', "u", 1);
+      super(char.class, 16,16, "C", "u", 1);
    }
 }
 
 class s16 extends PrimitiveType{
    s16(){
-      super(short.class, 16, 'S', "s", 1);
+      super(short.class, 16, 16,"S", "s", 1);
    }
 }
 
 class f16 extends PrimitiveType{
    f16(){
-      super(null, 16, '?', "f", -1);
+      super(null, 16, 0,null, "f", -1);
    }
 }
 
 class u32 extends PrimitiveType{
    u32(){
-      super(null, 32, '?', "u", -1);
+      super(null, 32, 0,null, "u", -1);
    }
 }
 
 class s32 extends PrimitiveType{
    s32(){
-      super(int.class, 32, 'I', "s", 1);
+      super(int.class, 32, 32, "I", "s", 1);
    }
 }
 
 class f32 extends PrimitiveType{
    f32(){
-      super(float.class, 32, 'F', "f", 1);
+      super(float.class, 32, 32,"F", "f", 1);
    }
 }
 
-//class u64 extends PrimitiveType {
-//   u64() {
-//      super(null, 64, '?', "u");
-//  }
-//}
+class u64 extends PrimitiveType {
+   u64() {
+      super(null, 64, 0, null, "u", -1);
+  }
+}
 class ref extends PrimitiveType{
    ref(){
-      super(null, 64, '?', "u", 1);
+      super(null, 64, 32, null, "u", 1);
    }
 }
 
 
 class s64 extends PrimitiveType{
    s64(){
-      super(long.class, 64, 'J', "s", 2);
+      super(long.class, 64, 64, "J", "s", 2);
    }
 }
 
 class f64 extends PrimitiveType{
    f64(){
-      super(double.class, 64, 'D', "f", 2);
+      super(double.class, 64, 64, "D", "f", 2);
    }
 }
 
 class none extends PrimitiveType{
    none(){
-      super(null, 0, '?', "?", -1);
+      super(null, 0, 0, null, "?", -1);
    }
 }
 
 class v extends PrimitiveType{
    v(){
-      super(null, 0, 'V', "v", -1);
+      super(null, 0, 0, "V", "v", -1);
    }
 }
 

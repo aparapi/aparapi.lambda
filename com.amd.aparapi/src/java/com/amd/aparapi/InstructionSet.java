@@ -52,44 +52,35 @@ class InstructionSet{
 
 
    static enum TypeSpec{
-      NONE(0), //
-      V(0, PrimitiveType.v), //     void
-      Z(4, PrimitiveType.u1), // boolean
-      C(2, PrimitiveType.u16), //   char
-      F(4, PrimitiveType.f32), //  float
-      D(8, PrimitiveType.f64), // double
-      B(1, PrimitiveType.s8), //     byte
-      S(2, PrimitiveType.s16), //  short
-      I(4, PrimitiveType.s32), //    int
-      L(8, PrimitiveType.s64), //   long
-      OREF(4, PrimitiveType.ref), // ref (array or object) ref
-      N(4), // null
-      IorForS(4),   // int, float or String depending on constant pool entry
-      LorD(8),  //  long or double depending upon the constant pool entry
-      RA(4), // return address
-      ANY(-1),// any primitive or reference type
-      ARGS(-1),   // args to method call
-      DIMS(-1); // dims for multiarraynew
-
-
-      private int size;
+      NONE(), //
+      V(PrimitiveType.v), //     void
+      Z(PrimitiveType.u1), // boolean
+      C(PrimitiveType.u16), //   char
+      F(PrimitiveType.f32), //  float
+      D(PrimitiveType.f64), // double
+      B(PrimitiveType.s8), //     byte
+      S(PrimitiveType.s16), //  short
+      I(PrimitiveType.s32), //    int
+      L(PrimitiveType.s64), //   long
+      OREF(PrimitiveType.ref), // ref (array or object) ref
+      N(), // null
+      IorForS(),   // int, float or String depending on constant pool entry
+      LorD(),  //  long or double depending upon the constant pool entry
+      RA(), // return address
+      ANY(),// any primitive or reference type
+      ARGS(),   // args to method call
+      DIMS(); // dims for multiarraynew
 
       private PrimitiveType primitiveType;
 
 
-      TypeSpec(int _size, PrimitiveType _primitiveType){
+      TypeSpec( PrimitiveType _primitiveType){
          primitiveType = _primitiveType;
-         size = _size;
       }
 
-      TypeSpec(int _size){
-         this(_size, PrimitiveType.none);
+      TypeSpec(){
+         this( PrimitiveType.none);
       }
-
-      int getSize(){
-         return (size);
-      }
-
 
       public PrimitiveType getPrimitiveType(){
          return primitiveType;
@@ -312,7 +303,6 @@ class InstructionSet{
 
    static enum ImmediateSpec{
       NONE("NONE"), //
-      // UNKNOWN("UNKNOWN"), //
       Bconst("byte constant value", TypeSpec.B), //
       Sconst("short constant value", TypeSpec.S), //
       Bcpci("byte constant pool constant index", TypeSpec.B), //

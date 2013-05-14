@@ -96,7 +96,7 @@ public class RegISARenderer{
    }
 
    public RegISARenderer regName(RegISA.Reg _reg){
-      switch(_reg.type.getBits()){
+      switch(_reg.type.getHsaBits()){
          case 32:
             append("s");
             break;

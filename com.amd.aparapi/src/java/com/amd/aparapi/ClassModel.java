@@ -1408,7 +1408,7 @@ public class ClassModel{
                if(args[i].getJavaType().isArray() || args[i].getJavaType().isObject()){
                   storeSpec = InstructionSet.StoreSpec.OREF;
                }else{
-                  storeSpec = InstructionSet.StoreSpec.valueOf(args[i].getJavaType().getPrimitiveType().getSig());
+                  storeSpec = InstructionSet.StoreSpec.valueOf(args[i].getJavaType().getPrimitiveType().getJavaSig());
                }
                ArgLocalVariableInfo arg = new ArgLocalVariableInfo(storeSpec, currSlotIndex, 0, args[i].getJavaType());
                vars[i + thisOffset] = arg;

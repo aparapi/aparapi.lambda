@@ -553,7 +553,7 @@ public abstract class KernelWriter extends BlockWriter{
             while(it.hasNext()){
                FieldEntry field = it.next();
                String fType = field.getNameAndTypeEntry().getDescriptorUTF8Entry().getUTF8();
-               int fSize = InstructionSet.TypeSpec.valueOf(fType.equals("Z") ? "B" : fType).getSize();
+               int fSize = InstructionSet.TypeSpec.valueOf(fType).getPrimitiveType().getJavaBytes();
 
                if(fSize > alignTo){
                   alignTo = fSize;
