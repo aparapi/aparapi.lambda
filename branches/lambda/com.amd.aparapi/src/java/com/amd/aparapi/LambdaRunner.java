@@ -554,7 +554,7 @@ class LambdaRunner extends OpenCLRunner{
                   // read int value from buffer and store into obj in the array
                   int x = arg.objArrayByteBuffer.getInt();
                   if(logger.isLoggable(Level.FINEST)){
-                     logger.finest("fType = " + t.getPrimitiveType().getJavaName()+ " x= " + x);
+                     logger.finest("fType = " + t.getPrimitiveType().getJavaName() + " x= " + x);
                   }
                   UnsafeWrapper.putInt(object, offset, x);
                   sizeWritten += t.getSize();
