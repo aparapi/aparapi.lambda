@@ -80,10 +80,11 @@ public abstract class PrimitiveType{
    }
 
    public int getJavaBits(){
-      return(javaBits);
+      return (javaBits);
    }
+
    public int getJavaBytes(){
-      return(javaBits/8);
+      return (javaBits / 8);
    }
 
 
@@ -94,7 +95,7 @@ public abstract class PrimitiveType{
 class u1 extends PrimitiveType{
 
    u1(){
-      super(boolean.class, 1, 8,"Z", "u", 1);
+      super(boolean.class, 1, 8, "Z", "u", 1);
    }
 }
 
@@ -107,31 +108,31 @@ class u8 extends PrimitiveType{
 
 class s8 extends PrimitiveType{
    s8(){
-      super(null, 8,8,  null, "s", -1);
+      super(null, 8, 8, null, "s", -1);
    }
 }
 
 class u16 extends PrimitiveType{
    u16(){
-      super(char.class, 16,16, "C", "u", 1);
+      super(char.class, 16, 16, "C", "u", 1);
    }
 }
 
 class s16 extends PrimitiveType{
    s16(){
-      super(short.class, 16, 16,"S", "s", 1);
+      super(short.class, 16, 16, "S", "s", 1);
    }
 }
 
 class f16 extends PrimitiveType{
    f16(){
-      super(null, 16, 0,null, "f", -1);
+      super(null, 16, 0, null, "f", -1);
    }
 }
 
 class u32 extends PrimitiveType{
    u32(){
-      super(null, 32, 0,null, "u", -1);
+      super(null, 32, 0, null, "u", -1);
    }
 }
 
@@ -143,15 +144,16 @@ class s32 extends PrimitiveType{
 
 class f32 extends PrimitiveType{
    f32(){
-      super(float.class, 32, 32,"F", "f", 1);
+      super(float.class, 32, 32, "F", "f", 1);
    }
 }
 
-class u64 extends PrimitiveType {
-   u64() {
+class u64 extends PrimitiveType{
+   u64(){
       super(null, 64, 0, null, "u", -1);
-  }
+   }
 }
+
 class ref extends PrimitiveType{
    ref(){
       super(null, 64, 32, null, "u", 1);

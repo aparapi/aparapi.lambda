@@ -594,7 +594,7 @@ class LambdaRunner extends OpenCLRunner{
                      logger.finest("fType = " + t.getPrimitiveType().getJavaName() + " x= " + x);
                   }
                   UnsafeWrapper.putByte(object, offset, x);
-                  sizeWritten +=t.getPrimitiveType().getJavaBytes();
+                  sizeWritten += t.getPrimitiveType().getJavaBytes();
                   break;
                }
                case D:{
