@@ -318,6 +318,9 @@ public class TypeHelper{
          baseType = baseType.substring(arrayDimensions);
       }
       for(PrimitiveType p : PrimitiveType.javaPrimitiveTypes){
+         if(p.getJavaSig() == null){
+            throw new IllegalStateException("no!");
+         }
          if(p.getJavaSig().equals(baseType)){
             signature = arrayPrefix + p.getJavaSig();
             break;
@@ -435,11 +438,11 @@ public class TypeHelper{
       }
 
       String getObjectClassName(){
-         return (TypeHelper.signatureToDotClassName(signature, 0));
+         return (TypeHelper.signatureToDotClassName(signature, arrayDimensions));
       }
 
       String getMangledClassName(){
-         return (TypeHelper.signatureToMangledClassName(signature, 0));
+         return (TypeHelper.signatureToMangledClassName(signature, arrayDimensions));
       }
 
 
@@ -459,21 +462,6 @@ public class TypeHelper{
          return (isInt() || isFloat() || isDouble() || isChar() || isLong() || isShort() || isByte() || isVoid());
       }
 
-      String getOpenCLName(){
-         String openCLName = null;
-         if(isArray()){
-            if(arrayElementType.equals(PrimitiveType.ref)){
-               throw new IllegalStateException("this is not right!");
-            }else{
-               openCLName = arrayElementType.getOpenCLTypeName() + "***********".substring(0, arrayDimensions);
-            }
-         }else if(isPrimitive() || isVoid()){
-            openCLName = type.getOpenCLTypeName();
-         }else if(isObject()){
-            openCLName = getObjectClassName();
-         }
-         return (openCLName);
-      }
 
       @Override
       public String toString(){
