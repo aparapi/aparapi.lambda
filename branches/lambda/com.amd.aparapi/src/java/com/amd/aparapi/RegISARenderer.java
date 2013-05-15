@@ -7,35 +7,10 @@ package com.amd.aparapi;
  * Time: 9:55 AM
  * To change this template use File | Settings | File Templates.
  */
-public class RegISARenderer{
-   StringBuilder sb = new StringBuilder();
-   int lastNewLineIndex = 0;
-
-   public RegISARenderer append(String s){
-      sb.append(s);
-      return (this);
-   }
+public class RegISARenderer extends TextRenderer<RegISARenderer>{
 
    public RegISARenderer label(int _pc){
       return (append(String.format("@L%d", _pc)));
-   }
-
-
-   public RegISARenderer append(int i){
-      return (append("" + i));
-
-   }
-
-   public RegISARenderer append(double d){
-      return (append("" + d));
-   }
-
-   public RegISARenderer append(float f){
-      return (append("" + f));
-   }
-
-   public RegISARenderer append(long l){
-      return (append("" + l));
    }
 
    public RegISARenderer array_len_offset(){
@@ -43,52 +18,7 @@ public class RegISARenderer{
    }
 
    public RegISARenderer separator(){
-      return (append(", "));
-   }
-
-   public RegISARenderer nl(){
-      append("\n");
-      lastMark = lastNewLineIndex = sb.length();
-      return (this);
-   }
-
-
-   public RegISARenderer pad(int n){
-      while(sb.length() - lastNewLineIndex < n){
-         append(" ");
-      }
-      return (this);
-   }
-
-   int lastMark = 0;
-
-   public RegISARenderer mark(){
-      lastMark = sb.length();
-      return (this);
-   }
-
-   public RegISARenderer relpad(int n){
-      while(sb.length() - lastMark < n){
-         append(" ");
-      }
-      return (this);
-   }
-
-   public RegISARenderer space(){
-      return (append(" "));
-   }
-
-   public RegISARenderer semicolon(){
-      return (append(";"));
-   }
-
-   public RegISARenderer dot(){
-      return (append("."));
-   }
-
-   @Override
-   public String toString(){
-      return (sb.toString());
+      return (commaSpace());
    }
 
    public RegISARenderer typeName(RegISA.Reg _reg){
