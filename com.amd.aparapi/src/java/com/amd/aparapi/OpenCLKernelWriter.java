@@ -111,7 +111,7 @@ public abstract class OpenCLKernelWriter{
    }
 
 
-   String getOpenCLName(TypeHelper.JavaType _javaType){
+   static String getOpenCLName(TypeHelper.JavaType _javaType){
       String openCLName = null;
       if(_javaType.isArray()){
          if(_javaType.getArrayElementType().equals(PrimitiveType.ref)){
@@ -237,6 +237,21 @@ public abstract class OpenCLKernelWriter{
    }
 
 
+   static class OpenCLTextRenderer extends TextRenderer<OpenCLTextRenderer>{
+      OpenCLTextRenderer __globalSpace(){
+         return (append(__global));
+      }
+
+      OpenCLTextRenderer type(TypeHelper.JavaType _type){
+         return (append(getOpenCLName(_type)));
+      }
+
+      OpenCLTextRenderer mangled(TypeHelper.JavaType _type){
+         return (append(_type.getMangledClassName()));
+      }
+   }
+
+
    void write(Entrypoint _entryPoint) throws CodeGenException{
       List<String> thisStruct = new ArrayList<String>();
       List<String> argLines = new ArrayList<String>();
@@ -284,6 +299,7 @@ public abstract class OpenCLKernelWriter{
                }else{
                   // This must be the iteration object
                   // Turn Lcom/amd/javalabs/opencl/demo/DummyOOA; into com_amd_javalabs_opencl_demo_DummyOOA for example
+                  final String sourceArrayName = "elements";
                   output = __global + " " + alvi.getRealType().getMangledClassName();
                   isObjectLambda = true;
 
@@ -291,7 +307,6 @@ public abstract class OpenCLKernelWriter{
                   // in case of object stream lambda
                   //if (isObjectLambda == true && argsCount == 1) {
 
-                  final String sourceArrayName = "elements";
                   String elementsDeclaration = output + " *" + sourceArrayName;
 
                   // Add array to args
