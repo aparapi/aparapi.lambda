@@ -876,7 +876,7 @@ class KernelRunner extends OpenCLRunner{
 
                   String openCL = null;
                   try{
-                     openCL = KernelWriter.writeToString(entryPoint);
+                     openCL = OpenCLKernelWriter.writeToString(entryPoint);
                   }catch(CodeGenException codeGenException){
                      return warnFallBackAndExecute(_entrypointName, _range, _passes, codeGenException);
                   }

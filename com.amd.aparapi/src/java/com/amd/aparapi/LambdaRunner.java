@@ -933,7 +933,7 @@ class LambdaRunner extends OpenCLRunner{
             entryPoint.setLambdaActualParamsCount(paramCount);
 
             String openCL = null;
-            openCL = KernelWriter.writeToString(entryPoint);
+            openCL = OpenCLKernelWriter.writeToString(entryPoint);
 
             if(Config.enableShowGeneratedOpenCL){
                System.out.println(openCL);

@@ -309,16 +309,16 @@ public class TypeHelper{
 
    static String createSignature(Class _clazz){
       String arrayPrefix = "";
-      String signature = null;
-      Class componentType = _clazz;
-      if(_clazz.isArray()){
 
-         componentType = _clazz.getComponentType();
-         int arrayDimensions = _clazz.getName().lastIndexOf('[') + 1;
-         arrayPrefix = _clazz.getName().substring(0, arrayDimensions);
+      String baseType = _clazz.getName();
+      String signature = null;
+      if(baseType.startsWith("[")){
+         int arrayDimensions = baseType.lastIndexOf('[') + 1;
+         arrayPrefix = baseType.substring(0, arrayDimensions);
+         baseType = baseType.substring(arrayDimensions);
       }
       for(PrimitiveType p : PrimitiveType.javaPrimitiveTypes){
-         if(p.getClazz().equals(componentType)){
+         if(p.getJavaSig().equals(baseType)){
             signature = arrayPrefix + p.getJavaSig();
             break;
          }
@@ -352,6 +352,9 @@ public class TypeHelper{
 
    static synchronized JavaType getJavaType(Class _clazz){
       String signature = createSignature(_clazz);
+      if(signature == null){
+         throw new IllegalStateException("no!");
+      }
       return (getJavaType(signature));
    }
 
