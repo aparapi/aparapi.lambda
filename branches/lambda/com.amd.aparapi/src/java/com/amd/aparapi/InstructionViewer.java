@@ -467,7 +467,7 @@ public class InstructionViewer implements Config.InstructionListener{
       _instructionView.dim = _dim;
       FontMetrics fm = _g.getFontMetrics();
 
-      _instructionView.label = InstructionHelper.getLabel(_instructionView.instruction, config.showPc, config.showExpressions,
+      _instructionView.label = InstructionHelper.getLabel(_instructionView.instruction, config.showPc,
             config.verboseBytecodeLabels);
 
       int w = fm.stringWidth(_instructionView.label) + HMARGIN;
@@ -573,7 +573,7 @@ public class InstructionViewer implements Config.InstructionListener{
    double flatPlace(Graphics2D _g, InstructionView _instructionView, double _x, double _y){
       FontMetrics fm = _g.getFontMetrics();
       Instruction instruction = _instructionView.instruction;
-      _instructionView.label = InstructionHelper.getLabel(instruction, config.showPc, config.showExpressions,
+      _instructionView.label = InstructionHelper.getLabel(instruction, config.showPc,
             config.verboseBytecodeLabels);
 
       int h = fm.getHeight() + 2;

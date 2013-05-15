@@ -18,7 +18,7 @@ public class SquaresBare{
       Entrypoint entryPoint = classModel.getKernelEntrypoint("run", "([I[II)V", SquaresBare.class);
       String openCL = null;
       try{
-         openCL = KernelWriter.writeToString(entryPoint);
+         openCL = OpenCLKernelWriter.writeToString(entryPoint);
          System.out.println(openCL);
       }catch(CodeGenException codeGenException){
          System.out.println(codeGenException);

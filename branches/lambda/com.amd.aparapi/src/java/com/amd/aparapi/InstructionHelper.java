@@ -11,49 +11,6 @@ import java.util.List;
 public class InstructionHelper{
 
 
-   static class StringWriter extends BlockWriter{
-      StringBuilder sb = null;
-
-      StringWriter(StringBuilder _sb){
-         sb = _sb;
-      }
-
-      StringWriter(){
-         sb = new StringBuilder();
-      }
-
-      @Override
-      public void write(String _string){
-         sb.append(_string);
-
-      }
-
-      @Override
-      public String toString(){
-         return (sb.toString().trim());
-      }
-
-      void clear(){
-         sb = new StringBuilder();
-      }
-
-      static String write(MethodModel _methodModel) throws CodeGenException{
-         StringWriter sw = new StringWriter();
-         sw.writeMethodBody(_methodModel);
-         return (sw.toString());
-      }
-
-      @Override
-      public void write(Entrypoint entryPoint){
-         // TODO Auto-generated method stub
-
-      }
-
-      protected void writeMethodBody(MethodModel _methodModel) throws CodeGenException{
-         super.writeMethodBody(_methodModel);
-      }
-   }
-
    static class BranchVector{
       protected Instruction from;
 
@@ -204,7 +161,7 @@ public class InstructionHelper{
 
    }
 
-   static String getLabel(Instruction instruction, boolean showNumber, boolean showExpressions, boolean verboseBytecodeLabels){
+   static String getLabel(Instruction instruction, boolean showNumber, boolean verboseBytecodeLabels){
 
       ByteCode byteCode = instruction.getByteCode();
       final StringBuilder label = new StringBuilder();
@@ -212,90 +169,80 @@ public class InstructionHelper{
          label.append(String.format("%3d: ", instruction.getThisPC()));
       }
 
-      if(!showExpressions){
-         String byteCodeName = byteCode.getName();
 
-         if(!verboseBytecodeLabels){
-            label.append(byteCodeName);
-         }else{
-            label.append(byteCodeName).append(" ");
-            if(instruction instanceof ConditionalBranch16){
-               ConditionalBranch16 conditionalBranch16 = (ConditionalBranch16) instruction;
-               label.append(conditionalBranch16.getOperator().getText());
-               label.append(" -> ");
-               label.append(conditionalBranch16.getTarget().getThisPC());
-            }else if(instruction instanceof Branch){
-               Branch branch = (Branch) instruction;
-               label.append(" -> ");
-               label.append(branch.getTarget().getThisPC());
-            }else if(instruction instanceof MethodCall){
-               MethodCall methodCall = (MethodCall) instruction;
-               label.append(methodCall.getConstantPoolMethodEntry().getNameAndTypeEntry().getNameUTF8Entry().getUTF8());
-               label.append(" ");
-               label.append(methodCall.getConstantPoolMethodEntry().getNameAndTypeEntry().getDescriptorUTF8Entry().getUTF8());
-            }else if(instruction instanceof OperatorInstruction){
-               OperatorInstruction operatorInstruction = (OperatorInstruction) instruction;
-               label.append(operatorInstruction.getOperator().getText() + "(" + byteCodeName + ")");
-            }else if(instruction instanceof FieldReference){
-               FieldReference field = (FieldReference) instruction;
-               label.append(field.getConstantPoolFieldEntry().getNameAndTypeEntry().getNameUTF8Entry().getUTF8());
-               label.append(field.getConstantPoolFieldEntry().getNameAndTypeEntry().getDescriptorUTF8Entry().getUTF8());
-            }else if(instruction instanceof Constant<?>){
-               Constant<?> constant = (Constant<?>) instruction;
-               Object value = constant.getValue();
-               if(value != null){
-                  label.append(value);
-               }else{
-                  if(instruction instanceof I_ACONST_NULL){
-                     label.append("null");
-                  }else{
-                     label.append(byteCodeName);
-                  }
-               }
-            }else if(instruction instanceof AssignToLocalVariable){
+      String byteCodeName = byteCode.getName();
 
-               AssignToLocalVariable assignToLocalVariable = (AssignToLocalVariable) instruction;
-               LocalVariableInfo info = assignToLocalVariable.getLocalVariableInfo();
-
-               if(assignToLocalVariable.isDeclaration()){
-                  label.append(TypeHelper.convert(info.getVariableDescriptor()));
-               }
-
-               label.append(info == null ? "?" : info.getVariableName());
-               label.append("=");
-
-            }else if(instruction instanceof LocalVariableTableIndexAccessor){
-               LocalVariableTableIndexAccessor localVariableAccessor = (LocalVariableTableIndexAccessor) instruction;
-               LocalVariableInfo info = localVariableAccessor.getLocalVariableInfo();
-               label.append(info.getVariableName());
-
-            }else if(instruction instanceof I_IINC){
-
-               label.append(instruction.getByteCode());
-               label.append(" " + ((I_IINC) instruction).getDelta());
-               label.append(" " + ((I_IINC) instruction).getLocalVariableInfo().getVariableName());
-            }else if(instruction instanceof CompositeInstruction){
-               label.append("composite ");
-               label.append(instruction.getByteCode());
-            }
-         }
+      if(!verboseBytecodeLabels){
+         label.append(byteCodeName);
       }else{
-         StringWriter writer = new StringWriter(label);
-         try{
-            writer.writeInstruction(instruction);
-         }catch(CodeGenException e){
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            writer.write("// exception " + e.getMessage());
-         }
+         label.append(byteCodeName).append(" ");
+         if(instruction instanceof ConditionalBranch16){
+            ConditionalBranch16 conditionalBranch16 = (ConditionalBranch16) instruction;
+            label.append(conditionalBranch16.getOperator().getText());
+            label.append(" -> ");
+            label.append(conditionalBranch16.getTarget().getThisPC());
+         }else if(instruction instanceof Branch){
+            Branch branch = (Branch) instruction;
+            label.append(" -> ");
+            label.append(branch.getTarget().getThisPC());
+         }else if(instruction instanceof MethodCall){
+            MethodCall methodCall = (MethodCall) instruction;
+            label.append(methodCall.getConstantPoolMethodEntry().getNameAndTypeEntry().getNameUTF8Entry().getUTF8());
+            label.append(" ");
+            label.append(methodCall.getConstantPoolMethodEntry().getNameAndTypeEntry().getDescriptorUTF8Entry().getUTF8());
+         }else if(instruction instanceof OperatorInstruction){
+            OperatorInstruction operatorInstruction = (OperatorInstruction) instruction;
+            label.append(operatorInstruction.getOperator().getText() + "(" + byteCodeName + ")");
+         }else if(instruction instanceof FieldReference){
+            FieldReference field = (FieldReference) instruction;
+            label.append(field.getConstantPoolFieldEntry().getNameAndTypeEntry().getNameUTF8Entry().getUTF8());
+            label.append(field.getConstantPoolFieldEntry().getNameAndTypeEntry().getDescriptorUTF8Entry().getUTF8());
+         }else if(instruction instanceof Constant<?>){
+            Constant<?> constant = (Constant<?>) instruction;
+            Object value = constant.getValue();
+            if(value != null){
+               label.append(value);
+            }else{
+               if(instruction instanceof I_ACONST_NULL){
+                  label.append("null");
+               }else{
+                  label.append(byteCodeName);
+               }
+            }
+         }else if(instruction instanceof AssignToLocalVariable){
 
+            AssignToLocalVariable assignToLocalVariable = (AssignToLocalVariable) instruction;
+            LocalVariableInfo info = assignToLocalVariable.getLocalVariableInfo();
+
+            if(assignToLocalVariable.isDeclaration()){
+               label.append(TypeHelper.convert(info.getVariableDescriptor()));
+            }
+
+            label.append(info == null ? "?" : info.getVariableName());
+            label.append("=");
+
+         }else if(instruction instanceof LocalVariableTableIndexAccessor){
+            LocalVariableTableIndexAccessor localVariableAccessor = (LocalVariableTableIndexAccessor) instruction;
+            LocalVariableInfo info = localVariableAccessor.getLocalVariableInfo();
+            label.append(info.getVariableName());
+
+         }else if(instruction instanceof I_IINC){
+
+            label.append(instruction.getByteCode());
+            label.append(" " + ((I_IINC) instruction).getDelta());
+            label.append(" " + ((I_IINC) instruction).getLocalVariableInfo().getVariableName());
+         }else if(instruction instanceof CompositeInstruction){
+            label.append("composite ");
+            label.append(instruction.getByteCode());
+         }
       }
+
       return (label.toString());
    }
 
    static private void appendFoldedInstruction(Table _sl, String _prefix, Instruction _instruction){
       _sl.data(_instruction.getThisPC());
-      _sl.data(_prefix + InstructionHelper.getLabel(_instruction, false, false, false));
+      _sl.data(_prefix + InstructionHelper.getLabel(_instruction, false, false));
       int startPc = _instruction.getStartPC();
       int thisPc = _instruction.getThisPC();
 
@@ -311,7 +258,7 @@ public class InstructionHelper{
    }
 
    static void writeExpression(String _prefix, Instruction _instruction){
-      System.out.println(_prefix + InstructionHelper.getLabel(_instruction, true, true, false));
+      System.out.println(_prefix + InstructionHelper.getLabel(_instruction, true, false));
    }
 
    public static String getFoldedView(MethodModel _methodModel){
@@ -327,7 +274,7 @@ public class InstructionHelper{
       Table table = new Table("[%2d-%2d] ", "%-60s", "%s");
       for(Instruction root = _head; root != null; root = root.getNextExpr()){
 
-         String label = InstructionHelper.getLabel(root, false, true, false);
+         String label = InstructionHelper.getLabel(root, true, false);
          StringBuilder sb = new StringBuilder();
          for(BranchVector branchInfo : getBranches(_methodModel.getMethod())){
             sb.append(branchInfo.render(root.getThisPC(), root.getStartPC()));
@@ -345,7 +292,7 @@ public class InstructionHelper{
       Table table = new Table("[%2d-%2d] ", "%-40s", "%s", "%3d");
 
       for(Instruction root = _head; root != null; root = root.getNextExpr()){
-         String label = InstructionHelper.getLabel(root, false, false, false);
+         String label = InstructionHelper.getLabel(root, false, false);
          StringBuilder sb = new StringBuilder();
          for(BranchVector branchInfo : getBranches(_methodModel.getMethod())){
             sb.append(branchInfo.render(root.getThisPC(), root.getStartPC()));
@@ -355,7 +302,7 @@ public class InstructionHelper{
          table.data(sb);
          table.data(_pcForwardBranchTargetCounts[root.getStartPC()]);
       }
-      String label = InstructionHelper.getLabel(_tail, false, false, false);
+      String label = InstructionHelper.getLabel(_tail, false, false);
       StringBuilder sb = new StringBuilder();
       for(BranchVector branchInfo : getBranches(_methodModel.getMethod())){
          sb.append(branchInfo.render(_tail.getThisPC(), _tail.getStartPC()));
@@ -376,7 +323,7 @@ public class InstructionHelper{
          int pc = i.getThisPC();
          table.data(stack);
          table.data(pc);
-         table.data(InstructionHelper.getLabel(i, false, false, true));
+         table.data(InstructionHelper.getLabel(i, false, true));
          StringBuilder sb = new StringBuilder();
          for(BranchVector branchInfo : getBranches(_method)){
             sb.append(branchInfo.render(pc));
@@ -417,7 +364,7 @@ public class InstructionHelper{
    }
 
    void edump(StringBuilder _sb, Instruction i, boolean clone){
-      String label = InstructionHelper.getLabel(i, false, true, true);
+      String label = InstructionHelper.getLabel(i, true, true);
 
       if(i instanceof CloneInstruction){
          edump(_sb, ((CloneInstruction) i).getReal(), true);
@@ -478,7 +425,7 @@ public class InstructionHelper{
    }
 
    void dump(String _indent, Instruction i, boolean clone){
-      String label = InstructionHelper.getLabel(i, true, false, false);
+      String label = InstructionHelper.getLabel(i, false, false);
 
       if(i instanceof CloneInstruction){
          dump(_indent, ((CloneInstruction) i).getReal(), true);
