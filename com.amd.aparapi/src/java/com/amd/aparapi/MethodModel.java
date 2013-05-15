@@ -1354,11 +1354,6 @@ public class MethodModel{
       init(_method);
    }
 
-   MethodModel(){
-      // used for fake derived classes
-   }
-
-
    private void init(ClassModelMethod _method) throws AparapiException{
       try{
          method = _method;
@@ -1436,9 +1431,6 @@ public class MethodModel{
       return (method.getLocalVariableTableEntry());
    }
 
-   ConstantPool getConstantPool(){
-      return (method.getConstantPool());
-   }
 
    ClassModel.AttributePool.LocalVariableTableEntry.LocalVariableInfo getLocalVariable(int _pc, int _index){
       return (method.getLocalVariable(_pc, _index));
@@ -1466,13 +1458,6 @@ public class MethodModel{
       MethodModel otherModel = (MethodModel) other;
       return otherModel.getName().equals(this.getName());
    }
-
-   String getReturnType(){
-      String returnType = method.getDescriptorUTF8Entry().getUTF8();
-      int index = returnType.indexOf(")");
-      return (returnType.substring(index + 1));
-   }
-
 
    Instruction getExprHead(){
       return (expressionList.getHead());

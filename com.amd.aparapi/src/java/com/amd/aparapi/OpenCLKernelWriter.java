@@ -110,6 +110,23 @@ public abstract class OpenCLKernelWriter{
 
    }
 
+
+   String getOpenCLName(TypeHelper.JavaType _javaType){
+      String openCLName = null;
+      if(_javaType.isArray()){
+         if(_javaType.getArrayElementType().equals(PrimitiveType.ref)){
+            openCLName = _javaType.getMangledClassName() + "***********".substring(0, _javaType.getArrayDimensions());
+         }else{
+            openCLName = _javaType.getArrayElementType().getOpenCLTypeName() + "***********".substring(0, _javaType.getArrayDimensions());
+         }
+      }else if(_javaType.isPrimitive()){
+         openCLName = _javaType.getPrimitiveType().getOpenCLTypeName();
+      }else if(_javaType.isObject()){
+         openCLName = _javaType.getObjectClassName();
+      }
+      return (openCLName);
+   }
+
    protected void writeMethod(MethodCall _methodCall, MethodEntry _methodEntry) throws CodeGenException{
 
       // System.out.println("_methodEntry = " + _methodEntry);
@@ -260,10 +277,10 @@ public abstract class OpenCLKernelWriter{
                   if(alvi.getRealType().isArrayOfObjects(dim)){    // an array of objects
                      output = __global + " " + alvi.getRealType().getMangledClassName();
                   }else{
-                     output = __global + " " + alvi.getRealType().getOpenCLName();
+                     output = __global + " " + getOpenCLName(alvi.getRealType());
                   }
                }else if(alvi.getRealType().isPrimitive()){
-                  output = alvi.getRealType().getOpenCLName();
+                  output = getOpenCLName(alvi.getRealType());
                }else{
                   // This must be the iteration object
                   // Turn Lcom/amd/javalabs/opencl/demo/DummyOOA; into com_amd_javalabs_opencl_demo_DummyOOA for example
@@ -312,8 +329,8 @@ public abstract class OpenCLKernelWriter{
                      argLine.append(output);
                      thisStructLine.append(output);
                   }else{
-                     argLine.append(alvi.getRealType().getOpenCLName() + " ");
-                     thisStructLine.append(alvi.getRealType().getOpenCLName() + " ");
+                     argLine.append(getOpenCLName(alvi.getRealType()) + " ");
+                     thisStructLine.append(getOpenCLName(alvi.getRealType()) + " ");
                      //argLine.append(convertType(output, false));
                      //hisStructLine.append(convertType(output, false));
                   }
@@ -364,7 +381,7 @@ public abstract class OpenCLKernelWriter{
 
 
          // check the suffix
-         String type = field.getName().endsWith(Kernel.LOCAL_SUFFIX) ? __local
+         String qualifier = field.getName().endsWith(Kernel.LOCAL_SUFFIX) ? __local
                : (field.getName().endsWith(Kernel.CONSTANT_SUFFIX) ? __constant : __global);
          RuntimeAnnotationsEntry visibleAnnotations = field.fieldAttributePool.getRuntimeVisibleAnnotationsEntry();
 
@@ -372,31 +389,35 @@ public abstract class OpenCLKernelWriter{
             for(AnnotationInfo ai : visibleAnnotations){
                String typeDescriptor = ai.getTypeDescriptor();
                if(typeDescriptor.equals(LOCAL_ANNOTATION_NAME)){
-                  type = __local;
+                  qualifier = __local;
                }else if(typeDescriptor.equals(CONSTANT_ANNOTATION_NAME)){
-                  type = __constant;
+                  qualifier = __constant;
                }
             }
          }
 
 
          if(fieldType.isArray()){
-            argLine.append(type + " ");
-            thisStructLine.append(type + " ");
+            argLine.append(qualifier + " ");
+            thisStructLine.append(qualifier + " ");
          }
 
          // If it is a converted array of objects, emit the struct param
          String className = null;
-         if(fieldType.isObject()){
+         if(fieldType.isArray()){
+            //  if (fieldType.getArrayElementType().equals(PrimitiveType.ref)){
+            //     argLine.append("*****".substring(fieldType.getArrayDimensions()))
+            //    throw new IllegalStateException("array of objects!");
+            // }else{
+            argLine.append(getOpenCLName(fieldType));
+            thisStructLine.append(getOpenCLName(fieldType));
+            // }
+
+         }else if(fieldType.isObject()){
             // Turn Lcom/amd/javalabs/opencl/demo/DummyOOA; into com_amd_javalabs_opencl_demo_DummyOOA for example
             className = fieldType.getMangledClassName();
             argLine.append(className);
             thisStructLine.append(className);
-         }else{
-            argLine.append(fieldType.getOpenCLName());
-            thisStructLine.append(fieldType.getOpenCLName());
-            // argLine.append(convertType(TypeHelper.typeName(fieldType.getSignature().charAt(0)), false));
-            //  thisStructLine.append(convertType(TypeHelper.typeName(fieldType.getSignature().charAt(0)), false));
          }
 
          argLine.append(" ");
@@ -533,7 +554,7 @@ public abstract class OpenCLKernelWriter{
          if(returnType.isArray()){
             write(" __global ");
          }
-         write(returnType.getOpenCLName() + " ");
+         write(getOpenCLName(returnType) + " ");
 
          write(mm.getMangledName() + "(");
 
@@ -570,7 +591,7 @@ public abstract class OpenCLKernelWriter{
                   write(" __global ");
                }
 
-               write(alvi.getRealType().getOpenCLName() + " ");
+               write(getOpenCLName(alvi.getRealType()) + " ");
                write(alvi.getVariableName());
                alreadyHasFirstArg = true;
             }
