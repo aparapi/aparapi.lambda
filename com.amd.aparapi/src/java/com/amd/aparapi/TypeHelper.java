@@ -359,6 +359,7 @@ public class TypeHelper{
       private int arrayDimensions = 0;
       private String signature;
       private PrimitiveType type; // I if int  OREF if array (or primitive or object or array) or object
+      private PrimitiveType arrayElementType; // none if not an array
 
       private JavaType(PrimitiveType _primitiveType){
          signature = createSignature(_primitiveType);
@@ -367,23 +368,23 @@ public class TypeHelper{
          }
          arrayDimensions = 0;
          type = _primitiveType;
-         if(signature.equals("I")){
-            signature = signature;
-         }
+         arrayElementType= PrimitiveType.none;
 
       }
 
       PrimitiveType getPrimitiveType(){
-         return ((PrimitiveType) type);
+         return (type);
+      }
+
+      PrimitiveType getArrayElementType(){
+         return (arrayElementType);
       }
 
       private JavaType(String _signature){
          arrayDimensions = _signature.startsWith("[") ? _signature.lastIndexOf('[') + 1 : 0;
          signature = _signature;
          type = PrimitiveType.ref;
-         if(signature.equals("I")){
-            signature = signature;
-         }
+         arrayElementType = PrimitiveType.getJavaPrimitiveTypeFor(_signature.substring(arrayDimensions));
       }
 
       String getSignature(){
@@ -391,39 +392,39 @@ public class TypeHelper{
       }
 
       boolean isVoid(){
-         return (arrayDimensions == 0 && type instanceof v);
+         return (arrayDimensions == 0 && type.equals(PrimitiveType.v));
       }
 
       boolean isInt(){
-         return (arrayDimensions == 0 && type instanceof s32);
+         return (arrayDimensions == 0 && type.equals(PrimitiveType.s32));
       }
 
       boolean isLong(){
-         return (arrayDimensions == 0 && type instanceof s64);
+         return (arrayDimensions == 0 && type.equals(PrimitiveType.s64));
       }
 
       boolean isShort(){
-         return (arrayDimensions == 0 && type instanceof s16);
+         return (arrayDimensions == 0 && type.equals(PrimitiveType.s16));
       }
 
       boolean isBoolean(){
-         return (arrayDimensions == 0 && type instanceof u1);
+         return (arrayDimensions == 0 && type.equals(PrimitiveType.u1));
       }
 
       boolean isChar(){
-         return (arrayDimensions == 0 && type instanceof u16);
+         return (arrayDimensions == 0 &&  type.equals(PrimitiveType.u16));
       }
 
       boolean isFloat(){
-         return (arrayDimensions == 0 && type instanceof f32);
+         return (arrayDimensions == 0 &&  type.equals(PrimitiveType.f32));
       }
 
       boolean isDouble(){
-         return (arrayDimensions == 0 && type instanceof f64);
+         return (arrayDimensions == 0 &&  type.equals(PrimitiveType.f64));
       }
 
       boolean isByte(){
-         return (arrayDimensions == 0 && type instanceof s8);
+         return (arrayDimensions == 0 &&  type.equals(PrimitiveType.s8));
       }
 
       boolean isObject(){
@@ -455,37 +456,16 @@ public class TypeHelper{
          return (isInt() || isFloat() || isDouble() || isChar() || isLong() || isShort() || isByte() || isVoid());
       }
 
-      String primitiveCharToJavaName(char _ch){
-         switch(_ch){
-            case VOID:
-               return ("void");
-            case DOUBLE:
-               return ("double");
-            case FLOAT:
-               return ("float");
-            case INT:
-               return ("int");
-            case CHAR:
-               return ("char");
-            case BYTE:
-               return ("byte");
-            case SHORT:
-               return ("short");
-            case LONG:
-               return ("long");
-            case BOOLEAN:
-               return ("boolean");
-         }
-         return ("?");
-      }
-
-
       String getOpenCLName(){
          String openCLName = null;
          if(isArray()){
-            openCLName = primitiveCharToJavaName(signature.charAt(arrayDimensions)) + "*";
+            if (arrayElementType.equals(PrimitiveType.ref)){
+               throw new IllegalStateException("this is not right!") ;
+            }else{
+                openCLName = arrayElementType.getOpenCLTypeName() + "***********".substring(0,arrayDimensions);
+            }
          }else if(isPrimitive() || isVoid()){
-            openCLName = primitiveCharToJavaName(signature.charAt(arrayDimensions));
+            openCLName = type.getOpenCLTypeName();
          }else if(isObject()){
             openCLName = getObjectClassName();
          }

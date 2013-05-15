@@ -50,29 +50,6 @@ import java.util.*;
 
 public abstract class KernelWriter extends BlockWriter{
 
-   final static String cvtBooleanToChar = "char ";
-
-   final static String cvtBooleanArrayToCharStar = "char* ";
-
-   final static String cvtByteToChar = "char ";
-
-   final static String cvtByteArrayToCharStar = "char* ";
-
-   final static String cvtCharToShort = "unsigned short ";
-
-   final static String cvtCharArrayToShortStar = "unsigned short* ";
-
-   final static String cvtIntArrayToIntStar = "int* ";
-
-   final static String cvtFloatArrayToFloatStar = "float* ";
-
-   final static String cvtDoubleArrayToDoubleStar = "double* ";
-
-   final static String cvtLongArrayToLongStar = "long* ";
-
-   final static String cvtShortArrayToShortStar = "short* ";
-
-   // private static Logger logger = Logger.getLogger(Config.getLoggerName());
 
    Entrypoint entryPoint = null;
 
@@ -124,57 +101,6 @@ public abstract class KernelWriter extends BlockWriter{
 
    }
 
-   /**
-    * These three convert functions are here to perform
-    * any prefix conversion that may be required between
-    * Java and OpenCL.
-    *
-    * @param _typeDesc String in the Java JNI notation, [I, etc
-    * @return Suitably converted string, "char*", etc
-    */
-   @Override
-   protected String convertType(String _typeDesc, boolean useClassModel){
-      return KernelWriter.convertType0(_typeDesc, useClassModel);
-   }
-
-   public static String convertType0(String _typeDesc, boolean useClassModel){
-      if(_typeDesc == null){
-         _typeDesc = _typeDesc;
-      }
-      if(_typeDesc.equals("Z") || _typeDesc.equals("boolean")){
-         return (cvtBooleanToChar);
-      }else if(_typeDesc.equals("[Z") || _typeDesc.equals("boolean[]")){
-         return (cvtBooleanArrayToCharStar);
-      }else if(_typeDesc.equals("B") || _typeDesc.equals("byte")){
-         return (cvtByteToChar);
-      }else if(_typeDesc.equals("[B") || _typeDesc.equals("byte[]")){
-         return (cvtByteArrayToCharStar);
-      }else if(_typeDesc.equals("C") || _typeDesc.equals("char")){
-         return (cvtCharToShort);
-      }else if(_typeDesc.equals("[C") || _typeDesc.equals("char[]")){
-         return (cvtCharArrayToShortStar);
-      }else if(_typeDesc.equals("I")){
-         return ("int ");
-      }else if(_typeDesc.equals("[I") || _typeDesc.equals("int[]")){
-         return (cvtIntArrayToIntStar);
-      }else if(_typeDesc.equals("F")){
-         return ("float ");
-      }else if(_typeDesc.equals("[F") || _typeDesc.equals("float[]")){
-         return (cvtFloatArrayToFloatStar);
-      }else if(_typeDesc.equals("[D") || _typeDesc.equals("double[]")){
-         return (cvtDoubleArrayToDoubleStar);
-      }else if(_typeDesc.equals("[J") || _typeDesc.equals("long[]")){
-         return (cvtLongArrayToLongStar);
-      }else if(_typeDesc.equals("[S") || _typeDesc.equals("short[]")){
-         return (cvtShortArrayToShortStar);
-      }
-      // if we get this far, we haven't matched anything yet
-      if(useClassModel){
-         return (TypeHelper.convert(_typeDesc, "", true));
-      }else{
-         return _typeDesc;
-      }
-   }
 
    @Override
    protected void writeMethod(MethodCall _methodCall, MethodEntry _methodEntry) throws CodeGenException{
@@ -334,13 +260,8 @@ public abstract class KernelWriter extends BlockWriter{
                   // This is a local array captured from the caller method and
                   // passed in from the Block/Consumer
                   if(alvi.getRealType().isArrayOfObjects(dim)){    // an array of objects
-                     //classModelType = __global + " " + (classModelType.substring(2, classModelType.length() - 1)).replace("/", "_");
-                     output = __global + " " + alvi.getRealType().getMangledClassName();
+                      output = __global + " " + alvi.getRealType().getMangledClassName();
                   }else{
-                     // Basic prefix array
-                     // how do we know the type of the array ?
-                     // String jn = type.getJavaName() ;
-                     // String sig = type.getSignature();
                      output = __global + " " + alvi.getRealType().getOpenCLName();
                   }
                }else if(alvi.getRealType().isPrimitive()){
@@ -393,8 +314,10 @@ public abstract class KernelWriter extends BlockWriter{
                      argLine.append(output);
                      thisStructLine.append(output);
                   }else{
-                     argLine.append(convertType(output, false));
-                     thisStructLine.append(convertType(output, false));
+                     argLine.append(alvi.getRealType().getOpenCLName()+" ");
+                     thisStructLine.append(alvi.getRealType().getOpenCLName()+" ") ;
+                     //argLine.append(convertType(output, false));
+                     //hisStructLine.append(convertType(output, false));
                   }
                   argLine.append(" ");
                   thisStructLine.append(" ");
@@ -556,17 +479,14 @@ public abstract class KernelWriter extends BlockWriter{
             Iterator<FieldEntry> it = fieldSet.iterator();
             while(it.hasNext()){
                FieldEntry field = it.next();
-               String fType = field.getNameAndTypeEntry().getDescriptorUTF8Entry().getUTF8();
-               int fSize = InstructionSet.TypeSpec.valueOf(fType).getPrimitiveType().getJavaBytes();
+               String fieldName = field.getNameAndTypeEntry().getName();
+               TypeHelper.JavaType fieldType = field.getNameAndTypeEntry().getType();
 
-               if(fSize > alignTo){
-                  alignTo = fSize;
+               if(fieldType.getPrimitiveType().getJavaBytes() > alignTo){
+                  alignTo = fieldType.getPrimitiveType().getJavaBytes();
                }
-               totalSize += fSize;
-
-               String cType = convertType(field.getNameAndTypeEntry().getDescriptorUTF8Entry().getUTF8(), true);
-               assert cType != null : "could not find prefix for " + field.getNameAndTypeEntry().getDescriptorUTF8Entry().getUTF8();
-               writeLn(cType + " " + field.getNameAndTypeEntry().getNameUTF8Entry().getUTF8() + ";");
+               totalSize += fieldType.getPrimitiveType().getJavaBytes();
+               writeLn(fieldType.getPrimitiveType().getOpenCLTypeName() + " " + fieldName + ";");
             }
 
             // compute total size for OpenCL buffer
@@ -610,12 +530,12 @@ public abstract class KernelWriter extends BlockWriter{
       for(MethodModel mm : _entryPoint.getCalledMethods()){
          // write declaration :)
 
-         String returnType = mm.getReturnType();
+         TypeHelper.JavaType returnType = mm.getMethod().getArgsAndReturnType().getReturnType();
          // Arrays always map to __global arrays
-         if(returnType.startsWith("[")){
+         if(returnType.isArray()){
             write(" __global ");
          }
-         write(convertType(returnType, true));
+         write(returnType.getOpenCLName()+" ");
 
          write(mm.getMangledName() + "(");
 
@@ -640,20 +560,20 @@ public abstract class KernelWriter extends BlockWriter{
 
          boolean alreadyHasFirstArg = !mm.getMethod().isStatic();
          LocalVariableTableEntry lvte = mm.getLocalVariableTableEntry();
-         for(LocalVariableInfo lvi : lvte){
-            if((lvi.getStart() == 0) && ((lvi.getSlot() != 0) || mm.getMethod().isStatic())){ // full scope but skip this
-               String descriptor = lvi.getVariableDescriptor();
+         for(LocalVariableTableEntry.ArgLocalVariableInfo alvi : lvte.getArgs()){
+            if((alvi.getSlot() != 0) || mm.getMethod().isStatic()){ // full scope but skip this
+
                if(alreadyHasFirstArg){
                   write(", ");
                }
 
                // Arrays always map to __global arrays
-               if(descriptor.startsWith("[")){
+               if(alvi.getRealType().isArray()){
                   write(" __global ");
                }
 
-               write(convertType(descriptor, true));
-               write(lvi.getVariableName());
+               write(alvi.getRealType().getOpenCLName()+" ");
+               write(alvi.getVariableName());
                alreadyHasFirstArg = true;
             }
          }
