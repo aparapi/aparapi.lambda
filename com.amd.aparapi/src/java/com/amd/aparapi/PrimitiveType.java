@@ -91,6 +91,7 @@ public abstract class PrimitiveType{
    public String getJavaTypeName(){
       return (javaTypeName);
    }
+
    public String getOpenCLTypeName(){
       return (openCLTypeName);
    }
@@ -105,12 +106,12 @@ public abstract class PrimitiveType{
 
 
    public static PrimitiveType getJavaPrimitiveTypeFor(String _sig){
-      for (PrimitiveType t:javaPrimitiveTypes){
-         if (t.getJavaSig().equals(_sig)){
-            return(t);
+      for(PrimitiveType t : javaPrimitiveTypes){
+         if(t.getJavaSig().equals(_sig)){
+            return (t);
          }
       }
-      return(ref);
+      return (ref);
    }
 }
 
@@ -132,13 +133,13 @@ class u8 extends PrimitiveType{
 
 class s8 extends PrimitiveType{
    s8(){
-      super(null, 8, 8, "B", "byte", "char","s", 1);
+      super(null, 8, 8, "B", "byte", "char", "s", 1);
    }
 }
 
 class u16 extends PrimitiveType{
    u16(){
-      super(char.class, 16, 16, "C", "char","unsigned short", "u", 1);
+      super(char.class, 16, 16, "C", "char", "unsigned short", "u", 1);
    }
 }
 
@@ -150,7 +151,7 @@ class s16 extends PrimitiveType{
 
 class f16 extends PrimitiveType{
    f16(){
-      super(null, 16, 0, null, null, null,  "f", -1);
+      super(null, 16, 0, null, null, null, "f", -1);
    }
 }
 
@@ -162,7 +163,7 @@ class u32 extends PrimitiveType{
 
 class s32 extends PrimitiveType{
    s32(){
-      super(int.class, 32, 32, "I", "int", "int",  "s", 1);
+      super(int.class, 32, 32, "I", "int", "int", "s", 1);
    }
 }
 
