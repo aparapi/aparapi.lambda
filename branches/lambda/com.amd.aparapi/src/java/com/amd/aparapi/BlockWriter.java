@@ -385,7 +385,7 @@ abstract class BlockWriter{
             TypeSpec typeSpec = localVariableInfo.getTypeSpec();
 
 
-            write(typeSpec.getPrimitiveType().getOpenCLTypeName()+" ");
+            write(typeSpec.getPrimitiveType().getOpenCLTypeName() + " ");
 
          }
          if(localVariableInfo == null){

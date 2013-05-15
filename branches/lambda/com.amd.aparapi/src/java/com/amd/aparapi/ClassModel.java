@@ -448,11 +448,13 @@ public class ClassModel{
          UTF8Entry getNameUTF8Entry(){
             return (ConstantPool.this.getUTF8Entry(nameIndex));
          }
+
          public JavaType getType(){
-            return(TypeHelper.getJavaType(getDescriptorUTF8Entry().getUTF8()));
+            return (TypeHelper.getJavaType(getDescriptorUTF8Entry().getUTF8()));
          }
+
          public String getName(){
-            return(getDescriptorUTF8Entry().getUTF8());
+            return (getDescriptorUTF8Entry().getUTF8());
          }
 
       }
@@ -472,7 +474,6 @@ public class ClassModel{
          UTF8Entry getDescriptorUTF8Entry(){
             return (ConstantPool.this.getUTF8Entry(descriptorIndex));
          }
-
 
 
       }

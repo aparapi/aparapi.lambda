@@ -368,7 +368,7 @@ public class TypeHelper{
          }
          arrayDimensions = 0;
          type = _primitiveType;
-         arrayElementType= PrimitiveType.none;
+         arrayElementType = PrimitiveType.none;
 
       }
 
@@ -412,19 +412,19 @@ public class TypeHelper{
       }
 
       boolean isChar(){
-         return (arrayDimensions == 0 &&  type.equals(PrimitiveType.u16));
+         return (arrayDimensions == 0 && type.equals(PrimitiveType.u16));
       }
 
       boolean isFloat(){
-         return (arrayDimensions == 0 &&  type.equals(PrimitiveType.f32));
+         return (arrayDimensions == 0 && type.equals(PrimitiveType.f32));
       }
 
       boolean isDouble(){
-         return (arrayDimensions == 0 &&  type.equals(PrimitiveType.f64));
+         return (arrayDimensions == 0 && type.equals(PrimitiveType.f64));
       }
 
       boolean isByte(){
-         return (arrayDimensions == 0 &&  type.equals(PrimitiveType.s8));
+         return (arrayDimensions == 0 && type.equals(PrimitiveType.s8));
       }
 
       boolean isObject(){
@@ -459,10 +459,10 @@ public class TypeHelper{
       String getOpenCLName(){
          String openCLName = null;
          if(isArray()){
-            if (arrayElementType.equals(PrimitiveType.ref)){
-               throw new IllegalStateException("this is not right!") ;
+            if(arrayElementType.equals(PrimitiveType.ref)){
+               throw new IllegalStateException("this is not right!");
             }else{
-                openCLName = arrayElementType.getOpenCLTypeName() + "***********".substring(0,arrayDimensions);
+               openCLName = arrayElementType.getOpenCLTypeName() + "***********".substring(0, arrayDimensions);
             }
          }else if(isPrimitive() || isVoid()){
             openCLName = type.getOpenCLTypeName();

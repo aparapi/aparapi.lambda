@@ -189,11 +189,12 @@ class InstructionSet{
 
 
       Operator(PrimitiveType _castFrom, PrimitiveType _castTo){
-         castTo= _castTo;
-         castFrom= _castFrom;
-         text = "("+castTo.getOpenCLTypeName()+")";
+         castTo = _castTo;
+         castFrom = _castFrom;
+         text = "(" + castTo.getOpenCLTypeName() + ")";
          binary = false;
       }
+
       Operator(boolean _binary, String _text){
 
          text = _text;

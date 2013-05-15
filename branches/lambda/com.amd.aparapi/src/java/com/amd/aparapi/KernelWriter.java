@@ -260,7 +260,7 @@ public abstract class KernelWriter extends BlockWriter{
                   // This is a local array captured from the caller method and
                   // passed in from the Block/Consumer
                   if(alvi.getRealType().isArrayOfObjects(dim)){    // an array of objects
-                      output = __global + " " + alvi.getRealType().getMangledClassName();
+                     output = __global + " " + alvi.getRealType().getMangledClassName();
                   }else{
                      output = __global + " " + alvi.getRealType().getOpenCLName();
                   }
@@ -314,8 +314,8 @@ public abstract class KernelWriter extends BlockWriter{
                      argLine.append(output);
                      thisStructLine.append(output);
                   }else{
-                     argLine.append(alvi.getRealType().getOpenCLName()+" ");
-                     thisStructLine.append(alvi.getRealType().getOpenCLName()+" ") ;
+                     argLine.append(alvi.getRealType().getOpenCLName() + " ");
+                     thisStructLine.append(alvi.getRealType().getOpenCLName() + " ");
                      //argLine.append(convertType(output, false));
                      //hisStructLine.append(convertType(output, false));
                   }
@@ -535,7 +535,7 @@ public abstract class KernelWriter extends BlockWriter{
          if(returnType.isArray()){
             write(" __global ");
          }
-         write(returnType.getOpenCLName()+" ");
+         write(returnType.getOpenCLName() + " ");
 
          write(mm.getMangledName() + "(");
 
@@ -572,7 +572,7 @@ public abstract class KernelWriter extends BlockWriter{
                   write(" __global ");
                }
 
-               write(alvi.getRealType().getOpenCLName()+" ");
+               write(alvi.getRealType().getOpenCLName() + " ");
                write(alvi.getVariableName());
                alreadyHasFirstArg = true;
             }
