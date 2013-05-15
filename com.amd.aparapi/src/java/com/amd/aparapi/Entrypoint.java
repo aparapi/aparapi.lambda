@@ -42,7 +42,6 @@ import com.amd.aparapi.ClassModel.ClassModelMethod;
 import com.amd.aparapi.ClassModel.ConstantPool.FieldEntry;
 import com.amd.aparapi.ClassModel.ConstantPool.MethodEntry;
 import com.amd.aparapi.InstructionSet.*;
-import com.amd.aparapi.TypeHelper.Arg;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -702,7 +701,7 @@ public class Entrypoint{
                         setRequiresAtomics32Pragma(true);
                      }
 
-                     Arg methodArgs[] = methodEntry.getArgsAndReturnType().getArgs();
+                     TypeHelper.JavaMethodArg methodArgs[] = methodEntry.getArgsAndReturnType().getArgs();
                      if(methodArgs.length > 0 && methodArgs[0].getJavaType().isArray()){ //currently array arg can only take slot 0
                         Instruction arrInstruction = invokeInstruction.getArg(0);
                         if(arrInstruction instanceof AccessField){

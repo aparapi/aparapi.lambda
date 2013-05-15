@@ -215,6 +215,8 @@ public class InstructionHelper{
             LocalVariableInfo info = assignToLocalVariable.getLocalVariableInfo();
 
             if(assignToLocalVariable.isDeclaration()){
+
+
                label.append(TypeHelper.convert(info.getVariableDescriptor()));
             }
 

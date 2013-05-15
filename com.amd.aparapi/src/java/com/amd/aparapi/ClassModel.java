@@ -42,7 +42,6 @@ import com.amd.aparapi.ClassModel.ConstantPool.FieldEntry;
 import com.amd.aparapi.ClassModel.ConstantPool.MethodEntry;
 import com.amd.aparapi.InstructionSet.Branch;
 import com.amd.aparapi.InstructionSet.TypeSpec;
-import com.amd.aparapi.TypeHelper.ArgsAndReturnType;
 import com.amd.aparapi.TypeHelper.JavaType;
 
 import java.io.ByteArrayInputStream;
@@ -345,7 +344,7 @@ public class ClassModel{
 
 
                String signature = nameAndTypeEntry.getDescriptorUTF8Entry().getUTF8();
-               type = TypeHelper.getJavaType(signature);
+               type = TypeHelper.JavaType.getJavaType(signature);
 
             }
             return (type);
@@ -450,7 +449,7 @@ public class ClassModel{
          }
 
          public JavaType getType(){
-            return (TypeHelper.getJavaType(getDescriptorUTF8Entry().getUTF8()));
+            return (TypeHelper.JavaType.getJavaType(getDescriptorUTF8Entry().getUTF8()));
          }
 
          public String getName(){
@@ -556,14 +555,14 @@ public class ClassModel{
             return (getArgsAndReturnType().getReturnType().isVoid() ? 0 : 1);
          }
 
-         ArgsAndReturnType argsAndReturnType;
+         TypeHelper.JavaMethodArgsAndReturnType argsAndReturnType;
 
-         ArgsAndReturnType getArgsAndReturnType(){
+         TypeHelper.JavaMethodArgsAndReturnType getArgsAndReturnType(){
             if(argsAndReturnType == null){
                NameAndTypeEntry nameAndTypeEntry = getNameAndTypeEntry();
 
                String signature = nameAndTypeEntry.getDescriptorUTF8Entry().getUTF8();// "([[IF)V" for a method that takes an int[][], float and returns void.
-               argsAndReturnType = new ArgsAndReturnType(signature);
+               argsAndReturnType = TypeHelper.JavaMethodArgsAndReturnType.getArgsAndReturnType(signature);
             }
             return (argsAndReturnType);
          }
@@ -592,7 +591,7 @@ public class ClassModel{
          }
 
          JavaType getContainingClass(){
-            return (TypeHelper.getJavaType(getClassEntry().getClassName()));
+            return (TypeHelper.JavaType.getJavaType(getClassEntry().getClassName()));
          }
 
          String getName(){
@@ -865,7 +864,7 @@ public class ClassModel{
             ConstantPool.NameAndTypeEntry nameAndTypeEntry = (ConstantPool.NameAndTypeEntry) get(methodEntry.getNameAndTypeIndex());
             ConstantPool.UTF8Entry utf8NameEntry = (ConstantPool.UTF8Entry) get(nameAndTypeEntry.getNameIndex());
             ConstantPool.UTF8Entry utf8DescriptorEntry = (ConstantPool.UTF8Entry) get(nameAndTypeEntry.getDescriptorIndex());
-            sb.append(TypeHelper.convert(utf8DescriptorEntry.getUTF8(), utf8Entry.getUTF8() + "." + utf8NameEntry.getUTF8()));
+            sb.append(TypeHelper.convert(utf8DescriptorEntry.getUTF8())).append(utf8Entry.getUTF8() + "." + utf8NameEntry.getUTF8());
          }else if(_entry instanceof ConstantPool.InterfaceMethodEntry){
             ConstantPool.InterfaceMethodEntry interfaceMethodEntry = (ConstantPool.InterfaceMethodEntry) _entry;
             ConstantPool.ClassEntry classEntry = (ConstantPool.ClassEntry) get(interfaceMethodEntry.getClassIndex());
@@ -874,7 +873,7 @@ public class ClassModel{
                   .getNameAndTypeIndex());
             ConstantPool.UTF8Entry utf8NameEntry = (ConstantPool.UTF8Entry) get(nameAndTypeEntry.getNameIndex());
             ConstantPool.UTF8Entry utf8DescriptorEntry = (ConstantPool.UTF8Entry) get(nameAndTypeEntry.getDescriptorIndex());
-            sb.append(TypeHelper.convert(utf8DescriptorEntry.getUTF8(), utf8Entry.getUTF8() + "." + utf8NameEntry.getUTF8()));
+            sb.append(TypeHelper.convert(utf8DescriptorEntry.getUTF8())).append(utf8Entry.getUTF8() + "." + utf8NameEntry.getUTF8());
          }else if(_entry instanceof ConstantPool.FieldEntry){
             ConstantPool.FieldEntry fieldEntry = (ConstantPool.FieldEntry) _entry;
             ConstantPool.ClassEntry classEntry = (ConstantPool.ClassEntry) get(fieldEntry.getClassIndex());
@@ -882,7 +881,7 @@ public class ClassModel{
             ConstantPool.NameAndTypeEntry nameAndTypeEntry = (ConstantPool.NameAndTypeEntry) get(fieldEntry.getNameAndTypeIndex());
             ConstantPool.UTF8Entry utf8NameEntry = (ConstantPool.UTF8Entry) get(nameAndTypeEntry.getNameIndex());
             ConstantPool.UTF8Entry utf8DescriptorEntry = (ConstantPool.UTF8Entry) get(nameAndTypeEntry.getDescriptorIndex());
-            sb.append(TypeHelper.convert(utf8DescriptorEntry.getUTF8(), utf8Entry.getUTF8() + "." + utf8NameEntry.getUTF8()));
+            sb.append(TypeHelper.convert(utf8DescriptorEntry.getUTF8())).append(utf8Entry.getUTF8() + "." + utf8NameEntry.getUTF8());
          }
          return (sb.toString());
       }
@@ -1395,8 +1394,8 @@ public class ClassModel{
 
             // MethodDescription description = TypeHelper.getMethodDescription(_method.getDescriptor());
 
-            ArgsAndReturnType argsAndReturnType = _method.getArgsAndReturnType();
-            TypeHelper.Arg[] args = argsAndReturnType.getArgs();
+            TypeHelper.JavaMethodArgsAndReturnType argsAndReturnType = _method.getArgsAndReturnType();
+            TypeHelper.JavaMethodArg[] args = argsAndReturnType.getArgs();
 
             int thisOffset = _method.isStatic() ? 0 : 1;
 
@@ -1404,7 +1403,7 @@ public class ClassModel{
             //   InstructionSet.StoreSpec[] argsAsStoreSpecs = new InstructionSet.StoreSpec[args.length + thisOffset];
             if(_method.isVirtual()){
                //argsAsStoreSpecs[0] = InstructionSet.StoreSpec.OREF;
-               ArgLocalVariableInfo arg = new ArgLocalVariableInfo(InstructionSet.StoreSpec.OREF, 0, 0, TypeHelper.getJavaType("L" + ClassModel.this.getClassName() + ";"));
+               ArgLocalVariableInfo arg = new ArgLocalVariableInfo(InstructionSet.StoreSpec.OREF, 0, 0, TypeHelper.JavaType.getJavaType("L" + ClassModel.this.getClassName() + ";"));
                vars[0] = arg;
                list.add(vars[0]);
                argsList.add(arg);
@@ -2150,7 +2149,7 @@ public class ClassModel{
 
       JavaType getType(){
          if(type == null){
-            type = TypeHelper.getJavaType(getDescriptor());
+            type = TypeHelper.JavaType.getJavaType(getDescriptor());
          }
          return (type);
       }
@@ -2213,11 +2212,11 @@ public class ClassModel{
          return (constantPool.getUTF8Entry(descriptorIndex));
       }
 
-      ArgsAndReturnType argsAndReturnType;
+      TypeHelper.JavaMethodArgsAndReturnType argsAndReturnType;
 
-      ArgsAndReturnType getArgsAndReturnType(){
+      TypeHelper.JavaMethodArgsAndReturnType getArgsAndReturnType(){
          if(argsAndReturnType == null){
-            argsAndReturnType = new ArgsAndReturnType(getDescriptor());
+            argsAndReturnType = TypeHelper.JavaMethodArgsAndReturnType.getArgsAndReturnType(getDescriptor());
          }
          return (argsAndReturnType);
       }
@@ -2510,7 +2509,7 @@ public class ClassModel{
                InstructionSet.PushSpec push = i.getByteCode().getPush();
 
                if(i.isMethodCall()){
-                  ArgsAndReturnType calledArgsAndReturnType = i.asMethodCall().getConstantPoolMethodEntry().getArgsAndReturnType();
+                  TypeHelper.JavaMethodArgsAndReturnType calledArgsAndReturnType = i.asMethodCall().getConstantPoolMethodEntry().getArgsAndReturnType();
                   consumedInstructionTypeStack.push(i, calledArgsAndReturnType.getReturnType().getPrimitiveType());
                }else if(i.isFieldAccessor()){
                   JavaType assignedFieldType = i.asFieldAccessor().getConstantPoolFieldEntry().getType();
