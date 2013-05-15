@@ -162,28 +162,38 @@ class InstructionSet{
       Neg(false, "-"), //
       Pos(false, "+"), //
 
-      I2FCast(false, "(float)"),
-      I2LCast(false, "(long)"), //
-      I2DCast(false, "(double)"), //
-      L2ICast(false, "(int)"), //
-      L2FCast(false, "(float)"), //
-      L2DCast(false, "(double)"), //
-      F2ICast(false, "(int)"), //
-      F2LCast(false, "(long)"), //
-      F2DCast(false, "(double)"), //
-      D2ICast(false, "(int)"), //
-      D2LCast(false, "(long)"), //
-      D2FCast(false, "(float)"), //
-      I2BCast(false, "(byte)"), //
-      I2CCast(false, "(char)"), //
-      I2SCast(false, "(short)");
+      I2FCast(PrimitiveType.s32, PrimitiveType.f32), //
+      I2LCast(PrimitiveType.s32, PrimitiveType.s64), //
+      I2DCast(PrimitiveType.s32, PrimitiveType.f64), //
+      I2BCast(PrimitiveType.s32, PrimitiveType.s8), //
+      I2CCast(PrimitiveType.s32, PrimitiveType.u16), //
+      I2SCast(PrimitiveType.s32, PrimitiveType.s16), //
+      L2ICast(PrimitiveType.s64, PrimitiveType.s32), //
+      L2FCast(PrimitiveType.s64, PrimitiveType.f32), //
+      L2DCast(PrimitiveType.s64, PrimitiveType.f64), //
+      F2ICast(PrimitiveType.f32, PrimitiveType.s32), //
+      F2LCast(PrimitiveType.f32, PrimitiveType.s64), //
+      F2DCast(PrimitiveType.f32, PrimitiveType.f64), //
+      D2ICast(PrimitiveType.f64, PrimitiveType.s32), //
+      D2LCast(PrimitiveType.f64, PrimitiveType.s64), //
+      D2FCast(PrimitiveType.f64, PrimitiveType.f32); //
+
 
       private String text;
 
       private boolean binary;
 
       private Operator compliment;
+      private PrimitiveType castFrom;
+      private PrimitiveType castTo;
 
+
+      Operator(PrimitiveType _castFrom, PrimitiveType _castTo){
+         castTo= _castTo;
+         castFrom= _castFrom;
+         text = "("+castTo.getOpenCLTypeName()+")";
+         binary = false;
+      }
       Operator(boolean _binary, String _text){
 
          text = _text;

@@ -359,17 +359,6 @@ abstract class BlockWriter{
       }
    }
 
-   protected String convertType(String _typeDesc, boolean useClassModel){
-      return (_typeDesc);
-   }
-
-   protected String convertCast(String _cast){
-      // Strip parens off cast
-      //System.out.println("cast = " + _cast);
-      String raw = convertType(_cast.substring(1, _cast.length() - 1), false);
-      return ("(" + raw + ")");
-   }
-
    protected void doAccessLocalVariable(Instruction _instruction){
       AccessLocalVariable localVariableLoadInstruction = (AccessLocalVariable) _instruction;
       LocalVariableInfo localVariable = localVariableLoadInstruction.getLocalVariableInfo();
@@ -392,13 +381,11 @@ abstract class BlockWriter{
 
          LocalVariableInfo localVariableInfo = assignToLocalVariable.getLocalVariableInfo();
          if(assignToLocalVariable.isDeclaration()){
-            String descriptor = localVariableInfo.getVariableDescriptor();
-            // Arrays always map to __global arrays
-            if(descriptor.startsWith("[")){
-               write(" __global ");
-            }
+            //String descriptor = localVariableInfo.getVariableDescriptor();
+            TypeSpec typeSpec = localVariableInfo.getTypeSpec();
 
-            write(convertType(descriptor, true));
+
+            write(typeSpec.getPrimitiveType().getOpenCLTypeName()+" ");
 
          }
          if(localVariableInfo == null){
@@ -558,7 +545,10 @@ abstract class BlockWriter{
       }else if(_instruction instanceof CastOperator){
          CastOperator castInstruction = (CastOperator) _instruction;
          //  write("(");
-         write(convertCast(castInstruction.getOperator().getText()));
+
+
+         write(castInstruction.getOperator().getText());
+
 
          writeInstruction(castInstruction.getUnary());
          //    write(")");
@@ -623,7 +613,11 @@ abstract class BlockWriter{
 
             LocalVariableInfo localVariableInfo = alv.getLocalVariableInfo();
             if(alv.isDeclaration()){
-               write(convertType(localVariableInfo.getVariableDescriptor(), true));
+
+               TypeSpec typeSpec = localVariableInfo.getTypeSpec();
+
+
+               write(typeSpec.getPrimitiveType().getOpenCLTypeName());
             }
             if(localVariableInfo == null){
                throw new CodeGenException("outOfScope" + _instruction.getThisPC() + " = ");
@@ -640,7 +634,7 @@ abstract class BlockWriter{
          LocalVariableInfo localVariableInfo = assignToLocalVariable.getLocalVariableInfo();
          if(assignToLocalVariable.isDeclaration()){
             // this is bad! we need a general way to hoist up a required declaration
-            throw new CodeGenException("/* we can't declare this " + convertType(localVariableInfo.getVariableDescriptor(), true)
+            throw new CodeGenException("/* we can't declare this " + localVariableInfo.getTypeSpec().getPrimitiveType().getOpenCLTypeName()
                   + " here */");
          }
          write(localVariableInfo.getVariableName());
