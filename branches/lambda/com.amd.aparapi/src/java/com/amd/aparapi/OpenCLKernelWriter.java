@@ -324,16 +324,12 @@ public abstract class OpenCLKernelWriter{
                   argLines.add(objSourceIndexDecl);
 
                   // Add array to assigns
-                  assignLine.append("this->");
-                  assignLine.append(sourceArrayName);
-                  assignLine.append(" = ");
-                  assignLine.append(sourceArrayName);
+                  assignLine.append("this->").append(sourceArrayName).append(" = ").append(sourceArrayName);
                   assigns.add(assignLine.toString());
 
                   // Add get_global_id to assigns
                   StringBuilder assignGid = new StringBuilder();
-                  assignGid.append(objSourceIndex);
-                  assignGid.append(" = get_global_id(0)");
+                  assignGid.append(objSourceIndex).append(" = get_global_id(0)");
                   assigns.add(assignGid.toString());
 
                }
@@ -344,10 +340,8 @@ public abstract class OpenCLKernelWriter{
                      argLine.append(output);
                      thisStructLine.append(output);
                   }else{
-                     argLine.append(getOpenCLName(alvi.getRealType()) + " ");
-                     thisStructLine.append(getOpenCLName(alvi.getRealType()) + " ");
-                     //argLine.append(convertType(output, false));
-                     //hisStructLine.append(convertType(output, false));
+                     argLine.append(getOpenCLName(alvi.getRealType()));
+                     thisStructLine.append(getOpenCLName(alvi.getRealType()));
                   }
                   argLine.append(" ");
                   thisStructLine.append(" ");
@@ -358,19 +352,15 @@ public abstract class OpenCLKernelWriter{
                   if(argsCount == (entryPoint.getLambdaActualParamsCount() + 1) &&
                         (alvi != null) && alvi.getVariableDescriptor().equals("I")){
                      StringBuilder assignGid = new StringBuilder();
-                     assignGid.append(alvi.getVariableName());
-                     assignGid.append(" = get_global_id(0)");
+                     assignGid.append(alvi.getVariableName()).append(" = get_global_id(0)");
                      assigns.add(assignGid.toString());
                   }
 
-                  assignLine.append("this->");
-                  assignLine.append(alvi.getVariableName());
-                  assignLine.append(" = ");
-                  assignLine.append(alvi.getVariableName());
+                  assignLine.append("this->").append(alvi.getVariableName()).append(" = ").append(alvi.getVariableName());
 
                   if(alvi.isArray()){
-                     argLine.append("*" + alvi.getVariableName());
-                     thisStructLine.append("*" + alvi.getVariableName());
+                     argLine.append(alvi.getVariableName());
+                     thisStructLine.append(alvi.getVariableName());
                   }else{
                      argLine.append(alvi.getVariableName());
                      thisStructLine.append(alvi.getVariableName());

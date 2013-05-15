@@ -1335,13 +1335,9 @@ public class ClassModel{
                return startPc;
             }
 
-            public boolean isArray(){
-               return name.startsWith("arr");
-            }
 
-            public boolean isObject(){
-               return name.startsWith("o");
-            }
+
+
 
             public int getEnd(){
                return endPc;
@@ -1382,6 +1378,10 @@ public class ClassModel{
 
             public JavaType getRealType(){
                return (realType);
+            }
+
+            public boolean isArray(){
+               return realType.isArray();
             }
 
          }
