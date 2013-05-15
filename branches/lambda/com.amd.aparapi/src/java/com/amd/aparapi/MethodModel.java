@@ -38,12 +38,10 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 package com.amd.aparapi;
 
 import com.amd.aparapi.ClassModel.ClassModelMethod;
-import com.amd.aparapi.ClassModel.ConstantPool;
 import com.amd.aparapi.ClassModel.ConstantPool.FieldEntry;
 import com.amd.aparapi.ClassModel.ConstantPool.MethodReferenceEntry;
 import com.amd.aparapi.InstructionPattern.InstructionMatch;
 import com.amd.aparapi.InstructionSet.*;
-import com.amd.aparapi.TypeHelper.Arg;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -230,7 +228,7 @@ public class MethodModel{
 
                MethodReferenceEntry methodReferenceEntry = methodCall.getConstantPoolMethodEntry();
                if(!Kernel.isMappedMethod(methodReferenceEntry)){ // we will allow trusted methods to violate this rule
-                  for(Arg arg : methodReferenceEntry.getArgsAndReturnType().getArgs()){
+                  for(TypeHelper.JavaMethodArg arg : methodReferenceEntry.getArgsAndReturnType().getArgs()){
                      if(arg.getJavaType().isArray()){
                         throw new ClassParseException(instruction, ClassParseException.TYPE.METHODARRAYARG);
 

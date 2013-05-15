@@ -38,7 +38,6 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 package com.amd.aparapi;
 
 import com.amd.aparapi.ClassModel.ConstantPool.MethodReferenceEntry;
-import com.amd.aparapi.TypeHelper.ArgsAndReturnType;
 import com.amd.aparapi.TypeHelper.JavaType;
 
 import java.lang.annotation.Retention;
@@ -1854,7 +1853,7 @@ public abstract class Kernel implements Cloneable{
       String methodName = _methodReferenceEntry.getNameAndTypeEntry().getNameUTF8Entry().getUTF8();
       String methodClass = _methodReferenceEntry.getClassEntry().getNameUTF8Entry().getUTF8();
       // if(methodClass.equals(Kernel.class.getHSAName())){
-      ArgsAndReturnType methodArgsAndReturnType = _methodReferenceEntry.getArgsAndReturnType();
+      TypeHelper.JavaMethodArgsAndReturnType methodArgsAndReturnType = _methodReferenceEntry.getArgsAndReturnType();
       JavaType methodReturnType = methodArgsAndReturnType.getReturnType();
 
       for(Method kernelMethod : Kernel.class.getDeclaredMethods()){

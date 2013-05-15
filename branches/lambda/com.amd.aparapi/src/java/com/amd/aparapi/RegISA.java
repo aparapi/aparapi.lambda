@@ -427,7 +427,7 @@ public class RegISA{
       @Override void render(RegISARenderer r){
          String dotClassName = from.asMethodCall().getConstantPoolMethodEntry().getClassEntry().getDotClassName();
          String name = from.asMethodCall().getConstantPoolMethodEntry().getName();
-         TypeHelper.ArgsAndReturnType argsAndReturnType = from.asMethodCall().getConstantPoolMethodEntry().getArgsAndReturnType();
+         TypeHelper.JavaMethodArgsAndReturnType argsAndReturnType = from.asMethodCall().getConstantPoolMethodEntry().getArgsAndReturnType();
 
 
          TypeHelper.JavaType returnType = argsAndReturnType.getReturnType();
@@ -447,7 +447,7 @@ public class RegISA{
 
          r.separator().append(dotClassName).dot().append(name).space();
 
-         for(TypeHelper.Arg arg : argsAndReturnType.getArgs()){
+         for(TypeHelper.JavaMethodArg arg : argsAndReturnType.getArgs()){
             if(arg.getArgc() > 0){
                r.separator();
             }
@@ -843,7 +843,7 @@ public class RegISA{
          r.nl().pad(3).append("kernarg_u64 %_arg0");
       }
 
-      for(TypeHelper.Arg arg : method.argsAndReturnType.getArgs()){
+      for(TypeHelper.JavaMethodArg arg : method.argsAndReturnType.getArgs()){
          if((method.isStatic() && arg.getArgc() == 0)){
             r.nl();
          }else{
@@ -1496,7 +1496,7 @@ public class RegISA{
                add(new ld_kernarg(i, new VarReg_ref(0)));
                argOffset++;
             }
-            for(TypeHelper.Arg arg : method.argsAndReturnType.getArgs()){
+            for(TypeHelper.JavaMethodArg arg : method.argsAndReturnType.getArgs()){
                if(arg.getJavaType().isArray()){
                   add(new ld_kernarg(i, new VarReg_ref(arg.getArgc() + argOffset)));
                }else if(arg.getJavaType().isInt()){

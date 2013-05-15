@@ -25,7 +25,7 @@ public class NBodyGraphics2D{
 
    public static void main(String[] _args){
 
-      TypeHelper.ArgsAndReturnType a = new TypeHelper.ArgsAndReturnType("([F[FI)V");
+      TypeHelper.JavaMethodArgsAndReturnType a = TypeHelper.JavaMethodArgsAndReturnType.getArgsAndReturnType("([F[FI)V");
       JFrame jframe = new JFrame("NBody");
       final int height = 768;
       final int width = 768;
