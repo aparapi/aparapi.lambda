@@ -14,14 +14,14 @@ public class ConstantAssignInExpression{
 }
 /**{OpenCL{
 typedef struct This_s{
-   
    int passid;
 }This;
+
 int get_pass_id(This *this){
    return this->passid;
-   }
+}
 
-void com_amd_aparapi_test_ConstantAssignInExpression__func(This *this, int _arg){
+void com_amd_aparapi_test_ConstantAssignInExpression__func(This *this, int i_1){
    return;
 }
 __kernel void run(
@@ -31,8 +31,8 @@ __kernel void run(
    This* this=&thisStruct;
    this->passid = passid;
    {
-      int result = 1;
-      com_amd_aparapi_test_ConstantAssignInExpression__func(this, result=0);
+      int i_1 = 1;
+      com_amd_aparapi_test_ConstantAssignInExpression__func(this, i_1=0);
       return;
    }
 }

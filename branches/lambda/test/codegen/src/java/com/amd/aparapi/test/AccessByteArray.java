@@ -20,17 +20,17 @@ public class AccessByteArray{
    }
 }
 /**{OpenCL{
- typedef struct This_s{
-   __global char  *bytes;
-   
+typedef struct This_s{
+   __global char* bytes;
    int passid;
 }This;
+
 int get_pass_id(This *this){
    return this->passid;
-   }
+}
 
 __kernel void run(
-   __global char  *bytes,
+   __global char* bytes, 
    int passid
 ){
    This thisStruct;
@@ -38,8 +38,9 @@ __kernel void run(
    this->bytes = bytes;
    this->passid = passid;
    {
-      for (int i = 0; i<1024; i++){
-         this->bytes[i]  = 1;
+      int i_1 = 0;
+      for (; i_1<1024; i_1++){
+         this->bytes[i_1]  = 1;
       }
       return;
    }

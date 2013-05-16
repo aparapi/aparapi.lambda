@@ -11,16 +11,16 @@ public class AccessFloatArray{
 }
 /**{OpenCL{
 typedef struct This_s{
-   __global float *floats;
-
+   __global float* floats;
    int passid;
 }This;
+
 int get_pass_id(This *this){
    return this->passid;
-   }
+}
 
 __kernel void run(
-   __global float *floats,
+   __global float* floats, 
    int passid
 ){
    This thisStruct;
@@ -28,8 +28,9 @@ __kernel void run(
    this->floats = floats;
    this->passid = passid;
    {
-      for (int i = 0; i<1024; i++){
-         this->floats[i]  = 1.0f;
+      int i_1 = 0;
+      for (; i_1<1024; i_1++){
+         this->floats[i_1]  = 1.0f;
       }
       return;
    }

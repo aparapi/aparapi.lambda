@@ -16,16 +16,18 @@ public class Drem{
 #pragma OPENCL EXTENSION cl_khr_fp64 : enable
 
 typedef struct This_s{
-   __global double *out;
+   __global double* out;
    double m;
    double n;
    int passid;
 }This;
+
 int get_pass_id(This *this){
    return this->passid;
 }
+
 __kernel void run(
-   __global double *out, 
+   __global double* out, 
    double m, 
    double n, 
    int passid

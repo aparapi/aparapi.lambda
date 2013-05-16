@@ -55,7 +55,7 @@ public class CodeGenJUnitBase{
          Object kernelInstance = _class.getConstructor((Class<?>[]) null).newInstance();
 
          Entrypoint entrypoint = classModel.getKernelEntrypoint("run", kernelInstance instanceof Kernel ? kernelInstance : null);
-         String actual = KernelWriter.writeToString(entrypoint);
+         String actual = OpenCLKernelWriter.writeToString(entrypoint);
 
          if (_expectedExceptionType == null) {
             int matched = 0;

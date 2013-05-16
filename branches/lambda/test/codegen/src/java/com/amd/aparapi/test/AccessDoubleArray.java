@@ -11,18 +11,17 @@ public class AccessDoubleArray{
    }
 }
 /**{OpenCL{
-#pragma OPENCL EXTENSION cl_khr_fp64 : enable
-
 typedef struct This_s{
-   __global double *doubles;
+   __global double* doubles;
    int passid;
 }This;
+
 int get_pass_id(This *this){
    return this->passid;
-   }
+}
 
 __kernel void run(
-   __global double *doubles,
+   __global double* doubles, 
    int passid
 ){
    This thisStruct;
@@ -30,8 +29,9 @@ __kernel void run(
    this->doubles = doubles;
    this->passid = passid;
    {
-      for (int i = 0; i<1024; i++){
-         this->doubles[i]  = 1.0;
+      int i_1 = 0;
+      for (; i_1<1024; i_1++){
+         this->doubles[i_1]  = 1.0;
       }
       return;
    }

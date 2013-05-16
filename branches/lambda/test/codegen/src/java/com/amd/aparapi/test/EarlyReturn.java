@@ -15,9 +15,11 @@ public class EarlyReturn{
 typedef struct This_s{
    int passid;
 }This;
+
 int get_pass_id(This *this){
    return this->passid;
 }
+
 __kernel void run(
    int passid
 ){
@@ -25,12 +27,12 @@ __kernel void run(
    This* this=&thisStruct;
    this->passid = passid;
    {
-      char pass = 0;
-      int i=0;
-      if ((i%2)==0){
+      int i_1 = 0;
+      int i_2 = 0;
+      if ((i_2 % 2)==0){
          return;
       }
-      i++;
+      i_2++;
       return;
    }
 }

@@ -17,14 +17,18 @@ public class CallRunSuper extends CallRunSuperBase{
    }
 
 }
-/**{OpenCL{
+
+/**{Throws{ClassParseException}Throws} **/
+
+/*
 typedef struct This_s{
    __global int *out;
    int passid;
 }This;
+
 int get_pass_id(This *this){
    return this->passid;
-   }
+}
 
 void com_amd_aparapi_test_CallRunSuperBase__run(This *this){
    this->out[0]  = 2;
@@ -44,4 +48,4 @@ __kernel void run(
       return;
    }
 }
-}OpenCL}**/
+*/
