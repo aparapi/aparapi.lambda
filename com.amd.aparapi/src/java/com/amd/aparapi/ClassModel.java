@@ -280,6 +280,102 @@ public class ClassModel{
             return (slot);
          }
 
+         public boolean isEmptyEntry(){
+            return (this instanceof EmptyEntry);
+         }
+
+         public EmptyEntry asEmptyEntry(){
+            return ((EmptyEntry) this);
+         }
+
+         public boolean isDoubleEntry(){
+            return (this instanceof DoubleEntry);
+         }
+
+         public DoubleEntry asDoubleEntry(){
+            return ((DoubleEntry) this);
+         }
+
+         public boolean isLongEntry(){
+            return (this instanceof LongEntry);
+         }
+
+         public LongEntry asLongEntry(){
+            return ((LongEntry) this);
+         }
+
+         public boolean isClassEntry(){
+            return (this instanceof ClassEntry);
+         }
+
+         public ClassEntry asClassEntry(){
+            return ((ClassEntry) this);
+         }
+
+         public boolean isFloatEntry(){
+            return (this instanceof FloatEntry);
+         }
+
+         public FloatEntry asFloatEntry(){
+            return ((FloatEntry) this);
+         }
+
+         public boolean isIntegerEntry(){
+            return (this instanceof IntegerEntry);
+         }
+
+         public IntegerEntry asIntegerEntry(){
+            return ((IntegerEntry) this);
+         }
+
+         public boolean isStringEntry(){
+            return (this instanceof StringEntry);
+         }
+
+         public StringEntry asStringEntry(){
+            return ((StringEntry) this);
+         }
+
+         public boolean isUTF8Entry(){
+            return (this instanceof UTF8Entry);
+         }
+
+         public UTF8Entry asUTF8Entry(){
+            return ((UTF8Entry) this);
+         }
+
+         public boolean isNameAndTypeEntry(){
+            return (this instanceof NameAndTypeEntry);
+         }
+
+         public NameAndTypeEntry asNameAndTypeEntry(){
+            return ((NameAndTypeEntry) this);
+         }
+
+         public boolean isMethodEntry(){
+            return (this instanceof MethodEntry);
+         }
+
+         public MethodEntry asMethodEntry(){
+            return ((MethodEntry) this);
+         }
+
+         public boolean isInterfaceMethodEntry(){
+            return (this instanceof InterfaceMethodEntry);
+         }
+
+         public InterfaceMethodEntry asInterfaceMethodEntry(){
+            return ((InterfaceMethodEntry) this);
+         }
+
+         public boolean isFieldEntry(){
+            return (this instanceof FieldEntry);
+         }
+
+         public FieldEntry asFieldEntry(){
+            return ((FieldEntry) this);
+         }
+
       }
 
       class ClassEntry extends Entry{
@@ -310,6 +406,11 @@ public class ClassModel{
          String getMangledClassName(){
             return (TypeHelper.slashClassNameToMangledClassName(getNameUTF8Entry().getUTF8()));
          }
+
+         JavaType getType(){
+            String sig = getNameUTF8Entry().getUTF8();
+            return (JavaType.getJavaType("L" + sig + ";"));
+         }
       }
 
       class DoubleEntry extends ConstantEntry<Double>{
@@ -336,20 +437,11 @@ public class ClassModel{
             super(_byteReader, _slot, ConstantPoolType.FIELD);
          }
 
-         private JavaType type;
-
-         JavaType getType(){
-            if(type == null){
-               NameAndTypeEntry nameAndTypeEntry = getNameAndTypeEntry();
-
-
-               String signature = nameAndTypeEntry.getDescriptorUTF8Entry().getUTF8();
-               type = TypeHelper.JavaType.getJavaType(signature);
-
-            }
-            return (type);
-
+         final JavaType getType(){
+            return (JavaType.getJavaType(getNameAndTypeEntry().getDescriptorUTF8Entry().getUTF8()));
          }
+
+
       }
 
       abstract class ConstantEntry<T> extends Entry{
@@ -448,14 +540,13 @@ public class ClassModel{
             return (ConstantPool.this.getUTF8Entry(nameIndex));
          }
 
-         public JavaType getType(){
-            return (TypeHelper.JavaType.getJavaType(getDescriptorUTF8Entry().getUTF8()));
+         public String getName(){
+            return (getNameUTF8Entry().getUTF8());
          }
 
-         public String getName(){
+         public String getDescriptor(){
             return (getDescriptorUTF8Entry().getUTF8());
          }
-
       }
 
       class MethodTypeEntry extends Entry{
@@ -555,16 +646,15 @@ public class ClassModel{
             return (getArgsAndReturnType().getReturnType().isVoid() ? 0 : 1);
          }
 
-         TypeHelper.JavaMethodArgsAndReturnType argsAndReturnType;
+         // TypeHelper.JavaMethodArgsAndReturnType argsAndReturnType;
 
          TypeHelper.JavaMethodArgsAndReturnType getArgsAndReturnType(){
-            if(argsAndReturnType == null){
-               NameAndTypeEntry nameAndTypeEntry = getNameAndTypeEntry();
+            //  if(argsAndReturnType == null){
+            NameAndTypeEntry nameAndTypeEntry = getNameAndTypeEntry();
 
-               String signature = nameAndTypeEntry.getDescriptorUTF8Entry().getUTF8();// "([[IF)V" for a method that takes an int[][], float and returns void.
-               argsAndReturnType = TypeHelper.JavaMethodArgsAndReturnType.getArgsAndReturnType(signature);
-            }
-            return (argsAndReturnType);
+            String signature = nameAndTypeEntry.getDescriptorUTF8Entry().getUTF8();// "([[IF)V" for a method that takes an int[][], float and returns void.
+            return (TypeHelper.JavaMethodArgsAndReturnType.getArgsAndReturnType(signature));
+
          }
 
 
@@ -578,7 +668,7 @@ public class ClassModel{
 
          protected int nameAndTypeIndex;
 
-         protected int argCount = -1;
+         // protected int argCount = -1;
 
          ReferenceEntry(ByteReader _byteReader, int _slot, ConstantPoolType _constantPoolType){
             super(_byteReader, _slot, _constantPoolType);
@@ -590,12 +680,9 @@ public class ClassModel{
             return (ConstantPool.this.getClassEntry(referenceClassIndex));
          }
 
-         JavaType getContainingClass(){
-            return (TypeHelper.JavaType.getJavaType(getClassEntry().getClassName()));
-         }
 
          String getName(){
-            return (getNameAndTypeEntry().getNameUTF8Entry().getUTF8());
+            return (getNameAndTypeEntry().getName());
          }
 
          int getClassIndex(){
@@ -605,6 +692,7 @@ public class ClassModel{
          NameAndTypeEntry getNameAndTypeEntry(){
             return (ConstantPool.this.getNameAndTypeEntry(nameAndTypeIndex));
          }
+
 
          int getNameAndTypeIndex(){
             return (nameAndTypeIndex);
@@ -827,152 +915,56 @@ public class ClassModel{
 
       String getDescription(ConstantPool.Entry _entry){
          StringBuilder sb = new StringBuilder();
-         if(_entry instanceof ConstantPool.EmptyEntry){
-            ;
-         }else if(_entry instanceof ConstantPool.DoubleEntry){
-            ConstantPool.DoubleEntry doubleEntry = (ConstantPool.DoubleEntry) _entry;
-            sb.append(doubleEntry.getValue());
-         }else if(_entry instanceof ConstantPool.FloatEntry){
-            ConstantPool.FloatEntry floatEntry = (ConstantPool.FloatEntry) _entry;
-            sb.append(floatEntry.getValue());
-         }else if(_entry instanceof ConstantPool.IntegerEntry){
-            ConstantPool.IntegerEntry integerEntry = (ConstantPool.IntegerEntry) _entry;
-            sb.append(integerEntry.getValue());
-         }else if(_entry instanceof ConstantPool.LongEntry){
-            ConstantPool.LongEntry longEntry = (ConstantPool.LongEntry) _entry;
-            sb.append(longEntry.getValue());
-         }else if(_entry instanceof ConstantPool.UTF8Entry){
-            ConstantPool.UTF8Entry utf8Entry = (ConstantPool.UTF8Entry) _entry;
-            sb.append(utf8Entry.getUTF8());
-         }else if(_entry instanceof ConstantPool.StringEntry){
-            ConstantPool.StringEntry stringEntry = (ConstantPool.StringEntry) _entry;
-            ConstantPool.UTF8Entry utf8Entry = (ConstantPool.UTF8Entry) get(stringEntry.getUTF8Index());
-            sb.append(utf8Entry.getUTF8());
-         }else if(_entry instanceof ConstantPool.ClassEntry){
-            ConstantPool.ClassEntry classEntry = (ConstantPool.ClassEntry) _entry;
-            ConstantPool.UTF8Entry utf8Entry = (ConstantPool.UTF8Entry) get(classEntry.getNameIndex());
-            sb.append(utf8Entry.getUTF8());
-         }else if(_entry instanceof ConstantPool.NameAndTypeEntry){
-            ConstantPool.NameAndTypeEntry nameAndTypeEntry = (ConstantPool.NameAndTypeEntry) _entry;
-            ConstantPool.UTF8Entry utf8NameEntry = (ConstantPool.UTF8Entry) get(nameAndTypeEntry.getNameIndex());
-            ConstantPool.UTF8Entry utf8DescriptorEntry = (ConstantPool.UTF8Entry) get(nameAndTypeEntry.getDescriptorIndex());
-            sb.append(utf8NameEntry.getUTF8() + "." + utf8DescriptorEntry.getUTF8());
-         }else if(_entry instanceof ConstantPool.MethodEntry){
-            ConstantPool.MethodEntry methodEntry = (ConstantPool.MethodEntry) _entry;
-            ConstantPool.ClassEntry classEntry = (ConstantPool.ClassEntry) get(methodEntry.getClassIndex());
-            ConstantPool.UTF8Entry utf8Entry = (ConstantPool.UTF8Entry) get(classEntry.getNameIndex());
-            ConstantPool.NameAndTypeEntry nameAndTypeEntry = (ConstantPool.NameAndTypeEntry) get(methodEntry.getNameAndTypeIndex());
-            ConstantPool.UTF8Entry utf8NameEntry = (ConstantPool.UTF8Entry) get(nameAndTypeEntry.getNameIndex());
-            ConstantPool.UTF8Entry utf8DescriptorEntry = (ConstantPool.UTF8Entry) get(nameAndTypeEntry.getDescriptorIndex());
-            sb.append(TypeHelper.convert(utf8DescriptorEntry.getUTF8())).append(utf8Entry.getUTF8() + "." + utf8NameEntry.getUTF8());
-         }else if(_entry instanceof ConstantPool.InterfaceMethodEntry){
-            ConstantPool.InterfaceMethodEntry interfaceMethodEntry = (ConstantPool.InterfaceMethodEntry) _entry;
-            ConstantPool.ClassEntry classEntry = (ConstantPool.ClassEntry) get(interfaceMethodEntry.getClassIndex());
-            ConstantPool.UTF8Entry utf8Entry = (ConstantPool.UTF8Entry) get(classEntry.getNameIndex());
-            ConstantPool.NameAndTypeEntry nameAndTypeEntry = (ConstantPool.NameAndTypeEntry) get(interfaceMethodEntry
-                  .getNameAndTypeIndex());
-            ConstantPool.UTF8Entry utf8NameEntry = (ConstantPool.UTF8Entry) get(nameAndTypeEntry.getNameIndex());
-            ConstantPool.UTF8Entry utf8DescriptorEntry = (ConstantPool.UTF8Entry) get(nameAndTypeEntry.getDescriptorIndex());
-            sb.append(TypeHelper.convert(utf8DescriptorEntry.getUTF8())).append(utf8Entry.getUTF8() + "." + utf8NameEntry.getUTF8());
-         }else if(_entry instanceof ConstantPool.FieldEntry){
-            ConstantPool.FieldEntry fieldEntry = (ConstantPool.FieldEntry) _entry;
-            ConstantPool.ClassEntry classEntry = (ConstantPool.ClassEntry) get(fieldEntry.getClassIndex());
-            ConstantPool.UTF8Entry utf8Entry = (ConstantPool.UTF8Entry) get(classEntry.getNameIndex());
-            ConstantPool.NameAndTypeEntry nameAndTypeEntry = (ConstantPool.NameAndTypeEntry) get(fieldEntry.getNameAndTypeIndex());
-            ConstantPool.UTF8Entry utf8NameEntry = (ConstantPool.UTF8Entry) get(nameAndTypeEntry.getNameIndex());
-            ConstantPool.UTF8Entry utf8DescriptorEntry = (ConstantPool.UTF8Entry) get(nameAndTypeEntry.getDescriptorIndex());
-            sb.append(TypeHelper.convert(utf8DescriptorEntry.getUTF8())).append(utf8Entry.getUTF8() + "." + utf8NameEntry.getUTF8());
+         if(_entry.isEmptyEntry()){
+            sb.append("<empty>");
+         }else if(_entry.isDoubleEntry()){
+            sb.append(_entry.asDoubleEntry().getValue());
+         }else if(_entry.isFloatEntry()){
+            sb.append(_entry.asFloatEntry().getValue());
+         }else if(_entry.isIntegerEntry()){
+            sb.append(_entry.asIntegerEntry().getValue());
+         }else if(_entry.isLongEntry()){
+            sb.append(_entry.asLongEntry().getValue());
+         }else if(_entry.isUTF8Entry()){
+            sb.append(_entry.asUTF8Entry().getUTF8());
+         }else if(_entry.isStringEntry()){
+            sb.append(_entry.asStringEntry().getValue());
+         }else if(_entry.isClassEntry()){
+            sb.append(_entry.asClassEntry().getClassName());
+         }else if(_entry.isNameAndTypeEntry()){
+            sb.append(_entry.asNameAndTypeEntry().getName() + "." + _entry.asNameAndTypeEntry().getDescriptor());
+         }else if(_entry.isMethodEntry()){
+            sb.append(TypeHelper.convert(_entry.asMethodEntry().getNameAndTypeEntry().getDescriptor()));
+            sb.append(_entry.asMethodEntry().getClassEntry().getClassName() + "." + _entry.asMethodEntry().getName());
+         }else if(_entry.isInterfaceMethodEntry()){
+            sb.append(TypeHelper.convert(_entry.asInterfaceMethodEntry().getNameAndTypeEntry().getDescriptor()));
+            sb.append(_entry.asInterfaceMethodEntry().getClassEntry().getClassName() + "." + _entry.asInterfaceMethodEntry().getName());
+         }else if(_entry.isFieldEntry()){
+            sb.append(TypeHelper.convert(_entry.asFieldEntry().getNameAndTypeEntry().getDescriptor()));
+            sb.append(_entry.asFieldEntry().getClassEntry().getClassName() + "." + _entry.asFieldEntry().getNameAndTypeEntry().getName());
          }
          return (sb.toString());
       }
 
-      int[] getConstantPoolReferences(ConstantPool.Entry _entry){
-         int[] references = new int[0];
-         if(_entry instanceof ConstantPool.StringEntry){
-            ConstantPool.StringEntry stringEntry = (ConstantPool.StringEntry) _entry;
-            references = new int[]{
-                  stringEntry.getUTF8Index()
-            };
-         }else if(_entry instanceof ConstantPool.ClassEntry){
-            ConstantPool.ClassEntry classEntry = (ConstantPool.ClassEntry) _entry;
-            references = new int[]{
-                  classEntry.getNameIndex()
-            };
-         }else if(_entry instanceof ConstantPool.NameAndTypeEntry){
-            ConstantPool.NameAndTypeEntry nameAndTypeEntry = (ConstantPool.NameAndTypeEntry) _entry;
-            references = new int[]{
-                  nameAndTypeEntry.getNameIndex(),
-                  nameAndTypeEntry.getDescriptorIndex()
-            };
-         }else if(_entry instanceof ConstantPool.MethodEntry){
-            ConstantPool.MethodEntry methodEntry = (ConstantPool.MethodEntry) _entry;
-            ConstantPool.ClassEntry classEntry = (ConstantPool.ClassEntry) get(methodEntry.getClassIndex());
-            @SuppressWarnings("unused") ConstantPool.UTF8Entry utf8Entry = (ConstantPool.UTF8Entry) get(classEntry.getNameIndex());
-            ConstantPool.NameAndTypeEntry nameAndTypeEntry = (ConstantPool.NameAndTypeEntry) get(methodEntry.getNameAndTypeIndex());
-            @SuppressWarnings("unused") ConstantPool.UTF8Entry utf8NameEntry = (ConstantPool.UTF8Entry) get(nameAndTypeEntry
-                  .getNameIndex());
-            @SuppressWarnings("unused") ConstantPool.UTF8Entry utf8DescriptorEntry = (ConstantPool.UTF8Entry) get(nameAndTypeEntry
-                  .getDescriptorIndex());
-            references = new int[]{
-                  methodEntry.getClassIndex(),
-                  classEntry.getNameIndex(),
-                  nameAndTypeEntry.getNameIndex(),
-                  nameAndTypeEntry.getDescriptorIndex()
-            };
-         }else if(_entry instanceof ConstantPool.InterfaceMethodEntry){
-            ConstantPool.InterfaceMethodEntry interfaceMethodEntry = (ConstantPool.InterfaceMethodEntry) _entry;
-            ConstantPool.ClassEntry classEntry = (ConstantPool.ClassEntry) get(interfaceMethodEntry.getClassIndex());
-            @SuppressWarnings("unused") ConstantPool.UTF8Entry utf8Entry = (ConstantPool.UTF8Entry) get(classEntry.getNameIndex());
-            ConstantPool.NameAndTypeEntry nameAndTypeEntry = (ConstantPool.NameAndTypeEntry) get(interfaceMethodEntry
-                  .getNameAndTypeIndex());
-            @SuppressWarnings("unused") ConstantPool.UTF8Entry utf8NameEntry = (ConstantPool.UTF8Entry) get(nameAndTypeEntry
-                  .getNameIndex());
-            @SuppressWarnings("unused") ConstantPool.UTF8Entry utf8DescriptorEntry = (ConstantPool.UTF8Entry) get(nameAndTypeEntry
-                  .getDescriptorIndex());
-            references = new int[]{
-                  interfaceMethodEntry.getClassIndex(),
-                  classEntry.getNameIndex(),
-                  nameAndTypeEntry.getNameIndex(),
-                  nameAndTypeEntry.getDescriptorIndex()
-            };
-         }else if(_entry instanceof ConstantPool.FieldEntry){
-            ConstantPool.FieldEntry fieldEntry = (ConstantPool.FieldEntry) _entry;
-            ConstantPool.ClassEntry classEntry = (ConstantPool.ClassEntry) get(fieldEntry.getClassIndex());
-            @SuppressWarnings("unused") ConstantPool.UTF8Entry utf8Entry = (ConstantPool.UTF8Entry) get(classEntry.getNameIndex());
-            ConstantPool.NameAndTypeEntry nameAndTypeEntry = (ConstantPool.NameAndTypeEntry) get(fieldEntry.getNameAndTypeIndex());
-            @SuppressWarnings("unused") ConstantPool.UTF8Entry utf8NameEntry = (ConstantPool.UTF8Entry) get(nameAndTypeEntry
-                  .getNameIndex());
-            @SuppressWarnings("unused") ConstantPool.UTF8Entry utf8DescriptorEntry = (ConstantPool.UTF8Entry) get(nameAndTypeEntry
-                  .getDescriptorIndex());
-            references = new int[]{
-                  fieldEntry.getClassIndex(),
-                  classEntry.getNameIndex(),
-                  nameAndTypeEntry.getNameIndex(),
-                  nameAndTypeEntry.getDescriptorIndex()
-            };
-         }
-         return (references);
-      }
 
-
-      Object getConstantEntry(int _constantPoolIndex){
+      <T> T getConstantEntry(int _constantPoolIndex){
          Entry entry = get(_constantPoolIndex);
-         Object object = null;
+         T object = null;
          switch(entry.getConstantPoolType()){
             case FLOAT:
-               object = ((FloatEntry) entry).getValue();
+               object = (T) entry.asFloatEntry().getValue();
                break;
             case DOUBLE:
-               object = ((DoubleEntry) entry).getValue();
+               object = (T) entry.asDoubleEntry().getValue();
                break;
             case INTEGER:
-               object = ((IntegerEntry) entry).getValue();
+               object = (T) entry.asIntegerEntry().getValue();
                break;
             case LONG:
-               object = ((LongEntry) entry).getValue();
+               object = (T) entry.asLongEntry().getValue();
                break;
             case STRING:
-               object = ((StringEntry) entry).getStringUTF8Entry().getUTF8();
+               object = (T) entry.asLongEntry().getValue();
                break;
          }
          return (object);
@@ -1336,9 +1328,6 @@ public class ClassModel{
             }
 
 
-
-
-
             public int getEnd(){
                return endPc;
             }
@@ -1403,7 +1392,7 @@ public class ClassModel{
             //   InstructionSet.StoreSpec[] argsAsStoreSpecs = new InstructionSet.StoreSpec[args.length + thisOffset];
             if(_method.isVirtual()){
                //argsAsStoreSpecs[0] = InstructionSet.StoreSpec.OREF;
-               ArgLocalVariableInfo arg = new ArgLocalVariableInfo(InstructionSet.StoreSpec.OREF, 0, 0, TypeHelper.JavaType.getJavaType("L" + ClassModel.this.getClassName() + ";"));
+               ArgLocalVariableInfo arg = new ArgLocalVariableInfo(InstructionSet.StoreSpec.OREF, 0, 0, ClassModel.this.getClassType());
                vars[0] = arg;
                list.add(vars[0]);
                argsList.add(arg);
@@ -2794,8 +2783,8 @@ public class ClassModel{
       }
 
       for(ClassModelMethod entry : methods){
-         if(entry.getName().equals(_methodEntry.getNameAndTypeEntry().getNameUTF8Entry().getUTF8())
-               && entry.getDescriptor().equals(_methodEntry.getNameAndTypeEntry().getDescriptorUTF8Entry().getUTF8())){
+         if(entry.getName().equals(_methodEntry.getNameAndTypeEntry().getName())
+               && entry.getDescriptor().equals(_methodEntry.getNameAndTypeEntry().getDescriptor())){
             if(logger.isLoggable(Level.FINE)){
                logger.fine("Found " + getDotClassName()
                      + "." + entry.getName() + " " + entry.getDescriptor() + " for "
@@ -2884,6 +2873,11 @@ public class ClassModel{
    public String getClassName(){
       ConstantPool.ClassEntry thisClassEntry = constantPool.getClassEntry(getThisClassConstantPoolIndex());
       return (thisClassEntry.getClassName());
+   }
+
+   public JavaType getClassType(){
+      ConstantPool.ClassEntry thisClassEntry = constantPool.getClassEntry(getThisClassConstantPoolIndex());
+      return (thisClassEntry.getType());
    }
 
    public String getDotClassName(){

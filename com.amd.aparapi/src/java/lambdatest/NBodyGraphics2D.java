@@ -17,15 +17,7 @@ import javax.swing.WindowConstants;
 public class NBodyGraphics2D{
    static int frame = 0;
 
-   @Kernel.OpenCLMapping(mapTo = "rsqrt")
-   static float rsqrt(float _v){
-      return ((float) Math.sqrt(_v));
-   }
-
-
    public static void main(String[] _args){
-
-      TypeHelper.JavaMethodArgsAndReturnType a = TypeHelper.JavaMethodArgsAndReturnType.getArgsAndReturnType("([F[FI)V");
       JFrame jframe = new JFrame("NBody");
       final int height = 768;
       final int width = 768;
@@ -87,7 +79,7 @@ public class NBodyGraphics2D{
                final float dx = xyz[i + 0] - xyz[globalId + 0];
                final float dy = xyz[i + 1] - xyz[globalId + 1];
                final float dz = xyz[i + 2] - xyz[globalId + 2];
-               final float invDist = 0f;//1f/(float)Math.sqrt(((dx * dx) + (dy * dy) + (dz * dz) + espSqr));
+               final float invDist = 1f / (float) Math.sqrt(((dx * dx) + (dy * dy) + (dz * dz) + espSqr));
                accx += mass * invDist * invDist * invDist * dx;
                accy += mass * invDist * invDist * invDist * dy;
                accz += mass * invDist * invDist * invDist * dz;

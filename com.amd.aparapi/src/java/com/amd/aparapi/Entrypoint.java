@@ -573,7 +573,7 @@ public class Entrypoint{
                   if(isLambda && arrayRef instanceof I_GETFIELD){
                      I_GETFIELD getField = (I_GETFIELD) arrayRef;
                      FieldEntry field = getField.getConstantPoolFieldEntry();
-                     String assignedArrayFieldName = field.getNameAndTypeEntry().getNameUTF8Entry().getUTF8();
+                     String assignedArrayFieldName = field.getNameAndTypeEntry().getName();
                      arrayFieldAssignments.add(assignedArrayFieldName);
                      referencedFieldNames.add(assignedArrayFieldName);
 
@@ -581,7 +581,7 @@ public class Entrypoint{
                   if(!isLambda && arrayRef instanceof AccessField){
                      AccessField getField = (AccessField) arrayRef;
                      FieldEntry field = getField.getConstantPoolFieldEntry();
-                     String assignedArrayFieldName = field.getNameAndTypeEntry().getNameUTF8Entry().getUTF8();
+                     String assignedArrayFieldName = field.getNameAndTypeEntry().getName();
                      arrayFieldAssignments.add(assignedArrayFieldName);
                      referencedFieldNames.add(assignedArrayFieldName);
 
@@ -595,25 +595,21 @@ public class Entrypoint{
                   if(isLambda && arrayRef instanceof I_GETFIELD){
                      I_GETFIELD getField = (I_GETFIELD) arrayRef;
                      FieldEntry field = getField.getConstantPoolFieldEntry();
-                     String accessedArrayFieldName = field.getNameAndTypeEntry().getNameUTF8Entry().getUTF8();
+                     String accessedArrayFieldName = field.getNameAndTypeEntry().getName();
                      arrayFieldAccesses.add(accessedArrayFieldName);
                      referencedFieldNames.add(accessedArrayFieldName);
 
                   }
                   if(!isLambda && arrayRef instanceof AccessField){
-                     AccessField getField = (AccessField) arrayRef;
-                     FieldEntry field = getField.getConstantPoolFieldEntry();
-                     String accessedArrayFieldName = field.getNameAndTypeEntry().getNameUTF8Entry().getUTF8();
-                     arrayFieldAccesses.add(accessedArrayFieldName);
-                     referencedFieldNames.add(accessedArrayFieldName);
+                     arrayFieldAccesses.add(arrayRef.asFieldAccessor().getConstantPoolFieldEntry().getName());
+                     referencedFieldNames.add(arrayRef.asFieldAccessor().getConstantPoolFieldEntry().getName());
 
                   }
                }else if(instruction instanceof I_ARRAYLENGTH){
-                  if(!(instruction.getFirstChild() instanceof AccessField)){
+                  if(!(instruction.getFirstChild().isFieldAccessor())){
                      throw new ClassParseException(ClassParseException.TYPE.LOCALARRAYLENGTHACCESS);
                   }
-                  AccessField child = (AccessField) instruction.getFirstChild();
-                  String arrayName = child.getConstantPoolFieldEntry().getNameAndTypeEntry().getNameUTF8Entry().getUTF8();
+                  String arrayName = instruction.getFirstChild().asFieldAccessor().getConstantPoolFieldEntry().getName();
                   arrayFieldArrayLengthUsed.add(arrayName);
                   if(logger.isLoggable(Level.FINE)){
                      logger.fine("Noted arraylength in " + methodModel.getName() + " on " + arrayName);
@@ -632,7 +628,7 @@ public class Entrypoint{
                   }
 
                   // Add the class model for the referenced obj array
-                  if(accessedFieldType.isArrayOfObjects(1)){   // is this a one dimension array of objects
+                  if(accessedFieldType.isArray() && accessedFieldType.getArrayElementType().equals(PrimitiveType.ref)){   // is this a one dimension array of objects
                      // Turn [Lcom/amd/javalabs/opencl/demo/DummyOOA; into com.amd.javalabs.opencl.demo.DummyOOA for example
                      String className = accessedFieldType.getObjectClassName();
                      ClassModel arrayFieldModel = getOrUpdateAllClassAccesses(className);
