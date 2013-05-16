@@ -157,7 +157,9 @@ public abstract class OpenCLKernelWriter{
       // System.out.println("_methodEntry = " + _methodEntry);
       // special case for buffers
 
-      int argc = _methodEntry.getStackConsumeCount();
+      TypeHelper.JavaMethodArgsAndReturnType argsAndReturnType = _methodEntry.getArgsAndReturnType();
+
+      int argc = argsAndReturnType.getArgs().length;
 
       String methodName = _methodEntry.getNameAndTypeEntry().getName();
       String methodSignature = _methodEntry.getNameAndTypeEntry().getDescriptor();
@@ -181,7 +183,6 @@ public abstract class OpenCLKernelWriter{
             write(barrierAndGetterMappings);
          }
       }else{
-
          String intrinsicMapping = Kernel.getMappedMethodName(_methodEntry);
          // System.out.println("getMappedMethodName for " + methodName + " returned " + mapping);
          boolean isIntrinsic = false;
@@ -286,8 +287,8 @@ public abstract class OpenCLKernelWriter{
       {
          MethodModel mm = entryPoint.getMethodModel();
          int argsCount = 1;
-
-         for(ArgLocalVariableInfo alvi : mm.getLocalVariableTableEntry().getArgs()){
+         LocalVariableTableEntry lvt = mm.getLocalVariableTableEntry();
+         for(ArgLocalVariableInfo alvi : lvt.getArgs()){
             StringBuilder thisStructLine = new StringBuilder();
             StringBuilder argLine = new StringBuilder();
             StringBuilder assignLine = new StringBuilder();
@@ -432,28 +433,20 @@ public abstract class OpenCLKernelWriter{
          // If it is a converted array of objects, emit the struct param
          String className = null;
          if(fieldType.isArray()){
-            //  if (fieldType.getArrayElementType().equals(PrimitiveType.ref)){
-            //     argLine.append("*****".substring(fieldType.getArrayDimensions()))
-            //    throw new IllegalStateException("array of objects!");
-            // }else{
             argLine.append(getOpenCLName(fieldType));
             thisStructLine.append(getOpenCLName(fieldType));
-            // }
-
          }else if(fieldType.isObject()){
             // Turn Lcom/amd/javalabs/opencl/demo/DummyOOA; into com_amd_javalabs_opencl_demo_DummyOOA for example
             className = fieldType.getMangledClassName();
             argLine.append(className);
             thisStructLine.append(className);
+         }  else{
+            argLine.append(getOpenCLName(fieldType));
+            thisStructLine.append(getOpenCLName(fieldType));
          }
 
          argLine.append(" ");
          thisStructLine.append(" ");
-
-         //  if(fieldType.isArray()){
-         //     argLine.append("*");
-         //    thisStructLine.append("*");
-         //  }
          assignLine.append("this->");
          assignLine.append(field.getName());
          assignLine.append(" = ");
@@ -1364,15 +1357,8 @@ public abstract class OpenCLKernelWriter{
       }
    }
 
-
-   void writeInstructionMore(Instruction _instruction) throws CodeGenException{
-
-   }
-
-
    protected void writeMethodBody(MethodModel _methodModel) throws CodeGenException{
       writeBlock(_methodModel.getExprHead(), null);
    }
-
 
 }
