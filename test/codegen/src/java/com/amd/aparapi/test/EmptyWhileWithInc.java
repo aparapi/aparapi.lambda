@@ -11,9 +11,11 @@ public class EmptyWhileWithInc{
 typedef struct This_s{
    int passid;
 }This;
+
 int get_pass_id(This *this){
    return this->passid;
 }
+
 __kernel void run(
    int passid
 ){
@@ -21,7 +23,7 @@ __kernel void run(
    This* this=&thisStruct;
    this->passid = passid;
    {
-      for (int x = 0; x++<10;){}
+      for (int i_1 = 0; i_1++<10;){}
       return;
    }
 }

@@ -12,9 +12,11 @@ public class BooleanToggle{
 typedef struct This_s{
    int passid;
 }This;
+
 int get_pass_id(This *this){
    return this->passid;
 }
+
 __kernel void run(
    int passid
 ){
@@ -22,8 +24,8 @@ __kernel void run(
    This* this=&thisStruct;
    this->passid = passid;
    {
-      char pass = 0;
-      pass = (pass==0)?1:0;
+      int i_1 = 0;
+      i_1 = (i_1==0)?1:0;
       return;
    }
 }
@@ -32,9 +34,11 @@ __kernel void run(
 typedef struct This_s{
    int passid;
 }This;
+
 int get_pass_id(This *this){
    return this->passid;
 }
+
 __kernel void run(
    int passid
 ){
@@ -42,9 +46,9 @@ __kernel void run(
    This* this=&thisStruct;
    this->passid = passid;
    {
-      char pass = 0;
-      pass = (pass!=0)?0:1;
+      int i_1 = 0;
+      i_1 = (i_1!=0)?0:1;
       return;
    }
 }
-}OpenCL}**/
+}}OpenCL}**/

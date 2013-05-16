@@ -180,4 +180,86 @@ __kernel void run(
       return;
    }
 }
+
+}Actual
+{typedef struct This_s{
+   int passid;
+}This;
+
+int get_pass_id(This *this){
+   return this->passid;
+}
+
+void com_amd_aparapi_test_CompositeArbitraryScope__t5(This *this){
+   int i_1 = get_global_id(0);
+   int i_2 = 1;
+   int i_3 = 0;
+   for (; i_2>0 && i_1>0; i_2++){
+      i_2++;
+      i_3 = min(i_2, i_1);
+      i_2 = i_2 - i_3;
+   }
+   i_1 = i_1 - i_3;
+   return;
+}
+void com_amd_aparapi_test_CompositeArbitraryScope__t4(This *this){
+   int i_1 = get_global_id(0);
+   int i_2 = 1;
+   for (; i_2>0 && i_1>0; i_1--){
+      i_2++;
+      int i_3 = min(i_2, i_1);
+      i_2 = i_2 - i_3;
+      i_2++;
+   }
+   return;
+}
+void com_amd_aparapi_test_CompositeArbitraryScope__t3(This *this){
+   int i_1 = get_global_id(0);
+   int i_2 = 1;
+   for (; i_2>0; i_2++){
+      i_2++;
+      int i_3 = min(i_2, i_1);
+      i_2 = i_2 - i_3;
+   }
+   return;
+}
+void com_amd_aparapi_test_CompositeArbitraryScope__t2(This *this){
+   int i_1 = get_global_id(0);
+   int i_2 = 1;
+   for (; i_2>0; i_2){
+      int i_3 = min(i_2, i_1);
+      i_2 = i_2 - i_3;
+   }
+   return;
+}
+void com_amd_aparapi_test_CompositeArbitraryScope__t1(This *this){
+   int i_1 = get_global_id(0);
+   int i_2 = 1;
+   for (; i_2>0; i_2 = i_2 - i_3){
+      i_2++;
+      int i_3 = min(i_2, i_1);
+   }
+   return;
+}
+__kernel void run(
+   int passid
+){
+   This thisStruct;
+   This* this=&thisStruct;
+   this->passid = passid;
+   {
+      int i_1 = get_global_id(0);
+      int i_2 = 1;
+      com_amd_aparapi_test_CompositeArbitraryScope__t1(this);
+      com_amd_aparapi_test_CompositeArbitraryScope__t2(this);
+      com_amd_aparapi_test_CompositeArbitraryScope__t3(this);
+      com_amd_aparapi_test_CompositeArbitraryScope__t4(this);
+      com_amd_aparapi_test_CompositeArbitraryScope__t5(this);
+      for (; i_2>0; i_2 = i_2 - i_3){
+         i_2++;
+         int i_3 = min(i_2, i_1);
+      }
+      return;
+   }
+}
 }OpenCL}**/

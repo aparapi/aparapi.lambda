@@ -14,14 +14,14 @@ public class FloatParamsSimple{
 }
 /**{OpenCL{
 typedef struct This_s{
-
    int passid;
 }This;
+
 int get_pass_id(This *this){
    return this->passid;
-   }
+}
 
-void com_amd_aparapi_test_FloatParamsSimple__floatParams(This *this, float y){
+void com_amd_aparapi_test_FloatParamsSimple__floatParams(This *this, float f_1){
    return;
 }
 __kernel void run(

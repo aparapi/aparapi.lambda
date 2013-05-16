@@ -13,12 +13,12 @@ public class If{
 }
 /**{OpenCL{
 typedef struct This_s{
-
    int passid;
 }This;
+
 int get_pass_id(This *this){
    return this->passid;
-   }
+}
 
 __kernel void run(
    int passid
@@ -27,10 +27,10 @@ __kernel void run(
    This* this=&thisStruct;
    this->passid = passid;
    {
-      int testValue = 10;
-      char pass = 0;
-      if ( (testValue % 4) == 0){
-         pass = 1;
+      int i_1 = 10;
+      int i_2 = 0;
+      if ((i_1 % 4)==0){
+         i_2 = 1;
       }
       return;
    }

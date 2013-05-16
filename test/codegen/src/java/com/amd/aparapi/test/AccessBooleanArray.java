@@ -15,15 +15,16 @@ public class AccessBooleanArray{
 }
 /**{OpenCL{
 typedef struct This_s{
-   __global char  *ba;
-    int passid;
+   __global char* ba;
+   int passid;
 }This;
+
 int get_pass_id(This *this){
    return this->passid;
 }
 
 __kernel void run(
-   __global char  *ba,
+   __global char* ba, 
    int passid
 ){
    This thisStruct;
@@ -31,11 +32,12 @@ __kernel void run(
    this->ba = ba;
    this->passid = passid;
    {
-      for (int i = 0; i<1024; i++){
-         if ((i % 2)==0){
-            this->ba[i]  = 1;
+      int i_1 = 0;
+      for (; i_1<1024; i_1++){
+         if ((i_1 % 2)==0){
+            this->ba[i_1]  = 1;
          } else {
-            this->ba[i]  = 0;
+            this->ba[i_1]  = 0;
          }
       }
       return;

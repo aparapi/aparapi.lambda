@@ -12,12 +12,12 @@ public class DoWhile{
 }
 /**{OpenCL{
 typedef struct This_s{
-
    int passid;
 }This;
+
 int get_pass_id(This *this){
    return this->passid;
-   }
+}
 
 __kernel void run(
    int passid
@@ -26,12 +26,13 @@ __kernel void run(
    This* this=&thisStruct;
    this->passid = passid;
    {
-      char pass = 0;
-      int i = 0;
+      int i_1 = 0;
+      int i_2 = 0;
       do{
-         pass = 1;
-         i++;
-      }while (i<10);
+         i_1 = 1;
+         i_2++;
+      }while(i_2<10);
+      
       return;
    }
 }

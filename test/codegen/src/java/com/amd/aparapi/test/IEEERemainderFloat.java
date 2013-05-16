@@ -16,16 +16,18 @@ public class IEEERemainderFloat extends Kernel{
 
 /**{OpenCL{
 typedef struct This_s{
-   __global float *out;
+   __global float* out;
    float m;
    float n;
    int passid;
 }This;
+
 int get_pass_id(This *this){
    return this->passid;
 }
+
 __kernel void run(
-   __global float *out, 
+   __global float* out, 
    float m, 
    float n, 
    int passid
@@ -37,9 +39,7 @@ __kernel void run(
    this->n = n;
    this->passid = passid;
    {
-      this->out[0]  = remainder(this->m, this->n);
+      this->out[0]  = IEEEremainder(this->m, this->n);
       return;
    }
-}
-
-}OpenCL}**/
+}}OpenCL}**/

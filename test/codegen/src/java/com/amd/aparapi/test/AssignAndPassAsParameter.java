@@ -20,20 +20,21 @@ public class AssignAndPassAsParameter{
 }
 /**{OpenCL{
 typedef struct This_s{
-   __global int *results;
+   __global int* results;
    int y;
    int passid;
 }This;
+
 int get_pass_id(This *this){
    return this->passid;
-   }
+}
 
-int com_amd_aparapi_test_AssignAndPassAsParameter__actuallyDoIt(This *this, int a){
+int com_amd_aparapi_test_AssignAndPassAsParameter__actuallyDoIt(This *this, int i_1){
    return(1);
 }
 __kernel void run(
-   __global int *results, 
-   int y,
+   __global int* results, 
+   int y, 
    int passid
 ){
    This thisStruct;
@@ -46,5 +47,4 @@ __kernel void run(
       return;
    }
 }
-
 }OpenCL}**/

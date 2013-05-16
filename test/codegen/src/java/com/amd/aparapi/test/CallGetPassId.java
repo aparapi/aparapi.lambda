@@ -9,13 +9,14 @@ public class CallGetPassId extends Kernel{
 
 }
 /**{OpenCL{
-
 typedef struct This_s{
    int passid;
 }This;
+
 int get_pass_id(This *this){
    return this->passid;
 }
+
 __kernel void run(
    int passid
 ){
@@ -23,9 +24,8 @@ __kernel void run(
    This* this=&thisStruct;
    this->passid = passid;
    {
-      int thePassId = get_pass_id(this);
+      int i_1 = get_pass_id(this);
       return;
    }
 }
-
 }OpenCL}**/

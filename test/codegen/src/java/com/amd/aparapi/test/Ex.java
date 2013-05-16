@@ -11,12 +11,13 @@ public class Ex{
    }
 }
 /**{OpenCL{
-typedef struct This_s{   
+typedef struct This_s{
    int passid;
 }This;
+
 int get_pass_id(This *this){
    return this->passid;
-   }
+}
 
 __kernel void run(
    int passid
@@ -25,10 +26,11 @@ __kernel void run(
    This* this=&thisStruct;
    this->passid = passid;
    {
-      int total = 0;
-      for (int i = 0; i<100; i++){
-         if ((i % 10)==0 && (i % 4)==0){
-            total++;
+      int i_1 = 0;
+      int i_2 = 0;
+      for (; i_2<100; i_2++){
+         if ((i_2 % 10)==0 && (i_2 % 4)==0){
+            i_1++;
          }
       }
       return;
