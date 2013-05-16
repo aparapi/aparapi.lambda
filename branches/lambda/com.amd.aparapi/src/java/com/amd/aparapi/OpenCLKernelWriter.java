@@ -43,6 +43,7 @@ import com.amd.aparapi.ClassModel.ClassModelField;
 import com.amd.aparapi.ClassModel.ConstantPool.FieldEntry;
 import com.amd.aparapi.ClassModel.ConstantPool.MethodEntry;
 import com.amd.aparapi.ClassModel.AttributePool.LocalVariableTableEntry.LocalVariableInfo;
+import com.amd.aparapi.ClassModel.AttributePool.LocalVariableTableEntry.ArgLocalVariableInfo;
 import com.amd.aparapi.ClassModel.AttributePool.LocalVariableTableEntry;
 import com.amd.aparapi.InstructionSet.*;
 
@@ -114,10 +115,11 @@ public abstract class OpenCLKernelWriter{
    static String getOpenCLName(TypeHelper.JavaType _javaType){
       String openCLName = null;
       if(_javaType.isArray()){
+         String stars = "**********".substring(0, _javaType.getArrayDimensions());
          if(_javaType.getArrayElementType().equals(PrimitiveType.ref)){
-            openCLName = _javaType.getMangledClassName() + "***********".substring(0, _javaType.getArrayDimensions());
+            openCLName = _javaType.getMangledClassName() + stars;
          }else{
-            openCLName = _javaType.getArrayElementType().getOpenCLTypeName() + "***********".substring(0, _javaType.getArrayDimensions());
+            openCLName = _javaType.getArrayElementType().getOpenCLTypeName() + stars;
          }
       }else if(_javaType.isPrimitive()){
          openCLName = _javaType.getPrimitiveType().getOpenCLTypeName();
@@ -127,6 +129,29 @@ public abstract class OpenCLKernelWriter{
       return (openCLName);
    }
 
+   static class ListBuilder{
+      StringBuilder sb = new StringBuilder();
+      String separator;
+      boolean first = true;
+
+      ListBuilder(String _separator){
+         separator = _separator;
+      }
+
+      void append(String _string){
+         if(first){
+            first = false;
+         }else{
+            sb.append(separator);
+         }
+         sb.append(_string);
+      }
+
+      @Override public String toString(){
+         return (sb.toString());
+      }
+   }
+
    protected void writeMethod(MethodCall _methodCall, MethodEntry _methodEntry) throws CodeGenException{
 
       // System.out.println("_methodEntry = " + _methodEntry);
@@ -134,8 +159,8 @@ public abstract class OpenCLKernelWriter{
 
       int argc = _methodEntry.getStackConsumeCount();
 
-      String methodName = _methodEntry.getNameAndTypeEntry().getNameUTF8Entry().getUTF8();
-      String methodSignature = _methodEntry.getNameAndTypeEntry().getDescriptorUTF8Entry().getUTF8();
+      String methodName = _methodEntry.getNameAndTypeEntry().getName();
+      String methodSignature = _methodEntry.getNameAndTypeEntry().getDescriptor();
 
       String barrierAndGetterMappings = javaToCLIdentifierMap.get(methodName + methodSignature);
 
@@ -189,8 +214,7 @@ public abstract class OpenCLKernelWriter{
             if(i instanceof I_ALOAD_0){
                // For I_ALOAD_0, it must be either a call in the lambda class or
                // a call to the iteration object.
-               String className = _methodEntry.getClassEntry().getNameUTF8Entry().getUTF8();
-               String classNameInDotForm = TypeHelper.slashClassNameToDotClassName(className);
+               String classNameInDotForm = _methodEntry.getClassEntry().getDotClassName();
                if(classNameInDotForm.equals(entryPoint.getClassModel().getDotClassName())){
                   write("this");
                }else{
@@ -201,14 +225,12 @@ public abstract class OpenCLKernelWriter{
             }else if(i instanceof AccessArrayElement){
                AccessArrayElement arrayAccess = (AccessArrayElement) ((VirtualMethodCall) _methodCall).getInstanceReference();
                Instruction refAccess = arrayAccess.getArrayRef();
-               if(refAccess instanceof FieldReference){
+               if(refAccess.isFieldAccessor()){
                   // Calls to objects in arrays that are fields
-                  String fieldName = ((FieldReference) refAccess).getConstantPoolFieldEntry().
-                        getNameAndTypeEntry().getNameUTF8Entry().getUTF8();
-                  write(" &(this->" + fieldName);
-               }else if(refAccess instanceof AccessLocalVariable){
+                  write(" &(this->" + refAccess.asFieldAccessor().getFieldName());
+               }else if(refAccess.isLocalVariableAccessor()){
                   // This case is to handle lambda argument object array refs
-                  AccessLocalVariable localVariableLoadInstruction = (AccessLocalVariable) refAccess;
+                  LocalVariableTableIndexAccessor localVariableLoadInstruction = refAccess.asLocalVariableAccessor();
                   LocalVariableInfo localVariable = localVariableLoadInstruction.getLocalVariableInfo();
                   write(" &(this->" + localVariable.getVariableName());
                }
@@ -265,7 +287,7 @@ public abstract class OpenCLKernelWriter{
          MethodModel mm = entryPoint.getMethodModel();
          int argsCount = 1;
 
-         for(ClassModel.AttributePool.LocalVariableTableEntry.ArgLocalVariableInfo alvi : mm.getLocalVariableTableEntry().getArgs()){
+         for(ArgLocalVariableInfo alvi : mm.getLocalVariableTableEntry().getArgs()){
             StringBuilder thisStructLine = new StringBuilder();
             StringBuilder argLine = new StringBuilder();
             StringBuilder assignLine = new StringBuilder();
@@ -504,7 +526,7 @@ public abstract class OpenCLKernelWriter{
             while(it.hasNext()){
                FieldEntry field = it.next();
                String fieldName = field.getNameAndTypeEntry().getName();
-               TypeHelper.JavaType fieldType = field.getNameAndTypeEntry().getType();
+               TypeHelper.JavaType fieldType = field.getType();
 
                if(fieldType.getPrimitiveType().getJavaBytes() > alignTo){
                   alignTo = fieldType.getPrimitiveType().getJavaBytes();
@@ -757,11 +779,11 @@ public abstract class OpenCLKernelWriter{
             // It is a static field but we still pass it via "this"
             writeThisRef();
          }
-         write(accessField.getConstantPoolFieldEntry().getNameAndTypeEntry().getNameUTF8Entry().getUTF8());
+         write(accessField.getConstantPoolFieldEntry().getNameAndTypeEntry().getName());
 
       }else if(_instruction instanceof I_ARRAYLENGTH){
          AccessField child = (AccessField) _instruction.getFirstChild();
-         String arrayName = child.getConstantPoolFieldEntry().getNameAndTypeEntry().getNameUTF8Entry().getUTF8();
+         String arrayName = child.getConstantPoolFieldEntry().getNameAndTypeEntry().getName();
          write("this->" + arrayName + arrayLengthMangleSuffix);
       }else if(_instruction instanceof AssignToField){
          AssignToField assignedField = (AssignToField) _instruction;
@@ -776,7 +798,7 @@ public abstract class OpenCLKernelWriter{
                writeThisRef();
             }
          }
-         write(assignedField.getConstantPoolFieldEntry().getNameAndTypeEntry().getNameUTF8Entry().getUTF8());
+         write(assignedField.getConstantPoolFieldEntry().getNameAndTypeEntry().getName());
          write("=");
          writeInstruction(assignedField.getValueToAssign());
       }else if(_instruction instanceof Constant<?>){

@@ -2300,6 +2300,10 @@ class InstructionSet{
          return (1);
       }
 
+      @Override public String getFieldName(){
+         return (getConstantPoolFieldEntry().getNameAndTypeEntry().getNameUTF8Entry().getUTF8());
+      }
+
    }
 
    static class I_GETSTATIC extends Index16 implements AccessField{
@@ -2328,6 +2332,10 @@ class InstructionSet{
 
       @Override int getStackProduceCount(){
          return (1);
+      }
+
+      @Override public String getFieldName(){
+         return (getConstantPoolFieldEntry().getNameAndTypeEntry().getNameUTF8Entry().getUTF8());
       }
    }
 
@@ -3896,6 +3904,9 @@ class InstructionSet{
          return (getLastChild());
       }
 
+      @Override public String getFieldName(){
+         return (getConstantPoolFieldEntry().getNameAndTypeEntry().getNameUTF8Entry().getUTF8());
+      }
    }
 
    static class I_PUTSTATIC extends Index16 implements AssignToField{
@@ -3929,6 +3940,10 @@ class InstructionSet{
       @Override
       public Instruction getValueToAssign(){
          return (getLastChild());
+      }
+
+      @Override public String getFieldName(){
+         return (getConstantPoolFieldEntry().getNameAndTypeEntry().getNameUTF8Entry().getUTF8());
       }
    }
 
@@ -4234,6 +4249,9 @@ class InstructionSet{
       int getConstantPoolFieldIndex();
 
       FieldEntry getConstantPoolFieldEntry();
+
+      String getFieldName();
+
    }
 
    interface AccessField extends FieldReference{
