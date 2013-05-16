@@ -66,7 +66,7 @@ NameToBytes *head = NULL;
    (JNIEnv *jenv, jobject instance, jstring className){
       jbyteArray bytes = NULL;
       const char *nameChars = jenv->GetStringUTFChars(className, NULL);
-      fprintf(stdout, "inside getBytes(\"%s\")\n", nameChars);
+  //    fprintf(stdout, "inside getBytes(\"%s\")\n", nameChars);
       for (NameToBytes *ptr = head; ptr != NULL; ptr=(NameToBytes *)ptr->getNext()){
         
          //ClassInfo classInfo(ptr->getByteBuffer());
@@ -79,7 +79,7 @@ NameToBytes *head = NULL;
          //fprintf(stdout, "classinfo name  \"%s\"\n", classInfo.getClassName());
          //fflush(stdout);
          if (!strcmp(ptr->getName(), nameChars)){
-            fprintf(stdout, "found bytes for \"%s\"\n", nameChars);
+ //           fprintf(stdout, "found bytes for \"%s\"\n", nameChars);
             ByteBuffer *byteBuffer = ptr->getByteBuffer();
             bytes = jenv->NewByteArray(byteBuffer->getLen());
             //fprintf(stdout, "created byte array size= %d\n", ptr->getLen());
