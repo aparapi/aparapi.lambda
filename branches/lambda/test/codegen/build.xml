@@ -47,7 +47,7 @@
       <pathelement path="classes"/>
    </path>
 	
-   <target name="junit" depends="clean, install.junit">
+   <target name="build" depends="clean">
       <mkdir dir="classes"/>
    	  <javac debug="true"
       	 debuglevel="lines,vars,source"
@@ -55,10 +55,12 @@
       	 destdir="classes" 
       	 includeAntRuntime="false"
       	 classpathref="classpath">
-      	    <compilerarg value="-Xlint"/>
-      	   	<compilerarg value="-Xlint:-path"/>
+<!--      	    <compilerarg value="-Xlint"/>
+      	   	<compilerarg value="-Xlint:-path"/> -->
       </javac>
+   </target>
 
+   <target name="junit" depends="clean, build, install.junit">
       <java classname="com.amd.aparapi.CreateJUnitTests" classpathref="classpath">
          <sysproperty key="root" value="${basedir}"/>
       </java>
