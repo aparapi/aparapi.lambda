@@ -44,9 +44,14 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public class Source{
+   public Section getActualOutput(){
+      return(actualOutput);
+   }
+
    enum STATE {
       NONE,
       JAVA,
@@ -72,15 +77,48 @@ public class Source{
 
    Source.STATE state = STATE.NONE;
 
-   List<String> all = new ArrayList<String>();
+   public String toString(){
+      return(file.getName().substring(0, file.getName().length()-".java".length()));
+   }
 
-   List<List<String>> opencl = new ArrayList<List<String>>();
+   class Section implements Iterable<String>{
+      List<String> lines = new ArrayList<String>();
+      Section (){
 
-   List<String> doc = new ArrayList<String>();
+      }
+      Section (String _lines){
+         for (String line:_lines.split("\n")){
+            add(line);
+         }
+      }
+      void add(String _line){
+         lines.add(_line);
+      }
 
-   List<String> java = new ArrayList<String>();
+      @Override public String toString() {
+         StringBuilder stringBuilder = new StringBuilder();
+         for (String line : lines) {
+            stringBuilder.append(line).append("\n");
+         }
+         return (stringBuilder.toString());
+      }
 
-   List<String> exceptions = new ArrayList<String>();
+      @Override public Iterator<String> iterator(){
+         return(lines.iterator());
+      }
+   }
+
+   Section all = new Section();
+
+   List<Section> opencl = new ArrayList<Section>();
+
+   Section doc = new Section();
+
+   Section java = new Section();
+
+   Section exceptions = new Section();
+
+   Section actualOutput = null;
 
    public Source(Class<?> _clazz, File _rootDir) {
       clazz = _clazz;
@@ -90,7 +128,7 @@ public class Source{
          BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
 
          state = STATE.JAVA;
-         List<String> openclSection = null;
+         Section openclSection = null;
          for (String line = reader.readLine(); line != null; line = reader.readLine()) {
             all.add(line);
             String trimmedLine = line.trim();
@@ -98,7 +136,7 @@ public class Source{
                case JAVA:
                   if (trimmedLine.equals(OpenCLStart)) {
                      state = STATE.OPENCL;
-                     openclSection = new ArrayList<String>();
+                     openclSection = new Section();
                      opencl.add(openclSection);
 
                   } else if (trimmedLine.startsWith(ThrowsStart) && trimmedLine.endsWith(ThrowsEnd)) {
@@ -136,27 +174,16 @@ public class Source{
 
    }
 
-   private String listToString(List<String> list) {
-      StringBuilder stringBuilder = new StringBuilder();
-      for (String line : list) {
-         stringBuilder.append(line).append("\n");
-      }
-      return (stringBuilder.toString().trim());
-   }
 
-   public String getOpenCLString(int _index) {
-      return (listToString(opencl.get(_index)));
-   }
 
-   public List<List<String>> getOpenCL() {
+
+   public List<Section> getOpenCL() {
       return (opencl);
    }
 
-   public String getJavaString() {
-      return (listToString(java));
-   }
 
-   public List<String> getJava() {
+
+   public Section getJava() {
       return (java);
    }
 
@@ -164,23 +191,24 @@ public class Source{
       return (file);
    }
 
-   public String getExceptionsString() {
-      return (listToString(exceptions));
-   }
 
-   public List<String> getExceptions() {
+
+   public Section getExceptions() {
       return (exceptions);
    }
 
-   public String getDocString() {
-      return (listToString(doc));
-   }
 
-   public List<String> getDoc() {
+
+   public Section getDoc() {
       return (doc);
    }
 
    public int getOpenCLSectionCount() {
       return (opencl.size());
+   }
+
+   public void addActualOutput(String _s){
+      actualOutput = new Section(_s);
+
    }
 }

@@ -37,164 +37,179 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
  */
 package com.amd.aparapi;
 
+import java.awt.Color;
+import java.awt.Component;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
+import javax.swing.*;
 import java.awt.Dimension;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 
 
-import javax.swing.JTextPane;
+import javax.swing.event.ListDataListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.text.JTextComponent;
-import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
 
 public class UpdateJUnits{
-   public static void main(String[] args) throws ClassNotFoundException, FileNotFoundException, IOException {
-      File rootDir = new File(System.getProperty("root", "."));
+
+   public static class Editor{
+      final static SimpleAttributeSet boldItalic = new SimpleAttributeSet();
+
+      static{
+         boldItalic.addAttribute(StyleConstants.CharacterConstants.Bold, Boolean.TRUE);
+         boldItalic.addAttribute(StyleConstants.CharacterConstants.Italic, Boolean.TRUE);
+      }
+
+      StyledDocument document = new DefaultStyledDocument();
+      JTextPane textPane = new JTextPane(document);
+
+      JScrollPane scrollPane = new JScrollPane(textPane);
+
+      Editor(){
+
+
+         textPane.setEditable(false);
+         scrollPane.setPreferredSize(new Dimension(600, 800));
+      }
+
+      void setText(String _string){
+         try{
+            document.remove(0, document.getLength());
+            document.insertString(0, _string, boldItalic);
+
+
+         }catch(BadLocationException e){
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+         }
+      }
+
+      JComponent getComponent(){
+         return (scrollPane);
+      }
+
+      public void setTextLines(List<String> _lines){
+         StringBuilder sb = new StringBuilder();
+         for(String line : _lines){
+            sb.append(line).append("\n");
+         }
+         setText(sb.toString());
+      }
+   }
+
+   public static void main(String[] args) throws ClassNotFoundException, FileNotFoundException, IOException{
+      File rootDir = new File(System.getProperty("root", "/home/gfrost/aparapi/branches/lambda/test/codegen"));
 
       final String rootPackageName = CreateJUnitTests.class.getPackage().getName();
       final String testPackageName = rootPackageName + ".test";
       final File sourceDir = new File(rootDir, "src/java");
-      System.out.println(sourceDir.getCanonicalPath());
       File testDir = new File(sourceDir, testPackageName.replace(".", "/"));
-      System.out.println(testDir.getCanonicalPath());
 
-      final List<String> classNames = new ArrayList<String>();
-      for (File sourceFile : testDir.listFiles(new FilenameFilter(){
+      List<String> classNames = new ArrayList<String>();
 
-               @Override public boolean accept(File dir, String name) {
-               return (name.endsWith(".java"));
-               }
-               })) {
+      for(File sourceFile : testDir.listFiles(new FilenameFilter(){
+
+         @Override public boolean accept(File dir, String name){
+            return (name.endsWith(".java"));
+         }
+      })){
          String fileName = sourceFile.getName();
          String className = fileName.substring(0, fileName.length() - ".java".length());
          classNames.add(className);
       }
 
-      //File outDir = new File(rootDir, "src/tmp");
-      //codeGenDir.mkdirs();
+      final List<Source> sources = new ArrayList<Source>();
+      for(String className : classNames){
+         Class clazz = Class.forName(testPackageName + "." + className);
+         Source source =  new Source(clazz, sourceDir);
+         sources.add(source);
+
+         try{
+            ClassModel classModel = ClassModel.getClassModel(clazz);
+            try{
+               Entrypoint e = classModel.getKernelEntrypoint();
+               source.addActualOutput(OpenCLKernelWriter.writeToString(e));
+
+
+            }catch(AparapiException e){
+               e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            }
+         }catch(ClassParseException e){
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+         }
+      }
+
+      Collections.sort(sources, new Comparator<Source>(){
+
+         @Override public int compare(Source o1, Source o2){
+            return(o1.toString().compareTo(o2.toString()));
+         }
+      });
+
       JFrame frame = new JFrame("");
       frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-      //frame.setSize(800,400);
       JPanel panel = new JPanel();
-      //panel.setPreferredSize(new Dimension(400,400));
-      final StyledDocument javaDocument = new DefaultStyledDocument();
-      final StyledDocument initialOpenCLDocument = new DefaultStyledDocument();
-      final StyledDocument finalOpenCLDocument = new DefaultStyledDocument();
-
-      final SimpleAttributeSet boldItalic = new SimpleAttributeSet();
-      boldItalic.addAttribute(StyleConstants.CharacterConstants.Bold, Boolean.TRUE);
-      boldItalic.addAttribute(StyleConstants.CharacterConstants.Italic, Boolean.TRUE);
-
-      JTextPane javaTextPane = new JTextPane(javaDocument);
-      javaTextPane.setEditable(false);
-      JScrollPane javaScrollPane = new JScrollPane(javaTextPane);
-      javaScrollPane.setPreferredSize(new Dimension(400,400));
-      panel.add(javaScrollPane);
-
-      JTextPane initialOpenCLTextPane = new JTextPane(initialOpenCLDocument);
-      initialOpenCLTextPane.setEditable(false);
-      JScrollPane initialOpenCLScrollPane = new JScrollPane(initialOpenCLTextPane);
-      initialOpenCLScrollPane.setPreferredSize(new Dimension(400,400));
-      panel.add(initialOpenCLScrollPane);
-
-      JTextPane finalOpenCLTextPane = new JTextPane(finalOpenCLDocument);
-      finalOpenCLTextPane.setEditable(false);
-      JScrollPane finalOpenCLScrollPane = new JScrollPane(finalOpenCLTextPane);
-      finalOpenCLScrollPane.setPreferredSize(new Dimension(400,400));
-      panel.add(finalOpenCLScrollPane);
+      ListModel listModel = new AbstractListModel<Source>(){
+         @Override public int getSize(){
+            return sources.size();  //To change body of implemented methods use File | Settings | File Templates.
+         }
+         @Override public Source getElementAt(int index){
+            return sources.get(index);  //To change body of implemented methods use File | Settings | File Templates.
+         }
+      }  ;
 
 
 
-
+      JList list = new JList(listModel);
+      //list.setCellRenderer(renderer);
+      final Editor javaEditor = new Editor();
+      final Editor initialOpenCLEditor = new Editor();
+      final Editor finalOpenCLEditor = new Editor();
+      panel.add(new JScrollPane(list));
+      panel.add(javaEditor.getComponent());
+      panel.add(initialOpenCLEditor.getComponent());
+      panel.add(finalOpenCLEditor.getComponent());
 
       frame.add(panel, BorderLayout.CENTER);
 
 
 
-      JMenuBar menu = new JMenuBar();
-      JMenu fileMenu = new JMenu();
-      fileMenu.setText("File");
 
-      final int[] index = new int[]{0};
-
-      Action nextAction = new AbstractAction() {
-         public void actionPerformed(ActionEvent e) {
-            try {
-            javaDocument.remove(0, javaDocument.getLength());
-            index[0]++;
-            String className = classNames.get(index[0]);
-            Source source = new Source(Class.forName(testPackageName + "." + className), sourceDir);
-            StringBuilder sb = new StringBuilder();
-            if (source.getOpenCLSectionCount() > 0) {
-               for (List<String> opencl : source.getOpenCL()) {
-                  sb.append("OpenCL{\n");
-                  for (String line : opencl) {
-                     sb.append("   +\"" + line + "\\n\"\n");
-                  }
-                  sb.append("}\n");
-               }
-            } else {
-               sb.append(" NO OpenCL!\n");
+      list.addListSelectionListener(new ListSelectionListener(){
+         @Override public void valueChanged(ListSelectionEvent e){
+            Source source = (Source)((JList)e.getSource()).getSelectedValue();
+            javaEditor.setText(source.getJava().toString());
+            if(source.getOpenCLSectionCount() > 0){
+               initialOpenCLEditor.setText(source.getOpenCL().toString());
+            }else{
+               initialOpenCLEditor.setText(" NO OpenCL!\n");
             }
-               javaDocument.insertString(0, sb.toString(), boldItalic);
-            } catch (Throwable t) {
-               System.err.println("Bad next "+t);
-               System.exit(1);
-
+            if (source.getActualOutput()!=null){
+               finalOpenCLEditor.setText(source.getActualOutput().toString());
+            } else{
+               finalOpenCLEditor.setText(" NO Generated OpenCL!\n");
             }
-
          }
-      };
-      nextAction.putValue(Action.NAME, "Next");
-      fileMenu.add(nextAction);
-      menu.add(fileMenu);
-      frame.add(menu, BorderLayout.NORTH);
+      });
+
+
       frame.setVisible(true);
       frame.pack();
 
-
-      /*
-
-         for (String className : classNames) {
-         Source source = new Source(Class.forName(testPackageName + "." + className), sourceDir);
-         StringBuilder sb = new StringBuilder();
-         if (source.getOpenCLSectionCount() > 0) {
-         for (List<String> opencl : source.getOpenCL()) {
-         sb.append("OpenCL{\n");
-         for (String line : opencl) {
-         sb.append("   +\"" + line + "\\n\"\n");
-         }
-         sb.append("}\n");
-         }
-         } else {
-         sb.append(" NO OpenCL!\n");
-         }
-
-         String exceptions = source.getExceptionsString();
-         if (exceptions.length() > 0) {
-         sb.append("Throws  com.amd.aparapi." + exceptions+"\n" );
-         }
-         System.out.println(sb);
-         }
-       */
 
    }
 }

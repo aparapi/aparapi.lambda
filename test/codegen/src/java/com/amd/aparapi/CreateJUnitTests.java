@@ -79,7 +79,7 @@ public class CreateJUnitTests{
          StringBuilder sb = new StringBuilder();
          sb.append("package com.amd.aparapi.test.junit.codegen;\n");
          sb.append("import org.junit.Test;\n");
-         String doc = source.getDocString();
+         String doc = source.getDoc().toString();
          if (doc.length() > 0) {
             sb.append("/**\n");
             sb.append(doc);
@@ -90,7 +90,7 @@ public class CreateJUnitTests{
          if (source.getOpenCLSectionCount() > 0) {
 
             sb.append("   String[] expectedOpenCL = new String[]{\n");
-            for (List<String> opencl : source.getOpenCL()) {
+            for (Source.Section opencl : source.getOpenCL()) {
                sb.append("   \"\"\n");
                for (String line : opencl) {
                   sb.append("   +\"" + line + "\\n\"\n");
@@ -102,7 +102,7 @@ public class CreateJUnitTests{
             sb.append("   String[] expectedOpenCL = null;\n");
          }
 
-         String exceptions = source.getExceptionsString();
+         String exceptions = source.getExceptions().toString();
          if (exceptions.length() > 0) {
             sb.append("   Class<? extends com.amd.aparapi.AparapiException> expectedException = ");
 

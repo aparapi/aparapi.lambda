@@ -66,15 +66,15 @@ import com.amd.aparapi.Diff.DiffResult;
 public class SwingDiff{
    JFrame frame;
 
-   public SwingDiff(DiffResult result) {
-      try {
+   public SwingDiff(DiffResult result){
+      try{
          UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 
          frame = new JFrame("SwingDiff");
 
          frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
          JPanel panel = new JPanel(){
-            @Override public void paint(Graphics g) {
+            @Override public void paint(Graphics g){
                super.paint(g);
                g.drawRect(10, 10, 100, 100);
             }
@@ -121,26 +121,26 @@ public class SwingDiff{
          frame.getContentPane().add(panel);
          frame.pack();
          frame.setVisible(true);
-      } catch (ClassNotFoundException e) {
+      }catch(ClassNotFoundException e){
          // TODO Auto-generated catch block
          e.printStackTrace();
-      } catch (InstantiationException e) {
+      }catch(InstantiationException e){
          // TODO Auto-generated catch block
          e.printStackTrace();
-      } catch (IllegalAccessException e) {
+      }catch(IllegalAccessException e){
          // TODO Auto-generated catch block
          e.printStackTrace();
-      } catch (UnsupportedLookAndFeelException e) {
+      }catch(UnsupportedLookAndFeelException e){
          // TODO Auto-generated catch block
          e.printStackTrace();
-      } catch (BadLocationException e) {
+      }catch(BadLocationException e){
          // TODO Auto-generated catch block
          e.printStackTrace();
       }
 
    }
 
-   public static void main(String[] args) {
+   public static void main(String[] args){
       String[] lhs = getFileContents("expected.c");
       String[] rhs = getFileContents("actual.c");
 
@@ -150,28 +150,28 @@ public class SwingDiff{
       SwingDiff swingDiff = new SwingDiff(result);
    }
 
-   private static String arrayToString(String[] array) {
+   private static String arrayToString(String[] array){
       StringBuilder stringBuilder = new StringBuilder();
-      for (String line : array) {
+      for(String line : array){
          stringBuilder.append(line).append("\n");
       }
       return (stringBuilder.toString().trim());
    }
 
-   private static String[] getFileContents(String string) {
+   private static String[] getFileContents(String string){
       String[] content = null;
-      try {
+      try{
          BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(string)));
          List<String> lines = new ArrayList<String>();
-         for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+         for(String line = reader.readLine(); line != null; line = reader.readLine()){
             lines.add(line);
          }
          reader.close();
          content = lines.toArray(new String[0]);
-      } catch (FileNotFoundException e) {
+      }catch(FileNotFoundException e){
          // TODO Auto-generated catch block
          e.printStackTrace();
-      } catch (IOException e) {
+      }catch(IOException e){
          // TODO Auto-generated catch block
          e.printStackTrace();
       }
@@ -179,20 +179,20 @@ public class SwingDiff{
 
    }
 
-   private static String getFileContent(String string) {
+   private static String getFileContent(String string){
       String content = null;
-      try {
+      try{
          BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(string)));
          StringBuilder sb = new StringBuilder();
-         for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+         for(String line = reader.readLine(); line != null; line = reader.readLine()){
             sb.append(line).append("\n");
          }
          reader.close();
          content = sb.toString();
-      } catch (FileNotFoundException e) {
+      }catch(FileNotFoundException e){
          // TODO Auto-generated catch block
          e.printStackTrace();
-      } catch (IOException e) {
+      }catch(IOException e){
          // TODO Auto-generated catch block
          e.printStackTrace();
       }
