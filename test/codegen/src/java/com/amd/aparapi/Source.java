@@ -106,6 +106,19 @@ public class Source{
       @Override public Iterator<String> iterator(){
          return(lines.iterator());
       }
+
+      String[] getLineArr(){
+         return(lines.toArray(new String[0]));
+      }
+
+      String[] getTrimmedLineArr(){
+         String[] arr =
+         lines.toArray(new String[0]);
+         for (int i=0; i<arr.length;i++){
+            arr[i]=arr[i].trim();
+         }
+         return(arr);
+      }
    }
 
    Section all = new Section();

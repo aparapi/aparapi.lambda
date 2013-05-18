@@ -40,6 +40,7 @@ package com.amd.aparapi;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Iterator;
 
 public class Diff{
 
@@ -70,7 +71,7 @@ public class Diff{
       }
    }
 
-   public static class DiffResult{
+   public static class DiffResult implements Iterable<DiffResult.Block>{
 
       public static enum TYPE {
          SAME,
@@ -127,6 +128,10 @@ public class Diff{
       }
 
       List<Block> blocks = new ArrayList<Block>();
+
+      @Override public Iterator<Block> iterator(){
+         return(blocks.iterator());
+      }
 
       private String[] rhs;
 

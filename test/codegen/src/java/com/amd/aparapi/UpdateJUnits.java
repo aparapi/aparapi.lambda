@@ -37,33 +37,19 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
  */
 package com.amd.aparapi;
 
-import java.awt.Color;
-import java.awt.Component;
+import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.text.*;
+import java.awt.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import javax.swing.*;
-import java.awt.Dimension;
-import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
-
-
-import javax.swing.event.ListDataListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.text.JTextComponent;
-import javax.swing.JTextPane;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultStyledDocument;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyledDocument;
 
 public class UpdateJUnits{
 
@@ -72,7 +58,11 @@ public class UpdateJUnits{
 
       static{
          boldItalic.addAttribute(StyleConstants.CharacterConstants.Bold, Boolean.TRUE);
-         boldItalic.addAttribute(StyleConstants.CharacterConstants.Italic, Boolean.TRUE);
+        // boldItalic.addAttribute(StyleConstants.CharacterConstants.Italic, Boolean.TRUE);
+         boldItalic.addAttribute(StyleConstants.CharacterConstants.FontSize, 10);
+         boldItalic.addAttribute(StyleConstants.CharacterConstants.FontFamily, "Courier");
+        // boldItalic.addAttribute(StyleConstants.CharacterConstants.Foreground, Color.YELLOW);
+         //boldItalic.addAttribute(StyleConstants.CharacterConstants.Background, Color.BLACK);
       }
 
       StyledDocument document = new DefaultStyledDocument();
@@ -80,11 +70,13 @@ public class UpdateJUnits{
 
       JScrollPane scrollPane = new JScrollPane(textPane);
 
-      Editor(){
-
-
-         textPane.setEditable(false);
-         scrollPane.setPreferredSize(new Dimension(600, 800));
+      Editor(int _width, int _height, boolean _editable){
+       //  Font font = new Font("Serif", Font.ITALIC, 20);
+       //  textPane.setFont(font);
+         textPane.setBackground(Color.BLACK);
+         textPane.setForeground(Color.YELLOW);
+         textPane.setEditable(_editable);
+         scrollPane.setPreferredSize(new Dimension(_width, _height));
       }
 
       void setText(String _string){
@@ -112,7 +104,7 @@ public class UpdateJUnits{
    }
 
    public static void main(String[] args) throws ClassNotFoundException, FileNotFoundException, IOException{
-      File rootDir = new File(System.getProperty("root", "/home/gfrost/aparapi/branches/lambda/test/codegen"));
+      File rootDir = new File(System.getProperty("root", "/Users/garyfrost/aparapi/aparapi/branches/lambda/test/codegen"));
 
       final String rootPackageName = CreateJUnitTests.class.getPackage().getName();
       final String testPackageName = rootPackageName + ".test";
@@ -135,7 +127,7 @@ public class UpdateJUnits{
       final List<Source> sources = new ArrayList<Source>();
       for(String className : classNames){
          Class clazz = Class.forName(testPackageName + "." + className);
-         Source source =  new Source(clazz, sourceDir);
+         Source source = new Source(clazz, sourceDir);
          sources.add(source);
 
          try{
@@ -156,52 +148,86 @@ public class UpdateJUnits{
       Collections.sort(sources, new Comparator<Source>(){
 
          @Override public int compare(Source o1, Source o2){
-            return(o1.toString().compareTo(o2.toString()));
+            return (o1.toString().compareTo(o2.toString()));
          }
       });
 
       JFrame frame = new JFrame("");
       frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
       JPanel panel = new JPanel();
+      panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
       ListModel listModel = new AbstractListModel<Source>(){
          @Override public int getSize(){
-            return sources.size();  //To change body of implemented methods use File | Settings | File Templates.
+            return sources.size();
          }
-         @Override public Source getElementAt(int index){
-            return sources.get(index);  //To change body of implemented methods use File | Settings | File Templates.
-         }
-      }  ;
 
+         @Override public Source getElementAt(int index){
+            return sources.get(index);
+         }
+      };
 
 
       JList list = new JList(listModel);
       //list.setCellRenderer(renderer);
-      final Editor javaEditor = new Editor();
-      final Editor initialOpenCLEditor = new Editor();
-      final Editor finalOpenCLEditor = new Editor();
-      panel.add(new JScrollPane(list));
-      panel.add(javaEditor.getComponent());
+      final Editor javaEditor = new Editor(300, 300, false);
+      final Editor initialOpenCLEditor = new Editor(600, 600, true);
+      final Editor mid = new Editor(25, 600, false);
+      final Editor finalOpenCLEditor = new Editor(600, 600, true);
+      JPanel left = new JPanel();
+      left.setLayout(new BoxLayout(left, BoxLayout.Y_AXIS));
+      left.add(javaEditor.getComponent());
+      left.add(new JScrollPane(list));
+      panel.add(left);
       panel.add(initialOpenCLEditor.getComponent());
+      panel.add(mid.getComponent());
       panel.add(finalOpenCLEditor.getComponent());
 
       frame.add(panel, BorderLayout.CENTER);
 
-
-
-
       list.addListSelectionListener(new ListSelectionListener(){
          @Override public void valueChanged(ListSelectionEvent e){
-            Source source = (Source)((JList)e.getSource()).getSelectedValue();
+            Source source = (Source) ((JList) e.getSource()).getSelectedValue();
             javaEditor.setText(source.getJava().toString());
+            Source.Section lhs=null;
+            Source.Section rhs=null;
+
             if(source.getOpenCLSectionCount() > 0){
-               initialOpenCLEditor.setText(source.getOpenCL().toString());
+
+               lhs =  source.getOpenCL().get(0);
+               initialOpenCLEditor.setText(lhs.toString());
             }else{
                initialOpenCLEditor.setText(" NO OpenCL!\n");
             }
-            if (source.getActualOutput()!=null){
-               finalOpenCLEditor.setText(source.getActualOutput().toString());
-            } else{
+            if(source.getActualOutput() != null){
+               rhs = source.getActualOutput();
+               finalOpenCLEditor.setText(rhs.toString());
+            }else{
                finalOpenCLEditor.setText(" NO Generated OpenCL!\n");
+            }
+            if (lhs != null && rhs != null){
+               Diff.DiffResult result = Diff.diff(lhs.getTrimmedLineArr(), rhs.getTrimmedLineArr());
+               List<String> col = new ArrayList<String>();
+               for (Diff.DiffResult.Block block:result){
+                  switch (block.type) {
+                     case SAME:
+                        for (int i = block.lhsFrom; i <= block.lhsTo; i++) {
+                           col.add("==");
+                        }
+                        break;
+                     case LEFT:
+                        for (int i = block.lhsFrom; i <= block.lhsTo; i++) {
+                           col.add("  <");
+                        }
+                        break;
+                     case RIGHT:
+                        for (int i = block.rhsFrom; i <= block.rhsTo; i++) {
+                           col.add("  >");
+                        }
+                        break;
+                  }
+
+               }
+               mid.setTextLines(col);
             }
          }
       });
