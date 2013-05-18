@@ -41,6 +41,8 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.*;
+import javax.swing.text.html.HTMLDocument;
+import javax.swing.text.html.HTMLEditorKit;
 import java.awt.*;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -49,18 +51,66 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.List;
 
 public class UpdateJUnits{
 
-   public static class Editor{
+    public static class HTML{
+
+
+        JTextPane textPane = new JTextPane();
+        HTMLEditorKit kit = new HTMLEditorKit();
+        HTMLDocument doc = new HTMLDocument();
+        JScrollPane scrollPane = new JScrollPane(textPane);
+
+        HTML(int _width, int _height){
+
+            Font font = new Font("Terminal", Font.BOLD, 11);
+            textPane.setFont(font);
+            textPane.setBackground(Color.BLACK);
+            textPane.setForeground(Color.YELLOW);
+
+            textPane.setEditorKit(kit);
+            textPane.setDocument(doc);
+            //  Font font = new Font("Serif", Font.ITALIC, 20);
+            //  textPane.setFont(font);
+
+            scrollPane.setPreferredSize(new Dimension(_width, _height));
+        }
+
+        void setText(String _string){
+            try{
+
+                doc.remove(0, doc.getLength());
+                kit.insertHTML(doc, doc.getLength(), _string, 0, 0, null);
+
+            }catch(BadLocationException e){
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            } catch (IOException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            }
+        }
+
+
+
+        JComponent getComponent(){
+            return (scrollPane);
+        }
+
+
+    }
+
+
+
+    public static class Editor{
       final static SimpleAttributeSet boldItalic = new SimpleAttributeSet();
 
       static{
-         boldItalic.addAttribute(StyleConstants.CharacterConstants.Bold, Boolean.TRUE);
+        // boldItalic.addAttribute(StyleConstants.CharacterConstants.Bold, Boolean.TRUE);
         // boldItalic.addAttribute(StyleConstants.CharacterConstants.Italic, Boolean.TRUE);
-         boldItalic.addAttribute(StyleConstants.CharacterConstants.FontSize, 10);
-         boldItalic.addAttribute(StyleConstants.CharacterConstants.FontFamily, "Courier");
+     //    boldItalic.addAttribute(StyleConstants.CharacterConstants.FontSize, 11);
+     //    boldItalic.addAttribute(StyleConstants.CharacterConstants.FontFamily, "Terminal");
         // boldItalic.addAttribute(StyleConstants.CharacterConstants.Foreground, Color.YELLOW);
          //boldItalic.addAttribute(StyleConstants.CharacterConstants.Background, Color.BLACK);
       }
@@ -71,8 +121,8 @@ public class UpdateJUnits{
       JScrollPane scrollPane = new JScrollPane(textPane);
 
       Editor(int _width, int _height, boolean _editable){
-       //  Font font = new Font("Serif", Font.ITALIC, 20);
-       //  textPane.setFont(font);
+         Font font = new Font("Terminal", Font.BOLD, 11);
+         textPane.setFont(font);
          textPane.setBackground(Color.BLACK);
          textPane.setForeground(Color.YELLOW);
          textPane.setEditable(_editable);
@@ -82,12 +132,16 @@ public class UpdateJUnits{
       void setText(String _string){
          try{
             document.remove(0, document.getLength());
-            document.insertString(0, _string, boldItalic);
+            document.insertString(0, _string, null);
 
 
          }catch(BadLocationException e){
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
          }
+      }
+
+      void setHtml(){
+          textPane.setContentType("text/html");
       }
 
       JComponent getComponent(){
@@ -104,7 +158,7 @@ public class UpdateJUnits{
    }
 
    public static void main(String[] args) throws ClassNotFoundException, FileNotFoundException, IOException{
-      File rootDir = new File(System.getProperty("root", "/Users/garyfrost/aparapi/aparapi/branches/lambda/test/codegen"));
+      File rootDir = new File(System.getProperty("root", "/home/gfrost/aparapi/branches/lambda/test/codegen"));
 
       final String rootPackageName = CreateJUnitTests.class.getPackage().getName();
       final String testPackageName = rootPackageName + ".test";
@@ -171,21 +225,23 @@ public class UpdateJUnits{
       //list.setCellRenderer(renderer);
       final Editor javaEditor = new Editor(300, 300, false);
       final Editor initialOpenCLEditor = new Editor(600, 600, true);
-      final Editor mid = new Editor(25, 600, false);
-      final Editor finalOpenCLEditor = new Editor(600, 600, true);
+      //final Editor mid = new Editor(25, 600, false);
+      final HTML finalOpenCLEditor = new HTML(600, 600);
+
       JPanel left = new JPanel();
       left.setLayout(new BoxLayout(left, BoxLayout.Y_AXIS));
       left.add(javaEditor.getComponent());
       left.add(new JScrollPane(list));
       panel.add(left);
       panel.add(initialOpenCLEditor.getComponent());
-      panel.add(mid.getComponent());
+     // panel.add(mid.getComponent());
       panel.add(finalOpenCLEditor.getComponent());
 
       frame.add(panel, BorderLayout.CENTER);
 
       list.addListSelectionListener(new ListSelectionListener(){
          @Override public void valueChanged(ListSelectionEvent e){
+             if (!e.getValueIsAdjusting()){
             Source source = (Source) ((JList) e.getSource()).getSelectedValue();
             javaEditor.setText(source.getJava().toString());
             Source.Section lhs=null;
@@ -194,17 +250,54 @@ public class UpdateJUnits{
             if(source.getOpenCLSectionCount() > 0){
 
                lhs =  source.getOpenCL().get(0);
-               initialOpenCLEditor.setText(lhs.toString());
+              // initialOpenCLEditor.setText(lhs.toString());
             }else{
                initialOpenCLEditor.setText(" NO OpenCL!\n");
             }
             if(source.getActualOutput() != null){
                rhs = source.getActualOutput();
-               finalOpenCLEditor.setText(rhs.toString());
+              // finalOpenCLEditor.setText(rhs.toString());
             }else{
                finalOpenCLEditor.setText(" NO Generated OpenCL!\n");
             }
             if (lhs != null && rhs != null){
+
+                DiffMatchPatch dmp = new DiffMatchPatch();
+               // DiffMatchPatch.LinesToCharsResult res = dmp.diff_linesToChars(lhs.toString(), rhs.toString());
+                LinkedList<DiffMatchPatch.Diff> res = dmp.diff_main(lhs.toString(), rhs.toString());
+                String txt1 = dmp.diff_text1(res);
+                String txt2 = dmp.diff_text2(res);
+                initialOpenCLEditor.setText(txt1);
+
+
+                txt2 = dmp.diff_prettyHtml(res);
+
+                    StringBuilder html = new StringBuilder();
+                    for (DiffMatchPatch.Diff aDiff : res) {
+                        String text = aDiff.text.replace("&", "&amp;").replace("<", "&lt;")
+                                .replace(">", "&gt;").replace("\n", "&para;<br>").replace(" ", "&nbsp;");
+                       // String text = aDiff.text;
+                        switch (aDiff.operation) {
+                            case INSERT:
+                                html.append("<span style=\"foreground:#ff0000;background:#ffffff;\">").append(text)
+                                        .append("</span>");
+                                break;
+                            case DELETE:
+                                html.append("<strike style=\"foreground:#cccccc;background:#ffffff;\">").append(text)
+                                        .append("</strike>");
+                                break;
+                            case EQUAL:
+                                html.append("<span style=\"foreground:#0000ff;background:#ffffff;\">").append(text).append("</span>");
+                                break;
+                        }
+                    }
+
+
+
+
+                finalOpenCLEditor.setText(html.toString());
+                System.out.println(html.toString());
+                /*
                Diff.DiffResult result = Diff.diff(lhs.getTrimmedLineArr(), rhs.getTrimmedLineArr());
                List<String> col = new ArrayList<String>();
                for (Diff.DiffResult.Block block:result){
@@ -228,7 +321,9 @@ public class UpdateJUnits{
 
                }
                mid.setTextLines(col);
+               */
             }
+             }
          }
       });
 
@@ -236,7 +331,7 @@ public class UpdateJUnits{
       frame.setVisible(true);
       frame.pack();
 
-      DiffMatchPatch dmp = new DiffMatchPatch();
+
      // dmp.
    }
 }
