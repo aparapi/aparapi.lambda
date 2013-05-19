@@ -9,6 +9,7 @@ public class WideInc{
 }
 
 
+
 /**{OpenCL{
 typedef struct This_s{
    int passid;
@@ -26,7 +27,7 @@ __kernel void run(
    this->passid = passid;
    {
       int i_1 = 0;
-      i_1 = i_1 + 128;
+      i_1+=128;
       return;
    }
 }

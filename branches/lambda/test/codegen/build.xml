@@ -65,7 +65,7 @@
          <sysproperty key="root" value="${basedir}"/>
       </java>
       <java fork="true" classname="com.amd.aparapi.UpdateJUnits" classpathref="classpath">
-         <jvmarg value="-agentpath:../../com.amd.aparapi.jni/dist/libaparapi_x86_64.so"/>
+         <jvmarg value="-agentpath:../../com.amd.aparapi.jni/dist/libaparapi_x86_64.dylib"/>
       </java>
    </target>
 

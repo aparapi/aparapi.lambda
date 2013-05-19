@@ -9,19 +9,21 @@ public class ArrayTortureIssue35{
       a[b[0]++] = 1;
    }
 }
+
 /**{OpenCL{
 typedef struct This_s{
-   __global int *a;
-   __global int *b;
+   __global int* a;
+   __global int* b;
    int passid;
 }This;
+
 int get_pass_id(This *this){
    return this->passid;
-   }
+}
 
 __kernel void run(
-   __global int *a,
-   __global int *b,
+   __global int* a, 
+   __global int* b, 
    int passid
 ){
    This thisStruct;
@@ -30,7 +32,7 @@ __kernel void run(
    this->b = b;
    this->passid = passid;
    {
-      this->a[this->b[0]++] = 1;
+      this->a[this->b[0]++]  = 1;
       return;
    }
 }

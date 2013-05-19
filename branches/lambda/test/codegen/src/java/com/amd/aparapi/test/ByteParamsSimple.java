@@ -14,16 +14,17 @@ public class ByteParamsSimple{
       addEmUp2(bb, cc);
    }
 }
+
 /**{OpenCL{
 typedef struct This_s{
-
    int passid;
 }This;
+
 int get_pass_id(This *this){
    return this->passid;
-   }
+}
 
-void com_amd_aparapi_test_ByteParamsSimple__addEmUp2(This *this, char x, char y){
+void com_amd_aparapi_test_ByteParamsSimple__addEmUp2(This *this, char i_1, char i_2){
    return;
 }
 __kernel void run(
@@ -33,9 +34,9 @@ __kernel void run(
    This* this=&thisStruct;
    this->passid = passid;
    {
-      char bb = 0;
-      char cc = 7;
-      com_amd_aparapi_test_ByteParamsSimple__addEmUp2(this, bb, cc);
+      int i_1 = 0;
+      int i_2 = 7;
+      com_amd_aparapi_test_ByteParamsSimple__addEmUp2(this, i_1, i_2);
       return;
    }
 }

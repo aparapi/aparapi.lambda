@@ -157,7 +157,7 @@ public class UpdateJUnits {
     public static DiffMatchPatch dmp = new DiffMatchPatch();
 
     public static void main(String[] args) throws ClassNotFoundException, FileNotFoundException, IOException {
-        File rootDir = new File(System.getProperty("root", "/home/gfrost/aparapi/branches/lambda/test/codegen"));
+        File rootDir = new File(System.getProperty("root", "."));
 
         final String rootPackageName = CreateJUnitTests.class.getPackage().getName();
         final String testPackageName = rootPackageName + ".test";

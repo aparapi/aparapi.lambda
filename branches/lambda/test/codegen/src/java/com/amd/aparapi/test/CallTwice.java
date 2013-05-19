@@ -15,19 +15,22 @@ public class CallTwice extends Kernel{
    int out[] = new int[1];
 }
 
+
 /**{OpenCL{
 typedef struct This_s{
-   __global int *out;
+   __global int* out;
    int passid;
 }This;
+
 int get_pass_id(This *this){
    return this->passid;
 }
+
 int com_amd_aparapi_test_CallTwice__getOne(This *this){
    return(1);
 }
 __kernel void run(
-   __global int *out, 
+   __global int* out, 
    int passid
 ){
    This thisStruct;

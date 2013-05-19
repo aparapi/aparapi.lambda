@@ -11,23 +11,24 @@ public class ByteParams{
 
    public void run() {
 
-      @SuppressWarnings("unused") byte bb = 0;
+      byte bb = 0;
       byte cc = 7;
 
       addEmUp2((bb = cc), cc);
    }
 }
+
 /**{OpenCL{
 typedef struct This_s{
-
    int passid;
 }This;
+
 int get_pass_id(This *this){
    return this->passid;
-   }
+}
 
-char com_amd_aparapi_test_ByteParams__addEmUp2(This *this, char x, char y){
-   return((char )(x + y));
+char com_amd_aparapi_test_ByteParams__addEmUp2(This *this, char i_1, char i_2){
+   return((char)(i_1 + i_2));
 }
 __kernel void run(
    int passid
@@ -36,9 +37,9 @@ __kernel void run(
    This* this=&thisStruct;
    this->passid = passid;
    {
-      char bb = 0;
-      char cc = 7;
-      com_amd_aparapi_test_ByteParams__addEmUp2(this, bb = cc, cc);
+      int i_1 = 0;
+      int i_2 = 7;
+      com_amd_aparapi_test_ByteParams__addEmUp2(this, i_1=i_2, i_2);
       return;
    }
 }
