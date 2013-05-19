@@ -14,21 +14,23 @@ public class IncArrayArgContent{
 
    }
 }
+
 /**{OpenCL{
 typedef struct This_s{
-   __global int *arr;
+   __global int* arr;
    int passid;
 }This;
+
 int get_pass_id(This *this){
    return this->passid;
-   }
+}
 
-void com_amd_aparapi_test_IncArrayArgContent__incit(This *this,  __global int* arr){
-   arr[0]  = arr[0] + 1;
+void com_amd_aparapi_test_IncArrayArgContent__incit(This *this,  __global int* oref_1){
+   oref_1[0]  = oref_1[0] + 1;
    return;
 }
 __kernel void run(
-   __global int *arr,
+   __global int* arr, 
    int passid
 ){
    This thisStruct;

@@ -13,7 +13,7 @@ public class UnrelatedIfsWithCommonEndByte{
       boolean b = false;
       boolean c = true;
       boolean outer = true;
-      @SuppressWarnings("unused") boolean result = false;
+      boolean result = false;
       if (outer) {
          if (a1 && !a2) {
             // result = true;
@@ -31,14 +31,15 @@ public class UnrelatedIfsWithCommonEndByte{
    }
 
 }
+
 /**{OpenCL{
 typedef struct This_s{
-   
    int passid;
 }This;
+
 int get_pass_id(This *this){
    return this->passid;
-   }
+}
 
 __kernel void run(
    int passid
@@ -47,18 +48,18 @@ __kernel void run(
    This* this=&thisStruct;
    this->passid = passid;
    {
-      char a1 = 1;
-      char a2 = 1;
-      char b = 0;
-      char c = 1;
-      char outer = 1;
-      char result = 0;
-      if (outer!=0 && a1!=0 && a2==0){
-         if (b!=0){
-            result = 1;
+      int i_1 = 1;
+      int i_2 = 1;
+      int i_3 = 0;
+      int i_4 = 1;
+      int i_5 = 1;
+      int i_6 = 0;
+      if (i_5!=0 && i_1!=0 && i_2==0){
+         if (i_3!=0){
+            i_6 = 1;
          }
-         if (c!=0){
-            result = 1;
+         if (i_4!=0){
+            i_6 = 1;
          }
       }
       return;

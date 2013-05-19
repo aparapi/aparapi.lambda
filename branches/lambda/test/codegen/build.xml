@@ -60,6 +60,15 @@
       </javac>
    </target>
 
+   <target name="update" depends="clean, build">
+      <java classname="com.amd.aparapi.CreateJUnitTests" classpathref="classpath">
+         <sysproperty key="root" value="${basedir}"/>
+      </java>
+      <java fork="true" classname="com.amd.aparapi.UpdateJUnits" classpathref="classpath">
+         <jvmarg value="-agentpath:../../com.amd.aparapi.jni/dist/libaparapi_x86_64.so"/>
+      </java>
+   </target>
+
    <target name="junit" depends="clean, build, install.junit">
       <java classname="com.amd.aparapi.CreateJUnitTests" classpathref="classpath">
          <sysproperty key="root" value="${basedir}"/>

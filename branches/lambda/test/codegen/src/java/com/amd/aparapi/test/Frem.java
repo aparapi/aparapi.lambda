@@ -12,18 +12,21 @@ public class Frem{
    float n;
 }
 
+
 /**{OpenCL{
 typedef struct This_s{
-   __global float *out;
+   __global float* out;
    float m;
    float n;
    int passid;
 }This;
+
 int get_pass_id(This *this){
    return this->passid;
 }
+
 __kernel void run(
-   __global float *out, 
+   __global float* out, 
    float m, 
    float n, 
    int passid

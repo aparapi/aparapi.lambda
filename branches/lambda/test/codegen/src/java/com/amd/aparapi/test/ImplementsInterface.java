@@ -17,25 +17,27 @@ public class ImplementsInterface extends Kernel implements IFoo{
 
    public void run() {
       out[0] = bar(1);
-      @SuppressWarnings("unused") boolean pass = false;
+      boolean pass = false;
    }
 }
+
 /**{OpenCL{
 typedef struct This_s{
    int ival;
-   __global int *out;   
+   __global int* out;
    int passid;
 }This;
+
 int get_pass_id(This *this){
    return this->passid;
-   }
+}
 
-int com_amd_aparapi_test_ImplementsInterface__bar(This *this, int n){
-   return((n + this->ival));
+int com_amd_aparapi_test_ImplementsInterface__bar(This *this, int i_1){
+   return((i_1 + this->ival));
 }
 __kernel void run(
    int ival, 
-   __global int *out,
+   __global int* out, 
    int passid
 ){
    This thisStruct;
@@ -45,7 +47,7 @@ __kernel void run(
    this->passid = passid;
    {
       this->out[0]  = com_amd_aparapi_test_ImplementsInterface__bar(this, 1);
-      char pass = 0;
+      int i_1 = 0;
       return;
    }
 }

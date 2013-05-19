@@ -48,13 +48,17 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 public class UpdateJUnits {
     public static class Editor {
@@ -146,6 +150,12 @@ public class UpdateJUnits {
 
     }
 
+    public static Source source = null;
+    public static Editor javaEditor = new Editor(300, 300, true);
+    public static Editor initialOpenCLEditor = new Editor(600, 600, true);
+    public static Editor finalOpenCLEditor = new Editor(600, 600, false);
+    public static DiffMatchPatch dmp = new DiffMatchPatch();
+
     public static void main(String[] args) throws ClassNotFoundException, FileNotFoundException, IOException {
         File rootDir = new File(System.getProperty("root", "/home/gfrost/aparapi/branches/lambda/test/codegen"));
 
@@ -154,7 +164,8 @@ public class UpdateJUnits {
         final File sourceDir = new File(rootDir, "src/java");
         File testDir = new File(sourceDir, testPackageName.replace(".", "/"));
 
-        List<String> classNames = new ArrayList<String>();
+      //  Map<String, File> classNameToFileMap = new HashMap<String, File>();
+        List<String> classNames = new ArrayList<String>() ;
 
         for (File sourceFile : testDir.listFiles(new FilenameFilter() {
             @Override
@@ -164,59 +175,20 @@ public class UpdateJUnits {
         })) {
             String fileName = sourceFile.getName();
             String className = fileName.substring(0, fileName.length() - ".java".length());
+         //   classNameToFileMap.put(className, sourceFile);
             classNames.add(className);
         }
 
-        final List<Source> sources = new ArrayList<Source>();
-        for (String className : classNames) {
-            Class clazz = Class.forName(testPackageName + "." + className);
-            Source source = new Source(clazz, sourceDir);
-            sources.add(source);
 
-            try {
-                ClassModel classModel = ClassModel.getClassModel(clazz);
-                try {
-                    Entrypoint e = classModel.getKernelEntrypoint();
-                    source.addActualOutput(OpenCLKernelWriter.writeToString(e));
-
-
-                } catch (AparapiException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                }
-            } catch (ClassParseException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            }
-        }
-
-        Collections.sort(sources, new Comparator<Source>() {
-            @Override
-            public int compare(Source o1, Source o2) {
-                return (o1.toString().compareTo(o2.toString()));
-            }
-        });
+        Collections.sort(classNames);
 
         JFrame frame = new JFrame("");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
-        ListModel listModel = new AbstractListModel<Source>() {
-            @Override
-            public int getSize() {
-                return sources.size();
-            }
 
-            @Override
-            public Source getElementAt(int index) {
-                return sources.get(index);
-            }
-        };
+        JList list = new JList(classNames.toArray(new String[0]));
 
-
-        JList list = new JList(listModel);
-        final Editor javaEditor = new Editor(300, 300, true);
-        final Editor initialOpenCLEditor = new Editor(600, 600, true);
-        final Editor finalOpenCLEditor = new Editor(600, 600, false);
-        final DiffMatchPatch dmp = new DiffMatchPatch();
 
         initialOpenCLEditor.document.addDocumentListener(new DocumentListener() {
             void update() {
@@ -287,16 +259,35 @@ public class UpdateJUnits {
         JToolBar toolBar = new JToolBar("Still draggable");
         JButton saveButton = new JButton("Save");
         toolBar.add(saveButton);
+        saveButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+               if (source != null){
+                   StringBuilder sb = new StringBuilder();
+                   sb.append(javaEditor.getText());
+                   sb.append("\n");
+                   sb.append("/**{OpenCL{\n");
+                   sb.append(initialOpenCLEditor.getText().trim());
+                   sb.append("\n}OpenCL}**/");
+                   try{
+                   Writer w = new FileWriter(source.file);
+                   w.append(sb.toString());
+                   w.close();
+                   }catch (IOException ioe){
+
+                   }
+
+               }
+            }
+        });
+
         JButton acceptButton = new JButton("Accept");
         acceptButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
                 final String rhs = finalOpenCLEditor.getText();
                 initialOpenCLEditor.clear().equal(rhs);
-
-
-
             }
         });
         toolBar.add(acceptButton);
@@ -307,29 +298,38 @@ public class UpdateJUnits {
             @Override
             public void valueChanged(ListSelectionEvent e) {
                 if (!e.getValueIsAdjusting()) {
-                    Source source = (Source) ((JList) e.getSource()).getSelectedValue();
+                        String className = (String)((JList)(e.getSource())).getSelectedValue();
+                        try{
+                        Class clazz = Class.forName(testPackageName + "." + className);
+                        source = new Source(clazz, sourceDir);
+                        try {
+                            ClassModel classModel = ClassModel.getClassModel(clazz);
+                            try {
+                                Entrypoint entrypoint = classModel.getKernelEntrypoint();
+                                source.addActualOutput(OpenCLKernelWriter.writeToString(entrypoint));
+                            } catch (AparapiException ex) {
+                                ex.printStackTrace();
+                            }
+                        } catch (ClassParseException ex) {
+                            ex.printStackTrace();
+                        }
                     javaEditor.clear();
                     javaEditor.equal(source.getJava().toString());
                     Source.Section lhs = null;
                     Source.Section rhs = null;
 
                     if (source.getOpenCLSectionCount() > 0) {
-
                         lhs = source.getOpenCL().get(0);
-                        // initialOpenCLEditor.setText(lhs.toString());
                     } else {
                         initialOpenCLEditor.clear().equal(" NO OpenCL!\n").endChange();
                     }
                     if (source.getActualOutput() != null) {
                         rhs = source.getActualOutput();
-                        // finalOpenCLEditor.setText(rhs.toString());
                     } else {
                         finalOpenCLEditor.startChange().clear().equal(" NO Generated OpenCL!\n").endChange();
                     }
                     if (lhs != null && rhs != null) {
-
                         LinkedList<DiffMatchPatch.Diff> res = dmp.diff_main(lhs.toString(), rhs.toString());
-
                         initialOpenCLEditor.startChange().clear();
                         finalOpenCLEditor.startChange().clear();
                         for (DiffMatchPatch.Diff aDiff : res) {
@@ -349,8 +349,10 @@ public class UpdateJUnits {
                         }
                         initialOpenCLEditor.endChange();
                         finalOpenCLEditor.endChange();
-
                     }
+
+                }catch(Throwable t){
+                }
                 }
             }
         });

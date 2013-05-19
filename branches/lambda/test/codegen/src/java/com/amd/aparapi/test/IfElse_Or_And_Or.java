@@ -5,7 +5,7 @@ public class IfElse_Or_And_Or{
       int x = 5;
       int y = 5;
 
-      @SuppressWarnings("unused") boolean pass = false;
+      boolean pass = false;
 
       if ((x < 0 || x >= 10) && (y < 0 || y >= 10)) {
          pass = true;
@@ -15,14 +15,15 @@ public class IfElse_Or_And_Or{
 
    }
 }
+
 /**{OpenCL{
 typedef struct This_s{
-   
    int passid;
 }This;
+
 int get_pass_id(This *this){
    return this->passid;
-   }
+}
 
 __kernel void run(
    int passid
@@ -31,13 +32,13 @@ __kernel void run(
    This* this=&thisStruct;
    this->passid = passid;
    {
-      int x = 5;
-      int y = 5;
-      char pass = 0;
-      if ((x<0 || x>=10) && (y<0 || y>=10)){
-         pass = 1;
+      int i_1 = 5;
+      int i_2 = 5;
+      int i_3 = 0;
+      if ((i_1<0 || i_1>=10) && (i_2<0 || i_2>=10)){
+         i_3 = 1;
       } else {
-         pass = 0;
+         i_3 = 0;
       }
       return;
    }

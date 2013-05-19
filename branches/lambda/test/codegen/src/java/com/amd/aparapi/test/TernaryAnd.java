@@ -7,13 +7,15 @@ public class TernaryAnd{
 
    public void run() {
 
-      @SuppressWarnings("unused") int count = ((random()) > .8f) && ((random()) < .2f) ? +1 : -1;
+      int count = ((random()) > .8f) && ((random()) < .2f) ? +1 : -1;
    }
 }
+
 /**{OpenCL{
 typedef struct This_s{
    int passid;
 }This;
+
 int get_pass_id(This *this){
    return this->passid;
 }
@@ -22,13 +24,13 @@ float com_amd_aparapi_test_TernaryAnd__random(This *this){
    return(0.1f);
 }
 __kernel void run(
-    int passid
+   int passid
 ){
    This thisStruct;
    This* this=&thisStruct;
    this->passid = passid;
    {
-      int count = (com_amd_aparapi_test_TernaryAnd__random(this)>0.8f && com_amd_aparapi_test_TernaryAnd__random(this)<0.2f)?1:-1;
+      int i_1 = (com_amd_aparapi_test_TernaryAnd__random(this)>0.8f && com_amd_aparapi_test_TernaryAnd__random(this)<0.2f)?1:-1;
       return;
    }
 }

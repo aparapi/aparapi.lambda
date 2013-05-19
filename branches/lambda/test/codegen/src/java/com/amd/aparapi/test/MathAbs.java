@@ -13,16 +13,15 @@ public class MathAbs extends Kernel{
          pass = false;
    }
 }
-/**{OpenCL{
-#pragma OPENCL EXTENSION cl_khr_fp64 : enable
 
+/**{OpenCL{
 typedef struct This_s{
-   
    int passid;
 }This;
+
 int get_pass_id(This *this){
    return this->passid;
-   }
+}
 
 __kernel void run(
    int passid
@@ -31,13 +30,13 @@ __kernel void run(
    This* this=&thisStruct;
    this->passid = passid;
    {
-      double d = -1.0;
-      float f = -1.0f;
-      int i = -1;
-      long n = -1L;
-      char pass = 1;
-      if (fabs(d)!=1.0 || fabs(f)!=1.0f || abs(i)!=1 || (abs(n) - 1L)!=0){
-         pass = 0;
+      double d_1 = -1.0;
+      float f_3 = -1.0f;
+      int i_4 = -1;
+      long l_5 = -1L;
+      int i_7 = 1;
+      if (abs(d_1)!=1.0 || abs(f_3)!=1.0f || abs(i_4)!=1 || (abs(l_5) - 1L)!=0){
+         i_7 = 0;
       }
       return;
    }

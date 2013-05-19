@@ -9,17 +9,19 @@ public class PreIncArrayIndexAndElement{
       ++array[++i];
    }
 }
+
 /**{OpenCL{
 typedef struct This_s{
-   __global int *array; 
+   __global int* array;
    int passid;
 }This;
+
 int get_pass_id(This *this){
    return this->passid;
-   }
+}
 
 __kernel void run(
-   __global int *array,
+   __global int* array, 
    int passid
 ){
    This thisStruct;
@@ -27,8 +29,8 @@ __kernel void run(
    this->array = array;
    this->passid = passid;
    {
-      int i = 0;
-      this->array[++i]  = this->array[i] + 1;
+      int i_1 = 0;
+      this->array[++i_1]  = this->array[i_1] + 1;
       return;
    }
 }

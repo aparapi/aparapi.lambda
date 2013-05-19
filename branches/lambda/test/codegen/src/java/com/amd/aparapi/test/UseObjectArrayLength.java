@@ -15,21 +15,23 @@ public class UseObjectArrayLength extends Kernel{
       out[0] = dummy.length;
    }
 }
+
 /**{OpenCL{
 typedef struct This_s{
-   __global int *out;
-   __global com_amd_aparapi_test_UseObjectArrayLength$Dummy *dummy;
-   int dummy__javaArrayLength;   
+   __global int* out;
+   __global com_amd_aparapi_test_UseObjectArrayLength$Dummy* dummy;
+   int dummy__javaArrayLength;
    int passid;
 }This;
+
 int get_pass_id(This *this){
    return this->passid;
-   }
+}
 
 __kernel void run(
-   __global int *out,
-   __global com_amd_aparapi_test_UseObjectArrayLength$Dummy *dummy, 
-   int dummy__javaArrayLength,
+   __global int* out, 
+   __global com_amd_aparapi_test_UseObjectArrayLength$Dummy* dummy, 
+   int dummy__javaArrayLength, 
    int passid
 ){
    This thisStruct;
