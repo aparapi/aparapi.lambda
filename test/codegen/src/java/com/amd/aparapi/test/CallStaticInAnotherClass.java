@@ -22,14 +22,17 @@ public class CallStaticInAnotherClass extends Kernel{
    int out[] = new int[2];
 }
 
+
 /**{OpenCL{
 typedef struct This_s{
-   __global int *out;
+   __global int* out;
    int passid;
 }This;
+
 int get_pass_id(This *this){
    return this->passid;
 }
+
 int com_amd_aparapi_test_AnotherClass__foo(){
    return(42);
 }
@@ -37,7 +40,7 @@ int com_amd_aparapi_test_CallStaticInAnotherClass__doodoo(This *this){
    return(com_amd_aparapi_test_AnotherClass__foo());
 }
 __kernel void run(
-   __global int *out, 
+   __global int* out, 
    int passid
 ){
    This thisStruct;
@@ -49,5 +52,4 @@ __kernel void run(
       return;
    }
 }
-
 }OpenCL}**/

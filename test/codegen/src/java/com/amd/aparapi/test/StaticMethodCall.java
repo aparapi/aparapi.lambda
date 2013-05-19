@@ -15,6 +15,7 @@ public class StaticMethodCall extends Kernel{
 }
 
 
+
 /**{OpenCL{
 typedef struct This_s{
    __global int* out;
@@ -25,8 +26,8 @@ int get_pass_id(This *this){
    return this->passid;
 }
 
-int com_amd_aparapi_test_StaticMethodCall__add(int i_0, int i_1){
-   return((i_0 + i_1));
+int com_amd_aparapi_test_StaticMethodCall__add(int oref_0, int oref_1){
+   return((oref_0 + oref_1));
 }
 __kernel void run(
    __global int* out, 

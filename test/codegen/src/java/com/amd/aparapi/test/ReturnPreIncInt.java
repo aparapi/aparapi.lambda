@@ -11,6 +11,7 @@ public class ReturnPreIncInt{
    }
 }
 
+
 /**{OpenCL{
 typedef struct This_s{
    int passid;
@@ -20,7 +21,7 @@ int get_pass_id(This *this){
    return this->passid;
 }
 
-int com_amd_aparapi_test_ReturnPreIncInt__returnPreIncInt(This *this, int i_1){
+int com_amd_aparapi_test_ReturnPreIncInt__returnPreIncInt(This *this, int oref_1){
    i_1++;
    return(i_1);
 }
