@@ -122,6 +122,23 @@ class InstructionSet{
       TypeSpec getTypeSpec(){
          return (typeSpec);
       }
+
+      static StoreSpec valueOf(PrimitiveType _type){
+         if (_type == TypeSpec.B.getPrimitiveType() || _type == TypeSpec.C.getPrimitiveType() ||
+             _type == TypeSpec.S.getPrimitiveType() || _type == TypeSpec.Z.getPrimitiveType() ||
+             _type == TypeSpec.I.getPrimitiveType()){
+            return(I);
+         } else if (_type == TypeSpec.F.getPrimitiveType()){
+            return(F);
+         } else if (_type == TypeSpec.D.getPrimitiveType()){
+            return(I);
+         }  else if (_type == TypeSpec.L.getPrimitiveType()){
+            return(L);
+         }  else if (_type == TypeSpec.OREF.getPrimitiveType()){
+            return(OREF);
+         }
+         return(NONE);
+      }
    }
 
 

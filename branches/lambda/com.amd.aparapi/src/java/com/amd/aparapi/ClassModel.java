@@ -1401,12 +1401,8 @@ public class ClassModel{
 
             int currSlotIndex = thisOffset;
             for(int i = 0; i < args.length; i++){
-               InstructionSet.StoreSpec storeSpec = null;
-               if(args[i].getJavaType().isArray() || args[i].getJavaType().isObject()){
-                  storeSpec = InstructionSet.StoreSpec.OREF;
-               }else{
-                  storeSpec = InstructionSet.StoreSpec.valueOf(args[i].getJavaType().getPrimitiveType().getJavaSig());
-               }
+               InstructionSet.StoreSpec storeSpec =  InstructionSet.StoreSpec.valueOf(args[i].getJavaType().getPrimitiveType());
+
                ArgLocalVariableInfo arg = new ArgLocalVariableInfo(storeSpec, currSlotIndex, 0, args[i].getJavaType());
                vars[i + thisOffset] = arg;
                currSlotIndex += storeSpec.getTypeSpec().getPrimitiveType().getJavaSlots(); // 1 for most 2 for Long/Double
