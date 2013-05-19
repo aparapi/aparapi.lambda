@@ -62,23 +62,24 @@ public class ObjectArrayMemberAccess extends Kernel{
    }
 }
 
+
 /**{OpenCL{
 typedef struct com_amd_aparapi_test_ObjectArrayMemberAccess$DummyOOA_s{
-   int  mem;
-   float  floatField;
-   
-} com_amd_aparapi_test_ObjectArrayMemberAccess$DummyOOA;
+   int mem;
+   float floatField;
+   } com_amd_aparapi_test_ObjectArrayMemberAccess$DummyOOA;
 
 typedef struct This_s{
-   __global com_amd_aparapi_test_ObjectArrayMemberAccess$DummyOOA *dummy;
+   __global com_amd_aparapi_test_ObjectArrayMemberAccess$DummyOOA* dummy;
    int passid;
 }This;
+
 int get_pass_id(This *this){
    return this->passid;
-   }
+}
 
 __kernel void run(
-   __global com_amd_aparapi_test_ObjectArrayMemberAccess$DummyOOA *dummy,
+   __global com_amd_aparapi_test_ObjectArrayMemberAccess$DummyOOA* dummy, 
    int passid
 ){
    This thisStruct;
@@ -86,9 +87,9 @@ __kernel void run(
    this->dummy = dummy;
    this->passid = passid;
    {
-      int myId = get_global_id(0);
-      this->dummy[myId].mem=this->dummy[myId].mem + 2;
-      this->dummy[myId].floatField=this->dummy[myId].floatField + 2.0f;
+      int i_1 = get_global_id(0);
+      this->dummy[i_1].mem=this->dummy[i_1].mem + 2;
+      this->dummy[i_1].floatField=this->dummy[i_1].floatField + 2.0f;
       return;
    }
 }

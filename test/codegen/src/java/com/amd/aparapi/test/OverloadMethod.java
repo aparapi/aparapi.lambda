@@ -17,22 +17,25 @@ public class OverloadMethod extends Kernel{
 
    int out[] = new int[1];
 }
+
 /**{OpenCL{
 typedef struct This_s{
-   __global int *out;
+   __global int* out;
    int passid;
 }This;
+
 int get_pass_id(This *this){
    return this->passid;
 }
-int com_amd_aparapi_test_OverloadMethod__foo(This *this, int a, int b){
-   return(min(a, b));
+
+int com_amd_aparapi_test_OverloadMethod__foo(This *this, int i_1, int i_2){
+   return(min(i_1, i_2));
 }
-int com_amd_aparapi_test_OverloadMethod__foo(This *this, int n){
-   return((n + 1));
+int com_amd_aparapi_test_OverloadMethod__foo(This *this, int i_1){
+   return((i_1 + 1));
 }
 __kernel void run(
-   __global int *out, 
+   __global int* out, 
    int passid
 ){
    This thisStruct;

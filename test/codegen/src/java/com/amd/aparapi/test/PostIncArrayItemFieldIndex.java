@@ -14,21 +14,23 @@ public class PostIncArrayItemFieldIndex{
       values[a] = results[a]++;
    }
 }
+
 /**{OpenCL{
 typedef struct This_s{
-   __global int *values;
+   __global int* values;
    int a;
-   __global int *results;
+   __global int* results;
    int passid;
 }This;
+
 int get_pass_id(This *this){
    return this->passid;
-   }
+}
 
 __kernel void run(
-   __global int *values,
-   int a,
-   __global int *results,
+   __global int* values, 
+   int a, 
+   __global int* results, 
    int passid
 ){
    This thisStruct;

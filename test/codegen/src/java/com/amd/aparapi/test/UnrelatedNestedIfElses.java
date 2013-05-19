@@ -12,7 +12,7 @@ public class UnrelatedNestedIfElses{
       boolean a = true;
       boolean b = false;
       boolean c = true;
-      @SuppressWarnings("unused") boolean result = false;
+      boolean result = false;
 
       if (a) {
          if (b) {
@@ -31,14 +31,15 @@ public class UnrelatedNestedIfElses{
    }
 
 }
+
 /**{OpenCL{
 typedef struct This_s{
-   
    int passid;
 }This;
+
 int get_pass_id(This *this){
    return this->passid;
-   }
+}
 
 __kernel void run(
    int passid
@@ -47,21 +48,21 @@ __kernel void run(
    This* this=&thisStruct;
    this->passid = passid;
    {
-      char a = 1;
-      char b = 0;
-      char c = 1;
-      char result = 0;
-      if (a!=0){
-         if (b!=0){
-            result = 1;
+      int i_1 = 1;
+      int i_2 = 0;
+      int i_3 = 1;
+      int i_4 = 0;
+      if (i_1!=0){
+         if (i_2!=0){
+            i_4 = 1;
          } else {
-            result = 0;
+            i_4 = 0;
          }
-      }else{
-         if (c!=0){
-            result = 1;
+      } else {
+         if (i_3!=0){
+            i_4 = 1;
          } else {
-            result = 0;
+            i_4 = 0;
          }
       }
       return;

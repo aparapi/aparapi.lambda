@@ -10,17 +10,19 @@ public class NonNullCheck{
     
    }
 }
+
 /**{OpenCL{
 typedef struct This_s{
-   __global int *ints;
-    int passid;
+   __global int* ints;
+   int passid;
 }This;
+
 int get_pass_id(This *this){
    return this->passid;
 }
 
 __kernel void run(
-   __global int *ints,
+   __global int* ints, 
    int passid
 ){
    This thisStruct;
@@ -29,7 +31,7 @@ __kernel void run(
    this->passid = passid;
    {
       if (this->ints != NULL){
-         int value = this->ints[0];
+         int i_1 = this->ints[0];
       }
       return;
    }

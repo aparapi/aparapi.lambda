@@ -15,14 +15,15 @@ public class If_While_Else{
 
    }
 }
+
 /**{OpenCL{
 typedef struct This_s{
-
    int passid;
 }This;
+
 int get_pass_id(This *this){
    return this->passid;
-   }
+}
 
 __kernel void run(
    int passid
@@ -31,12 +32,12 @@ __kernel void run(
    This* this=&thisStruct;
    this->passid = passid;
    {
-      char a = 1;
-      if (a!=0){
-         for (; a!=0; a = 0){
+      int i_1 = 1;
+      if (i_1!=0){
+         for (; i_1!=0; i_1 = 0){
          }
       } else {
-         a = 1;
+         i_1 = 1;
       }
       return;
    }

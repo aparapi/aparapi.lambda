@@ -13,21 +13,23 @@ public class RightShifts extends Kernel{
       iout[2] = i1 >>> i2;
    }
 }
+
 /**{OpenCL{
 typedef struct This_s{
-   __global int *iout;
+   __global int* iout;
    int i1;
    int i2;
    int passid;
 }This;
+
 int get_pass_id(This *this){
    return this->passid;
-   }
+}
 
 __kernel void run(
-   __global int *iout, 
-   int i1,
-   int i2,
+   __global int* iout, 
+   int i1, 
+   int i2, 
    int passid
 ){
    This thisStruct;
@@ -42,5 +44,4 @@ __kernel void run(
       return;
    }
 }
-
 }OpenCL}**/

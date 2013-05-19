@@ -65,35 +65,37 @@ public class ObjectArrayMemberHierarchy extends Kernel{
    }
 }
 
+
 /**{OpenCL{
 typedef struct com_amd_aparapi_test_ObjectArrayMemberHierarchy$DummyOOA_s{
-   float  floatField;
-   int  intField;
-   
-} com_amd_aparapi_test_ObjectArrayMemberHierarchy$DummyOOA;
+   float floatField;
+   int intField;
+   int intField;
+   } com_amd_aparapi_test_ObjectArrayMemberHierarchy$DummyOOA;
 
 typedef struct This_s{
    int something;
-   __global com_amd_aparapi_test_ObjectArrayMemberHierarchy$DummyOOA *dummy;
+   __global com_amd_aparapi_test_ObjectArrayMemberHierarchy$DummyOOA* dummy;
    int passid;
 }This;
+
 int get_pass_id(This *this){
    return this->passid;
-   }
+}
 
-void com_amd_aparapi_test_ObjectArrayMemberHierarchy$DummyOOA__setFloatField( __global com_amd_aparapi_test_ObjectArrayMemberHierarchy$DummyOOA *this, float x){
-   this->floatField=x;
+void com_amd_aparapi_test_ObjectArrayMemberHierarchy$DummyOOA__setFloatField(__global com_amd_aparapi_test_ObjectArrayMemberHierarchy$DummyOOA *this, float f_1){
+   this->floatField=f_1;
    return;
 }
 int com_amd_aparapi_test_ObjectArrayMemberHierarchy__getSomething(This *this){
    return(this->something);
 }
-int com_amd_aparapi_test_ObjectArrayMemberHierarchy$DummyParent__getIntField( __global com_amd_aparapi_test_ObjectArrayMemberHierarchy$DummyOOA *this){
+int com_amd_aparapi_test_ObjectArrayMemberHierarchy$DummyParent__getIntField(__global com_amd_aparapi_test_ObjectArrayMemberHierarchy$DummyOOA *this){
    return(this->intField);
 }
 __kernel void run(
    int something, 
-   __global com_amd_aparapi_test_ObjectArrayMemberHierarchy$DummyOOA *dummy,
+   __global com_amd_aparapi_test_ObjectArrayMemberHierarchy$DummyOOA* dummy, 
    int passid
 ){
    This thisStruct;
@@ -102,9 +104,9 @@ __kernel void run(
    this->dummy = dummy;
    this->passid = passid;
    {
-      int myId = get_global_id(0);
-      this->dummy[myId].intField=(com_amd_aparapi_test_ObjectArrayMemberHierarchy$DummyParent__getIntField( &(this->dummy[myId])) + 2) + com_amd_aparapi_test_ObjectArrayMemberHierarchy__getSomething(this);
-      com_amd_aparapi_test_ObjectArrayMemberHierarchy$DummyOOA__setFloatField( &(this->dummy[myId]), (this->dummy[myId].floatField + 2.0f));
+      int i_1 = get_global_id(0);
+      this->dummy[i_1].intField=(com_amd_aparapi_test_ObjectArrayMemberHierarchy$DummyParent__getIntField( &(this->dummy[i_1])) + 2) + com_amd_aparapi_test_ObjectArrayMemberHierarchy__getSomething(this);
+      com_amd_aparapi_test_ObjectArrayMemberHierarchy$DummyOOA__setFloatField( &(this->dummy[i_1]), (this->dummy[i_1].floatField + 2.0f));
       return;
    }
 }

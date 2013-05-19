@@ -3,7 +3,7 @@ package com.amd.aparapi.test;
 public class PlayPen{
    public void run() {
       int testValue = 10;
-      @SuppressWarnings("unused") boolean pass = false;
+      boolean pass = false;
 
       if ((testValue % 2 == 0 || testValue <= 0 && (testValue >= 100) && testValue % 4 == 0)) {
          pass = true;
@@ -19,14 +19,15 @@ public class PlayPen{
 
    }
 }
+
 /**{OpenCL{
 typedef struct This_s{
-   
    int passid;
 }This;
+
 int get_pass_id(This *this){
    return this->passid;
-   }
+}
 
 __kernel void run(
    int passid
@@ -35,22 +36,22 @@ __kernel void run(
    This* this=&thisStruct;
    this->passid = passid;
    {
-      int testValue = 10;
-      char pass = 0;
-      if ((testValue % 2)==0 || testValue<=0 && testValue>=100 && (testValue % 4)==0){
-         pass = 1;
+      int i_1 = 10;
+      int i_2 = 0;
+      if ((i_1 % 2)==0 || i_1<=0 && i_1>=100 && (i_1 % 4)==0){
+         i_2 = 1;
       }
-      if ((testValue<3 || testValue>5) && (testValue<2 || testValue>2) || testValue>5){
-         pass = 1;
+      if ((i_1<3 || i_1>5) && (i_1<2 || i_1>2) || i_1>5){
+         i_2 = 1;
       }
-      char a = 0;
-      char b = 0;
-      char c = 0;
-      char d = 0;
-      char e = 0;
-      char f = 0;
-      if ((a!=0 || b!=0 && c!=0 && d!=0) && e!=0 || f!=0){
-         pass = 1;
+      int i_3 = 0;
+      int i_4 = 0;
+      int i_5 = 0;
+      int i_6 = 0;
+      int i_7 = 0;
+      int i_8 = 0;
+      if ((i_3!=0 || i_4!=0 && i_5!=0 && i_6!=0) && i_7!=0 || i_8!=0){
+         i_2 = 1;
       }
       return;
    }

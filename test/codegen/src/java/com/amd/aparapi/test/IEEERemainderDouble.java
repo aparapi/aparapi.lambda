@@ -14,9 +14,8 @@ public class IEEERemainderDouble extends Kernel{
    double n;
 }
 
-/**{OpenCL{
-#pragma OPENCL EXTENSION cl_khr_fp64 : enable
 
+/**{OpenCL{
 typedef struct This_s{
    __global double* out;
    double m;
@@ -44,4 +43,5 @@ __kernel void run(
       this->out[0]  = IEEEremainder(this->m, this->n);
       return;
    }
-}}OpenCL}**/
+}
+}OpenCL}**/

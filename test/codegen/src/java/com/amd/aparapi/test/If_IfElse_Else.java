@@ -4,7 +4,7 @@ public class If_IfElse_Else{
    public void run() {
       boolean a = true;
       boolean b = true;
-      @SuppressWarnings("unused") boolean result = false;
+      boolean result = false;
 
       if (a) {
          if (b) {
@@ -18,14 +18,15 @@ public class If_IfElse_Else{
 
    }
 }
+
 /**{OpenCL{
 typedef struct This_s{
-
    int passid;
 }This;
+
 int get_pass_id(This *this){
    return this->passid;
-   }
+}
 
 __kernel void run(
    int passid
@@ -34,17 +35,17 @@ __kernel void run(
    This* this=&thisStruct;
    this->passid = passid;
    {
-      char a = 1;
-      char b = 1;
-      char result = 0;
-      if (a!=0){
-         if (b!=0){
-            result = 1;
+      int i_1 = 1;
+      int i_2 = 1;
+      int i_3 = 0;
+      if (i_1!=0){
+         if (i_2!=0){
+            i_3 = 1;
          } else {
-            result = 1;
+            i_3 = 1;
          }
       } else {
-         result = 0;
+         i_3 = 0;
       }
       return;
    }

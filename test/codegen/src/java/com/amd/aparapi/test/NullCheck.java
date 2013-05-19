@@ -10,17 +10,19 @@ public class NullCheck{
       int value = ints[0];
    }
 }
+
 /**{OpenCL{
 typedef struct This_s{
-   __global int *ints;
-    int passid;
+   __global int* ints;
+   int passid;
 }This;
+
 int get_pass_id(This *this){
    return this->passid;
 }
 
 __kernel void run(
-   __global int *ints,
+   __global int* ints, 
    int passid
 ){
    This thisStruct;
@@ -31,7 +33,7 @@ __kernel void run(
       if (this->ints == NULL){
          return;
       }
-      int value = this->ints[0];
+      int i_1 = this->ints[0];
       return;
    }
 }
