@@ -38,12 +38,14 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 package com.amd.aparapi;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.*;
-import javax.swing.text.html.HTMLDocument;
-import javax.swing.text.html.HTMLEditorKit;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
@@ -54,284 +56,305 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
-public class UpdateJUnits{
+public class UpdateJUnits {
+    public static class Editor {
+        final static SimpleAttributeSet del = new SimpleAttributeSet();
+        final static SimpleAttributeSet ins = new SimpleAttributeSet();
+        final static SimpleAttributeSet equal = new SimpleAttributeSet();
 
-    public static class HTML{
+        static {
+            del.addAttribute(StyleConstants.CharacterConstants.Background, Color.RED.brighter().brighter());
+            ins.addAttribute(StyleConstants.CharacterConstants.Background, Color.GREEN.brighter().brighter());
+        }
 
+        volatile boolean changing = false;
 
-        JTextPane textPane = new JTextPane();
-        HTMLEditorKit kit = new HTMLEditorKit();
-        HTMLDocument doc = new HTMLDocument();
+        StyledDocument document = new DefaultStyledDocument();
+        JTextPane textPane = new JTextPane(document);
+
         JScrollPane scrollPane = new JScrollPane(textPane);
 
-        HTML(int _width, int _height){
-
-            Font font = new Font("Terminal", Font.BOLD, 11);
-            textPane.setFont(font);
-            textPane.setBackground(Color.BLACK);
-            textPane.setForeground(Color.YELLOW);
-
-            textPane.setEditorKit(kit);
-            textPane.setDocument(doc);
-            //  Font font = new Font("Serif", Font.ITALIC, 20);
-            //  textPane.setFont(font);
-
+        Editor(int _width, int _height, boolean _editable) {
+            textPane.setEditable(_editable);
             scrollPane.setPreferredSize(new Dimension(_width, _height));
         }
 
-        void setText(String _string){
-            try{
+        Editor startChange() {
+            changing = true;
+            return (this);
+        }
 
-                doc.remove(0, doc.getLength());
-                kit.insertHTML(doc, doc.getLength(), _string, 0, 0, null);
-
-            }catch(BadLocationException e){
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            } catch (IOException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            }
+        Editor endChange() {
+            changing = false;
+            return (this);
         }
 
 
+        Editor clear() {
+            try {
+                document.remove(0, document.getLength());
 
-        JComponent getComponent(){
+
+            } catch (BadLocationException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            }
+            return (this);
+        }
+
+        Editor add(String _string, SimpleAttributeSet _attr) {
+            try {
+                document.insertString(document.getLength(), _string, _attr);
+
+
+            } catch (BadLocationException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            }
+            return (this);
+        }
+
+        Editor del(String _string) {
+            add(_string, del);
+            return (this);
+        }
+
+        Editor ins(String _string) {
+            add(_string, ins);
+            return (this);
+        }
+
+        Editor equal(String _string) {
+            add(_string, equal);
+            return (this);
+        }
+
+
+        String getText() {
+            String text = null;
+            try {
+                text = document.getText(0, document.getLength());
+            } catch (BadLocationException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            }
+            return (text);
+        }
+
+
+        JComponent getComponent() {
             return (scrollPane);
         }
 
 
     }
 
+    public static void main(String[] args) throws ClassNotFoundException, FileNotFoundException, IOException {
+        File rootDir = new File(System.getProperty("root", "/home/gfrost/aparapi/branches/lambda/test/codegen"));
 
+        final String rootPackageName = CreateJUnitTests.class.getPackage().getName();
+        final String testPackageName = rootPackageName + ".test";
+        final File sourceDir = new File(rootDir, "src/java");
+        File testDir = new File(sourceDir, testPackageName.replace(".", "/"));
 
-    public static class Editor{
-      final static SimpleAttributeSet boldItalic = new SimpleAttributeSet();
+        List<String> classNames = new ArrayList<String>();
 
-      static{
-        // boldItalic.addAttribute(StyleConstants.CharacterConstants.Bold, Boolean.TRUE);
-        // boldItalic.addAttribute(StyleConstants.CharacterConstants.Italic, Boolean.TRUE);
-     //    boldItalic.addAttribute(StyleConstants.CharacterConstants.FontSize, 11);
-     //    boldItalic.addAttribute(StyleConstants.CharacterConstants.FontFamily, "Terminal");
-        // boldItalic.addAttribute(StyleConstants.CharacterConstants.Foreground, Color.YELLOW);
-         //boldItalic.addAttribute(StyleConstants.CharacterConstants.Background, Color.BLACK);
-      }
-
-      StyledDocument document = new DefaultStyledDocument();
-      JTextPane textPane = new JTextPane(document);
-
-      JScrollPane scrollPane = new JScrollPane(textPane);
-
-      Editor(int _width, int _height, boolean _editable){
-         Font font = new Font("Terminal", Font.BOLD, 11);
-         textPane.setFont(font);
-         textPane.setBackground(Color.BLACK);
-         textPane.setForeground(Color.YELLOW);
-         textPane.setEditable(_editable);
-         scrollPane.setPreferredSize(new Dimension(_width, _height));
-      }
-
-      void setText(String _string){
-         try{
-            document.remove(0, document.getLength());
-            document.insertString(0, _string, null);
-
-
-         }catch(BadLocationException e){
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-         }
-      }
-
-      void setHtml(){
-          textPane.setContentType("text/html");
-      }
-
-      JComponent getComponent(){
-         return (scrollPane);
-      }
-
-      public void setTextLines(List<String> _lines){
-         StringBuilder sb = new StringBuilder();
-         for(String line : _lines){
-            sb.append(line).append("\n");
-         }
-         setText(sb.toString());
-      }
-   }
-
-   public static void main(String[] args) throws ClassNotFoundException, FileNotFoundException, IOException{
-      File rootDir = new File(System.getProperty("root", "/home/gfrost/aparapi/branches/lambda/test/codegen"));
-
-      final String rootPackageName = CreateJUnitTests.class.getPackage().getName();
-      final String testPackageName = rootPackageName + ".test";
-      final File sourceDir = new File(rootDir, "src/java");
-      File testDir = new File(sourceDir, testPackageName.replace(".", "/"));
-
-      List<String> classNames = new ArrayList<String>();
-
-      for(File sourceFile : testDir.listFiles(new FilenameFilter(){
-
-         @Override public boolean accept(File dir, String name){
-            return (name.endsWith(".java"));
-         }
-      })){
-         String fileName = sourceFile.getName();
-         String className = fileName.substring(0, fileName.length() - ".java".length());
-         classNames.add(className);
-      }
-
-      final List<Source> sources = new ArrayList<Source>();
-      for(String className : classNames){
-         Class clazz = Class.forName(testPackageName + "." + className);
-         Source source = new Source(clazz, sourceDir);
-         sources.add(source);
-
-         try{
-            ClassModel classModel = ClassModel.getClassModel(clazz);
-            try{
-               Entrypoint e = classModel.getKernelEntrypoint();
-               source.addActualOutput(OpenCLKernelWriter.writeToString(e));
-
-
-            }catch(AparapiException e){
-               e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        for (File sourceFile : testDir.listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return (name.endsWith(".java"));
             }
-         }catch(ClassParseException e){
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-         }
-      }
+        })) {
+            String fileName = sourceFile.getName();
+            String className = fileName.substring(0, fileName.length() - ".java".length());
+            classNames.add(className);
+        }
 
-      Collections.sort(sources, new Comparator<Source>(){
+        final List<Source> sources = new ArrayList<Source>();
+        for (String className : classNames) {
+            Class clazz = Class.forName(testPackageName + "." + className);
+            Source source = new Source(clazz, sourceDir);
+            sources.add(source);
 
-         @Override public int compare(Source o1, Source o2){
-            return (o1.toString().compareTo(o2.toString()));
-         }
-      });
-
-      JFrame frame = new JFrame("");
-      frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-      JPanel panel = new JPanel();
-      panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
-      ListModel listModel = new AbstractListModel<Source>(){
-         @Override public int getSize(){
-            return sources.size();
-         }
-
-         @Override public Source getElementAt(int index){
-            return sources.get(index);
-         }
-      };
+            try {
+                ClassModel classModel = ClassModel.getClassModel(clazz);
+                try {
+                    Entrypoint e = classModel.getKernelEntrypoint();
+                    source.addActualOutput(OpenCLKernelWriter.writeToString(e));
 
 
-      JList list = new JList(listModel);
-      //list.setCellRenderer(renderer);
-      final Editor javaEditor = new Editor(300, 300, false);
-      final Editor initialOpenCLEditor = new Editor(600, 600, true);
-      //final Editor mid = new Editor(25, 600, false);
-      final HTML finalOpenCLEditor = new HTML(600, 600);
-
-      JPanel left = new JPanel();
-      left.setLayout(new BoxLayout(left, BoxLayout.Y_AXIS));
-      left.add(javaEditor.getComponent());
-      left.add(new JScrollPane(list));
-      panel.add(left);
-      panel.add(initialOpenCLEditor.getComponent());
-     // panel.add(mid.getComponent());
-      panel.add(finalOpenCLEditor.getComponent());
-
-      frame.add(panel, BorderLayout.CENTER);
-
-      list.addListSelectionListener(new ListSelectionListener(){
-         @Override public void valueChanged(ListSelectionEvent e){
-             if (!e.getValueIsAdjusting()){
-            Source source = (Source) ((JList) e.getSource()).getSelectedValue();
-            javaEditor.setText(source.getJava().toString());
-            Source.Section lhs=null;
-            Source.Section rhs=null;
-
-            if(source.getOpenCLSectionCount() > 0){
-
-               lhs =  source.getOpenCL().get(0);
-              // initialOpenCLEditor.setText(lhs.toString());
-            }else{
-               initialOpenCLEditor.setText(" NO OpenCL!\n");
+                } catch (AparapiException e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+            } catch (ClassParseException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
-            if(source.getActualOutput() != null){
-               rhs = source.getActualOutput();
-              // finalOpenCLEditor.setText(rhs.toString());
-            }else{
-               finalOpenCLEditor.setText(" NO Generated OpenCL!\n");
+        }
+
+        Collections.sort(sources, new Comparator<Source>() {
+            @Override
+            public int compare(Source o1, Source o2) {
+                return (o1.toString().compareTo(o2.toString()));
             }
-            if (lhs != null && rhs != null){
+        });
 
-                DiffMatchPatch dmp = new DiffMatchPatch();
-               // DiffMatchPatch.LinesToCharsResult res = dmp.diff_linesToChars(lhs.toString(), rhs.toString());
-                LinkedList<DiffMatchPatch.Diff> res = dmp.diff_main(lhs.toString(), rhs.toString());
-                String txt1 = dmp.diff_text1(res);
-                String txt2 = dmp.diff_text2(res);
-                initialOpenCLEditor.setText(txt1);
+        JFrame frame = new JFrame("");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+        ListModel listModel = new AbstractListModel<Source>() {
+            @Override
+            public int getSize() {
+                return sources.size();
+            }
+
+            @Override
+            public Source getElementAt(int index) {
+                return sources.get(index);
+            }
+        };
 
 
-                txt2 = dmp.diff_prettyHtml(res);
+        JList list = new JList(listModel);
+        final Editor javaEditor = new Editor(300, 300, true);
+        final Editor initialOpenCLEditor = new Editor(600, 600, true);
+        final Editor finalOpenCLEditor = new Editor(600, 600, false);
+        final DiffMatchPatch dmp = new DiffMatchPatch();
 
-                    StringBuilder html = new StringBuilder();
-                    for (DiffMatchPatch.Diff aDiff : res) {
-                        String text = aDiff.text.replace("&", "&amp;").replace("<", "&lt;")
-                                .replace(">", "&gt;").replace("\n", "&para;<br>").replace(" ", "&nbsp;");
-                       // String text = aDiff.text;
-                        switch (aDiff.operation) {
-                            case INSERT:
-                                html.append("<span style=\"foreground:#ff0000;background:#ffffff;\">").append(text)
-                                        .append("</span>");
-                                break;
-                            case DELETE:
-                                html.append("<strike style=\"foreground:#cccccc;background:#ffffff;\">").append(text)
-                                        .append("</strike>");
-                                break;
-                            case EQUAL:
-                                html.append("<span style=\"foreground:#0000ff;background:#ffffff;\">").append(text).append("</span>");
-                                break;
+        initialOpenCLEditor.document.addDocumentListener(new DocumentListener() {
+            void update() {
+
+                final String lhs = initialOpenCLEditor.getText();
+                final String rhs = finalOpenCLEditor.getText();
+                if (!initialOpenCLEditor.changing && !finalOpenCLEditor.changing && lhs != null && rhs != null) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            // DiffMatchPatch.LinesToCharsResult res = dmp.diff_linesToChars(lhs.toString(), rhs.toString());
+                            LinkedList<DiffMatchPatch.Diff> res = dmp.diff_main(lhs, rhs);
+                            int caret = initialOpenCLEditor.textPane.getCaretPosition();
+                            System.out.println("caret = " + caret);
+                            initialOpenCLEditor.startChange().clear();
+                            finalOpenCLEditor.startChange().clear();
+                            for (DiffMatchPatch.Diff aDiff : res) {
+                                String text = aDiff.text;
+                                switch (aDiff.operation) {
+                                    case INSERT:
+                                        finalOpenCLEditor.ins(text);
+                                        break;
+                                    case DELETE:
+                                        initialOpenCLEditor.del(text);
+                                        break;
+                                    case EQUAL:
+                                        finalOpenCLEditor.equal(text);
+                                        initialOpenCLEditor.equal(text);
+                                        break;
+                                }
+                            }
+                            initialOpenCLEditor.textPane.setCaretPosition(caret);
+                            caret = initialOpenCLEditor.textPane.getCaretPosition();
+                            System.out.println("caret = " + caret);
+                            initialOpenCLEditor.endChange();
+                            finalOpenCLEditor.endChange();
                         }
+
+                    });
+                }
+            }
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                update();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                update();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                update();
+            }
+        });
+
+        JPanel left = new JPanel();
+        left.setLayout(new BoxLayout(left, BoxLayout.Y_AXIS));
+        left.add(javaEditor.getComponent());
+        left.add(new JScrollPane(list));
+        panel.add(left);
+        panel.add(initialOpenCLEditor.getComponent());
+        panel.add(finalOpenCLEditor.getComponent());
+
+        JToolBar toolBar = new JToolBar("Still draggable");
+        JButton saveButton = new JButton("Save");
+        toolBar.add(saveButton);
+        JButton acceptButton = new JButton("Accept");
+        acceptButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+                final String rhs = finalOpenCLEditor.getText();
+                initialOpenCLEditor.clear().equal(rhs);
+
+
+
+            }
+        });
+        toolBar.add(acceptButton);
+        frame.add(toolBar, BorderLayout.NORTH);
+        frame.add(panel, BorderLayout.CENTER);
+
+        list.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                if (!e.getValueIsAdjusting()) {
+                    Source source = (Source) ((JList) e.getSource()).getSelectedValue();
+                    javaEditor.clear();
+                    javaEditor.equal(source.getJava().toString());
+                    Source.Section lhs = null;
+                    Source.Section rhs = null;
+
+                    if (source.getOpenCLSectionCount() > 0) {
+
+                        lhs = source.getOpenCL().get(0);
+                        // initialOpenCLEditor.setText(lhs.toString());
+                    } else {
+                        initialOpenCLEditor.clear().equal(" NO OpenCL!\n").endChange();
                     }
+                    if (source.getActualOutput() != null) {
+                        rhs = source.getActualOutput();
+                        // finalOpenCLEditor.setText(rhs.toString());
+                    } else {
+                        finalOpenCLEditor.startChange().clear().equal(" NO Generated OpenCL!\n").endChange();
+                    }
+                    if (lhs != null && rhs != null) {
 
+                        LinkedList<DiffMatchPatch.Diff> res = dmp.diff_main(lhs.toString(), rhs.toString());
 
-
-
-                finalOpenCLEditor.setText(html.toString());
-                System.out.println(html.toString());
-                /*
-               Diff.DiffResult result = Diff.diff(lhs.getTrimmedLineArr(), rhs.getTrimmedLineArr());
-               List<String> col = new ArrayList<String>();
-               for (Diff.DiffResult.Block block:result){
-                  switch (block.type) {
-                     case SAME:
-                        for (int i = block.lhsFrom; i <= block.lhsTo; i++) {
-                           col.add("==");
+                        initialOpenCLEditor.startChange().clear();
+                        finalOpenCLEditor.startChange().clear();
+                        for (DiffMatchPatch.Diff aDiff : res) {
+                            String text = aDiff.text;
+                            switch (aDiff.operation) {
+                                case INSERT:
+                                    finalOpenCLEditor.ins(text);
+                                    break;
+                                case DELETE:
+                                    initialOpenCLEditor.del(text);
+                                    break;
+                                case EQUAL:
+                                    finalOpenCLEditor.equal(text);
+                                    initialOpenCLEditor.equal(text);
+                                    break;
+                            }
                         }
-                        break;
-                     case LEFT:
-                        for (int i = block.lhsFrom; i <= block.lhsTo; i++) {
-                           col.add("  <");
-                        }
-                        break;
-                     case RIGHT:
-                        for (int i = block.rhsFrom; i <= block.rhsTo; i++) {
-                           col.add("  >");
-                        }
-                        break;
-                  }
+                        initialOpenCLEditor.endChange();
+                        finalOpenCLEditor.endChange();
 
-               }
-               mid.setTextLines(col);
-               */
+                    }
+                }
             }
-             }
-         }
-      });
-
-
-      frame.setVisible(true);
-      frame.pack();
-
-
-     // dmp.
-   }
+        });
+        frame.setVisible(true);
+        frame.pack();
+    }
 }
