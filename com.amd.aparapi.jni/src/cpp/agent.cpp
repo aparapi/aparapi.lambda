@@ -79,7 +79,7 @@ NameToBytes *head = NULL;
          //fprintf(stdout, "classinfo name  \"%s\"\n", classInfo.getClassName());
          //fflush(stdout);
          if (!strcmp(ptr->getName(), nameChars)){
- //           fprintf(stdout, "found bytes for \"%s\"\n", nameChars);
+            fprintf(stderr, "found bytes for \"%s\"\n", nameChars);
             ByteBuffer *byteBuffer = ptr->getByteBuffer();
             bytes = jenv->NewByteArray(byteBuffer->getLen());
             //fprintf(stdout, "created byte array size= %d\n", ptr->getLen());
