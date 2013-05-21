@@ -37,74 +37,72 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 */
 package com.amd.aparapi;
 
+import java.util.LinkedList;
+
 import static org.junit.Assert.assertTrue;
 
 public class CodeGenJUnitBase{
+   public static DiffMatchPatch dmp = new DiffMatchPatch();
+   String trim(String _string){
+      int start = 0;
+      int end = _string.length();
+      while(start < end && Character.isWhitespace(_string.charAt(start))){
+         start++;
+      }
+      while(end > start && Character.isWhitespace(_string.charAt(end - 1))){
+         end--;
+      }
+      return (_string.substring(start, end));
+   }
+   boolean isSpace(String _string){
+      boolean space = true;
+      for (char ch:_string.toCharArray()){
+          space = space && Character.isWhitespace(ch);
+      }
+      return(space);
+   }
 
-   protected void test(Class<?> _class, Class<? extends AparapiException> _expectedExceptionType, String[] expectedOpenCL) {
-      try {
-         // Source source = new Source(_class, new File("src/java"));
-         // System.out.println("opencl\n"+source.getOpenCL());
 
-         //  String expected = source.getOpenCLString();
+   boolean same(String _lhs, String _rhs){
+      LinkedList<DiffMatchPatch.Diff> res = dmp.diff_main(trim(_lhs), trim(_rhs));
+      for (DiffMatchPatch.Diff d:res){
+         if (d.operation != DiffMatchPatch.Operation.EQUAL && !isSpace(d.text)){
+            return(false);
+         }
+      }
+      return(true);
 
+   }
+
+   public static final String line=   "------------------------------------------------------------------------------";
+
+   protected void test(Class<?> _class, Class<? extends AparapiException> _expectedExceptionType, String mode, String expectedOpenCL, String expectedHSAIL){
+      try{
+         ClassModel.flush();
          ClassModel classModel = ClassModel.getClassModel(_class);
-
-         // construct an artficial instance of our class here
-         // we assume the specified class will have a null constructor
          Object kernelInstance = _class.getConstructor((Class<?>[]) null).newInstance();
-
          Entrypoint entrypoint = classModel.getKernelEntrypoint("run", kernelInstance instanceof Kernel ? kernelInstance : null);
          String actual = OpenCLKernelWriter.writeToString(entrypoint);
 
-         if (_expectedExceptionType == null) {
-            int matched = 0;
-            for (String expected : expectedOpenCL) {
-               if (Diff.same(actual, expected)) {
-                  break;
-               }
-               matched++;
-            }
-            boolean same = (matched < expectedOpenCL.length);
-
-            if (!same) {
-               System.out.println("---" + _class.getName()
-                     + "------------------------------------------------------------------------------");
-               boolean first = true;
-               for (String expected : expectedOpenCL) {
-                  if (first) {
-                     first = false;
-                  } else {
-                     System.out.println("}");
-                  }
-                  System.out.println("Expected {\n" + expected);
-               }
-               System.out.println("}Actual\n{" + actual);
-               System.out
-                     .println("}\n------------------------------------------------------------------------------------------------------");
-
-            } else {
-               System.out.println("Matched{" + actual);
-               System.out
-                     .println("}\n------------------------------------------------------------------------------------------------------");
-
+         if(_expectedExceptionType == null){
+            boolean same = same(actual, expectedOpenCL);
+            if(!same){
+               System.out.println("---" + _class.getName() + line);
+               System.out.println("Expected {\n" + expectedOpenCL + "}Actual{\n" + actual);
+               System.out.println("}\n"+line);
+            }else{
+               System.out.println("Matched{" + actual+ "}\n"+line);
             }
             assertTrue(_class.getSimpleName(), same);
-         } else {
+         }else{
             assertTrue("Expected exception " + _expectedExceptionType + " Instead we got {\n" + actual + "\n}", false);
          }
 
-      } catch (Throwable t) {
-         if (_expectedExceptionType == null || !t.getClass().isAssignableFrom(_expectedExceptionType)) {
+      }catch(Throwable t){
+         if(_expectedExceptionType == null || !t.getClass().isAssignableFrom(_expectedExceptionType)){
             t.printStackTrace();
             assertTrue("Unexpected exception " + t, false);
          }
       }
    }
-
-   protected void test(Class<?> _class, String[] expectedOpenCL) {
-      test(_class, null, expectedOpenCL);
-
-   }
-
 }

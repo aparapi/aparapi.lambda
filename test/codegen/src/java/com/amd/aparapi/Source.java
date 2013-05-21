@@ -48,28 +48,35 @@ import java.util.Iterator;
 import java.util.List;
 
 public class Source{
-   public Section getActualOutput(){
-      return(actualOutput);
-   }
 
-   enum STATE {
+   enum STATE{
       NONE,
       JAVA,
       OPENCL,
-      DOC
+      HSAIL
    };
 
-   static final String OpenCLStart = "/**{OpenCL{";
+   static final String START_PREFIX="/**{";
+   static final String START_SUFFIX="{";
+   static final String END_PREFIX="}";
+   static final String END_SUFFIX="}**/";
 
-   static final String OpenCLEnd = "}OpenCL}**/";
+   static final String OpenCLStart = START_PREFIX+"OpenCL"+START_SUFFIX;
 
-   static final String ThrowsStart = "/**{Throws{";
+   static final String OpenCLEnd = END_PREFIX+"OpenCL"+END_SUFFIX;
 
-   static final String ThrowsEnd = "}Throws}**/";
+   static final String HSAILStart = START_PREFIX+"HSAIL"+START_SUFFIX;
 
-   static final String DocStart = "/**";
+   static final String HSAILEnd = END_PREFIX+"HSAIL"+END_SUFFIX;
 
-   static final String DocEnd = "*/";
+   static final String ThrowsStart = START_PREFIX+"Throws"+START_SUFFIX;
+
+   static final String ThrowsEnd = END_PREFIX+"Throws"+END_SUFFIX;
+
+   static final String ModeStart = START_PREFIX+"Mode"+START_SUFFIX;
+
+   static final String ModeEnd = END_PREFIX+"Mode"+END_SUFFIX;
+
 
    Class<?> clazz;
 
@@ -78,109 +85,111 @@ public class Source{
    Source.STATE state = STATE.NONE;
 
    public String toString(){
-      return(file.getName().substring(0, file.getName().length()-".java".length()));
+      return (file.getName().substring(0, file.getName().length() - ".java".length()));
    }
 
    class Section implements Iterable<String>{
       List<String> lines = new ArrayList<String>();
-      Section (){
+
+      Section(){
 
       }
-      Section (String _lines){
-         for (String line:_lines.split("\n")){
+
+      Section(String _lines){
+         for(String line : _lines.split("\n")){
             add(line);
          }
       }
+
       void add(String _line){
          lines.add(_line);
       }
 
-      @Override public String toString() {
+      @Override public String toString(){
          StringBuilder stringBuilder = new StringBuilder();
-         for (String line : lines) {
+         for(String line : lines){
             stringBuilder.append(line).append("\n");
          }
          return (stringBuilder.toString());
       }
 
       @Override public Iterator<String> iterator(){
-         return(lines.iterator());
+         return (lines.iterator());
       }
 
-      String[] getLineArr(){
-         return(lines.toArray(new String[0]));
-      }
 
-      String[] getTrimmedLineArr(){
-         String[] arr =
-         lines.toArray(new String[0]);
-         for (int i=0; i<arr.length;i++){
-            arr[i]=arr[i].trim();
-         }
-         return(arr);
-      }
    }
 
-   Section all = new Section();
 
-   List<Section> opencl = new ArrayList<Section>();
+   Section opencl = null;
 
-   Section doc = new Section();
+   Section hsail = null;
 
    Section java = new Section();
 
-   Section exceptions = new Section();
+   String exception = null;
 
-   Section actualOutput = null;
+   String mode = null;
 
-   public Source(Class<?> _clazz, File _rootDir) {
+   public boolean hasThrows(){
+      return (getThrows() != null);
+   }
+   public boolean hasMode(){
+      return (getMode() != null);
+   }
+   public boolean hasOpenCL(){
+      return (getOpenCL() != null);
+   }
+   public boolean hasHSAIL(){
+      return (getHSAIL() != null);
+   }
+   public Source(Class<?> _clazz, File _rootDir){
       clazz = _clazz;
       String srcName = clazz.getPackage().getName().replace(".", "/") + "/" + clazz.getSimpleName() + ".java";
       file = new File(_rootDir, srcName);
-      try {
+      try{
          BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
 
          state = STATE.JAVA;
-         Section openclSection = null;
-         for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-            all.add(line);
+         for(String line = reader.readLine(); line != null; line = reader.readLine()){
             String trimmedLine = line.trim();
-            switch (state) {
+            switch(state){
                case JAVA:
-                  if (trimmedLine.equals(OpenCLStart)) {
+                  if(trimmedLine.equals(OpenCLStart)){
                      state = STATE.OPENCL;
-                     openclSection = new Section();
-                     opencl.add(openclSection);
-
-                  } else if (trimmedLine.startsWith(ThrowsStart) && trimmedLine.endsWith(ThrowsEnd)) {
-                     exceptions.add(trimmedLine.substring(ThrowsStart.length(), trimmedLine.length() - ThrowsEnd.length()));
-                  } else if (trimmedLine.equals(DocStart)) {
-                     state = STATE.DOC;
-                  } else {
+                     opencl = new Section();
+                  }else if (trimmedLine.equals(HSAILStart)){
+                     state = STATE.HSAIL;
+                     hsail = new Section();
+                  }else if(trimmedLine.startsWith(ThrowsStart) && trimmedLine.endsWith(ThrowsEnd)){
+                     exception =  (trimmedLine.substring(ThrowsStart.length(), trimmedLine.length() - ThrowsEnd.length()));
+                  }else if(trimmedLine.startsWith(ModeStart) && trimmedLine.endsWith(ModeEnd)){
+                     mode =  (trimmedLine.substring(ModeStart.length(), trimmedLine.length() - ModeEnd.length()));
+                  }else{
                      java.add(line);
                   }
                   break;
                case OPENCL:
-                  if (trimmedLine.equals(OpenCLEnd)) {
+                  if(trimmedLine.equals(OpenCLEnd)){
                      state = STATE.JAVA;
-                  } else {
-                     openclSection.add(line);
+                  }else{
+                     opencl.add(line);
                   }
                   break;
-               case DOC:
-                  if (trimmedLine.equals(DocEnd)) {
+               case HSAIL:
+                  if(trimmedLine.equals(HSAILEnd)){
                      state = STATE.JAVA;
-                  } else {
-                     doc.add(line);
+                  }else{
+                     hsail.add(line);
                   }
                   break;
 
             }
          }
-      } catch (FileNotFoundException e) {
+      }catch(FileNotFoundException e){
          // TODO Auto-generated catch block
          e.printStackTrace();
-      } catch (IOException e) {
+      }catch(IOException e){
          // TODO Auto-generated catch block
          e.printStackTrace();
       }
@@ -188,40 +197,30 @@ public class Source{
    }
 
 
-
-
-   public List<Section> getOpenCL() {
+   public Section getOpenCL(){
       return (opencl);
    }
 
+   public Section getHSAIL(){
+      return (hsail);
+   }
 
 
-   public Section getJava() {
+   public Section getJava(){
       return (java);
    }
 
-   public File getFile() {
+   public File getFile(){
       return (file);
    }
 
 
-
-   public Section getExceptions() {
-      return (exceptions);
+   public String getThrows(){
+      return (exception);
    }
 
-
-
-   public Section getDoc() {
-      return (doc);
+   public String getMode(){
+      return (mode);
    }
 
-   public int getOpenCLSectionCount() {
-      return (opencl.size());
-   }
-
-   public void addActualOutput(String _s){
-      actualOutput = new Section(_s);
-
-   }
 }

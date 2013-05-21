@@ -54,309 +54,307 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
-public class UpdateJUnits {
-    public static class Editor {
-        final static SimpleAttributeSet del = new SimpleAttributeSet();
-        final static SimpleAttributeSet ins = new SimpleAttributeSet();
-        final static SimpleAttributeSet equal = new SimpleAttributeSet();
+public class UpdateJUnits{
+   public static class Editor{
+      final static SimpleAttributeSet del = new SimpleAttributeSet();
+      final static SimpleAttributeSet ins = new SimpleAttributeSet();
+      final static SimpleAttributeSet equal = new SimpleAttributeSet();
 
-        static {
-            del.addAttribute(StyleConstants.CharacterConstants.Background, Color.RED.brighter().brighter());
-            ins.addAttribute(StyleConstants.CharacterConstants.Background, Color.GREEN.brighter().brighter());
-        }
+      static{
+         del.addAttribute(StyleConstants.CharacterConstants.Background, Color.RED.brighter().brighter());
+         ins.addAttribute(StyleConstants.CharacterConstants.Background, Color.GREEN.brighter().brighter());
+      }
 
-        volatile boolean changing = false;
+      volatile boolean changing = false;
 
-        StyledDocument document = new DefaultStyledDocument();
-        JTextPane textPane = new JTextPane(document);
+      StyledDocument document = new DefaultStyledDocument();
+      JTextPane textPane = new JTextPane(document);
 
-        JScrollPane scrollPane = new JScrollPane(textPane);
+      JScrollPane scrollPane = new JScrollPane(textPane);
 
-        Editor(int _width, int _height, boolean _editable) {
-            textPane.setEditable(_editable);
-            scrollPane.setPreferredSize(new Dimension(_width, _height));
-        }
+      Editor(int _width, int _height, boolean _editable){
+         textPane.setEditable(_editable);
+         scrollPane.setPreferredSize(new Dimension(_width, _height));
+      }
 
-        Editor startChange() {
-            changing = true;
-            return (this);
-        }
+      Editor startChange(){
+         changing = true;
+         return (this);
+      }
 
-        Editor endChange() {
-            changing = false;
-            return (this);
-        }
-
-
-        Editor clear() {
-            try {
-                document.remove(0, document.getLength());
+      Editor endChange(){
+         changing = false;
+         return (this);
+      }
 
 
-            } catch (BadLocationException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            }
-            return (this);
-        }
+      Editor clear(){
+         try{
+            document.remove(0, document.getLength());
+         }catch(BadLocationException e){
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+         }
+         return (this);
+      }
 
-        Editor add(String _string, SimpleAttributeSet _attr) {
-            try {
-                document.insertString(document.getLength(), _string, _attr);
+      Editor add(String _string, SimpleAttributeSet _attr){
+         try{
+            document.insertString(document.getLength(), _string, _attr);
+         }catch(BadLocationException e){
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+         }
+         return (this);
+      }
 
+      Editor del(String _string){
+         add(_string, del);
+         return (this);
+      }
 
-            } catch (BadLocationException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            }
-            return (this);
-        }
+      Editor ins(String _string){
+         add(_string, ins);
+         return (this);
+      }
 
-        Editor del(String _string) {
-            add(_string, del);
-            return (this);
-        }
-
-        Editor ins(String _string) {
-            add(_string, ins);
-            return (this);
-        }
-
-        Editor equal(String _string) {
-            add(_string, equal);
-            return (this);
-        }
-
-
-        String getText() {
-            String text = null;
-            try {
-                text = document.getText(0, document.getLength());
-            } catch (BadLocationException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            }
-            return (text);
-        }
+      Editor equal(String _string){
+         add(_string, equal);
+         return (this);
+      }
 
 
-        JComponent getComponent() {
-            return (scrollPane);
-        }
+      String getText(){
+         String text = null;
+         try{
+            text = document.getText(0, document.getLength());
+         }catch(BadLocationException e){
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+         }
+         return (text);
+      }
 
 
-    }
-
-    public static Source source = null;
-    public static Editor javaEditor = new Editor(300, 300, true);
-    public static Editor initialOpenCLEditor = new Editor(600, 600, true);
-    public static Editor finalOpenCLEditor = new Editor(600, 600, false);
-    public static DiffMatchPatch dmp = new DiffMatchPatch();
-
-    public static void main(String[] args) throws ClassNotFoundException, FileNotFoundException, IOException {
-        File rootDir = new File(System.getProperty("root", "."));
-
-        final String rootPackageName = CreateJUnitTests.class.getPackage().getName();
-        final String testPackageName = rootPackageName + ".test";
-        final File sourceDir = new File(rootDir, "src/java");
-        File testDir = new File(sourceDir, testPackageName.replace(".", "/"));
-
-      //  Map<String, File> classNameToFileMap = new HashMap<String, File>();
-        List<String> classNames = new ArrayList<String>() ;
-
-        for (File sourceFile : testDir.listFiles(new FilenameFilter() {
-            @Override
-            public boolean accept(File dir, String name) {
-                return (name.endsWith(".java"));
-            }
-        })) {
-            String fileName = sourceFile.getName();
-            String className = fileName.substring(0, fileName.length() - ".java".length());
-         //   classNameToFileMap.put(className, sourceFile);
-            classNames.add(className);
-        }
+      JComponent getComponent(){
+         return (scrollPane);
+      }
 
 
-        Collections.sort(classNames);
+   }
 
-        JFrame frame = new JFrame("");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+   public static Source source = null;
+   public static Editor javaEditor = new Editor(300, 300, true);
+   public static Editor initialOpenCLEditor = new Editor(600, 600, true);
+   public static Editor finalOpenCLEditor = new Editor(600, 600, false);
+   public static DiffMatchPatch dmp = new DiffMatchPatch();
 
-        JList list = new JList(classNames.toArray(new String[0]));
+   public static void main(String[] args) throws ClassNotFoundException, FileNotFoundException, IOException{
+      File rootDir = new File(System.getProperty("root", "."));
+
+      final String rootPackageName = CreateJUnitTests.class.getPackage().getName();
+      final String testPackageName = rootPackageName + ".test";
+      final File sourceDir = new File(rootDir, "src/java");
+      File testDir = new File(sourceDir, testPackageName.replace(".", "/"));
+      List<String> classNames = new ArrayList<String>();
+
+      for(File sourceFile : testDir.listFiles(new FilenameFilter(){
+         @Override
+         public boolean accept(File dir, String name){
+            return (name.endsWith(".java"));
+         }
+      })){
+         String fileName = sourceFile.getName();
+         String className = fileName.substring(0, fileName.length() - ".java".length());
+         classNames.add(className);
+      }
 
 
-        initialOpenCLEditor.document.addDocumentListener(new DocumentListener() {
-            void update() {
+      Collections.sort(classNames);
 
-                final String lhs = initialOpenCLEditor.getText();
-                final String rhs = finalOpenCLEditor.getText();
-                if (!initialOpenCLEditor.changing && !finalOpenCLEditor.changing && lhs != null && rhs != null) {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
+      JFrame frame = new JFrame("");
+      frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+      JPanel panel = new JPanel();
+      panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 
-                            // DiffMatchPatch.LinesToCharsResult res = dmp.diff_linesToChars(lhs.toString(), rhs.toString());
-                            LinkedList<DiffMatchPatch.Diff> res = dmp.diff_main(lhs, rhs);
-                            int caret = initialOpenCLEditor.textPane.getCaretPosition();
-                            System.out.println("caret = " + caret);
-                            initialOpenCLEditor.startChange().clear();
-                            finalOpenCLEditor.startChange().clear();
-                            for (DiffMatchPatch.Diff aDiff : res) {
-                                String text = aDiff.text;
-                                switch (aDiff.operation) {
-                                    case INSERT:
-                                        finalOpenCLEditor.ins(text);
-                                        break;
-                                    case DELETE:
-                                        initialOpenCLEditor.del(text);
-                                        break;
-                                    case EQUAL:
-                                        finalOpenCLEditor.equal(text);
-                                        initialOpenCLEditor.equal(text);
-                                        break;
-                                }
-                            }
-                            initialOpenCLEditor.textPane.setCaretPosition(caret);
-                            caret = initialOpenCLEditor.textPane.getCaretPosition();
-                            System.out.println("caret = " + caret);
-                            initialOpenCLEditor.endChange();
-                            finalOpenCLEditor.endChange();
+      JList list = new JList(classNames.toArray(new String[0]));
+
+
+      initialOpenCLEditor.document.addDocumentListener(new DocumentListener(){
+         void update(){
+
+            final String lhs = initialOpenCLEditor.getText();
+            final String rhs = finalOpenCLEditor.getText();
+            if(!initialOpenCLEditor.changing && !finalOpenCLEditor.changing && lhs != null && rhs != null){
+               SwingUtilities.invokeLater(new Runnable(){
+                  @Override
+                  public void run(){
+                     int caret = initialOpenCLEditor.textPane.getCaretPosition();
+                     LinkedList<DiffMatchPatch.Diff> res = dmp.diff_main(lhs, rhs);
+
+                    // System.out.println("caret = " + caret);
+                     initialOpenCLEditor.startChange().clear();
+                     finalOpenCLEditor.startChange().clear();
+                     for(DiffMatchPatch.Diff aDiff : res){
+                        String text = aDiff.text;
+                        switch(aDiff.operation){
+                           case INSERT:
+                              finalOpenCLEditor.ins(text);
+                              break;
+                           case DELETE:
+                              initialOpenCLEditor.del(text);
+                              break;
+                           case EQUAL:
+                              finalOpenCLEditor.equal(text);
+                              initialOpenCLEditor.equal(text);
+                              break;
                         }
+                     }
 
-                    });
-                }
+                     //caret = initialOpenCLEditor.textPane.getCaretPosition();
+                     //System.out.println("caret = " + caret);
+                     initialOpenCLEditor.endChange();
+                     finalOpenCLEditor.endChange();
+                     initialOpenCLEditor.textPane.setCaretPosition(caret);
+                  }
+
+               });
             }
+         }
 
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                update();
-            }
+         @Override
+         public void insertUpdate(DocumentEvent e){
+            update();
+         }
 
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                update();
-            }
+         @Override
+         public void removeUpdate(DocumentEvent e){
+            update();
+         }
 
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                update();
-            }
-        });
+         @Override
+         public void changedUpdate(DocumentEvent e){
+            update();
+         }
+      });
 
-        JPanel left = new JPanel();
-        left.setLayout(new BoxLayout(left, BoxLayout.Y_AXIS));
-        left.add(javaEditor.getComponent());
-        left.add(new JScrollPane(list));
-        panel.add(left);
-        panel.add(initialOpenCLEditor.getComponent());
-        panel.add(finalOpenCLEditor.getComponent());
+      JPanel left = new JPanel();
+      left.setLayout(new BoxLayout(left, BoxLayout.Y_AXIS));
+      left.add(javaEditor.getComponent());
+      left.add(new JScrollPane(list));
+      panel.add(left);
+      panel.add(initialOpenCLEditor.getComponent());
+      panel.add(finalOpenCLEditor.getComponent());
 
-        JToolBar toolBar = new JToolBar("Still draggable");
-        JButton saveButton = new JButton("Save");
-        toolBar.add(saveButton);
-        saveButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
+      JToolBar toolBar = new JToolBar("Still draggable");
+      JButton saveButton = new JButton("Save");
+      toolBar.add(saveButton);
+      saveButton.addActionListener(new ActionListener(){
+         @Override
+         public void actionPerformed(ActionEvent e){
+            if(source != null){
+               StringBuilder sb = new StringBuilder();
+               sb.append(javaEditor.getText());
+               sb.append("\n");
+               if (source.hasThrows()){
+                  sb.append(Source.ThrowsStart).append("\n").append(source.getThrows()).append("\n").append(Source.ThrowsEnd);
+               }
+               if (source.hasMode()){
+                  sb.append(Source.ModeStart).append("\n").append(source.getMode()).append("\n").append(Source.ModeEnd);
+               }
+               if (source.hasHSAIL()){
+               sb.append(Source.HSAILStart).append("\n").append(source.getHSAIL()).append("\n").append(Source.HSAILEnd);
+               }
+               if (source.hasOpenCL()){
+               sb.append(Source.OpenCLStart).append("\n").append(initialOpenCLEditor.getText()).append("\n").append(Source.OpenCLEnd);
+               }
 
-               if (source != null){
-                   StringBuilder sb = new StringBuilder();
-                   sb.append(javaEditor.getText());
-                   sb.append("\n");
-                   sb.append("/**{OpenCL{\n");
-                   sb.append(initialOpenCLEditor.getText().trim());
-                   sb.append("\n}OpenCL}**/");
-                   try{
-                   Writer w = new FileWriter(source.file);
-                   w.append(sb.toString());
-                   w.close();
-                   }catch (IOException ioe){
-
-                   }
+               try{
+                  Writer w = new FileWriter(source.file);
+                  w.append(sb.toString());
+                  w.close();
+               }catch(IOException ioe){
 
                }
             }
-        });
+         }
+      });
 
-        JButton acceptButton = new JButton("Accept");
-        acceptButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                final String rhs = finalOpenCLEditor.getText();
-                initialOpenCLEditor.clear().equal(rhs);
-            }
-        });
-        toolBar.add(acceptButton);
-        frame.add(toolBar, BorderLayout.NORTH);
-        frame.add(panel, BorderLayout.CENTER);
+      JButton acceptButton = new JButton("Accept");
+      acceptButton.addActionListener(new ActionListener(){
+         @Override
+         public void actionPerformed(ActionEvent e){
+            final String rhs = finalOpenCLEditor.getText();
+            initialOpenCLEditor.clear().equal(rhs);
+         }
+      });
+      toolBar.add(acceptButton);
+      frame.add(toolBar, BorderLayout.NORTH);
+      frame.add(panel, BorderLayout.CENTER);
 
-        list.addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                if (!e.getValueIsAdjusting()) {
-                        String className = (String)((JList)(e.getSource())).getSelectedValue();
+      list.addListSelectionListener(new ListSelectionListener(){
+         @Override
+         public void valueChanged(ListSelectionEvent e){
+            if(!e.getValueIsAdjusting()){
+               String className = (String) ((JList) (e.getSource())).getSelectedValue();
+               try{
+                  Class clazz = Class.forName(testPackageName + "." + className);
+                  source = new Source(clazz, sourceDir);
+                  javaEditor.clear().equal(source.getJava().toString());
+                  if(source.hasOpenCL()){
+                     String expectedOpenCL= source.getOpenCL().toString();
+                     String actualOpenCL = null;
+                     try{
+                        ClassModel.flush(); // should not need this
+                        ClassModel classModel = ClassModel.getClassModel(clazz);
                         try{
-                        Class clazz = Class.forName(testPackageName + "." + className);
-                        source = new Source(clazz, sourceDir);
-                        try {
-                            ClassModel classModel = ClassModel.getClassModel(clazz);
-                            try {
-                                Entrypoint entrypoint = classModel.getKernelEntrypoint();
-                                source.addActualOutput(OpenCLKernelWriter.writeToString(entrypoint));
-                            } catch (AparapiException ex) {
-                                ex.printStackTrace();
-                            }
-                        } catch (ClassParseException ex) {
-                            ex.printStackTrace();
-                        }
-                    javaEditor.clear();
-                    javaEditor.equal(source.getJava().toString());
-                    Source.Section lhs = null;
-                    Source.Section rhs = null;
-
-                    if (source.getOpenCLSectionCount() > 0) {
-                        lhs = source.getOpenCL().get(0);
-                    } else {
-                        initialOpenCLEditor.clear().equal(" NO OpenCL!\n").endChange();
-                    }
-                    if (source.getActualOutput() != null) {
-                        rhs = source.getActualOutput();
-                    } else {
-                        finalOpenCLEditor.startChange().clear().equal(" NO Generated OpenCL!\n").endChange();
-                    }
-                    if (lhs != null && rhs != null) {
-                        LinkedList<DiffMatchPatch.Diff> res = dmp.diff_main(lhs.toString(), rhs.toString());
-                        initialOpenCLEditor.startChange().clear();
-                        finalOpenCLEditor.startChange().clear();
-                        for (DiffMatchPatch.Diff aDiff : res) {
-                            String text = aDiff.text;
-                            switch (aDiff.operation) {
-                                case INSERT:
+                           Entrypoint entrypoint = classModel.getKernelEntrypoint();
+                           actualOpenCL = OpenCLKernelWriter.writeToString(entrypoint);
+                           LinkedList<DiffMatchPatch.Diff> res = dmp.diff_main(expectedOpenCL, actualOpenCL);
+                           initialOpenCLEditor.startChange().clear();
+                           finalOpenCLEditor.startChange().clear();
+                           for(DiffMatchPatch.Diff aDiff : res){
+                              String text = aDiff.text;
+                              switch(aDiff.operation){
+                                 case INSERT:
                                     finalOpenCLEditor.ins(text);
                                     break;
-                                case DELETE:
+                                 case DELETE:
                                     initialOpenCLEditor.del(text);
                                     break;
-                                case EQUAL:
+                                 case EQUAL:
                                     finalOpenCLEditor.equal(text);
                                     initialOpenCLEditor.equal(text);
                                     break;
-                            }
-                        }
-                        initialOpenCLEditor.endChange();
-                        finalOpenCLEditor.endChange();
-                    }
+                              }
+                           }
+                           initialOpenCLEditor.endChange();
+                           finalOpenCLEditor.endChange();
 
-                }catch(Throwable t){
-                }
-                }
+                        }catch(AparapiException ex){
+                           System.out.println("failed to created OpenCL");
+                           finalOpenCLEditor.startChange().clear().equal(" NO actual OpenCL!\n").endChange();
+                           ex.printStackTrace();
+                        }
+                     }catch(ClassParseException ex){
+                        System.out.println("failed to load class ");
+                        finalOpenCLEditor.startChange().clear().equal(" NO actual OpenCL!\n").endChange();
+                        ex.printStackTrace();
+                     }
+                  }else{
+                     initialOpenCLEditor.startChange().clear().equal(" NO expected OpenCL!\n").endChange();
+                     finalOpenCLEditor.startChange().clear().equal(" NO actual OpenCL!\n").endChange();
+                  }
+
+               }catch(ClassNotFoundException nfe){
+                  javaEditor.startChange().clear().equal(" Can't load class!\n").endChange();
+                  initialOpenCLEditor.startChange().clear().equal(" Can't load class!\n").endChange();
+                  finalOpenCLEditor.startChange().clear().equal(" Can't load class!\n").endChange();
+               }
             }
-        });
-        frame.setVisible(true);
-        frame.pack();
-    }
+         }
+      });
+      frame.setVisible(true);
+      frame.pack();
+   }
 }
