@@ -43,15 +43,25 @@ import com.amd.aparapi.ClassModel.ConstantPool.MethodReferenceEntry;
 import com.amd.aparapi.InstructionPattern.InstructionMatch;
 import com.amd.aparapi.InstructionSet.*;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class MethodModel{
    static Logger logger = Logger.getLogger(Config.getLoggerName());
+
+
+   static Map<ClassModelMethod, MethodModel> map = new HashMap<ClassModelMethod, MethodModel>();
+
+   static synchronized final MethodModel getMethodModel(ClassModelMethod method) throws AparapiException{
+        MethodModel mm = map.get(method);
+        if (mm == null){
+           mm = new MethodModel(method, true);
+           map.put(method, mm);
+        }
+        return(mm);
+   }
+
 
    private ExpressionList expressionList;
 
@@ -1348,7 +1358,7 @@ public class MethodModel{
       init(_method);
    }
 
-   MethodModel(ClassModelMethod _method) throws AparapiException{
+   MethodModel(ClassModelMethod _method, boolean junk) throws AparapiException{
       init(_method);
    }
 

@@ -76,6 +76,7 @@ public class ClassModel{
        map.clear();
    }
    public static synchronized ClassModel getClassModel(Class<?> _clazz) throws ClassParseException{
+      String className = _clazz.getName();
       ClassModel classModel = map.get(_clazz.getName());
       if(classModel == null){
          classModel = new ClassModel(_clazz);
@@ -2807,7 +2808,7 @@ public class ClassModel{
 
    public MethodModel getMethodModel(String _name, String _signature) throws AparapiException{
       ClassModelMethod method = getMethod(_name, _signature);
-      return new MethodModel(method);
+      return MethodModel.getMethodModel(method);
    }
 
    // These fields use for accessor conversion
@@ -2841,12 +2842,12 @@ public class ClassModel{
 
    Entrypoint getLambdaEntrypoint(String _entrypointName, String _descriptor, Object _k) throws AparapiException{
       MethodModel method = getMethodModel(_entrypointName, _descriptor);
-      return (new Entrypoint(this, method, _k, true));
+      return (Entrypoint.getEntryPoint(this, method, _k, true));
    }
 
    public Entrypoint getKernelEntrypoint(String _entrypointName, String _descriptor, Object _k) throws AparapiException{
       MethodModel method = getMethodModel(_entrypointName, _descriptor);
-      return (new Entrypoint(this, method, _k, false));
+      return (Entrypoint.getEntryPoint(this, method, _k, false));
    }
 
    Class<?> getClassWeAreModelling(){
