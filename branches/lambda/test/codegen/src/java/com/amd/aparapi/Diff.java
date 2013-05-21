@@ -44,40 +44,42 @@ import java.util.Iterator;
 
 public class Diff{
 
-   static int[] hash(String[] lines) {
+   static int[] hash(String[] lines){
       int[] val = new int[lines.length];
-      for (int i = 0; i < lines.length; i++) {
+      for(int i = 0; i < lines.length; i++){
          val[i] = lines[i].hashCode();
       }
       return (val);
    }
 
-   static void costDiag(List<Point>[][] flags, int x, int y) {
-      if (x == 0 || y == 0 || flags[x - 1][y - 1] == null) {
-         if (x < (flags.length - 2) && y < (flags[0].length - 2)) {
+   static void costDiag(List<Point>[][] flags, int x, int y){
+      if(x == 0 || y == 0 || flags[x - 1][y - 1] == null){
+         if(x < (flags.length - 2) && y < (flags[0].length - 2)){
             flags[x][y] = new ArrayList<Point>();
             flags[x][y].add(new Point(x, y));
          }
-      } else {
+      }else{
          flags[x - 1][y - 1].add(new Point(x, y));
          flags[x][y] = flags[x - 1][y - 1];
       }
    }
 
-   static void cleanIslands(List<Point>[][] flags, int x, int y) {
+   static void cleanIslands(List<Point>[][] flags, int x, int y){
       flags[x][y] = null;
-      if (x > 0 && y > 0 && flags[x - 1][y - 1] != null && flags[x - 1][y - 1].size() == 1) {
+      if(x > 0 && y > 0 && flags[x - 1][y - 1] != null && flags[x - 1][y - 1].size() == 1){
          flags[x - 1][y - 1] = null;
       }
    }
 
    public static class DiffResult implements Iterable<DiffResult.Block>{
 
-      public static enum TYPE {
+      public static enum TYPE{
          SAME,
          LEFT,
          RIGHT
-      };
+      }
+
+      ;
 
       public static class Block{
          int lhsFrom;
@@ -90,34 +92,34 @@ public class Diff{
 
          TYPE type;
 
-         public Block(TYPE _type, int _lhsFrom, int _rhsFrom) {
+         public Block(TYPE _type, int _lhsFrom, int _rhsFrom){
             lhsFrom = lhsTo = _lhsFrom;
             rhsFrom = rhsTo = _rhsFrom;
             type = _type;
          }
 
-         public void extend(int _lhsTo, int _rhsTo) {
+         public void extend(int _lhsTo, int _rhsTo){
             lhsTo = _lhsTo;
             rhsTo = _rhsTo;
          }
 
-         public String toString(String[] _lhs, String[] _rhs) {
+         public String toString(String[] _lhs, String[] _rhs){
             StringBuilder sb = new StringBuilder();
             sb.append(type).append("\n");
 
-            switch (type) {
+            switch(type){
                case SAME:
-                  for (int i = lhsFrom; i <= lhsTo; i++) {
+                  for(int i = lhsFrom; i <= lhsTo; i++){
                      sb.append("  ==" + _lhs[i]).append("\n");
                   }
                   break;
                case LEFT:
-                  for (int i = lhsFrom; i <= lhsTo; i++) {
+                  for(int i = lhsFrom; i <= lhsTo; i++){
                      sb.append("  <" + _lhs[i]).append("\n");
                   }
                   break;
                case RIGHT:
-                  for (int i = rhsFrom; i <= rhsTo; i++) {
+                  for(int i = rhsFrom; i <= rhsTo; i++){
                      sb.append("  >" + _rhs[i]).append("\n");
                   }
                   break;
@@ -130,52 +132,52 @@ public class Diff{
       List<Block> blocks = new ArrayList<Block>();
 
       @Override public Iterator<Block> iterator(){
-         return(blocks.iterator());
+         return (blocks.iterator());
       }
 
       private String[] rhs;
 
       private String[] lhs;
 
-      public void add(TYPE _type, int lhs, int rhs) {
-         if (false) {
-            if (blocks.size() > 0) {
+      public void add(TYPE _type, int lhs, int rhs){
+         if(false){
+            if(blocks.size() > 0){
                Block lastBlock = blocks.get(blocks.size() - 1);
-               if (lastBlock.type == _type) {
+               if(lastBlock.type == _type){
                   lastBlock.extend(lhs, rhs);
-               } else {
+               }else{
                   blocks.add(new Block(_type, lhs, rhs));
                }
-            } else {
+            }else{
                blocks.add(new Block(_type, lhs, rhs));
             }
          }
          blocks.add(new Block(_type, lhs, rhs));
       }
 
-      DiffResult(String[] _lhs, String[] _rhs) {
+      DiffResult(String[] _lhs, String[] _rhs){
          lhs = _lhs;
          rhs = _rhs;
       }
 
-      public String[] getLhs() {
+      public String[] getLhs(){
          return lhs;
       }
 
-      public String[] getRhs() {
+      public String[] getRhs(){
          return rhs;
       }
 
-      public String toString() {
+      public String toString(){
          StringBuilder sb = new StringBuilder();
-         for (Block block : blocks) {
+         for(Block block : blocks){
             sb.append(block.toString(lhs, rhs)).append("\n");
          }
          return (sb.toString());
       }
    }
 
-   @SuppressWarnings("unchecked") public static DiffResult diff(String[] lhsString, String[] rhsString) {
+   @SuppressWarnings("unchecked") public static DiffResult diff(String[] lhsString, String[] rhsString){
       DiffResult diffResult = new DiffResult(lhsString, rhsString);
       int[] lhsHash = hash(lhsString);
       int[] rhsHash = hash(rhsString);
@@ -187,21 +189,21 @@ public class Diff{
       List<Point>[][] flags = new ArrayList[lhsLength + 1][rhsLength + 1];
 
       // compute length of LCS and all subproblems via dynamic programming
-      for (int i = 0; i < lhsLength; i++) {
-         for (int j = 0; j < rhsLength; j++) {
-            if (lhsHash[i] == rhsHash[j]) {
+      for(int i = 0; i < lhsLength; i++){
+         for(int j = 0; j < rhsLength; j++){
+            if(lhsHash[i] == rhsHash[j]){
                // We are the same so continue the diagonal is intact
-               if (i == 0 || j == 0) {
+               if(i == 0 || j == 0){
                   opt[i][j] = 0;
-               } else {
+               }else{
                   opt[i][j] = opt[i - 1][j - 1] + 1;
                }
                costDiag(flags, i, j);
-            } else {
+            }else{
                cleanIslands(flags, i, j);
-               if (i == 0 || j == 0) {
+               if(i == 0 || j == 0){
                   opt[i][j] = 0;
-               } else {
+               }else{
                   opt[i][j] = Math.max(opt[i - 1][j], opt[i][j - 1]);
                }
             }
@@ -210,9 +212,9 @@ public class Diff{
 
       // recover LCS itself and print out non-matching lines to standard output
       int i = 0, j = 0;
-      while (i < lhsLength && j < rhsLength) {
+      while(i < lhsLength && j < rhsLength){
          // if the diagonal is in tact walk it
-         if (lhsHash[i] == rhsHash[j]) {
+         if(lhsHash[i] == rhsHash[j]){
             diffResult.add(DiffResult.TYPE.SAME, i, j);
             i++;
             j++;
@@ -221,21 +223,21 @@ public class Diff{
          // this is not always the best approach. 
          // we need to find the shortest path between {i,j} and the {i+ii,j+jj} which 
          // connects us to the next diagonal run
-         else if (opt[i + 1][j] >= opt[i][j + 1]) {
+         else if(opt[i + 1][j] >= opt[i][j + 1]){
             diffResult.add(DiffResult.TYPE.LEFT, i, j);
             System.out.println("lhs:" + i + "< " + lhsString[i++]);
-         } else {
+         }else{
             diffResult.add(DiffResult.TYPE.RIGHT, i, j);
             System.out.println("rhs:" + j + "> " + rhsString[j++]);
          }
       }
 
       // dump out one remainder of one string if the other is exhausted
-      while (i < lhsLength || j < rhsLength) {
-         if (i == lhsLength) {
+      while(i < lhsLength || j < rhsLength){
+         if(i == lhsLength){
             diffResult.add(DiffResult.TYPE.RIGHT, i, j);
             System.out.println("lhs:" + i + "> " + rhsString[j++]);
-         } else if (j == rhsLength) {
+         }else if(j == rhsLength){
             diffResult.add(DiffResult.TYPE.LEFT, i, j);
             System.out.println("rhs:" + j + "< " + lhsString[i++]);
          }
@@ -243,25 +245,25 @@ public class Diff{
       return (diffResult);
    }
 
-   public static boolean same(String left, String right) {
+   public static boolean same(String left, String right){
       StringBuilder leftAll = new StringBuilder();
 
-      for (String s : left.replace("\n", "").split("  *")) {
+      for(String s : left.replace("\n", "").split("  *")){
          leftAll.append(s);
       }
 
       StringBuilder rightAll = new StringBuilder();
-      for (String s : right.replace("\n", " ").split("  *")) {
+      for(String s : right.replace("\n", " ").split("  *")){
          rightAll.append(s);
       }
       boolean same = leftAll.toString().equals(rightAll.toString());
-      if (!same) {
+      if(!same){
          String[] lhs = left.split("\n");
-         for (int i = 0; i < lhs.length; i++) {
+         for(int i = 0; i < lhs.length; i++){
             lhs[i] = lhs[i].trim();
          }
          String[] rhs = right.split("\n");
-         for (int i = 0; i < rhs.length; i++) {
+         for(int i = 0; i < rhs.length; i++){
             rhs[i] = rhs[i].trim();
          }
          diff(lhs, rhs);

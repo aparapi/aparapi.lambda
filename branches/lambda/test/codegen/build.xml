@@ -20,6 +20,21 @@
    <property name="build.compiler" value="javac1.6"/>
    <property name="ant.build.javac.source" value="1.6"/>
    <property name="ant.build.javac.target" value="1.6"/>
+
+   <condition property="lib.suffix" value=".dylib">
+        <os family="mac" />
+   </condition>
+
+   <condition property="lib.suffix" value=".so">
+         <and>
+            <os family="unix" />
+            <not>
+               <os family="mac" />
+            </not>
+         </and>
+      </condition>
+
+
 	
    <available property="junit.installed" file="${junit.home}/${junit.jar.name}"/>
 
@@ -47,7 +62,7 @@
       <pathelement path="classes"/>
    </path>
 	
-   <target name="build" depends="clean">
+   <target name="build" depends="install.junit">
       <mkdir dir="classes"/>
    	  <javac debug="true"
       	 debuglevel="lines,vars,source"
@@ -58,18 +73,7 @@
 <!--      	    <compilerarg value="-Xlint"/>
       	   	<compilerarg value="-Xlint:-path"/> -->
       </javac>
-   </target>
 
-   <target name="update" depends="clean, build">
-      <java classname="com.amd.aparapi.CreateJUnitTests" classpathref="classpath">
-         <sysproperty key="root" value="${basedir}"/>
-      </java>
-      <java fork="true" classname="com.amd.aparapi.UpdateJUnits" classpathref="classpath">
-         <jvmarg value="-agentpath:../../com.amd.aparapi.jni/dist/libaparapi_x86_64.so"/> <!-- or dylib -->
-      </java>
-   </target>
-
-   <target name="junit" depends="clean, build, install.junit">
       <java classname="com.amd.aparapi.CreateJUnitTests" classpathref="classpath">
          <sysproperty key="root" value="${basedir}"/>
       </java>
@@ -83,11 +87,19 @@
       	    <compilerarg value="-Xlint"/>
       	   	<compilerarg value="-Xlint:-path"/>
       </javac>
-      
-   	  <mkdir dir="junit"/>
+   </target>
+
+   <target name="update" depends="clean, build">
+      <java fork="true" classname="com.amd.aparapi.UpdateJUnits" classpathref="classpath">
+         <jvmarg value="-agentpath:../../com.amd.aparapi.jni/dist/libaparapi_x86_64${lib.suffix}"/> 
+      </java>
+   </target>
+
+   <target name="junit" depends="clean, build">
+   	<mkdir dir="junit"/>
       <mkdir dir="junit/data"/>
       
-   	  <junit printsummary="false" fork="false" haltonfailure="false" failureproperty="tests.failed" showoutput="false">
+   	<junit printsummary="false" fork="false" haltonfailure="false" failureproperty="tests.failed" showoutput="false">
          <formatter type="xml" />
          <classpath refid="classpath"/>
          <batchtest todir="junit/data">

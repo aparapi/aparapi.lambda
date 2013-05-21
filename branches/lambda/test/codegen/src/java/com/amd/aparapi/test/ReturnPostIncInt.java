@@ -12,6 +12,7 @@ public class ReturnPostIncInt{
 }
 
 
+
 /**{OpenCL{
 typedef struct This_s{
    int passid;
@@ -21,8 +22,8 @@ int get_pass_id(This *this){
    return this->passid;
 }
 
-int com_amd_aparapi_test_ReturnPostIncInt__returnPostIncInt(This *this, int oref_1){
-   return(oref_1++);
+int com_amd_aparapi_test_ReturnPostIncInt__returnPostIncInt(This *this, int i_1){
+   return(i_1++);
 }
 __kernel void run(
    int passid

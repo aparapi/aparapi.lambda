@@ -46,7 +46,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CreateJUnitTests{
-   public static void main(String[] args) throws ClassNotFoundException, FileNotFoundException, IOException {
+
+
+   public static void main(String[] args) throws ClassNotFoundException, FileNotFoundException, IOException{
       File rootDir = new File(System.getProperty("root", "."));
 
       String rootPackageName = CreateJUnitTests.class.getPackage().getName();
@@ -57,12 +59,12 @@ public class CreateJUnitTests{
       System.out.println(testDir.getCanonicalPath());
 
       List<String> classNames = new ArrayList<String>();
-      for (File sourceFile : testDir.listFiles(new FilenameFilter(){
+      for(File sourceFile : testDir.listFiles(new FilenameFilter(){
 
-         @Override public boolean accept(File dir, String name) {
+         @Override public boolean accept(File dir, String name){
             return (name.endsWith(".java"));
          }
-      })) {
+      })){
          String fileName = sourceFile.getName();
          String className = fileName.substring(0, fileName.length() - ".java".length());
          classNames.add(className);
@@ -72,46 +74,49 @@ public class CreateJUnitTests{
       File codeGenDir = new File(genSourceDir, rootPackageName.replace(".", "/") + "/test/junit/codegen/");
       codeGenDir.mkdirs();
 
-      for (String className : classNames) {
+      for(String className : classNames){
 
          Source source = new Source(Class.forName(testPackageName + "." + className), sourceDir);
 
          StringBuilder sb = new StringBuilder();
          sb.append("package com.amd.aparapi.test.junit.codegen;\n");
          sb.append("import org.junit.Test;\n");
-         String doc = source.getDoc().toString();
-         if (doc.length() > 0) {
-            sb.append("/**\n");
-            sb.append(doc);
-            sb.append("\n */\n");
-         }
+
          sb.append("public class " + className + " extends com.amd.aparapi.CodeGenJUnitBase{\n");
          sb.append("   @Test public void " + className + "(){\n");
-         if (source.getOpenCLSectionCount() > 0) {
 
-            sb.append("   String[] expectedOpenCL = new String[]{\n");
-            for (Source.Section opencl : source.getOpenCL()) {
-               sb.append("   \"\"\n");
-               for (String line : opencl) {
-                  sb.append("   +\"" + line + "\\n\"\n");
-               }
-               sb.append("   ,\n");
-            }
-            sb.append("   };\n");
-         } else {
-            sb.append("   String[] expectedOpenCL = null;\n");
+         if(source.hasMode()){
+            sb.append("   String mode=\""+source.getMode()+"\";\n");
+         }else{
+            sb.append("   String mode=null;\n");
          }
 
-         String exceptions = source.getExceptions().toString();
-         if (exceptions.length() > 0) {
-            sb.append("   Class<? extends com.amd.aparapi.AparapiException> expectedException = ");
-
-            sb.append("com.amd.aparapi." + exceptions + ".class");
-            sb.append(";\n");
-         } else {
+         if(source.hasThrows()){
+            sb.append("   Class<? extends com.amd.aparapi.AparapiException> expectedException = com.amd.aparapi." + source.getThrows() + ".class;\n");
+         }else{
             sb.append("   Class<? extends com.amd.aparapi.AparapiException> expectedException = null;\n");
          }
-         sb.append("       test(" + testPackageName + "." + className + ".class, expectedException, expectedOpenCL);\n");
+         if(source.hasOpenCL()){
+            sb.append("   String expectedOpenCL = \"\"\n");
+               for(String line : source.getOpenCL()){
+                  sb.append("   +\"" + line + "\\n\"\n");
+               }
+            sb.append("   ;\n");
+         }else{
+            sb.append("   String expectedOpenCL = null;\n");
+         }
+
+         if(source.hasHSAIL()){
+            sb.append("   String expectedHSAIL = \"\"\n");
+            for(String line : source.getHSAIL()){
+               sb.append("   +\"" + line + "\\n\"\n");
+            }
+            sb.append("   ;\n");
+         }else{
+            sb.append("   String expectedHSAIL = null;\n");
+         }
+
+         sb.append("       test(" + testPackageName + "." + className + ".class,  expectedException, mode, expectedOpenCL, expectedHSAIL);\n");
          sb.append("   }\n");
          sb.append("}\n");
          //  System.out.println(sb.toString());

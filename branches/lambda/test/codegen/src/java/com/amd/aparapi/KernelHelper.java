@@ -41,12 +41,12 @@ package com.amd.aparapi;
 // but in the com.amd.aparapi package for convenience
 
 public class KernelHelper{
-   public KernelHelper(Kernel kernel) {
+   public KernelHelper(Kernel kernel){
       this.kernel = kernel;
       this.kernelRunner = kernel.getKernelRunner();
    }
 
-   public boolean hasFP64Support() {
+   public boolean hasFP64Support(){
       return kernelRunner.hasFP64Support();
    }
 
