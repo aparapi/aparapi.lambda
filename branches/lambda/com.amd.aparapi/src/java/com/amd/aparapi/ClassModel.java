@@ -72,6 +72,9 @@ public class ClassModel{
 
    static Map<String, ClassModel> map = new LinkedHashMap<String, ClassModel>();
 
+   public static void flush(){
+       map.clear();
+   }
    public static synchronized ClassModel getClassModel(Class<?> _clazz) throws ClassParseException{
       ClassModel classModel = map.get(_clazz.getName());
       if(classModel == null){
