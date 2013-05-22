@@ -10,7 +10,7 @@ package com.amd.aparapi;
 public class RegIsaWriter{
 
 
-   static void write(RegISA regISA){
+   public static void write(RegISA regISA){
 
 
       // System.out.println(InstructionHelper.getJavapView(method));
