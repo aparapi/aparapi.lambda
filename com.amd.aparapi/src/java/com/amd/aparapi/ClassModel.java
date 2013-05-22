@@ -2618,14 +2618,6 @@ public class ClassModel{
             }
 
 
-            if(Config.enableShowJavaP){
-               RegIsaWriter.write(new RegISA(this));
-
-
-               //System.out.println(InstructionHelper.getLabel(i,true, false, false));
-
-
-            }
 
          }
          return (pcMap);

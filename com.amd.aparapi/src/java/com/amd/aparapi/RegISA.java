@@ -835,7 +835,7 @@ public class RegISA{
    }
 
 
-   RegISARenderer render(RegISARenderer r){
+   public RegISARenderer render(RegISARenderer r){
       r.append("version 1:0").nl();
       r.append("kernel &" + method.getName() + "(");
       int argOffset = method.isStatic() ? 0 : 1;
@@ -1487,7 +1487,7 @@ public class RegISA{
 
    }
 
-   RegISA(ClassModel.ClassModelMethod _method){
+   public RegISA(ClassModel.ClassModelMethod _method){
       method = _method;
       for(Instruction i : method.getInstructions()){
          if(i.getThisPC() == 0){

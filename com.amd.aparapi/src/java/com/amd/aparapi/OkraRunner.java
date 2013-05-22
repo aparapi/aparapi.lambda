@@ -1,0 +1,22 @@
+package com.amd.aparapi;
+
+import com.amd.okra.OkraContext;
+import com.amd.okra.OkraKernel;
+
+/**
+ * Created with IntelliJ IDEA.
+ * User: gfrost
+ * Date: 5/22/13
+ * Time: 5:56 PM
+ * To change this template use File | Settings | File Templates.
+ */
+public class OkraRunner{
+   public void run(String _hsail, Object _instance, Object ... args){
+      OkraContext context = new OkraContext();
+      OkraKernel k = new OkraKernel(context, _hsail, "run");
+      k.dispatchWithArgs(args);
+
+
+
+   }
+}
