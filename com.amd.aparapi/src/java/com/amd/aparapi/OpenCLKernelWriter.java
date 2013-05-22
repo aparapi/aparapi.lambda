@@ -710,7 +710,7 @@ public abstract class OpenCLKernelWriter{
          }
       }else if(_instruction instanceof CompositeIfElseInstruction){
          write("(");
-         Instruction lhs = writeConditional(((CompositeInstruction) _instruction).getBranchSet());
+         Instruction lhs = writeConditional(((CompositeInstruction) _instruction).getBranchSet(), false);
          write(")?");
          writeInstruction(lhs);
          write(":");
@@ -1176,14 +1176,14 @@ public abstract class OpenCLKernelWriter{
       }else if(instruction instanceof CompositeIfInstruction){
          newLine();
          write("if (");
-         Instruction blockStart = writeConditional(((CompositeInstruction) instruction).getBranchSet());
+         Instruction blockStart = writeConditional(((CompositeInstruction) instruction).getBranchSet(), false);
 
          write(")");
          writeBlock(blockStart, null);
       }else if(instruction instanceof CompositeIfElseInstruction){
          newLine();
          write("if (");
-         Instruction blockStart = writeConditional(((CompositeInstruction) instruction).getBranchSet());
+         Instruction blockStart = writeConditional(((CompositeInstruction) instruction).getBranchSet(), false);
          write(")");
          Instruction elseGoto = blockStart;
          while(!(elseGoto.isBranch() && elseGoto.asBranch().isUnconditional())){
@@ -1202,7 +1202,7 @@ public abstract class OpenCLKernelWriter{
          }
          write("; ");
          BranchSet branchSet = ((CompositeInstruction) instruction).getBranchSet();
-         Instruction blockStart = writeConditional(branchSet);
+         Instruction blockStart = writeConditional(branchSet, false);
 
          Instruction lastGoto = instruction.getLastChild();
 
@@ -1234,7 +1234,7 @@ public abstract class OpenCLKernelWriter{
          newLine();
          write("while (");
          BranchSet branchSet = ((CompositeInstruction) instruction).getBranchSet();
-         Instruction blockStart = writeConditional(branchSet);
+         Instruction blockStart = writeConditional(branchSet, false);
          write(")");
          Instruction lastGoto = instruction.getLastChild();
          writeBlock(blockStart, lastGoto);
@@ -1248,7 +1248,7 @@ public abstract class OpenCLKernelWriter{
             topBranch = topBranch.getNextExpr();
          }
          write("; ");
-         writeConditional(((CompositeInstruction) instruction).getBranchSet());
+         writeConditional(((CompositeInstruction) instruction).getBranchSet(), false);
          write(";){}");
 
       }else if(instruction instanceof CompositeForEclipseInstruction){
@@ -1290,7 +1290,7 @@ public abstract class OpenCLKernelWriter{
          Instruction blockEnd = instruction.getLastChild();
          writeBlock(blockStart, blockEnd);
          write("while(");
-         writeConditional(((CompositeInstruction) instruction).getBranchSet(), true);
+         writeConditional(((CompositeInstruction) instruction).getBranchSet(), false);
          write(");");
          newLine();
 
@@ -1318,40 +1318,45 @@ public abstract class OpenCLKernelWriter{
       outWrite("}");
    }
 
-   protected Instruction writeConditional(BranchSet _branchSet) throws CodeGenException{
-      return (writeConditional(_branchSet, false));
-   }
 
    protected Instruction writeConditional(BranchSet _branchSet, boolean _invert) throws CodeGenException{
 
       BranchSet.LogicalExpressionNode logicalExpression = _branchSet.getLogicalExpression();
-      if(!_invert){
-         logicalExpression.invert();
-      }
-      write(logicalExpression);
+      write(logicalExpression, !_invert, null);
       return (_branchSet.getLast().getNextExpr());
    }
 
-   protected void write(BranchSet.LogicalExpressionNode _node) throws CodeGenException{
+
+
+   protected void write(BranchSet.LogicalExpressionNode _node, boolean _invert, BranchSet.CompoundLogicalExpressionNode _parent) throws CodeGenException{
+
       if(_node instanceof BranchSet.SimpleLogicalExpressionNode){
          BranchSet.SimpleLogicalExpressionNode sn = (BranchSet.SimpleLogicalExpressionNode) _node;
-         writeConditionalBranch16((ConditionalBranch16) sn.getBranch(), sn.isInvert());
+
+         writeConditionalBranch16((ConditionalBranch16) sn.getBranch(), !sn.isInverted());
+
       }else{
          BranchSet.CompoundLogicalExpressionNode ln = (BranchSet.CompoundLogicalExpressionNode) _node;
-         boolean needParenthesis = false;
-         BranchSet.CompoundLogicalExpressionNode parent = (BranchSet.CompoundLogicalExpressionNode) ln.getParent();
-         if(parent != null){
-            if(!ln.isAnd() && parent.isAnd()){
-               needParenthesis = true;
-            }
+
+         boolean paren = false;
+         if (_invert){
+            paren = (_parent !=  null)  &&  _parent.isOr() && ln.isAnd();
+         }  else{
+            paren = (_parent !=  null)  &&  _parent.isAnd() && ln.isOr();
          }
-         if(needParenthesis){
+
+         if(paren){
             write("(");
          }
-         write(ln.getLhs());
-         write(ln.isAnd() ? " && " : " || ");
-         write(ln.getRhs());
-         if(needParenthesis){
+         write(ln.getLhs(), _invert, ln);
+         if (_invert){
+            write(ln.isAnd()?" || ":" && ");
+         }else{
+            write(ln.isAnd()?" && ":" || ");
+         }
+         write(ln.getRhs(), _invert, ln);
+
+         if(paren){
             write(")");
          }
       }

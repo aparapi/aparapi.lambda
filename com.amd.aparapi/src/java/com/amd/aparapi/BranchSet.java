@@ -106,7 +106,7 @@ class BranchSet{
     * @see SimpleLogicalExpressionNode
     * @see CompoundLogicalExpressionNode
     */
-   static abstract class LogicalExpressionNode{
+   static abstract class LogicalExpressionNode <T extends LogicalExpressionNode>{
       private LogicalExpressionNode next = null;
 
       private LogicalExpressionNode parent = null;
@@ -119,7 +119,7 @@ class BranchSet{
 
       abstract int getFallThrough();
 
-      abstract void invert();
+      abstract T invert();
 
       LogicalExpressionNode getRoot(){
          if(parent != null){
@@ -152,10 +152,10 @@ class BranchSet{
     *
     * @author gfrost
     */
-   static class SimpleLogicalExpressionNode extends LogicalExpressionNode{
+   static class SimpleLogicalExpressionNode extends LogicalExpressionNode<SimpleLogicalExpressionNode>{
       private ConditionalBranch branch;
+      private boolean inverted;
 
-      protected boolean invert = false;
 
       SimpleLogicalExpressionNode(ConditionalBranch _branch){
          branch = _branch;
@@ -165,21 +165,24 @@ class BranchSet{
          return (getBranch().getTarget().getThisPC());
       }
 
-      @Override void invert(){
-         invert = !invert;
-      }
 
       @Override int getFallThrough(){
          return (getBranch().getNextPC().getThisPC());
       }
 
-      boolean isInvert(){
-         return (invert);
-      }
-
       ConditionalBranch getBranch(){
          return branch;
       }
+
+      @Override SimpleLogicalExpressionNode invert(){
+        inverted = !inverted;
+        return(this);
+      }
+
+      boolean isInverted(){
+         return(inverted);
+      }
+
 
    }
 
@@ -193,7 +196,7 @@ class BranchSet{
     *
     * @author gfrost
     */
-   static class CompoundLogicalExpressionNode extends LogicalExpressionNode{
+   static class CompoundLogicalExpressionNode extends LogicalExpressionNode<CompoundLogicalExpressionNode>{
       private LogicalExpressionNode lhs;
 
       private LogicalExpressionNode rhs;
@@ -205,10 +208,7 @@ class BranchSet{
          and = _and;
          rhs = _rhs;
          setNext(_rhs.getNext());
-         if(and){
-            lhs.invert();
-            // rhs.invert();
-         }
+
          rhs.setParent(this);
          lhs.setParent(this);
       }
@@ -217,14 +217,19 @@ class BranchSet{
          return (rhs.getTarget());
       }
 
-      @Override void invert(){
+      @Override CompoundLogicalExpressionNode invert(){
          and = !and;
          lhs.invert();
          rhs.invert();
+         return(this);
       }
 
       boolean isAnd(){
          return (and);
+      }
+
+      boolean isOr(){
+         return (!and);
       }
 
       @Override int getFallThrough(){
@@ -315,7 +320,7 @@ class BranchSet{
                }else if(n.getTarget() == n.getNext().getFallThrough()){
                   // lhs(n) target and rhs(n.next) fallthrough are the same so we replace (lhs ?? rhs) with !(lhs && rhs)
                   // System.out.println("exp["+i+"] exp["+(i+1)+"] replaced by (!exp["+i+"] && exp["+(i+1)+"])");
-                  newNode = new CompoundLogicalExpressionNode(true, n, n.getNext());
+                  newNode = new CompoundLogicalExpressionNode(true, n.invert(), n.getNext());
                }
                if(n == logicalExpressionNode){
                   logicalExpressionNode = newNode;
