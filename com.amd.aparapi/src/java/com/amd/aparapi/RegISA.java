@@ -310,6 +310,21 @@ public class RegISA{
          return ((Reg<T>) sources[0]);
       }
    }
+   static abstract class RegInstructionWithSrcSrc<T extends PrimitiveType> extends RegInstruction{
+
+      RegInstructionWithSrcSrc(Instruction _from, Reg<T> _src_lhs, Reg<T> _src_rhs){
+         super(_from, 0, 2);
+         sources[0] = _src_lhs;
+         sources[1] = _src_rhs;
+      }
+
+      Reg<T> getSrcLhs(){
+         return ((Reg<T>) sources[0]);
+      }
+      Reg<T> getSrcRhs(){
+         return ((Reg<T>) sources[1]);
+      }
+   }
 
    static abstract class RegInstructionWithDestSrc<T extends PrimitiveType> extends RegInstruction{
 
@@ -348,6 +363,90 @@ public class RegISA{
       public void render(RegISARenderer r){
          r.append(name + " ");
          r.label(pc);
+      }
+   }
+
+   static class cmp_s32_const_0 extends RegInstructionWithSrc<s32>{
+      String type;
+
+      cmp_s32_const_0(Instruction _from, String _type, Reg_s32 _src){
+         super(_from, _src);
+         type = _type;
+      }
+
+      @Override
+      public Delta execute(State state){
+         System.out.println("cmp_s32_const_0 " + type);
+         return (null);
+      }
+
+      @Override
+      public void render(RegISARenderer r){
+         r.append("cmp_").append(type).append("_b1_").typeName(getSrc()).space().append("$c1").separator().regName(getSrc()).separator().append("0");
+
+      }
+   }
+
+   static class cmp_s32 extends RegInstructionWithSrcSrc<s32>{
+      String type;
+
+      cmp_s32(Instruction _from, String _type, Reg_s32 _srcLhs, Reg_s32 _srcRhs){
+         super(_from, _srcLhs, _srcRhs);
+         type = _type;
+      }
+
+      @Override
+      public Delta execute(State state){
+         System.out.println("cmp_s32 " + type);
+         return (null);
+      }
+
+      @Override
+      public void render(RegISARenderer r){
+         r.append("cmp_").append(type).append("_b1_").typeName(getSrcLhs()).space().append("$c1").separator().regName(getSrcLhs()).separator().regName(getSrcRhs());
+
+      }
+   }
+
+   static class cbr extends RegInstruction{
+      int pc;
+
+      cbr(Instruction _from, int _pc){
+         super(_from, 0, 0);
+         pc = _pc;
+      }
+
+      @Override
+      public Delta execute(State state){
+         System.out.println("cbr " + pc);
+         return (null);
+      }
+
+      @Override
+      public void render(RegISARenderer r){
+         r.append("cbr").space().append("$c1").separator().label(pc);
+
+      }
+   }
+
+   static class brn extends RegInstruction{
+      int pc;
+
+      brn(Instruction _from, int _pc){
+         super(_from, 0, 0);
+         pc = _pc;
+      }
+
+      @Override
+      public Delta execute(State state){
+         System.out.println("brn " + pc);
+         return (null);
+      }
+
+      @Override
+      public void render(RegISARenderer r){
+         r.append("brn").space().label(pc);
+
       }
    }
 
@@ -874,7 +973,7 @@ public class RegISA{
             s.add(i.from);
             if(i.from.isBranchTarget()){
 
-               r.label(i.from.getThisPC());
+               r.label(i.from.getThisPC()).append(":");
                r.nl();
             }
            if (r.isShowingComments()){
@@ -1383,20 +1482,61 @@ public class RegISA{
             add(new nyi(_i));
             break;
          case IFEQ:
+            add(new cmp_s32_const_0(_i, "eq", new StackReg_s32(_i, 0))) ;
+            add(new cbr(_i, _i.asBranch().getAbsolute()));
+            break;
          case IFNE:
+            add(new cmp_s32_const_0(_i, "ne", new StackReg_s32(_i, 0))) ;
+            add(new cbr(_i, _i.asBranch().getAbsolute()));
+            break;
          case IFLT:
+            add(new cmp_s32_const_0(_i, "lt", new StackReg_s32(_i, 0))) ;
+            add(new cbr(_i, _i.asBranch().getAbsolute()));
+            break;
          case IFGE:
+            add(new cmp_s32_const_0(_i, "ge", new StackReg_s32(_i, 0))) ;
+            add(new cbr(_i, _i.asBranch().getAbsolute()));
+            break;
          case IFGT:
+            add(new cmp_s32_const_0(_i, "gt", new StackReg_s32(_i, 0))) ;
+            add(new cbr(_i, _i.asBranch().getAbsolute()));
+            break;
          case IFLE:
+            add(new cmp_s32_const_0(_i, "le", new StackReg_s32(_i, 0))) ;
+            add(new cbr(_i, _i.asBranch().getAbsolute()));
+            break;
          case IF_ICMPEQ:
+            add(new cmp_s32(_i, "eq", new StackReg_s32(_i, 0), new StackReg_s32(_i, 1))) ;
+            add(new cbr(_i, _i.asBranch().getAbsolute()));
+            break;
          case IF_ICMPNE:
+            add(new cmp_s32(_i, "ne", new StackReg_s32(_i, 0), new StackReg_s32(_i, 1))) ;
+            add(new cbr(_i, _i.asBranch().getAbsolute()));
+            break;
          case IF_ICMPLT:
+            add(new cmp_s32(_i, "lt", new StackReg_s32(_i, 0), new StackReg_s32(_i, 1))) ;
+            add(new cbr(_i, _i.asBranch().getAbsolute()));
+            break;
          case IF_ICMPGE:
+            add(new cmp_s32(_i, "ge", new StackReg_s32(_i, 0), new StackReg_s32(_i, 1))) ;
+            add(new cbr(_i, _i.asBranch().getAbsolute()));
+            break;
          case IF_ICMPGT:
+            add(new cmp_s32(_i, "gt", new StackReg_s32(_i, 0), new StackReg_s32(_i, 1))) ;
+            add(new cbr(_i, _i.asBranch().getAbsolute()));
+            break;
          case IF_ICMPLE:
+
+            add(new cmp_s32(_i, "le", new StackReg_s32(_i, 0), new StackReg_s32(_i, 1))) ;
+            add(new cbr(_i, _i.asBranch().getAbsolute()));
+            break;
          case IF_ACMPEQ:
          case IF_ACMPNE:
+            add(new branch(_i, new StackReg_s32(_i, 0), _i.getByteCode().getName(), _i.asBranch().getAbsolute()));
+            break;
          case GOTO:
+            add(new brn(_i, _i.asBranch().getAbsolute()));
+            break;
          case IFNULL:
          case IFNONNULL:
          case GOTO_W:
