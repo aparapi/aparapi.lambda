@@ -11,9 +11,10 @@ import com.amd.okra.OkraKernel;
  * To change this template use File | Settings | File Templates.
  */
 public class OkraRunner{
-   public void run(String _hsail, Object _instance, Object ... args){
+   public void run(String _hsail, int _size, Object ... args){
       OkraContext context = new OkraContext();
-      OkraKernel k = new OkraKernel(context, _hsail, "run");
+      OkraKernel k = new OkraKernel(context, _hsail, "&run");
+      k.setLaunchAttributes(_size);
       k.dispatchWithArgs(args);
 
 

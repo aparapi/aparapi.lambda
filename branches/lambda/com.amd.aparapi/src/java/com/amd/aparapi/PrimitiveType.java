@@ -80,6 +80,10 @@ public abstract class PrimitiveType{
       return (hsaPrefix + hsaBits);
    }
 
+   public int getHSABits(){
+      return(hsaBits);
+   }
+
 
    public String getJavaSig(){
       return (javaSig);

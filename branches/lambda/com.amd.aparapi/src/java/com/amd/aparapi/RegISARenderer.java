@@ -24,17 +24,20 @@ public class RegISARenderer extends TextRenderer<RegISARenderer>{
    public RegISARenderer typeName(RegISA.Reg _reg){
       return (this.append(_reg.type.getHSAName()));
    }
+   public RegISARenderer movTypeName(RegISA.Reg _reg){
+      return (this.append("b"+_reg.type.getHsaBits()));
+   }
 
    public RegISARenderer regName(RegISA.Reg _reg){
       switch(_reg.type.getHsaBits()){
          case 32:
-            append("s");
+            append("$s");
             break;
          case 64:
-            append("d");
+            append("$d");
             break;
          default:
-            append("?");
+            append("$?");
             break;
       }
       return (this.append(_reg.index));
