@@ -624,7 +624,8 @@ public class RegISA{
       }
 
       @Override void render(RegISARenderer r){
-         r.append("st_global_").typeName(getSrc()).space().append("[").regName(mem).append("+").array_len_offset().append("]").separator().regName(getSrc());
+        // r.append("st_global_").typeName(getSrc()).space().append("[").regName(mem).append("+").array_len_offset().append("]").separator().regName(getSrc());
+         r.append("st_global_").typeName(getSrc()).space().regName(getSrc()).separator().append("[").regName(mem).append("+").array_len_offset().append("]") ;
       }
 
       @Override
@@ -646,7 +647,7 @@ public class RegISA{
       }
 
       @Override void render(RegISARenderer r){
-         r.append("ld_global").typeName(getDest()).space().regName(getDest()).separator().append("[").regName(mem).append("+").array_len_offset().append("]");
+         r.append("ld_global_").typeName(getDest()).space().regName(getDest()).separator().append("[").regName(mem).append("+").array_len_offset().append("]");
       }
 
       @Override
@@ -664,7 +665,7 @@ public class RegISA{
       }
 
       @Override void render(RegISARenderer r){
-         r.append("mov_").typeName(getDest()).space().regName(getDest()).separator().regName(getSrc());
+         r.append("mov_").movTypeName(getDest()).space().regName(getDest()).separator().regName(getSrc());
 
       }
 
@@ -781,7 +782,7 @@ public class RegISA{
       }
 
       @Override void render(RegISARenderer r){
-         r.append("mov_").typeName(getDest()).space().regName(getDest()).separator().append(value.toString());
+         r.append("mov_").movTypeName(getDest()).space().regName(getDest()).separator().append(value.toString());
 
       }
 
@@ -836,7 +837,7 @@ public class RegISA{
 
 
    public RegISARenderer render(RegISARenderer r){
-      r.append("version 1:0").nl();
+      r.append("version 1:0:large;").nl();
       r.append("kernel &" + method.getName() + "(");
       int argOffset = method.isStatic() ? 0 : 1;
       if(!method.isStatic()){
@@ -862,9 +863,14 @@ public class RegISA{
       r.nl().pad(3).append("){").nl();
 
       java.util.Set<Instruction> s = new java.util.HashSet<Instruction>();
-
+      boolean first = false;
+      int  count = 0;
       for(RegInstruction i : instructions){
          if(!(i instanceof ld_kernarg) && !s.contains(i.from)){
+            if (!first){
+               r.nl().append("workitemaid $s"+(count-1)+", 0;");
+                  first = true;
+            }
             s.add(i.from);
             if(i.from.isBranchTarget()){
 
@@ -872,6 +878,8 @@ public class RegISA{
                r.nl();
             }
             r.nl().pad(1).append("// ").mark().append(i.from.getThisPC()).relpad(2).space().i(i.from).nl();
+         }  else{
+            count++;
          }
          r.pad(9);
          i.render(r);

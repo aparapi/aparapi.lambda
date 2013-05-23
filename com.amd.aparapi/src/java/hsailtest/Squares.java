@@ -27,8 +27,12 @@ public class Squares{
       new RegISA(method).render(renderer);
       System.out.println(renderer.toString());
 
-      runner.run(renderer.toString(), null, in, out);
+      Squares s = new Squares();
+      runner.run(renderer.toString(), in.length, s, in, out, in.length);
+      for (int i=0; i< in.length; i++){
+         System.out.println(i+" "+in[i]+" "+out[i]);
 
+      }
 
          //System.out.println(InstructionHelper.getLabel(i,true, false, false));
 
