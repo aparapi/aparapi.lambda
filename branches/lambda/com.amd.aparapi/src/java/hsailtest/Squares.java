@@ -7,10 +7,13 @@ public class Squares{
 
 
    void run(float[] in, float[] out, int gid){
-      gid*=4;
-      for (int i=0; i< 4; i++){
-         out[gid+i] = in[gid+i] * in[gid+i];
-      }
+    //  gid*=4;
+      //for (int i=0; i< 4; i++){
+         if (in[gid] >10f){
+            out[gid] = in[gid] * in[gid];
+         }
+        // boolean l = in[gid]<10f;
+    //  }
    }
 
 
@@ -34,7 +37,7 @@ public class Squares{
       System.out.println(renderer.toString());
 
       Squares s = new Squares();
-      runner.run(renderer.toString(), in.length/4, s, in, out, in.length/4);
+      runner.run(renderer.toString(), in.length, s, in, out, in.length);
       for (int i=0; i< in.length; i++){
          System.out.println(i+" "+in[i]+" "+out[i]);
 
