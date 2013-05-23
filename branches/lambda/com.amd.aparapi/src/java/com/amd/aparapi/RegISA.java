@@ -877,7 +877,10 @@ public class RegISA{
                r.label(i.from.getThisPC());
                r.nl();
             }
-           // r.nl().pad(1).append("// ").mark().append(i.from.getThisPC()).relpad(2).space().i(i.from).nl();
+           if (r.isShowingComments()){
+               r.nl().pad(1).append("// ").mark().append(i.from.getThisPC()).relpad(2).space().i(i.from).nl();
+           }
+
          }  else{
             count++;
          }

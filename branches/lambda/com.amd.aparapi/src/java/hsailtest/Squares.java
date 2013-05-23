@@ -25,6 +25,8 @@ public class Squares{
          out[i]=0f;
       }
       RegISARenderer renderer = new RegISARenderer();
+      renderer.setShowLineNumbers(false);
+      renderer.setShowComments(true);
       new RegISA(method).render(renderer);
       System.out.println(renderer.toString());
 

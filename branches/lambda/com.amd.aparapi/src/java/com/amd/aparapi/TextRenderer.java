@@ -59,13 +59,26 @@ public class TextRenderer<T extends TextRenderer>{
       return (append(", "));
    }
 
-   int nlCount = 1;
+   int lineNumber = 1;
+   boolean showLineNumbers =false;
+   public void setShowLineNumbers(boolean _showLineNumbers){
+      showLineNumbers =_showLineNumbers;
+   }
+   boolean showComments =false;
+   public void setShowComments(boolean _showComments){
+      showComments =_showComments;
+   }
+   public boolean isShowingComments(){
+      return (showComments);
+   }
 
    final public T nl(){
       append("\n");
       lastMark = lastNewLineIndex = sb.length();
-    //  append("/* "+nlCount+" */ ");
-     // nlCount++;
+      if (showLineNumbers){
+         append("/* "+lineNumber+" */ ");
+         lineNumber++;
+      }
       return ((T) this);
    }
 
