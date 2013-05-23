@@ -80,8 +80,8 @@ public abstract class PrimitiveType{
       return (hsaPrefix + hsaBits);
    }
 
-   public int getHSABits(){
-      return(hsaBits);
+   public int getHsaBytes(){
+      return(hsaBits/8);
    }
 
 

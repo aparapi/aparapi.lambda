@@ -625,7 +625,7 @@ public class RegISA{
 
       @Override void render(RegISARenderer r){
         // r.append("st_global_").typeName(getSrc()).space().append("[").regName(mem).append("+").array_len_offset().append("]").separator().regName(getSrc());
-         r.append("st_global_").typeName(getSrc()).space().regName(getSrc()).separator().append("[").regName(mem).append("+").array_len_offset().append("]") ;
+         r.append("st_global_").typeName(getSrc()).space().regName(getSrc()).separator().append("[").regName(mem).append("+").array_base_offset().append("]") ;
       }
 
       @Override
@@ -647,7 +647,7 @@ public class RegISA{
       }
 
       @Override void render(RegISARenderer r){
-         r.append("ld_global_").typeName(getDest()).space().regName(getDest()).separator().append("[").regName(mem).append("+").array_len_offset().append("]");
+         r.append("ld_global_").typeName(getDest()).space().regName(getDest()).separator().append("[").regName(mem).append("+").array_base_offset().append("]");
       }
 
       @Override
@@ -868,8 +868,8 @@ public class RegISA{
       for(RegInstruction i : instructions){
          if(!(i instanceof ld_kernarg) && !s.contains(i.from)){
             if (!first){
-               r.nl().append("workitemaid $s"+(count-1)+", 0;");
-                  first = true;
+               r.pad(9).append("workitemaid $s" + (count - 1) + ", 0;").nl();
+               first = true;
             }
             s.add(i.from);
             if(i.from.isBranchTarget()){
@@ -877,7 +877,7 @@ public class RegISA{
                r.label(i.from.getThisPC());
                r.nl();
             }
-            r.nl().pad(1).append("// ").mark().append(i.from.getThisPC()).relpad(2).space().i(i.from).nl();
+           // r.nl().pad(1).append("// ").mark().append(i.from.getThisPC()).relpad(2).space().i(i.from).nl();
          }  else{
             count++;
          }
@@ -1025,7 +1025,7 @@ public class RegISA{
             break;
          case IALOAD:{
             add(new cvt<ref, s32>(_i, new StackReg_ref(_i, 1), new StackReg_s32(_i, 1)));  // index converted to 64 bit
-            add(new mul_const<ref, Long>(_i, new StackReg_ref(_i, 1), new StackReg_ref(_i, 1), (long) 4));
+            add(new mul_const<ref, Long>(_i, new StackReg_ref(_i, 1), new StackReg_ref(_i, 1), (long) PrimitiveType.s32.getHsaBytes()));
             add(new add<ref>(_i, new StackReg_ref(_i, 1), new StackReg_ref(_i, 0), new StackReg_ref(_i, 1)));
             add(new load<s32>(_i, new StackReg_s32(_i, 0), new StackReg_ref(_i, 1)));
          }
@@ -1036,7 +1036,12 @@ public class RegISA{
             add(new nyi(_i));
             break;
          case FALOAD:
-            add(new nyi(_i));
+         {
+            add(new cvt<ref, s32>(_i, new StackReg_ref(_i, 1), new StackReg_s32(_i, 1)));  // index converted to 64 bit
+            add(new mul_const<ref, Long>(_i, new StackReg_ref(_i, 1), new StackReg_ref(_i, 1), (long)  PrimitiveType.f32.getHsaBytes()));
+            add(new add<ref>(_i, new StackReg_ref(_i, 1), new StackReg_ref(_i, 0), new StackReg_ref(_i, 1)));
+            add(new load<f32>(_i, new StackReg_f32(_i, 0), new StackReg_ref(_i, 1)));
+         }
             break;
          case DALOAD:
             add(new nyi(_i));
@@ -1108,9 +1113,8 @@ public class RegISA{
                 st_global_s32 $s3, [$d6 + 24];
                  */
             add(new cvt<ref, s32>(_i, new StackReg_ref(_i, 1), new StackReg_s32(_i, 1)));
-            add(new mul_const<ref, Long>(_i, new StackReg_ref(_i, 1), new StackReg_ref(_i, 1), (long) 4));
+            add(new mul_const<ref, Long>(_i, new StackReg_ref(_i, 1), new StackReg_ref(_i, 1), (long)  PrimitiveType.s32.getHsaBytes()));
             add(new add<ref>(_i, new StackReg_ref(_i, 1), new StackReg_ref(_i, 0), new StackReg_ref(_i, 1)));
-            ;
             add(new store<s32>(_i, new StackReg_ref(_i, 1), new StackReg_s32(_i, 2)));
 
          }
@@ -1119,7 +1123,10 @@ public class RegISA{
             add(new nyi(_i));
             break;
          case FASTORE:
-            add(new nyi(_i));
+            add(new cvt<ref, s32>(_i, new StackReg_ref(_i, 1), new StackReg_s32(_i, 1)));
+            add(new mul_const<ref, Long>(_i, new StackReg_ref(_i, 1), new StackReg_ref(_i, 1), (long)  PrimitiveType.f32.getHsaBytes()));
+            add(new add<ref>(_i, new StackReg_ref(_i, 1), new StackReg_ref(_i, 0), new StackReg_ref(_i, 1)));
+            add(new store<f32>(_i, new StackReg_ref(_i, 1), new StackReg_f32(_i, 2)));
             break;
          case DASTORE:
             add(new nyi(_i));
