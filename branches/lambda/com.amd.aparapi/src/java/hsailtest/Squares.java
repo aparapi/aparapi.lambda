@@ -7,7 +7,10 @@ public class Squares{
 
 
    void run(float[] in, float[] out, int gid){
-      out[gid] = in[gid] * in[gid];
+      gid*=4;
+      for (int i=0; i< 4; i++){
+         out[gid+i] = in[gid+i] * in[gid+i];
+      }
    }
 
 
@@ -31,7 +34,7 @@ public class Squares{
       System.out.println(renderer.toString());
 
       Squares s = new Squares();
-      runner.run(renderer.toString(), in.length, s, in, out, in.length);
+      runner.run(renderer.toString(), in.length/4, s, in, out, in.length/4);
       for (int i=0; i< in.length; i++){
          System.out.println(i+" "+in[i]+" "+out[i]);
 
