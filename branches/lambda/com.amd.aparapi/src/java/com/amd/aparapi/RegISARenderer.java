@@ -9,12 +9,15 @@ package com.amd.aparapi;
  */
 public class RegISARenderer extends TextRenderer<RegISARenderer>{
 
+
+
    public RegISARenderer label(int _pc){
       return (append(String.format("@L%d", _pc)));
    }
 
-   public RegISARenderer array_len_offset(){
-      return (append(24));
+   public RegISARenderer array_base_offset(){
+
+      return (append(UnsafeWrapper.arrayBaseOffset(int[].class)));
    }
 
    public RegISARenderer separator(){

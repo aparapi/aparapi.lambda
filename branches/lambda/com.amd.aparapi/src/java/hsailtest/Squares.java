@@ -6,22 +6,23 @@ import com.amd.aparapi.*;
 public class Squares{
 
 
-   void run(int[] in, int[] out, int gid){
+   void run(float[] in, float[] out, int gid){
       out[gid] = in[gid] * in[gid];
    }
 
 
    public static void main(String[] args) throws AparapiException{
       ClassModel classModel = ClassModel.getClassModel(Squares.class);
-      ClassModel.ClassModelMethod method = classModel.getMethod("run", "([I[II)V");
+      ClassModel.ClassModelMethod method = classModel.getMethod("run", "([F[FI)V");
       method.getInstructions();
 
       OkraRunner runner = new OkraRunner();
-      int in[] = new int[100];
-      int out[] = new int[in.length];
+      float in[] = new float[100];
+      float out[] = new float[in.length];
       for (int i=0; i< in.length; i++){
          in[i]=i;
-         out[i]=0;
+
+         out[i]=0f;
       }
       RegISARenderer renderer = new RegISARenderer();
       new RegISA(method).render(renderer);

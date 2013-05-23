@@ -65,7 +65,7 @@ public class TextRenderer<T extends TextRenderer>{
       append("\n");
       lastMark = lastNewLineIndex = sb.length();
     //  append("/* "+nlCount+" */ ");
-    //  nlCount++;
+     // nlCount++;
       return ((T) this);
    }
 
