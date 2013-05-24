@@ -25,7 +25,8 @@ public class TextRenderer<T extends TextRenderer>{
          append(((Float)v).floatValue()).append("f");
       } else
       if (v instanceof Long){
-         append(((Long)v).longValue()).append("l");
+         append(((Long)v).longValue()); // .append("l");   ?
+
       } else
       if (v instanceof Double){
          append(((Double)v).doubleValue());

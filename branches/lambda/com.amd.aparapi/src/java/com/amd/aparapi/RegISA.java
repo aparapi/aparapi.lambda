@@ -647,7 +647,7 @@ public class RegISA{
       }
    }
 
-   static abstract class binary_const<T extends PrimitiveType, C> extends RegInstructionWithDestSrc<T>{
+   static abstract class binary_const<T extends PrimitiveType, C extends Number> extends RegInstructionWithDestSrc<T>{
       C value;
       String op;
 
@@ -658,7 +658,7 @@ public class RegISA{
       }
 
       @Override void render(RegISARenderer r){
-         r.append(op).typeName(getDest()).space().regName(getDest()).separator().regName(getSrc()).separator().append(value.toString());
+         r.append(op).typeName(getDest()).space().regName(getDest()).separator().regName(getSrc()).separator().append(value);
       }
 
       @Override
@@ -668,7 +668,7 @@ public class RegISA{
       }
    }
 
-   static class add_const<T extends PrimitiveType, C> extends binary_const<T, C>{
+   static class add_const<T extends PrimitiveType, C extends Number> extends binary_const<T, C>{
 
       add_const(Instruction _from, Reg<T> _dest, Reg _src, C _value){
          super(_from, "add_", _dest, _src, _value);
@@ -677,13 +677,29 @@ public class RegISA{
 
    }
 
-   static class mul_const<T extends PrimitiveType, C> extends binary_const<T, C>{
+   static class mul_const<T extends PrimitiveType, C extends Number> extends binary_const<T, C>{
 
       mul_const(Instruction _from, Reg<T> _dest, Reg _src, C _value){
          super(_from, "mul_", _dest, _src, _value);
 
       }
 
+   }
+
+   static class mad extends RegInstructionWithDestSrcSrc<ref, ref>{
+      long size;
+      mad(Instruction _from, Reg_ref _dest, Reg_ref _src_lhs, Reg_ref _src_rhs, long _size){
+         super(_from, _dest, _src_lhs, _src_rhs);
+         size = _size;
+      }
+
+      @Override public Delta execute(State state){
+         return null;  //To change body of implemented methods use File | Settings | File Templates.
+      }
+
+      @Override void render(RegISARenderer r){
+         r.append("mad_").typeName(getDest()).space().regName(getDest()).separator().regName(getSrcLhs()).separator().append(size).separator().regName(getSrcRhs());
+      }
    }
 
 
@@ -911,11 +927,11 @@ public class RegISA{
 
    }
 
-   static class mov_const<T extends PrimitiveType, V extends Number> extends RegInstructionWithDest<T>{
+   static class mov_const<T extends PrimitiveType, C extends Number> extends RegInstructionWithDest<T>{
 
-      V value;
+      C value;
 
-      public mov_const(Instruction _from, Reg<T> _dest, V _value){
+      public mov_const(Instruction _from, Reg<T> _dest, C _value){
          super(_from, _dest);
          value = _value;
       }
@@ -935,7 +951,7 @@ public class RegISA{
    List<RegInstruction> instructions = new ArrayList<RegInstruction>();
    ClassModel.ClassModelMethod method;
 
-   boolean optimizeMoves =  false || Config.enableOptimizeRegMoves;
+   boolean optimizeMoves =  true || Config.enableOptimizeRegMoves;
 
    void add(RegInstruction _regInstruction){
       // before we add lets see if this is a redundant mov
@@ -1191,8 +1207,9 @@ public class RegISA{
             break;
          case IALOAD:{
             add(new cvt<ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
-            add(new mul_const<ref, Long>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), (long) PrimitiveType.s32.getHsaBytes()));
-            add(new add<ref>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 0), new StackReg_ref(i, 1)));
+            add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1),  new StackReg_ref(i, 0),(long) PrimitiveType.s32.getHsaBytes()));
+           // add(new mul_const<ref, Long>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), (long) PrimitiveType.s32.getHsaBytes()));
+           // add(new add<ref>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 0), new StackReg_ref(i, 1)));
             add(new load<s32>(i, new StackReg_s32(i, 0), new StackReg_ref(i, 1)));
          }
 
@@ -1204,8 +1221,10 @@ public class RegISA{
          case FALOAD:
          {
             add(new cvt<ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
-            add(new mul_const<ref, Long>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), (long)  PrimitiveType.f32.getHsaBytes()));
-            add(new add<ref>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 0), new StackReg_ref(i, 1)));
+
+            add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1),  new StackReg_ref(i, 0),(long) PrimitiveType.f32.getHsaBytes()));
+          //  add(new mul_const<ref, Long>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), (long)  PrimitiveType.f32.getHsaBytes()));
+          //  add(new add<ref>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 0), new StackReg_ref(i, 1)));
             add(new load<f32>(i, new StackReg_f32(i, 0), new StackReg_ref(i, 1)));
          }
             break;
@@ -1279,8 +1298,10 @@ public class RegISA{
                 st_global_s32 $s3, [$d6 + 24];
                  */
             add(new cvt<ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));
-            add(new mul_const<ref, Long>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), (long)  PrimitiveType.s32.getHsaBytes()));
-            add(new add<ref>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 0), new StackReg_ref(i, 1)));
+          //  add(new mul_const<ref, Long>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), (long)  PrimitiveType.s32.getHsaBytes()));
+         //   add(new add<ref>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 0), new StackReg_ref(i, 1)));
+
+            add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1),  new StackReg_ref(i, 0),(long) PrimitiveType.s32.getHsaBytes()));
             add(new store<s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 2)));
 
          }
@@ -1290,8 +1311,10 @@ public class RegISA{
             break;
          case FASTORE:
             add(new cvt<ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));
-            add(new mul_const<ref, Long>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), (long)  PrimitiveType.f32.getHsaBytes()));
-            add(new add<ref>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 0), new StackReg_ref(i, 1)));
+
+            add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1),  new StackReg_ref(i, 0),(long) PrimitiveType.f32.getHsaBytes()));
+           // add(new mul_const<ref, Long>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), (long)  PrimitiveType.f32.getHsaBytes()));
+          //  add(new add<ref>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 0), new StackReg_ref(i, 1)));
             add(new store<f32>(i, new StackReg_ref(i, 1), new StackReg_f32(i, 2)));
             break;
          case DASTORE:
