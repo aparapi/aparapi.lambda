@@ -17,6 +17,24 @@ public class TextRenderer<T extends TextRenderer>{
       return ((T) this);
    }
 
+   final public T append(Number v){
+      if (v instanceof Integer){
+         append(((Integer)v).intValue());
+      }  else
+      if (v instanceof Float){
+         append(((Float)v).floatValue()).append("f");
+      } else
+      if (v instanceof Long){
+         append(((Long)v).longValue()).append("l");
+      } else
+      if (v instanceof Double){
+         append(((Double)v).doubleValue());
+      } else {
+         append("what?");
+      }
+      return((T)this);
+   }
+
 
    final public T append(int i){
       return (append("" + i));

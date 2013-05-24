@@ -911,7 +911,7 @@ public class RegISA{
 
    }
 
-   static class mov_const<T extends PrimitiveType, V> extends RegInstructionWithDest<T>{
+   static class mov_const<T extends PrimitiveType, V extends Number> extends RegInstructionWithDest<T>{
 
       V value;
 
@@ -921,7 +921,7 @@ public class RegISA{
       }
 
       @Override void render(RegISARenderer r){
-         r.append("mov_").movTypeName(getDest()).space().regName(getDest()).separator().append(value.toString());
+         r.append("mov_").movTypeName(getDest()).space().regName(getDest()).separator().append(value);
 
       }
 

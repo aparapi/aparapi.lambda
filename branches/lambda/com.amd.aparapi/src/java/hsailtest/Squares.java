@@ -7,9 +7,10 @@ public class Squares{
 
 
    void run(float[] in, float[] out, int gid){
-    //  gid*=4;
+
+      //float f = 9f;
       //for (int i=0; i< 4; i++){
-         if (in[gid] >10f){
+         if (in[gid] >9f){
             out[gid] = in[gid] * in[gid];
          }
         // boolean l = in[gid]<10f;
