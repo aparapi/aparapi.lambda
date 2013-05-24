@@ -10,8 +10,9 @@ public class Squares{
 
       //float f = 9f;
       //for (int i=0; i< 4; i++){
-         if (in[gid] >9f){
-            out[gid] = in[gid] * in[gid];
+         float f = in[gid];
+         if (f >3f && gid <7){
+            out[gid] = f * f;
          }
         // boolean l = in[gid]<10f;
     //  }
@@ -24,7 +25,7 @@ public class Squares{
       method.getInstructions();
 
       OkraRunner runner = new OkraRunner();
-      float in[] = new float[100];
+      float in[] = new float[10];
       float out[] = new float[in.length];
       for (int i=0; i< in.length; i++){
          in[i]=i;
@@ -32,18 +33,18 @@ public class Squares{
          out[i]=0f;
       }
       RegISARenderer renderer = new RegISARenderer();
-      renderer.setShowLineNumbers(false);
-      renderer.setShowComments(true);
+      //renderer.setShowLineNumbers(false);
+     // renderer.setShowComments(true);
       new RegISA(method).render(renderer);
       System.out.println(renderer.toString());
 
       Squares s = new Squares();
       runner.run(renderer.toString(), in.length, s, in, out, in.length);
       for (int i=0; i< in.length; i++){
-         System.out.println(i+" "+in[i]+" "+out[i]);
+         System.out.print("("+in[i]+","+out[i]+"),");
 
       }
-
+      System.out.println();
          //System.out.println(InstructionHelper.getLabel(i,true, false, false));
 
 

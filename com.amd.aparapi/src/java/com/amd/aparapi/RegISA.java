@@ -935,7 +935,7 @@ public class RegISA{
    List<RegInstruction> instructions = new ArrayList<RegInstruction>();
    ClassModel.ClassModelMethod method;
 
-   boolean optimizeMoves = false || Config.enableOptimizeRegMoves;
+   boolean optimizeMoves =  false || Config.enableOptimizeRegMoves;
 
    void add(RegInstruction _regInstruction){
       // before we add lets see if this is a redundant mov
