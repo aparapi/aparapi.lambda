@@ -10,10 +10,10 @@ public class Squares{
 
       //float f = 9f;
       //for (int i=0; i< 4; i++){
-         float f = in[gid];
-         if (f >3f && gid <7){
-            out[gid] = f * f;
-         }
+      //  float f = in[gid];
+       //  if (f >3f && gid <7){
+            out[gid] = in[gid] * in[gid];
+       //  }
         // boolean l = in[gid]<10f;
     //  }
    }
@@ -34,7 +34,7 @@ public class Squares{
       }
       RegISARenderer renderer = new RegISARenderer();
       //renderer.setShowLineNumbers(false);
-     // renderer.setShowComments(true);
+      //renderer.setShowComments(true);
       new RegISA(method).render(renderer);
       System.out.println(renderer.toString());
 
