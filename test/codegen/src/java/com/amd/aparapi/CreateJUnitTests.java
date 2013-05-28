@@ -71,18 +71,20 @@ public class CreateJUnitTests{
       }
 
       File genSourceDir = new File(rootDir, "src/genjava");
-      File codeGenDir = new File(genSourceDir, rootPackageName.replace(".", "/") + "/test/junit/codegen/");
-      codeGenDir.mkdirs();
-
+      File openCLCodeGenDir = new File(genSourceDir, rootPackageName.replace(".", "/") + "/test/junit/codegen/opencl");
+      openCLCodeGenDir.mkdirs();
+      File hsailCodeGenDir = new File(genSourceDir, rootPackageName.replace(".", "/") + "/test/junit/codegen/hsail");
+      hsailCodeGenDir.mkdirs();
       for(String className : classNames){
 
          Source source = new Source(Class.forName(testPackageName + "." + className), sourceDir);
+         if (source.hasOpenCL()||source.hasThrows()){
 
          StringBuilder sb = new StringBuilder();
-         sb.append("package com.amd.aparapi.test.junit.codegen;\n");
+         sb.append("package com.amd.aparapi.test.junit.codegen.opencl;\n");
          sb.append("import org.junit.Test;\n");
 
-         sb.append("public class " + className + " extends com.amd.aparapi.CodeGenJUnitBase{\n");
+         sb.append("public class " + className + " extends com.amd.aparapi.CodeGenOpenCLJUnitBase{\n");
          sb.append("   @Test public void " + className + "(){\n");
 
          if(source.hasMode()){
@@ -106,6 +108,41 @@ public class CreateJUnitTests{
             sb.append("   String expectedOpenCL = null;\n");
          }
 
+
+
+         sb.append("       test(" + testPackageName + "." + className + ".class,  expectedException, mode, expectedOpenCL);\n");
+         sb.append("   }\n");
+         sb.append("}\n");
+         //  System.out.println(sb.toString());
+
+         File generatedFile = new File(openCLCodeGenDir, className + ".java");
+         PrintStream out = new PrintStream(generatedFile);
+         out.append(sb.toString());
+         out.close();
+         }
+
+         if (source.hasHSAIL()){
+            StringBuilder sb = new StringBuilder();
+
+         sb = new StringBuilder();
+         sb.append("package com.amd.aparapi.test.junit.codegen.hsail;\n");
+         sb.append("import org.junit.Test;\n");
+
+         sb.append("public class " + className + " extends com.amd.aparapi.CodeGenHSAILJUnitBase{\n");
+         sb.append("   @Test public void " + className + "(){\n");
+
+         if(source.hasMode()){
+            sb.append("   String mode=\""+source.getMode()+"\";\n");
+         }else{
+            sb.append("   String mode=null;\n");
+         }
+
+         if(source.hasThrows()){
+            sb.append("   Class<? extends com.amd.aparapi.AparapiException> expectedException = com.amd.aparapi." + source.getThrows() + ".class;\n");
+         }else{
+            sb.append("   Class<? extends com.amd.aparapi.AparapiException> expectedException = null;\n");
+         }
+
          if(source.hasHSAIL()){
             sb.append("   String expectedHSAIL = \"\"\n");
             for(String line : source.getHSAIL()){
@@ -116,15 +153,16 @@ public class CreateJUnitTests{
             sb.append("   String expectedHSAIL = null;\n");
          }
 
-         sb.append("       test(" + testPackageName + "." + className + ".class,  expectedException, mode, expectedOpenCL, expectedHSAIL);\n");
+         sb.append("       test(" + testPackageName + "." + className + ".class,  expectedException, mode, expectedHSAIL);\n");
          sb.append("   }\n");
          sb.append("}\n");
          //  System.out.println(sb.toString());
 
-         File generatedFile = new File(codeGenDir, className + ".java");
+         File generatedFile = new File(hsailCodeGenDir, className + ".java");
          PrintStream out = new PrintStream(generatedFile);
          out.append(sb.toString());
          out.close();
+         }
 
       }
 

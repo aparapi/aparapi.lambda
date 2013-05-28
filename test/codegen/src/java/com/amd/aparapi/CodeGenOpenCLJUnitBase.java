@@ -41,7 +41,7 @@ import java.util.LinkedList;
 
 import static org.junit.Assert.assertTrue;
 
-public class CodeGenJUnitBase{
+public class CodeGenOpenCLJUnitBase{
    public static DiffMatchPatch dmp = new DiffMatchPatch();
    String trim(String _string){
       int start = 0;
@@ -76,7 +76,7 @@ public class CodeGenJUnitBase{
 
    public static final String line=   "------------------------------------------------------------------------------";
 
-   protected void test(Class<?> _class, Class<? extends AparapiException> _expectedExceptionType, String mode, String expectedOpenCL, String expectedHSAIL){
+   protected void test(Class<?> _class, Class<? extends AparapiException> _expectedExceptionType, String mode, String expectedOpenCL){
       try{
          ClassModel.flush();
          ClassModel classModel = ClassModel.getClassModel(_class);
