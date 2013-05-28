@@ -106,7 +106,7 @@ class BranchSet{
     * @see SimpleLogicalExpressionNode
     * @see CompoundLogicalExpressionNode
     */
-   static abstract class LogicalExpressionNode <T extends LogicalExpressionNode>{
+   static abstract class LogicalExpressionNode<T extends LogicalExpressionNode>{
       private LogicalExpressionNode next = null;
 
       private LogicalExpressionNode parent = null;
@@ -175,12 +175,12 @@ class BranchSet{
       }
 
       @Override SimpleLogicalExpressionNode invert(){
-        inverted = !inverted;
-        return(this);
+         inverted = !inverted;
+         return (this);
       }
 
       boolean isInverted(){
-         return(inverted);
+         return (inverted);
       }
 
 
@@ -221,7 +221,7 @@ class BranchSet{
          and = !and;
          lhs.invert();
          rhs.invert();
-         return(this);
+         return (this);
       }
 
       boolean isAnd(){

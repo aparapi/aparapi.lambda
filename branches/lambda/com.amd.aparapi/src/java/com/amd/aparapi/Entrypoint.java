@@ -51,18 +51,18 @@ import java.util.logging.Logger;
 
 public class Entrypoint{
 
-   static final  Map<ClassModelMethod, Entrypoint> map = new HashMap<ClassModelMethod, Entrypoint>();
+   static final Map<ClassModelMethod, Entrypoint> map = new HashMap<ClassModelMethod, Entrypoint>();
 
    static synchronized Entrypoint getEntryPoint(
-      ClassModel _classModel, MethodModel _methodModel, Object _kernelInstance, boolean _isLambda) throws AparapiException{
+         ClassModel _classModel, MethodModel _methodModel, Object _kernelInstance, boolean _isLambda) throws AparapiException{
       Entrypoint entrypoint = map.get(_methodModel.getMethod());
-      if (entrypoint == null){
+      if(entrypoint == null){
          entrypoint = new Entrypoint(_classModel, _methodModel, _kernelInstance, _isLambda, false);
          map.put(_methodModel.getMethod(), entrypoint);
-      } else{
+      }else{
          System.out.println("not new!");
       }
-      return(entrypoint);
+      return (entrypoint);
    }
 
    private boolean isLambda;
