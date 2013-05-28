@@ -440,7 +440,7 @@ public abstract class OpenCLKernelWriter{
             className = fieldType.getMangledClassName();
             argLine.append(className);
             thisStructLine.append(className);
-         }  else{
+         }else{
             argLine.append(getOpenCLName(fieldType));
             thisStructLine.append(getOpenCLName(fieldType));
          }
@@ -1327,7 +1327,6 @@ public abstract class OpenCLKernelWriter{
    }
 
 
-
    protected void write(BranchSet.LogicalExpressionNode _node, boolean _invert, BranchSet.CompoundLogicalExpressionNode _parent) throws CodeGenException{
 
       if(_node instanceof BranchSet.SimpleLogicalExpressionNode){
@@ -1339,20 +1338,20 @@ public abstract class OpenCLKernelWriter{
          BranchSet.CompoundLogicalExpressionNode ln = (BranchSet.CompoundLogicalExpressionNode) _node;
 
          boolean paren = false;
-         if (_invert){
-            paren = (_parent !=  null)  &&  _parent.isOr() && ln.isAnd();
-         }  else{
-            paren = (_parent !=  null)  &&  _parent.isAnd() && ln.isOr();
+         if(_invert){
+            paren = (_parent != null) && _parent.isOr() && ln.isAnd();
+         }else{
+            paren = (_parent != null) && _parent.isAnd() && ln.isOr();
          }
 
          if(paren){
             write("(");
          }
          write(ln.getLhs(), _invert, ln);
-         if (_invert){
-            write(ln.isAnd()?" || ":" && ");
+         if(_invert){
+            write(ln.isAnd() ? " || " : " && ");
          }else{
-            write(ln.isAnd()?" && ":" || ");
+            write(ln.isAnd() ? " && " : " || ");
          }
          write(ln.getRhs(), _invert, ln);
 

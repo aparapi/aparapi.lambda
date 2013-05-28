@@ -10,7 +10,6 @@ package com.amd.aparapi;
 public class RegISARenderer extends TextRenderer<RegISARenderer>{
 
 
-
    public RegISARenderer label(int _pc){
       return (append(String.format("@L%d", _pc)));
    }
@@ -27,8 +26,9 @@ public class RegISARenderer extends TextRenderer<RegISARenderer>{
    public RegISARenderer typeName(RegISA.Reg _reg){
       return (this.append(_reg.type.getHSAName()));
    }
+
    public RegISARenderer movTypeName(RegISA.Reg _reg){
-      return (this.append("b"+_reg.type.getHsaBits()));
+      return (this.append("b" + _reg.type.getHsaBits()));
    }
 
    public RegISARenderer regName(RegISA.Reg _reg){

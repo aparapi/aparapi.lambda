@@ -18,22 +18,19 @@ public class TextRenderer<T extends TextRenderer>{
    }
 
    final public T append(Number v){
-      if (v instanceof Integer){
-         append(((Integer)v).intValue());
-      }  else
-      if (v instanceof Float){
-         append(((Float)v).floatValue()).append("f");
-      } else
-      if (v instanceof Long){
-         append(((Long)v).longValue()); // .append("l");   ?
+      if(v instanceof Integer){
+         append(((Integer) v).intValue());
+      }else if(v instanceof Float){
+         append(((Float) v).floatValue()).append("f");
+      }else if(v instanceof Long){
+         append(((Long) v).longValue()); // .append("l");   ?
 
-      } else
-      if (v instanceof Double){
-         append(((Double)v).doubleValue());
-      } else {
+      }else if(v instanceof Double){
+         append(((Double) v).doubleValue());
+      }else{
          append("what?");
       }
-      return((T)this);
+      return ((T) this);
    }
 
 
@@ -79,14 +76,18 @@ public class TextRenderer<T extends TextRenderer>{
    }
 
    int lineNumber = 1;
-   boolean showLineNumbers =false;
+   boolean showLineNumbers = false;
+
    public void setShowLineNumbers(boolean _showLineNumbers){
-      showLineNumbers =_showLineNumbers;
+      showLineNumbers = _showLineNumbers;
    }
-   boolean showComments =false;
+
+   boolean showComments = false;
+
    public void setShowComments(boolean _showComments){
-      showComments =_showComments;
+      showComments = _showComments;
    }
+
    public boolean isShowingComments(){
       return (showComments);
    }
@@ -94,8 +95,8 @@ public class TextRenderer<T extends TextRenderer>{
    final public T nl(){
       append("\n");
       lastMark = lastNewLineIndex = sb.length();
-      if (showLineNumbers){
-         append("/* "+lineNumber+" */ ");
+      if(showLineNumbers){
+         append("/* " + lineNumber + " */ ");
          lineNumber++;
       }
       return ((T) this);

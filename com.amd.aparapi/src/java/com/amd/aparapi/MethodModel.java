@@ -54,12 +54,12 @@ public class MethodModel{
    static Map<ClassModelMethod, MethodModel> map = new HashMap<ClassModelMethod, MethodModel>();
 
    static synchronized final MethodModel getMethodModel(ClassModelMethod method) throws AparapiException{
-        MethodModel mm = map.get(method);
-        if (mm == null){
-           mm = new MethodModel(method, true);
-           map.put(method, mm);
-        }
-        return(mm);
+      MethodModel mm = map.get(method);
+      if(mm == null){
+         mm = new MethodModel(method, true);
+         map.put(method, mm);
+      }
+      return (mm);
    }
 
 

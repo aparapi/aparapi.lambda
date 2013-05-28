@@ -73,8 +73,9 @@ public class ClassModel{
    static Map<String, ClassModel> map = new LinkedHashMap<String, ClassModel>();
 
    public static void flush(){
-       map.clear();
+      map.clear();
    }
+
    public static synchronized ClassModel getClassModel(Class<?> _clazz) throws ClassParseException{
       String className = _clazz.getName();
       ClassModel classModel = map.get(_clazz.getName());
@@ -1405,7 +1406,7 @@ public class ClassModel{
 
             int currSlotIndex = thisOffset;
             for(int i = 0; i < args.length; i++){
-               InstructionSet.StoreSpec storeSpec =  InstructionSet.StoreSpec.valueOf(args[i].getJavaType().getPrimitiveType());
+               InstructionSet.StoreSpec storeSpec = InstructionSet.StoreSpec.valueOf(args[i].getJavaType().getPrimitiveType());
 
                ArgLocalVariableInfo arg = new ArgLocalVariableInfo(storeSpec, currSlotIndex, 0, args[i].getJavaType());
                vars[i + thisOffset] = arg;
@@ -2616,7 +2617,6 @@ public class ClassModel{
                }
                instruction.setLocalVariableInfo(var);
             }
-
 
 
          }
