@@ -73,7 +73,7 @@ public class MethodModel{
    private boolean usesDoubles;
 
    /**
-    * True is an indication to use the byte addressable store pragma
+    * True is an indication to use the byte addressable array_store pragma
     */
    private boolean usesByteWrites;
 
@@ -673,9 +673,9 @@ public class MethodModel{
              *
              *                 OREF                                     OREF
              *                 |                                     |
-             *         +1, 0  <t>load<n>                             |
+             *         +1, 0  <t>array_load<n>                             |
              *                 |                      / iload<n>    Decrement( varref<n>--)
-             *          0, 0  <t>store<n> - i2<t> isub               |
+             *          0, 0  <t>array_store<n> - i2<t> isub               |
              *                 |                      \ i_const_1    |
              *                 B                                     B
              * </pre>
@@ -711,9 +711,9 @@ public class MethodModel{
              *
              *                 OREF                                     OREF
              *                 |                      / iload<n>     |
-             *          0, 0  <t>store<n> - i2<t> iadd               |
+             *          0, 0  <t>array_store<n> - i2<t> iadd               |
              *                 |                      \ i_const_1    Increment( ++varref<n>)
-             *         +1, 0  <t>load<n>                             |
+             *         +1, 0  <t>array_load<n>                             |
              *                 |                                     |
              *                 B                                     B
              * </pre>
@@ -1333,7 +1333,7 @@ public class MethodModel{
                      methodIsSetter = true;
                      accessorVariableFieldEntry = field;
 
-                     // Setters use putfield which will miss the normal store check
+                     // Setters use putfield which will miss the normal array_store check
                      if(fieldType.equals("B") || fieldType.equals("Z")){
                         usesByteWrites = true;
                      }
