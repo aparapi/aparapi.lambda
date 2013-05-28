@@ -37,3 +37,7 @@ __kernel void run(
    }
 }
 }OpenCL}**/
+
+/**{HSAIL{
+This is junk
+}HSAIL}**/
