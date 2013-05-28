@@ -1,5 +1,6 @@
 package com.amd.aparapi;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,6 +52,12 @@ public class RegISA{
       }
    }
 
+   public abstract static class Reg_u64 extends Reg<u64>{
+      Reg_u64(int _index, boolean _stack){
+         super(_index, PrimitiveType.u64, _stack);
+      }
+   }
+
    public abstract static class Reg_s64 extends Reg<s64>{
       Reg_s64(int _index, boolean _stack){
          super(_index, PrimitiveType.s64, _stack);
@@ -87,6 +94,12 @@ public class RegISA{
       }
    }
 
+   public static class StackReg_u64 extends Reg_u64{
+      StackReg_u64(Instruction _from, int _offset){
+         super(_from.getPreStackBase() + _from.getMethod().getCodeEntry().getMaxLocals() + _offset, true);
+      }
+   }
+
    public static class StackReg_s32 extends Reg_s32{
       StackReg_s32(Instruction _from, int _offset){
          super(_from.getPreStackBase() + _from.getMethod().getCodeEntry().getMaxLocals() + _offset, true);
@@ -111,6 +124,11 @@ public class RegISA{
       }
    }
 
+   public static class VarReg_u64 extends Reg_u64{
+      VarReg_u64(Instruction _from){
+         super(_from.asLocalVariableAccessor().getLocalVariableTableIndex(), false);
+      }
+   }
    public static class VarReg_ref extends Reg_ref{
       VarReg_ref(Instruction _from){
          super(_from.asLocalVariableAccessor().getLocalVariableTableIndex(), false);
@@ -523,36 +541,57 @@ public class RegISA{
 
    }
 
-   static class get_field<T extends PrimitiveType> extends RegInstructionWithDest<T>{
 
-      boolean isStatic;
+   static class get_static_field<T extends PrimitiveType> extends RegInstructionWithDest<T>{
 
-      get_field(Instruction _from, Reg<T> _dest){
+
+
+      get_static_field(Instruction _from, Reg<T> _dest){
          super(_from, _dest);
-         isStatic = (_from instanceof InstructionSet.I_GETSTATIC);
       }
 
       @Override void render(RegISARenderer r){
-         r.append("load_");
-         if(isStatic){
-            r.append("static_");
-         }
-         r.append("field_");
+         r.append("load_static_field_");
          String dotClassName = from.asFieldAccessor().getConstantPoolFieldEntry().getClassEntry().getDotClassName();
          String name = from.asFieldAccessor().getConstantPoolFieldEntry().getName();
 
 
          r.typeName(getDest()).space().regName(getDest());
-         if(!isStatic){
-            r.separator().append("$d").append(getDest().index);
-         }
          r.separator().append(dotClassName).dot().append(name);
 
       }
 
       @Override
       public Delta execute(State state){
-         System.out.println("get_field ");
+         System.out.println("get_static_field ");
+         return (null);
+      }
+   }
+
+   static class get_instance_field<T extends PrimitiveType> extends RegInstructionWithDest<T>{
+
+
+
+      get_instance_field(Instruction _from, Reg<T> _dest){
+         super(_from, _dest);
+      }
+
+      @Override void render(RegISARenderer r){
+         r.append("load_instance_field_");
+         String dotClassName = from.asFieldAccessor().getConstantPoolFieldEntry().getClassEntry().getDotClassName();
+         String name = from.asFieldAccessor().getConstantPoolFieldEntry().getName();
+
+
+         r.typeName(getDest()).space().regName(getDest());
+
+            r.separator().append("$d").append(getDest().index);
+         r.separator().append(dotClassName).dot().append(name);
+
+      }
+
+      @Override
+      public Delta execute(State state){
+         System.out.println("get_instance_field ");
          return (null);
       }
    }
@@ -677,6 +716,20 @@ public class RegISA{
 
    }
 
+   static class and_const<T extends PrimitiveType, C extends Number> extends binary_const<T, C>{
+
+      and_const(Instruction _from, Reg<T> _dest, Reg _src, C _value){
+         super(_from, "and_", _dest, _src, _value);
+
+      }
+
+      @Override void render(RegISARenderer r){
+         r.append(op).append("b64").space().regName(getDest()).separator().regName(getSrc()).separator().append(value);
+      }
+
+
+   }
+
    static class mul_const<T extends PrimitiveType, C extends Number> extends binary_const<T, C>{
 
       mul_const(Instruction _from, Reg<T> _dest, Reg _src, C _value){
@@ -768,11 +821,11 @@ public class RegISA{
       }
    }
 
-   static class store<T extends PrimitiveType> extends RegInstructionWithSrc<T>{
+   static class array_store<T extends PrimitiveType> extends RegInstructionWithSrc<T>{
 
       Reg_ref mem;
 
-      store(Instruction _from, Reg_ref _mem, Reg<T> _src){
+      array_store(Instruction _from, Reg_ref _mem, Reg<T> _src){
          super(_from, _src);
 
          mem = _mem;
@@ -785,17 +838,17 @@ public class RegISA{
 
       @Override
       public Delta execute(State state){
-         System.out.println("store ");
+         System.out.println("array_store ");
          return (null);
       }
    }
 
 
-   static class load<T extends PrimitiveType> extends RegInstructionWithDest<T>{
+   static class array_load<T extends PrimitiveType> extends RegInstructionWithDest<T>{
       Reg_ref mem;
 
 
-      load(Instruction _from, Reg<T> _dest, Reg_ref _mem){
+      array_load(Instruction _from, Reg<T> _dest, Reg_ref _mem){
          super(_from, _dest);
 
          mem = _mem;
@@ -807,7 +860,29 @@ public class RegISA{
 
       @Override
       public Delta execute(State state){
-         System.out.println("load ");
+         System.out.println("array_load ");
+         return (null);
+      }
+   }
+
+   static class field_load<T extends PrimitiveType> extends RegInstructionWithDest<T>{
+      Reg_ref mem;
+      long offset;
+
+
+      field_load(Instruction _from, Reg<T> _dest, Reg_ref _mem, long _offset){
+         super(_from, _dest);
+               offset = _offset;
+         mem = _mem;
+      }
+
+      @Override void render(RegISARenderer r){
+         r.append("ld_global_").typeName(getDest()).space().regName(getDest()).separator().append("[").regName(mem).append("+").append(offset).append("]");
+      }
+
+      @Override
+      public Delta execute(State state){
+         System.out.println("array_load ");
          return (null);
       }
    }
@@ -1210,7 +1285,7 @@ public class RegISA{
             add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1),  new StackReg_ref(i, 0),(long) PrimitiveType.s32.getHsaBytes()));
            // add(new mul_const<ref, Long>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), (long) PrimitiveType.s32.getHsaBytes()));
            // add(new add<ref>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 0), new StackReg_ref(i, 1)));
-            add(new load<s32>(i, new StackReg_s32(i, 0), new StackReg_ref(i, 1)));
+            add(new array_load<s32>(i, new StackReg_s32(i, 0), new StackReg_ref(i, 1)));
          }
 
 
@@ -1225,11 +1300,18 @@ public class RegISA{
             add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1),  new StackReg_ref(i, 0),(long) PrimitiveType.f32.getHsaBytes()));
           //  add(new mul_const<ref, Long>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), (long)  PrimitiveType.f32.getHsaBytes()));
           //  add(new add<ref>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 0), new StackReg_ref(i, 1)));
-            add(new load<f32>(i, new StackReg_f32(i, 0), new StackReg_ref(i, 1)));
+            add(new array_load<f32>(i, new StackReg_f32(i, 0), new StackReg_ref(i, 1)));
          }
             break;
          case DALOAD:
-            add(new nyi(i));
+         {
+            add(new cvt<ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
+
+            add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1),  new StackReg_ref(i, 0),(long) PrimitiveType.f64.getHsaBytes()));
+            //  add(new mul_const<ref, Long>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), (long)  PrimitiveType.f32.getHsaBytes()));
+            //  add(new add<ref>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 0), new StackReg_ref(i, 1)));
+            add(new array_load<f64>(i, new StackReg_f64(i, 0), new StackReg_ref(i, 1)));
+         }
             break;
          case AALOAD:
             add(new nyi(i));
@@ -1302,7 +1384,7 @@ public class RegISA{
          //   add(new add<ref>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 0), new StackReg_ref(i, 1)));
 
             add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1),  new StackReg_ref(i, 0),(long) PrimitiveType.s32.getHsaBytes()));
-            add(new store<s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 2)));
+            add(new array_store<s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 2)));
 
          }
          break;
@@ -1315,10 +1397,15 @@ public class RegISA{
             add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1),  new StackReg_ref(i, 0),(long) PrimitiveType.f32.getHsaBytes()));
            // add(new mul_const<ref, Long>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), (long)  PrimitiveType.f32.getHsaBytes()));
           //  add(new add<ref>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 0), new StackReg_ref(i, 1)));
-            add(new store<f32>(i, new StackReg_ref(i, 1), new StackReg_f32(i, 2)));
+            add(new array_store<f32>(i, new StackReg_ref(i, 1), new StackReg_f32(i, 2)));
             break;
          case DASTORE:
-            add(new nyi(i));
+            add(new cvt<ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));
+
+            add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1),  new StackReg_ref(i, 0),(long) PrimitiveType.f64.getHsaBytes()));
+            // add(new mul_const<ref, Long>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), (long)  PrimitiveType.f32.getHsaBytes()));
+            //  add(new add<ref>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 0), new StackReg_ref(i, 1)));
+            add(new array_store<f64>(i, new StackReg_ref(i, 1), new StackReg_f64(i, 2)));
             break;
          case AASTORE:
             add(new nyi(i));
@@ -1748,15 +1835,54 @@ public class RegISA{
             add(new retvoid(i));
             break;
          case GETSTATIC:
+         {
+            TypeHelper.JavaType type = i.asFieldAccessor().getConstantPoolFieldEntry().getType();
+            if(type.isArray()){
+               add(new get_static_field<ref>(i, new StackReg_ref(i, 0)));
+            }else if(type.isInt()){
+               add(new get_static_field<s32>(i, new StackReg_s32(i, 0)));
+            }else if(type.isFloat()){
+               add(new get_static_field<f32>(i, new StackReg_f32(i, 0)));
+            }else if(type.isDouble()){
+               add(new get_static_field<f64>(i, new StackReg_f64(i, 0)));
+            }  else if(type.isLong()){
+                  add(new get_static_field<s64>(i, new StackReg_s64(i, 0)));
+            }
+         }
          case GETFIELD:{
             TypeHelper.JavaType type = i.asFieldAccessor().getConstantPoolFieldEntry().getType();
             if(type.isArray()){
-               add(new get_field<ref>(i, new StackReg_ref(i, 0)));
+               //add(new cvt<ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));
+              // add(new mov<ref>(i, new StackReg_ref(i, 1),  new StackReg_ref(i, 0))); // get a copy of 'this'
+             try{
+                  Class clazz = Class.forName(i.asFieldAccessor().getConstantPoolFieldEntry().getClassEntry().getDotClassName());
+
+                  Field f = clazz.getDeclaredField(i.asFieldAccessor().getFieldName());
+
+                //  add(new add_const<ref, Long>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), (long) UnsafeWrapper.objectFieldOffset(f)));
+                  add(new field_load<ref>(i, new StackReg_ref(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+                  add(new and_const<u64, Long>(i, new StackReg_u64(i,0),new StackReg_u64(i,0), (long) 0xffffffffL));
+                  // add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1),  new StackReg_ref(i, 0),(long) PrimitiveType.f32.getHsaBytes()));
+                  // add(new mul_const<ref, Long>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), (long)  PrimitiveType.f32.getHsaBytes()));
+                  //  add(new add<ref>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 0), new StackReg_ref(i, 1)));
+                  //  add(new array_store<f32>(i, new StackReg_ref(i, 1), new StackReg_f32(i, 2)));
+                  // break;
+                // add(new get_instance_field<ref>(i, new StackReg_ref(i, 0)));
+               }catch(ClassNotFoundException e){
+                  e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+               }catch(NoSuchFieldException e){
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+             }
+
             }else if(type.isInt()){
-               add(new get_field<s32>(i, new StackReg_s32(i, 0)));
+               add(new get_instance_field<s32>(i, new StackReg_s32(i, 0)));
             }else if(type.isFloat()){
-               add(new get_field<f32>(i, new StackReg_f32(i, 0)));
-            }
+               add(new get_instance_field<f32>(i, new StackReg_f32(i, 0)));
+            }  else if(type.isDouble()){
+            add(new get_instance_field<f64>(i, new StackReg_f64(i, 0)));
+         }  else if(type.isLong()){
+            add(new get_instance_field<s64>(i, new StackReg_s64(i, 0)));
+         }
          }
          break;
          case PUTSTATIC:

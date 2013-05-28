@@ -545,7 +545,7 @@ class KernelRunner extends OpenCLRunner{
             long offset = c.getStructMemberOffsets().get(i);
             switch(t){
                case I:{
-                  // read int value from buffer and store into obj in the array
+                  // read int value from buffer and array_store into obj in the array
                   int x = arg.objArrayByteBuffer.getInt();
                   if(logger.isLoggable(Level.FINEST)){
                      logger.finest("fType = " + t.getPrimitiveType().getJavaTypeName() + " x= " + x);

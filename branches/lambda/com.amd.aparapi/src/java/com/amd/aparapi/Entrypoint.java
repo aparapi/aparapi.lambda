@@ -112,7 +112,7 @@ public class Entrypoint{
    private boolean usesDoubles;
 
    /**
-    * True is an indication to use the byte addressable store pragma
+    * True is an indication to use the byte addressable array_store pragma
     */
    private boolean usesByteWrites;
 

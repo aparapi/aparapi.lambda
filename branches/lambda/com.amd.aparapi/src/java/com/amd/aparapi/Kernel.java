@@ -314,21 +314,21 @@ public abstract class Kernel implements Cloneable{
              if (arch.equals("amd64") || arch.equals("x86_64")) {
 
                 libName = "aparapi_x86_64";
-                logger.fine("attempting to load shared lib " + libName);
+                logger.fine("attempting to array_load shared lib " + libName);
                 System.loadLibrary(libName);
                 openCLAvailable = true;
              } else if (arch.equals("x86") || arch.equals("i386")) {
                 libName = "aparapi_x86";
-                logger.fine("attempting to load shared lib " + libName);
+                logger.fine("attempting to array_load shared lib " + libName);
                 System.loadLibrary(libName);
                 openCLAvailable = true;
              } else {
                 logger.warning("Expected property os.arch to contain amd64 or x86 but found " + arch
-                      + " don't know which library to load.");
+                      + " don't know which library to array_load.");
 
              }
           } catch (UnsatisfiedLinkError e) {
-             logger.warning("Check your environment. Failed to load aparapi native library "
+             logger.warning("Check your environment. Failed to array_load aparapi native library "
                    + libName
                    + " or possibly failed to locate opencl native library (opencl.dll/opencl.so). Ensure that both are in your PATH (windows) or in LD_LIBRARY_PATH (linux).");
 

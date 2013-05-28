@@ -340,7 +340,7 @@ class OpenCLRunner{
    //@UsedByJNICode public static final int JNI_FLAG_ENABLE_PROFILING = 1 << 0;
 
    /**
-    * This 'bit' indicates that we wish to store profiling information in a CSV file from JNI code.
+    * This 'bit' indicates that we wish to array_store profiling information in a CSV file from JNI code.
     *
     *
     * @see com.amd.aparapi.Annotations.UsedByJNICode

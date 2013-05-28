@@ -338,7 +338,7 @@ public class UpdateJUnits{
                            ex.printStackTrace();
                         }
                      }catch(ClassParseException ex){
-                        System.out.println("failed to load class ");
+                        System.out.println("failed to array_load class ");
                         actualOpenCLEditor.startChange().clear().equal(" NO actual OpenCL!\n").endChange();
                         ex.printStackTrace();
                      }
@@ -348,9 +348,9 @@ public class UpdateJUnits{
                   }
 
                }catch(ClassNotFoundException nfe){
-                  javaEditor.startChange().clear().equal(" Can't load class!\n").endChange();
-                  expectedOpenCLEditor.startChange().clear().equal(" Can't load class!\n").endChange();
-                  actualOpenCLEditor.startChange().clear().equal(" Can't load class!\n").endChange();
+                  javaEditor.startChange().clear().equal(" Can't array_load class!\n").endChange();
+                  expectedOpenCLEditor.startChange().clear().equal(" Can't array_load class!\n").endChange();
+                  actualOpenCLEditor.startChange().clear().equal(" Can't array_load class!\n").endChange();
                }
             }
          }
