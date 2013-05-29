@@ -514,91 +514,9 @@ public class RegISA{
       }
    }
 
-   static class put_field<T extends PrimitiveType> extends RegInstructionWithSrc<T>{
-      boolean isStatic;
-
-      put_field(Instruction _from, Reg<T> _src){
-         super(_from, _src);
-         isStatic = (_from instanceof InstructionSet.I_PUTSTATIC);
-      }
-
-      @Override void render(RegISARenderer r){
-         r.append("store_");
-         if(isStatic){
-            r.append("static_");
-         }
-         r.append("field_");
-         String dotClassName = from.asFieldAccessor().getConstantPoolFieldEntry().getClassEntry().getDotClassName();
-         String name = from.asFieldAccessor().getConstantPoolFieldEntry().getName();
 
 
-         r.typeName(getSrc());
-         if(!isStatic){
-            r.separator().append("$d").append(getSrc().index);
-         }
-         r.space().append(dotClassName).dot().append(name).separator().regName(getSrc());
-      }
 
-      @Override
-      public Delta execute(State state){
-         System.out.println("put_field ");
-         return (null);
-      }
-
-   }
-
-
-   static class get_static_field<T extends PrimitiveType> extends RegInstructionWithDest<T>{
-
-
-      get_static_field(Instruction _from, Reg<T> _dest){
-         super(_from, _dest);
-      }
-
-      @Override void render(RegISARenderer r){
-         r.append("load_static_field_");
-         String dotClassName = from.asFieldAccessor().getConstantPoolFieldEntry().getClassEntry().getDotClassName();
-         String name = from.asFieldAccessor().getConstantPoolFieldEntry().getName();
-
-
-         r.typeName(getDest()).space().regName(getDest());
-         r.separator().append(dotClassName).dot().append(name);
-
-      }
-
-      @Override
-      public Delta execute(State state){
-         System.out.println("get_static_field ");
-         return (null);
-      }
-   }
-
-   static class get_instance_field<T extends PrimitiveType> extends RegInstructionWithDest<T>{
-
-
-      get_instance_field(Instruction _from, Reg<T> _dest){
-         super(_from, _dest);
-      }
-
-      @Override void render(RegISARenderer r){
-         r.append("load_instance_field_");
-         String dotClassName = from.asFieldAccessor().getConstantPoolFieldEntry().getClassEntry().getDotClassName();
-         String name = from.asFieldAccessor().getConstantPoolFieldEntry().getName();
-
-
-         r.typeName(getDest()).space().regName(getDest());
-
-         r.separator().append("$d").append(getDest().index);
-         r.separator().append(dotClassName).dot().append(name);
-
-      }
-
-      @Override
-      public Delta execute(State state){
-         System.out.println("get_instance_field ");
-         return (null);
-      }
-   }
 
    static class call extends RegInstruction{
 
@@ -1861,20 +1779,9 @@ public class RegISA{
             case RETURN:
                add(new retvoid(i));
                break;
-            case GETSTATIC:{
-               TypeHelper.JavaType type = i.asFieldAccessor().getConstantPoolFieldEntry().getType();
-               if(type.isArray()){
-                  add(new get_static_field<ref>(i, new StackReg_ref(i, 0)));
-               }else if(type.isInt()){
-                  add(new get_static_field<s32>(i, new StackReg_s32(i, 0)));
-               }else if(type.isFloat()){
-                  add(new get_static_field<f32>(i, new StackReg_f32(i, 0)));
-               }else if(type.isDouble()){
-                  add(new get_static_field<f64>(i, new StackReg_f64(i, 0)));
-               }else if(type.isLong()){
-                  add(new get_static_field<s64>(i, new StackReg_s64(i, 0)));
-               }
-            }
+            case GETSTATIC:
+                add(new call(i));
+                break;
             case GETFIELD:{
                TypeHelper.JavaType type = i.asFieldAccessor().getConstantPoolFieldEntry().getType();
 
@@ -1885,7 +1792,7 @@ public class RegISA{
                       if(type.isArray()){
                      add(new field_load<ref>(i, new StackReg_ref(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
 
-                     add(new and_const<u64, Long>(i, new StackReg_u64(i, 0), new StackReg_u64(i, 0), (long) 0xffffffffL));
+                     add(new and_const<u64, Long>(i, new StackReg_u64(i, 0), new StackReg_ref(i, 0), (long) 0xffffffffL));
                       }else if(type.isInt()){
                           add(new field_load<s32>(i, new StackReg_s32(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
 
@@ -1905,18 +1812,9 @@ public class RegISA{
 
             }
             break;
-            case PUTSTATIC: {
-                TypeHelper.JavaType type = i.asFieldAccessor().getConstantPoolFieldEntry().getType();
-                if(type.isArray()){
-                    add(new put_field<ref>(i, new StackReg_ref(i, 0)));
-                }else if(type.isInt()){
-                    add(new put_field<s32>(i, new StackReg_s32(i, 0)));
-                }else if(type.isFloat()){
-                    add(new put_field<f32>(i, new StackReg_f32(i, 0)));
-                }
-
-            }
-            break;
+            case PUTSTATIC:
+                add(new call(i));
+                break;
             case PUTFIELD:{
                 TypeHelper.JavaType type = i.asFieldAccessor().getConstantPoolFieldEntry().getType();
 
@@ -1927,16 +1825,16 @@ public class RegISA{
                     if(type.isArray()){
                         add(new field_store<ref>(i, new StackReg_ref(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
 
-                        add(new and_const<u64, Long>(i, new StackReg_u64(i, 0), new StackReg_u64(i, 0), (long) 0xffffffffL));
+                        add(new and_const<u64, Long>(i, new StackReg_u64(i, 1), new StackReg_ref(i, 0), (long) 0xffffffffL));
                     }else if(type.isInt()){
-                        add(new field_store<s32>(i, new StackReg_s32(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+                        add(new field_store<s32>(i, new StackReg_s32(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
 
                     }else if(type.isFloat()){
-                        add(new field_store<f32>(i, new StackReg_f32(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+                        add(new field_store<f32>(i, new StackReg_f32(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
                     }else if(type.isDouble()){
-                        add(new field_store<f64>(i, new StackReg_f64(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+                        add(new field_store<f64>(i, new StackReg_f64(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
                     }else if(type.isLong()){
-                        add(new field_store<s64>(i, new StackReg_s64(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+                        add(new field_store<s64>(i, new StackReg_s64(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
                     }
                 }catch(ClassNotFoundException e){
                     e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
