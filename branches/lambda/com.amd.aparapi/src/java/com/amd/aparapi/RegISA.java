@@ -1258,9 +1258,15 @@ public class RegISA{
                add(new array_load<f64>(i, new StackReg_f64(i, 0), new StackReg_ref(i, 1)));
             }
             break;
-            case AALOAD:
-               add(new nyi(i));
-               break;
+            case AALOAD:{
+                add(new cvt<ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
+
+                add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.f64.getHsaBytes()));
+                //  add(new mul_const<ref, Long>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), (long)  PrimitiveType.f32.getHsaBytes()));
+                //  add(new add<ref>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 0), new StackReg_ref(i, 1)));
+                add(new array_load<ref>(i, new StackReg_ref(i, 0), new StackReg_ref(i, 1)));
+            }
+            break;
             case BALOAD:
                add(new nyi(i));
                break;

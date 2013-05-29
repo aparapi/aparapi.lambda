@@ -8,20 +8,27 @@ import com.amd.aparapi.RegISA;
 import com.amd.aparapi.RegISARenderer;
 
 
-public class Txfer {
+public class Oop {
 
-   int[] in = new int[100];
-   int[] out = new int[in.length];
-   int m = 2;
-   int a = 100;
+    public static class P{
+        int x;
+        int y;
+        P(int _x, int _y){
+           x = _x;
+           y = _y;
+        }
+    }
+
+   P[] points = new P[10];
 
 
    public void run(int id) {
-          out[id] = in[id]*m +a;
+       points[id].x= id;
+       points[id].y= id;
    }
 
    public void test() throws ClassParseException{
-      ClassModel classModel = ClassModel.getClassModel(Txfer.class);
+      ClassModel classModel = ClassModel.getClassModel(Oop.class);
       ClassModel.ClassModelMethod method = classModel.getMethod("run", "(I)V");
       method.getInstructions();
       OkraRunner runner = new OkraRunner();
@@ -30,14 +37,13 @@ public class Txfer {
       renderer.setShowComments(true);
       new RegISA(method).render(renderer);
       System.out.println(renderer.toString());
-       for (int i=0; i< in.length; i++){
-           in[i]=i;
-           out[i]=0;
+       for (int i=0; i< points.length; i++){
+           points[i]=new P(0,0);
        }
 
-      runner.run(renderer.toString(), in.length, this,  in.length);
-       for (int i=0; i< in.length; i++){
-           System.out.print("("+in[i]+","+out[i]+"),");
+      runner.run(renderer.toString(), points.length, this,  points.length);
+       for (int i=0; i< points.length; i++){
+           System.out.print("("+points[i].x+","+points[i].y+"),");
        }
    }
 
@@ -45,7 +51,7 @@ public class Txfer {
 
 
    public static void main(String[] args) throws AparapiException{
-      (new Txfer()).test();
+      (new Oop()).test();
 
    }
 }
