@@ -35,7 +35,7 @@ public class Squares{
       HSAILRenderer renderer = new HSAILRenderer();
       //renderer.setShowLineNumbers(false);
       renderer.setShowComments(true);
-      new RegISA(method).render(renderer);
+      new HSAILMethod(method).render(renderer);
       System.out.println(renderer.toString());
 
       Squares s = new Squares();

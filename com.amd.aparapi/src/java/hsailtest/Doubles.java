@@ -19,7 +19,7 @@ public class Doubles{
 
       HSAILRenderer renderer = new HSAILRenderer();
       renderer.setShowComments(true);
-      new RegISA(method).render(renderer);
+      new HSAILMethod(method).render(renderer);
       System.out.println(renderer.toString());
 
 
