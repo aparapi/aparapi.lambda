@@ -1,11 +1,7 @@
 package hsailtest;
 
-import com.amd.aparapi.AparapiException;
-import com.amd.aparapi.ClassModel;
-import com.amd.aparapi.ClassParseException;
-import com.amd.aparapi.OkraRunner;
-import com.amd.aparapi.RegISA;
-import com.amd.aparapi.HSAILRenderer;
+import com.amd.aparapi.*;
+import com.amd.aparapi.HSAILMethod;
 
 
 public class Txfer {
@@ -28,7 +24,7 @@ public class Txfer {
 
       HSAILRenderer renderer = new HSAILRenderer();
       renderer.setShowComments(true);
-      new RegISA(method).render(renderer);
+      new HSAILMethod(method).render(renderer);
       System.out.println(renderer.toString());
        for (int i=0; i< in.length; i++){
            in[i]=i;

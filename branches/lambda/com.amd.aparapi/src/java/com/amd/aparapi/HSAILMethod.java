@@ -11,15 +11,15 @@ import java.util.List;
  * Time: 9:48 AM
  * To change this template use File | Settings | File Templates.
  */
-public class RegISA{
+public class HSAILMethod{
 
 
-   public abstract static class Reg<T extends PrimitiveType>{
+   public abstract static class HSAILRegister<T extends PrimitiveType>{
       int index;
       public T type;
       public boolean stack;
 
-      Reg(int _index, T _type, boolean _stack){
+      HSAILRegister(int _index, T _type, boolean _stack){
          index = _index;
          type = _type;
          stack = _stack;
@@ -31,8 +31,8 @@ public class RegISA{
 
       @Override
       public boolean equals(Object _other){
-         if(_other instanceof Reg){
-            Reg otherReg = (Reg) _other;
+         if(_other instanceof HSAILRegister){
+            HSAILRegister otherReg = (HSAILRegister) _other;
             return (type.equals(otherReg.type) && index == otherReg.index);
          }
          return false;
@@ -40,37 +40,37 @@ public class RegISA{
 
    }
 
-   public abstract static class Reg_f64 extends Reg<f64>{
+   public abstract static class Reg_f64 extends HSAILRegister<f64>{
       Reg_f64(int _index, boolean _stack){
          super(_index, PrimitiveType.f64, _stack);
       }
    }
 
-   public abstract static class Reg_ref extends Reg<ref>{
+   public abstract static class Reg_ref extends HSAILRegister<ref>{
       Reg_ref(int _index, boolean _stack){
          super(_index, PrimitiveType.ref, _stack);
       }
    }
 
-   public abstract static class Reg_u64 extends Reg<u64>{
+   public abstract static class Reg_u64 extends HSAILRegister<u64>{
       Reg_u64(int _index, boolean _stack){
          super(_index, PrimitiveType.u64, _stack);
       }
    }
 
-   public abstract static class Reg_s64 extends Reg<s64>{
+   public abstract static class Reg_s64 extends HSAILRegister<s64>{
       Reg_s64(int _index, boolean _stack){
          super(_index, PrimitiveType.s64, _stack);
       }
    }
 
-   public abstract static class Reg_s32 extends Reg<s32>{
+   public abstract static class Reg_s32 extends HSAILRegister<s32>{
       Reg_s32(int _index, boolean _stack){
          super(_index, PrimitiveType.s32, _stack);
       }
    }
 
-   public abstract static class Reg_f32 extends Reg<f32>{
+   public abstract static class Reg_f32 extends HSAILRegister<f32>{
       Reg_f32(int _index, boolean _stack){
          super(_index, PrimitiveType.f32, _stack);
       }
@@ -286,16 +286,16 @@ public class RegISA{
    }
 
 
-   static abstract class RegInstruction{
+   static abstract class HSAILInstruction{
       Instruction from;
-      Reg[] dests = null;
-      Reg[] sources = null;
+      HSAILRegister[] dests = null;
+      HSAILRegister[] sources = null;
 
 
-      RegInstruction(Instruction _from, int _destCount, int _sourceCount){
+      HSAILInstruction(Instruction _from, int _destCount, int _sourceCount){
          from = _from;
-         dests = new Reg[_destCount];
-         sources = new Reg[_sourceCount];
+         dests = new HSAILRegister[_destCount];
+         sources = new HSAILRegister[_sourceCount];
       }
 
       abstract public Delta execute(State state);
@@ -304,93 +304,93 @@ public class RegISA{
 
    }
 
-   static abstract class RegInstructionWithDest<T extends PrimitiveType> extends RegInstruction{
+   static abstract class HSAILInstructionWithDest<T extends PrimitiveType> extends HSAILInstruction{
 
 
-      RegInstructionWithDest(Instruction _from, Reg<T> _dest){
+      HSAILInstructionWithDest(Instruction _from, HSAILRegister<T> _dest){
          super(_from, 1, 0);
          dests[0] = _dest;
 
       }
 
-      Reg<T> getDest(){
-         return ((Reg<T>) dests[0]);
+      HSAILRegister<T> getDest(){
+         return ((HSAILRegister<T>) dests[0]);
       }
    }
 
-   static abstract class RegInstructionWithSrc<T extends PrimitiveType> extends RegInstruction{
+   static abstract class HSAILInstructionWithSrc<T extends PrimitiveType> extends HSAILInstruction{
 
-      RegInstructionWithSrc(Instruction _from, Reg<T> _src){
+      HSAILInstructionWithSrc(Instruction _from, HSAILRegister<T> _src){
          super(_from, 0, 1);
          sources[0] = _src;
       }
 
-      Reg<T> getSrc(){
-         return ((Reg<T>) sources[0]);
+      HSAILRegister<T> getSrc(){
+         return ((HSAILRegister<T>) sources[0]);
       }
    }
 
-   static abstract class RegInstructionWithSrcSrc<T extends PrimitiveType> extends RegInstruction{
+   static abstract class HSAILInstructionWithSrcSrc<T extends PrimitiveType> extends HSAILInstruction{
 
-      RegInstructionWithSrcSrc(Instruction _from, Reg<T> _src_lhs, Reg<T> _src_rhs){
+      HSAILInstructionWithSrcSrc(Instruction _from, HSAILRegister<T> _src_lhs, HSAILRegister<T> _src_rhs){
          super(_from, 0, 2);
          sources[0] = _src_lhs;
          sources[1] = _src_rhs;
       }
 
-      Reg<T> getSrcLhs(){
-         return ((Reg<T>) sources[0]);
+      HSAILRegister<T> getSrcLhs(){
+         return ((HSAILRegister<T>) sources[0]);
       }
 
-      Reg<T> getSrcRhs(){
-         return ((Reg<T>) sources[1]);
+      HSAILRegister<T> getSrcRhs(){
+         return ((HSAILRegister<T>) sources[1]);
       }
    }
 
-   static abstract class RegInstructionWithDestSrcSrc<D extends PrimitiveType, T extends PrimitiveType> extends RegInstruction{
+   static abstract class HSAILInstructionWithDestSrcSrc<D extends PrimitiveType, T extends PrimitiveType> extends HSAILInstruction{
 
-      RegInstructionWithDestSrcSrc(Instruction _from, Reg<D> _dest, Reg<T> _src_lhs, Reg<T> _src_rhs){
+      HSAILInstructionWithDestSrcSrc(Instruction _from, HSAILRegister<D> _dest, HSAILRegister<T> _src_lhs, HSAILRegister<T> _src_rhs){
          super(_from, 1, 2);
          dests[0] = _dest;
          sources[0] = _src_lhs;
          sources[1] = _src_rhs;
       }
 
-      Reg<D> getDest(){
-         return ((Reg<D>) dests[0]);
+      HSAILRegister<D> getDest(){
+         return ((HSAILRegister<D>) dests[0]);
       }
 
-      Reg<T> getSrcLhs(){
-         return ((Reg<T>) sources[0]);
+      HSAILRegister<T> getSrcLhs(){
+         return ((HSAILRegister<T>) sources[0]);
       }
 
-      Reg<T> getSrcRhs(){
-         return ((Reg<T>) sources[1]);
+      HSAILRegister<T> getSrcRhs(){
+         return ((HSAILRegister<T>) sources[1]);
       }
    }
 
-   static abstract class RegInstructionWithDestSrc<T extends PrimitiveType> extends RegInstruction{
+   static abstract class HSAILInstructionWithDestSrc<T extends PrimitiveType> extends HSAILInstruction{
 
-      RegInstructionWithDestSrc(Instruction _from, Reg<T> _dest, Reg<T> _src){
+      HSAILInstructionWithDestSrc(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _src){
          super(_from, 1, 1);
          dests[0] = _dest;
          sources[0] = _src;
       }
 
-      Reg<T> getDest(){
-         return ((Reg<T>) dests[0]);
+      HSAILRegister<T> getDest(){
+         return ((HSAILRegister<T>) dests[0]);
       }
 
-      Reg<T> getSrc(){
-         return ((Reg<T>) sources[0]);
+      HSAILRegister<T> getSrc(){
+         return ((HSAILRegister<T>) sources[0]);
       }
    }
 
-   static class branch extends RegInstructionWithSrc<s32>{
+   static class branch extends HSAILInstructionWithSrc<s32>{
       String name;
       int pc;
 
-      branch(Instruction _from, Reg<s32> _src, String _name, int _pc){
+      branch(Instruction _from, HSAILRegister<s32> _src, String _name, int _pc){
          super(_from, _src);
          name = _name;
          pc = _pc;
@@ -409,7 +409,7 @@ public class RegISA{
       }
    }
 
-   static class cmp_s32_const_0 extends RegInstructionWithSrc<s32>{
+   static class cmp_s32_const_0 extends HSAILInstructionWithSrc<s32>{
       String type;
 
       cmp_s32_const_0(Instruction _from, String _type, Reg_s32 _src){
@@ -430,7 +430,7 @@ public class RegISA{
       }
    }
 
-   static class cmp_s32 extends RegInstructionWithSrcSrc<s32>{
+   static class cmp_s32 extends HSAILInstructionWithSrcSrc<s32>{
       String type;
 
       cmp_s32(Instruction _from, String _type, Reg_s32 _srcLhs, Reg_s32 _srcRhs){
@@ -451,10 +451,10 @@ public class RegISA{
       }
    }
 
-   static class cmp<T extends PrimitiveType> extends RegInstructionWithSrcSrc<T>{
+   static class cmp<T extends PrimitiveType> extends HSAILInstructionWithSrcSrc<T>{
       String type;
 
-      cmp(Instruction _from, String _type, Reg<T> _srcLhs, Reg<T> _srcRhs){
+      cmp(Instruction _from, String _type, HSAILRegister<T> _srcLhs, HSAILRegister<T> _srcRhs){
          super(_from, _srcLhs, _srcRhs);
          type = _type;
       }
@@ -472,7 +472,7 @@ public class RegISA{
       }
    }
 
-   static class cbr extends RegInstruction{
+   static class cbr extends HSAILInstruction{
       int pc;
 
       cbr(Instruction _from, int _pc){
@@ -493,7 +493,7 @@ public class RegISA{
       }
    }
 
-   static class brn extends RegInstruction{
+   static class brn extends HSAILInstruction{
       int pc;
 
       brn(Instruction _from, int _pc){
@@ -518,7 +518,7 @@ public class RegISA{
 
 
 
-   static class call extends RegInstruction{
+   static class call extends HSAILInstruction{
 
       call(Instruction _from){
          super(_from, 0, 0);
@@ -571,7 +571,7 @@ public class RegISA{
    }
 
 
-   static class nyi extends RegInstruction{
+   static class nyi extends HSAILInstruction{
 
       nyi(Instruction _from){
          super(_from, 0, 0);
@@ -590,10 +590,10 @@ public class RegISA{
       }
    }
 
-   static class ld_kernarg<T extends PrimitiveType> extends RegInstructionWithDest<T>{
+   static class ld_kernarg<T extends PrimitiveType> extends HSAILInstructionWithDest<T>{
 
 
-      ld_kernarg(Instruction _from, Reg<T> _dest){
+      ld_kernarg(Instruction _from, HSAILRegister<T> _dest){
          super(_from, _dest);
       }
 
@@ -608,11 +608,11 @@ public class RegISA{
       }
    }
 
-   static abstract class binary_const<T extends PrimitiveType, C extends Number> extends RegInstructionWithDestSrc<T>{
+   static abstract class binary_const<T extends PrimitiveType, C extends Number> extends HSAILInstructionWithDestSrc<T>{
       C value;
       String op;
 
-      binary_const(Instruction _from, String _op, Reg<T> _dest, Reg _src, C _value){
+      binary_const(Instruction _from, String _op, HSAILRegister<T> _dest, HSAILRegister _src, C _value){
          super(_from, _dest, _src);
          value = _value;
          op = _op;
@@ -631,7 +631,7 @@ public class RegISA{
 
    static class add_const<T extends PrimitiveType, C extends Number> extends binary_const<T, C>{
 
-      add_const(Instruction _from, Reg<T> _dest, Reg _src, C _value){
+      add_const(Instruction _from, HSAILRegister<T> _dest, HSAILRegister _src, C _value){
          super(_from, "add_", _dest, _src, _value);
 
       }
@@ -640,7 +640,7 @@ public class RegISA{
 
    static class and_const<T extends PrimitiveType, C extends Number> extends binary_const<T, C>{
 
-      and_const(Instruction _from, Reg<T> _dest, Reg _src, C _value){
+      and_const(Instruction _from, HSAILRegister<T> _dest, HSAILRegister _src, C _value){
          super(_from, "and_", _dest, _src, _value);
 
       }
@@ -654,14 +654,14 @@ public class RegISA{
 
    static class mul_const<T extends PrimitiveType, C extends Number> extends binary_const<T, C>{
 
-      mul_const(Instruction _from, Reg<T> _dest, Reg _src, C _value){
+      mul_const(Instruction _from, HSAILRegister<T> _dest, HSAILRegister _src, C _value){
          super(_from, "mul_", _dest, _src, _value);
 
       }
 
    }
 
-   static class mad extends RegInstructionWithDestSrcSrc<ref, ref>{
+   static class mad extends HSAILInstructionWithDestSrcSrc<ref, ref>{
       long size;
 
       mad(Instruction _from, Reg_ref _dest, Reg_ref _src_lhs, Reg_ref _src_rhs, long _size){
@@ -679,21 +679,21 @@ public class RegISA{
    }
 
 
-   static class cvt<T1 extends PrimitiveType, T2 extends PrimitiveType> extends RegInstruction{
+   static class cvt<T1 extends PrimitiveType, T2 extends PrimitiveType> extends HSAILInstruction{
 
 
-      cvt(Instruction _from, Reg<T1> _dest, Reg<T2> _src){
+      cvt(Instruction _from, HSAILRegister<T1> _dest, HSAILRegister<T2> _src){
          super(_from, 1, 1);
          dests[0] = _dest;
          sources[0] = _src;
       }
 
-      Reg<T1> getDest(){
-         return ((Reg<T1>) dests[0]);
+      HSAILRegister<T1> getDest(){
+         return ((HSAILRegister<T1>) dests[0]);
       }
 
-      Reg<T2> getSrc(){
-         return ((Reg<T2>) sources[0]);
+      HSAILRegister<T2> getSrc(){
+         return ((HSAILRegister<T2>) sources[0]);
       }
 
       @Override void render(HSAILRenderer r){
@@ -708,7 +708,7 @@ public class RegISA{
    }
 
 
-   static class retvoid extends RegInstruction{
+   static class retvoid extends HSAILInstruction{
 
       retvoid(Instruction _from){
          super(_from, 0, 0);
@@ -726,9 +726,9 @@ public class RegISA{
       }
    }
 
-   static class ret<T extends PrimitiveType> extends RegInstructionWithSrc<T>{
+   static class ret<T extends PrimitiveType> extends HSAILInstructionWithSrc<T>{
 
-      ret(Instruction _from, Reg<T> _src){
+      ret(Instruction _from, HSAILRegister<T> _src){
          super(_from, _src);
 
       }
@@ -744,11 +744,11 @@ public class RegISA{
       }
    }
 
-   static class array_store<T extends PrimitiveType> extends RegInstructionWithSrc<T>{
+   static class array_store<T extends PrimitiveType> extends HSAILInstructionWithSrc<T>{
 
       Reg_ref mem;
 
-      array_store(Instruction _from, Reg_ref _mem, Reg<T> _src){
+      array_store(Instruction _from, Reg_ref _mem, HSAILRegister<T> _src){
          super(_from, _src);
 
          mem = _mem;
@@ -767,11 +767,11 @@ public class RegISA{
    }
 
 
-   static class array_load<T extends PrimitiveType> extends RegInstructionWithDest<T>{
+   static class array_load<T extends PrimitiveType> extends HSAILInstructionWithDest<T>{
       Reg_ref mem;
 
 
-      array_load(Instruction _from, Reg<T> _dest, Reg_ref _mem){
+      array_load(Instruction _from, HSAILRegister<T> _dest, Reg_ref _mem){
          super(_from, _dest);
 
          mem = _mem;
@@ -788,12 +788,12 @@ public class RegISA{
       }
    }
 
-   static class field_load<T extends PrimitiveType> extends RegInstructionWithDest<T>{
+   static class field_load<T extends PrimitiveType> extends HSAILInstructionWithDest<T>{
       Reg_ref mem;
       long offset;
 
 
-      field_load(Instruction _from, Reg<T> _dest, Reg_ref _mem, long _offset){
+      field_load(Instruction _from, HSAILRegister<T> _dest, Reg_ref _mem, long _offset){
          super(_from, _dest);
          offset = _offset;
          mem = _mem;
@@ -809,12 +809,12 @@ public class RegISA{
          return (null);
       }
    }
-    static class field_store<T extends PrimitiveType> extends RegInstructionWithSrc<T>{
+    static class field_store<T extends PrimitiveType> extends HSAILInstructionWithSrc<T>{
         Reg_ref mem;
         long offset;
 
 
-        field_store(Instruction _from, Reg<T> _src, Reg_ref _mem, long _offset){
+        field_store(Instruction _from, HSAILRegister<T> _src, Reg_ref _mem, long _offset){
             super(_from, _src);
             offset = _offset;
             mem = _mem;
@@ -833,9 +833,9 @@ public class RegISA{
 
 
 
-    static final class mov<T extends PrimitiveType> extends RegInstructionWithDestSrc{
+    static final class mov<T extends PrimitiveType> extends HSAILInstructionWithDestSrc{
 
-      public mov(Instruction _from, Reg<T> _dest, Reg<T> _src){
+      public mov(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _src){
          super(_from, _dest, _src);
       }
 
@@ -851,11 +851,11 @@ public class RegISA{
       }
    }
 
-   static abstract class binary<T extends PrimitiveType> extends RegInstruction{
+   static abstract class binary<T extends PrimitiveType> extends HSAILInstruction{
 
       String op;
 
-      public binary(Instruction _from, String _op, Reg<T> _dest, Reg<T> _lhs, Reg<T> _rhs){
+      public binary(Instruction _from, String _op, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs){
          super(_from, 1, 2);
          dests[0] = _dest;
          sources[0] = _lhs;
@@ -867,16 +867,16 @@ public class RegISA{
          r.append(op).typeName(getDest()).space().regName(getDest()).separator().regName(getLhs()).separator().regName(getRhs());
       }
 
-      Reg<T> getDest(){
-         return ((Reg<T>) dests[0]);
+      HSAILRegister<T> getDest(){
+         return ((HSAILRegister<T>) dests[0]);
       }
 
-      Reg<T> getRhs(){
-         return ((Reg<T>) sources[1]);
+      HSAILRegister<T> getRhs(){
+         return ((HSAILRegister<T>) sources[1]);
       }
 
-      Reg<T> getLhs(){
-         return ((Reg<T>) sources[0]);
+      HSAILRegister<T> getLhs(){
+         return ((HSAILRegister<T>) sources[0]);
       }
 
       @Override
@@ -887,12 +887,12 @@ public class RegISA{
 
    }
 
-  /* static abstract class binaryRegConst<T extends JavaType, C> extends RegInstruction{
-      Reg<T> dest, lhs;
+  /* static abstract class binaryRegConst<T extends JavaType, C> extends HSAILInstruction{
+      HSAILRegister<T> dest, lhs;
       C value;
       String op;
 
-      public binaryRegConst(Instruction _from, String _op,  Reg<T> _dest, Reg<T> _lhs, C _value){
+      public binaryRegConst(Instruction _from, String _op,  HSAILRegister<T> _dest, HSAILRegister<T> _lhs, C _value){
          super(_from);
          dest = _dest;
          lhs = _lhs;
@@ -906,52 +906,52 @@ public class RegISA{
 
    static  class addConst<T extends JavaType, C> extends binaryRegConst<T, C>{
 
-      public addConst(Instruction _from,   Reg<T> _dest, Reg<T> _lhs, C _value_rhs){
+      public addConst(Instruction _from,   HSAILRegister<T> _dest, HSAILRegister<T> _lhs, C _value_rhs){
          super(_from, "add_", _dest, _lhs, _value_rhs);
       }
    }
    */
 
    static class add<T extends PrimitiveType> extends binary<T>{
-      public add(Instruction _from, Reg<T> _dest, Reg<T> _lhs, Reg<T> _rhs){
+      public add(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs){
          super(_from, "add_", _dest, _lhs, _rhs);
       }
 
    }
 
    static class sub<T extends PrimitiveType> extends binary<T>{
-      public sub(Instruction _from, Reg<T> _dest, Reg<T> _lhs, Reg<T> _rhs){
+      public sub(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs){
          super(_from, "sub_", _dest, _lhs, _rhs);
       }
 
    }
 
    static class div<T extends PrimitiveType> extends binary<T>{
-      public div(Instruction _from, Reg<T> _dest, Reg<T> _lhs, Reg<T> _rhs){
+      public div(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs){
          super(_from, "div_", _dest, _lhs, _rhs);
       }
 
    }
 
    static class mul<T extends PrimitiveType> extends binary<T>{
-      public mul(Instruction _from, Reg<T> _dest, Reg<T> _lhs, Reg<T> _rhs){
+      public mul(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs){
          super(_from, "mul_", _dest, _lhs, _rhs);
       }
 
    }
 
    static class rem<T extends PrimitiveType> extends binary<T>{
-      public rem(Instruction _from, Reg<T> _dest, Reg<T> _lhs, Reg<T> _rhs){
+      public rem(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs){
          super(_from, "rem_", _dest, _lhs, _rhs);
       }
 
    }
 
-   static class mov_const<T extends PrimitiveType, C extends Number> extends RegInstructionWithDest<T>{
+   static class mov_const<T extends PrimitiveType, C extends Number> extends HSAILInstructionWithDest<T>{
 
       C value;
 
-      public mov_const(Instruction _from, Reg<T> _dest, C _value){
+      public mov_const(Instruction _from, HSAILRegister<T> _dest, C _value){
          super(_from, _dest);
          value = _value;
       }
@@ -968,16 +968,16 @@ public class RegISA{
       }
    }
 
-   List<RegInstruction> instructions = new ArrayList<RegInstruction>();
+   List<HSAILInstruction> instructions = new ArrayList<HSAILInstruction>();
    ClassModel.ClassModelMethod method;
 
    boolean optimizeMoves = false || Config.enableOptimizeRegMoves;
 
-   void add(RegInstruction _regInstruction){
+   void add(HSAILInstruction _regInstruction){
       // before we add lets see if this is a redundant mov
       if(optimizeMoves && _regInstruction.sources != null && _regInstruction.sources.length > 0){
          for(int regIndex = 0; regIndex < _regInstruction.sources.length; regIndex++){
-            Reg r = _regInstruction.sources[regIndex];
+            HSAILRegister r = _regInstruction.sources[regIndex];
             if(r.isStack()){
                // look up the list of reg instructions for the last mov which assigns to r
                int i = instructions.size();
@@ -1040,7 +1040,7 @@ public class RegISA{
       java.util.Set<Instruction> s = new java.util.HashSet<Instruction>();
       boolean first = false;
       int count = 0;
-      for(RegInstruction i : instructions){
+      for(HSAILInstruction i : instructions){
          if(!(i instanceof ld_kernarg) && !s.contains(i.from)){
             if(!first){
                r.pad(9).append("workitemaid $s" + (count - 1) + ", 0;").nl();
@@ -1069,13 +1069,13 @@ public class RegISA{
       return (r);
    }
 
-   public Reg getRegOfLastWriteToIndex(int _index){
+   public HSAILRegister getRegOfLastWriteToIndex(int _index){
 
       int idx = instructions.size();
       while(--idx >= 0){
-         RegInstruction i = instructions.get(idx);
+         HSAILInstruction i = instructions.get(idx);
          if(i.dests != null){
-            for(Reg d : i.dests){
+            for(HSAILRegister d : i.dests){
                if(d.index == _index){
                   return (d);
                }
@@ -1102,8 +1102,8 @@ public class RegISA{
       }
    }
 
-   public Reg addmov(Instruction _i, int _from, int _to){
-      Reg r = getRegOfLastWriteToIndex(_i.getPreStackBase() + _i.getMethod().getCodeEntry().getMaxLocals() + _from);
+   public HSAILRegister addmov(Instruction _i, int _from, int _to){
+      HSAILRegister r = getRegOfLastWriteToIndex(_i.getPreStackBase() + _i.getMethod().getCodeEntry().getMaxLocals() + _from);
       addmov(_i, r.type, _from, _to);
       return (r);
    }
@@ -1113,7 +1113,7 @@ public class RegISA{
    ;
 
 
-   public RegISA(ClassModel.ClassModelMethod _method){
+   public HSAILMethod(ClassModel.ClassModelMethod _method){
       method = _method;
       ParseState parseState = ParseState.NONE;
       Instruction lastInstruction = null;
@@ -1383,7 +1383,7 @@ public class RegISA{
                add(new nyi(i));
                break;
             case DUP_X2:{
-               // Reg r = getRegOfLastWriteToIndex(_i.getPreStackBase()+_i.getMethod().getCodeEntry().getMaxLocals()+3);
+               // HSAILRegister r = getRegOfLastWriteToIndex(_i.getPreStackBase()+_i.getMethod().getCodeEntry().getMaxLocals()+3);
                // addmov(_i, 2, 4);
                addmov(i, 2, 3);
                addmov(i, 1, 2);
