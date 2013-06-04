@@ -23,15 +23,15 @@ public class HSAILRenderer extends TextRenderer<HSAILRenderer>{
       return (commaSpace());
    }
 
-   public HSAILRenderer typeName(HSAILMethod.HSAILRegister _reg){
+   public HSAILRenderer typeName(HSAILRegister _reg){
       return (this.append(_reg.type.getHSAName()));
    }
 
-   public HSAILRenderer movTypeName(HSAILMethod.HSAILRegister _reg){
+   public HSAILRenderer movTypeName(HSAILRegister _reg){
       return (this.append("b" + _reg.type.getHsaBits()));
    }
 
-   public HSAILRenderer regName(HSAILMethod.HSAILRegister _reg){
+   public HSAILRenderer regName(HSAILRegister _reg){
       switch(_reg.type.getHsaBits()){
          case 32:
             append("$s");

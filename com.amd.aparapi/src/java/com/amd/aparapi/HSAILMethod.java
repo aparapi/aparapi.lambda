@@ -14,276 +14,6 @@ import java.util.List;
 public class HSAILMethod{
 
 
-   public abstract static class HSAILRegister<T extends PrimitiveType>{
-      int index;
-      public T type;
-      public boolean stack;
-
-      HSAILRegister(int _index, T _type, boolean _stack){
-         index = _index;
-         type = _type;
-         stack = _stack;
-      }
-
-      public boolean isStack(){
-         return (stack);
-      }
-
-      @Override
-      public boolean equals(Object _other){
-         if(_other instanceof HSAILRegister){
-            HSAILRegister otherReg = (HSAILRegister) _other;
-            return (type.equals(otherReg.type) && index == otherReg.index);
-         }
-         return false;
-      }
-
-   }
-
-   public abstract static class Reg_f64 extends HSAILRegister<f64>{
-      Reg_f64(int _index, boolean _stack){
-         super(_index, PrimitiveType.f64, _stack);
-      }
-   }
-
-   public abstract static class Reg_ref extends HSAILRegister<ref>{
-      Reg_ref(int _index, boolean _stack){
-         super(_index, PrimitiveType.ref, _stack);
-      }
-   }
-
-   public abstract static class Reg_u64 extends HSAILRegister<u64>{
-      Reg_u64(int _index, boolean _stack){
-         super(_index, PrimitiveType.u64, _stack);
-      }
-   }
-
-   public abstract static class Reg_s64 extends HSAILRegister<s64>{
-      Reg_s64(int _index, boolean _stack){
-         super(_index, PrimitiveType.s64, _stack);
-      }
-   }
-
-   public abstract static class Reg_s32 extends HSAILRegister<s32>{
-      Reg_s32(int _index, boolean _stack){
-         super(_index, PrimitiveType.s32, _stack);
-      }
-   }
-
-   public abstract static class Reg_f32 extends HSAILRegister<f32>{
-      Reg_f32(int _index, boolean _stack){
-         super(_index, PrimitiveType.f32, _stack);
-      }
-   }
-
-   public static class StackReg_f64 extends Reg_f64{
-      StackReg_f64(Instruction _from, int _offset){
-         super(_from.getPreStackBase() + _from.getMethod().getCodeEntry().getMaxLocals() + _offset, true);
-      }
-   }
-
-   public static class StackReg_f32 extends Reg_f32{
-      StackReg_f32(Instruction _from, int _offset){
-         super(_from.getPreStackBase() + _from.getMethod().getCodeEntry().getMaxLocals() + _offset, true);
-      }
-   }
-
-   public static class StackReg_s64 extends Reg_s64{
-      StackReg_s64(Instruction _from, int _offset){
-         super(_from.getPreStackBase() + _from.getMethod().getCodeEntry().getMaxLocals() + _offset, true);
-      }
-   }
-
-   public static class StackReg_u64 extends Reg_u64{
-      StackReg_u64(Instruction _from, int _offset){
-         super(_from.getPreStackBase() + _from.getMethod().getCodeEntry().getMaxLocals() + _offset, true);
-      }
-   }
-
-   public static class StackReg_s32 extends Reg_s32{
-      StackReg_s32(Instruction _from, int _offset){
-         super(_from.getPreStackBase() + _from.getMethod().getCodeEntry().getMaxLocals() + _offset, true);
-      }
-   }
-
-   public static class StackReg_ref extends Reg_ref{
-      StackReg_ref(Instruction _from, int _offset){
-         super(_from.getPreStackBase() + _from.getMethod().getCodeEntry().getMaxLocals() + _offset, true);
-      }
-   }
-
-   public static class VarReg_f64 extends Reg_f64{
-      VarReg_f64(Instruction _from){
-         super(_from.asLocalVariableAccessor().getLocalVariableTableIndex(), false);
-      }
-   }
-
-   public static class VarReg_s64 extends Reg_s64{
-      VarReg_s64(Instruction _from){
-         super(_from.asLocalVariableAccessor().getLocalVariableTableIndex(), false);
-      }
-   }
-
-   public static class VarReg_u64 extends Reg_u64{
-      VarReg_u64(Instruction _from){
-         super(_from.asLocalVariableAccessor().getLocalVariableTableIndex(), false);
-      }
-   }
-
-   public static class VarReg_ref extends Reg_ref{
-      VarReg_ref(Instruction _from){
-         super(_from.asLocalVariableAccessor().getLocalVariableTableIndex(), false);
-      }
-
-      public VarReg_ref(int _index){
-         super(_index, false);
-      }
-   }
-
-   public static class VarReg_s32 extends Reg_s32{
-      VarReg_s32(Instruction _from){
-         super(_from.asLocalVariableAccessor().getLocalVariableTableIndex(), false);
-      }
-
-      public VarReg_s32(int _index){
-         super(_index, false);
-      }
-   }
-
-   public static class VarReg_f32 extends Reg_f32{
-      VarReg_f32(Instruction _from){
-         super(_from.asLocalVariableAccessor().getLocalVariableTableIndex(), false);
-      }
-
-      public VarReg_f32(int _index){
-         super(_index, false);
-      }
-   }
-
-   static class State{
-      int s32[];
-      float f32[];
-      long s64[];
-      double f64[];
-      Object ref[];
-      PrimitiveType typeInfo[];
-      int maxLocals;
-
-      State(int _maxReg, int _maxLocals){
-         maxLocals = _maxLocals;
-
-         s32 = new int[_maxReg];
-         f32 = new float[_maxReg];
-         s64 = new long[_maxReg];
-         f64 = new double[_maxReg];
-         ref = new Object[_maxReg];
-         typeInfo = new PrimitiveType[_maxReg];
-         for(int i = 0; i < _maxReg; i++){
-            typeInfo[i] = PrimitiveType.none;
-         }
-      }
-
-      void s32Set(int _index, int _value){
-         s32[_index] = _value;
-         typeInfo[_index] = PrimitiveType.s32;
-      }
-
-      void f32Set(int _index, float _value){
-         f32[_index] = _value;
-         typeInfo[_index] = PrimitiveType.f32;
-      }
-
-      void s64Set(int _index, long _value){
-         s64[_index] = _value;
-         typeInfo[_index] = PrimitiveType.s64;
-      }
-
-      void f64Set(int _index, double _value){
-         f64[_index] = _value;
-         typeInfo[_index] = PrimitiveType.f64;
-      }
-
-      void refSet(int _index, Object _value){
-         ref[_index] = _value;
-         typeInfo[_index] = PrimitiveType.ref;
-      }
-
-      int s32Get(int _index){
-         int value = 0;
-         if(typeInfo[_index] == PrimitiveType.s32){
-            value = s32[_index];
-            if(_index >= maxLocals){
-               //clobber
-               typeInfo[_index] = PrimitiveType.none;
-            }
-         }else{
-            throw new IllegalStateException("invalid type for reg " + _index);
-         }
-         return (value);
-      }
-
-      float f32Get(int _index){
-         float value = 0;
-         if(typeInfo[_index] == PrimitiveType.f32){
-            value = f32[_index];
-            if(_index >= maxLocals){
-               //clobber
-               typeInfo[_index] = PrimitiveType.none;
-            }
-         }else{
-            throw new IllegalStateException("invalid type for reg " + _index);
-         }
-         return (value);
-      }
-
-      double f64Get(int _index){
-         double value = 0;
-         if(typeInfo[_index] == PrimitiveType.f64){
-            value = f64[_index];
-            if(_index >= maxLocals){
-               //clobber
-               typeInfo[_index] = PrimitiveType.none;
-            }
-         }else{
-            throw new IllegalStateException("invalid type for reg " + _index);
-         }
-         return (value);
-      }
-
-      long s64Get(int _index){
-         long value = 0;
-         if(typeInfo[_index] == PrimitiveType.s64){
-            value = s64[_index];
-            if(_index >= maxLocals){
-               //clobber
-               typeInfo[_index] = PrimitiveType.none;
-            }
-         }else{
-            throw new IllegalStateException("invalid type for reg " + _index);
-         }
-         return (value);
-      }
-
-      Object refGet(int _index){
-         Object value = 0;
-         if(typeInfo[_index] == PrimitiveType.ref){
-            value = ref[_index];
-            if(_index >= maxLocals){
-               //clobber
-               typeInfo[_index] = PrimitiveType.none;
-            }
-         }else{
-            throw new IllegalStateException("invalid type for reg " + _index);
-         }
-         return (value);
-      }
-
-
-   }
-
-   static class Delta{
-
-   }
 
 
    static abstract class HSAILInstruction{
@@ -298,7 +28,6 @@ public class HSAILMethod{
          sources = new HSAILRegister[_sourceCount];
       }
 
-      abstract public Delta execute(State state);
 
       abstract void render(HSAILRenderer r);
 
@@ -396,11 +125,6 @@ public class HSAILMethod{
          pc = _pc;
       }
 
-      @Override
-      public Delta execute(State state){
-         System.out.println("branch " + name);
-         return (null);
-      }
 
       @Override
       public void render(HSAILRenderer r){
@@ -417,11 +141,6 @@ public class HSAILMethod{
          type = _type;
       }
 
-      @Override
-      public Delta execute(State state){
-         System.out.println("cmp_s32_const_0 " + type);
-         return (null);
-      }
 
       @Override
       public void render(HSAILRenderer r){
@@ -438,11 +157,7 @@ public class HSAILMethod{
          type = _type;
       }
 
-      @Override
-      public Delta execute(State state){
-         System.out.println("cmp_s32 " + type);
-         return (null);
-      }
+
 
       @Override
       public void render(HSAILRenderer r){
@@ -459,11 +174,7 @@ public class HSAILMethod{
          type = _type;
       }
 
-      @Override
-      public Delta execute(State state){
-         System.out.println("cmp " + type);
-         return (null);
-      }
+
 
       @Override
       public void render(HSAILRenderer r){
@@ -480,11 +191,7 @@ public class HSAILMethod{
          pc = _pc;
       }
 
-      @Override
-      public Delta execute(State state){
-         System.out.println("cbr " + pc);
-         return (null);
-      }
+
 
       @Override
       public void render(HSAILRenderer r){
@@ -501,11 +208,7 @@ public class HSAILMethod{
          pc = _pc;
       }
 
-      @Override
-      public Delta execute(State state){
-         System.out.println("brn " + pc);
-         return (null);
-      }
+
 
       @Override
       public void render(HSAILRenderer r){
@@ -563,11 +266,7 @@ public class HSAILMethod{
          }
       }
 
-      @Override
-      public Delta execute(State state){
-         System.out.println("call ");
-         return (null);
-      }
+
    }
 
 
@@ -577,11 +276,7 @@ public class HSAILMethod{
          super(_from, 0, 0);
       }
 
-      @Override
-      public Delta execute(State state){
-         System.out.println("nyi ");
-         return (null);
-      }
+
 
       @Override void render(HSAILRenderer r){
 
@@ -601,11 +296,7 @@ public class HSAILMethod{
          r.append("ld_kernarg_").typeName(getDest()).space().regName(getDest()).separator().append("[%_arg").append(getDest().index).append("]");
       }
 
-      @Override
-      public Delta execute(State state){
-         System.out.println("ld_kernarg ");
-         return (null);
-      }
+
    }
 
    static abstract class binary_const<T extends PrimitiveType, C extends Number> extends HSAILInstructionWithDestSrc<T>{
@@ -622,11 +313,7 @@ public class HSAILMethod{
          r.append(op).typeName(getDest()).space().regName(getDest()).separator().regName(getSrc()).separator().append(value);
       }
 
-      @Override
-      public Delta execute(State state){
-         System.out.println(op + " ");
-         return (null);
-      }
+
    }
 
    static class add_const<T extends PrimitiveType, C extends Number> extends binary_const<T, C>{
@@ -669,9 +356,6 @@ public class HSAILMethod{
          size = _size;
       }
 
-      @Override public Delta execute(State state){
-         return null;  //To change body of implemented methods use File | Settings | File Templates.
-      }
 
       @Override void render(HSAILRenderer r){
          r.append("mad_").typeName(getDest()).space().regName(getDest()).separator().regName(getSrcLhs()).separator().append(size).separator().regName(getSrcRhs());
@@ -700,11 +384,7 @@ public class HSAILMethod{
          r.append("cvt_").typeName(getDest()).append("_").typeName(getSrc()).space().regName(getDest()).separator().regName(getSrc());
       }
 
-      @Override
-      public Delta execute(State state){
-         System.out.println("cvt ");
-         return (null);
-      }
+
    }
 
 
@@ -719,11 +399,7 @@ public class HSAILMethod{
          r.append("ret");
       }
 
-      @Override
-      public Delta execute(State state){
-         System.out.println("ret ");
-         return (null);
-      }
+
    }
 
    static class ret<T extends PrimitiveType> extends HSAILInstructionWithSrc<T>{
@@ -737,11 +413,7 @@ public class HSAILMethod{
          r.append("ret_").typeName(getSrc()).space().regName(getSrc());
       }
 
-      @Override
-      public Delta execute(State state){
-         System.out.println("ret ");
-         return (null);
-      }
+
    }
 
    static class array_store<T extends PrimitiveType> extends HSAILInstructionWithSrc<T>{
@@ -759,11 +431,7 @@ public class HSAILMethod{
          r.append("st_global_").typeName(getSrc()).space().regName(getSrc()).separator().append("[").regName(mem).append("+").array_base_offset().append("]");
       }
 
-      @Override
-      public Delta execute(State state){
-         System.out.println("array_store ");
-         return (null);
-      }
+
    }
 
 
@@ -781,11 +449,7 @@ public class HSAILMethod{
          r.append("ld_global_").typeName(getDest()).space().regName(getDest()).separator().append("[").regName(mem).append("+").array_base_offset().append("]");
       }
 
-      @Override
-      public Delta execute(State state){
-         System.out.println("array_load ");
-         return (null);
-      }
+
    }
 
    static class field_load<T extends PrimitiveType> extends HSAILInstructionWithDest<T>{
@@ -803,11 +467,7 @@ public class HSAILMethod{
          r.append("ld_global_").typeName(getDest()).space().regName(getDest()).separator().append("[").regName(mem).append("+").append(offset).append("]");
       }
 
-      @Override
-      public Delta execute(State state){
-         System.out.println("field_load ");
-         return (null);
-      }
+
    }
     static class field_store<T extends PrimitiveType> extends HSAILInstructionWithSrc<T>{
         Reg_ref mem;
@@ -824,11 +484,7 @@ public class HSAILMethod{
             r.append("st_global_").typeName(getSrc()).space().regName(getSrc()).separator().append("[").regName(mem).append("+").append(offset).append("]");
         }
 
-        @Override
-        public Delta execute(State state){
-            System.out.println("field_store ");
-            return (null);
-        }
+
     }
 
 
@@ -844,11 +500,7 @@ public class HSAILMethod{
 
       }
 
-      @Override
-      public Delta execute(State state){
-         System.out.println("mov ");
-         return (null);
-      }
+
    }
 
    static abstract class binary<T extends PrimitiveType> extends HSAILInstruction{
@@ -879,11 +531,7 @@ public class HSAILMethod{
          return ((HSAILRegister<T>) sources[0]);
       }
 
-      @Override
-      public Delta execute(State state){
-         System.out.println(op + " ");
-         return (null);
-      }
+
 
    }
 
@@ -961,11 +609,7 @@ public class HSAILMethod{
 
       }
 
-      @Override
-      public Delta execute(State state){
-         System.out.println("mov const ");
-         return (null);
-      }
+
    }
 
    List<HSAILInstruction> instructions = new ArrayList<HSAILInstruction>();
