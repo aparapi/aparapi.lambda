@@ -7,31 +7,31 @@ package com.amd.aparapi;
  * Time: 9:55 AM
  * To change this template use File | Settings | File Templates.
  */
-public class RegISARenderer extends TextRenderer<RegISARenderer>{
+public class HSAILRenderer extends TextRenderer<HSAILRenderer>{
 
 
-   public RegISARenderer label(int _pc){
+   public HSAILRenderer label(int _pc){
       return (append(String.format("@L%d", _pc)));
    }
 
-   public RegISARenderer array_base_offset(){
+   public HSAILRenderer array_base_offset(){
 
       return (append(UnsafeWrapper.arrayBaseOffset(int[].class)));
    }
 
-   public RegISARenderer separator(){
+   public HSAILRenderer separator(){
       return (commaSpace());
    }
 
-   public RegISARenderer typeName(RegISA.Reg _reg){
+   public HSAILRenderer typeName(RegISA.Reg _reg){
       return (this.append(_reg.type.getHSAName()));
    }
 
-   public RegISARenderer movTypeName(RegISA.Reg _reg){
+   public HSAILRenderer movTypeName(RegISA.Reg _reg){
       return (this.append("b" + _reg.type.getHsaBits()));
    }
 
-   public RegISARenderer regName(RegISA.Reg _reg){
+   public HSAILRenderer regName(RegISA.Reg _reg){
       switch(_reg.type.getHsaBits()){
          case 32:
             append("$s");
@@ -46,7 +46,7 @@ public class RegISARenderer extends TextRenderer<RegISARenderer>{
       return (this.append(_reg.index));
    }
 
-   public RegISARenderer i(Instruction from){
+   public HSAILRenderer i(Instruction from){
 
       mark().append(from.getByteCode().getName()).relpad(8);//InstructionHelper.getLabel(i, false, false, false);
 
