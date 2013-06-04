@@ -32,7 +32,7 @@ public class Squares{
 
          out[i]=0;
       }
-      RegISARenderer renderer = new RegISARenderer();
+      HSAILRenderer renderer = new HSAILRenderer();
       //renderer.setShowLineNumbers(false);
       renderer.setShowComments(true);
       new RegISA(method).render(renderer);

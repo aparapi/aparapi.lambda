@@ -5,7 +5,7 @@ import com.amd.aparapi.ClassModel;
 import com.amd.aparapi.ClassParseException;
 import com.amd.aparapi.OkraRunner;
 import com.amd.aparapi.RegISA;
-import com.amd.aparapi.RegISARenderer;
+import com.amd.aparapi.HSAILRenderer;
 
 
 public class Txfer {
@@ -26,7 +26,7 @@ public class Txfer {
       method.getInstructions();
       OkraRunner runner = new OkraRunner();
 
-      RegISARenderer renderer = new RegISARenderer();
+      HSAILRenderer renderer = new HSAILRenderer();
       renderer.setShowComments(true);
       new RegISA(method).render(renderer);
       System.out.println(renderer.toString());

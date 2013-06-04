@@ -17,7 +17,7 @@ public class Doubles{
       method.getInstructions();
       OkraRunner runner = new OkraRunner();
 
-      RegISARenderer renderer = new RegISARenderer();
+      HSAILRenderer renderer = new HSAILRenderer();
       renderer.setShowComments(true);
       new RegISA(method).render(renderer);
       System.out.println(renderer.toString());

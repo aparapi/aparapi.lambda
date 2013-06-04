@@ -300,7 +300,7 @@ public class RegISA{
 
       abstract public Delta execute(State state);
 
-      abstract void render(RegISARenderer r);
+      abstract void render(HSAILRenderer r);
 
    }
 
@@ -403,7 +403,7 @@ public class RegISA{
       }
 
       @Override
-      public void render(RegISARenderer r){
+      public void render(HSAILRenderer r){
          r.append(name + " ");
          r.label(pc);
       }
@@ -424,7 +424,7 @@ public class RegISA{
       }
 
       @Override
-      public void render(RegISARenderer r){
+      public void render(HSAILRenderer r){
          r.append("cmp_").append(type).append("_b1_").typeName(getSrc()).space().append("$c1").separator().regName(getSrc()).separator().append("0");
 
       }
@@ -445,7 +445,7 @@ public class RegISA{
       }
 
       @Override
-      public void render(RegISARenderer r){
+      public void render(HSAILRenderer r){
          r.append("cmp_").append(type).append("_b1_").typeName(getSrcLhs()).space().append("$c1").separator().regName(getSrcLhs()).separator().regName(getSrcRhs());
 
       }
@@ -466,7 +466,7 @@ public class RegISA{
       }
 
       @Override
-      public void render(RegISARenderer r){
+      public void render(HSAILRenderer r){
          r.append("cmp_").append(type).append("u").append("_b1_").typeName(getSrcLhs()).space().append("$c1").separator().regName(getSrcLhs()).separator().regName(getSrcRhs());
 
       }
@@ -487,7 +487,7 @@ public class RegISA{
       }
 
       @Override
-      public void render(RegISARenderer r){
+      public void render(HSAILRenderer r){
          r.append("cbr").space().append("$c1").separator().label(pc);
 
       }
@@ -508,7 +508,7 @@ public class RegISA{
       }
 
       @Override
-      public void render(RegISARenderer r){
+      public void render(HSAILRenderer r){
          r.append("brn").space().label(pc);
 
       }
@@ -524,7 +524,7 @@ public class RegISA{
          super(_from, 0, 0);
       }
 
-      @Override void render(RegISARenderer r){
+      @Override void render(HSAILRenderer r){
          String dotClassName = from.asMethodCall().getConstantPoolMethodEntry().getClassEntry().getDotClassName();
          String name = from.asMethodCall().getConstantPoolMethodEntry().getName();
          TypeHelper.JavaMethodArgsAndReturnType argsAndReturnType = from.asMethodCall().getConstantPoolMethodEntry().getArgsAndReturnType();
@@ -583,7 +583,7 @@ public class RegISA{
          return (null);
       }
 
-      @Override void render(RegISARenderer r){
+      @Override void render(HSAILRenderer r){
 
          r.append("NYI ").i(from);
 
@@ -597,7 +597,7 @@ public class RegISA{
          super(_from, _dest);
       }
 
-      @Override void render(RegISARenderer r){
+      @Override void render(HSAILRenderer r){
          r.append("ld_kernarg_").typeName(getDest()).space().regName(getDest()).separator().append("[%_arg").append(getDest().index).append("]");
       }
 
@@ -618,7 +618,7 @@ public class RegISA{
          op = _op;
       }
 
-      @Override void render(RegISARenderer r){
+      @Override void render(HSAILRenderer r){
          r.append(op).typeName(getDest()).space().regName(getDest()).separator().regName(getSrc()).separator().append(value);
       }
 
@@ -645,7 +645,7 @@ public class RegISA{
 
       }
 
-      @Override void render(RegISARenderer r){
+      @Override void render(HSAILRenderer r){
          r.append(op).append("b64").space().regName(getDest()).separator().regName(getSrc()).separator().append(value);
       }
 
@@ -673,7 +673,7 @@ public class RegISA{
          return null;  //To change body of implemented methods use File | Settings | File Templates.
       }
 
-      @Override void render(RegISARenderer r){
+      @Override void render(HSAILRenderer r){
          r.append("mad_").typeName(getDest()).space().regName(getDest()).separator().regName(getSrcLhs()).separator().append(size).separator().regName(getSrcRhs());
       }
    }
@@ -696,7 +696,7 @@ public class RegISA{
          return ((Reg<T2>) sources[0]);
       }
 
-      @Override void render(RegISARenderer r){
+      @Override void render(HSAILRenderer r){
          r.append("cvt_").typeName(getDest()).append("_").typeName(getSrc()).space().regName(getDest()).separator().regName(getSrc());
       }
 
@@ -715,7 +715,7 @@ public class RegISA{
 
       }
 
-      @Override void render(RegISARenderer r){
+      @Override void render(HSAILRenderer r){
          r.append("ret");
       }
 
@@ -733,7 +733,7 @@ public class RegISA{
 
       }
 
-      @Override void render(RegISARenderer r){
+      @Override void render(HSAILRenderer r){
          r.append("ret_").typeName(getSrc()).space().regName(getSrc());
       }
 
@@ -754,7 +754,7 @@ public class RegISA{
          mem = _mem;
       }
 
-      @Override void render(RegISARenderer r){
+      @Override void render(HSAILRenderer r){
          // r.append("st_global_").typeName(getSrc()).space().append("[").regName(mem).append("+").array_len_offset().append("]").separator().regName(getSrc());
          r.append("st_global_").typeName(getSrc()).space().regName(getSrc()).separator().append("[").regName(mem).append("+").array_base_offset().append("]");
       }
@@ -777,7 +777,7 @@ public class RegISA{
          mem = _mem;
       }
 
-      @Override void render(RegISARenderer r){
+      @Override void render(HSAILRenderer r){
          r.append("ld_global_").typeName(getDest()).space().regName(getDest()).separator().append("[").regName(mem).append("+").array_base_offset().append("]");
       }
 
@@ -799,7 +799,7 @@ public class RegISA{
          mem = _mem;
       }
 
-      @Override void render(RegISARenderer r){
+      @Override void render(HSAILRenderer r){
          r.append("ld_global_").typeName(getDest()).space().regName(getDest()).separator().append("[").regName(mem).append("+").append(offset).append("]");
       }
 
@@ -820,7 +820,7 @@ public class RegISA{
             mem = _mem;
         }
 
-        @Override void render(RegISARenderer r){
+        @Override void render(HSAILRenderer r){
             r.append("st_global_").typeName(getSrc()).space().regName(getSrc()).separator().append("[").regName(mem).append("+").append(offset).append("]");
         }
 
@@ -839,7 +839,7 @@ public class RegISA{
          super(_from, _dest, _src);
       }
 
-      @Override void render(RegISARenderer r){
+      @Override void render(HSAILRenderer r){
          r.append("mov_").movTypeName(getDest()).space().regName(getDest()).separator().regName(getSrc());
 
       }
@@ -863,7 +863,7 @@ public class RegISA{
          op = _op;
       }
 
-      @Override void render(RegISARenderer r){
+      @Override void render(HSAILRenderer r){
          r.append(op).typeName(getDest()).space().regName(getDest()).separator().regName(getLhs()).separator().regName(getRhs());
       }
 
@@ -899,7 +899,7 @@ public class RegISA{
          value = _value;
          op = _op;
       }
-      @Override void render(RegISARenderer r){
+      @Override void render(HSAILRenderer r){
          r.append(op).typeName(dest).space().regName(dest).separator().regName(lhs).separator().append(value.toString());
       }
    }
@@ -956,7 +956,7 @@ public class RegISA{
          value = _value;
       }
 
-      @Override void render(RegISARenderer r){
+      @Override void render(HSAILRenderer r){
          r.append("mov_").movTypeName(getDest()).space().regName(getDest()).separator().append(value);
 
       }
@@ -1011,7 +1011,7 @@ public class RegISA{
    }
 
 
-   public RegISARenderer render(RegISARenderer r){
+   public HSAILRenderer render(HSAILRenderer r){
       r.append("version 1:0:large;").nl();
       r.append("kernel &" + method.getName() + "(");
       int argOffset = method.isStatic() ? 0 : 1;
