@@ -656,7 +656,8 @@ public class HSAILMethod{
 
 
    public HSAILRenderer render(HSAILRenderer r){
-      r.append("version 1:0:large;").nl();
+     // r.append("version 1:0:large;").nl();
+      r.append("version 0:95: $full : $large;").nl();
       r.append("kernel &" + method.getName() + "(");
       int argOffset = method.isStatic() ? 0 : 1;
       if(!method.isStatic()){
@@ -687,7 +688,7 @@ public class HSAILMethod{
       for(HSAILInstruction i : instructions){
          if(!(i instanceof ld_kernarg) && !s.contains(i.from)){
             if(!first){
-               r.pad(9).append("workitemaid $s" + (count - 1) + ", 0;").nl();
+               r.pad(9).append("workitemabsid_u32 $s" + (count - 1) + ", 0;").nl();
                first = true;
             }
             s.add(i.from);

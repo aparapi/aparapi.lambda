@@ -8,7 +8,7 @@ public class Doubles{
    double[] doubles = new double[32];
 
    public void run(int id) {
-           doubles[id] = id;
+           doubles[id] = id*2;
    }
 
    public void test() throws ClassParseException{
