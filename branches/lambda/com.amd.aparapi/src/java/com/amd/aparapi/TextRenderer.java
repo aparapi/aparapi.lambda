@@ -78,14 +78,16 @@ public class TextRenderer<T extends TextRenderer>{
    int lineNumber = 1;
    boolean showLineNumbers = false;
 
-   public void setShowLineNumbers(boolean _showLineNumbers){
+   public T setShowLineNumbers(boolean _showLineNumbers){
       showLineNumbers = _showLineNumbers;
+      return((T)this);
    }
 
    boolean showComments = false;
 
-   public void setShowComments(boolean _showComments){
+   public T setShowComments(boolean _showComments){
       showComments = _showComments;
+      return((T)this);
    }
 
    public boolean isShowingComments(){

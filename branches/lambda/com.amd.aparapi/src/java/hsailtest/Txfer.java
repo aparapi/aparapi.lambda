@@ -20,18 +20,19 @@ public class Txfer {
       ClassModel classModel = ClassModel.getClassModel(Txfer.class);
       ClassModel.ClassModelMethod method = classModel.getMethod("run", "(I)V");
       method.getInstructions();
-      OkraRunner runner = new OkraRunner();
 
-      HSAILRenderer renderer = new HSAILRenderer();
-      renderer.setShowComments(true);
-      new HSAILMethod(method).render(renderer);
-      System.out.println(renderer.toString());
+
+      String hsail =  new HSAILMethod(method).render(new HSAILRenderer().setShowComments(true)).toString();
+      System.out.println(hsail);
+
        for (int i=0; i< in.length; i++){
            in[i]=i;
            out[i]=0;
        }
 
-      runner.run(renderer.toString(), in.length, this,  in.length);
+      new OkraRunner().run(hsail, in.length, this,  in.length);
+
+
        for (int i=0; i< in.length; i++){
            System.out.print("("+in[i]+","+out[i]+"),");
        }
