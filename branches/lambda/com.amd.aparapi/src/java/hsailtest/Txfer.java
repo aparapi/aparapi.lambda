@@ -19,8 +19,6 @@ public class Txfer {
    public void test() throws ClassParseException{
       ClassModel classModel = ClassModel.getClassModel(Txfer.class);
       ClassModel.ClassModelMethod method = classModel.getMethod("run", "(I)V");
-      method.getInstructions();
-
 
       String hsail =  new HSAILMethod(method).render(new HSAILRenderer().setShowComments(true)).toString();
       System.out.println(hsail);
