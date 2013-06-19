@@ -658,7 +658,8 @@ public class HSAILMethod{
    public HSAILRenderer render(HSAILRenderer r){
      // r.append("version 1:0:large;").nl();
       r.append("version 0:95: $full : $large;").nl();
-      r.append("kernel &" + method.getName() + "(");
+     // r.append("kernel &" + method.getName() + "(");
+      r.append("kernel &run(");
       int argOffset = method.isStatic() ? 0 : 1;
       if(!method.isStatic()){
          r.nl().pad(3).append("kernarg_u64 %_arg0");
