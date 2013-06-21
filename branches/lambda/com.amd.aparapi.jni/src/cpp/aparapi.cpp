@@ -964,7 +964,7 @@ JNI_JAVA(jint, OpenCLRunner, runJNI)
                      memList.remove((cl_mem)arg->arrayBuffer->mem, __LINE__, (char *)__FILE__);
                   }
                   status = clReleaseMemObject((cl_mem)arg->arrayBuffer->mem);
-                  //fprintf(stdout, "dispose arg %d %0lx\n", i, arg->arrayBuffer->mem);
+                  //fprintf(stdout, "dispose arg %d %p\n", i, arg->arrayBuffer->mem);
                   ASSERT_CL_NO_RETURN("clReleaseMemObject()");
                   arg->arrayBuffer->mem = (cl_mem)0;
                }
@@ -981,8 +981,8 @@ JNI_JAVA(jint, OpenCLRunner, runJNI)
                   if (mask & CL_MEM_READ_ONLY) strcat(arg->arrayBuffer->memSpec,"|CL_MEM_READ_ONLY");
                   if (mask & CL_MEM_WRITE_ONLY) strcat(arg->arrayBuffer->memSpec,"|CL_MEM_WRITE_ONLY");
 
-                  config->indentf("%s %d clCreateBuffer(context, %s, size=%08x bytes, address=%08lx, &status)\n", arg->name, 
-                        argIdx, arg->arrayBuffer->memSpec, arg->arrayBuffer->lengthInBytes, (unsigned long)arg->arrayBuffer->addr);
+                  config->indentf("%s %d clCreateBuffer(context, %s, size=%08x bytes, address=%p, &status)\n", arg->name, 
+                        argIdx, arg->arrayBuffer->memSpec, arg->arrayBuffer->lengthInBytes, arg->arrayBuffer->addr);
                }
                arg->arrayBuffer->mem = clCreateBuffer(jniContext->context, arg->arrayBuffer->memMask, 
                      arg->arrayBuffer->lengthInBytes, arg->arrayBuffer->addr, &status);
@@ -1580,7 +1580,7 @@ JNI_JAVA(jint, KernelRunner, getJNI)
 
             status = clEnqueueReadBuffer(jniContext->commandQueue, arg->arrayBuffer->mem, CL_FALSE, 0, 
                   arg->arrayBuffer->lengthInBytes,arg->arrayBuffer->addr , 0, NULL, &jniContext->readEvents[0]);
-            config->indentf("explicitly read %s ptr=%lx len=%d\n", arg->name, (unsigned long)arg->arrayBuffer->addr,arg->arrayBuffer->lengthInBytes );
+            config->indentf("explicitly read %s ptr=%p len=%d\n", arg->name, arg->arrayBuffer->addr,arg->arrayBuffer->lengthInBytes );
             if (status != CL_SUCCESS) {
                PRINT_CL_ERR(status, "clEnqueueReadBuffer()");
                return status;
