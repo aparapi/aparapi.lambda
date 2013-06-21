@@ -21,7 +21,7 @@ public class SquaresLambda{
       OkraRunner runner = new OkraRunner();
       IntConsumer ic =  gid -> {
          in[gid]=gid;
-         out[gid] = 4;/*in[gid] * in[gid];*/
+         out[gid] = in[gid] * in[gid];
       };
 
       HSAILRenderer renderer = new HSAILRenderer();
@@ -31,7 +31,7 @@ public class SquaresLambda{
       System.out.println(renderer.toString());
 
       SquaresLambda s = new SquaresLambda();
-      runner.run(renderer.toString(), in.length, s, in, out, in.length);
+      runner.run(renderer.toString(), in.length,  in, out, in.length);
       for (int i=0; i< in.length; i++){
          System.out.print("("+in[i]+","+out[i]+"),");
       }
