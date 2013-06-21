@@ -11,6 +11,7 @@ public abstract class Device{
       GPU,
       CPU,
       JTP,
+      HSA,
       SEQ
    }
 
@@ -57,6 +58,11 @@ public abstract class Device{
 
    public static Device jtp(){
       return (new JavaDevice());
+
+   }
+
+   public static Device hsa(){
+      return (new HSADevice());
 
    }
 
