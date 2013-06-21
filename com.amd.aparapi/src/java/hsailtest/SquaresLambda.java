@@ -1,21 +1,22 @@
 package hsailtest;
 
-import com.amd.aparapi.*;
-import java.util.function.IntConsumer;
+import com.amd.aparapi.AparapiException;
+import com.amd.aparapi.Device;
 
 
 public class SquaresLambda{
 
    public static void main(String[] args) throws AparapiException{
-      int in[] = new int[10];
-      int out[] = new int[in.length];
+      final int len=10;
+      int in[] = new int[len];
+      int out[] = new int[len];
 
-      Device.hsa().forEach(in.length, gid -> {
+      Device.hsa().forEach(len, gid -> {
          in[gid]=gid;
          out[gid] = in[gid] * in[gid];
       });
 
-      for (int i=0; i< in.length; i++){
+      for (int i=0; i<len; i++){
          System.out.print("("+in[i]+","+out[i]+"),");
       }
    }
