@@ -13,14 +13,11 @@ A HSA+Lambda enabled Aparapi will remove many of Aparapi's constraints.  HSA all
  * We can access multi-dim arrays efficiently
  * We can access Java objects directly from the GPU. 
 
-These are all huge benefits.
+These are all substantial benefits.
 
 In the existing code (early prototype) we provide access to HSA as a specific device type.  
 
-So our ubiquitous 'squares' example would be written as:
-
-
-So you can run the familiar 'squares' kernel using   
+So our ubiquitous 'squares' example will initially be written as:
 
 {{{
 int in[] = ..// 
@@ -30,7 +27,11 @@ Device.hsa().forEach(in.length, (i)->{
  });
 }}}
 
+At present access to HSA compatible devices is pretty restricted, so we propose to make use of a HSA simulator/emulator for Linux which will allow us to generate HSAIL code, and to emulate it's execution.  
 
+This emulator is a separate project and is to be open sourced very soon.  
+
+As soon as the emulator is available we will provide instructions for building the Aparapi HSA/lambda branch and executing on Linx platforms. 
 
 
 
