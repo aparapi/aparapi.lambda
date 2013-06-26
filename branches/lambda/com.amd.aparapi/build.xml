@@ -2,6 +2,8 @@
 
 <project name="com.amd.aparapi" default="build" basedir=".">
 
+    <property environment="env"/>
+
     <!--
             USER CONFIGURABLE PROPERTIES
     -->
@@ -65,9 +67,6 @@
         <delete file="aparapi.jar"/>
     </target>
 
-    <path id="path">
-       <pathelement path="/home/gfrost/okra/okra/dist/okra.jar"/>
-    </path>
 
     <target name="build" depends="clean" description="Build Aparapi">
         <mkdir dir="classes"/>
@@ -76,10 +75,10 @@
                debuglevel="lines,vars,source"
                srcdir="${basedir}/src/java"
                destdir="${basedir}/classes"
+               classpath="${env.OKRA}/dist/okra.jar"
                includeantruntime="false">
             <!--    <compilerarg value="-Xlint"/>
             <compilerarg value="-Xlint:-path"/>-->
-        <classpath refid="path"/>
         </javac>
         <jar jarfile="${basedir}/dist/aparapi.jar" basedir="${basedir}/classes"/>
     </target>
