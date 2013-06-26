@@ -65,6 +65,10 @@
         <delete file="aparapi.jar"/>
     </target>
 
+    <path id="path">
+       <pathelement path="/home/gfrost/okra/okra/dist/okra.jar"/>
+    </path>
+
     <target name="build" depends="clean" description="Build Aparapi">
         <mkdir dir="classes"/>
         <mkdir dir="dist"/>
@@ -75,6 +79,7 @@
                includeantruntime="false">
             <!--    <compilerarg value="-Xlint"/>
             <compilerarg value="-Xlint:-path"/>-->
+        <classpath refid="path"/>
         </javac>
         <jar jarfile="${basedir}/dist/aparapi.jar" basedir="${basedir}/classes"/>
     </target>
