@@ -27,15 +27,15 @@ Device.hsa().forEach(in.length, (i)->{
  });
 }}}
 
-At present access to HSA compatible devices is pretty restricted, so we propose to make use of a HSA simulator/emulator for Linux which will allow us to generate HSAIL code, and to emulate it's execution.  
+At present access to HSA compatible devices is pretty restricted, so we propose to make use of a HSA simulator/emulator for Linux which will allow us to generate HSAIL code, and to emulate it's execution. 
 
-This emulator is a separate project and is to be open sourced very soon.  
+To use the lambda/HSA branch you will need to build the simulator
 
-As soon as the emulator is available we will provide instructions for building the Aparapi HSA/lambda branch and executing on Linx platforms. 
+Follow the instructions here to download and build the simulator https://github.com/HSAFoundation/Okra-Interface-to-HSAIL-Simulator 
+ 
+You will also need a Java 8 compatible JDK, which you can get from https://jdk8.java.net/download.html
 
-
-
-
+I am also using IntelliJ which has preliminary support for Java 8 features. You can download the community edition of IntelliJ from http://www.jetbrains.com/idea/
 
 
     
