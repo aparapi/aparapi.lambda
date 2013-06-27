@@ -493,6 +493,33 @@ public class HSAILMethod{
 
    }
 
+   static abstract class unary<T extends PrimitiveType> extends HSAILInstructionWithDestSrc{
+
+      String op;
+
+      public unary(Instruction _from, String _op, HSAILRegister<T> _destSrc){
+         super(_from, _destSrc, _destSrc);
+
+         op = _op;
+      }
+
+      @Override void render(HSAILRenderer r){
+         r.append(op).typeName(getDest()).space().regName(getDest()).separator().regName(getDest());
+      }
+
+      HSAILRegister<T> getDest(){
+         return ((HSAILRegister<T>) dests[0]);
+      }
+
+      HSAILRegister<T> getSrc(){
+         return ((HSAILRegister<T>) sources[0]);
+      }
+
+
+
+
+   }
+
    static abstract class binary<T extends PrimitiveType> extends HSAILInstruction{
 
       String op;
@@ -580,6 +607,59 @@ public class HSAILMethod{
    static class rem<T extends PrimitiveType> extends binary<T>{
       public rem(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs){
          super(_from, "rem_", _dest, _lhs, _rhs);
+      }
+
+   }
+   static class neg<T extends PrimitiveType> extends unary<T>{
+      public neg(Instruction _from, HSAILRegister<T> _destSrc){
+         super(_from, "neg_", _destSrc);
+      }
+
+   }
+   static class shl<T extends PrimitiveType> extends binary<T>{
+      public shl(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs){
+         super(_from, "shl_", _dest, _lhs, _rhs);
+      }
+
+   }
+   static class shr<T extends PrimitiveType> extends binary<T>{
+      public shr(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs){
+         super(_from, "shr_", _dest, _lhs, _rhs);
+      }
+
+   }
+   static class ushr<T extends PrimitiveType> extends binary<T>{
+      public ushr(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs){
+         super(_from, "ushr_", _dest, _lhs, _rhs);
+      }
+
+   }
+
+
+   static class and<T extends PrimitiveType> extends binary<T>{
+      public and(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs){
+         super(_from, "and_", _dest, _lhs, _rhs);
+      }
+      @Override void render(HSAILRenderer r){
+         r.append(op).movTypeName(getDest()).space().regName(getDest()).separator().regName(getLhs()).separator().regName(getRhs());
+      }
+
+   }
+   static class or<T extends PrimitiveType> extends binary<T>{
+      public or(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs){
+         super(_from, "or_", _dest, _lhs, _rhs);
+      }
+      @Override void render(HSAILRenderer r){
+         r.append(op).movTypeName(getDest()).space().regName(getDest()).separator().regName(getLhs()).separator().regName(getRhs());
+      }
+
+   }
+   static class xor<T extends PrimitiveType> extends binary<T>{
+      public xor(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs){
+         super(_from, "xor_", _dest, _lhs, _rhs);
+      }
+      @Override void render(HSAILRenderer r){
+         r.append(op).movTypeName(getDest()).space().regName(getDest()).separator().regName(getLhs()).separator().regName(getRhs());
       }
 
    }
@@ -862,54 +942,47 @@ public class HSAILMethod{
             case ALOAD_3:
                add(new mov<ref>(i, new StackReg_ref(i, 0), new VarReg_ref(i)));
                break;
-            case IALOAD:{
+            case IALOAD:
                add(new cvt<ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
                add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.s32.getHsaBytes()));
-               // add(new mul_const<ref, Long>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), (long) PrimitiveType.s32.getHsaBytes()));
-               // add(new add<ref>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 0), new StackReg_ref(i, 1)));
                add(new array_load<s32>(i, new StackReg_s32(i, 0), new StackReg_ref(i, 1)));
-            }
-
-
             break;
             case LALOAD:
-               add(new nyi(i));
+               add(new cvt<ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
+               add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.s64.getHsaBytes()));
+               add(new array_load<s64>(i, new StackReg_s64(i, 0), new StackReg_ref(i, 1)));
                break;
-            case FALOAD:{
+            case FALOAD:
                add(new cvt<ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
-
                add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.f32.getHsaBytes()));
-               //  add(new mul_const<ref, Long>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), (long)  PrimitiveType.f32.getHsaBytes()));
-               //  add(new add<ref>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 0), new StackReg_ref(i, 1)));
                add(new array_load<f32>(i, new StackReg_f32(i, 0), new StackReg_ref(i, 1)));
-            }
-            break;
-            case DALOAD:{
-               add(new cvt<ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
 
+            break;
+            case DALOAD:
+               add(new cvt<ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
                add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.f64.getHsaBytes()));
-               //  add(new mul_const<ref, Long>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), (long)  PrimitiveType.f32.getHsaBytes()));
-               //  add(new add<ref>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 0), new StackReg_ref(i, 1)));
                add(new array_load<f64>(i, new StackReg_f64(i, 0), new StackReg_ref(i, 1)));
-            }
-            break;
-            case AALOAD:{
-               add(new cvt<ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
 
-               add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.f64.getHsaBytes()));
-               //  add(new mul_const<ref, Long>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), (long)  PrimitiveType.f32.getHsaBytes()));
-               //  add(new add<ref>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 0), new StackReg_ref(i, 1)));
+            break;
+            case AALOAD:
+               add(new cvt<ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
+               add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.ref.getHsaBytes()));
                add(new array_load<ref>(i, new StackReg_ref(i, 0), new StackReg_ref(i, 1)));
-            }
             break;
             case BALOAD:
-               add(new nyi(i));
+               add(new cvt<ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
+               add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.s8.getHsaBytes()));
+               add(new array_load<s8>(i, new StackReg_s8(i, 0), new StackReg_ref(i, 1)));
                break;
             case CALOAD:
-               add(new nyi(i));
+               add(new cvt<ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
+               add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.u16.getHsaBytes()));
+               add(new array_load<u16>(i, new StackReg_u16(i, 0), new StackReg_ref(i, 1)));
                break;
             case SALOAD:
-               add(new nyi(i));
+               add(new cvt<ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
+               add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.s16.getHsaBytes()));
+               add(new array_load<s16>(i, new StackReg_s16(i, 0), new StackReg_ref(i, 1)));
                break;
             //case ISTORE: moved down
             // case LSTORE:  moved down
@@ -975,16 +1048,26 @@ public class HSAILMethod{
                add(new array_store<f64>(i, new StackReg_ref(i, 1), new StackReg_f64(i, 2)));
                break;
             case AASTORE:
-               add(new nyi(i));
+               add(new cvt<ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));
+               add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.ref.getHsaBytes()));
+               add(new array_store<ref>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 2)));
+
                break;
             case BASTORE:
-               add(new nyi(i));
+               add(new cvt<ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));
+               add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.s8.getHsaBytes()));
+               add(new array_store<s8>(i, new StackReg_ref(i, 1), new StackReg_s8(i, 2)));
+
                break;
             case CASTORE:
-               add(new nyi(i));
+               add(new cvt<ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));
+               add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.s8.getHsaBytes()));
+               add(new array_store<u16>(i, new StackReg_ref(i, 1), new StackReg_u16(i, 2)));
                break;
             case SASTORE:
-               add(new nyi(i));
+               add(new cvt<ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));
+               add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.s8.getHsaBytes()));
+               add(new array_store<s16>(i, new StackReg_ref(i, 1), new StackReg_s16(i, 2)));
                break;
             case POP:
                add(new nyi(i));
@@ -1024,131 +1107,111 @@ public class HSAILMethod{
                break;
             case IADD:
                add(new add<s32>(i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
-
-
                break;
             case LADD:
                add(new add<s64>(i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
-
-
                break;
             case FADD:
                add(new add<f32>(i, new StackReg_f32(i, 0), new StackReg_f32(i, 0), new StackReg_f32(i, 1)));
                break;
             case DADD:
                add(new add<f64>(i, new StackReg_f64(i, 0), new StackReg_f64(i, 0), new StackReg_f64(i, 1)));
-
                break;
             case ISUB:
                add(new sub<s32>(i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
-
                break;
             case LSUB:
                add(new sub<s64>(i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
-
                break;
             case FSUB:
                add(new sub<f32>(i, new StackReg_f32(i, 0), new StackReg_f32(i, 0), new StackReg_f32(i, 1)));
-
                break;
             case DSUB:
                add(new sub<f64>(i, new StackReg_f64(i, 0), new StackReg_f64(i, 0), new StackReg_f64(i, 1)));
-
                break;
             case IMUL:
                add(new mul<s32>(i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
-
                break;
             case LMUL:
                add(new mul<s64>(i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
-
                break;
             case FMUL:
                add(new mul<f32>(i, new StackReg_f32(i, 0), new StackReg_f32(i, 0), new StackReg_f32(i, 1)));
-
                break;
             case DMUL:
                add(new mul<f64>(i, new StackReg_f64(i, 0), new StackReg_f64(i, 0), new StackReg_f64(i, 1)));
                break;
             case IDIV:
                add(new div<s32>(i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
-
                break;
             case LDIV:
                add(new div<s64>(i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
-
                break;
             case FDIV:
                add(new div<f32>(i, new StackReg_f32(i, 0), new StackReg_f32(i, 0), new StackReg_f32(i, 1)));
-
                break;
             case DDIV:
                add(new div<f64>(i, new StackReg_f64(i, 0), new StackReg_f64(i, 0), new StackReg_f64(i, 1)));
-
                break;
             case IREM:
                add(new rem<s32>(i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
-
                break;
             case LREM:
                add(new rem<s64>(i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
-
                break;
             case FREM:
                add(new rem<f32>(i, new StackReg_f32(i, 0), new StackReg_f32(i, 0), new StackReg_f32(i, 1)));
-
                break;
             case DREM:
                add(new rem<f64>(i, new StackReg_f64(i, 0), new StackReg_f64(i, 0), new StackReg_f64(i, 1)));
-
                break;
             case INEG:
-               add(new nyi(i));
+               add(new neg<s32>(i, new StackReg_s32(i, 0)));
                break;
             case LNEG:
-               add(new nyi(i));
+               add(new neg<s64>(i, new StackReg_s64(i, 0)));
                break;
             case FNEG:
-               add(new nyi(i));
+               add(new neg<f32>(i, new StackReg_f32(i, 0)));
                break;
             case DNEG:
-               add(new nyi(i));
+               add(new neg<f64>(i, new StackReg_f64(i, 0)));
                break;
             case ISHL:
-               add(new nyi(i));
+               add(new shl<s32>(i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
                break;
             case LSHL:
-               add(new nyi(i));
+               add(new shl<s64>(i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
                break;
             case ISHR:
-               add(new nyi(i));
+               add(new shr<s32>(i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
                break;
             case LSHR:
-               add(new nyi(i));
+               add(new shr<s64>(i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
                break;
             case IUSHR:
-               add(new nyi(i));
+               add(new ushr<s32>(i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
                break;
             case LUSHR:
-               add(new nyi(i));
+               add(new ushr<s64>(i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
                break;
             case IAND:
-               add(new nyi(i));
+               add(new and<s32>(i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
                break;
             case LAND:
-               add(new nyi(i));
+               add(new and<s64>(i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
                break;
             case IOR:
-               add(new nyi(i));
+               add(new or<s32>(i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
                break;
             case LOR:
-               add(new nyi(i));
+               add(new or<s64>(i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
                break;
             case IXOR:
-               add(new nyi(i));
+               add(new xor<s32>(i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
                break;
             case LXOR:
-               add(new nyi(i));
+               add(new xor<s64>(i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
                break;
             case IINC:
                add(new add_const<s32, Integer>(i, new VarReg_s32(i), new VarReg_s32(i), ((InstructionSet.I_IINC) i).getDelta()));
