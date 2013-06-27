@@ -1,4 +1,4 @@
-#summary Adding HSA Support to Aparapi lambda branch (DRAFT)
+#summary Adding HSA Support to Aparapi lambda branch
 
 Recently the HSA Foundation released their ‘Programmers Reference Manual’. This manual is  for developers wishing to write code for upcoming HSA compatible devices,  it describes the HSA Intermediate Language (HSAIL) along with its binary form (BRIG) and describes how code is expected to execute on a HSA enabled devices.
 
