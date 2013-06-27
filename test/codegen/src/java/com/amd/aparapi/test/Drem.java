@@ -1,7 +1,7 @@
 package com.amd.aparapi.test;
 
 public class Drem{
-   public void run() {
+   public void run(){
       out[0] = m % n;
    }
 
@@ -14,32 +14,32 @@ public class Drem{
 
 
 /**{OpenCL{
-typedef struct This_s{
-   __global double* out;
-   double m;
-   double n;
-   int passid;
-}This;
+ typedef struct This_s{
+ __global double* out;
+ double m;
+ double n;
+ int passid;
+ }This;
 
-int get_pass_id(This *this){
-   return this->passid;
-}
+ int get_pass_id(This *this){
+ return this->passid;
+ }
 
-__kernel void run(
-   __global double* out, 
-   double m, 
-   double n, 
-   int passid
-){
-   This thisStruct;
-   This* this=&thisStruct;
-   this->out = out;
-   this->m = m;
-   this->n = n;
-   this->passid = passid;
-   {
-      this->out[0]  = this->m % this->n;
-      return;
-   }
-}
-}OpenCL}**/
+ __kernel void run(
+ __global double* out,
+ double m,
+ double n,
+ int passid
+ ){
+ This thisStruct;
+ This* this=&thisStruct;
+ this->out = out;
+ this->m = m;
+ this->n = n;
+ this->passid = passid;
+ {
+ this->out[0]  = this->m % this->n;
+ return;
+ }
+ }
+ }OpenCL}**/

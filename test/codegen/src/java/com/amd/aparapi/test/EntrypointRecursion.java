@@ -6,12 +6,12 @@ public class EntrypointRecursion extends Kernel{
 
    int[] values = new int[128];
 
-   public void run() {
+   public void run(){
       int id = getGlobalId();
 
       values[id]++;
 
-      if (values[id] < 20) {
+      if(values[id] < 20){
          run();
       }
    }

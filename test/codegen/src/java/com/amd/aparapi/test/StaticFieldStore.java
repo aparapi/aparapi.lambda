@@ -5,7 +5,7 @@ public class StaticFieldStore{
 
    static int foo = 6;
 
-   public void run() {
+   public void run(){
       foo = ints[0];
    }
 }

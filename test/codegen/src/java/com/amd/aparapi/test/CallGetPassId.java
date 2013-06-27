@@ -3,29 +3,29 @@ package com.amd.aparapi.test;
 import com.amd.aparapi.Kernel;
 
 public class CallGetPassId extends Kernel{
-   public void run() {
+   public void run(){
       int thePassId = getPassId();
    }
 
 }
 /**{OpenCL{
-typedef struct This_s{
-   int passid;
-}This;
+ typedef struct This_s{
+ int passid;
+ }This;
 
-int get_pass_id(This *this){
-   return this->passid;
-}
+ int get_pass_id(This *this){
+ return this->passid;
+ }
 
-__kernel void run(
-   int passid
-){
-   This thisStruct;
-   This* this=&thisStruct;
-   this->passid = passid;
-   {
-      int i_1 = get_pass_id(this);
-      return;
-   }
-}
-}OpenCL}**/
+ __kernel void run(
+ int passid
+ ){
+ This thisStruct;
+ This* this=&thisStruct;
+ this->passid = passid;
+ {
+ int i_1 = get_pass_id(this);
+ return;
+ }
+ }
+ }OpenCL}**/

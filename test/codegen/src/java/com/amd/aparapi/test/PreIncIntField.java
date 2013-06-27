@@ -4,11 +4,11 @@ public class PreIncIntField{
 
    int y = 2;
 
-   int preIncInt(int _a) {
+   int preIncInt(int _a){
       return ++_a;
    }
 
-   public void run() {
+   public void run(){
 
       preIncInt(++y);
 

@@ -4,11 +4,11 @@ import com.amd.aparapi.Kernel;
 
 public class CallTwice extends Kernel{
 
-   public int getOne() {
+   public int getOne(){
       return (1);
    }
 
-   @Override public void run() {
+   @Override public void run(){
       out[0] = getOne() + getOne();
    }
 
@@ -17,29 +17,29 @@ public class CallTwice extends Kernel{
 
 
 /**{OpenCL{
-typedef struct This_s{
-   __global int* out;
-   int passid;
-}This;
+ typedef struct This_s{
+ __global int* out;
+ int passid;
+ }This;
 
-int get_pass_id(This *this){
-   return this->passid;
-}
+ int get_pass_id(This *this){
+ return this->passid;
+ }
 
-int com_amd_aparapi_test_CallTwice__getOne(This *this){
-   return(1);
-}
-__kernel void run(
-   __global int* out, 
-   int passid
-){
-   This thisStruct;
-   This* this=&thisStruct;
-   this->out = out;
-   this->passid = passid;
-   {
-      this->out[0]  = com_amd_aparapi_test_CallTwice__getOne(this) + com_amd_aparapi_test_CallTwice__getOne(this);
-      return;
-   }
-}
-}OpenCL}**/
+ int com_amd_aparapi_test_CallTwice__getOne(This *this){
+ return(1);
+ }
+ __kernel void run(
+ __global int* out,
+ int passid
+ ){
+ This thisStruct;
+ This* this=&thisStruct;
+ this->out = out;
+ this->passid = passid;
+ {
+ this->out[0]  = com_amd_aparapi_test_CallTwice__getOne(this) + com_amd_aparapi_test_CallTwice__getOne(this);
+ return;
+ }
+ }
+ }OpenCL}**/

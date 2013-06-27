@@ -4,14 +4,16 @@ import com.amd.aparapi.Kernel;
 
 public class CallObject extends Kernel{
    static class Dummy{
-      public int foo() {
+      public int foo(){
          return 42;
       }
-   };
+   }
+
+   ;
 
    Dummy dummy = new Dummy();
 
-   public void run() {
+   public void run(){
       out[0] = dummy.foo();
    }
 

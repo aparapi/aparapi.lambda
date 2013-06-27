@@ -5,11 +5,13 @@ import com.amd.aparapi.Kernel;
 public class UseObject extends Kernel{
    class Dummy{
       public int n;
-   };
+   }
+
+   ;
 
    Dummy dummy = new Dummy();
 
-   public void run() {
+   public void run(){
       out[0] = dummy.n;
       out[1] = plainInt;
    }

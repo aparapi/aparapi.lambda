@@ -8,27 +8,27 @@ public class ContinueTorture{
 
    public int[] results = new int[START_SIZE];
 
-   int actuallyDoIt(int a) {
+   int actuallyDoIt(int a){
       return 1;
    }
 
-   int actuallyDoIt2(int a) {
+   int actuallyDoIt2(int a){
       return -1;
    }
 
    int myId = 34;
 
-   public void run() {
+   public void run(){
       int idx = myId;
-      while (--idx > 0) {
+      while(--idx > 0){
 
-         if (myId == 0) {
+         if(myId == 0){
             continue;
          }
-         if (myId % 2 == 0) {
+         if(myId % 2 == 0){
             results[myId] = actuallyDoIt(idx);
             continue;
-         } else {
+         }else{
             results[myId] = actuallyDoIt2(idx);
             continue;
          }

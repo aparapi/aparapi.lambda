@@ -43,6 +43,7 @@ import static org.junit.Assert.assertTrue;
 
 public class CodeGenOpenCLJUnitBase{
    public static DiffMatchPatch dmp = new DiffMatchPatch();
+
    String trim(String _string){
       int start = 0;
       int end = _string.length();
@@ -54,27 +55,28 @@ public class CodeGenOpenCLJUnitBase{
       }
       return (_string.substring(start, end));
    }
+
    boolean isSpace(String _string){
       boolean space = true;
-      for (char ch:_string.toCharArray()){
-          space = space && Character.isWhitespace(ch);
+      for(char ch : _string.toCharArray()){
+         space = space && Character.isWhitespace(ch);
       }
-      return(space);
+      return (space);
    }
 
 
    boolean same(String _lhs, String _rhs){
       LinkedList<DiffMatchPatch.Diff> res = dmp.diff_main(trim(_lhs), trim(_rhs));
-      for (DiffMatchPatch.Diff d:res){
-         if (d.operation != DiffMatchPatch.Operation.EQUAL && !isSpace(d.text)){
-            return(false);
+      for(DiffMatchPatch.Diff d : res){
+         if(d.operation != DiffMatchPatch.Operation.EQUAL && !isSpace(d.text)){
+            return (false);
          }
       }
-      return(true);
+      return (true);
 
    }
 
-   public static final String line=   "------------------------------------------------------------------------------";
+   public static final String line = "------------------------------------------------------------------------------";
 
    protected void test(Class<?> _class, Class<? extends AparapiException> _expectedExceptionType, String mode, String expectedOpenCL){
       try{
@@ -89,9 +91,9 @@ public class CodeGenOpenCLJUnitBase{
             if(!same){
                System.out.println("---" + _class.getName() + line);
                System.out.println("Expected {\n" + expectedOpenCL + "}Actual{\n" + actual);
-               System.out.println("}\n"+line);
+               System.out.println("}\n" + line);
             }else{
-               System.out.println("Matched{" + actual+ "}\n"+line);
+               System.out.println("Matched{" + actual + "}\n" + line);
             }
             assertTrue(_class.getSimpleName(), same);
          }else{

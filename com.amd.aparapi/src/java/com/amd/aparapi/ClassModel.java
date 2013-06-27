@@ -1974,7 +1974,7 @@ public class ClassModel{
                attributePoolEntries.add(entry);
             }else{
                String attributeName = utf8Entry.getUTF8();
-              // System.out.println("Got " + attributeName);
+               // System.out.println("Got " + attributeName);
                if(attributeName.equals(LOCALVARIABLETABLE_TAG)){
                   entry = new OtherEntry(_byteReader, attributeNameIndex, length);
                   // realLocalVariableTableEntry = new RealLocalVariableTableEntry(_byteReader, attributeNameIndex, length);

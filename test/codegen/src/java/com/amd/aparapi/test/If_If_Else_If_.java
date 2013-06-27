@@ -13,17 +13,17 @@ public class If_If_Else_If_{
    24:  istore_3   (23:iconst_1)    | | |
    25:  return                      v v v
     */
-   public void run() {
+   public void run(){
       boolean a = true;
       boolean b = true;
       @SuppressWarnings("unused") boolean result = false;
 
-      if (a) {
-         if (b) {
+      if(a){
+         if(b){
             result = true;
          }
-      } else {
-         if (b) {
+      }else{
+         if(b){
             result = true;
          }
       }
@@ -31,34 +31,34 @@ public class If_If_Else_If_{
    }
 }
 /**{OpenCL{
-typedef struct This_s{
-   
-   int passid;
-}This;
-int get_pass_id(This *this){
-   return this->passid;
-   }
+ typedef struct This_s{
 
-__kernel void run(
-   int passid
-){
-   This thisStruct;
-   This* this=&thisStruct;
-   this->passid = passid;
-   {
-      char a = 1;
-      char b = 1;
-      char result = 0;
-      if (a!=0){
-         if (b!=0){
-            result = 1;
-         }
-      } else {
-         if (b!=0){
-            result = 1;
-         }
-      }
-      return;
-   }
-}
-}OpenCL}**/
+ int passid;
+ }This;
+ int get_pass_id(This *this){
+ return this->passid;
+ }
+
+ __kernel void run(
+ int passid
+ ){
+ This thisStruct;
+ This* this=&thisStruct;
+ this->passid = passid;
+ {
+ char a = 1;
+ char b = 1;
+ char result = 0;
+ if (a!=0){
+ if (b!=0){
+ result = 1;
+ }
+ } else {
+ if (b!=0){
+ result = 1;
+ }
+ }
+ return;
+ }
+ }
+ }OpenCL}**/

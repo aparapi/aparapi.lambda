@@ -2,12 +2,12 @@ package com.amd.aparapi.test;
 
 public class ReturnBooleanNewArray{
 
-   boolean[] returnBooleanNewArray() {
+   boolean[] returnBooleanNewArray(){
 
       return new boolean[1024];
    }
 
-   public void run() {
+   public void run(){
       returnBooleanNewArray();
    }
 }

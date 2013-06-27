@@ -9,12 +9,12 @@ import java.util.function.IntConsumer;
 
 public class HSADevice extends Device{
 
-   public Device forEach(int size, IntConsumer ic) {
+   public Device forEach(int size, IntConsumer ic){
       try{
          LambdaKernelCall lkc = new LambdaKernelCall(ic);
-        // System.out.println("lambda method " + lkc.getLambdaMethodName());
-       //  System.out.println("lambda method sig " + lkc.getLambdaMethodSignature());
-        // System.out.println("lambda method class "+lkc.getLambdaKernelClass());
+         // System.out.println("lambda method " + lkc.getLambdaMethodName());
+         //  System.out.println("lambda method sig " + lkc.getLambdaMethodSignature());
+         // System.out.println("lambda method class "+lkc.getLambdaKernelClass());
          ClassModel classModel = ClassModel.getClassModel(lkc.getLambdaKernelClass());
          ClassModel.ClassModelMethod method = classModel.getMethod(lkc.getLambdaMethodName(), lkc.getLambdaMethodSignature());
 
@@ -24,13 +24,13 @@ public class HSADevice extends Device{
          System.out.println(renderer.toString());
 
          List<Object> args = new ArrayList<Object>();
-         for (Field f:lkc.getLambdaCapturedFields())  {
-            Object v  =lkc.unsafeGetFieldRefFromObject(ic, f.getName());
+         for(Field f : lkc.getLambdaCapturedFields()){
+            Object v = lkc.unsafeGetFieldRefFromObject(ic, f.getName());
             args.add(v);
          }
          args.add(0);
 
-         runner.run(renderer.toString(), size,  args.toArray(new Object[0]));
+         runner.run(renderer.toString(), size, args.toArray(new Object[0]));
 
 
       }catch(AparapiException e){

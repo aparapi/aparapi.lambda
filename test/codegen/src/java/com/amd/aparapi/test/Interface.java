@@ -7,12 +7,12 @@ public class Interface{
    }
 
    public class SimpleAdder implements Operator{
-      public double operate(double d) {
+      public double operate(double d){
          return d + 1.0;
       }
    }
 
-   public void run() {
+   public void run(){
       out[0] = sa.operate(0.0);
    }
 

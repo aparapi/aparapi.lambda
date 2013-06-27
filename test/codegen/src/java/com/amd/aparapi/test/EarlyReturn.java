@@ -1,10 +1,10 @@
 package com.amd.aparapi.test;
 
 public class EarlyReturn{
-   public void run() {
+   public void run(){
       @SuppressWarnings("unused") boolean pass = false;
-      int i=0;
-      if ((i%2)==0){
+      int i = 0;
+      if((i % 2) == 0){
          return;
       }
       i++;
@@ -12,28 +12,28 @@ public class EarlyReturn{
    }
 }
 /**{OpenCL{
-typedef struct This_s{
-   int passid;
-}This;
+ typedef struct This_s{
+ int passid;
+ }This;
 
-int get_pass_id(This *this){
-   return this->passid;
-}
+ int get_pass_id(This *this){
+ return this->passid;
+ }
 
-__kernel void run(
-   int passid
-){
-   This thisStruct;
-   This* this=&thisStruct;
-   this->passid = passid;
-   {
-      int i_1 = 0;
-      int i_2 = 0;
-      if ((i_2 % 2)==0){
-         return;
-      }
-      i_2++;
-      return;
-   }
-}
-}OpenCL}**/
+ __kernel void run(
+ int passid
+ ){
+ This thisStruct;
+ This* this=&thisStruct;
+ this->passid = passid;
+ {
+ int i_1 = 0;
+ int i_2 = 0;
+ if ((i_2 % 2)==0){
+ return;
+ }
+ i_2++;
+ return;
+ }
+ }
+ }OpenCL}**/

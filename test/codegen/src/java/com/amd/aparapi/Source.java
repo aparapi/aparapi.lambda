@@ -54,28 +54,30 @@ public class Source{
       JAVA,
       OPENCL,
       HSAIL
-   };
+   }
 
-   static final String START_PREFIX="/**{";
-   static final String START_SUFFIX="{";
-   static final String END_PREFIX="}";
-   static final String END_SUFFIX="}**/";
+   ;
 
-   static final String OpenCLStart = START_PREFIX+"OpenCL"+START_SUFFIX;
+   static final String START_PREFIX = "/**{";
+   static final String START_SUFFIX = "{";
+   static final String END_PREFIX = "}";
+   static final String END_SUFFIX = "}**/";
 
-   static final String OpenCLEnd = END_PREFIX+"OpenCL"+END_SUFFIX;
+   static final String OpenCLStart = START_PREFIX + "OpenCL" + START_SUFFIX;
 
-   static final String HSAILStart = START_PREFIX+"HSAIL"+START_SUFFIX;
+   static final String OpenCLEnd = END_PREFIX + "OpenCL" + END_SUFFIX;
 
-   static final String HSAILEnd = END_PREFIX+"HSAIL"+END_SUFFIX;
+   static final String HSAILStart = START_PREFIX + "HSAIL" + START_SUFFIX;
 
-   static final String ThrowsStart = START_PREFIX+"Throws"+START_SUFFIX;
+   static final String HSAILEnd = END_PREFIX + "HSAIL" + END_SUFFIX;
 
-   static final String ThrowsEnd = END_PREFIX+"Throws"+END_SUFFIX;
+   static final String ThrowsStart = START_PREFIX + "Throws" + START_SUFFIX;
 
-   static final String ModeStart = START_PREFIX+"Mode"+START_SUFFIX;
+   static final String ThrowsEnd = END_PREFIX + "Throws" + END_SUFFIX;
 
-   static final String ModeEnd = END_PREFIX+"Mode"+END_SUFFIX;
+   static final String ModeStart = START_PREFIX + "Mode" + START_SUFFIX;
+
+   static final String ModeEnd = END_PREFIX + "Mode" + END_SUFFIX;
 
 
    Class<?> clazz;
@@ -134,15 +136,19 @@ public class Source{
    public boolean hasThrows(){
       return (getThrows() != null);
    }
+
    public boolean hasMode(){
       return (getMode() != null);
    }
+
    public boolean hasOpenCL(){
       return (getOpenCL() != null);
    }
+
    public boolean hasHSAIL(){
       return (getHSAIL() != null);
    }
+
    public Source(Class<?> _clazz, File _rootDir){
       clazz = _clazz;
       String srcName = clazz.getPackage().getName().replace(".", "/") + "/" + clazz.getSimpleName() + ".java";
@@ -158,13 +164,13 @@ public class Source{
                   if(trimmedLine.equals(OpenCLStart)){
                      state = STATE.OPENCL;
                      opencl = new Section();
-                  }else if (trimmedLine.equals(HSAILStart)){
+                  }else if(trimmedLine.equals(HSAILStart)){
                      state = STATE.HSAIL;
                      hsail = new Section();
                   }else if(trimmedLine.startsWith(ThrowsStart) && trimmedLine.endsWith(ThrowsEnd)){
-                     exception =  (trimmedLine.substring(ThrowsStart.length(), trimmedLine.length() - ThrowsEnd.length()));
+                     exception = (trimmedLine.substring(ThrowsStart.length(), trimmedLine.length() - ThrowsEnd.length()));
                   }else if(trimmedLine.startsWith(ModeStart) && trimmedLine.endsWith(ModeEnd)){
-                     mode =  (trimmedLine.substring(ModeStart.length(), trimmedLine.length() - ModeEnd.length()));
+                     mode = (trimmedLine.substring(ModeStart.length(), trimmedLine.length() - ModeEnd.length()));
                   }else{
                      java.add(line);
                   }
