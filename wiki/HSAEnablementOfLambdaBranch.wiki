@@ -36,6 +36,19 @@ Follow the instructions here to download and build the simulator https://github.
 You will also need a Java 8 compatible JDK, which you can get from https://jdk8.java.net/download.html
 
 I am also using IntelliJ which has preliminary support for Java 8 features. You can download the community edition of IntelliJ from http://www.jetbrains.com/idea/
+===Building the simulator on Ubuntu===
+
+We assume you have ant, svn and g++ available because you can build other aparapi artifacts.
+
+You will also need git, libelf-dev, libdwarf-dev, flex and cmake
+
+{{{
+$ sudo apt-get install git libelf-dev libdwarf-dev flex cmake
+login...
+$ git clone https://github.com/HSAFoundation/Okra-Interface-to-HSAIL-Simulator.git okra
+$ cd okra
+$ ant -f build-okra-sim.xml
+}}}
 
 ===How to setup and test an initial build===
 
