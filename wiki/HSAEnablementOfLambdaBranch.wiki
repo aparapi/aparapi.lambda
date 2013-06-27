@@ -27,16 +27,16 @@ Device.hsa().forEach(in.length, (i)->{
  });
 }}}
 
-At present access to HSA compatible devices is pretty restricted, so we propose to make use of a HSA simulator/emulator for Linux which will allow us to generate HSAIL code, and to emulate it's execution. 
+You will obviously need a Java 8 compatible JDK (https://jdk8.java.net/download.html) in your path. 
 
-To use the lambda/HSA branch you will need to build the simulator
+We also recommend using IntelliJ which has preliminary support for Java 8 lambda features. You can download the community edition of IntelliJ from http://www.jetbrains.com/idea/
 
-Follow the instructions here to download and build the simulator https://github.com/HSAFoundation/Okra-Interface-to-HSAIL-Simulator 
- 
-You will also need a Java 8 compatible JDK, which you can get from https://jdk8.java.net/download.html
+At present access to HSA compatible devices is pretty restricted, thankfully the HSA foundation have open sourced a LLVM based HSAIL emulator which we can use to test HSAIL generated code. 
 
-I am also using IntelliJ which has preliminary support for Java 8 features. You can download the community edition of IntelliJ from http://www.jetbrains.com/idea/
-===Building the simulator on Ubuntu===
+The project is based here (https://github.com/HSAFoundation/Okra-Interface-to-HSAIL-Simulator) but we have extracted detailed download and build instructions for Ubuntu below. 
+
+
+===Building the HSA Simulator on Ubuntu===
 
 We assume you have ant, svn and g++ available because you can build other aparapi artifacts.
 
@@ -50,7 +50,9 @@ $ cd okra
 $ ant -f build-okra-sim.xml
 }}}
 
-===How to setup and test an initial build===
+The build should take approximately 15 mins.
+
+===How to setup and test an initial lambda/HSA enabled Aparapi build===
 
 Assuming you have built okra in {{{/home/gfrost/okra}}}
 
