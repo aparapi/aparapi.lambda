@@ -11,27 +11,29 @@ public class ObjectArrayMemberBadGetter extends Kernel{
 
       float theOtherFloatField;
 
-      public float getFloatField() {
+      public float getFloatField(){
          //return floatField;
          return theOtherFloatField;
       }
 
-      public void setFloatField(float x) {
+      public void setFloatField(float x){
          floatField = x;
       }
-   };
+   }
+
+   ;
 
    DummyOOA dummy[] = null;
 
    final int size = 64;
 
-   public ObjectArrayMemberBadGetter() {
+   public ObjectArrayMemberBadGetter(){
       dummy = new DummyOOA[size];
 
       dummy[0] = new DummyOOA();
    }
 
-   public void run() {
+   public void run(){
       int myId = getGlobalId();
       dummy[myId].setFloatField(dummy[myId].getFloatField() + (float) 2.0);
    }

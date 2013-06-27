@@ -4,16 +4,16 @@ import com.amd.aparapi.*;
 import com.amd.aparapi.HSAILRenderer;
 
 
-public class Fields {
+public class Fields{
 
    int fromId = 0;
    float toId = 0;
 
-   public void run(int id) {
-           if (id==24){
-               fromId = id;
-               toId = (float)id;
-           }
+   public void run(int id){
+      if(id == 24){
+         fromId = id;
+         toId = (float) id;
+      }
    }
 
    public void test() throws ClassParseException{
@@ -28,12 +28,10 @@ public class Fields {
       System.out.println(renderer.toString());
 
 
-      runner.run(renderer.toString(), 100, this,  100);
-      System.out.println("fromId = "+fromId);
-       System.out.println("toId = "+toId);
+      runner.run(renderer.toString(), 100, this, 100);
+      System.out.println("fromId = " + fromId);
+      System.out.println("toId = " + toId);
    }
-
-
 
 
    public static void main(String[] args) throws AparapiException{

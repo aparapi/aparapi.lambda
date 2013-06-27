@@ -14,8 +14,6 @@ import java.util.List;
 public class HSAILMethod{
 
 
-
-
    static abstract class HSAILInstruction{
       Instruction from;
       HSAILRegister[] dests = null;
@@ -158,7 +156,6 @@ public class HSAILMethod{
       }
 
 
-
       @Override
       public void render(HSAILRenderer r){
          r.append("cmp_").append(type).append("_b1_").typeName(getSrcLhs()).space().append("$c1").separator().regName(getSrcLhs()).separator().regName(getSrcRhs());
@@ -173,7 +170,6 @@ public class HSAILMethod{
          super(_from, _srcLhs, _srcRhs);
          type = _type;
       }
-
 
 
       @Override
@@ -192,7 +188,6 @@ public class HSAILMethod{
       }
 
 
-
       @Override
       public void render(HSAILRenderer r){
          r.append("cbr").space().append("$c1").separator().label(pc);
@@ -209,16 +204,12 @@ public class HSAILMethod{
       }
 
 
-
       @Override
       public void render(HSAILRenderer r){
          r.append("brn").space().label(pc);
 
       }
    }
-
-
-
 
 
    static class call extends HSAILInstruction{
@@ -275,7 +266,6 @@ public class HSAILMethod{
       nyi(Instruction _from){
          super(_from, 0, 0);
       }
-
 
 
       @Override void render(HSAILRenderer r){
@@ -469,27 +459,27 @@ public class HSAILMethod{
 
 
    }
-    static class field_store<T extends PrimitiveType> extends HSAILInstructionWithSrc<T>{
-        Reg_ref mem;
-        long offset;
+
+   static class field_store<T extends PrimitiveType> extends HSAILInstructionWithSrc<T>{
+      Reg_ref mem;
+      long offset;
 
 
-        field_store(Instruction _from, HSAILRegister<T> _src, Reg_ref _mem, long _offset){
-            super(_from, _src);
-            offset = _offset;
-            mem = _mem;
-        }
+      field_store(Instruction _from, HSAILRegister<T> _src, Reg_ref _mem, long _offset){
+         super(_from, _src);
+         offset = _offset;
+         mem = _mem;
+      }
 
-        @Override void render(HSAILRenderer r){
-            r.append("st_global_").typeName(getSrc()).space().regName(getSrc()).separator().append("[").regName(mem).append("+").append(offset).append("]");
-        }
-
-
-    }
+      @Override void render(HSAILRenderer r){
+         r.append("st_global_").typeName(getSrc()).space().regName(getSrc()).separator().append("[").regName(mem).append("+").append(offset).append("]");
+      }
 
 
+   }
 
-    static final class mov<T extends PrimitiveType> extends HSAILInstructionWithDestSrc{
+
+   static final class mov<T extends PrimitiveType> extends HSAILInstructionWithDestSrc{
 
       public mov(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _src){
          super(_from, _dest, _src);
@@ -530,7 +520,6 @@ public class HSAILMethod{
       HSAILRegister<T> getLhs(){
          return ((HSAILRegister<T>) sources[0]);
       }
-
 
 
    }
@@ -656,9 +645,9 @@ public class HSAILMethod{
 
 
    public HSAILRenderer render(HSAILRenderer r){
-     // r.append("version 1:0:large;").nl();
+      // r.append("version 1:0:large;").nl();
       r.append("version 0:95: $full : $large;").nl();
-     // r.append("kernel &" + method.getName() + "(");
+      // r.append("kernel &" + method.getName() + "(");
       r.append("kernel &run(");
       int argOffset = method.isStatic() ? 0 : 1;
       if(!method.isStatic()){
@@ -905,12 +894,12 @@ public class HSAILMethod{
             }
             break;
             case AALOAD:{
-                add(new cvt<ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
+               add(new cvt<ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
 
-                add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.f64.getHsaBytes()));
-                //  add(new mul_const<ref, Long>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), (long)  PrimitiveType.f32.getHsaBytes()));
-                //  add(new add<ref>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 0), new StackReg_ref(i, 1)));
-                add(new array_load<ref>(i, new StackReg_ref(i, 0), new StackReg_ref(i, 1)));
+               add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.f64.getHsaBytes()));
+               //  add(new mul_const<ref, Long>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), (long)  PrimitiveType.f32.getHsaBytes()));
+               //  add(new add<ref>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 0), new StackReg_ref(i, 1)));
+               add(new array_load<ref>(i, new StackReg_ref(i, 0), new StackReg_ref(i, 1)));
             }
             break;
             case BALOAD:
@@ -966,42 +955,23 @@ public class HSAILMethod{
 
                break;
             case IASTORE:
-
-            {
-
-                /*
-
-                cvt_u64_s32 $d(index), $s(index)
-                mul_u64 $d(index), $d(index), (sizeof array element);
-                add_u64 $d(index), $d(index), $d{array};
-                st_global_s32 $s3, [$d6 + 24];
-                 */
                add(new cvt<ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));
-               //  add(new mul_const<ref, Long>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), (long)  PrimitiveType.s32.getHsaBytes()));
-               //   add(new add<ref>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 0), new StackReg_ref(i, 1)));
-
                add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.s32.getHsaBytes()));
                add(new array_store<s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 2)));
-
-            }
-            break;
+               break;
             case LASTORE:
-               add(new nyi(i));
+               add(new cvt<ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));
+               add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.s64.getHsaBytes()));
+               add(new array_store<u64>(i, new StackReg_ref(i, 1), new StackReg_u64(i, 2)));
                break;
             case FASTORE:
                add(new cvt<ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));
-
                add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.f32.getHsaBytes()));
-               // add(new mul_const<ref, Long>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), (long)  PrimitiveType.f32.getHsaBytes()));
-               //  add(new add<ref>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 0), new StackReg_ref(i, 1)));
                add(new array_store<f32>(i, new StackReg_ref(i, 1), new StackReg_f32(i, 2)));
                break;
             case DASTORE:
                add(new cvt<ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));
-
                add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.f64.getHsaBytes()));
-               // add(new mul_const<ref, Long>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), (long)  PrimitiveType.f32.getHsaBytes()));
-               //  add(new add<ref>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 0), new StackReg_ref(i, 1)));
                add(new array_store<f64>(i, new StackReg_ref(i, 1), new StackReg_f64(i, 2)));
                break;
             case AASTORE:
@@ -1028,29 +998,21 @@ public class HSAILMethod{
             case DUP_X1:
                add(new nyi(i));
                break;
-            case DUP_X2:{
-               // HSAILRegister r = getRegOfLastWriteToIndex(_i.getPreStackBase()+_i.getMethod().getCodeEntry().getMaxLocals()+3);
-               // addmov(_i, 2, 4);
+            case DUP_X2:
+
                addmov(i, 2, 3);
                addmov(i, 1, 2);
                addmov(i, 0, 1);
                addmov(i, 3, 0);
-               // add(new mov<s32>(_i, new StackReg_s32(_i, 3), new StackReg_s32(_i, 2)));
-               // add(new mov<s32>(_i, new StackReg_s32(_i, 2),new StackReg_s32(_i, 1)));
 
-               // add(new mov<s32>(_i, new StackReg_s32(_i, 1), new StackReg_s32(_i, 0)));
-
-               // add(new mov<s32>(_i, new StackReg_s32(_i, 0), new StackReg_s32(_i, 3)));
-            }
-            break;
-            case DUP2:{
+               break;
+            case DUP2:
                // DUP2 is problematic. DUP2 either dups top two items or one depending on the 'prefix' of the stack items.
                // To complicate this further HSA large model wants object/mem references to be 64 bits (prefix 2 in Java) whereas
                // in java object/array refs are 32 bits (prefix 1).
                addmov(i, 0, 2);
                addmov(i, 1, 3);
-            }
-            break;
+               break;
             case DUP2_X1:
                add(new nyi(i));
                break;
@@ -1190,7 +1152,6 @@ public class HSAILMethod{
                break;
             case IINC:
                add(new add_const<s32, Integer>(i, new VarReg_s32(i), new VarReg_s32(i), ((InstructionSet.I_IINC) i).getDelta()));
-
                break;
             case I2L:
                add(new cvt<s64, s32>(i, new StackReg_s64(i, 0), new StackReg_s32(i, 0)));
@@ -1202,60 +1163,55 @@ public class HSAILMethod{
                add(new cvt<f64, s32>(i, new StackReg_f64(i, 0), new StackReg_s32(i, 0)));
                break;
             case L2I:
-               add(new nyi(i));
+               add(new cvt<s32, s64>(i, new StackReg_s32(i, 0), new StackReg_s64(i, 0)));
                break;
             case L2F:
-               add(new nyi(i));
+               add(new cvt<f32, s64>(i, new StackReg_f32(i, 0), new StackReg_s64(i, 0)));
                break;
             case L2D:
-               add(new nyi(i));
+               add(new cvt<f64, s64>(i, new StackReg_f64(i, 0), new StackReg_s64(i, 0)));
                break;
             case F2I:
-               add(new nyi(i));
+               add(new cvt<s32, f32>(i, new StackReg_s32(i, 0), new StackReg_f32(i, 0)));
                break;
             case F2L:
-               add(new nyi(i));
+               add(new cvt<s64, f32>(i, new StackReg_s64(i, 0), new StackReg_f32(i, 0)));
                break;
             case F2D:
-               add(new nyi(i));
+               add(new cvt<f64, f32>(i, new StackReg_f64(i, 0), new StackReg_f32(i, 0)));
                break;
             case D2I:
-               add(new nyi(i));
+               add(new cvt<s32, f64>(i, new StackReg_s32(i, 0), new StackReg_f64(i, 0)));
                break;
             case D2L:
-               add(new nyi(i));
+               add(new cvt<s64, f64>(i, new StackReg_s64(i, 0), new StackReg_f64(i, 0)));
                break;
             case D2F:
-               add(new nyi(i));
+               add(new cvt<f32, f64>(i, new StackReg_f32(i, 0), new StackReg_f64(i, 0)));
                break;
             case I2B:
-               add(new nyi(i));
+               add(new cvt<s8, s32>(i, new StackReg_s8(i, 0), new StackReg_s32(i, 0)));
                break;
             case I2C:
-               add(new nyi(i));
+               add(new cvt<u16, s32>(i, new StackReg_u16(i, 0), new StackReg_s32(i, 0)));
                break;
             case I2S:
-               add(new nyi(i));
+               add(new cvt<s16, s32>(i, new StackReg_s16(i, 0), new StackReg_s32(i, 0)));
                break;
             case LCMP:
-               add(new nyi(i));
+               parseState = ParseState.COMPARE_S64;
                break;
             case FCMPL:
                parseState = ParseState.COMPARE_F32;
-               //  add(new cmp<f32>(i,  "ge",new StackReg_s32(i, 0),  new StackReg_f32(i, 0), new StackReg_f32(i, 1)));
                break;
             case FCMPG:
                parseState = ParseState.COMPARE_F32;
-               //   add(new cmp<f32>(i,  "le", new StackReg_s32(i, 0), new StackReg_f32(i, 0), new StackReg_f32(i, 1)));
-
                break;
             case DCMPL:
                parseState = ParseState.COMPARE_F64;
-               // add(new cmp<f64>(i,  "ge", new StackReg_s32(i, 0), new StackReg_f64(i, 0), new StackReg_f64(i, 1)));
                break;
             case DCMPG:
                parseState = ParseState.COMPARE_F64;
-               // add(new cmp<f64>(i,  "le", new StackReg_s32(i, 0), new StackReg_f64(i, 0), new StackReg_f64(i, 1)));
                break;
             case IFEQ:
                if(parseState.equals(ParseState.COMPARE_F32)){
@@ -1426,74 +1382,73 @@ public class HSAILMethod{
                add(new ret<f64>(i, new StackReg_f64(i, 0)));
                break;
             case ARETURN:
-               add(new nyi(i));
+               add(new ret<ref>(i, new StackReg_ref(i, 0)));
                break;
             case RETURN:
                add(new retvoid(i));
                break;
             case GETSTATIC:
-                add(new call(i));
-                break;
+               add(new call(i));
+               break;
             case GETFIELD:{
                TypeHelper.JavaType type = i.asFieldAccessor().getConstantPoolFieldEntry().getType();
 
-                  try{
-                     Class clazz = Class.forName(i.asFieldAccessor().getConstantPoolFieldEntry().getClassEntry().getDotClassName());
+               try{
+                  Class clazz = Class.forName(i.asFieldAccessor().getConstantPoolFieldEntry().getClassEntry().getDotClassName());
 
-                     Field f = clazz.getDeclaredField(i.asFieldAccessor().getFieldName());
-                      if(type.isArray()){
+                  Field f = clazz.getDeclaredField(i.asFieldAccessor().getFieldName());
+                  if(type.isArray()){
                      add(new field_load<ref>(i, new StackReg_ref(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
 
                      add(new and_const<u64, Long>(i, new StackReg_u64(i, 0), new StackReg_ref(i, 0), (long) 0xffffffffL));
-                      }else if(type.isInt()){
-                          add(new field_load<s32>(i, new StackReg_s32(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+                  }else if(type.isInt()){
+                     add(new field_load<s32>(i, new StackReg_s32(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
 
-                      }else if(type.isFloat()){
-                          add(new field_load<f32>(i, new StackReg_f32(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
-                      }else if(type.isDouble()){
-                          add(new field_load<f64>(i, new StackReg_f64(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
-                      }else if(type.isLong()){
-                          add(new field_load<s64>(i, new StackReg_s64(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
-                      }
-                  }catch(ClassNotFoundException e){
-                     e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                  }catch(NoSuchFieldException e){
-                     e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                  }else if(type.isFloat()){
+                     add(new field_load<f32>(i, new StackReg_f32(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+                  }else if(type.isDouble()){
+                     add(new field_load<f64>(i, new StackReg_f64(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+                  }else if(type.isLong()){
+                     add(new field_load<s64>(i, new StackReg_s64(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
                   }
+               }catch(ClassNotFoundException e){
+                  e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+               }catch(NoSuchFieldException e){
+                  e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+               }
 
 
             }
             break;
             case PUTSTATIC:
-                add(new call(i));
-                break;
+               add(new call(i));
+               break;
             case PUTFIELD:{
-                TypeHelper.JavaType type = i.asFieldAccessor().getConstantPoolFieldEntry().getType();
+               TypeHelper.JavaType type = i.asFieldAccessor().getConstantPoolFieldEntry().getType();
 
-                try{
-                    Class clazz = Class.forName(i.asFieldAccessor().getConstantPoolFieldEntry().getClassEntry().getDotClassName());
+               try{
+                  Class clazz = Class.forName(i.asFieldAccessor().getConstantPoolFieldEntry().getClassEntry().getDotClassName());
 
-                    Field f = clazz.getDeclaredField(i.asFieldAccessor().getFieldName());
-                    if(type.isArray()){
-                        add(new field_store<ref>(i, new StackReg_ref(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+                  Field f = clazz.getDeclaredField(i.asFieldAccessor().getFieldName());
+                  if(type.isArray()){
+                     add(new field_store<ref>(i, new StackReg_ref(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
 
-                        add(new and_const<u64, Long>(i, new StackReg_u64(i, 1), new StackReg_ref(i, 0), (long) 0xffffffffL));
-                    }else if(type.isInt()){
-                        add(new field_store<s32>(i, new StackReg_s32(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+                     add(new and_const<u64, Long>(i, new StackReg_u64(i, 1), new StackReg_ref(i, 0), (long) 0xffffffffL));
+                  }else if(type.isInt()){
+                     add(new field_store<s32>(i, new StackReg_s32(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
 
-                    }else if(type.isFloat()){
-                        add(new field_store<f32>(i, new StackReg_f32(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
-                    }else if(type.isDouble()){
-                        add(new field_store<f64>(i, new StackReg_f64(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
-                    }else if(type.isLong()){
-                        add(new field_store<s64>(i, new StackReg_s64(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
-                    }
-                }catch(ClassNotFoundException e){
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                }catch(NoSuchFieldException e){
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                }
-
+                  }else if(type.isFloat()){
+                     add(new field_store<f32>(i, new StackReg_f32(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+                  }else if(type.isDouble()){
+                     add(new field_store<f64>(i, new StackReg_f64(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+                  }else if(type.isLong()){
+                     add(new field_store<s64>(i, new StackReg_s64(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+                  }
+               }catch(ClassNotFoundException e){
+                  e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+               }catch(NoSuchFieldException e){
+                  e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+               }
 
 
             }

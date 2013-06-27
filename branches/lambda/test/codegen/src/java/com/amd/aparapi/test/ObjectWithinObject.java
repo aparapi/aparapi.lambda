@@ -11,13 +11,15 @@ public class ObjectWithinObject extends Kernel{
 
       DummyOOA next;
 
-   };
+   }
+
+   ;
 
    final int size = 8;
 
    DummyOOA dummy[] = new DummyOOA[size];
 
-   public void run() {
+   public void run(){
       int myId = getGlobalId();
       dummy[myId].mem = dummy[myId].next.mem + 4;
    }

@@ -3,7 +3,7 @@ package com.amd.aparapi.test;
 import com.amd.aparapi.Kernel;
 
 class CallRunSuperBase extends Kernel{
-   @Override public void run() {
+   @Override public void run(){
       out[0] = 2;
    }
 
@@ -11,7 +11,7 @@ class CallRunSuperBase extends Kernel{
 }
 
 public class CallRunSuper extends CallRunSuperBase{
-   public void run() {
+   public void run(){
       super.run();
       out[1] = 3;
    }

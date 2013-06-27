@@ -2,11 +2,11 @@ package com.amd.aparapi.test;
 
 public class ReturnLongArrayNew{
 
-   long[] returnLongArrayNew() {
+   long[] returnLongArrayNew(){
       return new long[1024];
    }
 
-   public void run() {
+   public void run(){
       returnLongArrayNew();
    }
 }

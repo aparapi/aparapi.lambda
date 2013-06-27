@@ -2,12 +2,12 @@ package com.amd.aparapi.test;
 
 public class ReturnFloatArrayVar{
 
-   float[] returnFloatArrayVar() {
+   float[] returnFloatArrayVar(){
       float[] floats = new float[1024];
       return floats;
    }
 
-   public void run() {
+   public void run(){
 
       returnFloatArrayVar();
    }

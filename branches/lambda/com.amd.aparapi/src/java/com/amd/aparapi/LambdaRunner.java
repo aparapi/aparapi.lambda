@@ -100,12 +100,12 @@ class LambdaRunner extends OpenCLRunner{
    LambdaRunner(Consumer block, Stream source) throws AparapiException{
       try{
          lambdaKernelCall = new LambdaKernelCall(block);
-   objectLambdaSourceArray = (Object[]) lambdaKernelCall.setupStreamSource(source);
+         objectLambdaSourceArray = (Object[]) lambdaKernelCall.setupStreamSource(source);
          if(logger.isLoggable(Level.INFO)){
             logger.info("New lambda call is = " + lambdaKernelCall);
-        }
-     }catch(ClassNotFoundException c){
-        throw new AparapiException(c);
+         }
+      }catch(ClassNotFoundException c){
+         throw new AparapiException(c);
       }
    }
 

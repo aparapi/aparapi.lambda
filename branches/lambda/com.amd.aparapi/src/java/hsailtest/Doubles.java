@@ -7,8 +7,8 @@ public class Doubles{
 
    double[] doubles = new double[32];
 
-   public void run(int id) {
-           doubles[id] = id*2;
+   public void run(int id){
+      doubles[id] = id * 2;
    }
 
    public void test() throws ClassParseException{
@@ -23,13 +23,11 @@ public class Doubles{
       System.out.println(renderer.toString());
 
 
-      runner.run(renderer.toString(), doubles.length, this,  doubles.length);
-      for (int i=0; i< doubles.length; i++){
-         System.out.print(doubles[i]+", ");
+      runner.run(renderer.toString(), doubles.length, this, doubles.length);
+      for(int i = 0; i < doubles.length; i++){
+         System.out.print(doubles[i] + ", ");
       }
    }
-
-
 
 
    public static void main(String[] args) throws AparapiException{

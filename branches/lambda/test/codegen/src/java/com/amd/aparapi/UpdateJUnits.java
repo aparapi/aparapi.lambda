@@ -158,16 +158,16 @@ public class UpdateJUnits{
       StringBuilder sb = new StringBuilder();
       sb.append(javaEditor.getText());
       sb.append("\n");
-      if (source.hasThrows()){
+      if(source.hasThrows()){
          sb.append(Source.ThrowsStart).append("\n").append(source.getThrows()).append("\n").append(Source.ThrowsEnd);
       }
-      if (source.hasMode()){
+      if(source.hasMode()){
          sb.append(Source.ModeStart).append("\n").append(source.getMode()).append("\n").append(Source.ModeEnd);
       }
-      if (source.hasHSAIL()){
+      if(source.hasHSAIL()){
          sb.append(Source.HSAILStart).append("\n").append(source.getHSAIL()).append("\n").append(Source.HSAILEnd);
       }
-      if (source.hasOpenCL()){
+      if(source.hasOpenCL()){
          sb.append(Source.OpenCLStart).append("\n").append(expectedOpenCLEditor.getText()).append("\n").append(Source.OpenCLEnd);
       }
 
@@ -205,14 +205,14 @@ public class UpdateJUnits{
 
    public static void main(String[] args) throws ClassNotFoundException, FileNotFoundException, IOException{
 
-      try {
-         for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
-            if ("Nimbus".equals(info.getName())) {
+      try{
+         for(UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()){
+            if("Nimbus".equals(info.getName())){
                UIManager.setLookAndFeel(info.getClassName());
                break;
             }
          }
-      } catch (Exception e) {
+      }catch(Exception e){
          // If Nimbus is not available, you can set the GUI to another look and feel.
       }
       File rootDir = new File(System.getProperty("root", "."));
@@ -321,10 +321,10 @@ public class UpdateJUnits{
                   source = new Source(clazz, sourceDir);
                   javaEditor.clear().equal(source.getJava().toString());
                   if(source.hasOpenCL()){
-                     String expectedOpenCL= source.getOpenCL().toString();
+                     String expectedOpenCL = source.getOpenCL().toString();
                      String actualOpenCL = null;
                      try{
-                       // ClassModel.flush(); // should not need this
+                        // ClassModel.flush(); // should not need this
                         ClassModel classModel = ClassModel.getClassModel(clazz);
                         try{
                            Entrypoint entrypoint = classModel.getKernelEntrypoint();

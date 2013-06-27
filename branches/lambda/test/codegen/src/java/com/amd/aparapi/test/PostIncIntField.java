@@ -4,11 +4,11 @@ public class PostIncIntField{
 
    int _y = 2;
 
-   int incInt(int a) {
+   int incInt(int a){
       return a++;
    }
 
-   public void run() {
+   public void run(){
 
       incInt(_y++);
 

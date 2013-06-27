@@ -5,7 +5,7 @@ public class AccessNested2DIntArray{
 
    int[][] ints = new int[1024][];
 
-   public void run() {
+   public void run(){
       int value = ints[indices[0]][0];
    }
 

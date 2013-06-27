@@ -13,44 +13,44 @@ class DummyOOANF{
 
    byte byteField;
 
-   public DummyOOANF() {
+   public DummyOOANF(){
       mem = 8;
    }
 
-   public boolean isBoolField() {
+   public boolean isBoolField(){
       return boolField;
    }
 
-   public boolean getBoolField() {
+   public boolean getBoolField(){
       return boolField;
    }
 
-   public void setBoolField(boolean x) {
+   public void setBoolField(boolean x){
       //boolField = x & true;
       boolField = x;
    }
 
-   public int getMem() {
+   public int getMem(){
       return mem;
    }
 
-   public void setMem(int x) {
+   public void setMem(int x){
       mem = x;
    }
 
-   public float getFloatField() {
+   public float getFloatField(){
       return floatField;
    }
 
-   public void setFloatField(float x) {
+   public void setFloatField(float x){
       floatField = x;
    }
 
-   public long getLongField() {
+   public long getLongField(){
       return longField;
    }
 
-   public void setLongField(long x) {
+   public void setLongField(long x){
       longField = x;
    }
 };
@@ -65,22 +65,22 @@ public class ObjectArrayMemberNotFinal extends Kernel{
 
    final int size = 64;
 
-   public ObjectArrayMemberNotFinal() {
+   public ObjectArrayMemberNotFinal(){
       something = -1;
       dummy = new DummyOOANF[size];
 
       dummy[0] = new DummyOOANF();
    }
 
-   public int getSomething() {
+   public int getSomething(){
       return something;
    }
 
-   public int bar(int x) {
+   public int bar(int x){
       return -x;
    }
 
-   public void run() {
+   public void run(){
       int myId = getGlobalId();
 
       int tmp = dummy[myId].getMem();

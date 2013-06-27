@@ -2,12 +2,12 @@ package com.amd.aparapi.test;
 
 public class ReturnIntArrayVar{
 
-   int[] returnIntArrayVar() {
+   int[] returnIntArrayVar(){
       int[] ints = new int[1024];
       return ints;
    }
 
-   public void run() {
+   public void run(){
 
       returnIntArrayVar();
    }

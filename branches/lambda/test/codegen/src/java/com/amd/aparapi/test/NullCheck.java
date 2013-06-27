@@ -3,8 +3,8 @@ package com.amd.aparapi.test;
 public class NullCheck{
    int[] ints = new int[1024];
 
-   public void run() {
-      if (ints == null){
+   public void run(){
+      if(ints == null){
          return;
       }
       int value = ints[0];
@@ -12,29 +12,29 @@ public class NullCheck{
 }
 
 /**{OpenCL{
-typedef struct This_s{
-   __global int* ints;
-   int passid;
-}This;
+ typedef struct This_s{
+ __global int* ints;
+ int passid;
+ }This;
 
-int get_pass_id(This *this){
-   return this->passid;
-}
+ int get_pass_id(This *this){
+ return this->passid;
+ }
 
-__kernel void run(
-   __global int* ints, 
-   int passid
-){
-   This thisStruct;
-   This* this=&thisStruct;
-   this->ints = ints;
-   this->passid = passid;
-   {
-      if (this->ints == NULL){
-         return;
-      }
-      int i_1 = this->ints[0];
-      return;
-   }
-}
-}OpenCL}**/
+ __kernel void run(
+ __global int* ints,
+ int passid
+ ){
+ This thisStruct;
+ This* this=&thisStruct;
+ this->ints = ints;
+ this->passid = passid;
+ {
+ if (this->ints == NULL){
+ return;
+ }
+ int i_1 = this->ints[0];
+ return;
+ }
+ }
+ }OpenCL}**/
