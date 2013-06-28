@@ -2,16 +2,21 @@ package hsailtest;
 
 import com.amd.aparapi.AparapiException;
 import com.amd.aparapi.Device;
+import java.util.function.IntConsumer;
 
 
 public class OopLambda{
    public static class P{
+      P next;
       int x;
       int y;
+      long l;
 
       P(int _x, int _y){
+         next = null;
          x = _x;
          y = _y;
+         l = 0;
       }
    }
 
@@ -25,12 +30,15 @@ public class OopLambda{
         points[i]=new P(0,0);
       }
 
-      Device.hsa().forEach(len, gid -> {
+      IntConsumer ic  =  gid -> {
          P p = points[gid];
+         // p.next = null;
          p.x = 0;
-         //points[gid].x = gid;
-        // points[gid].y = 4;
-      });
+         p.y = 0;
+         p.l = 0L;
+      } ;
+
+      Device.hsa().forEach(len, ic);
 
       System.out.print("hsa ->");
       for(int i = 0; i < len; i++){
@@ -38,19 +46,13 @@ public class OopLambda{
       }
       System.out.println();
 
-      Device.jtp().forEach(len, gid -> {
-         points[gid].x = gid;
-         points[gid].y = 4;
-      });
+      Device.jtp().forEach(len, ic);
       System.out.print("jtp ->");
       for(int i = 0; i < len; i++){
          System.out.print("(" + points[i].x + "," + points[i].y + "),");
       }
       System.out.println();
-      Device.seq().forEach(len, gid -> {
-         points[gid].x = gid;
-         points[gid].y = 4;
-      });
+      Device.seq().forEach(len, ic);
       System.out.print("seq ->");
       for(int i = 0; i < len; i++){
          System.out.print("(" + points[i].x + "," + points[i].y + "),");
