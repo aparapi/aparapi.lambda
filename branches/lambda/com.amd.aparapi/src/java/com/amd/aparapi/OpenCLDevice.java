@@ -462,7 +462,7 @@ public class OpenCLDevice extends Device{
             lambdaRunner.setRunnable(success);
 
          }else{
-            new JavaDevice().forEach(jobSize, intFunctionSAM);
+            new JavaThreadPoolDevice().forEach(jobSize, intFunctionSAM);
          }
 
          return this;
@@ -484,7 +484,7 @@ public class OpenCLDevice extends Device{
             logger.fine("Running java.");
          }
 
-         new JavaDevice().forEach(jobSize, intFunctionSAM);
+         new JavaThreadPoolDevice().forEach(jobSize, intFunctionSAM);
       }
       return (this);
 

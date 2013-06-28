@@ -57,7 +57,12 @@ public abstract class Device{
    }
 
    public static Device jtp(){
-      return (new JavaDevice());
+      return (new JavaThreadPoolDevice());
+
+   }
+
+   public static Device seq(){
+      return (new JavaSequentialDevice());
 
    }
 
