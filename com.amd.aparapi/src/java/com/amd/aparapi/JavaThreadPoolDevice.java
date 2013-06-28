@@ -4,7 +4,7 @@ import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.function.IntConsumer;
 
-public class JavaDevice extends Device{
+public class JavaThreadPoolDevice extends Device{
    void wait(CyclicBarrier barrier){
       try{
          barrier.await();
