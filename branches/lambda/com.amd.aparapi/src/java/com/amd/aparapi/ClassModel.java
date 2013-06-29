@@ -2501,7 +2501,7 @@ public class ClassModel{
                if(i.isMethodCall()){
                   TypeHelper.JavaMethodArgsAndReturnType calledArgsAndReturnType = i.asMethodCall().getConstantPoolMethodEntry().getArgsAndReturnType();
                   consumedInstructionTypeStack.push(i, calledArgsAndReturnType.getReturnType().getPrimitiveType());
-               }else if(i.isFieldAccessor()){
+               }else if(i.isFieldAccessor() && i instanceof InstructionSet.AccessField){   // don't do this for assigns to fields!
                   JavaType assignedFieldType = i.asFieldAccessor().getConstantPoolFieldEntry().getType();
                   consumedInstructionTypeStack.push(i, assignedFieldType.getPrimitiveType());
 
