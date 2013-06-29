@@ -75,6 +75,8 @@ class UnsafeWrapper{
 
    private static Method objectFieldOffsetMethod;
 
+   private static Method staticFieldOffsetMethod;
+
    private static Method putBooleanMethod;
 
    private static Method putIntMethod;
@@ -88,6 +90,8 @@ class UnsafeWrapper{
    private static Method putLongMethod;
 
    private static Method compareAndSwapIntMethod;
+
+   sun.misc.Unsafe u;
 
    static{
       try{
@@ -106,6 +110,7 @@ class UnsafeWrapper{
          getBooleanMethod = uc.getDeclaredMethod("getBoolean", Object.class, long.class);
          getLongMethod = uc.getDeclaredMethod("getLong", Object.class, long.class);
          objectFieldOffsetMethod = uc.getDeclaredMethod("objectFieldOffset", Field.class);
+         staticFieldOffsetMethod = uc.getDeclaredMethod("staticFieldOffset", Field.class);
          putBooleanMethod = uc.getDeclaredMethod("putBoolean", Object.class, long.class, boolean.class);
          putIntMethod = uc.getDeclaredMethod("putInt", Object.class, long.class, int.class);
          putFloatMethod = uc.getDeclaredMethod("putFloat", Object.class, long.class, float.class);
@@ -399,7 +404,7 @@ class UnsafeWrapper{
    static long objectFieldOffset(Field _field){
       long offset = 0l;
       try{
-         offset = (Long) objectFieldOffsetMethod.invoke(unsafe, _field);
+         offset = (long) objectFieldOffsetMethod.invoke(unsafe, _field);
       }catch(IllegalArgumentException e){
          // TODO Auto-generated catch block
          e.printStackTrace();
@@ -412,4 +417,48 @@ class UnsafeWrapper{
       }
       return offset;
    }
+
+    static long staticFieldOffset(Field _field){
+        long offset = 0l;
+        try{
+            offset = (long) staticFieldOffsetMethod.invoke(unsafe, _field);
+        }catch(IllegalArgumentException e){
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }catch(IllegalAccessException e){
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }catch(InvocationTargetException e){
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return offset;
+    }
+
+
+    private static class CompressedCheck{
+        Object o1;
+        Object o2;
+        static long sizeInBytes = 0L;
+        static long getObjectPointerSizeInBytes(){
+            if (sizeInBytes == 0L){
+            try{
+                Field f1 = CompressedCheck.class.getDeclaredField("o1");
+                Field f2 = CompressedCheck.class.getDeclaredField("o2");
+
+                long offset1 = UnsafeWrapper.objectFieldOffset(f1);
+                long offset2 = UnsafeWrapper.objectFieldOffset(f2);
+                // System.out.printf(" f1=%d, f2=%d\n", offset1, offset2);
+                sizeInBytes = Math.abs(offset1-offset2);
+            } catch (NoSuchFieldException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            }
+            }
+            return(sizeInBytes);
+        }
+    }
+
+    public static long getObjectPointerSizeInBytes(){
+        return(CompressedCheck.getObjectPointerSizeInBytes());
+    }
 }

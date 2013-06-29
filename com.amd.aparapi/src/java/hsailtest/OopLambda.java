@@ -31,15 +31,12 @@ public class OopLambda{
       }
 
       IntConsumer ic  =  gid -> {
-         P p = points[gid];
-         // p.next = null;
-         p.x = 0;
-         p.y = 0;
-         p.l = 0L;
+         points[gid].x = gid;
+         points[gid].y = gid*2;
       } ;
 
       Device.hsa().forEach(len, ic);
-
+      // System.out.print("p=(" + p.x + "," + p.y + ")\n");
       System.out.print("hsa ->");
       for(int i = 0; i < len; i++){
          System.out.print("(" + points[i].x + "," + points[i].y + "),");

@@ -14,6 +14,8 @@ import java.util.List;
 public class HSAILMethod{
 
 
+
+
    static abstract class HSAILInstruction{
       Instruction from;
       HSAILRegister[] dests = null;
@@ -823,12 +825,15 @@ public class HSAILMethod{
       return (r);
    }
 
-   enum ParseState{NONE, COMPARE_F32, COMPARE_F64, COMPARE_S64}
+   enum ParseState{NONE, COMPARE_F32, COMPARE_F64, COMPARE_S64};
 
-   ;
+
 
 
    public HSAILMethod(ClassModel.ClassModelMethod _method){
+      if (UnsafeWrapper.getObjectPointerSizeInBytes()==4){
+          throw new IllegalStateException("Object pointer size is 4, you need to use 64 bit JVM and set -XX:-UseCompressedOops!");
+      }
       method = _method;
       ParseState parseState = ParseState.NONE;
       Instruction lastInstruction = null;
@@ -842,11 +847,16 @@ public class HSAILMethod{
             for(TypeHelper.JavaMethodArg arg : method.argsAndReturnType.getArgs()){
                if(arg.getJavaType().isArray()){
                   add(new ld_kernarg(i, new VarReg_ref(arg.getArgc() + argOffset)));
+               }else    if(arg.getJavaType().isObject()){
+                  add(new ld_kernarg(i, new VarReg_ref(arg.getArgc() + argOffset)));
                }else if(arg.getJavaType().isInt()){
                   add(new ld_kernarg(i, new VarReg_s32(arg.getArgc() + argOffset)));
-
                }else if(arg.getJavaType().isFloat()){
                   add(new ld_kernarg(i, new VarReg_f32(arg.getArgc() + argOffset)));
+               }else if(arg.getJavaType().isDouble()){
+                   add(new ld_kernarg(i, new VarReg_f64(arg.getArgc() + argOffset)));
+               }else if(arg.getJavaType().isLong()){
+                   add(new ld_kernarg(i, new VarReg_s64(arg.getArgc() + argOffset)));
                }
             }
          }

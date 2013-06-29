@@ -147,12 +147,18 @@ class VarReg_f64 extends Reg_f64{
    VarReg_f64(Instruction _from){
       super(_from.asLocalVariableAccessor().getLocalVariableTableIndex(), false);
    }
+    public VarReg_f64(int _index){
+        super(_index, false);
+    }
 }
 
 class VarReg_s64 extends Reg_s64{
    VarReg_s64(Instruction _from){
       super(_from.asLocalVariableAccessor().getLocalVariableTableIndex(), false);
    }
+    public VarReg_s64(int _index){
+        super(_index, false);
+    }
 }
 
 class VarReg_u64 extends Reg_u64{
