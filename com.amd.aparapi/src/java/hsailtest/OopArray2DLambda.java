@@ -8,77 +8,62 @@ import java.util.function.IntConsumer;
 
 public class OopArray2DLambda {
 
-    public static class P{
+    public static class P {
         P next;
         int x;
         int y;
         long l;
 
-        P(int _x, int _y){
+        P(int _x, int _y) {
             next = null;
             x = _x;
             y = _y;
             l = 0;
         }
+
+        @Override
+        public String toString() {
+            return ("(" + x + ", " + y + ")");
+        }
     }
 
+    static void dump(String type, P[][] points) {
+        System.out.print(type + " ->");
+        for (int x = 0; x < points.length; x++) {
+            System.out.print("[");
 
-   public static void main(String[] args) throws AparapiException{
-      final int len = 4; // need this to be final, why is len not effectively final?
-      P[][] matrix = new P[len][len];
-       for(int x = 0; x < len; x++){
-           for(int y = 0; y < len; y++){
-               matrix[x][y] = new P(0,0);
-           }
-       }
+            for (int y = 0; y < points[0].length; y++) {
+                if (y != 0) {
+                    System.out.print(", ");
+                }
+                System.out.print(points[x][y]);
+            }
+            System.out.print("]");
+        }
+        System.out.println();
+    }
 
-      IntConsumer ic  =  gid -> {
-         for (int i=0; i< len; i++){
-             matrix[gid][i].x=gid;
-             matrix[gid][i].y=gid;
-         }
-      } ;
+    public static void main(String[] args) throws AparapiException {
+        final int len = 4; // need this to be final, why is len not effectively final?
+        P[][] matrix = new P[len][len];
+        for (int x = 0; x < len; x++) {
+            for (int y = 0; y < len; y++) {
+                matrix[x][y] = new P(0, 0);
+            }
+        }
 
-      Device.hsa().forEach(len, ic);
-      // System.out.print("p=(" + p.x + "," + p.y + ")\n");
-      System.out.print("hsa ->");
-      for(int x = 0; x < len; x++){
-          System.out.print("[");
-          for(int y = 0; y < len; y++){
-              if (y!=0){
-                  System.out.print(", ");
-              }
-             System.out.print("("+matrix[x][y].x+", "+matrix[x][y].y+")");
-          }
-          System.out.print("]");
-      }
-      System.out.println();
+        IntConsumer ic = gid -> {
+            for (int i = 0; i < len; i++) {
+                matrix[gid][i].x = gid;
+                matrix[gid][i].y = gid;
+            }
+        };
 
-      Device.jtp().forEach(len, ic);
-      System.out.print("jtp ->");
-       for(int x = 0; x < len; x++){
-           System.out.print("[");
-           for(int y = 0; y < len; y++){
-               if (y!=0){
-                   System.out.print(", ");
-               }
-               System.out.print("("+matrix[x][y].x+", "+matrix[x][y].y+")");
-           }
-           System.out.print("]");
-       }
-      System.out.println();
-      Device.seq().forEach(len, ic);
-      System.out.print("seq ->");
-       for(int x = 0; x < len; x++){
-           System.out.print("[");
-           for(int y = 0; y < len; y++){
-               if (y!=0){
-                   System.out.print(", ");
-               }
-               System.out.print("("+matrix[x][y].x+", "+matrix[x][y].y+")");
-           }
-           System.out.print("]");
-       }
-      System.out.println();
-   }
+        Device.hsa().forEach(len, ic);
+        dump("hsa", matrix);
+        Device.jtp().forEach(len, ic);
+        dump("jtp", matrix);
+        Device.seq().forEach(len, ic);
+        dump("seq", matrix);
+    }
 }
