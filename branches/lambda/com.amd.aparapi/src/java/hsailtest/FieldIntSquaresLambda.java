@@ -7,9 +7,9 @@ import java.util.function.IntConsumer;
 
 
 public class FieldIntSquaresLambda {
-    static final int len = 10;
-    static int in[] = new int[len];
-    static int out[] = new int[len];
+    public final int len = 10;
+    public int in[] = new int[len];
+    public int out[] = new int[len];
 
     static void dump(String type, int[] in, int[] out) {
         System.out.print(type + " ->");
@@ -19,8 +19,7 @@ public class FieldIntSquaresLambda {
         System.out.println();
     }
 
-    public static void main(String[] args) throws AparapiException {
-
+    public void test(){
         IntConsumer ic = gid -> {
             in[gid] = gid;
             out[gid] = in[gid] * in[gid];
@@ -31,5 +30,10 @@ public class FieldIntSquaresLambda {
         dump("jtp", in, out);
         Device.seq().forEach(len, ic);
         dump("seq", in, out);
+    }
+
+    public static void main(String[] args) throws AparapiException {
+        (new FieldIntSquaresLambda()).test();
+
     }
 }

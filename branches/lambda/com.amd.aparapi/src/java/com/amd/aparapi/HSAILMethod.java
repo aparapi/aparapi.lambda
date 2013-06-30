@@ -462,6 +462,25 @@ public class HSAILMethod{
 
    }
 
+    static class static_field_load<T extends PrimitiveType> extends HSAILInstructionWithDest<T>{
+
+        long offset;
+
+
+        static_field_load(Instruction _from, HSAILRegister<T> _dest,  long _offset){
+            super(_from, _dest);
+            offset = _offset;
+
+        }
+
+        @Override void render(HSAILRenderer r){
+            r.append("ld_global_").typeName(getDest()).space().regName(getDest()).separator().append("[").append(offset).append("]");
+        }
+
+
+    }
+
+
    static class field_store<T extends PrimitiveType> extends HSAILInstructionWithSrc<T>{
       Reg_ref mem;
       long offset;
@@ -1460,9 +1479,37 @@ public class HSAILMethod{
             case RETURN:
                add(new retvoid(i));
                break;
-            case GETSTATIC:
-               add(new call(i));
-               break;
+            case GETSTATIC:{
+                TypeHelper.JavaType type = i.asFieldAccessor().getConstantPoolFieldEntry().getType();
+
+                try{
+                    Class clazz = Class.forName(i.asFieldAccessor().getConstantPoolFieldEntry().getClassEntry().getDotClassName());
+
+                    Field f = clazz.getDeclaredField(i.asFieldAccessor().getFieldName());
+
+                    if(type.isArray()){
+                        add(new static_field_load<ref>(i, new StackReg_ref(i, 0), (long) UnsafeWrapper.staticFieldOffset(f)));
+
+                        add(new and_const<u64, Long>(i, new StackReg_u64(i, 0), new StackReg_ref(i, 0), (long) 0xffffffffL));
+                    }else if(type.isInt()){
+                        add(new static_field_load<s32>(i, new StackReg_s32(i, 0), (long) UnsafeWrapper.staticFieldOffset(f)));
+
+                    }else if(type.isFloat()){
+                        add(new static_field_load<f32>(i, new StackReg_f32(i, 0), (long) UnsafeWrapper.staticFieldOffset(f)));
+                    }else if(type.isDouble()){
+                        add(new static_field_load<f64>(i, new StackReg_f64(i, 0), (long) UnsafeWrapper.staticFieldOffset(f)));
+                    }else if(type.isLong()){
+                        add(new static_field_load<s64>(i, new StackReg_s64(i, 0), (long) UnsafeWrapper.staticFieldOffset(f)));
+                    }
+                }catch(ClassNotFoundException e){
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }catch(NoSuchFieldException e){
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+
+
+            }
+            break;
             case GETFIELD:{
                TypeHelper.JavaType type = i.asFieldAccessor().getConstantPoolFieldEntry().getType();
 
@@ -1494,7 +1541,7 @@ public class HSAILMethod{
             }
             break;
             case PUTSTATIC:
-               add(new call(i));
+               add(new nyi(i));
                break;
             case PUTFIELD:{
                TypeHelper.JavaType type = i.asFieldAccessor().getConstantPoolFieldEntry().getType();
@@ -1506,7 +1553,7 @@ public class HSAILMethod{
                   if(type.isArray()){
                      add(new field_store<ref>(i, new StackReg_ref(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
 
-                     add(new and_const<u64, Long>(i, new StackReg_u64(i, 1), new StackReg_ref(i, 0), (long) 0xffffffffL));
+                   //  add(new and_const<u64, Long>(i, new StackReg_u64(i, 1), new StackReg_ref(i, 0), (long) 0xffffffffL));
                   }else if(type.isInt()){
                      add(new field_store<s32>(i, new StackReg_s32(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
 
