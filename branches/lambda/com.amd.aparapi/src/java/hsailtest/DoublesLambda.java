@@ -6,9 +6,9 @@ import com.amd.aparapi.Device;
 import java.util.function.IntConsumer;
 
 
-public class SquaresLambda {
+public class DoublesLambda {
 
-    static void dump(String type, int[] in, int[] out) {
+    static void dump(String type, double[] in, double[] out) {
         System.out.print(type + " ->");
         for (int i = 0; i < in.length; i++) {
             System.out.print("(" + in[i] + "," + out[i] + "),");
@@ -18,12 +18,13 @@ public class SquaresLambda {
 
     public static void main(String[] args) throws AparapiException {
         final int len = 10;
-        int in[] = new int[len];
-        int out[] = new int[len];
+        double in[] = new double[len];
+        double out[] = new double[len];
         IntConsumer ic = gid -> {
             in[gid] = gid;
             out[gid] = in[gid] * in[gid];
         };
+
         Device.hsa().forEach(len, ic);
         dump("hsa", in, out);
         Device.jtp().forEach(len, ic);
