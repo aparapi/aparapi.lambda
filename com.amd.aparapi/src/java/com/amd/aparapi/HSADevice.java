@@ -25,8 +25,13 @@ public class HSADevice extends Device{
 
          List<Object> args = new ArrayList<Object>();
          for(Field f : lkc.getLambdaCapturedFields()){
-            Object v = lkc.unsafeGetFieldRefFromObject(ic, f.getName());
-            args.add(v);
+            String name = f.getName();
+            Object v = lkc.unsafeGetFieldRefFromObject(ic,name);     // Sometimes this fails if capture is not effectively final!
+             if (v != null){
+                args.add(v);
+             } else{
+                 v=v;
+             }
          }
          args.add(0);
 
