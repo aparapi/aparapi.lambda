@@ -15,10 +15,11 @@ public class HSAILRenderer extends TextRenderer<HSAILRenderer>{
    }
 
    public HSAILRenderer array_base_offset(){
-
       return (append(UnsafeWrapper.arrayBaseOffset(int[].class)));
    }
-
+    public HSAILRenderer array_len_offset(){
+        return (append((UnsafeWrapper.arrayBaseOffset(int[].class)-8)));
+    }
    public HSAILRenderer separator(){
       return (commaSpace());
    }
