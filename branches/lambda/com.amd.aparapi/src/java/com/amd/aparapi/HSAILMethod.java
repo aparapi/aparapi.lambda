@@ -444,6 +444,23 @@ public class HSAILMethod{
 
    }
 
+    static class array_len extends HSAILInstructionWithDest<s32>{
+        Reg_ref mem;
+
+
+        array_len(Instruction _from, Reg_s32 _dest, Reg_ref _mem){
+            super(_from, _dest);
+
+            mem = _mem;
+        }
+
+        @Override void render(HSAILRenderer r){
+            r.append("ld_global_").typeName(getDest()).space().regName(getDest()).separator().append("[").regName(mem).append("+").array_len_offset().append("]");
+        }
+
+
+    }
+
    static class field_load<T extends PrimitiveType> extends HSAILInstructionWithDest<T>{
       Reg_ref mem;
       long offset;
@@ -1590,7 +1607,8 @@ public class HSAILMethod{
                add(new nyi(i));
                break;
             case ARRAYLENGTH:
-               add(new nyi(i));
+               add(new array_len(i, new StackReg_s32(i, 0), new StackReg_ref(i, 0)));
+
                break;
             case ATHROW:
                add(new nyi(i));
