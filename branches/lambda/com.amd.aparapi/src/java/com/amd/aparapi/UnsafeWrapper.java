@@ -404,7 +404,10 @@ class UnsafeWrapper{
    static long objectFieldOffset(Field _field){
       long offset = 0l;
       try{
-         offset = (long) objectFieldOffsetMethod.invoke(unsafe, _field);
+
+        // int v =       ((Integer)objectFieldOffsetMethod.invoke(unsafe, _field)).intValue();
+         // offset = (long)    (v & 0xffffffff);
+          offset = (long) objectFieldOffsetMethod.invoke(unsafe, _field);
       }catch(IllegalArgumentException e){
          // TODO Auto-generated catch block
          e.printStackTrace();

@@ -13,7 +13,7 @@ import java.util.List;
  */
 public class HSAILMethod{
 
-
+    //  final static long ADDR_MASK = ((1L << 32)-1);
 
 
    static abstract class HSAILInstruction{
@@ -1537,8 +1537,9 @@ public class HSAILMethod{
                   if(type.isArray()){
                      add(new field_load<ref>(i, new StackReg_ref(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
 
-                     add(new and_const<u64, Long>(i, new StackReg_u64(i, 0), new StackReg_ref(i, 0), (long) 0xffffffffL));
+                   //  add(new and_const<u64, Long>(i, new StackReg_u64(i, 0), new StackReg_ref(i, 0), ADDR_MASK));
                   }else if(type.isInt()){
+                  //    add(new and_const<ref, Long>(i, new StackReg_ref(i, 0), new StackReg_ref(i, 0), ADDR_MASK));
                      add(new field_load<s32>(i, new StackReg_s32(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
 
                   }else if(type.isFloat()){
@@ -1570,7 +1571,7 @@ public class HSAILMethod{
                   if(type.isArray()){
                      add(new field_store<ref>(i, new StackReg_ref(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
 
-                   //  add(new and_const<u64, Long>(i, new StackReg_u64(i, 1), new StackReg_ref(i, 0), (long) 0xffffffffL));
+                   //  add(new and_const<u64, Long>(i, new StackReg_u64(i, 1), new StackReg_ref(i, 0), ADDR_MASK);
                   }else if(type.isInt()){
                      add(new field_store<s32>(i, new StackReg_s32(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
 
