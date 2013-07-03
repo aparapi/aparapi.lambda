@@ -37,6 +37,8 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 */
 package com.amd.aparapi;
 
+import hsailtest.FieldAccess;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -51,9 +53,11 @@ import java.lang.reflect.Method;
  * @author gfrost
  */
 
-class UnsafeWrapper{
+public class UnsafeWrapper{
 
    private static Object unsafe;
+
+   private static Method addressSizeMethod;
 
    private static Method getIntVolatileMethod;
 
@@ -91,15 +95,17 @@ class UnsafeWrapper{
 
    private static Method compareAndSwapIntMethod;
 
-   sun.misc.Unsafe u;
+   public static sun.misc.Unsafe getUnsafe(){
+       return((sun.misc.Unsafe)unsafe);
+   }
 
    static{
       try{
          Class<?> uc = Class.forName("sun.misc.Unsafe");
-
          Field field = uc.getDeclaredField("theUnsafe");
          field.setAccessible(true);
          unsafe = field.get(uc);
+         addressSizeMethod = uc.getDeclaredMethod("addressSize");
          getIntVolatileMethod = uc.getDeclaredMethod("getIntVolatile", Object.class, long.class);
          arrayBaseOffsetMethod = uc.getDeclaredMethod("arrayBaseOffset", Class.class);
          arrayIndexScaleMethod = uc.getDeclaredMethod("arrayIndexScale", Class.class);
@@ -140,7 +146,28 @@ class UnsafeWrapper{
 
    }
 
-   static int atomicAdd(int[] _arr, int _index, int _delta){
+
+    public static int addressSize(){
+         int addressSize = 0;
+         try{
+                addressSize = (Integer) addressSizeMethod.invoke(unsafe);
+
+            }catch(IllegalArgumentException e){
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }catch(IllegalAccessException e){
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }catch(InvocationTargetException e){
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+
+        return(addressSize);
+
+    }
+
+    static int atomicAdd(int[] _arr, int _index, int _delta){
       if(_index < 0 || _index >= _arr.length){
          throw new IndexOutOfBoundsException("index " + _index);
       }
@@ -401,7 +428,7 @@ class UnsafeWrapper{
       }
    }
 
-   static long objectFieldOffset(Field _field){
+   public static long objectFieldOffset(Field _field){
       long offset = 0l;
       try{
 
@@ -439,6 +466,13 @@ class UnsafeWrapper{
     }
 
 
+    public static long addressOf(Object o){
+            Object[] array = new Object[] {o};
+            long baseOffset = arrayBaseOffset(Object[].class);
+            return(getLong(array, baseOffset));
+    }
+
+
     private static class CompressedCheck{
         Object o1;
         Object o2;
@@ -461,7 +495,8 @@ class UnsafeWrapper{
         }
     }
 
-    public static long getObjectPointerSizeInBytes(){
-        return(CompressedCheck.getObjectPointerSizeInBytes());
-    }
+   // public static long getObjectPointerSizeInBytes(){
+     //   return(addressSize());
+        //return(CompressedCheck.getObjectPointerSizeInBytes());
+  //  }
 }

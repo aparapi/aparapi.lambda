@@ -482,16 +482,17 @@ public class HSAILMethod{
     static class static_field_load<T extends PrimitiveType> extends HSAILInstructionWithDest<T>{
 
         long offset;
+        Reg_ref mem;
 
-
-        static_field_load(Instruction _from, HSAILRegister<T> _dest,  long _offset){
+        static_field_load(Instruction _from, HSAILRegister<T> _dest, Reg_ref _mem, long _offset){
             super(_from, _dest);
             offset = _offset;
+            mem = _mem;
 
         }
 
         @Override void render(HSAILRenderer r){
-            r.append("ld_global_").typeName(getDest()).space().regName(getDest()).separator().append("[").append(offset).append("]");
+            r.append("ld_global_").typeName(getDest()).space().regName(getDest()).separator().append("[").regName(mem).append("+").append(offset).append("]");
         }
 
 
@@ -763,7 +764,7 @@ public class HSAILMethod{
 
 
    public HSAILRenderer render(HSAILRenderer r){
-      // r.append("version 1:0:large;").nl();
+       //r.append("version 1:0:large;").nl();
       r.append("version 0:95: $full : $large;").nl();
       // r.append("kernel &" + method.getName() + "(");
       r.append("kernel &run(");
@@ -796,7 +797,8 @@ public class HSAILMethod{
       for(HSAILInstruction i : instructions){
          if(!(i instanceof ld_kernarg) && !s.contains(i.from)){
             if(!first){
-               r.pad(9).append("workitemabsid_u32 $s" + (count - 1) + ", 0;").nl();
+                r.pad(9).append("workitemabsid_u32 $s" + (count - 1) + ", 0;").nl();
+               // r.pad(9).append("workitemaid $s" + (count - 1) + ", 0;").nl();
                first = true;
             }
             s.add(i.from);
@@ -867,7 +869,8 @@ public class HSAILMethod{
 
 
    public HSAILMethod(ClassModel.ClassModelMethod _method){
-      if (UnsafeWrapper.getObjectPointerSizeInBytes()==4){
+
+      if (UnsafeWrapper.addressSize()==4){
           throw new IllegalStateException("Object pointer size is 4, you need to use 64 bit JVM and set -XX:-UseCompressedOops!");
       }
       method = _method;
@@ -1505,18 +1508,18 @@ public class HSAILMethod{
                     Field f = clazz.getDeclaredField(i.asFieldAccessor().getFieldName());
 
                     if(type.isArray()){
-                        add(new static_field_load<ref>(i, new StackReg_ref(i, 0), (long) UnsafeWrapper.staticFieldOffset(f)));
+                        add(new static_field_load<ref>(i, new StackReg_ref(i, 0),new StackReg_ref(i, 0), (long) UnsafeWrapper.staticFieldOffset(f)));
 
-                        add(new and_const<u64, Long>(i, new StackReg_u64(i, 0), new StackReg_ref(i, 0), (long) 0xffffffffL));
+                      //  add(new and_const<u64, Long>(i, new StackReg_u64(i, 0), new StackReg_ref(i, 0), (long) 0xffffffffL));
                     }else if(type.isInt()){
-                        add(new static_field_load<s32>(i, new StackReg_s32(i, 0), (long) UnsafeWrapper.staticFieldOffset(f)));
+                        add(new static_field_load<s32>(i, new StackReg_s32(i, 0),new StackReg_ref(i, 0), (long) UnsafeWrapper.staticFieldOffset(f)));
 
                     }else if(type.isFloat()){
-                        add(new static_field_load<f32>(i, new StackReg_f32(i, 0), (long) UnsafeWrapper.staticFieldOffset(f)));
+                        add(new static_field_load<f32>(i, new StackReg_f32(i, 0),new StackReg_ref(i, 0), (long) UnsafeWrapper.staticFieldOffset(f)));
                     }else if(type.isDouble()){
-                        add(new static_field_load<f64>(i, new StackReg_f64(i, 0), (long) UnsafeWrapper.staticFieldOffset(f)));
+                        add(new static_field_load<f64>(i, new StackReg_f64(i, 0), new StackReg_ref(i, 0),(long) UnsafeWrapper.staticFieldOffset(f)));
                     }else if(type.isLong()){
-                        add(new static_field_load<s64>(i, new StackReg_s64(i, 0), (long) UnsafeWrapper.staticFieldOffset(f)));
+                        add(new static_field_load<s64>(i, new StackReg_s64(i, 0),new StackReg_ref(i, 0), (long) UnsafeWrapper.staticFieldOffset(f)));
                     }
                 }catch(ClassNotFoundException e){
                     e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.

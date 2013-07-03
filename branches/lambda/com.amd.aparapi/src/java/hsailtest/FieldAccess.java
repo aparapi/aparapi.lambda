@@ -1,13 +1,12 @@
 package hsailtest;
 
-import com.amd.aparapi.AparapiException;
 import com.amd.aparapi.Device;
 
 import java.util.function.IntConsumer;
 
 
 public class FieldAccess {
-    public int value;
+    public int value=0;
 
     public void test(){
         IntConsumer ic = gid -> {
@@ -16,8 +15,8 @@ public class FieldAccess {
         Device.hsa().forEach(1, ic);
     }
 
-    public static void main(String[] args) throws AparapiException {
-        (new FieldAccess()).test();
-
+    public static void main(String[] args) throws Exception {
+       FieldAccess fieldAccess = new FieldAccess();
+       fieldAccess.test();
     }
 }
