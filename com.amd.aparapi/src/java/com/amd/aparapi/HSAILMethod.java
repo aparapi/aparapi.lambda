@@ -219,9 +219,10 @@ public class HSAILMethod{
 
 
    static class call extends HSAILInstruction{
-
+      int base ;
       call(Instruction _from){
          super(_from, 0, 0);
+         base =  from.getPreStackBase() + from.getMethod().getCodeEntry().getMaxLocals();
       }
 
       @Override void render(HSAILRenderer r){
@@ -242,9 +243,9 @@ public class HSAILMethod{
             r.append("{").nl();
             r.pad(9).append("arg_f64 %_val;").nl();
             r.pad(9).append("arg_f64 %_result;").nl();
-            r.pad(9).append("st_arg_f64 $d").append(from.getPreStackBase() + from.getMethod().getCodeEntry().getMaxLocals()).append(", [%_val];  // pass to function").nl();
+            r.pad(9).append("st_arg_f64 $d").append(base).append(", [%_val];  // pass to function").nl();
             r.pad(9).append("call &sqrt (%_result) (%_val);").nl();
-            r.pad(9).append("ld_arg_f64 $d").append(from.getPreStackBase() + from.getMethod().getCodeEntry().getMaxLocals()).append(", [%_result]; // get result").nl();
+            r.pad(9).append("ld_arg_f64 $d").append(base).append(", [%_result]; // get result").nl();
             r.pad(9).append("}//");
          } else{
          TypeHelper.JavaMethodArgsAndReturnType argsAndReturnType = from.asMethodCall().getConstantPoolMethodEntry().getArgsAndReturnType();
@@ -256,10 +257,10 @@ public class HSAILMethod{
          if(returnType.isVoid()){
             r.append("call_").append("void").space().append("VOID");
          }else if(returnType.isInt()){
-            r.append("call_").append("s64").space().append("$s").append(from.getPreStackBase() + from.getMethod().getCodeEntry().getMaxLocals());
+            r.append("call_").append("s64").space().append("$s").append(base);
 
          }else if(returnType.isDouble()){
-            r.append("call_").append("f64").space().append("$d").append(from.getPreStackBase() + from.getMethod().getCodeEntry().getMaxLocals());
+            r.append("call_").append("f64").space().append("$d").append(base);
          }
 
 
@@ -270,13 +271,13 @@ public class HSAILMethod{
                r.separator();
             }
             if(arg.getJavaType().isDouble()){
-               r.append("$d").append(from.getPreStackBase() + from.getMethod().getCodeEntry().getMaxLocals() + arg.getArgc());
+               r.append("$d").append(base + arg.getArgc());
             }else if(arg.getJavaType().isFloat()){
-               r.append("$s").append(from.getPreStackBase() + from.getMethod().getCodeEntry().getMaxLocals() + arg.getArgc());
+               r.append("$s").append(base + arg.getArgc());
             }else if(arg.getJavaType().isInt()){
-               r.append("$s").append(from.getPreStackBase() + from.getMethod().getCodeEntry().getMaxLocals() + arg.getArgc());
+               r.append("$s").append(base + arg.getArgc());
             }else if(arg.getJavaType().isLong()){
-               r.append("$d").append(from.getPreStackBase() + from.getMethod().getCodeEntry().getMaxLocals() + arg.getArgc());
+               r.append("$d").append(base + arg.getArgc());
             }
          }
          }
