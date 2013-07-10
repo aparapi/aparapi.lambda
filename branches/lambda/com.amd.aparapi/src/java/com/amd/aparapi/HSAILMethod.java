@@ -1,10 +1,7 @@
 package com.amd.aparapi;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -17,8 +14,7 @@ public class HSAILMethod{
 
     //  final static long ADDR_MASK = ((1L << 32)-1);
 
-
-   static abstract class HSAILInstruction{
+   abstract class HSAILInstruction{
       Instruction from;
       HSAILRegister[] dests = null;
       HSAILRegister[] sources = null;
@@ -35,7 +31,7 @@ public class HSAILMethod{
 
    }
 
-   static abstract class HSAILInstructionWithDest<T extends PrimitiveType> extends HSAILInstruction{
+    abstract class HSAILInstructionWithDest<T extends PrimitiveType> extends HSAILInstruction{
 
 
       HSAILInstructionWithDest(Instruction _from, HSAILRegister<T> _dest){
@@ -49,7 +45,7 @@ public class HSAILMethod{
       }
    }
 
-   static abstract class HSAILInstructionWithSrc<T extends PrimitiveType> extends HSAILInstruction{
+    abstract class HSAILInstructionWithSrc<T extends PrimitiveType> extends HSAILInstruction{
 
       HSAILInstructionWithSrc(Instruction _from, HSAILRegister<T> _src){
          super(_from, 0, 1);
@@ -61,7 +57,7 @@ public class HSAILMethod{
       }
    }
 
-   static abstract class HSAILInstructionWithSrcSrc<T extends PrimitiveType> extends HSAILInstruction{
+    abstract class HSAILInstructionWithSrcSrc<T extends PrimitiveType> extends HSAILInstruction{
 
       HSAILInstructionWithSrcSrc(Instruction _from, HSAILRegister<T> _src_lhs, HSAILRegister<T> _src_rhs){
          super(_from, 0, 2);
@@ -78,7 +74,7 @@ public class HSAILMethod{
       }
    }
 
-   static abstract class HSAILInstructionWithDestSrcSrc<D extends PrimitiveType, T extends PrimitiveType> extends HSAILInstruction{
+    abstract class HSAILInstructionWithDestSrcSrc<D extends PrimitiveType, T extends PrimitiveType> extends HSAILInstruction{
 
       HSAILInstructionWithDestSrcSrc(Instruction _from, HSAILRegister<D> _dest, HSAILRegister<T> _src_lhs, HSAILRegister<T> _src_rhs){
          super(_from, 1, 2);
@@ -100,7 +96,7 @@ public class HSAILMethod{
       }
    }
 
-   static abstract class HSAILInstructionWithDestSrc<T extends PrimitiveType> extends HSAILInstruction{
+    abstract class HSAILInstructionWithDestSrc<T extends PrimitiveType> extends HSAILInstruction{
 
       HSAILInstructionWithDestSrc(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _src){
          super(_from, 1, 1);
@@ -117,7 +113,7 @@ public class HSAILMethod{
       }
    }
 
-   static class branch extends HSAILInstructionWithSrc<s32>{
+    class branch extends HSAILInstructionWithSrc<s32>{
       String name;
       int pc;
 
@@ -135,7 +131,7 @@ public class HSAILMethod{
       }
    }
 
-   static class cmp_s32_const_0 extends HSAILInstructionWithSrc<s32>{
+    class cmp_s32_const_0 extends HSAILInstructionWithSrc<s32>{
       String type;
 
       cmp_s32_const_0(Instruction _from, String _type, Reg_s32 _src){
@@ -151,7 +147,7 @@ public class HSAILMethod{
       }
    }
 
-   static class cmp_s32 extends HSAILInstructionWithSrcSrc<s32>{
+    class cmp_s32 extends HSAILInstructionWithSrcSrc<s32>{
       String type;
 
       cmp_s32(Instruction _from, String _type, Reg_s32 _srcLhs, Reg_s32 _srcRhs){
@@ -167,7 +163,7 @@ public class HSAILMethod{
       }
    }
 
-   static class cmp<T extends PrimitiveType> extends HSAILInstructionWithSrcSrc<T>{
+    class cmp<T extends PrimitiveType> extends HSAILInstructionWithSrcSrc<T>{
       String type;
 
       cmp(Instruction _from, String _type, HSAILRegister<T> _srcLhs, HSAILRegister<T> _srcRhs){
@@ -183,7 +179,7 @@ public class HSAILMethod{
       }
    }
 
-   static class cbr extends HSAILInstruction{
+    class cbr extends HSAILInstruction{
       int pc;
 
       cbr(Instruction _from, int _pc){
@@ -199,7 +195,7 @@ public class HSAILMethod{
       }
    }
 
-   static class brn extends HSAILInstruction{
+    class brn extends HSAILInstruction{
       int pc;
 
       brn(Instruction _from, int _pc){
@@ -218,18 +214,45 @@ public class HSAILMethod{
 
 
 
-   static class call extends HSAILInstruction{
+    class call extends HSAILInstruction{
       int base ;
+       HSAILMethod hsailMethod;
+       String dotClassName ;
+       String name ;
+       String sig;
+       String intrinsicLookup ;
+       ClassModel classModel;
+       ClassModel.ClassModelMethod method;
+       String body;
       call(Instruction _from){
          super(_from, 0, 0);
          base =  from.getPreStackBase() + from.getMethod().getCodeEntry().getMaxLocals();
+         dotClassName = from.asMethodCall().getConstantPoolMethodEntry().getClassEntry().getDotClassName();
+         name = from.asMethodCall().getConstantPoolMethodEntry().getName();
+         sig = from.asMethodCall().getConstantPoolMethodEntry().getNameAndTypeEntry().getDescriptor();
+         intrinsicLookup = dotClassName+"."+name+sig;
+
+         try{
+            Class theClass = Class.forName(from.asMethodCall().getConstantPoolMethodEntry().getClassEntry().getDotClassName());
+            classModel = ClassModel.getClassModel(theClass);
+            method = classModel.getMethod(name, sig);
+            hsailMethod = HSAILMethod.getHSAILMethod(method);
+            HSAILRenderer r = new HSAILRenderer();
+            hsailMethod.renderFunction(r);
+            body = r.toString();
+            System.out.println("body = {"+body+"}");
+
+         }catch(ClassNotFoundException e){
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+         }catch(ClassParseException e){
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+         }
+
+
       }
 
       @Override void render(HSAILRenderer r){
-         String dotClassName = from.asMethodCall().getConstantPoolMethodEntry().getClassEntry().getDotClassName();
-         String name = from.asMethodCall().getConstantPoolMethodEntry().getName();
-         String sig = from.asMethodCall().getConstantPoolMethodEntry().getNameAndTypeEntry().getDescriptor();
-         String intrinsicLookup = dotClassName+"."+name+sig;
+
          if (intrinsicLookup.equals("java.lang.Math.sqrt(D)D")){
             r.define(intrinsicLookup,
                      "function &sqrt (arg_f64 %_result) (arg_f64 %_val) {\n" +
@@ -252,42 +275,61 @@ public class HSAILMethod{
 
 
          TypeHelper.JavaType returnType = argsAndReturnType.getReturnType();
+         r.append("{").nl();
+             /*
+            for(TypeHelper.JavaMethodArg arg : argsAndReturnType.getArgs()){
+               if(arg.getArgc() > 0){
+                  r.separator();
+               }
+               if(arg.getJavaType().isDouble()){
+                  r.append("$d").append(base + arg.getArgc());
+               }else if(arg.getJavaType().isFloat()){
+                  r.append("$s").append(base + arg.getArgc());
+               }else if(arg.getJavaType().isInt()){
+                  r.append("$s").append(base + arg.getArgc());
+               }else if(arg.getJavaType().isLong()){
+                  r.append("$d").append(base + arg.getArgc());
+               }
+            }
+            */
 
-
-         if(returnType.isVoid()){
-            r.append("call_").append("void").space().append("VOID");
-         }else if(returnType.isInt()){
-            r.append("call_").append("s64").space().append("$s").append(base);
-
-         }else if(returnType.isDouble()){
-            r.append("call_").append("f64").space().append("$d").append(base);
+            r.append("call &").append( intrinsicLookup).space();
+         if (argsAndReturnType.getReturnType().isVoid()){
+            r.append("()").space();
+         }  else if (argsAndReturnType.getReturnType().isInt()){
+            r.append("(arg_s32 %_result)").space();
+             }  else if (argsAndReturnType.getReturnType().isDouble()){
+            r.append("(arg_f64 %_result)").space();
          }
 
+         r.append("(");
 
-         r.separator().append(dotClassName).dot().append(name).space();
+      //   r.separator().append(dotClassName).dot().append(name).space();
 
          for(TypeHelper.JavaMethodArg arg : argsAndReturnType.getArgs()){
             if(arg.getArgc() > 0){
                r.separator();
             }
             if(arg.getJavaType().isDouble()){
-               r.append("$d").append(base + arg.getArgc());
+               r.append("arg_f64 ").append("arg+"+base + arg.getArgc());
             }else if(arg.getJavaType().isFloat()){
-               r.append("$s").append(base + arg.getArgc());
+               r.append("arg_f32 ").append("arg+"+base + arg.getArgc());
             }else if(arg.getJavaType().isInt()){
-               r.append("$s").append(base + arg.getArgc());
+               r.append("arg_s32 ").append("arg+"+base + arg.getArgc());
             }else if(arg.getJavaType().isLong()){
-               r.append("$d").append(base + arg.getArgc());
+               r.append("arg_s64 ").append("arg+"+base + arg.getArgc());
             }
          }
+            r.append(");").nl();
          }
+         r.append("}").nl();
       }
 
 
    }
 
 
-   static class nyi extends HSAILInstruction{
+    class nyi extends HSAILInstruction{
 
       nyi(Instruction _from){
          super(_from, 0, 0);
@@ -301,7 +343,7 @@ public class HSAILMethod{
       }
    }
 
-   static class ld_kernarg<T extends PrimitiveType> extends HSAILInstructionWithDest<T>{
+    class ld_kernarg<T extends PrimitiveType> extends HSAILInstructionWithDest<T>{
 
 
       ld_kernarg(Instruction _from, HSAILRegister<T> _dest){
@@ -315,7 +357,7 @@ public class HSAILMethod{
 
    }
 
-   static abstract class binary_const<T extends PrimitiveType, C extends Number> extends HSAILInstructionWithDestSrc<T>{
+    abstract class binary_const<T extends PrimitiveType, C extends Number> extends HSAILInstructionWithDestSrc<T>{
       C value;
       String op;
 
@@ -332,7 +374,7 @@ public class HSAILMethod{
 
    }
 
-   static class add_const<T extends PrimitiveType, C extends Number> extends binary_const<T, C>{
+    class add_const<T extends PrimitiveType, C extends Number> extends binary_const<T, C>{
 
       add_const(Instruction _from, HSAILRegister<T> _dest, HSAILRegister _src, C _value){
          super(_from, "add_", _dest, _src, _value);
@@ -341,7 +383,7 @@ public class HSAILMethod{
 
    }
 
-   static class and_const<T extends PrimitiveType, C extends Number> extends binary_const<T, C>{
+    class and_const<T extends PrimitiveType, C extends Number> extends binary_const<T, C>{
 
       and_const(Instruction _from, HSAILRegister<T> _dest, HSAILRegister _src, C _value){
          super(_from, "and_", _dest, _src, _value);
@@ -355,7 +397,7 @@ public class HSAILMethod{
 
    }
 
-   static class mul_const<T extends PrimitiveType, C extends Number> extends binary_const<T, C>{
+    class mul_const<T extends PrimitiveType, C extends Number> extends binary_const<T, C>{
 
       mul_const(Instruction _from, HSAILRegister<T> _dest, HSAILRegister _src, C _value){
          super(_from, "mul_", _dest, _src, _value);
@@ -364,7 +406,7 @@ public class HSAILMethod{
 
    }
 
-   static class mad extends HSAILInstructionWithDestSrcSrc<ref, ref>{
+    class mad extends HSAILInstructionWithDestSrcSrc<ref, ref>{
       long size;
 
       mad(Instruction _from, Reg_ref _dest, Reg_ref _src_lhs, Reg_ref _src_rhs, long _size){
@@ -379,7 +421,7 @@ public class HSAILMethod{
    }
 
 
-   static class cvt<T1 extends PrimitiveType, T2 extends PrimitiveType> extends HSAILInstruction{
+    class cvt<T1 extends PrimitiveType, T2 extends PrimitiveType> extends HSAILInstruction{
 
 
       cvt(Instruction _from, HSAILRegister<T1> _dest, HSAILRegister<T2> _src){
@@ -404,7 +446,7 @@ public class HSAILMethod{
    }
 
 
-   static class retvoid extends HSAILInstruction{
+    class retvoid extends HSAILInstruction{
 
       retvoid(Instruction _from){
          super(_from, 0, 0);
@@ -418,7 +460,7 @@ public class HSAILMethod{
 
    }
 
-   static class ret<T extends PrimitiveType> extends HSAILInstructionWithSrc<T>{
+    class ret<T extends PrimitiveType> extends HSAILInstructionWithSrc<T>{
 
       ret(Instruction _from, HSAILRegister<T> _src){
          super(_from, _src);
@@ -432,7 +474,7 @@ public class HSAILMethod{
 
    }
 
-   static class array_store<T extends PrimitiveType> extends HSAILInstructionWithSrc<T>{
+    class array_store<T extends PrimitiveType> extends HSAILInstructionWithSrc<T>{
 
       Reg_ref mem;
 
@@ -451,7 +493,7 @@ public class HSAILMethod{
    }
 
 
-   static class array_load<T extends PrimitiveType> extends HSAILInstructionWithDest<T>{
+    class array_load<T extends PrimitiveType> extends HSAILInstructionWithDest<T>{
       Reg_ref mem;
 
 
@@ -468,7 +510,7 @@ public class HSAILMethod{
 
    }
 
-    static class array_len extends HSAILInstructionWithDest<s32>{
+     class array_len extends HSAILInstructionWithDest<s32>{
         Reg_ref mem;
 
 
@@ -485,7 +527,7 @@ public class HSAILMethod{
 
     }
 
-   static class field_load<T extends PrimitiveType> extends HSAILInstructionWithDest<T>{
+    class field_load<T extends PrimitiveType> extends HSAILInstructionWithDest<T>{
       Reg_ref mem;
       long offset;
 
@@ -503,7 +545,7 @@ public class HSAILMethod{
 
    }
 
-    static class static_field_load<T extends PrimitiveType> extends HSAILInstructionWithDest<T>{
+     class static_field_load<T extends PrimitiveType> extends HSAILInstructionWithDest<T>{
 
         long offset;
         Reg_ref mem;
@@ -523,7 +565,7 @@ public class HSAILMethod{
     }
 
 
-   static class field_store<T extends PrimitiveType> extends HSAILInstructionWithSrc<T>{
+    class field_store<T extends PrimitiveType> extends HSAILInstructionWithSrc<T>{
       Reg_ref mem;
       long offset;
 
@@ -542,7 +584,7 @@ public class HSAILMethod{
    }
 
 
-   static final class mov<T extends PrimitiveType> extends HSAILInstructionWithDestSrc{
+    final class mov<T extends PrimitiveType> extends HSAILInstructionWithDestSrc{
 
       public mov(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _src){
          super(_from, _dest, _src);
@@ -556,7 +598,7 @@ public class HSAILMethod{
 
    }
 
-   static abstract class unary<T extends PrimitiveType> extends HSAILInstructionWithDestSrc{
+    abstract class unary<T extends PrimitiveType> extends HSAILInstructionWithDestSrc{
 
       String op;
 
@@ -583,7 +625,7 @@ public class HSAILMethod{
 
    }
 
-   static abstract class binary<T extends PrimitiveType> extends HSAILInstruction{
+    abstract class binary<T extends PrimitiveType> extends HSAILInstruction{
 
       String op;
 
@@ -614,7 +656,7 @@ public class HSAILMethod{
 
    }
 
-  /* static abstract class binaryRegConst<T extends JavaType, C> extends HSAILInstruction{
+  /*  abstract class binaryRegConst<T extends JavaType, C> extends HSAILInstruction{
       HSAILRegister<T> dest, lhs;
       C value;
       String op;
@@ -631,7 +673,7 @@ public class HSAILMethod{
       }
    }
 
-   static  class addConst<T extends JavaType, C> extends binaryRegConst<T, C>{
+     class addConst<T extends JavaType, C> extends binaryRegConst<T, C>{
 
       public addConst(Instruction _from,   HSAILRegister<T> _dest, HSAILRegister<T> _lhs, C _value_rhs){
          super(_from, "add_", _dest, _lhs, _value_rhs);
@@ -639,59 +681,59 @@ public class HSAILMethod{
    }
    */
 
-   static class add<T extends PrimitiveType> extends binary<T>{
+    class add<T extends PrimitiveType> extends binary<T>{
       public add(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs){
          super(_from, "add_", _dest, _lhs, _rhs);
       }
 
    }
 
-   static class sub<T extends PrimitiveType> extends binary<T>{
+    class sub<T extends PrimitiveType> extends binary<T>{
       public sub(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs){
          super(_from, "sub_", _dest, _lhs, _rhs);
       }
 
    }
 
-   static class div<T extends PrimitiveType> extends binary<T>{
+    class div<T extends PrimitiveType> extends binary<T>{
       public div(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs){
          super(_from, "div_", _dest, _lhs, _rhs);
       }
 
    }
 
-   static class mul<T extends PrimitiveType> extends binary<T>{
+    class mul<T extends PrimitiveType> extends binary<T>{
       public mul(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs){
          super(_from, "mul_", _dest, _lhs, _rhs);
       }
 
    }
 
-   static class rem<T extends PrimitiveType> extends binary<T>{
+    class rem<T extends PrimitiveType> extends binary<T>{
       public rem(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs){
          super(_from, "rem_", _dest, _lhs, _rhs);
       }
 
    }
-   static class neg<T extends PrimitiveType> extends unary<T>{
+    class neg<T extends PrimitiveType> extends unary<T>{
       public neg(Instruction _from, HSAILRegister<T> _destSrc){
          super(_from, "neg_", _destSrc);
       }
 
    }
-   static class shl<T extends PrimitiveType> extends binary<T>{
+    class shl<T extends PrimitiveType> extends binary<T>{
       public shl(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs){
          super(_from, "shl_", _dest, _lhs, _rhs);
       }
 
    }
-   static class shr<T extends PrimitiveType> extends binary<T>{
+    class shr<T extends PrimitiveType> extends binary<T>{
       public shr(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs){
          super(_from, "shr_", _dest, _lhs, _rhs);
       }
 
    }
-   static class ushr<T extends PrimitiveType> extends binary<T>{
+    class ushr<T extends PrimitiveType> extends binary<T>{
       public ushr(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs){
          super(_from, "ushr_", _dest, _lhs, _rhs);
       }
@@ -699,7 +741,7 @@ public class HSAILMethod{
    }
 
 
-   static class and<T extends PrimitiveType> extends binary<T>{
+    class and<T extends PrimitiveType> extends binary<T>{
       public and(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs){
          super(_from, "and_", _dest, _lhs, _rhs);
       }
@@ -708,7 +750,7 @@ public class HSAILMethod{
       }
 
    }
-   static class or<T extends PrimitiveType> extends binary<T>{
+    class or<T extends PrimitiveType> extends binary<T>{
       public or(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs){
          super(_from, "or_", _dest, _lhs, _rhs);
       }
@@ -717,7 +759,7 @@ public class HSAILMethod{
       }
 
    }
-   static class xor<T extends PrimitiveType> extends binary<T>{
+    class xor<T extends PrimitiveType> extends binary<T>{
       public xor(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs){
          super(_from, "xor_", _dest, _lhs, _rhs);
       }
@@ -727,7 +769,7 @@ public class HSAILMethod{
 
    }
 
-   static class mov_const<T extends PrimitiveType, C extends Number> extends HSAILInstructionWithDest<T>{
+    class mov_const<T extends PrimitiveType, C extends Number> extends HSAILInstructionWithDest<T>{
 
       C value;
 
@@ -787,7 +829,67 @@ public class HSAILMethod{
    }
 
 
-   public HSAILRenderer render(HSAILRenderer r){
+
+   public HSAILRenderer renderFunction(HSAILRenderer r){
+      r.append("function &run(");
+
+      int argOffset = method.isStatic() ? 0 : 1;
+      if(!method.isStatic()){
+         r.nl().pad(3).append("kernarg_u64 %_arg0");
+      }
+
+      for(TypeHelper.JavaMethodArg arg : method.argsAndReturnType.getArgs()){
+         if((method.isStatic() && arg.getArgc() == 0)){
+            r.nl();
+         }else{
+            r.separator().nl();
+         }
+
+         PrimitiveType type = arg.getJavaType().getPrimitiveType();
+         r.pad(3).append("kernarg_");
+         if(type == null){
+            r.append("u64");
+         }else{
+            r.append(type.getHSAName());
+         }
+         r.append(" %_arg" + (arg.getArgc() + argOffset));
+      }
+      r.nl().pad(3).append("){").nl();
+
+      java.util.Set<Instruction> s = new java.util.HashSet<Instruction>();
+      boolean first = false;
+      int count = 0;
+      for(HSAILInstruction i : instructions){
+         if(!(i instanceof ld_kernarg) && !s.contains(i.from)){
+            if(!first){
+               r.pad(9).append("workitemabsid_u32 $s" + (count - 1) + ", 0;").nl();
+               // r.pad(9).append("workitemaid $s" + (count - 1) + ", 0;").nl();
+               first = true;
+            }
+            s.add(i.from);
+            if(i.from.isBranchTarget()){
+
+               r.label(i.from.getThisPC()).append(":");
+               r.nl();
+            }
+            if(r.isShowingComments()){
+               r.nl().pad(1).append("// ").mark().append(i.from.getThisPC()).relpad(2).space().i(i.from).nl();
+            }
+
+         }else{
+            count++;
+         }
+         r.pad(9);
+         i.render(r);
+         r.semicolon();
+
+         r.nl();
+      }
+      r.append("};");
+      return(r);
+   }
+
+   public HSAILRenderer renderEntryPoint(HSAILRenderer r){
        //r.append("version 1:0:large;").nl();
       r.prefixAppend("version 0:95: $full : $large;\n");
       // r.append("kernel &" + method.getName() + "(");
@@ -821,7 +923,7 @@ public class HSAILMethod{
       for(HSAILInstruction i : instructions){
          if(!(i instanceof ld_kernarg) && !s.contains(i.from)){
             if(!first){
-                r.pad(9).append("workitemabsid_u32 $s" + (count - 1) + ", 0;").nl();
+               r.pad(9).append("workitemabsid_u32 $s" + (count - 1) + ", 0;").nl();
                // r.pad(9).append("workitemaid $s" + (count - 1) + ", 0;").nl();
                first = true;
             }
@@ -845,7 +947,7 @@ public class HSAILMethod{
          r.nl();
       }
       r.append("};");
-      return (r);
+      return(r);
    }
 
    public HSAILRegister getRegOfLastWriteToIndex(int _index){
@@ -889,11 +991,21 @@ public class HSAILMethod{
 
    enum ParseState{NONE, COMPARE_F32, COMPARE_F64, COMPARE_S64};
 
+   static Map<ClassModel.ClassModelMethod, HSAILMethod> cache = new HashMap<ClassModel.ClassModelMethod, HSAILMethod>();
+
+   static synchronized HSAILMethod getHSAILMethod(ClassModel.ClassModelMethod _method){
+         HSAILMethod instance = cache.get(_method);
+         if (instance == null){
+            instance = new HSAILMethod(_method);
+            cache.put(_method, instance);
+         }
+         return(instance);
+   }
 
 
 
-   public HSAILMethod(ClassModel.ClassModelMethod _method){
 
+   private HSAILMethod(ClassModel.ClassModelMethod _method){
       if (UnsafeWrapper.addressSize()==4){
           throw new IllegalStateException("Object pointer size is 4, you need to use 64 bit JVM and set -XX:-UseCompressedOops!");
       }
@@ -1623,6 +1735,7 @@ public class HSAILMethod{
             case INVOKESTATIC:
             case INVOKEINTERFACE:
             case INVOKEDYNAMIC:
+
                add(new call(i));
                break;
             case NEW:

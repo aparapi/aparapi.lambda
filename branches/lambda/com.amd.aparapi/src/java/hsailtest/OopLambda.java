@@ -12,12 +12,18 @@ public class OopLambda {
         int x;
         int y;
         long l;
+         int xy;
+
+        int getXY(){
+           return(x*y);
+        }
 
         P(int _x, int _y) {
             next = null;
             x = _x;
             y = _y;
             l = 0;
+            xy=0;
         }
 
         @Override
@@ -49,6 +55,7 @@ public class OopLambda {
         IntConsumer ic = gid -> {
             points[gid].x = gid;
             points[gid].y = gid * 2;
+            points[gid].xy = points[gid].getXY();
         };
 
         Device.hsa().forEach(len, ic);
