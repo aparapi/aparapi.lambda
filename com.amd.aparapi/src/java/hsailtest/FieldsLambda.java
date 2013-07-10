@@ -5,8 +5,8 @@ import com.amd.aparapi.*;
 
 public class FieldsLambda {
 
-    static int fromId = 0;
-    static float toId = 0;
+    int fromId = 0;
+    float toId = 0;
 
 
     public void test() throws ClassParseException {
