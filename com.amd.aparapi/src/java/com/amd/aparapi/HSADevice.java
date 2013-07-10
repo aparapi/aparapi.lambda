@@ -20,7 +20,7 @@ public class HSADevice extends Device{
 
          OkraRunner runner = new OkraRunner();
          HSAILRenderer renderer = new HSAILRenderer().setShowComments(true);
-         new HSAILMethod(method).render(renderer);
+         HSAILMethod.getHSAILMethod(method).renderEntryPoint(renderer);
          System.out.println(renderer.toString());
 
          List<Object> args = new ArrayList<Object>();
