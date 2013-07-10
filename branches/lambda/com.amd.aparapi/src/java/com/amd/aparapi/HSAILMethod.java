@@ -2,7 +2,9 @@ package com.amd.aparapi;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created with IntelliJ IDEA.
@@ -228,21 +230,22 @@ public class HSAILMethod{
          String sig = from.asMethodCall().getConstantPoolMethodEntry().getNameAndTypeEntry().getDescriptor();
          String intrinsicLookup = dotClassName+"."+name+sig;
          if (intrinsicLookup.equals("java.lang.Math.sqrt(D)D")){
-            r.prefixAppend("// java.lang.math.sqrt(D)D\n");
-            r.prefixAppend(
-            "function &sqrt (arg_f64 %_result) (arg_f64 %_val) {\n"+
-            "   ld_arg_f64  $d0, [%_val];\n"+
-            "   nsqrt_f64  $d0, $d0;\n"+
-            "   st_arg_f64  $d0, [%_result];\n"+
-            "   ret;\n"+
-            "};\n\n");
+            r.define(intrinsicLookup,
+                     "function &sqrt (arg_f64 %_result) (arg_f64 %_val) {\n" +
+                     "   ld_arg_f64  $d0, [%_val];\n" +
+                     "   nsqrt_f64  $d0, $d0;\n" +
+                     "   st_arg_f64  $d0, [%_result];\n" +
+                     "   ret;\n" +
+                     "};\n\n");
+
+
             r.append("{").nl();
-            r.append("arg_f64 %_inval;").nl();
-            r.append("arg_f64 %_outval;").nl();
-            r.append("st_arg_f64 $d").append(from.getPreStackBase() + from.getMethod().getCodeEntry().getMaxLocals()).append(", [%_inval];  // pass to function").nl();
-            r.append("call &sqrt (%_outval) (%_inval);").nl();
-            r.append("ld_arg_f64 $d").append(from.getPreStackBase() + from.getMethod().getCodeEntry().getMaxLocals()).append(", [%_outval]; // get result").nl();
-            r.append("}//");
+            r.pad(9).append("arg_f64 %_val;").nl();
+            r.pad(9).append("arg_f64 %_result;").nl();
+            r.pad(9).append("st_arg_f64 $d").append(from.getPreStackBase() + from.getMethod().getCodeEntry().getMaxLocals()).append(", [%_val];  // pass to function").nl();
+            r.pad(9).append("call &sqrt (%_result) (%_val);").nl();
+            r.pad(9).append("ld_arg_f64 $d").append(from.getPreStackBase() + from.getMethod().getCodeEntry().getMaxLocals()).append(", [%_result]; // get result").nl();
+            r.pad(9).append("}//");
          } else{
          TypeHelper.JavaMethodArgsAndReturnType argsAndReturnType = from.asMethodCall().getConstantPoolMethodEntry().getArgsAndReturnType();
 

@@ -8,8 +8,8 @@ package com.amd.aparapi;
  * To change this template use File | Settings | File Templates.
  */
 public class TextRenderer<T extends TextRenderer>{
-   final private StringBuilder prefix = new StringBuilder();
-   final private StringBuilder sb = new StringBuilder();
+   final protected StringBuilder prefix = new StringBuilder();
+   final protected StringBuilder sb = new StringBuilder();
    private int lastNewLineIndex = 0;
    private int lastMark = 0;
 
@@ -148,7 +148,7 @@ public class TextRenderer<T extends TextRenderer>{
    }
 
    @Override
-   final public String toString(){
+   public String toString(){
       return (prefix.toString()+sb.toString());
    }
 
