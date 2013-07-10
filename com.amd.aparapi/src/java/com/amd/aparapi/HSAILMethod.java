@@ -214,6 +214,8 @@ public class HSAILMethod{
    }
 
 
+
+
    static class call extends HSAILInstruction{
 
       call(Instruction _from){
@@ -223,6 +225,25 @@ public class HSAILMethod{
       @Override void render(HSAILRenderer r){
          String dotClassName = from.asMethodCall().getConstantPoolMethodEntry().getClassEntry().getDotClassName();
          String name = from.asMethodCall().getConstantPoolMethodEntry().getName();
+         String sig = from.asMethodCall().getConstantPoolMethodEntry().getNameAndTypeEntry().getDescriptor();
+         String intrinsicLookup = dotClassName+"."+name+sig;
+         if (intrinsicLookup.equals("java.lang.Math.sqrt(D)D")){
+            r.prefixAppend("// java.lang.math.sqrt(D)D\n");
+            r.prefixAppend(
+            "function &sqrt (arg_f64 %_result) (arg_f64 %_val) {\n"+
+            "   ld_arg_f64  $d0, [%_val];\n"+
+            "   nsqrt_f64  $d0, $d0;\n"+
+            "   st_arg_f64  $d0, [%_result];\n"+
+            "   ret;\n"+
+            "};\n\n");
+            r.append("{").nl();
+            r.append("arg_f64 %_inval;").nl();
+            r.append("arg_f64 %_outval;").nl();
+            r.append("st_arg_f64 $d").append(from.getPreStackBase() + from.getMethod().getCodeEntry().getMaxLocals()).append(", [%_inval];  // pass to function").nl();
+            r.append("call &sqrt (%_outval) (%_inval);").nl();
+            r.append("ld_arg_f64 $d").append(from.getPreStackBase() + from.getMethod().getCodeEntry().getMaxLocals()).append(", [%_outval]; // get result").nl();
+            r.append("}//");
+         } else{
          TypeHelper.JavaMethodArgsAndReturnType argsAndReturnType = from.asMethodCall().getConstantPoolMethodEntry().getArgsAndReturnType();
 
 
@@ -236,8 +257,6 @@ public class HSAILMethod{
 
          }else if(returnType.isDouble()){
             r.append("call_").append("f64").space().append("$d").append(from.getPreStackBase() + from.getMethod().getCodeEntry().getMaxLocals());
-
-
          }
 
 
@@ -256,6 +275,7 @@ public class HSAILMethod{
             }else if(arg.getJavaType().isLong()){
                r.append("$d").append(from.getPreStackBase() + from.getMethod().getCodeEntry().getMaxLocals() + arg.getArgc());
             }
+         }
          }
       }
 
@@ -765,7 +785,7 @@ public class HSAILMethod{
 
    public HSAILRenderer render(HSAILRenderer r){
        //r.append("version 1:0:large;").nl();
-      r.append("version 0:95: $full : $large;").nl();
+      r.prefixAppend("version 0:95: $full : $large;\n");
       // r.append("kernel &" + method.getName() + "(");
       r.append("kernel &run(");
       int argOffset = method.isStatic() ? 0 : 1;
