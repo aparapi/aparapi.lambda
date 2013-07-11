@@ -238,6 +238,7 @@ public class HSAILMethod{
             method = classModel.getMethod(name, sig);
             hsailMethod = HSAILMethod.getHSAILMethod(method, false);
             HSAILRenderer r = new HSAILRenderer();
+            r.setShowComments(true);
             hsailMethod.renderFunction(r);
             body = r.toString();
           //  System.out.println("body = {"+body+"}");
