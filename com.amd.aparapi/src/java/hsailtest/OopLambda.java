@@ -8,10 +8,8 @@ import java.util.function.IntConsumer;
 
 public class OopLambda {
     public static class P {
-        P next;
         int x;
         int y;
-        long l;
          int xy;
 
         int getXY(){
@@ -19,16 +17,14 @@ public class OopLambda {
         }
 
         P(int _x, int _y) {
-            next = null;
             x = _x;
             y = _y;
-            l = 0;
             xy=0;
         }
 
         @Override
         public String toString() {
-            return ("(" + x + ", " + y + ")");
+            return ("(" + x + ", " + y + ", "+xy+ ")");
         }
     }
 

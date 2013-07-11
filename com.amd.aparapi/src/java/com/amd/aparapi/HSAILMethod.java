@@ -236,11 +236,11 @@ public class HSAILMethod{
             Class theClass = Class.forName(from.asMethodCall().getConstantPoolMethodEntry().getClassEntry().getDotClassName());
             classModel = ClassModel.getClassModel(theClass);
             method = classModel.getMethod(name, sig);
-            hsailMethod = HSAILMethod.getHSAILMethod(method);
+            hsailMethod = HSAILMethod.getHSAILMethod(method, false);
             HSAILRenderer r = new HSAILRenderer();
             hsailMethod.renderFunction(r);
             body = r.toString();
-            System.out.println("body = {"+body+"}");
+          //  System.out.println("body = {"+body+"}");
 
          }catch(ClassNotFoundException e){
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
@@ -271,58 +271,65 @@ public class HSAILMethod{
             r.pad(9).append("ld_arg_f64 $d").append(base).append(", [%_result]; // get result").nl();
             r.pad(9).append("}//");
          } else{
+            r.define(intrinsicLookup, body+"\n"+"\n");
          TypeHelper.JavaMethodArgsAndReturnType argsAndReturnType = from.asMethodCall().getConstantPoolMethodEntry().getArgsAndReturnType();
 
 
          TypeHelper.JavaType returnType = argsAndReturnType.getReturnType();
          r.append("{").nl();
-             /*
+             int offset = method.isStatic()?0:1;
+            if (!method.isStatic()){
+               r.append("arg_u64 %this;").nl();
+               r.append("st_arg_u64 $d"+base+", [%this];").nl();
+            }
             for(TypeHelper.JavaMethodArg arg : argsAndReturnType.getArgs()){
-               if(arg.getArgc() > 0){
-                  r.separator();
-               }
+               r.append("arg_");
                if(arg.getJavaType().isDouble()){
-                  r.append("$d").append(base + arg.getArgc());
+                  r.append("arg_f64 %_arg_").append(base + arg.getArgc());
                }else if(arg.getJavaType().isFloat()){
-                  r.append("$s").append(base + arg.getArgc());
+                   r.append("arg_f32 %_arg_").append(base + arg.getArgc());
                }else if(arg.getJavaType().isInt()){
-                  r.append("$s").append(base + arg.getArgc());
+                   r.append("arg_s32 %_arg_").append(base + arg.getArgc());
                }else if(arg.getJavaType().isLong()){
-                  r.append("$d").append(base + arg.getArgc());
+                   r.append("arg_s64 %_arg_").append(base + arg.getArgc());
                }
             }
-            */
 
-            r.append("call &").append( intrinsicLookup).space();
-         if (argsAndReturnType.getReturnType().isVoid()){
-            r.append("()").space();
-         }  else if (argsAndReturnType.getReturnType().isInt()){
-            r.append("(arg_s32 %_result)").space();
-             }  else if (argsAndReturnType.getReturnType().isDouble()){
-            r.append("(arg_f64 %_result)").space();
+             if (method.getArgsAndReturnType().getReturnType().isInt()){
+                 r.append("arg_s32 %_result;").nl();
+
+             }
+
+
+            r.append("call &").append( name).space();
+             if (argsAndReturnType.getReturnType().isVoid()){
+                 r.append("()").space();
+             }  else{
+                 r.append("(%_result)").space();
+             }
+
+             r.append("(");
+             if (!method.isStatic()){
+                 r.append("%this");
+             }
+             //   r.separator().append(dotClassName).dot().append(name).space();
+
+             for(TypeHelper.JavaMethodArg arg : argsAndReturnType.getArgs()){
+                 if(arg.getArgc() > 0){
+                     r.separator();
+                 }
+
+                     r.append("arg+"+base + arg.getArgc());
+
+             }
+             r.append(");").nl();
          }
+             if (method.getArgsAndReturnType().getReturnType().isInt()){
 
-         r.append("(");
+                 r.append("ld_arg_s32 $s"+base+", [%_result];").nl();
+             }
 
-      //   r.separator().append(dotClassName).dot().append(name).space();
-
-         for(TypeHelper.JavaMethodArg arg : argsAndReturnType.getArgs()){
-            if(arg.getArgc() > 0){
-               r.separator();
-            }
-            if(arg.getJavaType().isDouble()){
-               r.append("arg_f64 ").append("arg+"+base + arg.getArgc());
-            }else if(arg.getJavaType().isFloat()){
-               r.append("arg_f32 ").append("arg+"+base + arg.getArgc());
-            }else if(arg.getJavaType().isInt()){
-               r.append("arg_s32 ").append("arg+"+base + arg.getArgc());
-            }else if(arg.getJavaType().isLong()){
-               r.append("arg_s64 ").append("arg+"+base + arg.getArgc());
-            }
-         }
-            r.append(");").nl();
-         }
-         r.append("}").nl();
+         r.append("}//");
       }
 
 
@@ -353,9 +360,21 @@ public class HSAILMethod{
       @Override void render(HSAILRenderer r){
          r.append("ld_kernarg_").typeName(getDest()).space().regName(getDest()).separator().append("[%_arg").append(getDest().index).append("]");
       }
-
-
    }
+
+    class ld_arg<T extends PrimitiveType> extends HSAILInstructionWithDest<T>{
+
+
+        ld_arg(Instruction _from, HSAILRegister<T> _dest){
+            super(_from, _dest);
+        }
+
+        @Override void render(HSAILRenderer r){
+            r.append("ld_arg_").typeName(getDest()).space().regName(getDest()).separator().append("[%_arg").append(getDest().index).append("]");
+        }
+
+
+    }
 
     abstract class binary_const<T extends PrimitiveType, C extends Number> extends HSAILInstructionWithDestSrc<T>{
       C value;
@@ -468,7 +487,8 @@ public class HSAILMethod{
       }
 
       @Override void render(HSAILRenderer r){
-         r.append("ret_").typeName(getSrc()).space().regName(getSrc());
+         r.append("st_arg_").typeName(getSrc()).space().regName(getSrc()).separator().append("[%_result];").nl();
+         r.append("ret");
       }
 
 
@@ -831,22 +851,24 @@ public class HSAILMethod{
 
 
    public HSAILRenderer renderFunction(HSAILRenderer r){
-      r.append("function &run(");
+      r.append("function &").append(method.getName()).append("(");
+      if (method.getArgsAndReturnType().getReturnType().isInt()){
+         r.append("arg_s32 %_result");
+      }
+      r.append(") (");
 
       int argOffset = method.isStatic() ? 0 : 1;
       if(!method.isStatic()){
-         r.nl().pad(3).append("kernarg_u64 %_arg0");
+         r.nl().pad(3).append("arg_u64 %_arg0");
       }
 
       for(TypeHelper.JavaMethodArg arg : method.argsAndReturnType.getArgs()){
-         if((method.isStatic() && arg.getArgc() == 0)){
-            r.nl();
-         }else{
-            r.separator().nl();
+         if(!((method.isStatic() && arg.getArgc() == 0))){
+            r.separator();
          }
+         r.nl().pad(3).append("arg_");
 
          PrimitiveType type = arg.getJavaType().getPrimitiveType();
-         r.pad(3).append("kernarg_");
          if(type == null){
             r.append("u64");
          }else{
@@ -856,34 +878,21 @@ public class HSAILMethod{
       }
       r.nl().pad(3).append("){").nl();
 
-      java.util.Set<Instruction> s = new java.util.HashSet<Instruction>();
-      boolean first = false;
-      int count = 0;
+      Set<Instruction> s = new HashSet<Instruction>();
+
       for(HSAILInstruction i : instructions){
          if(!(i instanceof ld_kernarg) && !s.contains(i.from)){
-            if(!first){
-               r.pad(9).append("workitemabsid_u32 $s" + (count - 1) + ", 0;").nl();
-               // r.pad(9).append("workitemaid $s" + (count - 1) + ", 0;").nl();
-               first = true;
-            }
             s.add(i.from);
             if(i.from.isBranchTarget()){
-
-               r.label(i.from.getThisPC()).append(":");
-               r.nl();
+               r.label(i.from.getThisPC()).append(":").nl();
             }
             if(r.isShowingComments()){
                r.nl().pad(1).append("// ").mark().append(i.from.getThisPC()).relpad(2).space().i(i.from).nl();
             }
-
-         }else{
-            count++;
          }
          r.pad(9);
          i.render(r);
-         r.semicolon();
-
-         r.nl();
+         r.semicolon().nl();
       }
       r.append("};");
       return(r);
@@ -993,10 +1002,10 @@ public class HSAILMethod{
 
    static Map<ClassModel.ClassModelMethod, HSAILMethod> cache = new HashMap<ClassModel.ClassModelMethod, HSAILMethod>();
 
-   static synchronized HSAILMethod getHSAILMethod(ClassModel.ClassModelMethod _method){
+   static synchronized HSAILMethod getHSAILMethod(ClassModel.ClassModelMethod _method, boolean _entryPoint){
          HSAILMethod instance = cache.get(_method);
          if (instance == null){
-            instance = new HSAILMethod(_method);
+            instance = new HSAILMethod(_method, _entryPoint);
             cache.put(_method, instance);
          }
          return(instance);
@@ -1005,7 +1014,7 @@ public class HSAILMethod{
 
 
 
-   private HSAILMethod(ClassModel.ClassModelMethod _method){
+   private HSAILMethod(ClassModel.ClassModelMethod _method, boolean _entryPoint){
       if (UnsafeWrapper.addressSize()==4){
           throw new IllegalStateException("Object pointer size is 4, you need to use 64 bit JVM and set -XX:-UseCompressedOops!");
       }
@@ -1014,24 +1023,53 @@ public class HSAILMethod{
       Instruction lastInstruction = null;
       for(Instruction i : method.getInstructions()){
          if(i.getThisPC() == 0){
+
             int argOffset = 0;
             if(!method.isStatic()){
-               add(new ld_kernarg(i, new VarReg_ref(0)));
+               if (_entryPoint){
+                  add(new ld_kernarg(i, new VarReg_ref(0)));
+               } else{
+                  add(new ld_arg(i, new VarReg_ref(0)));
+               }
                argOffset++;
             }
             for(TypeHelper.JavaMethodArg arg : method.argsAndReturnType.getArgs()){
                if(arg.getJavaType().isArray()){
+                   if (_entryPoint){
                   add(new ld_kernarg(i, new VarReg_ref(arg.getArgc() + argOffset)));
+                   }else{
+                       add(new ld_arg(i, new VarReg_ref(arg.getArgc() + argOffset)));
+                   }
                }else    if(arg.getJavaType().isObject()){
+                   if (_entryPoint){
                   add(new ld_kernarg(i, new VarReg_ref(arg.getArgc() + argOffset)));
+               }else{
+                       add(new ld_arg(i, new VarReg_ref(arg.getArgc() + argOffset)));
+               }
                }else if(arg.getJavaType().isInt()){
+                   if (_entryPoint){
                   add(new ld_kernarg(i, new VarReg_s32(arg.getArgc() + argOffset)));
+             }else{
+                       add(new ld_arg(i, new VarReg_s32(arg.getArgc() + argOffset)));
+             }
                }else if(arg.getJavaType().isFloat()){
+                   if (_entryPoint){
                   add(new ld_kernarg(i, new VarReg_f32(arg.getArgc() + argOffset)));
+         }else{
+                       add(new ld_arg(i, new VarReg_f32(arg.getArgc() + argOffset)));
+         }
                }else if(arg.getJavaType().isDouble()){
+                   if (_entryPoint){
                    add(new ld_kernarg(i, new VarReg_f64(arg.getArgc() + argOffset)));
+       }else{
+                       add(new ld_arg(i, new VarReg_f64(arg.getArgc() + argOffset)));
+       }
                }else if(arg.getJavaType().isLong()){
+                   if (_entryPoint){
                    add(new ld_kernarg(i, new VarReg_s64(arg.getArgc() + argOffset)));
+    }else{
+                       add(new ld_arg(i, new VarReg_s64(arg.getArgc() + argOffset)));
+    }
                }
             }
          }
