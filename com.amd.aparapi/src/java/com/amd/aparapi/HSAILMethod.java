@@ -12,7 +12,89 @@ import java.util.*;
  */
 public class HSAILMethod{
 
-    //  final static long ADDR_MASK = ((1L << 32)-1);
+   public static abstract class Call<T extends Call>{
+      private String mappedMethod; // i.e  java.lang.Math.sqrt(D)D
+      String getMappedMethod(){
+         return(mappedMethod);
+      }
+      Call(String _mappedMethod){
+         mappedMethod = _mappedMethod;
+      }
+      abstract T render(HSAILRenderer r);
+      abstract boolean isStatic();
+   }
+
+
+
+   public static class IntrinsicCall extends Call<IntrinsicCall>{
+      String[] lines;
+      boolean isStatic;
+
+      IntrinsicCall(String _mappedMethod, boolean _isStatic, String... _lines){
+         super(_mappedMethod);
+         lines = _lines;
+         isStatic= _isStatic;
+      }
+
+      @Override IntrinsicCall render(HSAILRenderer r){
+         for (String line:lines){
+            if (!(line.trim().endsWith("{")|| line.trim().startsWith("}"))){
+               r.pad(9);
+            }
+            r.append(line).nl();
+         }
+         return this;
+      }
+
+      @Override boolean isStatic(){
+         return(isStatic);
+      }
+   }
+
+   public static class MethodCall extends Call<MethodCall>{
+      HSAILMethod method;
+
+      MethodCall(String _mappedMethod, HSAILMethod _method){
+         super(_mappedMethod);
+         method = _method;
+      }
+
+      @Override MethodCall render(HSAILRenderer r){
+         method.renderFunction(r);
+         r.nl();
+         return(this);
+      }
+      @Override boolean isStatic(){
+         return(method.method.isStatic());
+      }
+   }
+
+
+   public static Map<String, IntrinsicCall> intrinsicMap = new HashMap<String, IntrinsicCall>();
+
+   public static void add(IntrinsicCall _intrinsic){
+      intrinsicMap.put(_intrinsic.getMappedMethod(), _intrinsic);
+   }
+   {
+      add(new IntrinsicCall("java.lang.Math.sqrt(D)D", true,
+               "function &sqrt (arg_f64 %_result) (arg_f64 %_val) {",
+               "ld_arg_f64  $d0, [%_val];",
+               "nsqrt_f64  $d0, $d0;",
+               "st_arg_f64  $d0, [%_result];",
+               "ret;",
+               "};"));
+      add(new IntrinsicCall("java.lang.Math.hypot(DD)D", true,
+            "function &hypot (arg_f64 %_result) (arg_f64 %_val1, arg_f64 %_val2) {",
+            "ld_arg_f64  $d0, [%_val1];",
+            "ld_arg_f64  $d1, [%_val2];",
+            "mul_f64 $d0, $d0, $d1;",
+            "nsqrt_f64  $d0, $d0;",
+            "st_arg_f64  $d0, [%_result];",
+            "ret;",
+            "};"));
+   }
+
+   //  final static long ADDR_MASK = ((1L << 32)-1);
 
    abstract class HSAILInstruction{
       Instruction from;
@@ -31,7 +113,7 @@ public class HSAILMethod{
 
    }
 
-    abstract class HSAILInstructionWithDest<T extends PrimitiveType> extends HSAILInstruction{
+   abstract class HSAILInstructionWithDest<T extends PrimitiveType> extends HSAILInstruction{
 
 
       HSAILInstructionWithDest(Instruction _from, HSAILRegister<T> _dest){
@@ -45,7 +127,7 @@ public class HSAILMethod{
       }
    }
 
-    abstract class HSAILInstructionWithSrc<T extends PrimitiveType> extends HSAILInstruction{
+   abstract class HSAILInstructionWithSrc<T extends PrimitiveType> extends HSAILInstruction{
 
       HSAILInstructionWithSrc(Instruction _from, HSAILRegister<T> _src){
          super(_from, 0, 1);
@@ -57,7 +139,7 @@ public class HSAILMethod{
       }
    }
 
-    abstract class HSAILInstructionWithSrcSrc<T extends PrimitiveType> extends HSAILInstruction{
+   abstract class HSAILInstructionWithSrcSrc<T extends PrimitiveType> extends HSAILInstruction{
 
       HSAILInstructionWithSrcSrc(Instruction _from, HSAILRegister<T> _src_lhs, HSAILRegister<T> _src_rhs){
          super(_from, 0, 2);
@@ -74,7 +156,7 @@ public class HSAILMethod{
       }
    }
 
-    abstract class HSAILInstructionWithDestSrcSrc<D extends PrimitiveType, T extends PrimitiveType> extends HSAILInstruction{
+   abstract class HSAILInstructionWithDestSrcSrc<D extends PrimitiveType, T extends PrimitiveType> extends HSAILInstruction{
 
       HSAILInstructionWithDestSrcSrc(Instruction _from, HSAILRegister<D> _dest, HSAILRegister<T> _src_lhs, HSAILRegister<T> _src_rhs){
          super(_from, 1, 2);
@@ -96,7 +178,7 @@ public class HSAILMethod{
       }
    }
 
-    abstract class HSAILInstructionWithDestSrc<T extends PrimitiveType> extends HSAILInstruction{
+   abstract class HSAILInstructionWithDestSrc<T extends PrimitiveType> extends HSAILInstruction{
 
       HSAILInstructionWithDestSrc(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _src){
          super(_from, 1, 1);
@@ -113,7 +195,7 @@ public class HSAILMethod{
       }
    }
 
-    class branch extends HSAILInstructionWithSrc<s32>{
+   class branch extends HSAILInstructionWithSrc<s32>{
       String name;
       int pc;
 
@@ -131,7 +213,7 @@ public class HSAILMethod{
       }
    }
 
-    class cmp_s32_const_0 extends HSAILInstructionWithSrc<s32>{
+   class cmp_s32_const_0 extends HSAILInstructionWithSrc<s32>{
       String type;
 
       cmp_s32_const_0(Instruction _from, String _type, Reg_s32 _src){
@@ -147,7 +229,7 @@ public class HSAILMethod{
       }
    }
 
-    class cmp_s32 extends HSAILInstructionWithSrcSrc<s32>{
+   class cmp_s32 extends HSAILInstructionWithSrcSrc<s32>{
       String type;
 
       cmp_s32(Instruction _from, String _type, Reg_s32 _srcLhs, Reg_s32 _srcRhs){
@@ -163,7 +245,7 @@ public class HSAILMethod{
       }
    }
 
-    class cmp<T extends PrimitiveType> extends HSAILInstructionWithSrcSrc<T>{
+   class cmp<T extends PrimitiveType> extends HSAILInstructionWithSrcSrc<T>{
       String type;
 
       cmp(Instruction _from, String _type, HSAILRegister<T> _srcLhs, HSAILRegister<T> _srcRhs){
@@ -179,7 +261,7 @@ public class HSAILMethod{
       }
    }
 
-    class cbr extends HSAILInstruction{
+   class cbr extends HSAILInstruction{
       int pc;
 
       cbr(Instruction _from, int _pc){
@@ -195,7 +277,7 @@ public class HSAILMethod{
       }
    }
 
-    class brn extends HSAILInstruction{
+   class brn extends HSAILInstruction{
       int pc;
 
       brn(Instruction _from, int _pc){
@@ -210,134 +292,149 @@ public class HSAILMethod{
 
       }
    }
+   private Set<Call> calls = null;
+
+   public void add(Call call){
+      getEntryPoint().calls.add(call);
+   }
+
+
+   HSAILMethod getEntryPoint(){
+      if (entryPoint == null){
+         return(this);
+      }
+      return(entryPoint.getEntryPoint());
+   }
+   class call extends HSAILInstruction{
+      int base;
+
+
+      String name;
 
 
 
 
-    class call extends HSAILInstruction{
-      int base ;
-       HSAILMethod hsailMethod;
-       String dotClassName ;
-       String name ;
-       String sig;
-       String intrinsicLookup ;
-       ClassModel classModel;
-       ClassModel.ClassModelMethod method;
-       String body;
+      Call call;
+
       call(Instruction _from){
          super(_from, 0, 0);
-         base =  from.getPreStackBase() + from.getMethod().getCodeEntry().getMaxLocals();
-         dotClassName = from.asMethodCall().getConstantPoolMethodEntry().getClassEntry().getDotClassName();
+         base = from.getPreStackBase() + from.getMethod().getCodeEntry().getMaxLocals();
+         String dotClassName= from.asMethodCall().getConstantPoolMethodEntry().getClassEntry().getDotClassName();
          name = from.asMethodCall().getConstantPoolMethodEntry().getName();
-         sig = from.asMethodCall().getConstantPoolMethodEntry().getNameAndTypeEntry().getDescriptor();
-         intrinsicLookup = dotClassName+"."+name+sig;
-
+         String sig = from.asMethodCall().getConstantPoolMethodEntry().getNameAndTypeEntry().getDescriptor();
+         String intrinsicLookup = dotClassName + "." + name + sig;
+         call = null;
+         for (IntrinsicCall ic:intrinsicMap.values())  {
+            if (ic.getMappedMethod().equals(intrinsicLookup)){
+               call = ic;
+               break;
+            }
+         }
+         if (call == null){
          try{
             Class theClass = Class.forName(from.asMethodCall().getConstantPoolMethodEntry().getClassEntry().getDotClassName());
-            classModel = ClassModel.getClassModel(theClass);
-            method = classModel.getMethod(name, sig);
-            hsailMethod = HSAILMethod.getHSAILMethod(method, false);
-            HSAILRenderer r = new HSAILRenderer();
-            r.setShowComments(true);
-            hsailMethod.renderFunction(r);
-            body = r.toString();
-          //  System.out.println("body = {"+body+"}");
-
+            ClassModel classModel = ClassModel.getClassModel(theClass);
+            ClassModel.ClassModelMethod method = classModel.getMethod(name, sig);
+            HSAILMethod hsailMethod = HSAILMethod.getHSAILMethod(method, getEntryPoint());
+            call = new MethodCall(intrinsicLookup, hsailMethod);
          }catch(ClassNotFoundException e){
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
          }catch(ClassParseException e){
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
          }
-
-
+         }
+         add(call);
       }
+
+
+
+
+
 
       @Override void render(HSAILRenderer r){
 
-         if (intrinsicLookup.equals("java.lang.Math.sqrt(D)D")){
-            r.define(intrinsicLookup,
-                     "function &sqrt (arg_f64 %_result) (arg_f64 %_val) {\n" +
-                     "   ld_arg_f64  $d0, [%_val];\n" +
-                     "   nsqrt_f64  $d0, $d0;\n" +
-                     "   st_arg_f64  $d0, [%_result];\n" +
-                     "   ret;\n" +
-                     "};\n\n");
-
-
+            TypeHelper.JavaMethodArgsAndReturnType argsAndReturnType = from.asMethodCall().getConstantPoolMethodEntry().getArgsAndReturnType();
+            TypeHelper.JavaType returnType = argsAndReturnType.getReturnType();
             r.append("{").nl();
-            r.pad(9).append("arg_f64 %_val;").nl();
-            r.pad(9).append("arg_f64 %_result;").nl();
-            r.pad(9).append("st_arg_f64 $d").append(base).append(", [%_val];  // pass to function").nl();
-            r.pad(9).append("call &sqrt (%_result) (%_val);").nl();
-            r.pad(9).append("ld_arg_f64 $d").append(base).append(", [%_result]; // get result").nl();
-            r.pad(9).append("}//");
-         } else{
-            r.define(intrinsicLookup, body+"\n"+"\n");
-         TypeHelper.JavaMethodArgsAndReturnType argsAndReturnType = from.asMethodCall().getConstantPoolMethodEntry().getArgsAndReturnType();
+            if(!call.isStatic()){
+               r.pad(12).append("arg_u64 %this;").nl();
+               r.pad(12).append("st_arg_u64 $d" + base + ", [%this];").nl();
+            }
 
-
-         TypeHelper.JavaType returnType = argsAndReturnType.getReturnType();
-         r.append("{").nl();
-             int offset = method.isStatic()?0:1;
-            if (!method.isStatic()){
-               r.append("arg_u64 %this;").nl();
-               r.append("st_arg_u64 $d"+base+", [%this];").nl();
+            int offset=0;
+            if (!call.isStatic()){
+               offset++;
             }
             for(TypeHelper.JavaMethodArg arg : argsAndReturnType.getArgs()){
-               r.append("arg_");
+               String argName = "%_arg_"+ arg.getArgc();
+
                if(arg.getJavaType().isDouble()){
-                  r.append("arg_f64 %_arg_").append(base + arg.getArgc());
+                  r.pad(12).append("arg_f64 ").append(argName).semicolon().nl();
+                  r.pad(12).append("st_arg_f64 $d" + (base +offset)+ ", ["+argName+"];").nl();
                }else if(arg.getJavaType().isFloat()){
-                   r.append("arg_f32 %_arg_").append(base + arg.getArgc());
+                  r.pad(12).append("arg_f32 ").append(argName).semicolon().nl();
+                  r.pad(12).append("st_arg_f32 $s" + (base +offset)+ ", ["+argName+"];").nl();
                }else if(arg.getJavaType().isInt()){
-                   r.append("arg_s32 %_arg_").append(base + arg.getArgc());
+                  r.pad(12).append("arg_s32 ").append(argName).semicolon().nl();
+                  r.pad(12).append("st_arg_s32 $s" + (base +offset)+ ", ["+argName+"];").nl();
                }else if(arg.getJavaType().isLong()){
-                   r.append("arg_s64 %_arg_").append(base + arg.getArgc());
+                  r.pad(12).append("arg_s64 ").append(argName).semicolon().nl();
+                  r.pad(12).append("st_arg_s64 $s" + (base +offset)+ ", ["+argName+"];").nl();
                }
             }
 
-             if (method.getArgsAndReturnType().getReturnType().isInt()){
-                 r.append("arg_s32 %_result;").nl();
+            if(returnType.isInt()){
+               r.pad(12).append("arg_s32 %_result;").nl();
+            } else if(returnType.isFloat()){
+               r.pad(12).append("arg_f32 %_result;").nl();
+            } else if(returnType.isDouble()){
+               r.pad(12).append("arg_f64 %_result;").nl();
+            }  else if(returnType.isLong()){
+               r.pad(12).append("arg_s64 %_result;").nl();
+            }
 
-             }
+
+            r.pad(12).append("call &").append(name).space();
+            if(returnType.isVoid()){
+               r.append("()").space();
+            }else{
+               r.append("(%_result)").space();
+            }
+
+            r.append("(");
+            if(!call.isStatic()){
+               r.append("%this ");
+            }
+
+            for(TypeHelper.JavaMethodArg arg : argsAndReturnType.getArgs()){
+               if(arg.getArgc()+offset > 0){
+                  r.separator();
+               }
+               r.append("%_arg_" + arg.getArgc());
+
+            }
+            r.append(");").nl();
 
 
-            r.append("call &").append( name).space();
-             if (argsAndReturnType.getReturnType().isVoid()){
-                 r.append("()").space();
-             }  else{
-                 r.append("(%_result)").space();
-             }
+            if(returnType.isInt()){
+               r.pad(12).append("ld_arg_s32 $s" + base + ", [%_result];").nl();
+            } else if(returnType.isFloat()){
+               r.pad(12).append("ld_arg_f32 $f" + base + ", [%_result];").nl();
+            } else if(returnType.isDouble()){
+               r.pad(12).append("ld_arg_f64 $d" + base + ", [%_result];").nl();
+            }  else if(returnType.isLong()){
+               r.pad(12).append("ld_arg_s64 $d" + base + ", [%_result];").nl();
+            }
 
-             r.append("(");
-             if (!method.isStatic()){
-                 r.append("%this");
-             }
-             //   r.separator().append(dotClassName).dot().append(name).space();
 
-             for(TypeHelper.JavaMethodArg arg : argsAndReturnType.getArgs()){
-                 if(arg.getArgc() > 0){
-                     r.separator();
-                 }
-
-                     r.append("arg+"+base + arg.getArgc());
-
-             }
-             r.append(");").nl();
+         r.pad(9).append("}//");
          }
-             if (method.getArgsAndReturnType().getReturnType().isInt()){
-
-                 r.append("ld_arg_s32 $s"+base+", [%_result];").nl();
-             }
-
-         r.append("}//");
-      }
 
 
    }
 
 
-    class nyi extends HSAILInstruction{
+   class nyi extends HSAILInstruction{
 
       nyi(Instruction _from){
          super(_from, 0, 0);
@@ -351,7 +448,7 @@ public class HSAILMethod{
       }
    }
 
-    class ld_kernarg<T extends PrimitiveType> extends HSAILInstructionWithDest<T>{
+   class ld_kernarg<T extends PrimitiveType> extends HSAILInstructionWithDest<T>{
 
 
       ld_kernarg(Instruction _from, HSAILRegister<T> _dest){
@@ -363,21 +460,21 @@ public class HSAILMethod{
       }
    }
 
-    class ld_arg<T extends PrimitiveType> extends HSAILInstructionWithDest<T>{
+   class ld_arg<T extends PrimitiveType> extends HSAILInstructionWithDest<T>{
 
 
-        ld_arg(Instruction _from, HSAILRegister<T> _dest){
-            super(_from, _dest);
-        }
+      ld_arg(Instruction _from, HSAILRegister<T> _dest){
+         super(_from, _dest);
+      }
 
-        @Override void render(HSAILRenderer r){
-            r.append("ld_arg_").typeName(getDest()).space().regName(getDest()).separator().append("[%_arg").append(getDest().index).append("]");
-        }
+      @Override void render(HSAILRenderer r){
+         r.append("ld_arg_").typeName(getDest()).space().regName(getDest()).separator().append("[%_arg").append(getDest().index).append("]");
+      }
 
 
-    }
+   }
 
-    abstract class binary_const<T extends PrimitiveType, C extends Number> extends HSAILInstructionWithDestSrc<T>{
+   abstract class binary_const<T extends PrimitiveType, C extends Number> extends HSAILInstructionWithDestSrc<T>{
       C value;
       String op;
 
@@ -394,7 +491,7 @@ public class HSAILMethod{
 
    }
 
-    class add_const<T extends PrimitiveType, C extends Number> extends binary_const<T, C>{
+   class add_const<T extends PrimitiveType, C extends Number> extends binary_const<T, C>{
 
       add_const(Instruction _from, HSAILRegister<T> _dest, HSAILRegister _src, C _value){
          super(_from, "add_", _dest, _src, _value);
@@ -403,7 +500,7 @@ public class HSAILMethod{
 
    }
 
-    class and_const<T extends PrimitiveType, C extends Number> extends binary_const<T, C>{
+   class and_const<T extends PrimitiveType, C extends Number> extends binary_const<T, C>{
 
       and_const(Instruction _from, HSAILRegister<T> _dest, HSAILRegister _src, C _value){
          super(_from, "and_", _dest, _src, _value);
@@ -417,7 +514,7 @@ public class HSAILMethod{
 
    }
 
-    class mul_const<T extends PrimitiveType, C extends Number> extends binary_const<T, C>{
+   class mul_const<T extends PrimitiveType, C extends Number> extends binary_const<T, C>{
 
       mul_const(Instruction _from, HSAILRegister<T> _dest, HSAILRegister _src, C _value){
          super(_from, "mul_", _dest, _src, _value);
@@ -426,7 +523,7 @@ public class HSAILMethod{
 
    }
 
-    class mad extends HSAILInstructionWithDestSrcSrc<ref, ref>{
+   class mad extends HSAILInstructionWithDestSrcSrc<ref, ref>{
       long size;
 
       mad(Instruction _from, Reg_ref _dest, Reg_ref _src_lhs, Reg_ref _src_rhs, long _size){
@@ -441,7 +538,7 @@ public class HSAILMethod{
    }
 
 
-    class cvt<T1 extends PrimitiveType, T2 extends PrimitiveType> extends HSAILInstruction{
+   class cvt<T1 extends PrimitiveType, T2 extends PrimitiveType> extends HSAILInstruction{
 
 
       cvt(Instruction _from, HSAILRegister<T1> _dest, HSAILRegister<T2> _src){
@@ -466,7 +563,7 @@ public class HSAILMethod{
    }
 
 
-    class retvoid extends HSAILInstruction{
+   class retvoid extends HSAILInstruction{
 
       retvoid(Instruction _from){
          super(_from, 0, 0);
@@ -480,7 +577,7 @@ public class HSAILMethod{
 
    }
 
-    class ret<T extends PrimitiveType> extends HSAILInstructionWithSrc<T>{
+   class ret<T extends PrimitiveType> extends HSAILInstructionWithSrc<T>{
 
       ret(Instruction _from, HSAILRegister<T> _src){
          super(_from, _src);
@@ -495,7 +592,7 @@ public class HSAILMethod{
 
    }
 
-    class array_store<T extends PrimitiveType> extends HSAILInstructionWithSrc<T>{
+   class array_store<T extends PrimitiveType> extends HSAILInstructionWithSrc<T>{
 
       Reg_ref mem;
 
@@ -514,7 +611,7 @@ public class HSAILMethod{
    }
 
 
-    class array_load<T extends PrimitiveType> extends HSAILInstructionWithDest<T>{
+   class array_load<T extends PrimitiveType> extends HSAILInstructionWithDest<T>{
       Reg_ref mem;
 
 
@@ -531,24 +628,24 @@ public class HSAILMethod{
 
    }
 
-     class array_len extends HSAILInstructionWithDest<s32>{
-        Reg_ref mem;
+   class array_len extends HSAILInstructionWithDest<s32>{
+      Reg_ref mem;
 
 
-        array_len(Instruction _from, Reg_s32 _dest, Reg_ref _mem){
-            super(_from, _dest);
+      array_len(Instruction _from, Reg_s32 _dest, Reg_ref _mem){
+         super(_from, _dest);
 
-            mem = _mem;
-        }
+         mem = _mem;
+      }
 
-        @Override void render(HSAILRenderer r){
-            r.append("ld_global_").typeName(getDest()).space().regName(getDest()).separator().append("[").regName(mem).append("+").array_len_offset().append("]");
-        }
+      @Override void render(HSAILRenderer r){
+         r.append("ld_global_").typeName(getDest()).space().regName(getDest()).separator().append("[").regName(mem).append("+").array_len_offset().append("]");
+      }
 
 
-    }
+   }
 
-    class field_load<T extends PrimitiveType> extends HSAILInstructionWithDest<T>{
+   class field_load<T extends PrimitiveType> extends HSAILInstructionWithDest<T>{
       Reg_ref mem;
       long offset;
 
@@ -566,27 +663,27 @@ public class HSAILMethod{
 
    }
 
-     class static_field_load<T extends PrimitiveType> extends HSAILInstructionWithDest<T>{
+   class static_field_load<T extends PrimitiveType> extends HSAILInstructionWithDest<T>{
 
-        long offset;
-        Reg_ref mem;
+      long offset;
+      Reg_ref mem;
 
-        static_field_load(Instruction _from, HSAILRegister<T> _dest, Reg_ref _mem, long _offset){
-            super(_from, _dest);
-            offset = _offset;
-            mem = _mem;
+      static_field_load(Instruction _from, HSAILRegister<T> _dest, Reg_ref _mem, long _offset){
+         super(_from, _dest);
+         offset = _offset;
+         mem = _mem;
 
-        }
+      }
 
-        @Override void render(HSAILRenderer r){
-            r.append("ld_global_").typeName(getDest()).space().regName(getDest()).separator().append("[").regName(mem).append("+").append(offset).append("]");
-        }
-
-
-    }
+      @Override void render(HSAILRenderer r){
+         r.append("ld_global_").typeName(getDest()).space().regName(getDest()).separator().append("[").regName(mem).append("+").append(offset).append("]");
+      }
 
 
-    class field_store<T extends PrimitiveType> extends HSAILInstructionWithSrc<T>{
+   }
+
+
+   class field_store<T extends PrimitiveType> extends HSAILInstructionWithSrc<T>{
       Reg_ref mem;
       long offset;
 
@@ -605,7 +702,7 @@ public class HSAILMethod{
    }
 
 
-    final class mov<T extends PrimitiveType> extends HSAILInstructionWithDestSrc{
+   final class mov<T extends PrimitiveType> extends HSAILInstructionWithDestSrc{
 
       public mov(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _src){
          super(_from, _dest, _src);
@@ -619,7 +716,7 @@ public class HSAILMethod{
 
    }
 
-    abstract class unary<T extends PrimitiveType> extends HSAILInstructionWithDestSrc{
+   abstract class unary<T extends PrimitiveType> extends HSAILInstructionWithDestSrc{
 
       String op;
 
@@ -642,11 +739,9 @@ public class HSAILMethod{
       }
 
 
-
-
    }
 
-    abstract class binary<T extends PrimitiveType> extends HSAILInstruction{
+   abstract class binary<T extends PrimitiveType> extends HSAILInstruction{
 
       String op;
 
@@ -702,59 +797,63 @@ public class HSAILMethod{
    }
    */
 
-    class add<T extends PrimitiveType> extends binary<T>{
+   class add<T extends PrimitiveType> extends binary<T>{
       public add(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs){
          super(_from, "add_", _dest, _lhs, _rhs);
       }
 
    }
 
-    class sub<T extends PrimitiveType> extends binary<T>{
+   class sub<T extends PrimitiveType> extends binary<T>{
       public sub(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs){
          super(_from, "sub_", _dest, _lhs, _rhs);
       }
 
    }
 
-    class div<T extends PrimitiveType> extends binary<T>{
+   class div<T extends PrimitiveType> extends binary<T>{
       public div(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs){
          super(_from, "div_", _dest, _lhs, _rhs);
       }
 
    }
 
-    class mul<T extends PrimitiveType> extends binary<T>{
+   class mul<T extends PrimitiveType> extends binary<T>{
       public mul(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs){
          super(_from, "mul_", _dest, _lhs, _rhs);
       }
 
    }
 
-    class rem<T extends PrimitiveType> extends binary<T>{
+   class rem<T extends PrimitiveType> extends binary<T>{
       public rem(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs){
          super(_from, "rem_", _dest, _lhs, _rhs);
       }
 
    }
-    class neg<T extends PrimitiveType> extends unary<T>{
+
+   class neg<T extends PrimitiveType> extends unary<T>{
       public neg(Instruction _from, HSAILRegister<T> _destSrc){
          super(_from, "neg_", _destSrc);
       }
 
    }
-    class shl<T extends PrimitiveType> extends binary<T>{
+
+   class shl<T extends PrimitiveType> extends binary<T>{
       public shl(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs){
          super(_from, "shl_", _dest, _lhs, _rhs);
       }
 
    }
-    class shr<T extends PrimitiveType> extends binary<T>{
+
+   class shr<T extends PrimitiveType> extends binary<T>{
       public shr(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs){
          super(_from, "shr_", _dest, _lhs, _rhs);
       }
 
    }
-    class ushr<T extends PrimitiveType> extends binary<T>{
+
+   class ushr<T extends PrimitiveType> extends binary<T>{
       public ushr(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs){
          super(_from, "ushr_", _dest, _lhs, _rhs);
       }
@@ -762,35 +861,40 @@ public class HSAILMethod{
    }
 
 
-    class and<T extends PrimitiveType> extends binary<T>{
+   class and<T extends PrimitiveType> extends binary<T>{
       public and(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs){
          super(_from, "and_", _dest, _lhs, _rhs);
       }
+
       @Override void render(HSAILRenderer r){
          r.append(op).movTypeName(getDest()).space().regName(getDest()).separator().regName(getLhs()).separator().regName(getRhs());
       }
 
    }
-    class or<T extends PrimitiveType> extends binary<T>{
+
+   class or<T extends PrimitiveType> extends binary<T>{
       public or(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs){
          super(_from, "or_", _dest, _lhs, _rhs);
       }
+
       @Override void render(HSAILRenderer r){
          r.append(op).movTypeName(getDest()).space().regName(getDest()).separator().regName(getLhs()).separator().regName(getRhs());
       }
 
    }
-    class xor<T extends PrimitiveType> extends binary<T>{
+
+   class xor<T extends PrimitiveType> extends binary<T>{
       public xor(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs){
          super(_from, "xor_", _dest, _lhs, _rhs);
       }
+
       @Override void render(HSAILRenderer r){
          r.append(op).movTypeName(getDest()).space().regName(getDest()).separator().regName(getLhs()).separator().regName(getRhs());
       }
 
    }
 
-    class mov_const<T extends PrimitiveType, C extends Number> extends HSAILInstructionWithDest<T>{
+   class mov_const<T extends PrimitiveType, C extends Number> extends HSAILInstructionWithDest<T>{
 
       C value;
 
@@ -850,10 +954,9 @@ public class HSAILMethod{
    }
 
 
-
    public HSAILRenderer renderFunction(HSAILRenderer r){
       r.append("function &").append(method.getName()).append("(");
-      if (method.getArgsAndReturnType().getReturnType().isInt()){
+      if(method.getArgsAndReturnType().getReturnType().isInt()){
          r.append("arg_s32 %_result");
       }
       r.append(") (");
@@ -896,12 +999,16 @@ public class HSAILMethod{
          r.semicolon().nl();
       }
       r.append("};");
-      return(r);
+      return (r);
    }
 
    public HSAILRenderer renderEntryPoint(HSAILRenderer r){
-       //r.append("version 1:0:large;").nl();
-      r.prefixAppend("version 0:95: $full : $large;\n");
+      //r.append("version 1:0:large;").nl();
+      r.append("version 0:95: $full : $large;\n");
+
+      for (Call c:calls){
+         c.render(r);
+      }
       // r.append("kernel &" + method.getName() + "(");
       r.append("kernel &run(");
       int argOffset = method.isStatic() ? 0 : 1;
@@ -957,7 +1064,7 @@ public class HSAILMethod{
          r.nl();
       }
       r.append("};");
-      return(r);
+      return (r);
    }
 
    public HSAILRegister getRegOfLastWriteToIndex(int _index){
@@ -999,25 +1106,32 @@ public class HSAILMethod{
       return (r);
    }
 
-   enum ParseState{NONE, COMPARE_F32, COMPARE_F64, COMPARE_S64};
+   enum ParseState{NONE, COMPARE_F32, COMPARE_F64, COMPARE_S64}
+
+   ;
 
    static Map<ClassModel.ClassModelMethod, HSAILMethod> cache = new HashMap<ClassModel.ClassModelMethod, HSAILMethod>();
 
-   static synchronized HSAILMethod getHSAILMethod(ClassModel.ClassModelMethod _method, boolean _entryPoint){
-         HSAILMethod instance = cache.get(_method);
-         if (instance == null){
-            instance = new HSAILMethod(_method, _entryPoint);
-            cache.put(_method, instance);
-         }
-         return(instance);
+   static synchronized HSAILMethod getHSAILMethod(ClassModel.ClassModelMethod _method, HSAILMethod _entryPoint){
+      HSAILMethod instance = cache.get(_method);
+      if(instance == null){
+         instance = new HSAILMethod(_method, _entryPoint);
+         cache.put(_method, instance);
+      }
+      return (instance);
    }
 
-
-
-
-   private HSAILMethod(ClassModel.ClassModelMethod _method, boolean _entryPoint){
-      if (UnsafeWrapper.addressSize()==4){
-          throw new IllegalStateException("Object pointer size is 4, you need to use 64 bit JVM and set -XX:-UseCompressedOops!");
+   private HSAILMethod(ClassModel.ClassModelMethod _method){
+       this(_method, null);
+   }
+   HSAILMethod entryPoint;
+   private HSAILMethod(ClassModel.ClassModelMethod _method, HSAILMethod _entryPoint){
+      entryPoint = _entryPoint;
+      if (entryPoint == null){
+         calls = new HashSet<Call>();
+      }
+      if(UnsafeWrapper.addressSize() == 4){
+         throw new IllegalStateException("Object pointer size is 4, you need to use 64 bit JVM and set -XX:-UseCompressedOops!");
       }
       method = _method;
       ParseState parseState = ParseState.NONE;
@@ -1027,50 +1141,50 @@ public class HSAILMethod{
 
             int argOffset = 0;
             if(!method.isStatic()){
-               if (_entryPoint){
+               if(entryPoint==null){
                   add(new ld_kernarg(i, new VarReg_ref(0)));
-               } else{
+               }else{
                   add(new ld_arg(i, new VarReg_ref(0)));
                }
                argOffset++;
             }
             for(TypeHelper.JavaMethodArg arg : method.argsAndReturnType.getArgs()){
                if(arg.getJavaType().isArray()){
-                   if (_entryPoint){
-                  add(new ld_kernarg(i, new VarReg_ref(arg.getArgc() + argOffset)));
-                   }else{
-                       add(new ld_arg(i, new VarReg_ref(arg.getArgc() + argOffset)));
-                   }
-               }else    if(arg.getJavaType().isObject()){
-                   if (_entryPoint){
-                  add(new ld_kernarg(i, new VarReg_ref(arg.getArgc() + argOffset)));
-               }else{
-                       add(new ld_arg(i, new VarReg_ref(arg.getArgc() + argOffset)));
-               }
+                  if(_entryPoint==null){
+                     add(new ld_kernarg(i, new VarReg_ref(arg.getArgc() + argOffset)));
+                  }else{
+                     add(new ld_arg(i, new VarReg_ref(arg.getArgc() + argOffset)));
+                  }
+               }else if(arg.getJavaType().isObject()){
+                  if(_entryPoint==null){
+                     add(new ld_kernarg(i, new VarReg_ref(arg.getArgc() + argOffset)));
+                  }else{
+                     add(new ld_arg(i, new VarReg_ref(arg.getArgc() + argOffset)));
+                  }
                }else if(arg.getJavaType().isInt()){
-                   if (_entryPoint){
-                  add(new ld_kernarg(i, new VarReg_s32(arg.getArgc() + argOffset)));
-             }else{
-                       add(new ld_arg(i, new VarReg_s32(arg.getArgc() + argOffset)));
-             }
+                  if(_entryPoint==null){
+                     add(new ld_kernarg(i, new VarReg_s32(arg.getArgc() + argOffset)));
+                  }else{
+                     add(new ld_arg(i, new VarReg_s32(arg.getArgc() + argOffset)));
+                  }
                }else if(arg.getJavaType().isFloat()){
-                   if (_entryPoint){
-                  add(new ld_kernarg(i, new VarReg_f32(arg.getArgc() + argOffset)));
-         }else{
-                       add(new ld_arg(i, new VarReg_f32(arg.getArgc() + argOffset)));
-         }
+                  if(_entryPoint==null){
+                     add(new ld_kernarg(i, new VarReg_f32(arg.getArgc() + argOffset)));
+                  }else{
+                     add(new ld_arg(i, new VarReg_f32(arg.getArgc() + argOffset)));
+                  }
                }else if(arg.getJavaType().isDouble()){
-                   if (_entryPoint){
-                   add(new ld_kernarg(i, new VarReg_f64(arg.getArgc() + argOffset)));
-       }else{
-                       add(new ld_arg(i, new VarReg_f64(arg.getArgc() + argOffset)));
-       }
+                  if(_entryPoint==null){
+                     add(new ld_kernarg(i, new VarReg_f64(arg.getArgc() + argOffset)));
+                  }else{
+                     add(new ld_arg(i, new VarReg_f64(arg.getArgc() + argOffset)));
+                  }
                }else if(arg.getJavaType().isLong()){
-                   if (_entryPoint){
-                   add(new ld_kernarg(i, new VarReg_s64(arg.getArgc() + argOffset)));
-    }else{
-                       add(new ld_arg(i, new VarReg_s64(arg.getArgc() + argOffset)));
-    }
+                  if(_entryPoint==null){
+                     add(new ld_kernarg(i, new VarReg_s64(arg.getArgc() + argOffset)));
+                  }else{
+                     add(new ld_arg(i, new VarReg_s64(arg.getArgc() + argOffset)));
+                  }
                }
             }
          }
@@ -1170,7 +1284,7 @@ public class HSAILMethod{
                add(new cvt<ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
                add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.s32.getHsaBytes()));
                add(new array_load<s32>(i, new StackReg_s32(i, 0), new StackReg_ref(i, 1)));
-            break;
+               break;
             case LALOAD:
                add(new cvt<ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
                add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.s64.getHsaBytes()));
@@ -1181,18 +1295,18 @@ public class HSAILMethod{
                add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.f32.getHsaBytes()));
                add(new array_load<f32>(i, new StackReg_f32(i, 0), new StackReg_ref(i, 1)));
 
-            break;
+               break;
             case DALOAD:
                add(new cvt<ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
                add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.f64.getHsaBytes()));
                add(new array_load<f64>(i, new StackReg_f64(i, 0), new StackReg_ref(i, 1)));
 
-            break;
+               break;
             case AALOAD:
                add(new cvt<ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
                add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.ref.getHsaBytes()));
                add(new array_load<ref>(i, new StackReg_ref(i, 0), new StackReg_ref(i, 1)));
-            break;
+               break;
             case BALOAD:
                add(new cvt<ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
                add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.s8.getHsaBytes()));
@@ -1675,32 +1789,32 @@ public class HSAILMethod{
                add(new retvoid(i));
                break;
             case GETSTATIC:{
-                TypeHelper.JavaType type = i.asFieldAccessor().getConstantPoolFieldEntry().getType();
+               TypeHelper.JavaType type = i.asFieldAccessor().getConstantPoolFieldEntry().getType();
 
-                try{
-                    Class clazz = Class.forName(i.asFieldAccessor().getConstantPoolFieldEntry().getClassEntry().getDotClassName());
+               try{
+                  Class clazz = Class.forName(i.asFieldAccessor().getConstantPoolFieldEntry().getClassEntry().getDotClassName());
 
-                    Field f = clazz.getDeclaredField(i.asFieldAccessor().getFieldName());
+                  Field f = clazz.getDeclaredField(i.asFieldAccessor().getFieldName());
 
-                    if(type.isArray()){
-                        add(new static_field_load<ref>(i, new StackReg_ref(i, 0),new StackReg_ref(i, 0), (long) UnsafeWrapper.staticFieldOffset(f)));
+                  if(type.isArray()){
+                     add(new static_field_load<ref>(i, new StackReg_ref(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.staticFieldOffset(f)));
 
-                      //  add(new and_const<u64, Long>(i, new StackReg_u64(i, 0), new StackReg_ref(i, 0), (long) 0xffffffffL));
-                    }else if(type.isInt()){
-                        add(new static_field_load<s32>(i, new StackReg_s32(i, 0),new StackReg_ref(i, 0), (long) UnsafeWrapper.staticFieldOffset(f)));
+                     //  add(new and_const<u64, Long>(i, new StackReg_u64(i, 0), new StackReg_ref(i, 0), (long) 0xffffffffL));
+                  }else if(type.isInt()){
+                     add(new static_field_load<s32>(i, new StackReg_s32(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.staticFieldOffset(f)));
 
-                    }else if(type.isFloat()){
-                        add(new static_field_load<f32>(i, new StackReg_f32(i, 0),new StackReg_ref(i, 0), (long) UnsafeWrapper.staticFieldOffset(f)));
-                    }else if(type.isDouble()){
-                        add(new static_field_load<f64>(i, new StackReg_f64(i, 0), new StackReg_ref(i, 0),(long) UnsafeWrapper.staticFieldOffset(f)));
-                    }else if(type.isLong()){
-                        add(new static_field_load<s64>(i, new StackReg_s64(i, 0),new StackReg_ref(i, 0), (long) UnsafeWrapper.staticFieldOffset(f)));
-                    }
-                }catch(ClassNotFoundException e){
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                }catch(NoSuchFieldException e){
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                }
+                  }else if(type.isFloat()){
+                     add(new static_field_load<f32>(i, new StackReg_f32(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.staticFieldOffset(f)));
+                  }else if(type.isDouble()){
+                     add(new static_field_load<f64>(i, new StackReg_f64(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.staticFieldOffset(f)));
+                  }else if(type.isLong()){
+                     add(new static_field_load<s64>(i, new StackReg_s64(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.staticFieldOffset(f)));
+                  }
+               }catch(ClassNotFoundException e){
+                  e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+               }catch(NoSuchFieldException e){
+                  e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+               }
 
 
             }
@@ -1715,9 +1829,9 @@ public class HSAILMethod{
                   if(type.isArray()){
                      add(new field_load<ref>(i, new StackReg_ref(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
 
-                   //  add(new and_const<u64, Long>(i, new StackReg_u64(i, 0), new StackReg_ref(i, 0), ADDR_MASK));
+                     //  add(new and_const<u64, Long>(i, new StackReg_u64(i, 0), new StackReg_ref(i, 0), ADDR_MASK));
                   }else if(type.isInt()){
-                  //    add(new and_const<ref, Long>(i, new StackReg_ref(i, 0), new StackReg_ref(i, 0), ADDR_MASK));
+                     //    add(new and_const<ref, Long>(i, new StackReg_ref(i, 0), new StackReg_ref(i, 0), ADDR_MASK));
                      add(new field_load<s32>(i, new StackReg_s32(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
 
                   }else if(type.isFloat()){
@@ -1749,7 +1863,7 @@ public class HSAILMethod{
                   if(type.isArray()){
                      add(new field_store<ref>(i, new StackReg_ref(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
 
-                   //  add(new and_const<u64, Long>(i, new StackReg_u64(i, 1), new StackReg_ref(i, 0), ADDR_MASK);
+                     //  add(new and_const<u64, Long>(i, new StackReg_u64(i, 1), new StackReg_ref(i, 0), ADDR_MASK);
                   }else if(type.isInt()){
                      add(new field_store<s32>(i, new StackReg_s32(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
 
