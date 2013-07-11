@@ -8,23 +8,28 @@ import java.util.function.IntConsumer;
 
 public class OopLambda {
     public static class P {
-        int x;
-        int y;
-         int xy;
+       private int x;
+       private  int y;
 
-        int getXY(){
-           return(x*y);
-        }
 
-        P(int _x, int _y) {
-            x = _x;
-            y = _y;
-            xy=0;
-        }
+       int getX(){
+          return(x);
+       }
+       int getY(){
+          return(y);
+       }
 
-        @Override
+       void setX(int _x){
+          x = _x;
+       }
+       void setY(int _y){
+          y = _y;
+       }
+
+
+       @Override
         public String toString() {
-            return ("(" + x + ", " + y + ", "+xy+ ")");
+            return ("(" + x + ", " + y + ")");
         }
     }
 
@@ -45,13 +50,12 @@ public class OopLambda {
         P[] points = new P[len];
 
         for (int i = 0; i < len; i++) {
-            points[i] = new P(0, 0);
+            points[i] = new P();
         }
 
         IntConsumer ic = gid -> {
-            points[gid].x = gid;
-            points[gid].y = gid * 2;
-            points[gid].xy = points[gid].getXY();
+            points[gid].setX(gid);
+            points[gid].setY(gid * 2);
         };
 
         Device.hsa().forEach(len, ic);

@@ -91,25 +91,8 @@ public class HSAILRenderer extends TextRenderer<HSAILRenderer>{
       return (this);
    }
 
-   Map<String, String> definitions = new LinkedHashMap<String, String>();
-   public void define(String _key, String _body){
-       synchronized(definitions){
-          if (!definitions.containsKey(_key)){
-             definitions.put(_key, _body);
-          }
-       }
-   }
 
-   @Override
-   final public String toString(){
-      StringBuilder result = new StringBuilder();
-      result.append(prefix.toString());
-      for (Map.Entry<String,String> entry:definitions.entrySet()){
-         result.append("// "+entry.getKey()+"\n");
-         result.append(entry.getValue());
-      }
-      result.append(sb.toString());
-      return (result.toString());
-   }
+
+
 
 }
