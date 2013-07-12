@@ -10,14 +10,18 @@ public class OopLambda {
     public static class P {
        private int x;
        private  int y;
+       int xy = 0;
 
+        int getX(){
+            return(x);
+        }
+        int getY(){
+            return(y);
+        }
+     //  int getXY(){
+     ///     return(getX()+getY());
+      // }
 
-       int getX(){
-          return(x);
-       }
-       int getY(){
-          return(y);
-       }
 
        void setX(int _x){
           x = _x;
@@ -56,6 +60,7 @@ public class OopLambda {
         IntConsumer ic = gid -> {
             points[gid].setX(gid);
             points[gid].setY(gid * 2);
+         //   points[gid].xy=points[gid].getXY();
         };
 
         Device.hsa().forEach(len, ic);
