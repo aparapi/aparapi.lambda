@@ -42,6 +42,8 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyAdapter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -172,6 +174,9 @@ public class Main {
 
     /**
      * Render all particles to the OpenGL context
+     *
+     * we need to rotate the texture to face the camera
+     * http://fivedots.coe.psu.ac.th/~ad/jg2/ch16/jogl2.pdf     
      * 
      * @param gl
      */
@@ -200,6 +205,10 @@ public class Main {
 
   public static boolean running;
    static Texture texture;
+
+  public static float eyedx = 0;
+  public static float eyedy = 0;
+  public static float eyedz = 0;
   public static void main(String _args[]) {
      //System.load("/Library/Java/JavaVirtualMachines/jdk1.7.0_09.jdk/Contents/Home/jre/lib/libawt.dylib");
      //System.load("/Library/Java/JavaVirtualMachines/jdk1.7.0_09.jdk/Contents/Home/jre/lib/libjawt.dylib");
@@ -248,6 +257,48 @@ public class Main {
 
     final Dimension dimension = new Dimension(Integer.getInteger("width", 742 - 64), Integer.getInteger("height", 742 - 64));
     canvas.setPreferredSize(dimension);
+    canvas.addKeyListener(new KeyAdapter(){
+       @Override public void keyPressed(KeyEvent e){
+          int keyCode = e.getKeyCode();
+          if (keyCode == KeyEvent.VK_LEFT) { 
+             if (e.isControlDown()) { 
+                eyedx-=10f;
+             }else{
+                eyedx-=1f;
+             }
+         } else if (keyCode == KeyEvent.VK_RIGHT) { 
+             if (e.isControlDown()) { 
+                eyedx+=10f;
+             }else{
+                eyedx+=1f;
+             }
+         }else if (keyCode == KeyEvent.VK_UP) { 
+             if (e.isControlDown()) { 
+                eyedy-=10f;
+             }else{
+                eyedy-=1f;
+             }
+         } else if (keyCode == KeyEvent.VK_DOWN) { 
+             if (e.isControlDown()) { 
+                eyedy+=10f;
+             }else{
+                eyedy+=1f;
+             }
+         }else if (keyCode == KeyEvent.VK_ADD) { 
+             if (e.isControlDown()) { 
+                eyedz-=10f;
+             }else{
+                eyedz-=1f;
+             }
+         } else if (keyCode == KeyEvent.VK_SUBTRACT) { 
+             if (e.isControlDown()) { 
+                eyedz+=10f;
+             }else{
+                eyedz+=1f;
+             }
+         }
+       }
+   });
 
     canvas.addGLEventListener(new GLEventListener() {
       private double ratio;
@@ -264,6 +315,8 @@ public class Main {
 
       private final float zat = 0f;
 
+      private final float viewAngle = -90f;
+
       public final float zoomFactor = 1.0f;
 
       private int frames;
@@ -274,6 +327,7 @@ public class Main {
       public void dispose(GLAutoDrawable drawable) {
 
       }
+
 
       @Override
       public void display(GLAutoDrawable drawable) {
@@ -288,7 +342,10 @@ public class Main {
         final GLU glu = new GLU();
         glu.gluPerspective(45f, ratio, 0f, 1000f);
 
-        glu.gluLookAt(xeye, yeye, zeye * zoomFactor, xat, yat, zat, 0f, 1f, 0f);
+        //glu.gluLookAt(xeye+eyedx, yeye+eyedy, zeye * zoomFactor +eyedz, xat+eyedx, yat+eyedy, zat+eyedz, 0f, 1f, 0f);
+        glu.gluLookAt(xeye+eyedx, yeye+eyedy, zeye * zoomFactor +eyedz, xat, yat, zat, 0f, 1f, 0f);
+        gl.glPushMatrix(); //1
+        gl.glRotatef(-1*((float)viewAngle+90.0f), 0, 1, 0); //2
         if (running) {
           kernel.execute(kernel.range);
           if (kernel.isExplicit()) {
@@ -303,6 +360,7 @@ public class Main {
           }
         }
         kernel.render(gl);
+        gl.glPopMatrix(); //3
 
         final long now = System.currentTimeMillis();
         final long time = now - last;
@@ -333,21 +391,11 @@ public class Main {
         
         gl.glEnable(GL.GL_TEXTURE_2D);
         gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
-         gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST);
+        gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST);
         try {
           final InputStream textureStream = Main.class.getResourceAsStream("particle.jpg");
-          
           TextureData data = TextureIO.newTextureData(profile,textureStream, false, "jpg");
           texture = TextureIO.newTexture(data);
-          //final Texture texture = TextureIO.newTexture(textureStream, false, null);
-         // texture.enable(gl);
-         // texture.bind(gl);
-
-         // gl.glEnable(GL.GL_TEXTURE_2D);
-         //gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
-          //gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST);
-         // gl.glBindTexture(GL.GL_TEXTURE_2D, texture.);
-          
         } catch (final IOException e) {
           e.printStackTrace();
         } catch (final GLException e) {
@@ -363,11 +411,9 @@ public class Main {
 
         final GL2 gl = drawable.getGL().getGL2();
         gl.glViewport(0, 0, width, height);
-
         ratio = (double) width / (double) height;
 
       }
-
     });
 
     panel.add(canvas, BorderLayout.CENTER);
