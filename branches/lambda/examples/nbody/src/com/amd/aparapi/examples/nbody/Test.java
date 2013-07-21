@@ -200,8 +200,10 @@ public class Test {
     // perform the rotation. The if statement is used for stability reasons
     // if the lookAt and objToCamProj vectors are too close together then 
     // |angleCosine| could be bigger than 1 due to lack of precision
-    if ((angleCosine < 0.99990) && (angleCosine > -0.9999))
+    if ((angleCosine < 0.99990) && (angleCosine > -0.9999)){
       gl.glRotatef(acos(angleCosine)*180f/((float)Math.PI),upAux[0], upAux[1], upAux[2]);	
+      System.out.println("rotated1");
+    }
 
     // so far it is just like the cylindrical billboard. The code for the 
     // second rotation comes now
@@ -226,12 +228,14 @@ public class Test {
     // when objToCam and objToCamProj have a very small
     // angle between them
 
-    if ((angleCosine < 0.99990) && (angleCosine > -0.9999))
-      if (objToCam[1] < 0)
+    if ((angleCosine < 0.99990) && (angleCosine > -0.9999)){
+      if (objToCam[1] < 0){
         gl.glRotatef(acos(angleCosine)*180f/((float)Math.PI),1,0,0);	
-      else
+      } else {
         gl.glRotatef(acos(angleCosine)*180f/((float)Math.PI),-1,0,0);	
-
+      }
+      System.out.println("rotated2");
+    }
   }
 
   GLEventListener renderer = new GLEventListener(){
@@ -303,26 +307,29 @@ public class Test {
                 //float camX =modelview[12];
                 //float camY =modelview[13];
                 //float camZ =modelview[14];
-                float camX =camera.getXeye();
-                float camY =camera.getYeye();
-                float camZ =camera.getZeye();
+                float camX = -(modelview[0] * modelview[12] + modelview[1] * modelview[13] + modelview[2] * modelview[14]);
+                float camY = -(modelview[4] * modelview[12] + modelview[5] * modelview[13] + modelview[6] * modelview[14]);
+                float camZ = -(modelview[8] * modelview[12] + modelview[9] * modelview[13] + modelview[10] * modelview[14]);
+                //float camX =camera.getXeye();
+                //float camY =camera.getYeye();
+                //float camZ =camera.getZeye();
 
                 System.out.println("cam x,y,z = "+camX+", "+camY+", "+camZ);
                 billboardBegin(gl, camX, camY, camZ, xcenter, ycenter, zcenter) ;
 
-                if (false){
-                if (false){
+                if (true){
+                  if (true){
 
-                  gl.glTexCoord2f(0, 0); gl.glVertex3f(xcenter-10,ycenter-10,  zcenter);
-                  gl.glTexCoord2f(0, 1); gl.glVertex3f(xcenter-10, ycenter+10, zcenter); 
-                  gl.glTexCoord2f(1, 1); gl.glVertex3f(xcenter+10, ycenter+10, zcenter);
-                  gl.glTexCoord2f(1, 0); gl.glVertex3f(xcenter+10, ycenter-10, zcenter);
-                }else{
-                  gl.glTexCoord2f(0, 0); gl.glVertex3f(xcenter-10,ycenter-10,  zcenter);
-                  gl.glTexCoord2f(1, 0); gl.glVertex3f(xcenter+10, ycenter-10, zcenter);
-                  gl.glTexCoord2f(1, 1); gl.glVertex3f(xcenter+10, ycenter+10, zcenter);
-                  gl.glTexCoord2f(0, 1); gl.glVertex3f(xcenter-10, ycenter+10, zcenter); 
-                }
+                    gl.glTexCoord2f(0, 0); gl.glVertex3f(xcenter-10,ycenter-10,  zcenter);
+                    gl.glTexCoord2f(0, 1); gl.glVertex3f(xcenter-10, ycenter+10, zcenter); 
+                    gl.glTexCoord2f(1, 1); gl.glVertex3f(xcenter+10, ycenter+10, zcenter);
+                    gl.glTexCoord2f(1, 0); gl.glVertex3f(xcenter+10, ycenter-10, zcenter);
+                  }else{
+                    gl.glTexCoord2f(0, 0); gl.glVertex3f(xcenter-10,ycenter-10,  zcenter);
+                    gl.glTexCoord2f(1, 0); gl.glVertex3f(xcenter+10, ycenter-10, zcenter);
+                    gl.glTexCoord2f(1, 1); gl.glVertex3f(xcenter+10, ycenter+10, zcenter);
+                    gl.glTexCoord2f(0, 1); gl.glVertex3f(xcenter-10, ycenter+10, zcenter); 
+                  }
                 }else{
                   gl.glTexCoord2f(0, 0); gl.glVertex3f(-10,-10,  0);
                   gl.glTexCoord2f(1, 0); gl.glVertex3f(10, -10, 0);
