@@ -40,6 +40,7 @@ package com.amd.aparapi.examples.nbody;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -125,11 +126,11 @@ public class Main {
 
             // divide into two 'spheres of bodies' by adjusting x
 
-            if ((body % 2) == 0) {
-               xyz[body + 0] += maxDist * 1.5;
-            } else {
-               xyz[body + 0] -= maxDist * 1.5;
-            }
+            //if ((body % 2) == 0) {
+            //   xyz[body + 0] += maxDist * 1.5;
+           // } else {
+          //     xyz[body + 0] -= maxDist * 1.5;
+          ////  }
          }
          setExplicit(true);
       }
@@ -199,262 +200,278 @@ public class Main {
    }
 
 
-   private float xLookAt, yLookAt, zLookAt;
-   private float xStep, zStep;
+   public class Camera extends KeyAdapter{
 
+      private float xLookAt, yLookAt, zLookAt;
+      private float xStep, yStep, zStep;
 
-   public int width;
+      private float xeye = 0f;
 
-   public int height;
+      private float yeye = 0f;
 
-   public boolean running;
-   Texture texture;
+      private float zeye = 100f;
 
-   private double ratio;
+      private float xat = 0f;
 
-   private float xeye = 0f;
+      private float yat = 0f;
 
-   private float yeye = 0f;
+      private float zat = 0f;
 
-   private float zeye = 100f;
+      private float pitchAngle = -90f;
 
-   private float xat = 0f;
+      private float yawAngle = -90f;
 
-   private float yat = 0f;
+      private final static float LOOK_AT_DIST = 30.0f;
 
-   private float zat = 0f;
+      private final static float SPEED = 0.2f; // for camera movement
+      private final static float ANGLE_INCR = 2.0f; // degrees
+      private final static float HEIGHT_STEP = 1.0f;
+      Camera(){
+         xeye = 0f; yeye = 0f; zeye = LOOK_AT_DIST; // camera posn
+         yawAngle = -90.0f; // along -z axis
+         xStep = (float)Math.cos( Math.toRadians(yawAngle)); // step distances
+         zStep = (float)Math.sin( Math.toRadians(yawAngle));
+         yStep = (float)Math.sin( Math.toRadians(pitchAngle));
+         xLookAt = xeye + (LOOK_AT_DIST * xStep); // look-at posn
+         xLookAt = yeye + (LOOK_AT_DIST * yStep); // look-at posn
+         zLookAt = zeye + (LOOK_AT_DIST * zStep);
+      }
 
-   private float viewAngle = -90f;
-
-   public float zoomFactor = 1.0f;
-
-   private final static float LOOK_AT_DIST = 100.0f;
-   private final static float Z_POS = 100.0f;
-   private final static float SPEED = 0.4f; // for camera movement
-   private final static float ANGLE_INCR = 5.0f; // degrees
-   private final static float HEIGHT_STEP = 1.0f;
-
-   private void initViewerPosition() {
-      xeye = 0f; yeye = 0f; zeye = Z_POS; // camera posn
-      viewAngle = -90.0f; // along -z axis
-      xStep = (float)Math.cos( Math.toRadians(viewAngle)); // step distances
-      zStep = (float)Math.sin( Math.toRadians(viewAngle));
-      xLookAt = xeye + (LOOK_AT_DIST * xStep); // look-at posn
-      yLookAt = 0;
-      zLookAt = zeye + (LOOK_AT_DIST * zStep);
-   } // end of initViewerPosn()
-
-   public void main() {
-      //System.load("/Library/Java/JavaVirtualMachines/jdk1.7.0_09.jdk/Contents/Home/jre/lib/libawt.dylib");
-      //System.load("/Library/Java/JavaVirtualMachines/jdk1.7.0_09.jdk/Contents/Home/jre/lib/libjawt.dylib");
-
-      final NBodyKernel kernel = new NBodyKernel(Range.create(Integer.getInteger("bodies", 8192)));
-
-      final JFrame frame = new JFrame("NBody");
-
-      final JPanel panel = new JPanel(new BorderLayout());
-      final JPanel controlPanel = new JPanel(new FlowLayout());
-      panel.add(controlPanel, BorderLayout.NORTH);
-
-      final JButton startButton = new JButton("Start");
-
-      startButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-            running = true;
-            startButton.setEnabled(false);
-            }
-            });
-      controlPanel.add(startButton);
-      controlPanel.add(new JLabel(kernel.getExecutionMode().toString()));
-
-      controlPanel.add(new JLabel("   Particles"));
-      controlPanel.add(new JTextField("" + kernel.range.getGlobalSize(0), 5));
-
-      controlPanel.add(new JLabel("FPS"));
-      final JTextField framesPerSecondTextField = new JTextField("0", 5);
-
-      controlPanel.add(framesPerSecondTextField);
-      controlPanel.add(new JLabel("Score("));
-      final JLabel miniLabel = new JLabel("<html><small>calcs</small><hr/><small>&micro;sec</small></html>");
-
-      controlPanel.add(miniLabel);
-      controlPanel.add(new JLabel(")"));
-
-      final JTextField positionUpdatesPerMicroSecondTextField = new JTextField("0", 5);
-
-      controlPanel.add(positionUpdatesPerMicroSecondTextField);
-      final GLCapabilities caps = new GLCapabilities(null);
-      final GLProfile profile = caps.getGLProfile();
-      caps.setDoubleBuffered(true);
-      caps.setHardwareAccelerated(true);
-      final GLCanvas canvas = new GLCanvas(caps);
-
-      final Dimension dimension = new Dimension(Integer.getInteger("width", 742 - 64), Integer.getInteger("height", 742 - 64));
-      canvas.setPreferredSize(dimension);
-      canvas.addKeyListener(new KeyAdapter(){
-            @Override public void keyPressed(KeyEvent e){
-            int keyCode = e.getKeyCode();
-            if (keyCode == KeyEvent.VK_LEFT) { // left
-            if (e.isControlDown()) { // translate left
-            xeye += zStep * SPEED;
-            zeye -= xStep * SPEED;
-            } else { // turn left
-            viewAngle -= ANGLE_INCR;
-            xStep = (float)Math.cos( Math.toRadians(viewAngle));
-            zStep = (float)Math.sin( Math.toRadians(viewAngle));
-            System.out.println("viewAngle = "+viewAngle);
+      @Override public void keyPressed(KeyEvent e){
+         int keyCode = e.getKeyCode();
+         if (keyCode == KeyEvent.VK_LEFT) { 
+            if (e.isControlDown()) { 
+               xeye += zStep * SPEED;
+               zeye -= xStep * SPEED;
+            }else{ 
+               yawAngle -= ANGLE_INCR;
+               xStep = (float)Math.cos(Math.toRadians(yawAngle));
+               zStep = (float)Math.sin(Math.toRadians(yawAngle));
+               System.out.println("yawAngle = "+yawAngle);
             }     
-            } else if (keyCode == KeyEvent.VK_RIGHT) { 
+         } else if (keyCode == KeyEvent.VK_RIGHT) { 
             if (e.isControlDown()) { 
-            xeye -= zStep * SPEED;
-            zeye += xStep * SPEED;
+               xeye -= zStep * SPEED;
+               zeye += xStep * SPEED;
             }else{
-            viewAngle += ANGLE_INCR;
-            xStep = (float)Math.cos( Math.toRadians(viewAngle));
-            zStep = (float)Math.sin( Math.toRadians(viewAngle));
-            System.out.println("viewAngle = "+viewAngle);
+               yawAngle += ANGLE_INCR;
+               xStep = (float)Math.cos(Math.toRadians(yawAngle));
+               zStep = (float)Math.sin(Math.toRadians(yawAngle));
+               System.out.println("yawAngle = "+yawAngle);
             }
-            }else if (keyCode == KeyEvent.VK_UP) { 
+         }else if (keyCode == KeyEvent.VK_UP) { 
             if (e.isControlDown()) { 
-            yeye-=10f;
+               yeye-=10f;
             }else{
                yeye-=1f;
             }
-            } else if (keyCode == KeyEvent.VK_DOWN) { 
-               if (e.isControlDown()) { 
-                  yeye+=10f;
-               }else{
-                  yeye+=1f;
+         } else if (keyCode == KeyEvent.VK_DOWN) { 
+            if (e.isControlDown()) { 
+               yeye+=10f;
+            }else{
+               yeye+=1f;
+            }
+         }else if (keyCode == KeyEvent.VK_ADD) { 
+            if (e.isControlDown()) { 
+               zeye-=10f;
+            }else{
+               zeye-=1f;
+            }
+         } else if (keyCode == KeyEvent.VK_SUBTRACT) { 
+            if (e.isControlDown()) { 
+               zeye+=10f;
+            }else{
+               zeye+=1f;
+            }
+         }
+      }
+      void setView(GL2 _gl, int _width, int _height){
+         final GLU glu = new GLU();
+         glu.gluPerspective(45f, (double) _width / (double) _height , 0f, 1000f);
+         glu.gluLookAt(xeye, yeye, zeye , xat, yat, zat, 0f, 1f, 0f);
+         //_gl.glRotatef(-1*((float)yawAngle+90.0f), 0, 1, 0); //2
+         float[] modelview= new float[16];
+         _gl.glGetFloatv(GL2.GL_MODELVIEW_MATRIX, modelview, 0);
+         controls.setMatrix(modelview);
+         if (false){
+            System.out.println("[");
+            for (int row=0; row<4; row++){
+               System.out.print("{");
+               for (int col=0; col<4; col++){
+                  System.out.printf(" %5.2f ",modelview[row+col*4]);
                }
-            }else if (keyCode == KeyEvent.VK_ADD) { 
-               if (e.isControlDown()) { 
-                  zeye-=10f;
-               }else{
-                  zeye-=1f;
+               System.out.println("}");
+            }
+            System.out.println("]");
+         }
+      }
+   }
+
+
+   Camera camera = new Camera();
+
+   NBodyKernel kernel = new NBodyKernel(Range.create(Integer.getInteger("bodies", 8192)));
+   GLCapabilities caps = new GLCapabilities(null);
+   GLProfile profile = caps.getGLProfile();
+
+   GLEventListener renderer = new GLEventListener(){
+      private int width;
+
+      private int height;
+      private Texture texture;
+
+      @Override public void dispose(GLAutoDrawable drawable) {
+      }
+
+
+      @Override public void display(GLAutoDrawable drawable) {
+
+         final GL2 gl = drawable.getGL().getGL2();
+         texture.enable(gl);
+         texture.bind(gl);
+         gl.glLoadIdentity();
+         gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
+         gl.glColor3f(1f, 1f, 1f);
+         camera.setView(gl, width, height);
+         if (controls.isRunning()) {
+            kernel.execute(kernel.range);
+            if (kernel.isExplicit()) {
+               kernel.get(kernel.xyz);
+            }
+            final List<ProfileInfo> profileInfo = kernel.getProfileInfo();
+            if ((profileInfo != null) && (profileInfo.size() > 0)) {
+               for (final ProfileInfo p : profileInfo) {
+                  System.out.print(" " + p.getType() + " " + p.getLabel() + ((p.getEnd() - p.getStart()) / 1000) + "us");
                }
-            } else if (keyCode == KeyEvent.VK_SUBTRACT) { 
-               if (e.isControlDown()) { 
-                  zeye+=10f;
-               }else{
-                  zeye+=1f;
+               System.out.println();
+            }
+         }
+         kernel.render(gl);
+         gl.glFlush();
+         controls.incFrame();
+
+      }
+
+      @Override public void init(GLAutoDrawable drawable) {
+         final GL2 gl = drawable.getGL().getGL2();
+
+         gl.glShadeModel(GLLightingFunc.GL_SMOOTH);
+         gl.glEnable(GL.GL_BLEND ); 
+         gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE);
+         gl.glEnable(GL.GL_TEXTURE_2D);
+         gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
+         gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST);
+         try {
+            final InputStream textureStream = Main.class.getResourceAsStream("particle.jpg");
+            TextureData data = TextureIO.newTextureData(profile,textureStream, false, "jpg");
+            texture = TextureIO.newTexture(data);
+         } catch (final IOException e) {
+            e.printStackTrace();
+         } catch (final GLException e) {
+            e.printStackTrace();
+         }
+
+      }
+
+      @Override public void reshape(GLAutoDrawable drawable, int x, int y, int _width, int _height) {
+         width = _width;
+         height = _height;
+
+         final GL2 gl = drawable.getGL().getGL2();
+         gl.glViewport(0, 0, width, height);
+      }
+
+   };
+
+   class Controls {
+      private int frames;
+      private long last = System.currentTimeMillis();
+      private boolean running = false;
+      private JPanel controlPanel = new JPanel(new FlowLayout());
+      private JButton startButton = new JButton("Start");
+      private JTextField framesPerSecondTextField = new JTextField("0", 5);
+      private JTextField positionUpdatesPerMicroSecondTextField = new JTextField("0", 5);
+      private JPanel matrix = new JPanel(new GridLayout(4,4));
+      private JLabel[] grid = new JLabel[16];
+      Controls(){
+         for (int i=0; i<16; i++){
+            grid[i] = new JLabel(String.format("%5.2f", (float)i));
+         }
+         matrix.add(grid[0]); matrix.add(grid[4]); matrix.add(grid[8]); matrix.add(grid[12]);
+         matrix.add(grid[1]); matrix.add(grid[5]); matrix.add(grid[9]); matrix.add(grid[13]);
+         matrix.add(grid[2]); matrix.add(grid[6]); matrix.add(grid[10]); matrix.add(grid[14]);
+         matrix.add(grid[3]); matrix.add(grid[7]); matrix.add(grid[11]); matrix.add(grid[15]);
+
+         startButton.addActionListener(new ActionListener() {
+               @Override public void actionPerformed(ActionEvent e) {
+               running = true;
+               startButton.setEnabled(false);
                }
-            }
-            }
-      });
-
-      canvas.addGLEventListener(new GLEventListener() {
-
-            private int frames;
-
-            private long last = System.currentTimeMillis();
-
-            @Override
-            public void dispose(GLAutoDrawable drawable) {
-
-            }
-
-
-            @Override
-            public void display(GLAutoDrawable drawable) {
-
-            final GL2 gl = drawable.getGL().getGL2();
-            texture.enable(gl);
-            texture.bind(gl);
-            gl.glLoadIdentity();
-            gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
-            gl.glColor3f(1f, 1f, 1f);
-
-            final GLU glu = new GLU();
-            glu.gluPerspective(45f, ratio, 0f, 1000f);
-
-            //glu.gluLookAt(xeye, yeye, zeye * zoomFactor , xat, yat, zat, 0f, 1f, 0f);
-            glu.gluLookAt(xeye, yeye, zeye * zoomFactor , xat, yat, zat, 0f, 1f, 0f);
-            //gl.glPushMatrix(); //1
-            gl.glRotatef(-1*((float)viewAngle+90.0f), 0, 1, 0); //2
-            float[] modelview= new float[16];
-            gl.glGetFloatv(GL2.GL_MODELVIEW_MATRIX, modelview, 0);
-            for (int i=0; i<modelview.length; i++){
-                System.out.print(" "+modelview[i]);
-            }
-                System.out.println();
+               });
+         controlPanel.add(matrix);
+         controlPanel.add(startButton);
+         controlPanel.add(new JLabel(kernel.getExecutionMode().toString()));
+         controlPanel.add(new JLabel("   Particles"));
+         controlPanel.add(new JTextField("" + kernel.range.getGlobalSize(0), 5));
+         controlPanel.add(new JLabel("FPS"));
+         controlPanel.add(framesPerSecondTextField);
+         controlPanel.add(new JLabel("Score("));
+         controlPanel.add(new JLabel("<html><small>calcs</small><hr/><small>&micro;sec</small></html>"));
+         controlPanel.add(new JLabel(")"));
+         controlPanel.add(positionUpdatesPerMicroSecondTextField);
+      }
+      JPanel getContainer(){
+         return(controlPanel);
+      }
+      void incFrame(){
+         long now = System.currentTimeMillis();
+         long time = now - last;
+         frames++;
+         if (time > 1000) { // We update the frames/sec every second
             if (running) {
-               kernel.execute(kernel.range);
-               if (kernel.isExplicit()) {
-                  kernel.get(kernel.xyz);
-               }
-               final List<ProfileInfo> profileInfo = kernel.getProfileInfo();
-               if ((profileInfo != null) && (profileInfo.size() > 0)) {
-                  for (final ProfileInfo p : profileInfo) {
-                     System.out.print(" " + p.getType() + " " + p.getLabel() + ((p.getEnd() - p.getStart()) / 1000) + "us");
-                  }
-                  System.out.println();
-               }
+               final float framesPerSecond = (frames * 1000.0f) / time;
+               final int updatesPerMicroSecond = (int) ((framesPerSecond * kernel.range.getGlobalSize(0) * kernel.range
+                        .getGlobalSize(0)) / 1000000);
+               framesPerSecondTextField.setText(String.format("%5.2f", framesPerSecond));
+               positionUpdatesPerMicroSecondTextField.setText(String.format("%4d", updatesPerMicroSecond));
             }
-            kernel.render(gl);
-            //gl.glPopMatrix(); //3
-
-            final long now = System.currentTimeMillis();
-            final long time = now - last;
-            frames++;
-
-            if (time > 1000) { // We update the frames/sec every second
-               if (running) {
-                  final float framesPerSecond = (frames * 1000.0f) / time;
-                  final int updatesPerMicroSecond = (int) ((framesPerSecond * kernel.range.getGlobalSize(0) * kernel.range
-                           .getGlobalSize(0)) / 1000000);
-                  framesPerSecondTextField.setText(String.format("%5.2f", framesPerSecond));
-                  positionUpdatesPerMicroSecondTextField.setText(String.format("%4d", updatesPerMicroSecond));
-               }
-               frames = 0;
-               last = now;
-            }
-            gl.glFlush();
-
-            }
-
-      @Override
-         public void init(GLAutoDrawable drawable) {
-            final GL2 gl = drawable.getGL().getGL2();
-
-            gl.glShadeModel(GLLightingFunc.GL_SMOOTH);
-            gl.glEnable(GL.GL_BLEND ); 
-            gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE);
-
-            gl.glEnable(GL.GL_TEXTURE_2D);
-            gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
-            gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST);
-            try {
-               final InputStream textureStream = Main.class.getResourceAsStream("particle.jpg");
-               TextureData data = TextureIO.newTextureData(profile,textureStream, false, "jpg");
-               texture = TextureIO.newTexture(data);
-            } catch (final IOException e) {
-               e.printStackTrace();
-            } catch (final GLException e) {
-               e.printStackTrace();
-            }
-
+            frames = 0;
+            last = now;
          }
-
-      @Override
-         public void reshape(GLAutoDrawable drawable, int x, int y, int _width, int _height) {
-            width = _width;
-            height = _height;
-
-            final GL2 gl = drawable.getGL().getGL2();
-            gl.glViewport(0, 0, width, height);
-            ratio = (double) width / (double) height;
-
+      }
+      void setMatrix(float[] matrix){
+         for (int i=0; i<16; i++){
+            grid[i].setText(String.format("%5.2f", matrix[i]));
          }
-      });
+      }
 
+      boolean isRunning(){
+         return(running);
+      }
+
+   }
+
+   Controls controls = new Controls();
+
+   public void main() {
+
+      final JFrame frame = new JFrame("NBody");
+      final JPanel panel = new JPanel(new BorderLayout());
+      panel.add(controls.getContainer(), BorderLayout.NORTH);
+
+      caps.setDoubleBuffered(true);
+      caps.setHardwareAccelerated(true);
+
+      final GLCanvas canvas = new GLCanvas(caps);
+      canvas.setPreferredSize(new Dimension(Integer.getInteger("width", 1024 ), Integer.getInteger("height", 1024)));
+      canvas.addKeyListener(camera);
+      canvas.addGLEventListener(renderer);
       panel.add(canvas, BorderLayout.CENTER);
       frame.getContentPane().add(panel, BorderLayout.CENTER);
 
       frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
       frame.pack();
       frame.setVisible(true);
-      initViewerPosition();
       (new FPSAnimator(canvas, 100)).start();
 
    }
