@@ -63,9 +63,11 @@ public class Test {
 
       private float zat = 0f;
 
-      private float phi = (float)-Math.PI;
-      private float theta = (float)-Math.PI;
+      private float phi = 0f;
+      private float theta = 0f;
       private float radius = 30f;
+
+      private float INC = (float) (Math.PI/18); // 5 deg?
 
       float originx = 0f;
       float originy = 0f;
@@ -73,6 +75,9 @@ public class Test {
 
       float cos(float v){
          return((float)Math.cos( v));
+      }
+      float tan(float v){
+         return((float)Math.tan( v));
       }
       float sin(float v){
          return((float)Math.sin( v));
@@ -95,13 +100,13 @@ public class Test {
          if (keyCode == KeyEvent.VK_LEFT) { 
             if (e.isControlDown()) { 
             }else{ 
-               phi -= 0.1f;
+               phi -= INC;
                delta();
             }     
          } else if (keyCode == KeyEvent.VK_RIGHT) { 
             if (e.isControlDown()) { 
             }else{
-               phi += 0.1f;
+               phi += INC;
                delta();
             }
 
@@ -125,22 +130,22 @@ public class Test {
             if (e.isControlDown()) { 
                //yeye-=10f;
             }else{
-               theta -= 0.1f;
+               theta -= INC;
                delta();
             }
          } else if (keyCode == KeyEvent.VK_DOWN) { 
             if (e.isControlDown()) { 
             }else{
-               theta += 0.1f;
+               theta += INC;
                delta();
             }
-         }else if (keyCode == KeyEvent.VK_ADD) { 
+         }else if (keyCode == KeyEvent.VK_ADD || keyCode == '=') { 
             if (e.isControlDown()) { 
             }else{
                radius +=20f;
                delta();
             }
-         } else if (keyCode == KeyEvent.VK_SUBTRACT) { 
+         } else if (keyCode == KeyEvent.VK_SUBTRACT || keyCode == '-') { 
             if (e.isControlDown()) { 
             }else{
                radius-=20f;
@@ -157,6 +162,8 @@ public class Test {
             float[] modelview= new float[16];
             _gl.glGetFloatv(GL2.GL_MODELVIEW_MATRIX, modelview, 0);
             controls.setMatrix(modelview);
+            controls.setTheta(theta);
+            controls.setPhi(phi);
          }
       }
 
@@ -188,6 +195,7 @@ public class Test {
             float[] modelview= new float[16];
             gl.glGetFloatv(GL2.GL_MODELVIEW_MATRIX, modelview, 0);
             gl.glPushMatrix();{
+               if (false){
                //gl.glMatrixMode(GL2.GL_MODELVIEW_MATRIX);
                System.out.println("[");
                for (int row=0; row<4; row++){
@@ -214,7 +222,8 @@ public class Test {
                   }
                   System.out.println("}");
                }
-                   // gl.glLoadMatrixf(modelview, 0);
+                    //gl.glLoadMatrixf(modelview, 0);
+               }
                gl.glBegin(GL2.GL_QUADS);{
                   for (int x = 0; x <3; x++){
                      for (int y = 0; y <3; y++){
@@ -284,9 +293,9 @@ public class Test {
          private long last = System.currentTimeMillis();
          private boolean running = false;
          private JPanel controlPanel = new JPanel(new FlowLayout());
-         private JButton startButton = new JButton("Start");
          private JTextField framesPerSecondTextField = new JTextField("0", 5);
-         private JTextField positionUpdatesPerMicroSecondTextField = new JTextField("0", 5);
+         private JTextField thetaField = new JTextField("0", 5);
+         private JTextField phiField = new JTextField("0", 5);
          private JPanel matrix = new JPanel(new GridLayout(4,4));
          private JLabel[] grid = new JLabel[16];
          Controls(){
@@ -297,14 +306,11 @@ public class Test {
             matrix.add(grid[1]); matrix.add(grid[5]); matrix.add(grid[9]); matrix.add(grid[13]);
             matrix.add(grid[2]); matrix.add(grid[6]); matrix.add(grid[10]); matrix.add(grid[14]);
             matrix.add(grid[3]); matrix.add(grid[7]); matrix.add(grid[11]); matrix.add(grid[15]);
-
-            startButton.addActionListener(new ActionListener() {
-                  @Override public void actionPerformed(ActionEvent e) {
-                  running = true;
-                  startButton.setEnabled(false);
-                  }
-                  });
             controlPanel.add(matrix);
+            controlPanel.add(new JLabel("    theta:"));
+            controlPanel.add(thetaField);
+            controlPanel.add(new JLabel("    phi:"));
+            controlPanel.add(phiField);
          }
          JPanel getContainer(){
             return(controlPanel);
@@ -326,6 +332,13 @@ public class Test {
             for (int i=0; i<16; i++){
                grid[i].setText(String.format("%5.2f", matrix[i]));
             }
+         }
+
+         void setTheta(float _theta){
+            thetaField.setText(String.format("%5.2f", _theta));
+         }
+         void setPhi(float _phi){
+            phiField.setText(String.format("%5.2f", _phi));
          }
 
          boolean isRunning(){
