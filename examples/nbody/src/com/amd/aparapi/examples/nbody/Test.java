@@ -202,7 +202,7 @@ public class Test {
     // |angleCosine| could be bigger than 1 due to lack of precision
     if ((angleCosine < 0.99990) && (angleCosine > -0.9999)){
       gl.glRotatef(acos(angleCosine)*180f/((float)Math.PI),upAux[0], upAux[1], upAux[2]);	
-      System.out.println("rotated1");
+    //  System.out.println("rotated1");
     }
 
     // so far it is just like the cylindrical billboard. The code for the 
@@ -230,11 +230,13 @@ public class Test {
 
     if ((angleCosine < 0.99990) && (angleCosine > -0.9999)){
       if (objToCam[1] < 0){
-        gl.glRotatef(acos(angleCosine)*180f/((float)Math.PI),1,0,0);	
+        gl.glRotatef(acos(angleCosine)*180f/((float)Math.PI),1,0,0);
+       //  System.out.println("rotated2a");
       } else {
-        gl.glRotatef(acos(angleCosine)*180f/((float)Math.PI),-1,0,0);	
+        gl.glRotatef(acos(angleCosine)*180f/((float)Math.PI),-1,0,0);
+        // System.out.println("rotated2b");
       }
-      System.out.println("rotated2");
+
     }
   }
 
@@ -259,10 +261,16 @@ public class Test {
       glu.gluPerspective(45f, (double) width / (double) height , 0f, 1000f);
       glu.gluLookAt(camera.getXeye(), camera.getYeye(), camera.getZeye() , camera.getXat(), camera.getYat(), camera.getZat(), 0f, 1f, 0f);
       float[] modelview= new float[16];
-      gl.glGetFloatv(GL2.GL_MODELVIEW_MATRIX, modelview, 0);
+       gl.glGetFloatv(GL2.GL_MODELVIEW_MATRIX, modelview, 0);
+       float camX = -(modelview[0] * modelview[12] + modelview[1] * modelview[13] + modelview[2] * modelview[14]);
+       float camY = -(modelview[4] * modelview[12] + modelview[5] * modelview[13] + modelview[6] * modelview[14]);
+       float camZ = -(modelview[8] * modelview[12] + modelview[9] * modelview[13] + modelview[10] * modelview[14]);
+      // System.out.println("cam x,y,z = "+camX+", "+camY+", "+camZ);
+
       controls.setMatrix(modelview);
       controls.setTheta(camera.getTheta());
       controls.setPhi(camera.getPhi());
+      controls.setCam(camX, camY, camZ);
 
 
       gl.glPushMatrix();{
@@ -307,17 +315,15 @@ public class Test {
                 //float camX =modelview[12];
                 //float camY =modelview[13];
                 //float camZ =modelview[14];
-                float camX = -(modelview[0] * modelview[12] + modelview[1] * modelview[13] + modelview[2] * modelview[14]);
-                float camY = -(modelview[4] * modelview[12] + modelview[5] * modelview[13] + modelview[6] * modelview[14]);
-                float camZ = -(modelview[8] * modelview[12] + modelview[9] * modelview[13] + modelview[10] * modelview[14]);
+
                 //float camX =camera.getXeye();
                 //float camY =camera.getYeye();
                 //float camZ =camera.getZeye();
 
-                System.out.println("cam x,y,z = "+camX+", "+camY+", "+camZ);
+
                 billboardBegin(gl, camX, camY, camZ, xcenter, ycenter, zcenter) ;
 
-                if (true){
+                if (false){
                   if (true){
 
                     gl.glTexCoord2f(0, 0); gl.glVertex3f(xcenter-10,ycenter-10,  zcenter);
@@ -388,6 +394,7 @@ public class Test {
     private JTextField framesPerSecondTextField = new JTextField("0", 5);
     private JTextField thetaField = new JTextField("0", 5);
     private JTextField phiField = new JTextField("0", 5);
+     private JTextField camField = new JTextField("0,0,0", 20);
     private JPanel matrix = new JPanel(new GridLayout(4,4));
     private JLabel[] grid = new JLabel[16];
     Controls(){
@@ -402,7 +409,9 @@ public class Test {
       controlPanel.add(new JLabel("    theta:"));
       controlPanel.add(thetaField);
       controlPanel.add(new JLabel("    phi:"));
-      controlPanel.add(phiField);
+       controlPanel.add(phiField);
+       controlPanel.add(new JLabel("    cam:"));
+       controlPanel.add(camField);
     }
     JPanel getContainer(){
       return(controlPanel);
@@ -437,6 +446,9 @@ public class Test {
       return(running);
     }
 
+     public void setCam(float camX, float camY, float camZ){
+        camField.setText(String.format("%5.2f, %5.2f, %5.2f", camX, camY, camZ));
+     }
   }
 
   Controls controls = new Controls();
