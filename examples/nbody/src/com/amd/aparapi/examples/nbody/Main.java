@@ -79,10 +79,10 @@ import com.jogamp.opengl.util.texture.TextureIO;
  * 
  * For a description of the NBody problem.
  * 
- * @see http://en.wikipedia.org/wiki/N-body_problem
+ * http://en.wikipedia.org/wiki/N-body_problem
  * 
  *      We use JOGL to render the bodies.
- * @see http://jogamp.org/jogl/www/
+ * http://jogamp.org/jogl/www/
  * 
  * @author gfrost
  * 
@@ -105,11 +105,10 @@ public class Main {
       /**
        * Constructor initializes xyz and vxyz arrays.
        * 
-       * @param _bodies
+       * @param _range
        */
       public NBodyKernel(Range _range) {
          range = _range;
-         // range = Range.create(bodies);
          xyz = new float[range.getGlobalSize(0) * 3];
          vxyz = new float[range.getGlobalSize(0) * 3];
          final float maxDist = 20f;
@@ -126,11 +125,11 @@ public class Main {
 
             // divide into two 'spheres of bodies' by adjusting x
 
-            //if ((body % 2) == 0) {
-            //   xyz[body + 0] += maxDist * 1.5;
-           // } else {
-          //     xyz[body + 0] -= maxDist * 1.5;
-          ////  }
+            if ((body % 2) == 0) {
+               xyz[body + 0] += maxDist * 1.5;
+            } else {
+               xyz[body + 0] -= maxDist * 1.5;
+            }
          }
          setExplicit(true);
       }
@@ -186,202 +185,31 @@ public class Main {
          gl.glBegin(GL2.GL_QUADS);
 
          for (int i = 0; i < (range.getGlobalSize(0) * 3); i += 3) {
-            float x = xyz[i + 0];
-            float y = xyz[i + 1];
-            float z = xyz[i + 2];
-            gl.glTexCoord2f(0, 1); gl.glVertex3f(x, y + 1, z);
-            gl.glTexCoord2f(0, 0); gl.glVertex3f(x,y,z);
-            gl.glTexCoord2f(1, 0); gl.glVertex3f(x + 1, y, z);
-            gl.glTexCoord2f(1, 1); gl.glVertex3f(x + 1, y + 1, z);
+            float x = xyz[i + 0]-.5f;
+            float y = xyz[i + 1]-.5f;
+            float z = xyz[i + 2]-.5f;
+            gl.glTexCoord2f(0, 1); gl.glVertex3f(x - .5f, y + .5f, z + .0f);
+            gl.glTexCoord2f(0, 0); gl.glVertex3f(x - .5f, y - .5f, z + .0f);
+            gl.glTexCoord2f(1, 0); gl.glVertex3f(x + .5f, y - .5f, z + .0f);
+            gl.glTexCoord2f(1, 1); gl.glVertex3f(x + .5f, y + .5f, z + .0f);
+
+            gl.glTexCoord2f(0, 1); gl.glVertex3f(x + .0f, y + .5f, z - .5f);
+            gl.glTexCoord2f(0, 0); gl.glVertex3f(x + .0f, y - .5f, z - .5f);
+            gl.glTexCoord2f(1, 0); gl.glVertex3f(x + .0f, y - .5f, z + .5f);
+            gl.glTexCoord2f(1, 1); gl.glVertex3f(x + .0f, y + .5f, z + .5f);
+
+            gl.glTexCoord2f(0, 1); gl.glVertex3f(x - .5f, y + .0f, z + .5f);
+            gl.glTexCoord2f(0, 0); gl.glVertex3f(x - .5f, y + .0f, z - .5f);
+            gl.glTexCoord2f(1, 0); gl.glVertex3f(x + .5f, y + .0f, z - .5f);
+            gl.glTexCoord2f(1, 1); gl.glVertex3f(x + .5f, y + .0f, z + .5f);
+
          }
          gl.glEnd();
       }
 
    }
 
-
-   public class Camera extends KeyAdapter{
-
-      private float xLookAt, yLookAt, zLookAt;
-      private float xStep, yStep, zStep;
-
-      private float xeye = 0f;
-
-      private float yeye = 0f;
-
-      private float zeye = 100f;
-
-      private float xat = 0f;
-
-      private float yat = 0f;
-
-      private float zat = 0f;
-
-      private float pitchAngle = -90f;
-
-      private float yawAngle = -90f;
-
-      private final static float LOOK_AT_DIST = 30.0f;
-
-      private final static float SPEED = 0.2f; // for camera movement
-      private final static float ANGLE_INCR = 2.0f; // degrees
-      private final static float HEIGHT_STEP = 1.0f;
-      Camera(){
-         xeye = 0f; yeye = 0f; zeye = LOOK_AT_DIST; // camera posn
-         yawAngle = -90.0f; // along -z axis
-         xStep = (float)Math.cos( Math.toRadians(yawAngle)); // step distances
-         zStep = (float)Math.sin( Math.toRadians(yawAngle));
-         yStep = (float)Math.sin( Math.toRadians(pitchAngle));
-         xLookAt = xeye + (LOOK_AT_DIST * xStep); // look-at posn
-         xLookAt = yeye + (LOOK_AT_DIST * yStep); // look-at posn
-         zLookAt = zeye + (LOOK_AT_DIST * zStep);
-      }
-
-      @Override public void keyPressed(KeyEvent e){
-         int keyCode = e.getKeyCode();
-         if (keyCode == KeyEvent.VK_LEFT) { 
-            if (e.isControlDown()) { 
-               xeye += zStep * SPEED;
-               zeye -= xStep * SPEED;
-            }else{ 
-               yawAngle -= ANGLE_INCR;
-               xStep = (float)Math.cos(Math.toRadians(yawAngle));
-               zStep = (float)Math.sin(Math.toRadians(yawAngle));
-               System.out.println("yawAngle = "+yawAngle);
-            }     
-         } else if (keyCode == KeyEvent.VK_RIGHT) { 
-            if (e.isControlDown()) { 
-               xeye -= zStep * SPEED;
-               zeye += xStep * SPEED;
-            }else{
-               yawAngle += ANGLE_INCR;
-               xStep = (float)Math.cos(Math.toRadians(yawAngle));
-               zStep = (float)Math.sin(Math.toRadians(yawAngle));
-               System.out.println("yawAngle = "+yawAngle);
-            }
-         }else if (keyCode == KeyEvent.VK_UP) { 
-            if (e.isControlDown()) { 
-               yeye-=10f;
-            }else{
-               yeye-=1f;
-            }
-         } else if (keyCode == KeyEvent.VK_DOWN) { 
-            if (e.isControlDown()) { 
-               yeye+=10f;
-            }else{
-               yeye+=1f;
-            }
-         }else if (keyCode == KeyEvent.VK_ADD) { 
-            if (e.isControlDown()) { 
-               zeye-=10f;
-            }else{
-               zeye-=1f;
-            }
-         } else if (keyCode == KeyEvent.VK_SUBTRACT) { 
-            if (e.isControlDown()) { 
-               zeye+=10f;
-            }else{
-               zeye+=1f;
-            }
-         }
-      }
-      void setView(GL2 _gl, int _width, int _height){
-         final GLU glu = new GLU();
-         glu.gluPerspective(45f, (double) _width / (double) _height , 0f, 1000f);
-         glu.gluLookAt(xeye, yeye, zeye , xat, yat, zat, 0f, 1f, 0f);
-         //_gl.glRotatef(-1*((float)yawAngle+90.0f), 0, 1, 0); //2
-         float[] modelview= new float[16];
-         _gl.glGetFloatv(GL2.GL_MODELVIEW_MATRIX, modelview, 0);
-         controls.setMatrix(modelview);
-         if (false){
-            System.out.println("[");
-            for (int row=0; row<4; row++){
-               System.out.print("{");
-               for (int col=0; col<4; col++){
-                  System.out.printf(" %5.2f ",modelview[row+col*4]);
-               }
-               System.out.println("}");
-            }
-            System.out.println("]");
-         }
-      }
-   }
-
-
-   Camera camera = new Camera();
-
    NBodyKernel kernel = new NBodyKernel(Range.create(Integer.getInteger("bodies", 8192)));
-   GLCapabilities caps = new GLCapabilities(null);
-   GLProfile profile = caps.getGLProfile();
-
-   GLEventListener renderer = new GLEventListener(){
-      private int width;
-
-      private int height;
-      private Texture texture;
-
-      @Override public void dispose(GLAutoDrawable drawable) {
-      }
-
-
-      @Override public void display(GLAutoDrawable drawable) {
-
-         final GL2 gl = drawable.getGL().getGL2();
-         texture.enable(gl);
-         texture.bind(gl);
-         gl.glLoadIdentity();
-         gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
-         gl.glColor3f(1f, 1f, 1f);
-         camera.setView(gl, width, height);
-         if (controls.isRunning()) {
-            kernel.execute(kernel.range);
-            if (kernel.isExplicit()) {
-               kernel.get(kernel.xyz);
-            }
-            final List<ProfileInfo> profileInfo = kernel.getProfileInfo();
-            if ((profileInfo != null) && (profileInfo.size() > 0)) {
-               for (final ProfileInfo p : profileInfo) {
-                  System.out.print(" " + p.getType() + " " + p.getLabel() + ((p.getEnd() - p.getStart()) / 1000) + "us");
-               }
-               System.out.println();
-            }
-         }
-         kernel.render(gl);
-         gl.glFlush();
-         controls.incFrame();
-
-      }
-
-      @Override public void init(GLAutoDrawable drawable) {
-         final GL2 gl = drawable.getGL().getGL2();
-
-         gl.glShadeModel(GLLightingFunc.GL_SMOOTH);
-         gl.glEnable(GL.GL_BLEND ); 
-         gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE);
-         gl.glEnable(GL.GL_TEXTURE_2D);
-         gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
-         gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST);
-         try {
-            final InputStream textureStream = Main.class.getResourceAsStream("particle.jpg");
-            TextureData data = TextureIO.newTextureData(profile,textureStream, false, "jpg");
-            texture = TextureIO.newTexture(data);
-         } catch (final IOException e) {
-            e.printStackTrace();
-         } catch (final GLException e) {
-            e.printStackTrace();
-         }
-
-      }
-
-      @Override public void reshape(GLAutoDrawable drawable, int x, int y, int _width, int _height) {
-         width = _width;
-         height = _height;
-
-         final GL2 gl = drawable.getGL().getGL2();
-         gl.glViewport(0, 0, width, height);
-      }
-
-   };
 
    class Controls {
       private int frames;
@@ -448,31 +276,46 @@ public class Main {
       boolean isRunning(){
          return(running);
       }
-
    }
 
-   Controls controls = new Controls();
-
    public void main() {
-
       final JFrame frame = new JFrame("NBody");
       final JPanel panel = new JPanel(new BorderLayout());
+      Controls controls = new Controls();
       panel.add(controls.getContainer(), BorderLayout.NORTH);
-
-      caps.setDoubleBuffered(true);
-      caps.setHardwareAccelerated(true);
-
-      final GLCanvas canvas = new GLCanvas(caps);
-      canvas.setPreferredSize(new Dimension(Integer.getInteger("width", 1024 ), Integer.getInteger("height", 1024)));
-      canvas.addKeyListener(camera);
-      canvas.addGLEventListener(renderer);
-      panel.add(canvas, BorderLayout.CENTER);
+      Camera camera = new Camera();
+      Universe universe = new Universe(camera, Integer.getInteger("width", 1024 ), Integer.getInteger("height", 1024)){
+         Texture texture;
+         public  void render(GL2 gl){
+            texture.enable(gl);
+            texture.bind(gl);
+            if (controls.isRunning()) {
+               kernel.execute(kernel.range);
+               kernel.get(kernel.xyz);
+               float[] modelview = new float[16];
+               gl.glGetFloatv(GL2.GL_MODELVIEW_MATRIX, modelview, 0);
+               controls.setMatrix(modelview);
+               final List<ProfileInfo> profileInfo = kernel.getProfileInfo();
+               if ((profileInfo != null) && (profileInfo.size() > 0)) {
+                  for (final ProfileInfo p : profileInfo) {
+                     System.out.print(" " + p.getType() + " " + p.getLabel() + ((p.getEnd() - p.getStart()) / 1000) + "us");
+                  }
+                  System.out.println();
+               }
+            }
+            kernel.render(gl);
+            controls.incFrame();
+         }
+         public  void setup(GL2 gl){
+            texture = getTexture("particle", "jpg");
+         }
+      }  ;
+      panel.add(universe.getCanvas(), BorderLayout.CENTER);
       frame.getContentPane().add(panel, BorderLayout.CENTER);
-
       frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
       frame.pack();
       frame.setVisible(true);
-      (new FPSAnimator(canvas, 100)).start();
+      (new FPSAnimator(universe.getCanvas(), 100)).start();
 
    }
    public static void main(String[] args) {
