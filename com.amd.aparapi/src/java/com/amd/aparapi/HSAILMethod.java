@@ -12,14 +12,14 @@ import java.util.*;
  */
 public class HSAILMethod {
 
-    public static abstract class Call<T extends Call> {
+    public static abstract class CallType<T extends CallType> {
         private String mappedMethod; // i.e  java.lang.Math.sqrt(D)D
 
         String getMappedMethod() {
             return (mappedMethod);
         }
 
-        Call(String _mappedMethod) {
+        CallType(String _mappedMethod) {
             mappedMethod = _mappedMethod;
         }
 
@@ -29,7 +29,7 @@ public class HSAILMethod {
     }
 
 
-    public static class IntrinsicCall extends Call<IntrinsicCall> {
+    public static class IntrinsicCall extends CallType<IntrinsicCall> {
         String[] lines;
         boolean isStatic;
 
@@ -56,7 +56,7 @@ public class HSAILMethod {
         }
     }
 
-    public static class MethodCall extends Call<MethodCall> {
+    public static class MethodCall extends CallType<MethodCall> {
         HSAILMethod method;
 
         MethodCall(String _mappedMethod, HSAILMethod _method) {
@@ -302,9 +302,9 @@ public class HSAILMethod {
         }
     }
 
-    private Set<Call> calls = null;
+    private Set<CallType> calls = null;
 
-    public void add(Call call) {
+    public void add(CallType call) {
         getEntryPoint().calls.add(call);
     }
 
@@ -323,7 +323,7 @@ public class HSAILMethod {
         String name;
 
 
-        Call call;
+        CallType call;
 
         call(Instruction _from) {
             super(_from, 0, 0);
@@ -1038,11 +1038,11 @@ public class HSAILMethod {
         //r.append("version 1:0:large;").nl();
         r.append("version 0:95: $full : $large;\n");
 
-        for (Call c : calls) {
+        for (CallType c : calls) {
             c.render(r, false);
         }
 
-        for (Call c : calls) {
+        for (CallType c : calls) {
             c.render(r, true);
         }
         // r.append("kernel &" + method.getName() + "(");
@@ -1166,7 +1166,7 @@ public class HSAILMethod {
     private HSAILMethod(ClassModel.ClassModelMethod _method, HSAILMethod _entryPoint) {
         entryPoint = _entryPoint;
         if (entryPoint == null) {
-            calls = new HashSet<Call>();
+            calls = new HashSet<CallType>();
         }
         if (UnsafeWrapper.addressSize() == 4) {
             throw new IllegalStateException("Object pointer size is 4, you need to use 64 bit JVM and set -XX:-UseCompressedOops!");
