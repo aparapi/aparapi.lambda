@@ -11,10 +11,16 @@ public class OkraKernel{
    public OkraKernel(OkraContext context, String _hsail, String _s){
    }
 
-   public void setLaunchAttributes(int launchAttributes){
+   public int setLaunchAttributes(int launchAttributes){
+	   return(0);
+   }
+   public int setLaunchAttributes(int launchAttributes, int junk){
+	   return(0);
+
 
    }
 
-   public void dispatchWithArgs(Object ...args){
+   public int dispatchWithArgs(Object ...args){
+	   return(0);
    }
 }

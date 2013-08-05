@@ -15,7 +15,7 @@ public class OkraRunner{
    public void run(String _hsail, int _size, Object... args){
       OkraContext context = new OkraContext();
       OkraKernel k = new OkraKernel(context, _hsail, "&run");
-      k.setLaunchAttributes(_size);
+      k.setLaunchAttributes(_size, 0);
       k.dispatchWithArgs(args);
 
 
