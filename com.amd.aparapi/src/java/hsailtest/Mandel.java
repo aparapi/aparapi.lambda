@@ -120,12 +120,18 @@ public class Mandel {
 
 
 
-   void getNextImage(Device device, float x_offset, float y_offset, float scale){
+   void getNextImage(Device device, final float x_offset, final float y_offset, final float scale){
+      final int w = width;
+      final int h = height;
+      final  int[] rgb = this.rgb;
+      final int[] pallette = this.pallette;
 
-      device.forEach(width * height, gid -> {
+
+       device.forEach(width * height, gid -> {
          /** Translate the gid into an x an y value. */
-         float lx = (((gid % width * scale) - ((scale / 2) * width)) / width) + x_offset;
-         float ly = (((gid / width * scale) - ((scale / 2) * height)) / height) + y_offset;
+
+         float lx = ((((gid % w) * scale) - ((scale / 2) * w)) / w) + x_offset;
+         float ly = (((gid / w * scale) - ((scale / 2) * h)) / h) + y_offset;
           int count = 0;
           float zx = lx;
           float zy = ly;
@@ -140,7 +146,7 @@ public class Mandel {
           }
 
 
-         rgb[gid] = pallette[count];
+        rgb[gid] = pallette[count];
       });
    }
 

@@ -1,0 +1,2 @@
+rem java -XX:-UseCompressedOops -agentpath:com.amd.aparapi.jni\dist\aparapi_x86_64.dll -Djava.library.path=%OKRA_HOME%\dist\bin;%OKRA_HOME%\hsa\bin\x86_64 -classpath com.amd.aparapi\dist\aparapi.jar;mockra\mockra.jar %1
+java -XX:-UseCompressedOops -agentpath:com.amd.aparapi.jni\dist\aparapi_x86_64.dll -Djava.library.path=%OKRA_HOME%\dist\bin;%OKRA_HOME%\hsa\bin\x86_64 -classpath com.amd.aparapi\dist\aparapi.jar;%OKRA_HOME%\dist\okra.jar %1
