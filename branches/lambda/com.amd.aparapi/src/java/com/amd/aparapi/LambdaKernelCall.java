@@ -1,6 +1,7 @@
 package com.amd.aparapi;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Type;
 import java.util.Set;
 import java.util.function.IntConsumer;
 import java.util.logging.Level;
@@ -176,13 +177,21 @@ public class LambdaKernelCall{
    Object unsafeGetFieldRefFromObject(Object sourceObj, String fieldName){
       // Get ref to java.util.stream.AbstractPipeline.source
       Object fieldRef = null;
-      for(Field f : sourceObj.getClass().getDeclaredFields()){
-         if(f.getName().equals(fieldName)){
-            long offset = UnsafeWrapper.objectFieldOffset(f);
-            fieldRef = UnsafeWrapper.getObject(sourceObj, offset);
-            break;
-         }
-      }
+       Field f = null;
+       try {
+           f = sourceObj.getClass().getDeclaredField(fieldName);
+           Type t = f.getType();
+           if (t.equals(float.class)){
+               System.out.println("is float");
+               // fieldRef = (float)f.getFloat(sourceObj);
+           }
+
+           long offset = UnsafeWrapper.objectFieldOffset(f);
+           fieldRef = UnsafeWrapper.getObject(sourceObj, offset);
+       } catch (NoSuchFieldException e) {
+           e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+       }
+
       return fieldRef;
    }
 
