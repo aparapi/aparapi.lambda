@@ -1,20 +1,12 @@
-package lambdatest;
+package hsailtest;
 
 import com.amd.aparapi.Device;
-import com.amd.aparapi.Kernel;
-import com.amd.aparapi.TypeHelper;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.WindowConstants;
+import javax.swing.*;
+import java.awt.*;
 
 
-public class NBodyGraphics2D{
+public class NBodyGraphics2D {
    static int frame = 0;
 
    public static void main(String[] _args){
@@ -64,7 +56,7 @@ public class NBodyGraphics2D{
       jframe.getContentPane().add(viewer);
       jframe.pack();
       jframe.setVisible(true);
-      Device device = Device.best();
+      Device device = Device.hsa();
 
 
       jframe.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
