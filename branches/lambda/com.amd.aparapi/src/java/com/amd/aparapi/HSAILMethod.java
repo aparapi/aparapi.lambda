@@ -2,6 +2,8 @@ package com.amd.aparapi;
 
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created with IntelliJ IDEA.
@@ -56,6 +58,49 @@ public class HSAILMethod {
         }
     }
 
+    public static class InlineIntrinsicCall extends IntrinsicCall {
+
+        int base;
+
+        InlineIntrinsicCall(String _mappedMethod, boolean _isStatic,  String... _lines) {
+            super(_mappedMethod, _isStatic, _lines);
+        }
+
+        InlineIntrinsicCall(InlineIntrinsicCall template, int _base) {
+            super(template.getMappedMethod(), template.isStatic, template.lines);
+
+            base = _base;
+
+        }
+
+        final Pattern regex= Pattern.compile("\\$\\{([0-9]+)\\}");
+        String expand(String line, int base){
+            StringBuffer sb= new StringBuffer();
+           Matcher matcher = regex.matcher(line);
+
+            while (matcher.find()) {
+                matcher.appendReplacement(sb, String.valueOf(Integer.parseInt(matcher.group(1))+base));
+            }
+
+            return(sb.toString());
+        }
+
+        @Override
+        InlineIntrinsicCall render(HSAILRenderer r, boolean _body) {
+            for (String line : lines) {
+                String expandedLine = expand(line, base);
+
+                r.append(expandedLine).nl();
+            }
+            return this;
+        }
+
+        @Override
+        boolean isStatic() {
+            return (isStatic);
+        }
+    }
+
     public static class MethodCall extends CallType<MethodCall> {
         HSAILMethod method;
 
@@ -66,6 +111,7 @@ public class HSAILMethod {
 
         @Override
         MethodCall render(HSAILRenderer r, boolean _body) {
+
             method.renderFunction(r, _body);
             r.nl();
             return (this);
@@ -85,13 +131,16 @@ public class HSAILMethod {
     }
 
     {
-        add(new IntrinsicCall("java.lang.Math.sqrt(D)D", true,
-                "function &sqrt (arg_f64 %_result) (arg_f64 %_val) {",
-                "ld_arg_f64  $d0, [%_val];",
-                "nsqrt_f64  $d0, $d0;",
-                "st_arg_f64  $d0, [%_result];",
-                "ret;",
-                "};"));
+       // add(new IntrinsicCall("java.lang.Math.sqrt(D)D", true,
+              //  "function &sqrt (arg_f64 %_result) (arg_f64 %_val) {",
+             //   "ld_arg_f64  $d0, [%_val];",
+              //  "nsqrt_f64  $d0, $d0;",
+              //  "st_arg_f64  $d0, [%_result];",
+               // "ret;",
+               // "};"));
+        add(new InlineIntrinsicCall("java.lang.Math.sqrt(D)D", true,
+                "nsqrt_f64  $d${0}, $d${0};"
+              ));
         add(new IntrinsicCall("java.lang.Math.hypot(DD)D", true,
                 "function &hypot (arg_f64 %_result) (arg_f64 %_val1, arg_f64 %_val2) {",
                 "ld_arg_f64  $d0, [%_val1];",
@@ -336,6 +385,9 @@ public class HSAILMethod {
             for (IntrinsicCall ic : intrinsicMap.values()) {
                 if (ic.getMappedMethod().equals(intrinsicLookup)) {
                     call = ic;
+                    if (call instanceof InlineIntrinsicCall){
+                        call = new InlineIntrinsicCall((InlineIntrinsicCall)call, base);
+                    }
                     break;
                 }
             }
@@ -352,12 +404,20 @@ public class HSAILMethod {
                     e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                 }
             }
-            add(call);
+           // if (call instanceof InlineIntrinsicCall){
+              //  ((InlineIntrinsicCall)call).
+           // }else{
+                add(call);
+            //}//
+
         }
 
 
         @Override
         void render(HSAILRenderer r) {
+            if (call instanceof InlineIntrinsicCall){
+                call.render(r, false);
+            }else{
 
             TypeHelper.JavaMethodArgsAndReturnType argsAndReturnType = from.asMethodCall().getConstantPoolMethodEntry().getArgsAndReturnType();
             TypeHelper.JavaType returnType = argsAndReturnType.getReturnType();
@@ -434,6 +494,7 @@ public class HSAILMethod {
 
 
             r.pad(9).append("}//");
+            }
         }
 
 
@@ -1039,11 +1100,15 @@ public class HSAILMethod {
         r.append("version 0:95: $full : $large;\n");
 
         for (CallType c : calls) {
-            c.render(r, false);
+            if (!(c instanceof InlineIntrinsicCall)){
+               c.render(r, false);
+            }
         }
 
         for (CallType c : calls) {
-            c.render(r, true);
+            if (!(c instanceof InlineIntrinsicCall)){
+               c.render(r, true);
+            }
         }
         // r.append("kernel &" + method.getName() + "(");
         r.append("kernel &run(");
