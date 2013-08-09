@@ -22,7 +22,7 @@ public class NBodyGraphics2D{
       final int height = 768;
       final int width = 768;
       final int depth = 768;
-      final int bodies = 512;
+      final int bodies = 512*2*2;
       final float delT = .005f;
       final float espSqr = 1.0f;
       final float mass = 5f;
@@ -53,7 +53,7 @@ public class NBodyGraphics2D{
                for(int body = 0; body < bodies * 3; body += 3){
                   float x = xyz[body];
                   float y = xyz[body + 1];
-                  g.fillOval((int) x, (int) y, (int) 10, (int) 10);
+                  g.fillOval((int) x, (int) y, (int) 2, (int) 2);
                }
                g.setColor(Color.WHITE);
                g.drawString("" + frame, 100, 100);
@@ -64,7 +64,7 @@ public class NBodyGraphics2D{
       jframe.getContentPane().add(viewer);
       jframe.pack();
       jframe.setVisible(true);
-      Device device = Device.best();
+      Device device = Device.hsa();
 
 
       jframe.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
