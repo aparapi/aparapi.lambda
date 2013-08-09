@@ -12,13 +12,15 @@ import java.util.function.IntConsumer;
  * To change this template use File | Settings | File Templates.
  */
 public class OkraRunner{
-   public void run(String _hsail, int _size, Object... args){
-      OkraContext context = new OkraContext();
-      OkraKernel k = new OkraKernel(context, _hsail, "&run");
+    OkraContext context;
+    OkraKernel k;
+    OkraRunner(String _hsail){
+        context = new OkraContext();
+        k = new OkraKernel(context, _hsail, "&run");
+    }
+   public void run(int _size, Object... args){
       k.setLaunchAttributes(_size, 0);
       k.dispatchWithArgs(args);
-
-
    }
 
 
