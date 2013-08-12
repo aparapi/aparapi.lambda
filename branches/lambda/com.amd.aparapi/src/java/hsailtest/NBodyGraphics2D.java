@@ -4,24 +4,33 @@ import com.amd.aparapi.Device;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
+import java.util.Arrays;
 
 
 public class NBodyGraphics2D {
    static int frame = 0;
 
+    static final int width = Integer.getInteger("width", 768);
+
+    static final int height =  Integer.getInteger("height", 768);
+    static final BufferedImage offscreen = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+    static final int[] rgb = ((DataBufferInt) offscreen.getRaster().getDataBuffer()).getData();
+
+
    public static void main(String[] _args){
       JFrame jframe = new JFrame("NBody");
-      final int height = 768;
-      final int width = 768;
-      final int depth = 768;
-      final int bodies = 512*2*2;
+
+      final int bodies = 2048;
       final float delT = .005f;
       final float espSqr = 1.0f;
-      final float mass = 5f;
+      final float mass = 20f;
 
       final float[] xyz = new float[bodies * 3]; // positions xy and z of bodies
       final float[] vxyz = new float[bodies * 3]; // velocity component of x,y and z of bodies
 
+     if (false){
       final float maxDist = width / 4;
       for(int body = 0; body < (bodies * 3); body += 3){
          final float theta = (float) (Math.random() * Math.PI * 2);
@@ -31,36 +40,43 @@ public class NBodyGraphics2D {
          xyz[body + 1] = (float) (radius * Math.sin(theta) * Math.sin(phi)) + height / 2;
          xyz[body + 2] = (float) (radius * Math.cos(phi));
       }
+     }  else{
+      int side = (int)Math.sqrt(bodies)+1;
+      int spread = width/side;
+      System.out.println("side "+side);
+       System.out.println("spread "+spread);
 
+       int x=0;
+       int y=0;
+       for (int body = 0; body < bodies; body++){
+           x += spread;
+           if (x>width){
+               x = 0;
+               y+=spread;
+           }
+
+           xyz[body*3 + 0]=x;
+           xyz[body*3 + 1]=y;
+           xyz[body*3 + 2]=0;
+       }
+       }
 
       JComponent viewer = new JComponent(){
-         @Override
-         public void paintComponent(Graphics _g){
-            if(frame > 0){
-               Graphics2D g = (Graphics2D) _g;
-               g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-               g.setColor(Color.BLACK);
-               g.fillRect(0, 0, width, height);
-               g.setColor(Color.WHITE);
-               for(int body = 0; body < bodies * 3; body += 3){
-                  float x = xyz[body];
-                  float y = xyz[body + 1];
-                  g.fillOval((int) x, (int) y, (int) 2, (int) 2);
-               }
-               g.setColor(Color.WHITE);
-               g.drawString("" + frame, 100, 100);
-            }
-         }
       };
+
       viewer.setPreferredSize(new Dimension(width, height));
       jframe.getContentPane().add(viewer);
       jframe.pack();
       jframe.setVisible(true);
-      Device device = Device.hsa();
+      Device device = Device.best();
 
 
       jframe.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
       for(frame = 0; frame < 10000; frame++){
+          int[] rgbCopy = rgb;
+          Arrays.fill(rgbCopy, 0);
+          int w = width;
+          int h = height;
          device.forEach(bodies, gid -> {
             final int count = bodies * 3;
             final int globalId = gid * 3;
@@ -86,9 +102,20 @@ public class NBodyGraphics2D {
             vxyz[globalId + 0] = vxyz[globalId + 0] + accx;
             vxyz[globalId + 1] = vxyz[globalId + 1] + accy;
             vxyz[globalId + 2] = vxyz[globalId + 2] + accz;
+             int x =  (int)xyz[globalId + 0];
+             int y =  (int)xyz[globalId + 1];
+             if (x<w-1 && y<h-1 && x>0 && y>0){
+                 rgbCopy[x+y*w]=0xffffff;
+                 rgbCopy[x+1+y*w]=0xffffff;
+                 rgbCopy[x-1+y*w]=0xffffff;
+                 rgbCopy[x+(y+1)*w]=0xffffff;
+                 rgbCopy[x+(y-1)*w]=0xffffff;
+             }
+
 
          });
-         viewer.repaint();
+
+          viewer.getGraphics().drawImage(offscreen, 0, 0, null);
       }
    }
 
