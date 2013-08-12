@@ -13,7 +13,6 @@ public class NBodyGraphics2D {
    static int frame = 0;
 
     static final int width = Integer.getInteger("width", 768);
-
     static final int height =  Integer.getInteger("height", 768);
     static final BufferedImage offscreen = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
     static final int[] rgb = ((DataBufferInt) offscreen.getRaster().getDataBuffer()).getData();
@@ -22,7 +21,7 @@ public class NBodyGraphics2D {
    public static void main(String[] _args){
       JFrame jframe = new JFrame("NBody");
 
-      final int bodies = 2048;
+      final int bodies = Integer.getInteger("bodies", 2048);
       final float delT = .005f;
       final float espSqr = 1.0f;
       final float mass = 20f;
@@ -68,7 +67,7 @@ public class NBodyGraphics2D {
       jframe.getContentPane().add(viewer);
       jframe.pack();
       jframe.setVisible(true);
-      Device device = Device.best();
+      Device device = Device.hsa();
 
 
       jframe.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);

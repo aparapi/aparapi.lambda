@@ -1517,7 +1517,8 @@ public class HSAILMethod {
                     add(new nyi(i));
                     break;
                 case DUP:
-                    add(new nyi(i));
+                   // add(new nyi(i));
+                    addmov(i, 0, 1);
                     break;
                 case DUP_X1:
                     add(new nyi(i));
