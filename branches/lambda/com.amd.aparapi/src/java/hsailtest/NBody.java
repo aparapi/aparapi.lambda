@@ -28,7 +28,7 @@ public class NBody{
    public static void main(String[] _args){
       JFrame jframe = new JFrame("NBody");
 
-      final Body[] bodies = new Body[512];
+      final Body[] bodies = new Body[Integer.getInteger("bodies", 512)];
 
       final float delT = .005f;
       final float espSqr = 1.0f;
@@ -76,7 +76,7 @@ public class NBody{
       jframe.getContentPane().add(viewer);
       jframe.pack();
       jframe.setVisible(true);
-      Device device = Device.jtp();
+      Device device = Device.hsa();
 
 
       jframe.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -113,15 +113,16 @@ public class NBody{
             thisBody.vz +=  accz;
              int x =  (int)thisBody.x;
              int y =  (int)thisBody.y;
-             if (x<w-1 && y<h-1 && x>0 && y>0){
-                 rgbCopy[x+y*w]=0xffffff;
-                 rgbCopy[x+1+y*w]=0xffffff;
-                 rgbCopy[x-1+y*w]=0xffffff;
-                 rgbCopy[x+(y+1)*w]=0xffffff;
-                 rgbCopy[x+(y-1)*w]=0xffffff;
-             }
-
-
+	     for (int px =x-1; px<x+2; px++){ 
+                 if (px<w && y<h && px>=0 && y>0){
+                    rgbCopy[px+y*w]=0xffffff;
+		 }
+	     }
+	     for (int py =y-1; py<y+2; py+=2){ 
+                 if (x<w && py<h && x>=0 && py>=0){
+                    rgbCopy[x+py*w]=0xffffff;
+		 }
+	     }
          });
 
           viewer.getGraphics().drawImage(offscreen, 0, 0, null);
