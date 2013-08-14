@@ -29,6 +29,11 @@ public class NBody{
           mass = (float)(Math.random()*20f+10f);
           paletteIndex = 0;
       }
+      float getX(){
+          return(x);
+      }
+
+
    }
 
    public static void main(String[] _args){
@@ -78,7 +83,7 @@ public class NBody{
             for(int i = 0; i < bodies.length; i++){
                Body otherBody = bodies[i];
                if (thisBody != otherBody){
-                  float dx = otherBody.x - thisBody.x;
+                  float dx = otherBody.getX() - thisBody.x;
                   float dy = otherBody.y - thisBody.y;
                   float dz = otherBody.z - thisBody.z;
                   float dist =  (float) Math.sqrt(((dx * dx) + (dy * dy) + (dz * dz) + .1f /* +.1f in case dx,dy,dz are 0!*/));
