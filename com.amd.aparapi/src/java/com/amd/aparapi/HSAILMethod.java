@@ -123,6 +123,27 @@ public class HSAILMethod {
         }
     }
 
+    public static class InlineMethodCall extends CallType<InlineMethodCall> {
+        HSAILMethod method;
+
+        InlineMethodCall(String _mappedMethod, HSAILMethod _method) {
+            super(_mappedMethod);
+            method = _method;
+        }
+
+        @Override
+        InlineMethodCall render(HSAILRenderer r, boolean _body) {
+
+            method.renderFunction(r, _body);
+            r.nl();
+            return (this);
+        }
+
+        @Override
+        boolean isStatic() {
+            return (method.method.isStatic());
+        }
+    }
 
     public static Map<String, IntrinsicCall> intrinsicMap = new HashMap<String, IntrinsicCall>();
 
@@ -412,7 +433,7 @@ public class HSAILMethod {
                     ClassModel classModel = ClassModel.getClassModel(theClass);
                     ClassModel.ClassModelMethod method = classModel.getMethod(name, sig);
                     HSAILMethod hsailMethod = HSAILMethod.getHSAILMethod(method, getEntryPoint());
-                    call = new MethodCall(intrinsicLookup, hsailMethod);
+                    call = new InlineMethodCall(intrinsicLookup, hsailMethod);
                 } catch (ClassNotFoundException e) {
                     e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                 } catch (ClassParseException e) {
@@ -432,6 +453,9 @@ public class HSAILMethod {
         void render(HSAILRenderer r) {
             if (call instanceof InlineIntrinsicCall){
                 call.render(r, false);
+            }else if (call instanceof InlineMethodCall){
+                  r.append(" // will inline "+((InlineMethodCall) call).method.method.getName()+" here");
+                  call.render(r, false);
             }else{
 
             TypeHelper.JavaMethodArgsAndReturnType argsAndReturnType = from.asMethodCall().getConstantPoolMethodEntry().getArgsAndReturnType();
@@ -1114,11 +1138,11 @@ public class HSAILMethod {
         //r.append("version 1:0:large;").nl();
         r.append("version 0:95: $full : $large;\n");
 
-        for (CallType c : calls) {
-            if (!(c instanceof InlineIntrinsicCall)){
-               c.render(r, false);
-            }
-        }
+      //  for (CallType c : calls) {
+      //      if (!(c instanceof InlineIntrinsicCall)){
+      //         c.render(r, false);
+      //      }
+     // }
 
         for (CallType c : calls) {
             if (!(c instanceof InlineIntrinsicCall)){
