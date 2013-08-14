@@ -6,7 +6,14 @@ import com.amd.aparapi.OpenCLDevice.DeviceSelector;
 import java.util.function.IntConsumer;
 
 public abstract class Device{
-   static public enum TYPE{
+    public static Device getByName(String _deviceName) {
+        return(_deviceName.equals("hsa")?Device.hsa():
+                (_deviceName.equals("jtp")?Device.jtp():
+                        (_deviceName.equals("seq")?Device.seq():
+                                (_deviceName.equals("best")?Device.best():null))));
+    }
+
+    static public enum TYPE{
       UNKNOWN,
       GPU,
       CPU,
