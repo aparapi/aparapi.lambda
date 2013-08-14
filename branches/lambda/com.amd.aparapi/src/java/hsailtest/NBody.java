@@ -18,64 +18,41 @@ public class NBody{
       float vx,vy,vz;
       float mass;
       int paletteIndex;
+      Body(int width, int height){
+          float maxDist = width / 2;
+          float theta = (float) (Math.random() * Math.PI * 2);
+          float phi = (float) (Math.random() * Math.PI * 2);
+          float radius = (float) (Math.random() * maxDist);
+          x = (float) (radius * Math.cos(theta) * Math.sin(phi)) + width / 2;
+          y = (float) (radius * Math.sin(theta) * Math.sin(phi)) + height / 2;
+          z = (float) (radius * Math.cos(phi));
+          mass = (float)(Math.random()*20f+10f);
+          paletteIndex = 0;
+      }
    }
 
    public static void main(String[] _args){
-      String mode = _args[0];
-      int bodyCount = Integer.parseInt(_args[1]);
-      Device device = mode.equals("hsa")?Device.hsa():
-         (mode.equals("jtp")?Device.jtp():
-          (mode.equals("seq")?Device.seq():
-           (mode.equals("best")?Device.best():null)));
-      if (device != null){
-         NBody nb = new NBody();
-         nb.go(device, bodyCount);
-      }
+       (new NBody()).go(Device.getByName(_args[0]), Integer.parseInt(_args[1]));
    }
 
    void go(Device device, int bodyCount ){
       float frame = 0f;
-      int width = Integer.getInteger("width", 768);
-      int height =  Integer.getInteger("height", 768);
+      int width = Integer.getInteger("width", 1024);
+      int height =  Integer.getInteger("height", 1024);
       BufferedImage offscreen = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-      int[] rgb = ((DataBufferInt) offscreen.getRaster().getDataBuffer()).getData();
+      int[] offscreenPixels= ((DataBufferInt) offscreen.getRaster().getDataBuffer()).getData();
       JFrame jframe = new JFrame("NBody");
       Body[] bodies = new Body[bodyCount];
+       //Initialize palette values
+       int[] palette = new int[16];
+       for(int i = 0; i < palette.length; i++){
+           float h = i / (float) palette.length;
+           float b = 1.0f - h * h *h;
+           palette[palette.length-1-i] = Color.HSBtoRGB(h, 1f, b);
+       }
 
-      int[] palette = new int[]{
-         Color.WHITE.getRGB(), 
-            Color.YELLOW.brighter().brighter().getRGB(), 
-            Color.YELLOW.brighter().getRGB(), 
-            Color.YELLOW.getRGB(), 
-            Color.YELLOW.darker().getRGB(), 
-            Color.YELLOW.darker().darker().getRGB(), 
-            Color.ORANGE.brighter().brighter().getRGB(), 
-            Color.ORANGE.brighter().getRGB(), 
-            Color.ORANGE.getRGB(), 
-            Color.ORANGE.darker().getRGB(), 
-            Color.ORANGE.darker().darker().getRGB(), 
-            Color.PINK.brighter().brighter().getRGB(),
-            Color.PINK.brighter().getRGB(),
-            Color.PINK.getRGB(),
-            Color.PINK.darker().getRGB(),
-            Color.PINK.darker().darker().getRGB(),
-            Color.RED.brighter().brighter().getRGB(),
-            Color.RED.brighter().getRGB(),
-            Color.RED.getRGB(),
-            Color.RED.darker().getRGB(),
-            Color.RED.darker().darker().getRGB(),
-      };
-      float maxDist = width / 4;
       Device.jtp().forEach(bodies.length, body -> {
-         float theta = (float) (Math.random() * Math.PI * 2);
-         float phi = (float) (Math.random() * Math.PI * 2);
-         float radius = (float) (Math.random() * maxDist);
-         bodies[body] = new Body();
-         bodies[body].x = (float) (radius * Math.cos(theta) * Math.sin(phi)) + width / 2;
-         bodies[body].y = (float) (radius * Math.sin(theta) * Math.sin(phi)) + height / 2;
-         bodies[body].z = (float) (radius * Math.cos(phi));
-         bodies[body].mass = (float)(Math.random()*20f+10f);
-         bodies[body].paletteIndex = 0;
+         bodies[body] = new Body(width, height);
       });
 
       JComponent viewer = new JComponent(){
@@ -90,28 +67,24 @@ public class NBody{
       long first = System.currentTimeMillis();
       float fps  =0;
       while(true){
-         Arrays.fill(rgb, 0);
-             offscreen.getGraphics().setColor(Color.WHITE);
-             offscreen.getGraphics().drawString(String.format("%5.2f\n",fps), 100, 100);
+         Arrays.fill(offscreenPixels, 0);
+         offscreen.getGraphics().setColor(Color.WHITE);
+         offscreen.getGraphics().drawString(String.format("%5.2f\n",fps), 100, 100);
          device.forEach(bodies.length, gid -> {
             Body thisBody = bodies[gid];
             float accx = 0.f;
             float accy = 0.f;
             float accz = 0.f;
             for(int i = 0; i < bodies.length; i++){
-               if (gid != i){
-                  Body otherBody = bodies[i];
-               //if (thisBody != otherBody){ 
+               Body otherBody = bodies[i];
+               if (thisBody != otherBody){
                   float dx = otherBody.x - thisBody.x;
                   float dy = otherBody.y - thisBody.y;
                   float dz = otherBody.z - thisBody.z;
                   float dist =  (float) Math.sqrt(((dx * dx) + (dy * dy) + (dz * dz) + .1f /* +.1f in case dx,dy,dz are 0!*/));
                   float invDist = 1f / dist;
                   float massInvDist_3 = otherBody.mass * invDist * invDist * invDist;
-                  if (dist<0.6f){
-                     //accx -= massInvDist_3 * dx;
-                     //accy -= massInvDist_3 * dy;
-                     //accz -= massInvDist_3 * dz;
+                  if (dist<0.7f){
                      thisBody.mass+=10f;
                      if (thisBody.paletteIndex<(palette.length-1)){
                         thisBody.paletteIndex++;
@@ -136,12 +109,12 @@ public class NBody{
             int x =  (int)thisBody.x;
             int y =  (int)thisBody.y;
             if (x>1&&x<width-1&&y>1&&y<height-1){
-               int color = palette[thisBody.paletteIndex];
-               rgb[x-1+y*width]=color;
-               rgb[x+y*width]=color;
-               rgb[x+1+y*width]=color;
-               rgb[x+(y-1)*width]=color;
-               rgb[x+(y+1)*width]=color;
+               int rgb = palette[thisBody.paletteIndex];
+               offscreenPixels[x-1+y*width]=rgb;
+               offscreenPixels[x+y*width]=rgb;
+               offscreenPixels[x+1+y*width]=rgb;
+               offscreenPixels[x+(y-1)*width]=rgb;
+               offscreenPixels[x+(y+1)*width]=rgb;
             }
          });
          long delta = System.currentTimeMillis()-first;

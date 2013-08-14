@@ -302,6 +302,21 @@ public class HSAILMethod {
 
         }
     }
+    class cmp_ref extends HSAILInstructionWithSrcSrc<ref> {
+        String type;
+
+        cmp_ref(Instruction _from, String _type, Reg_ref _srcLhs, Reg_ref _srcRhs) {
+            super(_from, _srcLhs, _srcRhs);
+            type = _type;
+        }
+
+
+        @Override
+        public void render(HSAILRenderer r) {
+            r.append("cmp_").append(type).append("_b1_").typeName(getSrcLhs()).space().append("$c1").separator().regName(getSrcLhs()).separator().regName(getSrcRhs());
+
+        }
+    }
 
     class cmp<T extends PrimitiveType> extends HSAILInstructionWithSrcSrc<T> {
         String type;
@@ -1851,8 +1866,12 @@ public class HSAILMethod {
 
                     break;
                 case IF_ACMPEQ:
+                    add(new cmp_ref(i, "eq", new StackReg_ref(i, 0), new StackReg_ref(i, 1)));
+                    add(new cbr(i, i.asBranch().getAbsolute()));
+                    break;
                 case IF_ACMPNE:
-                    add(new branch(i, new StackReg_s32(i, 0), i.getByteCode().getName(), i.asBranch().getAbsolute()));
+                    add(new cmp_ref(i, "ne", new StackReg_ref(i, 0), new StackReg_ref(i, 1)));
+                    add(new cbr(i, i.asBranch().getAbsolute()));
                     break;
                 case GOTO:
                     add(new brn(i, i.asBranch().getAbsolute()));
