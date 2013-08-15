@@ -14,6 +14,13 @@ import java.util.regex.Pattern;
  */
 public class HSAILMethod {
 
+    public interface Inline<T extends CallType>{
+
+    }
+    public interface Outline<T extends CallType>{
+
+    }
+
     public static abstract class CallType<T extends CallType> {
         private String mappedMethod; // i.e  java.lang.Math.sqrt(D)D
 
@@ -25,8 +32,9 @@ public class HSAILMethod {
             mappedMethod = _mappedMethod;
         }
 
-        abstract T render(HSAILRenderer r, boolean _body);
-
+        abstract T renderDefinition(HSAILRenderer r);
+        abstract T renderDeclaration(HSAILRenderer r);
+        abstract T renderCallSite(HSAILRenderer r);
         abstract boolean isStatic();
     }
 
@@ -42,7 +50,7 @@ public class HSAILMethod {
         }
 
         @Override
-        IntrinsicCall render(HSAILRenderer r, boolean _body) {
+        IntrinsicCall renderDefinition(HSAILRenderer r) {
             for (String line : lines) {
                 if (!(line.trim().endsWith("{") || line.trim().startsWith("}"))) {
                     r.pad(9);
@@ -51,7 +59,14 @@ public class HSAILMethod {
             }
             return this;
         }
-
+        @Override
+           IntrinsicCall renderCallSite(HSAILRenderer r) {
+            return(this);
+        }
+        @Override
+        IntrinsicCall renderDeclaration(HSAILRenderer r) {
+            return(this);
+        }
         @Override
         boolean isStatic() {
             return (isStatic);
@@ -81,12 +96,13 @@ public class HSAILMethod {
             while (matcher.find()) {
                 matcher.appendReplacement(sb, String.valueOf(Integer.parseInt(matcher.group(1))+base));
             }
+            matcher.appendTail(sb);
 
             return(sb.toString());
         }
 
         @Override
-        InlineIntrinsicCall render(HSAILRenderer r, boolean _body) {
+        InlineIntrinsicCall renderCallSite(HSAILRenderer r) {
             for (String line : lines) {
                 String expandedLine = expand(line, base);
 
@@ -94,7 +110,14 @@ public class HSAILMethod {
             }
             return this;
         }
-
+        @Override
+        InlineIntrinsicCall renderDefinition(HSAILRenderer r) {
+            return(this);
+        }
+        @Override
+        IntrinsicCall renderDeclaration(HSAILRenderer r) {
+            return(this);
+        }
         @Override
         boolean isStatic() {
             return (isStatic);
@@ -110,13 +133,22 @@ public class HSAILMethod {
         }
 
         @Override
-        MethodCall render(HSAILRenderer r, boolean _body) {
+        MethodCall renderDefinition(HSAILRenderer r) {
 
-            method.renderFunction(r, _body);
-            r.nl();
+            method.renderFunctionDefinition(r);
+            r.nl().nl();
             return (this);
         }
-
+        @Override
+        MethodCall renderCallSite(HSAILRenderer r) {
+            return(this);
+        }
+        @Override
+        MethodCall renderDeclaration(HSAILRenderer r) {
+            method.renderFunctionDeclaration(r);
+            r.semicolon().nl().nl();
+            return (this);
+        }
         @Override
         boolean isStatic() {
             return (method.method.isStatic());
@@ -130,12 +162,17 @@ public class HSAILMethod {
             super(_mappedMethod);
             method = _method;
         }
+        @Override
+        InlineMethodCall renderDefinition(HSAILRenderer r) {
+            return (this);
+        }
+        @Override
+        InlineMethodCall renderCallSite(HSAILRenderer r) {
+            return (this);
+        }
 
         @Override
-        InlineMethodCall render(HSAILRenderer r, boolean _body) {
-
-            method.renderFunction(r, _body);
-            r.nl();
+        InlineMethodCall renderDeclaration(HSAILRenderer r) {
             return (this);
         }
 
@@ -275,20 +312,19 @@ public class HSAILMethod {
     }
 
     class branch extends HSAILInstructionWithSrc<s32> {
-        String name;
+        String branchName;
         int pc;
 
-        branch(Instruction _from, HSAILRegister<s32> _src, String _name, int _pc) {
+        branch(Instruction _from, HSAILRegister<s32> _src, String _branchName, int _pc) {
             super(_from, _src);
-            name = _name;
+            branchName = _branchName;
             pc = _pc;
         }
 
 
         @Override
         public void render(HSAILRenderer r) {
-            r.append(name + " ");
-            r.label(pc);
+            r.append(branchName).space().label(pc).semicolon();
         }
     }
 
@@ -303,7 +339,7 @@ public class HSAILMethod {
 
         @Override
         public void render(HSAILRenderer r) {
-            r.append("cmp_").append(type).append("_b1_").typeName(getSrc()).space().append("$c1").separator().regName(getSrc()).separator().append("0");
+            r.append("cmp_").append(type).append("_b1_").typeName(getSrc()).space().append("$c1").separator().regName(getSrc()).separator().append("0").semicolon();
 
         }
     }
@@ -319,7 +355,7 @@ public class HSAILMethod {
 
         @Override
         public void render(HSAILRenderer r) {
-            r.append("cmp_").append(type).append("_b1_").typeName(getSrcLhs()).space().append("$c1").separator().regName(getSrcLhs()).separator().regName(getSrcRhs());
+            r.append("cmp_").append(type).append("_b1_").typeName(getSrcLhs()).space().append("$c1").separator().regName(getSrcLhs()).separator().regName(getSrcRhs()).semicolon();
 
         }
     }
@@ -334,7 +370,7 @@ public class HSAILMethod {
 
         @Override
         public void render(HSAILRenderer r) {
-            r.append("cmp_").append(type).append("_b1_").typeName(getSrcLhs()).space().append("$c1").separator().regName(getSrcLhs()).separator().regName(getSrcRhs());
+            r.append("cmp_").append(type).append("_b1_").typeName(getSrcLhs()).space().append("$c1").separator().regName(getSrcLhs()).separator().regName(getSrcRhs()).semicolon();
 
         }
     }
@@ -350,7 +386,7 @@ public class HSAILMethod {
 
         @Override
         public void render(HSAILRenderer r) {
-            r.append("cmp_").append(type).append("u").append("_b1_").typeName(getSrcLhs()).space().append("$c1").separator().regName(getSrcLhs()).separator().regName(getSrcRhs());
+            r.append("cmp_").append(type).append("u").append("_b1_").typeName(getSrcLhs()).space().append("$c1").separator().regName(getSrcLhs()).separator().regName(getSrcRhs()).semicolon();
 
         }
     }
@@ -366,7 +402,7 @@ public class HSAILMethod {
 
         @Override
         public void render(HSAILRenderer r) {
-            r.append("cbr").space().append("$c1").separator().label(pc);
+            r.append("cbr").space().append("$c1").separator().label(pc).semicolon();
 
         }
     }
@@ -382,7 +418,7 @@ public class HSAILMethod {
 
         @Override
         public void render(HSAILRenderer r) {
-            r.append("brn").space().label(pc);
+            r.append("brn").space().label(pc).semicolon();
 
         }
     }
@@ -403,13 +439,8 @@ public class HSAILMethod {
 
     class call extends HSAILInstruction {
         int base;
-
-
         String name;
-
-
         CallType call;
-
         call(Instruction _from) {
             super(_from, 0, 0);
             base = from.getPreStackBase() + from.getMethod().getCodeEntry().getMaxLocals();
@@ -427,43 +458,38 @@ public class HSAILMethod {
                     break;
                 }
             }
-            if (call == null) {
+            if (call == null) { // not an intrinsic!
                 try {
                     Class theClass = Class.forName(from.asMethodCall().getConstantPoolMethodEntry().getClassEntry().getDotClassName());
                     ClassModel classModel = ClassModel.getClassModel(theClass);
                     ClassModel.ClassModelMethod method = classModel.getMethod(name, sig);
                     HSAILMethod hsailMethod = HSAILMethod.getHSAILMethod(method, getEntryPoint());
-                    call = new InlineMethodCall(intrinsicLookup, hsailMethod);
+                    call = new MethodCall(intrinsicLookup, hsailMethod);
                 } catch (ClassNotFoundException e) {
                     e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                 } catch (ClassParseException e) {
                     e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                 }
             }
-           // if (call instanceof InlineIntrinsicCall){
-              //  ((InlineIntrinsicCall)call).
-           // }else{
-                add(call);
-            //}//
-
+            add(call);
         }
 
 
         @Override
         void render(HSAILRenderer r) {
             if (call instanceof InlineIntrinsicCall){
-                call.render(r, false);
+                call.renderCallSite(r);
             }else if (call instanceof InlineMethodCall){
-                  r.append(" // will inline "+((InlineMethodCall) call).method.method.getName()+" here");
-                  call.render(r, false);
+                r.append(" // will inline "+((InlineMethodCall) call).method.method.getName()+" here");
+                call.renderCallSite(r);
             }else{
 
             TypeHelper.JavaMethodArgsAndReturnType argsAndReturnType = from.asMethodCall().getConstantPoolMethodEntry().getArgsAndReturnType();
             TypeHelper.JavaType returnType = argsAndReturnType.getReturnType();
-            r.append("{").nl();
+            r.obrace().nl();
             if (!call.isStatic()) {
-                r.pad(12).append("arg_u64 %this;").nl();
-                r.pad(12).append("st_arg_u64 $d" + base + ", [%this];").nl();
+                r.pad(12).append("arg_u64 %this").semicolon().nl();
+                r.pad(12).append("st_arg_u64 $d" + base + ", [%this]").semicolon().nl();
             }
 
             int offset = 0;
@@ -475,27 +501,27 @@ public class HSAILMethod {
 
                 if (arg.getJavaType().isDouble()) {
                     r.pad(12).append("arg_f64 ").append(argName).semicolon().nl();
-                    r.pad(12).append("st_arg_f64 $d" + (base + offset) + ", [" + argName + "];").nl();
+                    r.pad(12).append("st_arg_f64 $d" + (base + offset) + ", [" + argName + "]").semicolon().nl();
                 } else if (arg.getJavaType().isFloat()) {
                     r.pad(12).append("arg_f32 ").append(argName).semicolon().nl();
-                    r.pad(12).append("st_arg_f32 $s" + (base + offset) + ", [" + argName + "];").nl();
+                    r.pad(12).append("st_arg_f32 $s" + (base + offset) + ", [" + argName + "]").semicolon().nl();
                 } else if (arg.getJavaType().isInt()) {
                     r.pad(12).append("arg_s32 ").append(argName).semicolon().nl();
-                    r.pad(12).append("st_arg_s32 $s" + (base + offset) + ", [" + argName + "];").nl();
+                    r.pad(12).append("st_arg_s32 $s" + (base + offset) + ", [" + argName + "]").semicolon().nl();
                 } else if (arg.getJavaType().isLong()) {
                     r.pad(12).append("arg_s64 ").append(argName).semicolon().nl();
-                    r.pad(12).append("st_arg_s64 $s" + (base + offset) + ", [" + argName + "];").nl();
+                    r.pad(12).append("st_arg_s64 $s" + (base + offset) + ", [" + argName + "]").semicolon().nl();
                 }
             }
 
             if (returnType.isInt()) {
-                r.pad(12).append("arg_s32 %_result;").nl();
+                r.pad(12).append("arg_s32 %_result").semicolon().nl();
             } else if (returnType.isFloat()) {
-                r.pad(12).append("arg_f32 %_result;").nl();
+                r.pad(12).append("arg_f32 %_result").semicolon().nl();
             } else if (returnType.isDouble()) {
-                r.pad(12).append("arg_f64 %_result;").nl();
+                r.pad(12).append("arg_f64 %_result").semicolon().nl();
             } else if (returnType.isLong()) {
-                r.pad(12).append("arg_s64 %_result;").nl();
+                r.pad(12).append("arg_s64 %_result").semicolon().nl();
             }
 
 
@@ -506,7 +532,7 @@ public class HSAILMethod {
                 r.append("(%_result)").space();
             }
 
-            r.append("(");
+            r.oparenth();
             if (!call.isStatic()) {
                 r.append("%this ");
             }
@@ -518,21 +544,21 @@ public class HSAILMethod {
                 r.append("%_arg_" + arg.getArgc());
 
             }
-            r.append(");").nl();
+            r.cparenth().semicolon().nl();
 
 
             if (returnType.isInt()) {
-                r.pad(12).append("ld_arg_s32 $s" + base + ", [%_result];").nl();
+                r.pad(12).append("ld_arg_s32 $s" + base + ", [%_result]").semicolon().nl();
             } else if (returnType.isFloat()) {
-                r.pad(12).append("ld_arg_f32 $f" + base + ", [%_result];").nl();
+                r.pad(12).append("ld_arg_f32 $f" + base + ", [%_result]").semicolon().nl();
             } else if (returnType.isDouble()) {
-                r.pad(12).append("ld_arg_f64 $d" + base + ", [%_result];").nl();
+                r.pad(12).append("ld_arg_f64 $d" + base + ", [%_result]").semicolon().nl();
             } else if (returnType.isLong()) {
-                r.pad(12).append("ld_arg_s64 $d" + base + ", [%_result];").nl();
+                r.pad(12).append("ld_arg_s64 $d" + base + ", [%_result]").semicolon().nl();
             }
 
 
-            r.pad(9).append("}//");
+            r.pad(9).append("}");
             }
         }
 
@@ -564,7 +590,7 @@ public class HSAILMethod {
 
         @Override
         void render(HSAILRenderer r) {
-            r.append("ld_kernarg_").typeName(getDest()).space().regName(getDest()).separator().append("[%_arg").append(getDest().index).append("]");
+            r.append("ld_kernarg_").typeName(getDest()).space().regName(getDest()).separator().append("[%_arg").append(getDest().index).append("]").semicolon();
         }
     }
 
@@ -577,7 +603,7 @@ public class HSAILMethod {
 
         @Override
         void render(HSAILRenderer r) {
-            r.append("ld_arg_").typeName(getDest()).space().regName(getDest()).separator().append("[%_arg").append(getDest().index).append("]");
+            r.append("ld_arg_").typeName(getDest()).space().regName(getDest()).separator().append("[%_arg").append(getDest().index).append("]").semicolon();
         }
 
 
@@ -595,7 +621,7 @@ public class HSAILMethod {
 
         @Override
         void render(HSAILRenderer r) {
-            r.append(op).typeName(getDest()).space().regName(getDest()).separator().regName(getSrc()).separator().append(value);
+            r.append(op).typeName(getDest()).space().regName(getDest()).separator().regName(getSrc()).separator().append(value).semicolon();
         }
 
 
@@ -619,7 +645,7 @@ public class HSAILMethod {
 
         @Override
         void render(HSAILRenderer r) {
-            r.append(op).append("b64").space().regName(getDest()).separator().regName(getSrc()).separator().append(value);
+            r.append(op).append("b64").space().regName(getDest()).separator().regName(getSrc()).separator().append(value).semicolon();
         }
 
 
@@ -645,7 +671,7 @@ public class HSAILMethod {
 
         @Override
         void render(HSAILRenderer r) {
-            r.append("mad_").typeName(getDest()).space().regName(getDest()).separator().regName(getSrcLhs()).separator().append(size).separator().regName(getSrcRhs());
+            r.append("mad_").typeName(getDest()).space().regName(getDest()).separator().regName(getSrcLhs()).separator().append(size).separator().regName(getSrcRhs()).semicolon();
         }
     }
 
@@ -669,7 +695,7 @@ public class HSAILMethod {
 
         @Override
         void render(HSAILRenderer r) {
-            r.append("cvt_").typeName(getDest()).append("_").typeName(getSrc()).space().regName(getDest()).separator().regName(getSrc());
+            r.append("cvt_").typeName(getDest()).append("_").typeName(getSrc()).space().regName(getDest()).separator().regName(getSrc()).semicolon();
         }
 
 
@@ -685,7 +711,7 @@ public class HSAILMethod {
 
         @Override
         void render(HSAILRenderer r) {
-            r.append("ret");
+            r.append("ret").semicolon();
         }
 
 
@@ -700,8 +726,8 @@ public class HSAILMethod {
 
         @Override
         void render(HSAILRenderer r) {
-            r.append("st_arg_").typeName(getSrc()).space().regName(getSrc()).separator().append("[%_result];").nl();
-            r.append("ret");
+            r.append("st_arg_").typeName(getSrc()).space().regName(getSrc()).separator().append("[%_result]").semicolon().nl();
+            r.append("ret").semicolon();
         }
 
 
@@ -720,7 +746,7 @@ public class HSAILMethod {
         @Override
         void render(HSAILRenderer r) {
             // r.append("st_global_").typeName(getSrc()).space().append("[").regName(mem).append("+").array_len_offset().append("]").separator().regName(getSrc());
-            r.append("st_global_").typeName(getSrc()).space().regName(getSrc()).separator().append("[").regName(mem).append("+").array_base_offset().append("]");
+            r.append("st_global_").typeName(getSrc()).space().regName(getSrc()).separator().append("[").regName(mem).append("+").array_base_offset().append("]").semicolon();
         }
 
 
@@ -739,7 +765,7 @@ public class HSAILMethod {
 
         @Override
         void render(HSAILRenderer r) {
-            r.append("ld_global_").typeName(getDest()).space().regName(getDest()).separator().append("[").regName(mem).append("+").array_base_offset().append("]");
+            r.append("ld_global_").typeName(getDest()).space().regName(getDest()).separator().append("[").regName(mem).append("+").array_base_offset().append("]").semicolon();
         }
 
 
@@ -757,7 +783,7 @@ public class HSAILMethod {
 
         @Override
         void render(HSAILRenderer r) {
-            r.append("ld_global_").typeName(getDest()).space().regName(getDest()).separator().append("[").regName(mem).append("+").array_len_offset().append("]");
+            r.append("ld_global_").typeName(getDest()).space().regName(getDest()).separator().append("[").regName(mem).append("+").array_len_offset().append("]").semicolon();
         }
 
 
@@ -776,7 +802,7 @@ public class HSAILMethod {
 
         @Override
         void render(HSAILRenderer r) {
-            r.append("ld_global_").typeName(getDest()).space().regName(getDest()).separator().append("[").regName(mem).append("+").append(offset).append("]");
+            r.append("ld_global_").typeName(getDest()).space().regName(getDest()).separator().append("[").regName(mem).append("+").append(offset).append("]").semicolon();
         }
 
 
@@ -796,7 +822,7 @@ public class HSAILMethod {
 
         @Override
         void render(HSAILRenderer r) {
-            r.append("ld_global_").typeName(getDest()).space().regName(getDest()).separator().append("[").regName(mem).append("+").append(offset).append("]");
+            r.append("ld_global_").typeName(getDest()).space().regName(getDest()).separator().append("[").regName(mem).append("+").append(offset).append("]").semicolon();
         }
 
 
@@ -816,7 +842,7 @@ public class HSAILMethod {
 
         @Override
         void render(HSAILRenderer r) {
-            r.append("st_global_").typeName(getSrc()).space().regName(getSrc()).separator().append("[").regName(mem).append("+").append(offset).append("]");
+            r.append("st_global_").typeName(getSrc()).space().regName(getSrc()).separator().append("[").regName(mem).append("+").append(offset).append("]").semicolon();
         }
 
 
@@ -831,7 +857,7 @@ public class HSAILMethod {
 
         @Override
         void render(HSAILRenderer r) {
-            r.append("mov_").movTypeName(getDest()).space().regName(getDest()).separator().regName(getSrc());
+            r.append("mov_").movTypeName(getDest()).space().regName(getDest()).separator().regName(getSrc()).semicolon();
 
         }
 
@@ -850,7 +876,7 @@ public class HSAILMethod {
 
         @Override
         void render(HSAILRenderer r) {
-            r.append(op).typeName(getDest()).space().regName(getDest()).separator().regName(getDest());
+            r.append(op).typeName(getDest()).space().regName(getDest()).separator().regName(getDest()).semicolon();
         }
 
         HSAILRegister<T> getDest() {
@@ -878,7 +904,7 @@ public class HSAILMethod {
 
         @Override
         void render(HSAILRenderer r) {
-            r.append(op).typeName(getDest()).space().regName(getDest()).separator().regName(getLhs()).separator().regName(getRhs());
+            r.append(op).typeName(getDest()).space().regName(getDest()).separator().regName(getLhs()).separator().regName(getRhs()).semicolon();
         }
 
         HSAILRegister<T> getDest() {
@@ -908,7 +934,7 @@ public class HSAILMethod {
          value = _value;
          op = _op;
       }
-      @Override void render(HSAILRenderer r){
+      @Override void renderDefinition(HSAILRenderer r){
          r.append(op).typeName(dest).space().regName(dest).separator().regName(lhs).separator().append(value.toString());
       }
    }
@@ -992,7 +1018,7 @@ public class HSAILMethod {
 
         @Override
         void render(HSAILRenderer r) {
-            r.append(op).movTypeName(getDest()).space().regName(getDest()).separator().regName(getLhs()).separator().regName(getRhs());
+            r.append(op).movTypeName(getDest()).space().regName(getDest()).separator().regName(getLhs()).separator().regName(getRhs()).semicolon();
         }
 
     }
@@ -1004,7 +1030,7 @@ public class HSAILMethod {
 
         @Override
         void render(HSAILRenderer r) {
-            r.append(op).movTypeName(getDest()).space().regName(getDest()).separator().regName(getLhs()).separator().regName(getRhs());
+            r.append(op).movTypeName(getDest()).space().regName(getDest()).separator().regName(getLhs()).separator().regName(getRhs()).semicolon();
         }
 
     }
@@ -1016,7 +1042,7 @@ public class HSAILMethod {
 
         @Override
         void render(HSAILRenderer r) {
-            r.append(op).movTypeName(getDest()).space().regName(getDest()).separator().regName(getLhs()).separator().regName(getRhs());
+            r.append(op).movTypeName(getDest()).space().regName(getDest()).separator().regName(getLhs()).separator().regName(getRhs()).semicolon();
         }
 
     }
@@ -1032,7 +1058,7 @@ public class HSAILMethod {
 
         @Override
         void render(HSAILRenderer r) {
-            r.append("mov_").movTypeName(getDest()).space().regName(getDest()).separator().append(value);
+            r.append("mov_").movTypeName(getDest()).space().regName(getDest()).separator().append(value).semicolon();
 
         }
 
@@ -1081,8 +1107,7 @@ public class HSAILMethod {
         instructions.add(_regInstruction);
     }
 
-
-    public HSAILRenderer renderFunction(HSAILRenderer r, boolean _body) {
+    public HSAILRenderer renderFunctionDeclaration(HSAILRenderer r) {
         r.append("function &").append(method.getName()).append("(");
         if (method.getArgsAndReturnType().getReturnType().isInt()) {
             r.append("arg_s32 %_result");
@@ -1109,48 +1134,48 @@ public class HSAILMethod {
             r.append(" %_arg" + (arg.getArgc() + argOffset));
         }
         r.nl().pad(3).append(")");
-        if (_body) {
-            r.append("{").nl();
+        return (r);
+    }
+
+    public HSAILRenderer renderFunctionDefinition(HSAILRenderer r) {
+        renderFunctionDeclaration(r);
+
+            r.obrace();
             Set<Instruction> s = new HashSet<Instruction>();
 
             for (HSAILInstruction i : instructions) {
                 if (!(i instanceof ld_kernarg) && !s.contains(i.from)) {
                     s.add(i.from);
                     if (i.from.isBranchTarget()) {
-                        r.label(i.from.getThisPC()).append(":").nl();
+                        r.label(i.from.getThisPC()).colon().nl();
                     }
                     if (r.isShowingComments()) {
-                        r.nl().pad(1).append("// ").mark().append(i.from.getThisPC()).relpad(2).space().i(i.from).nl();
+                        r.nl().pad(1).lineCommentStart().mark().append(i.from.getThisPC()).relpad(2).space().i(i.from).nl();
                     }
                 }
                 r.pad(9);
                 i.render(r);
-                r.semicolon().nl();
+                r.nl();
             }
-            r.append("};");
-        } else {
-            r.semicolon().nl();
-        }
+            r.cbrace().semicolon();
+
+
+
         return (r);
     }
 
     public HSAILRenderer renderEntryPoint(HSAILRenderer r) {
         //r.append("version 1:0:large;").nl();
-        r.append("version 0:95: $full : $large;\n");
-
-      //  for (CallType c : calls) {
-      //      if (!(c instanceof InlineIntrinsicCall)){
-      //         c.render(r, false);
-      //      }
-     // }
+        r.append("version 0:95: $full : $large").semicolon().nl();
 
         for (CallType c : calls) {
-            if (!(c instanceof InlineIntrinsicCall)){
-               c.render(r, true);
-            }
+            c.renderDeclaration(r);
         }
-        // r.append("kernel &" + method.getName() + "(");
-        r.append("kernel &run(");
+
+        for (CallType c : calls) {
+            c.renderDefinition(r);
+        }
+        r.append("kernel &run").oparenth();
         int argOffset = method.isStatic() ? 0 : 1;
         if (!method.isStatic()) {
             r.nl().pad(3).append("kernarg_u64 %_arg0");
@@ -1172,7 +1197,7 @@ public class HSAILMethod {
             }
             r.append(" %_arg" + (arg.getArgc() + argOffset));
         }
-        r.nl().pad(3).append("){").nl();
+        r.nl().pad(3).cparenth().obrace().nl();
 
         java.util.Set<Instruction> s = new java.util.HashSet<Instruction>();
         boolean first = false;
@@ -1180,18 +1205,17 @@ public class HSAILMethod {
         for (HSAILInstruction i : instructions) {
             if (!(i instanceof ld_kernarg) && !s.contains(i.from)) {
                 if (!first) {
-                    r.pad(9).append("workitemabsid_u32 $s" + (count - 1) + ", 0;").nl();
+                    r.pad(9).append("workitemabsid_u32 $s" + (count - 1) + ", 0").semicolon().nl();
                     // r.pad(9).append("workitemaid $s" + (count - 1) + ", 0;").nl();
                     first = true;
                 }
                 s.add(i.from);
                 if (i.from.isBranchTarget()) {
 
-                    r.label(i.from.getThisPC()).append(":");
-                    r.nl();
+                    r.label(i.from.getThisPC()).colon().nl();
                 }
                 if (r.isShowingComments()) {
-                    r.nl().pad(1).append("// ").mark().append(i.from.getThisPC()).relpad(2).space().i(i.from).nl();
+                    r.nl().pad(1).lineCommentStart().mark().append(i.from.getThisPC()).relpad(2).space().i(i.from).nl();
                 }
 
             } else {
@@ -1199,11 +1223,9 @@ public class HSAILMethod {
             }
             r.pad(9);
             i.render(r);
-            r.semicolon();
-
             r.nl();
         }
-        r.append("};");
+        r.cbrace().semicolon();
         return (r);
     }
 
