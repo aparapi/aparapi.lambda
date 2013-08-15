@@ -96,11 +96,18 @@ public class TextRenderer<T extends TextRenderer>{
       return (showComments);
    }
 
+   final T commentStart(){
+       return (append("/*"));
+   }
+    final T commentEnd(){
+        return (append("*/"));
+    }
+
    final public T nl(){
       append("\n");
       lastMark = lastNewLineIndex = sb.length();
       if(showLineNumbers){
-         append("/* " + lineNumber + " */ ");
+         commentStart().append(lineNumber).commentEnd();
          lineNumber++;
       }
       return ((T) this);
@@ -132,8 +139,28 @@ public class TextRenderer<T extends TextRenderer>{
    }
 
    final public T semicolon(){
-      return (append(";"));
-   }
+        return (append(";"));
+    }
+
+    final public T lineCommentStart(){
+        return (append("// "));
+    }
+    final public T colon(){
+        return (append(":"));
+    }
+    final public T obrace(){
+        return (append("{"));
+    }
+    final public T cbrace(){
+        return (append("}"));
+    }
+
+    final public T oparenth(){
+        return (append("("));
+    }
+    final public T cparenth(){
+        return (append(")"));
+    }
 
    final public T dot(){
       return (append("."));

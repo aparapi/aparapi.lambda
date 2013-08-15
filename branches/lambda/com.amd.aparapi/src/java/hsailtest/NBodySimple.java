@@ -7,10 +7,10 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.util.Arrays;
+import java.util.Random;
 
 
 public class NBodySimple {
-
    public class Body{
       float x,y,z;
       float vx,vy,vz;
