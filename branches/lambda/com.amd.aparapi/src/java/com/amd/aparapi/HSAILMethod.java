@@ -175,6 +175,7 @@ public class HSAILMethod {
             }
             r.pad(9).cbrace();
 
+            r.nl().nl();
             return(this);
         }
         @Override
@@ -202,6 +203,9 @@ public class HSAILMethod {
         }
         @Override
         InlineMethodCall renderCallSite(HSAILRenderer r, Instruction from, String name, int base) {
+            r.nl();
+            method.renderInlinedFunctionBody(r, base);
+            r.nl();
             return (this);
         }
 
@@ -259,7 +263,7 @@ public class HSAILMethod {
         }
 
 
-        abstract void render(HSAILRenderer r);
+        abstract void render(HSAILRenderer r, int _baseOffset);
 
     }
 
@@ -357,7 +361,7 @@ public class HSAILMethod {
 
 
         @Override
-        public void render(HSAILRenderer r) {
+        public void render(HSAILRenderer r, int baseOffset) {
             r.append(branchName).space().label(pc).semicolon();
         }
     }
@@ -372,8 +376,8 @@ public class HSAILMethod {
 
 
         @Override
-        public void render(HSAILRenderer r) {
-            r.append("cmp_").append(type).append("_b1_").typeName(getSrc()).space().append("$c1").separator().regName(getSrc()).separator().append("0").semicolon();
+        public void render(HSAILRenderer r, int baseOffset) {
+            r.append("cmp_").append(type).append("_b1_").typeName(getSrc()).space().append("$c1").separator().regName(getSrc(), baseOffset).separator().append("0").semicolon();
 
         }
     }
@@ -388,8 +392,8 @@ public class HSAILMethod {
 
 
         @Override
-        public void render(HSAILRenderer r) {
-            r.append("cmp_").append(type).append("_b1_").typeName(getSrcLhs()).space().append("$c1").separator().regName(getSrcLhs()).separator().regName(getSrcRhs()).semicolon();
+        public void render(HSAILRenderer r, int baseOffset) {
+            r.append("cmp_").append(type).append("_b1_").typeName(getSrcLhs()).space().append("$c1").separator().regName(getSrcLhs(), baseOffset).separator().regName(getSrcRhs(), baseOffset).semicolon();
 
         }
     }
@@ -403,8 +407,8 @@ public class HSAILMethod {
 
 
         @Override
-        public void render(HSAILRenderer r) {
-            r.append("cmp_").append(type).append("_b1_").typeName(getSrcLhs()).space().append("$c1").separator().regName(getSrcLhs()).separator().regName(getSrcRhs()).semicolon();
+        public void render(HSAILRenderer r, int baseOffset) {
+            r.append("cmp_").append(type).append("_b1_").typeName(getSrcLhs()).space().append("$c1").separator().regName(getSrcLhs(), baseOffset).separator().regName(getSrcRhs(), baseOffset).semicolon();
 
         }
     }
@@ -419,8 +423,8 @@ public class HSAILMethod {
 
 
         @Override
-        public void render(HSAILRenderer r) {
-            r.append("cmp_").append(type).append("u").append("_b1_").typeName(getSrcLhs()).space().append("$c1").separator().regName(getSrcLhs()).separator().regName(getSrcRhs()).semicolon();
+        public void render(HSAILRenderer r, int baseOffset) {
+            r.append("cmp_").append(type).append("u").append("_b1_").typeName(getSrcLhs()).space().append("$c1").separator().regName(getSrcLhs(), baseOffset).separator().regName(getSrcRhs(), baseOffset).semicolon();
 
         }
     }
@@ -435,7 +439,7 @@ public class HSAILMethod {
 
 
         @Override
-        public void render(HSAILRenderer r) {
+        public void render(HSAILRenderer r, int baseOffset) {
             r.append("cbr").space().append("$c1").separator().label(pc).semicolon();
 
         }
@@ -451,7 +455,7 @@ public class HSAILMethod {
 
 
         @Override
-        public void render(HSAILRenderer r) {
+        public void render(HSAILRenderer r, int baseOffset) {
             r.append("brn").space().label(pc).semicolon();
 
         }
@@ -496,7 +500,7 @@ public class HSAILMethod {
                     ClassModel classModel = ClassModel.getClassModel(theClass);
                     ClassModel.ClassModelMethod method = classModel.getMethod(name, sig);
                     HSAILMethod hsailMethod = HSAILMethod.getHSAILMethod(method, getEntryPoint());
-                    call = new MethodCall(intrinsicLookup, hsailMethod);
+                    call = new InlineMethodCall(intrinsicLookup, hsailMethod);
                 } catch (ClassNotFoundException e) {
                     e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                 } catch (ClassParseException e) {
@@ -508,7 +512,7 @@ public class HSAILMethod {
 
 
         @Override
-        void render(HSAILRenderer r) {
+        void render(HSAILRenderer r, int baseOffset) {
             call.renderCallSite(r, from, name, base);
 
         }
@@ -525,7 +529,7 @@ public class HSAILMethod {
 
 
         @Override
-        void render(HSAILRenderer r) {
+        void render(HSAILRenderer r, int baseOffset) {
 
             r.append("NYI ").i(from);
 
@@ -540,8 +544,8 @@ public class HSAILMethod {
         }
 
         @Override
-        void render(HSAILRenderer r) {
-            r.append("ld_kernarg_").typeName(getDest()).space().regName(getDest()).separator().append("[%_arg").append(getDest().index).append("]").semicolon();
+        void render(HSAILRenderer r, int baseOffset) {
+            r.append("ld_kernarg_").typeName(getDest()).space().regName(getDest(), baseOffset).separator().append("[%_arg").append(getDest().index).append("]").semicolon();
         }
     }
 
@@ -553,8 +557,8 @@ public class HSAILMethod {
         }
 
         @Override
-        void render(HSAILRenderer r) {
-            r.append("ld_arg_").typeName(getDest()).space().regName(getDest()).separator().append("[%_arg").append(getDest().index).append("]").semicolon();
+        void render(HSAILRenderer r, int baseOffset) {
+            r.append("ld_arg_").typeName(getDest()).space().regName(getDest(), baseOffset).separator().append("[%_arg").append(getDest().index).append("]").semicolon();
         }
 
 
@@ -571,8 +575,8 @@ public class HSAILMethod {
         }
 
         @Override
-        void render(HSAILRenderer r) {
-            r.append(op).typeName(getDest()).space().regName(getDest()).separator().regName(getSrc()).separator().append(value).semicolon();
+        void render(HSAILRenderer r, int baseOffset) {
+            r.append(op).typeName(getDest()).space().regName(getDest(), baseOffset).separator().regName(getSrc(), baseOffset).separator().append(value).semicolon();
         }
 
 
@@ -595,8 +599,8 @@ public class HSAILMethod {
         }
 
         @Override
-        void render(HSAILRenderer r) {
-            r.append(op).append("b64").space().regName(getDest()).separator().regName(getSrc()).separator().append(value).semicolon();
+        void render(HSAILRenderer r, int baseOffset) {
+            r.append(op).append("b64").space().regName(getDest(), baseOffset).separator().regName(getSrc(), baseOffset).separator().append(value).semicolon();
         }
 
 
@@ -621,8 +625,8 @@ public class HSAILMethod {
 
 
         @Override
-        void render(HSAILRenderer r) {
-            r.append("mad_").typeName(getDest()).space().regName(getDest()).separator().regName(getSrcLhs()).separator().append(size).separator().regName(getSrcRhs()).semicolon();
+        void render(HSAILRenderer r, int baseOffset) {
+            r.append("mad_").typeName(getDest()).space().regName(getDest(), baseOffset).separator().regName(getSrcLhs(), baseOffset).separator().append(size).separator().regName(getSrcRhs(), baseOffset).semicolon();
         }
     }
 
@@ -645,8 +649,8 @@ public class HSAILMethod {
         }
 
         @Override
-        void render(HSAILRenderer r) {
-            r.append("cvt_").typeName(getDest()).append("_").typeName(getSrc()).space().regName(getDest()).separator().regName(getSrc()).semicolon();
+        void render(HSAILRenderer r, int baseOffset) {
+            r.append("cvt_").typeName(getDest()).append("_").typeName(getSrc()).space().regName(getDest(), baseOffset).separator().regName(getSrc(), baseOffset).semicolon();
         }
 
 
@@ -661,7 +665,7 @@ public class HSAILMethod {
         }
 
         @Override
-        void render(HSAILRenderer r) {
+        void render(HSAILRenderer r, int baseOffset) {
             r.append("ret").semicolon();
         }
 
@@ -676,8 +680,8 @@ public class HSAILMethod {
         }
 
         @Override
-        void render(HSAILRenderer r) {
-            r.append("st_arg_").typeName(getSrc()).space().regName(getSrc()).separator().append("[%_result]").semicolon().nl();
+        void render(HSAILRenderer r, int baseOffset) {
+            r.append("st_arg_").typeName(getSrc()).space().regName(getSrc(), baseOffset).separator().append("[%_result]").semicolon().nl();
             r.append("ret").semicolon();
         }
 
@@ -695,9 +699,9 @@ public class HSAILMethod {
         }
 
         @Override
-        void render(HSAILRenderer r) {
+        void render(HSAILRenderer r, int baseOffset) {
             // r.append("st_global_").typeName(getSrc()).space().append("[").regName(mem).append("+").array_len_offset().append("]").separator().regName(getSrc());
-            r.append("st_global_").typeName(getSrc()).space().regName(getSrc()).separator().append("[").regName(mem).append("+").array_base_offset().append("]").semicolon();
+            r.append("st_global_").typeName(getSrc()).space().regName(getSrc(), baseOffset).separator().append("[").regName(mem, baseOffset).append("+").array_base_offset().append("]").semicolon();
         }
 
 
@@ -715,8 +719,8 @@ public class HSAILMethod {
         }
 
         @Override
-        void render(HSAILRenderer r) {
-            r.append("ld_global_").typeName(getDest()).space().regName(getDest()).separator().append("[").regName(mem).append("+").array_base_offset().append("]").semicolon();
+        void render(HSAILRenderer r, int baseOffset) {
+            r.append("ld_global_").typeName(getDest()).space().regName(getDest(), baseOffset).separator().append("[").regName(mem, baseOffset).append("+").array_base_offset().append("]").semicolon();
         }
 
 
@@ -733,8 +737,8 @@ public class HSAILMethod {
         }
 
         @Override
-        void render(HSAILRenderer r) {
-            r.append("ld_global_").typeName(getDest()).space().regName(getDest()).separator().append("[").regName(mem).append("+").array_len_offset().append("]").semicolon();
+        void render(HSAILRenderer r, int baseOffset) {
+            r.append("ld_global_").typeName(getDest()).space().regName(getDest(), baseOffset).separator().append("[").regName(mem, baseOffset).append("+").array_len_offset().append("]").semicolon();
         }
 
 
@@ -752,8 +756,8 @@ public class HSAILMethod {
         }
 
         @Override
-        void render(HSAILRenderer r) {
-            r.append("ld_global_").typeName(getDest()).space().regName(getDest()).separator().append("[").regName(mem).append("+").append(offset).append("]").semicolon();
+        void render(HSAILRenderer r, int baseOffset) {
+            r.append("ld_global_").typeName(getDest()).space().regName(getDest(), baseOffset).separator().append("[").regName(mem, baseOffset).append("+").append(offset).append("]").semicolon();
         }
 
 
@@ -772,8 +776,8 @@ public class HSAILMethod {
         }
 
         @Override
-        void render(HSAILRenderer r) {
-            r.append("ld_global_").typeName(getDest()).space().regName(getDest()).separator().append("[").regName(mem).append("+").append(offset).append("]").semicolon();
+        void render(HSAILRenderer r, int baseOffset) {
+            r.append("ld_global_").typeName(getDest()).space().regName(getDest(), baseOffset).separator().append("[").regName(mem, baseOffset).append("+").append(offset).append("]").semicolon();
         }
 
 
@@ -792,8 +796,8 @@ public class HSAILMethod {
         }
 
         @Override
-        void render(HSAILRenderer r) {
-            r.append("st_global_").typeName(getSrc()).space().regName(getSrc()).separator().append("[").regName(mem).append("+").append(offset).append("]").semicolon();
+        void render(HSAILRenderer r, int baseOffset) {
+            r.append("st_global_").typeName(getSrc()).space().regName(getSrc(), baseOffset).separator().append("[").regName(mem, baseOffset).append("+").append(offset).append("]").semicolon();
         }
 
 
@@ -807,8 +811,8 @@ public class HSAILMethod {
         }
 
         @Override
-        void render(HSAILRenderer r) {
-            r.append("mov_").movTypeName(getDest()).space().regName(getDest()).separator().regName(getSrc()).semicolon();
+        void render(HSAILRenderer r, int baseOffset) {
+            r.append("mov_").movTypeName(getDest()).space().regName(getDest(), baseOffset).separator().regName(getSrc(), baseOffset).semicolon();
 
         }
 
@@ -826,8 +830,8 @@ public class HSAILMethod {
         }
 
         @Override
-        void render(HSAILRenderer r) {
-            r.append(op).typeName(getDest()).space().regName(getDest()).separator().regName(getDest()).semicolon();
+        void render(HSAILRenderer r, int baseOffset) {
+            r.append(op).typeName(getDest()).space().regName(getDest(), baseOffset).separator().regName(getDest(), baseOffset).semicolon();
         }
 
         HSAILRegister<T> getDest() {
@@ -854,8 +858,8 @@ public class HSAILMethod {
         }
 
         @Override
-        void render(HSAILRenderer r) {
-            r.append(op).typeName(getDest()).space().regName(getDest()).separator().regName(getLhs()).separator().regName(getRhs()).semicolon();
+        void render(HSAILRenderer r, int baseOffset) {
+            r.append(op).typeName(getDest()).space().regName(getDest(), baseOffset).separator().regName(getLhs(), baseOffset).separator().regName(getRhs(), baseOffset).semicolon();
         }
 
         HSAILRegister<T> getDest() {
@@ -968,8 +972,8 @@ public class HSAILMethod {
         }
 
         @Override
-        void render(HSAILRenderer r) {
-            r.append(op).movTypeName(getDest()).space().regName(getDest()).separator().regName(getLhs()).separator().regName(getRhs()).semicolon();
+        void render(HSAILRenderer r, int baseOffset) {
+            r.append(op).movTypeName(getDest()).space().regName(getDest(), baseOffset).separator().regName(getLhs(), baseOffset).separator().regName(getRhs(), baseOffset).semicolon();
         }
 
     }
@@ -980,8 +984,8 @@ public class HSAILMethod {
         }
 
         @Override
-        void render(HSAILRenderer r) {
-            r.append(op).movTypeName(getDest()).space().regName(getDest()).separator().regName(getLhs()).separator().regName(getRhs()).semicolon();
+        void render(HSAILRenderer r, int baseOffset) {
+            r.append(op).movTypeName(getDest()).space().regName(getDest(), baseOffset).separator().regName(getLhs(), baseOffset).separator().regName(getRhs(), baseOffset).semicolon();
         }
 
     }
@@ -992,8 +996,8 @@ public class HSAILMethod {
         }
 
         @Override
-        void render(HSAILRenderer r) {
-            r.append(op).movTypeName(getDest()).space().regName(getDest()).separator().regName(getLhs()).separator().regName(getRhs()).semicolon();
+        void render(HSAILRenderer r, int baseOffset) {
+            r.append(op).movTypeName(getDest()).space().regName(getDest(), baseOffset).separator().regName(getLhs(), baseOffset).separator().regName(getRhs(), baseOffset).semicolon();
         }
 
     }
@@ -1008,8 +1012,8 @@ public class HSAILMethod {
         }
 
         @Override
-        void render(HSAILRenderer r) {
-            r.append("mov_").movTypeName(getDest()).space().regName(getDest()).separator().append(value).semicolon();
+        void render(HSAILRenderer r, int baseOffset) {
+            r.append("mov_").movTypeName(getDest()).space().regName(getDest(), baseOffset).separator().append(value).semicolon();
 
         }
 
@@ -1091,11 +1095,11 @@ public class HSAILMethod {
     public HSAILRenderer renderFunctionDefinition(HSAILRenderer r) {
         renderFunctionDeclaration(r);
 
-            r.obrace();
+            r.obrace().nl();
             Set<Instruction> s = new HashSet<Instruction>();
 
             for (HSAILInstruction i : instructions) {
-                if (!(i instanceof ld_kernarg) && !s.contains(i.from)) {
+                if (!(i instanceof ld_kernarg || i instanceof ld_arg) && !s.contains(i.from)) {
                     s.add(i.from);
                     if (i.from.isBranchTarget()) {
                         r.label(i.from.getThisPC()).colon().nl();
@@ -1105,10 +1109,48 @@ public class HSAILMethod {
                     }
                 }
                 r.pad(9);
-                i.render(r);
+                i.render(r,0);
                 r.nl();
             }
             r.cbrace().semicolon();
+
+
+
+        return (r);
+    }
+
+    public HSAILRenderer renderInlinedFunctionBody(HSAILRenderer r, int base) {
+
+
+      //  r.lineCommentStart().obrace().nl();
+        Set<Instruction> s = new HashSet<Instruction>();
+
+        for (HSAILInstruction i : instructions) {
+            if (!(i instanceof ld_arg)){
+               if (!s.contains(i.from)) {
+                   s.add(i.from);
+                     if (i.from.isBranchTarget()) {
+                         r.label(i.from.getThisPC()).colon().nl();
+                     }
+                    if (r.isShowingComments()) {
+                        r.nl().pad(1).lineCommentStart().append("inlined! ").mark().append(i.from.getThisPC()).relpad(2).space().i(i.from).nl();
+                    }
+                }
+                if (i instanceof retvoid){
+                    r.pad(9).lineCommentStart().append("ret").semicolon();
+                }else if (i instanceof ret){
+                  r.pad(9);
+                  r.append("mov_").typeName(((ret)i).getSrc()).space().regPrefix(((ret)i).getSrc().type).append(base).separator().regName(((ret)i).getSrc(), base).semicolon().nl();
+                  r.nl().pad(9).lineCommentStart().append("st_arg_").typeName(((ret)i).getSrc()).space().regName(((ret)i).getSrc(), base).separator().append("[%_result]").semicolon().nl();
+                  r.pad(9).lineCommentStart().append("ret").semicolon();
+              }   else{
+                  r.pad(9);
+                  i.render(r, base);    // note rendering of labels will fail.  we need a namespace
+              }
+            r.nl();
+            }
+        }
+       // r.lineCommentStart().cbrace().semicolon();
 
 
 
@@ -1173,7 +1215,7 @@ public class HSAILMethod {
                 count++;
             }
             r.pad(9);
-            i.render(r);
+            i.render(r, 0);
             r.nl();
         }
         r.cbrace().semicolon();

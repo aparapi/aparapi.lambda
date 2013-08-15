@@ -29,9 +29,34 @@ public class NBody{
           mass = (float)(Math.random()*20f+10f);
           paletteIndex = 0;
       }
+       float getDX(Body other){
+           return(x -other.x);
+       }
+       float getDY(Body other){
+           return(y -other.y);
+       }
+       float getDZ(Body other){
+           return(z -other.z);
+       }
+       void incVx(float _dvx){
+           vx+=_dvx;
+       }
+       void incVy(float _dvy){
+           vy+=_dvy;
+       }
+       void incVz(float _dvz){
+           vz+=_dvz;
+       }
       float getX(){
           return(x);
       }
+       float getY(){
+           return(y);
+       }
+       float getZ(){
+           return(z);
+       }
+
 
 
    }
@@ -83,9 +108,9 @@ public class NBody{
             for(int i = 0; i < bodies.length; i++){
                Body otherBody = bodies[i];
                if (thisBody != otherBody){
-                  float dx = otherBody.getX() - thisBody.x;
-                  float dy = otherBody.y - thisBody.y;
-                  float dz = otherBody.z - thisBody.z;
+                  float dx = otherBody.getDX(thisBody);
+                  float dy = otherBody.getDY(thisBody);
+                  float dz = otherBody.getDZ(thisBody);
                   float dist =  (float) Math.sqrt(((dx * dx) + (dy * dy) + (dz * dz) + .1f /* +.1f in case dx,dy,dz are 0!*/));
                   float invDist = 1f / dist;
                   float massInvDist_3 = otherBody.mass * invDist * invDist * invDist;
@@ -108,9 +133,11 @@ public class NBody{
             thisBody.x += thisBody.vx * delT + (accx * .5f * delT);
             thisBody.y += thisBody.vy * delT + (accy * .5f * delT);
             thisBody.z += thisBody.vz * delT + (accz * .5f * delT);
-            thisBody.vx +=  accx;
-            thisBody.vy +=  accy;
-            thisBody.vz +=  accz;
+            thisBody.incVx(accx);
+            thisBody.incVy(accy);
+           // thisBody.vx+=accx;
+           //  thisBody.vy+=accy;
+             thisBody.vz+=accz;
             int x =  (int)thisBody.x;
             int y =  (int)thisBody.y;
             if (x>1&&x<width-1&&y>1&&y<height-1){
