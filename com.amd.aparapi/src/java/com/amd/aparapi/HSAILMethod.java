@@ -26,7 +26,7 @@ public class HSAILMethod {
 
         abstract T renderDefinition(HSAILRenderer r);
         abstract T renderDeclaration(HSAILRenderer r);
-        abstract T renderCallSite(HSAILRenderer r);
+        abstract T renderCallSite(HSAILRenderer r, Instruction from, String name, int base);
         abstract boolean isStatic();
     }
 
@@ -52,7 +52,7 @@ public class HSAILMethod {
             return this;
         }
         @Override
-           IntrinsicCall renderCallSite(HSAILRenderer r) {
+           IntrinsicCall renderCallSite(HSAILRenderer r, Instruction from, String name, int base) {
             return(this);
         }
         @Override
@@ -67,18 +67,13 @@ public class HSAILMethod {
 
     public static class InlineIntrinsicCall extends IntrinsicCall {
 
-        int base;
+
 
         InlineIntrinsicCall(String _mappedMethod, boolean _isStatic,  String... _lines) {
             super(_mappedMethod, _isStatic, _lines);
         }
 
-        InlineIntrinsicCall(InlineIntrinsicCall template, int _base) {
-            super(template.getMappedMethod(), template.isStatic, template.lines);
 
-            base = _base;
-
-        }
 
         final Pattern regex= Pattern.compile("\\$\\{([0-9]+)\\}");
         String expand(String line, int base){
@@ -94,7 +89,7 @@ public class HSAILMethod {
         }
 
         @Override
-        InlineIntrinsicCall renderCallSite(HSAILRenderer r) {
+        InlineIntrinsicCall renderCallSite(HSAILRenderer r, Instruction from, String name, int base) {
             for (String line : lines) {
                 String expandedLine = expand(line, base);
 
@@ -119,6 +114,7 @@ public class HSAILMethod {
     public static class MethodCall extends CallType<MethodCall> {
         HSAILMethod method;
 
+
         MethodCall(String _mappedMethod, HSAILMethod _method) {
             super(_mappedMethod);
             method = _method;
@@ -132,7 +128,53 @@ public class HSAILMethod {
             return (this);
         }
         @Override
-        MethodCall renderCallSite(HSAILRenderer r) {
+        MethodCall renderCallSite(HSAILRenderer r, Instruction from, String name, int base) {
+
+            TypeHelper.JavaMethodArgsAndReturnType argsAndReturnType = from.asMethodCall().getConstantPoolMethodEntry().getArgsAndReturnType();
+            TypeHelper.JavaType returnType = argsAndReturnType.getReturnType();
+            r.obrace().nl();
+            if (!isStatic()) {
+                r.pad(12).append("arg_u64 %this").semicolon().nl();
+                r.pad(12).append("st_arg_u64 $d" + base + ", [%this]").semicolon().nl();
+            }
+
+            int offset = 0;
+            if (!isStatic()) {
+                offset++;
+            }
+            for (TypeHelper.JavaMethodArg arg : argsAndReturnType.getArgs()) {
+                String argName = "%_arg_" + arg.getArgc();
+                r.pad(12).append("arg_").typeName(arg.getJavaType()).space().append(argName).semicolon().nl();
+                r.pad(12).append("st_arg_").typeName(arg.getJavaType()).space().regPrefix(arg.getJavaType()).append( + (base + offset) + ", [" + argName + "]").semicolon().nl();
+            }
+            if (!returnType.isVoid()) {
+                r.pad(12).append("arg_").typeName(returnType).append(" %_result").semicolon().nl();
+            }
+            r.pad(12).append("call &").append(name).space();
+            r.oparenth();
+            if (!returnType.isVoid()) {
+                r.append("%_result");
+            }
+            r.cparenth().space();
+
+            r.oparenth();
+            if (!isStatic()) {
+                r.append("%this ");
+            }
+
+            for (TypeHelper.JavaMethodArg arg : argsAndReturnType.getArgs()) {
+                if (arg.getArgc() + offset > 0) {
+                    r.separator();
+                }
+                r.append("%_arg_" + arg.getArgc());
+
+            }
+            r.cparenth().semicolon().nl();
+            if (!returnType.isVoid()) {
+                r.pad(12).append("ld_arg_").typeName(returnType).space().regPrefix(returnType).append( base + ", [%_result]").semicolon().nl();
+            }
+            r.pad(9).cbrace();
+
             return(this);
         }
         @Override
@@ -159,7 +201,7 @@ public class HSAILMethod {
             return (this);
         }
         @Override
-        InlineMethodCall renderCallSite(HSAILRenderer r) {
+        InlineMethodCall renderCallSite(HSAILRenderer r, Instruction from, String name, int base) {
             return (this);
         }
 
@@ -444,9 +486,7 @@ public class HSAILMethod {
             for (IntrinsicCall ic : intrinsicMap.values()) {
                 if (ic.getMappedMethod().equals(intrinsicLookup)) {
                     call = ic;
-                    if (call instanceof InlineIntrinsicCall){
-                        call = new InlineIntrinsicCall((InlineIntrinsicCall)call, base);
-                    }
+
                     break;
                 }
             }
@@ -469,59 +509,8 @@ public class HSAILMethod {
 
         @Override
         void render(HSAILRenderer r) {
-            if (call instanceof InlineIntrinsicCall){
-                call.renderCallSite(r);
-            }else if (call instanceof InlineMethodCall){
-                r.append(" // will inline "+((InlineMethodCall) call).method.method.getName()+" here");
-                call.renderCallSite(r);
-            }else{
+            call.renderCallSite(r, from, name, base);
 
-            TypeHelper.JavaMethodArgsAndReturnType argsAndReturnType = from.asMethodCall().getConstantPoolMethodEntry().getArgsAndReturnType();
-            TypeHelper.JavaType returnType = argsAndReturnType.getReturnType();
-            r.obrace().nl();
-            if (!call.isStatic()) {
-                r.pad(12).append("arg_u64 %this").semicolon().nl();
-                r.pad(12).append("st_arg_u64 $d" + base + ", [%this]").semicolon().nl();
-            }
-
-            int offset = 0;
-            if (!call.isStatic()) {
-                offset++;
-            }
-            for (TypeHelper.JavaMethodArg arg : argsAndReturnType.getArgs()) {
-                String argName = "%_arg_" + arg.getArgc();
-                r.pad(12).append("arg_").typeName(arg.getJavaType()).space().append(argName).semicolon().nl();
-                r.pad(12).append("st_arg_").typeName(arg.getJavaType()).space().regPrefix(arg.getJavaType()).append( + (base + offset) + ", [" + argName + "]").semicolon().nl();
-            }
-            if (!returnType.isVoid()) {
-                r.pad(12).append("arg_").typeName(returnType).append(" %_result").semicolon().nl();
-            }
-            r.pad(12).append("call &").append(name).space();
-            r.oparenth();
-            if (!returnType.isVoid()) {
-                r.append("%_result");
-            }
-            r.cparenth().space();
-
-            r.oparenth();
-            if (!call.isStatic()) {
-                r.append("%this ");
-            }
-
-            for (TypeHelper.JavaMethodArg arg : argsAndReturnType.getArgs()) {
-                if (arg.getArgc() + offset > 0) {
-                    r.separator();
-                }
-                r.append("%_arg_" + arg.getArgc());
-
-            }
-            r.cparenth().semicolon().nl();
-            if (!returnType.isVoid()) {
-               r.pad(12).append("ld_arg_").typeName(returnType).space().regPrefix(returnType).append( base + ", [%_result]").semicolon().nl();
-            }
-            r.pad(9).cbrace();
-
-            }
         }
 
 
