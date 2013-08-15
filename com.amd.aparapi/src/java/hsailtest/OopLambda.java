@@ -58,8 +58,10 @@ public class OopLambda {
         }
 
         IntConsumer ic = gid -> {
-            points[gid].setX(gid);
-            points[gid].setY(gid * 2);
+            P p = points[gid];
+            p.setX(p.getX()+gid);
+
+            p.setY(p.getY()+gid * 2);
          //   points[gid].xy=points[gid].getXY();
         };
 

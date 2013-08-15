@@ -13,14 +13,6 @@ import java.util.regex.Pattern;
  * To change this template use File | Settings | File Templates.
  */
 public class HSAILMethod {
-
-    public interface Inline<T extends CallType>{
-
-    }
-    public interface Outline<T extends CallType>{
-
-    }
-
     public static abstract class CallType<T extends CallType> {
         private String mappedMethod; // i.e  java.lang.Math.sqrt(D)D
 
@@ -498,39 +490,18 @@ public class HSAILMethod {
             }
             for (TypeHelper.JavaMethodArg arg : argsAndReturnType.getArgs()) {
                 String argName = "%_arg_" + arg.getArgc();
-
-                if (arg.getJavaType().isDouble()) {
-                    r.pad(12).append("arg_f64 ").append(argName).semicolon().nl();
-                    r.pad(12).append("st_arg_f64 $d" + (base + offset) + ", [" + argName + "]").semicolon().nl();
-                } else if (arg.getJavaType().isFloat()) {
-                    r.pad(12).append("arg_f32 ").append(argName).semicolon().nl();
-                    r.pad(12).append("st_arg_f32 $s" + (base + offset) + ", [" + argName + "]").semicolon().nl();
-                } else if (arg.getJavaType().isInt()) {
-                    r.pad(12).append("arg_s32 ").append(argName).semicolon().nl();
-                    r.pad(12).append("st_arg_s32 $s" + (base + offset) + ", [" + argName + "]").semicolon().nl();
-                } else if (arg.getJavaType().isLong()) {
-                    r.pad(12).append("arg_s64 ").append(argName).semicolon().nl();
-                    r.pad(12).append("st_arg_s64 $s" + (base + offset) + ", [" + argName + "]").semicolon().nl();
-                }
+                r.pad(12).append("arg_").typeName(arg.getJavaType()).space().append(argName).semicolon().nl();
+                r.pad(12).append("st_arg_").typeName(arg.getJavaType()).space().regPrefix(arg.getJavaType()).append( + (base + offset) + ", [" + argName + "]").semicolon().nl();
             }
-
-            if (returnType.isInt()) {
-                r.pad(12).append("arg_s32 %_result").semicolon().nl();
-            } else if (returnType.isFloat()) {
-                r.pad(12).append("arg_f32 %_result").semicolon().nl();
-            } else if (returnType.isDouble()) {
-                r.pad(12).append("arg_f64 %_result").semicolon().nl();
-            } else if (returnType.isLong()) {
-                r.pad(12).append("arg_s64 %_result").semicolon().nl();
+            if (!returnType.isVoid()) {
+                r.pad(12).append("arg_").typeName(returnType).append(" %_result").semicolon().nl();
             }
-
-
             r.pad(12).append("call &").append(name).space();
-            if (returnType.isVoid()) {
-                r.append("()").space();
-            } else {
-                r.append("(%_result)").space();
+            r.oparenth();
+            if (!returnType.isVoid()) {
+                r.append("%_result");
             }
+            r.cparenth().space();
 
             r.oparenth();
             if (!call.isStatic()) {
@@ -545,20 +516,11 @@ public class HSAILMethod {
 
             }
             r.cparenth().semicolon().nl();
-
-
-            if (returnType.isInt()) {
-                r.pad(12).append("ld_arg_s32 $s" + base + ", [%_result]").semicolon().nl();
-            } else if (returnType.isFloat()) {
-                r.pad(12).append("ld_arg_f32 $f" + base + ", [%_result]").semicolon().nl();
-            } else if (returnType.isDouble()) {
-                r.pad(12).append("ld_arg_f64 $d" + base + ", [%_result]").semicolon().nl();
-            } else if (returnType.isLong()) {
-                r.pad(12).append("ld_arg_s64 $d" + base + ", [%_result]").semicolon().nl();
+            if (!returnType.isVoid()) {
+               r.pad(12).append("ld_arg_").typeName(returnType).space().regPrefix(returnType).append( base + ", [%_result]").semicolon().nl();
             }
+            r.pad(9).cbrace();
 
-
-            r.pad(9).append("}");
             }
         }
 
