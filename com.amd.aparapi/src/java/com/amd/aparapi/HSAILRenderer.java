@@ -47,8 +47,9 @@ public class HSAILRenderer extends TextRenderer<HSAILRenderer>{
         }
        return(this);
     }
-    public HSAILRenderer regPrefix(TypeHelper.JavaType _javaType){
-        switch(_javaType.getPrimitiveType().getHsaBits()){
+
+    public HSAILRenderer regPrefix(PrimitiveType _type){
+        switch(_type.getHsaBits()){
             case 32:
                 append("$s");
                 break;
@@ -61,21 +62,17 @@ public class HSAILRenderer extends TextRenderer<HSAILRenderer>{
         }
         return (this);
     }
+    public HSAILRenderer regPrefix(TypeHelper.JavaType _javaType){
+        this.regPrefix(_javaType.getPrimitiveType());
+
+        return (this);
+    }
 
 
-    public HSAILRenderer regName(HSAILRegister _reg){
-      switch(_reg.type.getHsaBits()){
-         case 32:
-            append("$s");
-            break;
-         case 64:
-            append("$d");
-            break;
-         default:
-            append("$?");
-            break;
-      }
-      return (this.append(_reg.index));
+    public HSAILRenderer regName(HSAILRegister _reg, int baseOffset){
+        this.regPrefix(_reg.type);
+
+      return (this.append(_reg.index + baseOffset));
    }
 
    public HSAILRenderer i(Instruction from){
