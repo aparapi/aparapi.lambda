@@ -34,7 +34,36 @@ public class HSAILRenderer extends TextRenderer<HSAILRenderer>{
       return (this.append("b" + _reg.type.getHsaBits()));
    }
 
-   public HSAILRenderer regName(HSAILRegister _reg){
+
+    public HSAILRenderer typeName(TypeHelper.JavaType _javaType){
+        if (_javaType.isDouble()) {
+            this.append("f64");
+        } else if (_javaType.isFloat()) {
+            this.append("f32");
+        } else if (_javaType.isInt()) {
+            this.append("s32");
+        } else if (_javaType.isLong()) {
+            this.append("s64");
+        }
+       return(this);
+    }
+    public HSAILRenderer regPrefix(TypeHelper.JavaType _javaType){
+        switch(_javaType.getPrimitiveType().getHsaBits()){
+            case 32:
+                append("$s");
+                break;
+            case 64:
+                append("$d");
+                break;
+            default:
+                append("$?");
+                break;
+        }
+        return (this);
+    }
+
+
+    public HSAILRenderer regName(HSAILRegister _reg){
       switch(_reg.type.getHsaBits()){
          case 32:
             append("$s");
