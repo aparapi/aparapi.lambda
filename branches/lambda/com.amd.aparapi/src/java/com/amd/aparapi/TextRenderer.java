@@ -102,6 +102,10 @@ public class TextRenderer<T extends TextRenderer>{
     final T commentEnd(){
         return (append("*/"));
     }
+    final public T comment(String text){
+        commentStart().space().append(text).commentEnd();
+        return ((T)this);
+    }
 
    final public T nl(){
       append("\n");
@@ -144,6 +148,11 @@ public class TextRenderer<T extends TextRenderer>{
 
     final public T lineCommentStart(){
         return (append("// "));
+    }
+
+    final public T lineComment(String text){
+        lineCommentStart().space().append(text).nl();
+        return ((T)this);
     }
     final public T colon(){
         return (append(":"));

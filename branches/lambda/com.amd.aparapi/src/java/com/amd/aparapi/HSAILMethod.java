@@ -203,8 +203,40 @@ public class HSAILMethod {
         }
         @Override
         InlineMethodCall renderCallSite(HSAILRenderer r, Instruction from, String name, int base) {
+
+            /** we need to copy all args to registers to represent the stack **/
+            TypeHelper.JavaMethodArgsAndReturnType argsAndReturnType = from.asMethodCall().getConstantPoolMethodEntry().getArgsAndReturnType();
+            int argCount = argsAndReturnType.getArgs().length;
+            TypeHelper.JavaType returnType = argsAndReturnType.getReturnType();
+           // r.obrace().nl();
+            int offset = 0;
+            if (!isStatic()) {
+                offset++;
+            }
+            if (!isStatic()) {
+                r.pad(12).append("mov_b64 $d" + (base+argCount+1) + ", $d"+base).semicolon().space().lineComment("copy 'this' up to base !  This is broken and seems inconsistent");
+            }
+
+            int argc = offset+1;
+            for (TypeHelper.JavaMethodArg arg : argsAndReturnType.getArgs()) {
+
+                String argName = "%_arg_" + arg.getArgc();
+                r.pad(12).append("mov_").typeName(arg.getJavaType()).space().regPrefix(arg.getJavaType()).append( + (base + argCount+argc)).separator().space().regPrefix(arg.getJavaType()).append( + (base + argc)).semicolon().space().lineComment("move args up to base! broken !");
+                argc++;
+            }
+
+
+
+
+          //  if (!returnType.isVoid()) {
+          //      r.pad(12).append("ld_arg_").typeName(returnType).space().regPrefix(returnType).append( base + ", [%_result]").semicolon().nl();
+          //  }
+          // r.pad(9).cbrace();
+
+
+            /**/
             r.nl();
-            method.renderInlinedFunctionBody(r, base);
+            method.renderInlinedFunctionBody(r, base+argCount+offset);
             r.nl();
             return (this);
         }
@@ -1120,11 +1152,7 @@ public class HSAILMethod {
     }
 
     public HSAILRenderer renderInlinedFunctionBody(HSAILRenderer r, int base) {
-
-
-      //  r.lineCommentStart().obrace().nl();
         Set<Instruction> s = new HashSet<Instruction>();
-
         for (HSAILInstruction i : instructions) {
             if (!(i instanceof ld_arg)){
                if (!s.contains(i.from)) {
@@ -1150,10 +1178,6 @@ public class HSAILMethod {
             r.nl();
             }
         }
-       // r.lineCommentStart().cbrace().semicolon();
-
-
-
         return (r);
     }
 
