@@ -26,8 +26,9 @@ public class OopLambda {
        void setX(int _x){
           x = _x;
        }
-       void setY(int _y, int _1, int _2, int _3){
+       int setY(int _y, int _1, int _2, int _3){
           y = _y;
+           return(0);
        }
        void clear(){
            x=y=0;
@@ -53,6 +54,7 @@ public class OopLambda {
 
 
     public static void main(String[] args) throws AparapiException {
+        System.out.println("PATH="+System.getenv("PATH"));
         int len = 12;
         P[] points = new P[len];
 
@@ -67,7 +69,7 @@ public class OopLambda {
             //p.x = gid;
            // p.y = gid*2;
             points[gid].setX(gid);
-            points[gid].setY(gid*2, 1, 2, 3);
+            int junk = points[gid].setY(gid*2, 1, 2, 3);
            // p.setX(p.getX()+gid);
 
           //  p.setY(p.getY()+gid * 2);
