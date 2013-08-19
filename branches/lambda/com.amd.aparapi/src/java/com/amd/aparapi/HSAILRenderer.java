@@ -44,6 +44,8 @@ public class HSAILRenderer extends TextRenderer<HSAILRenderer>{
             this.append("s32");
         } else if (_javaType.isLong()) {
             this.append("s64");
+        } else if (_javaType.isObject()) {
+            this.append("b64");
         }
        return(this);
     }
