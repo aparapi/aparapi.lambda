@@ -217,11 +217,11 @@ public class HSAILMethod {
                 r.pad(12).append("mov_b64 $d" + (base+argCount+1) + ", $d"+base).semicolon().space().lineComment("copy 'this' up to base !  This is broken and seems inconsistent");
             }
 
-            int argc = offset+1;
+            int argc = offset;
             for (TypeHelper.JavaMethodArg arg : argsAndReturnType.getArgs()) {
 
                 String argName = "%_arg_" + arg.getArgc();
-                r.pad(12).append("mov_").typeName(arg.getJavaType()).space().regPrefix(arg.getJavaType()).append( + (base + argCount+argc)).separator().space().regPrefix(arg.getJavaType()).append( + (base + argc)).semicolon().space().lineComment("move args up to base! broken !");
+                r.pad(12).append("mov_").typeName(arg.getJavaType()).space().regPrefix(arg.getJavaType()).append( + (base + argCount+argc+1)).separator().space().regPrefix(arg.getJavaType()).append( + (base + argc)).semicolon().space().lineComment("move args up to base! broken !");
                 argc++;
             }
 
@@ -236,7 +236,7 @@ public class HSAILMethod {
 
             /**/
             r.nl();
-            method.renderInlinedFunctionBody(r, base+argCount+offset);
+            method.renderInlinedFunctionBody(r, base+argCount+1);
             r.nl();
             return (this);
         }
@@ -1219,6 +1219,7 @@ public class HSAILMethod {
         java.util.Set<Instruction> s = new java.util.HashSet<Instruction>();
         boolean first = false;
         int count = 0;
+
         for (HSAILInstruction i : instructions) {
             if (!(i instanceof ld_kernarg) && !s.contains(i.from)) {
                 if (!first) {
@@ -1317,6 +1318,9 @@ public class HSAILMethod {
         method = _method;
         ParseState parseState = ParseState.NONE;
         Instruction lastInstruction = null;
+        for (Instruction i : method.getInstructions()) {
+            System.out.println(i.getThisPC()+" "+i.getPostStackBase());
+        }
         for (Instruction i : method.getInstructions()) {
             if (i.getThisPC() == 0) {
 
