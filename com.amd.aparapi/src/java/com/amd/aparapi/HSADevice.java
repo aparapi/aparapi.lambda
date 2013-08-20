@@ -33,6 +33,7 @@ public class HSADevice extends Device {
 
 
                 HSAILRenderer renderer = new HSAILRenderer().setShowComments(true);
+
                 HSAILMethod.getHSAILMethod(method, null).renderEntryPoint(renderer);
                 cachedRunner.hsail = renderer.toString();
                 System.out.println(cachedRunner.hsail);

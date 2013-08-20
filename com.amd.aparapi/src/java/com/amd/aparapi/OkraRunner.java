@@ -20,7 +20,11 @@ public class OkraRunner{
     }
    public void run(int _size, Object... args){
       k.setLaunchAttributes(_size, 0);
-      k.dispatchWithArgs(args);
+      if (Boolean.getBoolean("dispatch")){
+        k.dispatchWithArgs(args);
+      }else{
+          System.out.println("-Ddispath=true if you want to actually dispatch");
+      }
    }
 
 
