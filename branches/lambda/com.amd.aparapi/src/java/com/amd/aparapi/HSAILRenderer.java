@@ -12,8 +12,8 @@ import java.util.*;
 public class HSAILRenderer extends TextRenderer<HSAILRenderer>{
 
 
-   public HSAILRenderer label(int _pc){
-      return (append(String.format("@L%d", _pc)));
+   public HSAILRenderer label(String callSiteId, int _pc){
+      return (append(String.format("@L%s%d", callSiteId, _pc)));
    }
 
    public HSAILRenderer array_base_offset(){
@@ -71,10 +71,10 @@ public class HSAILRenderer extends TextRenderer<HSAILRenderer>{
     }
 
 
-    public HSAILRenderer regName(HSAILRegister _reg, int baseOffset){
+    public HSAILRenderer regName(HSAILRegister _reg, HSAILMethod.RenderContext _renderContext){
         this.regPrefix(_reg.type);
 
-      return (this.append(_reg.index + baseOffset));
+      return (this.append(_reg.index + _renderContext.baseOffset));
    }
 
    public HSAILRenderer i(Instruction from){

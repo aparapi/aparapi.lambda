@@ -39,10 +39,10 @@ public class NBody{
            return(z -other.z);
        }
        void incVx(float _dvx){
-           vx+=_dvx;
+           vx += _dvx;
        }
        void incVy(float _dvy){
-           vy+=_dvy;
+           vy += _dvy;
        }
        void incVz(float _dvz){
            vz+=_dvz;
@@ -135,9 +135,8 @@ public class NBody{
             thisBody.z += thisBody.vz * delT + (accz * .5f * delT);
             thisBody.incVx(accx);
             thisBody.incVy(accy);
-           // thisBody.vx+=accx;
-           //  thisBody.vy+=accy;
-             thisBody.vz+=accz;
+             thisBody.incVz(accz);
+
             int x =  (int)thisBody.x;
             int y =  (int)thisBody.y;
             if (x>1&&x<width-1&&y>1&&y<height-1){
