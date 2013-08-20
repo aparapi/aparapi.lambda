@@ -567,7 +567,7 @@ public class HSAILMethod {
 
         @Override
         void render(HSAILRenderer r, RenderContext _renderContext) {
-            RenderContext rc = new RenderContext(_renderContext, "call_");
+            RenderContext rc = new RenderContext(_renderContext, "call_"+from.getThisPC()+"_");
             rc.baseOffset=base;
             call.renderCallSite(r,rc, from,  name);
 

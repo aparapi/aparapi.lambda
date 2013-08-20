@@ -25,6 +25,21 @@ public class NBodySimple {
           z = (float) (radius * Math.cos(phi));
           mass = (float)(Math.random()*20f+10f);
       }
+      void paint(int[] offscreenPixels, int width, int height, int x, int y,int rgb){
+          if (x>=0 && x<width && y>=0 && y<height){
+              offscreenPixels[x+y*width]=rgb;
+          }
+      }
+       void paint(int[] offscreenPixels, int width, int height){
+       int px =  (int)x;
+       int py =  (int)y;
+       int rgb = 0xffffff;
+       paint(offscreenPixels, width, height, px-1, py, rgb);
+       paint(offscreenPixels, width, height, px, py, rgb);
+       paint(offscreenPixels, width, height, px+1, py, rgb);
+       paint(offscreenPixels, width, height, px, py-1, rgb);
+       paint(offscreenPixels, width, height, px, py+1, rgb);
+       }
    }
 
    public static void main(String[] _args){
@@ -89,16 +104,11 @@ public class NBodySimple {
             thisBody.vx +=  accx;
             thisBody.vy +=  accy;
             thisBody.vz +=  accz;
-            int x =  (int)thisBody.x;
-            int y =  (int)thisBody.y;
-            if (x>1&&x<width-1&&y>1&&y<height-1){
-               int rgb = 0xffffff;
-               offscreenPixels[x-1+y*width]=rgb;
-               offscreenPixels[x+y*width]=rgb;
-               offscreenPixels[x+1+y*width]=rgb;
-               offscreenPixels[x+(y-1)*width]=rgb;
-               offscreenPixels[x+(y+1)*width]=rgb;
-            }
+            thisBody.paint(offscreenPixels, width, height, (int)thisBody.x-1, (int)thisBody.y, 0xffffff);
+             thisBody.paint(offscreenPixels, width, height, (int)thisBody.x, (int)thisBody.y, 0xffffff);
+             thisBody.paint(offscreenPixels, width, height, (int)thisBody.x+1, (int)thisBody.y, 0xffffff);
+             thisBody.paint(offscreenPixels, width, height, (int)thisBody.x, (int)thisBody.y-1, 0xffffff);
+             thisBody.paint(offscreenPixels, width, height, (int)thisBody.x, (int)thisBody.y+1, 0xffffff);
          });
          long delta = System.currentTimeMillis()-first;
          frame+=1;

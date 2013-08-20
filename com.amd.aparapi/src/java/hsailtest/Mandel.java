@@ -118,6 +118,23 @@ public class Mandel {
       }
    }
 
+   static int getMandelCount(float x, float y, int maxIterations ){
+       float zx = x;
+       float zy = y;
+       float new_zx = 0f;
+       int count =0;
+
+       // Iterate until the algorithm converges or until maxIterations are reached.
+       while(count < maxIterations && zx * zx + zy * zy < 8){
+           new_zx = zx * zx - zy * zy + x;
+           zy = 2 * zx * zy + y;
+           zx = new_zx;
+           count++;
+       }
+       return(count);
+
+   }
+
 
 
    void getNextImage(Device device, final float x_offset, final float y_offset, final float scale){
@@ -132,18 +149,8 @@ public class Mandel {
 
          float lx = ((((gid % w) * scale) - ((scale / 2) * w)) / w) + x_offset;
          float ly = (((gid / w * scale) - ((scale / 2) * h)) / h) + y_offset;
-          int count = 0;
-          float zx = lx;
-          float zy = ly;
-          float new_zx = 0f;
+         int count = getMandelCount(lx, ly, maxIterations);
 
-          // Iterate until the algorithm converges or until maxIterations are reached.
-          while(count < maxIterations && zx * zx + zy * zy < 8){
-              new_zx = zx * zx - zy * zy + lx;
-              zy = 2 * zx * zy + ly;
-              zx = new_zx;
-              count++;
-          }
 
 
         rgb[gid] = pallette[count];
