@@ -15,7 +15,6 @@ public class NBodyFunc {
       float x,y,z;
       float vx,vy,vz;
       float mass;
-      int paletteIndex;
       Body(int width, int height){
           float maxDist = width / 2;
           float theta = (float) (Math.random() * Math.PI * 2);
@@ -24,8 +23,7 @@ public class NBodyFunc {
           x = (float) (radius * Math.cos(theta) * Math.sin(phi)) + width / 2;
           y = (float) (radius * Math.sin(theta) * Math.sin(phi)) + height / 2;
           z = (float) (radius * Math.cos(phi));
-          mass = (float)(Math.random()*100f+10f);
-          paletteIndex = 0;
+          mass = (float)(Math.random()*20f+10f);
       }
 
 
@@ -36,32 +34,26 @@ public class NBodyFunc {
            float accz = 0.f;
            for(int i = 0; i < bodies.length; i++){
                Body other = bodies[i];
-            //   if (this != other){
-                   float dx = x - other.x;
-                   float dy = y - other.y;
-                   float dz = z - other.z;
+               if (this != other){
+                   float dx = other.x-x;
+                   float dy = other.y-y;
+                   float dz = other.z-z;
                    float dist =  (float) Math.sqrt(((dx * dx) + (dy * dy) + (dz * dz) + .1f /* +.1f in case dx,dy,dz are 0!*/));
                    float invDist = 1f / dist;
                    float massInvDist_3 = other.mass * invDist * invDist * invDist;
-               //    if (dist<0.7f){
-                //       mass+=10f;
-                      // if (paletteIndex<(pallette.length-1)){
-                         //  paletteIndex++;
-                      // }
-              //     }else{
-                       accx += massInvDist_3 * dx;
-                       accy += massInvDist_3 * dy;
-                       accz += massInvDist_3 * dz;
-               //    }
-              // }
+                   accx += massInvDist_3 * dx;
+                   accy += massInvDist_3 * dy;
+                   accz += massInvDist_3 * dz;
+               }
            }
            float delT = .05f;
+           float delT_2 = delT/2;
            accx *= delT;
            accy *= delT;
            accz *= delT;
-           x += vx * delT + (accx * .5f * delT);
-           y += vy * delT + (accy * .5f * delT);
-           z += vz * delT + (accz * .5f * delT);
+           x += vx * delT + accx * delT_2;
+           y += vy * delT + accy * delT_2;
+           z += vz * delT + accz * delT_2;
            vx+=accx;
            vy+=accy;
            vz+=accz;
@@ -72,7 +64,16 @@ public class NBodyFunc {
            }
        }
 
-
+       void setPixel(int[] offscreenPixels, int width, int height){
+           int px =  (int)x;
+           int py =  (int)y;
+           int rgb = 0xffffff;
+           setPixel(offscreenPixels, width, height, px-1, py, rgb);
+           setPixel(offscreenPixels, width, height, px, py, rgb);
+           setPixel(offscreenPixels, width, height, px+1, py, rgb);
+           setPixel(offscreenPixels, width, height, px, py-1, rgb);
+           setPixel(offscreenPixels, width, height, px, py+1, rgb);
+       }
    }
 
    public static void main(String[] _args){
@@ -117,17 +118,7 @@ public class NBodyFunc {
          device.forEach(bodies.length, gid -> {
             Body body = bodies[gid];
             body.updatePosition(bodies);
-            if (body.paletteIndex >= palette.length){
-                body.paletteIndex = palette.length-1;
-            }
-
-             body.setPixel(offscreenPixels, width, height, (int)body.x-1, (int)body.y, 0xffffff);
-             body.setPixel(offscreenPixels, width, height, (int)body.x, (int)body.y, 0xffffff);
-             body.setPixel(offscreenPixels, width, height, (int)body.x+1, (int)body.y, 0xffffff);
-             body.setPixel(offscreenPixels, width, height, (int)body.x, (int)body.y-1, 0xffffff);
-             body.setPixel(offscreenPixels, width, height, (int)body.x, (int)body.y+1, 0xffffff);
-
-
+            body.setPixel(offscreenPixels, width, height);
          });
          long delta = System.currentTimeMillis()-first;
          frame+=1;

@@ -10,6 +10,7 @@ public class OopLambda {
     public static class P {
       public int x;
        public int y;
+        public int v;
        int xy = 0;
 
         int getX(){
@@ -18,18 +19,20 @@ public class OopLambda {
         int getY(){
             return(y);
         }
-     //  int getXY(){
-     ///     return(getX()+getY());
-      // }
+       int getXY(){
+          return(getX()+getY());
+       }
 
 
        void setX(int _x){
           x = _x;
        }
-       int setY(int _y, int _1, int _2, int _3){
+       void setY(int _y){
           y = _y;
-           return(0);
        }
+        void setV(int _v){
+            v = _v;
+        }
        void clear(){
            x=y=0;
        }
@@ -37,7 +40,7 @@ public class OopLambda {
 
        @Override
         public String toString() {
-            return ("(" + x + ", " + y + ")");
+            return ("(" + x + ", " + y + ", "+ v+")");
         }
     }
 
@@ -65,11 +68,12 @@ public class OopLambda {
 
 
         IntConsumer ic = gid -> {
-          //  P p = points[gid];
+            P p = points[gid];
             //p.x = gid;
            // p.y = gid*2;
-            points[gid].setX(gid);
-            int junk = points[gid].setY(gid*2, 1, 2, 3);
+            p.setX(gid);
+            p.setY(gid*2);
+            p.setV(p.getXY());
            // p.setX(p.getX()+gid);
 
           //  p.setY(p.getY()+gid * 2);

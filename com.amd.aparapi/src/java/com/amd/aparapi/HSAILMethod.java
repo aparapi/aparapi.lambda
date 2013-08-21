@@ -18,16 +18,17 @@ public class HSAILMethod {
         public int baseOffset;
         public String nameSpace;
         RenderContext last = null;
-        RenderContext(RenderContext _last, String _nameSpace){
+        RenderContext(RenderContext _last, String _nameSpace, int _baseOffset){
             last = _last;
             if (last != null){
-               baseOffset = last.baseOffset;
+               baseOffset = last.baseOffset + _baseOffset;
                nameSpace=last.nameSpace+"_"+_nameSpace;
             }else{
-                baseOffset = 0;
+                baseOffset = _baseOffset;
                 nameSpace=_nameSpace;
             }
         }
+
     }
 
     public static abstract class CallType<T extends CallType> {
@@ -567,8 +568,8 @@ public class HSAILMethod {
 
         @Override
         void render(HSAILRenderer r, RenderContext _renderContext) {
-            RenderContext rc = new RenderContext(_renderContext, "call_"+from.getThisPC()+"_");
-            rc.baseOffset=base;
+            RenderContext rc = new RenderContext(_renderContext, "call_"+from.getThisPC()+"_", base);
+
             call.renderCallSite(r,rc, from,  name);
 
         }
@@ -1209,7 +1210,7 @@ public class HSAILMethod {
         //r.append("version 1:0:large;").nl();
         r.append("version 0:95: $full : $large").semicolon().nl();
 
-        RenderContext rc = new RenderContext(null, "main_");
+        RenderContext rc = new RenderContext(null, "main_", 0);
         for (CallType c : calls) {
             c.renderDeclaration(r, rc);
         }

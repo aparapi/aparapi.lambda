@@ -104,11 +104,7 @@ public class NBodySimple {
             thisBody.vx +=  accx;
             thisBody.vy +=  accy;
             thisBody.vz +=  accz;
-            thisBody.paint(offscreenPixels, width, height, (int)thisBody.x-1, (int)thisBody.y, 0xffffff);
-             thisBody.paint(offscreenPixels, width, height, (int)thisBody.x, (int)thisBody.y, 0xffffff);
-             thisBody.paint(offscreenPixels, width, height, (int)thisBody.x+1, (int)thisBody.y, 0xffffff);
-             thisBody.paint(offscreenPixels, width, height, (int)thisBody.x, (int)thisBody.y-1, 0xffffff);
-             thisBody.paint(offscreenPixels, width, height, (int)thisBody.x, (int)thisBody.y+1, 0xffffff);
+            thisBody.paint(offscreenPixels, width, height);
          });
          long delta = System.currentTimeMillis()-first;
          frame+=1;
