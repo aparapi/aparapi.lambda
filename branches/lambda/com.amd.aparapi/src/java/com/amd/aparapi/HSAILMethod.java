@@ -221,45 +221,9 @@ public class HSAILMethod {
         }
         @Override
         InlineMethodCall renderCallSite(HSAILRenderer r, RenderContext _renderContext, Instruction from, String name) {
-            boolean copyArgsWhenInlining = false;
-            if (copyArgsWhenInlining){
-            /** we need to copy all args to registers to represent the stack **/
-            TypeHelper.JavaMethodArgsAndReturnType argsAndReturnType = from.asMethodCall().getConstantPoolMethodEntry().getArgsAndReturnType();
-            int argCount = argsAndReturnType.getArgs().length;
-            TypeHelper.JavaType returnType = argsAndReturnType.getReturnType();
-           // r.obrace().nl();
-            int offset = 0;
-            if (!isStatic()) {
-                offset++;
-            }
-            if (!isStatic()) {
-                r.pad(12).append("mov_b64 $d" + (_renderContext.baseOffset+argCount+1) + ", $d"+_renderContext.baseOffset).semicolon().space().lineComment("copy 'this");
-            }
 
-            int argc = offset;
-            for (TypeHelper.JavaMethodArg arg : argsAndReturnType.getArgs()) {
+            method.renderInlinedFunctionBody(r, _renderContext, _renderContext.baseOffset);
 
-                String argName = "%_arg_" + arg.getArgc();
-                r.pad(12).append("mov_").typeName(arg.getJavaType()).space().regPrefix(arg.getJavaType()).append( + (_renderContext.baseOffset + argCount+argc+1)).separator().space().regPrefix(arg.getJavaType()).append( + (_renderContext.baseOffset + argc)).semicolon().space().lineComment("Copy args so we can mutate them without side effects");
-                argc++;
-            }
-
-
-
-
-          //  if (!returnType.isVoid()) {
-          //      r.pad(12).append("ld_arg_").typeName(returnType).space().regPrefix(returnType).append( base + ", [%_result]").semicolon().nl();
-          //  }
-          // r.pad(9).cbrace();
-
-
-            /**/
-            r.nl();
-            method.renderInlinedFunctionBody(r, _renderContext, _renderContext.baseOffset+argCount+1);
-            }
-            else{
-                method.renderInlinedFunctionBody(r, _renderContext, _renderContext.baseOffset);
-            }
             r.nl();
             return (this);
         }
@@ -290,8 +254,14 @@ public class HSAILMethod {
                // "ret;",
                // "};"));
         add(new InlineIntrinsicCall("java.lang.Math.sqrt(D)D", true,
-                "nsqrt_f64  $d${0}, $d${0};"
-              ));
+            "nsqrt_f64  $d${0}, $d${0};"
+    ));
+        add(new InlineIntrinsicCall("java.lang.Math.cos(D)D", true,
+            "ncos_f64  $d${0}, $d${0};"
+    ));
+        add(new InlineIntrinsicCall("java.lang.Math.sin(D)D", true,
+                "nsin_f64  $d${0}, $d${0};"
+        ));
         add(new IntrinsicCall("java.lang.Math.hypot(DD)D", true,
                 "function &hypot (arg_f64 %_result) (arg_f64 %_val1, arg_f64 %_val2) {",
                 "ld_arg_f64  $d0, [%_val1];",
