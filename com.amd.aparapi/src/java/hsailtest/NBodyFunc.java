@@ -7,23 +7,43 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.util.Arrays;
+import java.util.Random;
+import java.util.Scanner;
 
 
 public class NBodyFunc {
 
    public class Body{
+       Random r = new Random();
       float x,y,z;
       float vx,vy,vz;
       float mass;
-      Body(int width, int height){
+
+
+      float randf(long seed){
+          return(r.nextFloat());
+       //   long randLong= (seed * 0x5DEECE66DL + 0xBL) & 0xffffffffffffL;
+         // randLong = randLong >>24;
+       //   int i = (int)(randLong >> 24);
+         // float f = ((float)i)/((float)(1 << 24));
+         // Math.random();
+          //System.out.println(f);
+        //  return (float)f;
+      }
+
+
+      void init(int width, int height, int id){
+          float randTheta=(float)(randf(id) * Math.PI * 2);
+          float randPhi=(float)(randf(id) * Math.PI * 2);
+          float randRadius = randf(id);
+          float randMass = randf(id);
           float maxDist = width / 2;
-          float theta = (float) (Math.random() * Math.PI * 2);
-          float phi = (float) (Math.random() * Math.PI * 2);
-          float radius = (float) (Math.random() * maxDist);
-          x = (float) (radius * Math.cos(theta) * Math.sin(phi)) + width / 2;
-          y = (float) (radius * Math.sin(theta) * Math.sin(phi)) + height / 2;
-          z = (float) (radius * Math.cos(phi));
-          mass = (float)(Math.random()*20f+10f);
+          float radius = (float) (randRadius * maxDist);
+          mass = (float)(randMass*20f+10f);
+          x = (float) (radius * Math.cos(randTheta) * Math.sin(randPhi)) + width / 2;
+          y = (float) (radius * Math.sin(randTheta) * Math.sin(randPhi)) + height / 2;
+          z = (float) (radius * Math.cos(randPhi));
+
       }
 
        void updatePosition(Body[] bodies){
@@ -62,11 +82,11 @@ public class NBodyFunc {
            int px =  (int)x;
            int py =  (int)y;
            int rgb = 0xffffff;
-           screen.setPixel(px-1, py, rgb);
-           screen.setPixel( px, py, rgb);
-           screen.setPixel( px+1, py, rgb);
-           screen.setPixel( px, py-1, rgb);
-           screen.setPixel( px, py+1, rgb);
+           screen.setPixel(px - 1, py, rgb);
+           screen.setPixel(px, py, rgb);
+           screen.setPixel(px + 1, py, rgb);
+           screen.setPixel(px, py - 1, rgb);
+           screen.setPixel(px, py + 1, rgb);
        }
    }
 
@@ -108,8 +128,12 @@ public class NBodyFunc {
       JFrame jframe = new JFrame("NBody");
       Body[] bodies = new Body[bodyCount];
       Device.jtp().forEach(bodies.length, body -> {
-         bodies[body] = new Body(screen.width, screen.height);
-      });
+           bodies[body] = new Body();
+       });
+
+       Device.jtp().forEach(bodies.length, body -> {
+           bodies[body].init(screen.width, screen.height, body);
+       });
 
       JComponent viewer = new JComponent(){
       };
