@@ -26,8 +26,6 @@ public class NBodyFunc {
           mass = (float)(Math.random()*20f+10f);
       }
 
-
-
        void updatePosition(Body[] bodies){
            float accx = 0.f;
            float accy = 0.f;
@@ -58,21 +56,44 @@ public class NBodyFunc {
            vy+=accy;
            vz+=accz;
        }
-       void setPixel(int[] offscreenPixels, int width, int height, int x, int y,int rgb){
-           if (x>=0 && x<width && y>=0 && y<height){
-               offscreenPixels[x+y*width]=rgb;
-           }
-       }
 
-       void setPixel(int[] offscreenPixels, int width, int height){
+
+       void draw(Screen screen){
            int px =  (int)x;
            int py =  (int)y;
            int rgb = 0xffffff;
-           setPixel(offscreenPixels, width, height, px-1, py, rgb);
-           setPixel(offscreenPixels, width, height, px, py, rgb);
-           setPixel(offscreenPixels, width, height, px+1, py, rgb);
-           setPixel(offscreenPixels, width, height, px, py-1, rgb);
-           setPixel(offscreenPixels, width, height, px, py+1, rgb);
+           screen.setPixel(px-1, py, rgb);
+           screen.setPixel( px, py, rgb);
+           screen.setPixel( px+1, py, rgb);
+           screen.setPixel( px, py-1, rgb);
+           screen.setPixel( px, py+1, rgb);
+       }
+   }
+
+   static class Screen {
+       int width;
+       int height;
+       BufferedImage offscreen ;
+       int[] offscreenPixels;
+       Screen(int _width, int _height){
+           width=_width;
+           height = _height;
+           offscreen = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+           offscreenPixels= ((DataBufferInt) offscreen.getRaster().getDataBuffer()).getData();
+       }
+       void clear(){
+           Arrays.fill(offscreenPixels, 0);
+       }
+       void print(int x, int y, String _string){
+
+           offscreen.getGraphics().setColor(Color.WHITE);
+           offscreen.getGraphics().drawString(_string, x, y);
+       }
+
+       void setPixel(int x, int y,int rgb){
+           if (x>=0 && x<width && y>=0 && y<height){
+               offscreenPixels[x+y*width]=rgb;
+           }
        }
    }
 
@@ -82,28 +103,18 @@ public class NBodyFunc {
 
    void go(Device device, int bodyCount ){
       float frame = 0f;
-      int width = Integer.getInteger("width", 1024);
-      int height =  Integer.getInteger("height", 1024);
-      BufferedImage offscreen = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-      int[] offscreenPixels= ((DataBufferInt) offscreen.getRaster().getDataBuffer()).getData();
+
+      Screen screen = new Screen(Integer.getInteger("width", 1024),  Integer.getInteger("height", 1024));
       JFrame jframe = new JFrame("NBody");
       Body[] bodies = new Body[bodyCount];
-       //Initialize palette values
-       int[] palette = new int[16];
-       for(int i = 0; i < palette.length; i++){
-           float h = i / (float) palette.length;
-           float b = 1.0f - h * h *h;
-           palette[palette.length-1-i] = Color.HSBtoRGB(h, 1f, b);
-       }
-
       Device.jtp().forEach(bodies.length, body -> {
-         bodies[body] = new Body(width, height);
+         bodies[body] = new Body(screen.width, screen.height);
       });
 
       JComponent viewer = new JComponent(){
       };
 
-      viewer.setPreferredSize(new Dimension(width, height));
+      viewer.setPreferredSize(new Dimension(screen.width, screen.height));
       jframe.getContentPane().add(viewer);
       jframe.pack();
       jframe.setVisible(true);
@@ -112,13 +123,12 @@ public class NBodyFunc {
       long first = System.currentTimeMillis();
       float fps  =0;
       while(true){
-         Arrays.fill(offscreenPixels, 0);
-         offscreen.getGraphics().setColor(Color.WHITE);
-         offscreen.getGraphics().drawString(String.format("%5.2f\n",fps), 100, 100);
+         screen.clear();
+         screen.print(100, 100, String.format("fps %5.2f ",fps));
          device.forEach(bodies.length, gid -> {
             Body body = bodies[gid];
             body.updatePosition(bodies);
-            body.setPixel(offscreenPixels, width, height);
+            body.draw(screen);
          });
          long delta = System.currentTimeMillis()-first;
          frame+=1;
@@ -128,7 +138,7 @@ public class NBodyFunc {
             first = System.currentTimeMillis() ;
             frame=0;
          }
-         viewer.getGraphics().drawImage(offscreen, 0, 0, null);
+         viewer.getGraphics().drawImage(screen.offscreen, 0, 0, null);
       }
    }
 }
