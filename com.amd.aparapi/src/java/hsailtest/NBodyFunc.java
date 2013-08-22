@@ -14,35 +14,19 @@ import java.util.Scanner;
 public class NBodyFunc {
 
    public class Body{
-       Random r = new Random();
       float x,y,z;
       float vx,vy,vz;
       float mass;
 
-
-      float randf(long seed){
-          return(r.nextFloat());
-       //   long randLong= (seed * 0x5DEECE66DL + 0xBL) & 0xffffffffffffL;
-         // randLong = randLong >>24;
-       //   int i = (int)(randLong >> 24);
-         // float f = ((float)i)/((float)(1 << 24));
-         // Math.random();
-          //System.out.println(f);
-        //  return (float)f;
-      }
-
-
       void init(int width, int height, int id){
-          float randTheta=(float)(randf(id) * Math.PI * 2);
-          float randPhi=(float)(randf(id) * Math.PI * 2);
-          float randRadius = randf(id);
-          float randMass = randf(id);
-          float maxDist = width / 2;
-          float radius = (float) (randRadius * maxDist);
-          mass = (float)(randMass*20f+10f);
-          x = (float) (radius * Math.cos(randTheta) * Math.sin(randPhi)) + width / 2;
-          y = (float) (radius * Math.sin(randTheta) * Math.sin(randPhi)) + height / 2;
-          z = (float) (radius * Math.cos(randPhi));
+          float scaledId = ((float)id)/width;
+          float theta =  (float)(scaledId * Math.PI * 2);
+          float phi =  (float)(scaledId *  Math.PI * 2);
+          float radius = scaledId * width / 2;
+          mass = (float)(scaledId*20f+10f);
+          x = (float) (radius * Math.cos(theta) * Math.sin(phi)) + width / 2;
+          y = (float) (radius * Math.sin(theta) * Math.sin(phi)) + height / 2;
+          z = (float) (radius * Math.cos(phi));
 
       }
 
@@ -131,7 +115,7 @@ public class NBodyFunc {
            bodies[body] = new Body();
        });
 
-       Device.jtp().forEach(bodies.length, body -> {
+       device.forEach(bodies.length, body -> {
            bodies[body].init(screen.width, screen.height, body);
        });
 
