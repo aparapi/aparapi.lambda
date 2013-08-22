@@ -2924,7 +2924,7 @@ class InstructionSet{
 
    }
 
-   static class I_INVOKEINTERFACE extends Index16 implements InterfaceConstantPoolMethodIndexAccessor{
+   static class I_INVOKEINTERFACE extends Index16 implements InterfaceMethodCall {
       private int args;
 
       I_INVOKEINTERFACE(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
@@ -2978,7 +2978,7 @@ class InstructionSet{
       }
    }
 
-   static class I_INVOKEDYNAMIC extends Index16 implements InterfaceConstantPoolMethodIndexAccessor{
+   static class I_INVOKEDYNAMIC extends Index16 implements InterfaceMethodCall {
       private int args;
 
       I_INVOKEDYNAMIC(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
@@ -4242,12 +4242,13 @@ class InstructionSet{
 
    }
 
+
    interface VirtualMethodCall extends MethodCall{
 
       Instruction getInstanceReference();
    }
 
-   interface InterfaceConstantPoolMethodIndexAccessor{
+   interface InterfaceMethodCall {
       int getConstantPoolInterfaceMethodIndex();
 
       ConstantPool.InterfaceMethodEntry getConstantPoolInterfaceMethodEntry();

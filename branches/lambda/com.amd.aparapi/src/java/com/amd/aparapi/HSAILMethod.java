@@ -99,7 +99,7 @@ public class HSAILMethod {
             Matcher matcher = regex.matcher(line);
 
             while (matcher.find()) {
-                matcher.appendReplacement(sb, String.valueOf(Integer.parseInt(matcher.group(1))+_renderContext.baseOffset));
+                matcher.appendReplacement(sb, String.format("%d",Integer.parseInt(matcher.group(1))+_renderContext.baseOffset));
             }
             matcher.appendTail(sb);
 
@@ -108,11 +108,24 @@ public class HSAILMethod {
 
         @Override
         InlineIntrinsicCall renderCallSite(HSAILRenderer r, RenderContext _renderContext, Instruction from, String name) {
+            boolean first = false;
+            r.lineComment("inlining intrinsic "+getMappedMethod()+"{");
+            if (isStatic){
+                r.pad(9).lineComment(expand("This is a static method so $?${0} contains first arg (if any)", _renderContext));
+            }else{
+                r.pad(9).lineComment(expand("This is a virtual method so $d${0} contains this. Other args (if any) from $?${1}", _renderContext));
+            }
             for (String line : lines) {
+               // if (!first){
+                    r.pad(9);
+              //  }
                 String expandedLine = expand(line, _renderContext);
 
                 r.append(expandedLine).nl();
+                //first = false;
             }
+            r.pad(9);
+            r.lineComment("} inlining intrinsic "+getMappedMethod());
             return this;
         }
         @Override
@@ -254,10 +267,17 @@ public class HSAILMethod {
                // "ret;",
                // "};"));
         add(new InlineIntrinsicCall("java.lang.Math.sqrt(D)D", true,
-            "nsqrt_f64  $d${0}, $d${0};"
+                "nsqrt_f64  $d${0}, $d${0};"
     ));
+        add(new InlineIntrinsicCall("java.lang.String.charAt(I)C", false,
+                "ld_global_b64 $d${2}, [$d${0}+16];   // this string reference into $d${2}",
+                "mov_b32 $s${3}, $s${1};              // copy index",
+                "cvt_u64_s32 $d${3}, $s${3};          // convert array index to 64 bits",
+                "mad_u64 $d${3}, $d${3}, 2, $d${2};      // get the char address",
+                "ld_global_u16 $s${0}, [$d${3}+24];   // ld the char"
+        ));
         add(new InlineIntrinsicCall("java.lang.Math.cos(D)D", true,
-            "ncos_f64  $d${0}, $d${0};"
+                "ncos_f64  $d${0}, $d${0};"
     ));
         add(new InlineIntrinsicCall("java.lang.Math.sin(D)D", true,
                 "nsin_f64  $d${0}, $d${0};"
@@ -503,13 +523,30 @@ public class HSAILMethod {
     class call extends HSAILInstruction {
         int base;
         String name;
+        String mangledName;
         CallType call;
         call(Instruction _from) {
             super(_from, 0, 0);
             base = from.getPreStackBase() + from.getMethod().getCodeEntry().getMaxLocals();
-            String dotClassName = from.asMethodCall().getConstantPoolMethodEntry().getClassEntry().getDotClassName();
+            String dotClassName = null;
+            String sig = null;
+            if (from.isInterfaceMethodCall()){
+                dotClassName = from.asInterfaceMethodCall().getConstantPoolInterfaceMethodEntry().getClassEntry().getDotClassName();
+                name = from.asInterfaceMethodCall().getConstantPoolInterfaceMethodEntry().getName();
+                sig = from.asInterfaceMethodCall().getConstantPoolInterfaceMethodEntry().getNameAndTypeEntry().getDescriptor();
+
+                /** sig to specialize CharSequence to String  - big hack!**/
+                if (dotClassName.equals("java.lang.CharSequence")){
+                    dotClassName = "java.lang.String";
+                }
+
+            }else{
+                dotClassName = from.asMethodCall().getConstantPoolMethodEntry().getClassEntry().getDotClassName();
             name = from.asMethodCall().getConstantPoolMethodEntry().getName();
-            String sig = from.asMethodCall().getConstantPoolMethodEntry().getNameAndTypeEntry().getDescriptor();
+
+            sig = from.asMethodCall().getConstantPoolMethodEntry().getNameAndTypeEntry().getDescriptor();
+            }
+            mangledName = (dotClassName+"_"+name+sig).replace(".","_").replace(";","_").replace("(","_").replace(")", "_").replace("/", "_").replace("$", "_").replace("[", "_");
             String intrinsicLookup = dotClassName + "." + name + sig;
             call = null;
             for (IntrinsicCall ic : intrinsicMap.values()) {
@@ -521,7 +558,7 @@ public class HSAILMethod {
             }
             if (call == null) { // not an intrinsic!
                 try {
-                    Class theClass = Class.forName(from.asMethodCall().getConstantPoolMethodEntry().getClassEntry().getDotClassName());
+                    Class theClass = Class.forName(dotClassName);
                     ClassModel classModel = ClassModel.getClassModel(theClass);
                     ClassModel.ClassModelMethod method = classModel.getMethod(name, sig);
                     HSAILMethod hsailMethod = HSAILMethod.getHSAILMethod(method, getEntryPoint());
@@ -538,7 +575,7 @@ public class HSAILMethod {
 
         @Override
         void render(HSAILRenderer r, RenderContext _renderContext) {
-            RenderContext rc = new RenderContext(_renderContext, "call_"+from.getThisPC()+"_", base);
+            RenderContext rc = new RenderContext(_renderContext, mangledName+"_"+from.getThisPC()+"_", base);
 
             call.renderCallSite(r,rc, from,  name);
 
@@ -748,6 +785,11 @@ public class HSAILMethod {
         @Override
         void render(HSAILRenderer r, RenderContext _renderContext) {
             r.append("ld_global_").typeName(getDest()).space().regName(getDest(), _renderContext).separator().append("[").regName(mem, _renderContext).append("+").array_base_offset().append("]").semicolon();
+            if (getDest().type.getHsaBits()==8){
+                r.nl().pad(9).append("//cvt_s32_u8 $s").regNum(getDest(), _renderContext).separator().space().regName(getDest(), _renderContext).semicolon();
+            }     else   if (getDest().type.getHsaBits()==16){
+                r.nl().pad(9).append("//cvt_s32_u16 $s").regNum(getDest(), _renderContext).separator().space().regName(getDest(), _renderContext).semicolon();
+            }
         }
 
 
@@ -1156,7 +1198,7 @@ public class HSAILMethod {
                          r.label(_renderContext.nameSpace, i.from.getThisPC()).colon().nl();
                      }
                     if (r.isShowingComments()) {
-                        r.nl().pad(1).lineCommentStart().append("inlined! ").mark().append(i.from.getThisPC()).relpad(2).space().i(i.from).nl();
+                        r.nl().pad(1).lineCommentStart().append("inlined! ").append(_renderContext.nameSpace).mark().append(i.from.getThisPC()).relpad(2).space().i(i.from).nl();
                     }
                 }
                 if (i instanceof retvoid){
@@ -1278,6 +1320,9 @@ public class HSAILMethod {
 
     public HSAILRegister addmov(Instruction _i, int _from, int _to) {
         HSAILRegister r = getRegOfLastWriteToIndex(_i.getPreStackBase() + _i.getMethod().getCodeEntry().getMaxLocals() + _from);
+        if (r == null){
+            System.out.println("damn!");
+        }
         addmov(_i, r.type, _from, _to);
         return (r);
     }
@@ -1580,12 +1625,12 @@ public class HSAILMethod {
                     break;
                 case CASTORE:
                     add(new cvt<ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));
-                    add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.s8.getHsaBytes()));
+                    add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.u16.getHsaBytes()));
                     add(new array_store<u16>(i, new StackReg_ref(i, 1), new StackReg_u16(i, 2)));
                     break;
                 case SASTORE:
                     add(new cvt<ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));
-                    add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.s8.getHsaBytes()));
+                    add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.s16.getHsaBytes()));
                     add(new array_store<s16>(i, new StackReg_ref(i, 1), new StackReg_s16(i, 2)));
                     break;
                 case POP:
