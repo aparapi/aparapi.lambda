@@ -39,6 +39,7 @@ package com.amd.aparapi;
 
 import com.amd.aparapi.InstructionSet.Branch;
 import com.amd.aparapi.InstructionSet.LocalVariableTableIndexAccessor;
+import com.amd.aparapi.InstructionSet.InterfaceMethodCall;
 import com.amd.aparapi.InstructionSet.MethodCall;
 import com.amd.aparapi.InstructionSet.Constant;
 import com.amd.aparapi.InstructionSet.FieldReference;
@@ -279,6 +280,12 @@ abstract class Instruction{
    MethodCall asMethodCall(){
       return ((MethodCall) this);
    }
+    boolean isInterfaceMethodCall(){
+        return (this instanceof InterfaceMethodCall);
+    }
+    InterfaceMethodCall asInterfaceMethodCall(){
+        return ((InterfaceMethodCall) this);
+    }
 
    boolean isBranch(){
       return (this instanceof Branch);
