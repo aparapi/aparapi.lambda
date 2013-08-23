@@ -27,7 +27,7 @@ public class CharArrayLambdaHisto {
             for (char c:_strings[i]){
                 System.out.print(c);
             }
-                System.out.print("="+results[i]);
+                System.out.print("=" + results[i]);
             }
 
         }
@@ -74,19 +74,20 @@ public class CharArrayLambdaHisto {
     public static void main(String[] args) throws AparapiException, IOException {
         char[][] strings = buildDictionary(new File("C:\\Users\\user1\\aparapi\\branches\\lambda\\names.txt"));
         int len = strings.length;
-        char[] text = getText(new File("C:\\Users\\user1\\aparapi\\branches\\lambda\\alice.txt"));
+        char[] text = getText(new File("C:\\Users\\user1\\aparapi\\branches\\lambda\\moby.txt"));
         int[] counts = new int[len];
         IntConsumer ic = gid -> {
             char[] chars = strings[gid];
             int count = 0;
             for (int i=0; i<=text.length-chars.length; i++){
-                boolean result = true; // optimistic!
-                for (int offset=0; result && offset<chars.length; offset++){
-
-                    result = chars[offset] == text[i+offset];
-                }
-                if (result){
-                    count++;
+                if (i==0 || (i>0 && (text[i-1]<'a' || text[i-1]>'z'))){
+                    boolean result = true; // optimistic!
+                    for (int offset=0; result && offset<chars.length; offset++){
+                       result = chars[offset] == text[i+offset];
+                    }
+                    if (result && !(i+chars.length<text.length && (text[i+chars.length]>='a' && text[i+chars.length]<='z'))){
+                        count++;
+                    }
                 }
             }
             counts[gid] = count;
