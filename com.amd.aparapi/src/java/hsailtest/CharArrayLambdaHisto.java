@@ -10,14 +10,14 @@ import java.util.List;
 import java.util.function.IntConsumer;
 
 
-public class CharArrayLambda {
+public class CharArrayLambdaHisto {
 
 
-    static void dump(String type, char[][] _strings, boolean[] results) {
+    static void dump(String type, char[][] _strings, int[] results) {
         System.out.print(type + " ->");
         boolean first = true;
         for (int i = 0; i < _strings.length; i++) {
-            if (results[i]){
+            if (results[i]>0){
             if (!first) {
                 System.out.print(", ");
             }   else{
@@ -27,6 +27,7 @@ public class CharArrayLambda {
             for (char c:_strings[i]){
                 System.out.print(c);
             }
+                System.out.print("="+results[i]);
             }
 
         }
@@ -74,40 +75,43 @@ public class CharArrayLambda {
         char[][] strings = buildDictionary(new File("C:\\Users\\user1\\aparapi\\branches\\lambda\\names.txt"));
         int len = strings.length;
         char[] text = getText(new File("C:\\Users\\user1\\aparapi\\branches\\lambda\\alice.txt"));
-        boolean[] results = new boolean[len];
+        int[] counts = new int[len];
         IntConsumer ic = gid -> {
-            boolean result = false;
             char[] chars = strings[gid];
-            for (int i=0; !result && i<=text.length-chars.length; i++){
-                result = true; // optimistic!
+            int count = 0;
+            for (int i=0; i<=text.length-chars.length; i++){
+                boolean result = true; // optimistic!
                 for (int offset=0; result && offset<chars.length; offset++){
 
                     result = chars[offset] == text[i+offset];
                 }
+                if (result){
+                    count++;
+                }
             }
-            results[gid] = result;
+            counts[gid] = count;
         };
-        Arrays.fill(results, false);
+        Arrays.fill(counts, 0);
 
         long start = System.currentTimeMillis();
         Device.jtp().forEach(len, ic);
         System.out.println();
-        dump("jtp = "+(System.currentTimeMillis()-start), strings, results);
+        dump("jtp = "+(System.currentTimeMillis()-start), strings, counts);
 
-        Arrays.fill(results, false);
+        Arrays.fill(counts, 0);
         start = System.currentTimeMillis();
         Device.hsa().forEach(len, ic);
         System.out.println();
-        dump("hsa1= "+(System.currentTimeMillis()-start), strings, results);
-        Arrays.fill(results, false);
+        dump("hsa1= "+(System.currentTimeMillis()-start), strings, counts);
+        Arrays.fill(counts, 0);
         start = System.currentTimeMillis();
         Device.hsa().forEach(len, ic);
         System.out.println();
-        dump("hsa2= "+(System.currentTimeMillis()-start), strings, results);
-        Arrays.fill(results, false);
+        dump("hsa2= "+(System.currentTimeMillis()-start), strings, counts);
+        Arrays.fill(counts, 0);
         start = System.currentTimeMillis();
         Device.seq().forEach(len, ic);
         System.out.println();
-        dump("seq= "+(System.currentTimeMillis()-start), strings, results);
+        dump("seq= "+(System.currentTimeMillis()-start), strings, counts);
     }
 }
