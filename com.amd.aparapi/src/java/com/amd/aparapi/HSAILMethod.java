@@ -31,6 +31,8 @@ public class HSAILMethod {
 
     }
 
+
+
     public static abstract class CallType<T extends CallType> {
         private String mappedMethod; // i.e  java.lang.Math.sqrt(D)D
 
