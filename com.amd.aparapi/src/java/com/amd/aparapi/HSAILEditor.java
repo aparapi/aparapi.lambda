@@ -1062,9 +1062,13 @@ public class HSAILEditor implements Config.InstructionListener{
       frame.pack();
       frame.setVisible(true);
 
+      System.out.println("class "+_args[0]);
+      System.out.println("method "+_args[1]);
+      System.out.println("sig "+_args[2]);
+
       Class clazz = Class.forName(_args[0]);
       ClassModel classModel = ClassModel.getClassModel(clazz);
-      ClassModel.ClassModelMethod method = classModel.getMethod("lambda$13", "([Lhsailtest/OopLambda$P;I)V");
+      ClassModel.ClassModelMethod method = classModel.getMethod(_args[1], _args[2]);
       HSAILRenderer renderer = new HSAILRenderer().setShowComments(true);
 
       HSAILMethod hsailMethod = HSAILMethod.getHSAILMethod(method, null);
