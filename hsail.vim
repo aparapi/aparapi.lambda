@@ -5,11 +5,18 @@
 "
 " This is incomplete. Feel free to contribute...
 "
+" Don't forget to add following to %VIM_HOME%/vim73/filetype.vim 
+" HSAIL (.hsail and .hsa)
+" au BufNewFile,BufRead *.hsail,*.hsa  setf hsail
 "
 " http://vim.wikia.com/wiki/Creating_your_own_syntax_files
 " http://www.openlogic.com/wazi/bid/188101/Create-Your-Own-Syntax-Highlighting-in-Vim
-
-" For version 6.x: Quit when a syntax file was already loaded
+" http://www.ibm.com/developerworks/library/l-vim-script-1/
+" http://www.ibm.com/developerworks/library/l-vim-script-2/
+" http://www.ibm.com/developerworks/library/l-vim-script-3/
+" http://www.ibm.com/developerworks/library/l-vim-script-4/
+" http://www.ibm.com/developerworks/library/l-vim-script-5/
+" Quit when a syntax file was already loaded
 if exists("b:current_syntax")
   finish
 endif
@@ -21,54 +28,15 @@ syn match hsailReg  "\$[cds][0-9]\+"
 syn match hsailReg "%_arg[0-9]+"
 
 " All matches - order is important!
-syn match hsailOpcode "mov_[fbusd]64"
-syn match hsailOpcode "mov_[fbusd]32"
-syn match hsailOpcode "kernarg_[fbusd]32"
-syn match hsailOpcode "kernarg_[fbusd]64"
-syn match hsailOpcode "ld_kernarg_[fbusd]32"
-syn match hsailOpcode "ld_kernarg_[fbusd]64"
-syn match hsailOpcode "ld_global_[fbusd]32"
-syn match hsailOpcode "ld_global_[fbusd]64"
-syn match hsailOpcode "st_global_[fbusd]32"
-syn match hsailOpcode "st_global_[fbusd]64"
-syn match hsailOpcode "add_[fbusd](32|64)"
-syn match hsailOpcode "rem_[fbusd]32"
-syn match hsailOpcode "rem_[fbusd]64"
-syn match hsailOpcode "sub_[fbusd]32"
-syn match hsailOpcode "sub_[fbusd]64"
-syn match hsailOpcode "mad_[fbusd]32"
-syn match hsailOpcode "mad_[fbusd]64"
-syn match hsailOpcode "mul_[fbusd]32"
-syn match hsailOpcode "mul_[fbusd]64"
-syn match hsailOpcode "div_[fbusd]32"
-syn match hsailOpcode "div_[fbusd]64"
-syn match hsailOpcode "cvt_[fbusd]64_[fbusd]64"
-syn match hsailOpcode "cvt_[fbusd]64_[fbusd]32"
-syn match hsailOpcode "cvt_[fbusd]64_[fbusd]16"
-syn match hsailOpcode "cvt_[fbusd]64_[fbusd]8"
-syn match hsailOpcode "cvt_[fbusd]32_[fbusd]64"
-syn match hsailOpcode "cvt_[fbusd]32_[fbusd]32"
-syn match hsailOpcode "cvt_[fbusd]32_[fbusd]16"
-syn match hsailOpcode "cvt_[fbusd]32_[fbusd]8"
-syn match hsailOpcode "cvt_[fbusd]16_[fbusd]64"
-syn match hsailOpcode "cvt_[fbusd]16_[fbusd]32"
-syn match hsailOpcode "cvt_[fbusd]16_[fbusd]16"
-syn match hsailOpcode "cvt_[fbusd]16_[fbusd]8"
-syn match hsailOpcode "cvt_[fbusd]8_[fbusd]64"
-syn match hsailOpcode "cvt_[fbusd]8_[fbusd]32"
-syn match hsailOpcode "cvt_[fbusd]8_[fbusd]16"
-syn match hsailOpcode "cvt_[fbusd]8_[fbusd]8"
+syn match hsailOpcode "mov_[fbusd]\(64\|32\)"
+syn match hsailOpcode "kernarg_[fbusd]\(64\|32\)"
+syn match hsailOpcode "ld_kernarg_[fbusd]\(64\|32\)"
+syn match hsailOpcode "\(ld\|st\)_global_[fbusd]\(64\|32\)"
+syn match hsailOpcode "\(add\|sub\|rem\|div\|mul\|mad\)_[fbusd]\(32\|64\)"
+syn match hsailOpcode "cvt_[fbusd]\(64\|32\|16\|8\)_[fbusd]\(64\|32\|16\|8\)"
 syn match hsailOpcode "workitemabsid_[busd]32"
-syn match hsailOpcode "cbr"
-syn match hsailOpcode "cmp_geu_b1_[fbusd]32"
-syn match hsailOpcode "cmp_geu_b1_[fbusd]64"
-syn match hsailOpcode "cmp_ge_b1_[fbusd]32"
-syn match hsailOpcode "cmp_ge_b1_[fbusd]64"
-syn match hsailOpcode "cmp_leu_b1_[fbusd]32"
-syn match hsailOpcode "cmp_leu_b1_[fbusd]64"
-syn match hsailOpcode "cmp_le_b1_[fbusd]32"
-syn match hsailOpcode "cmp_le_b1_[fbusd]64"
-syn keyword hsailOpcode ret
+syn match hsailOpcode "\(cbr\|ret\)"
+syn match hsailOpcode "cmp_\(geu\|ge\|leu\|le\)_b1_[fbusd]\(64\|32\)"
 
 " Various number formats
 syn match hsaildecNumber    "[+-]\=[0-9]\+\>"
