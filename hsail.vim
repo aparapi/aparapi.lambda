@@ -26,17 +26,20 @@ syn case ignore
 " Partial list of register symbols
 syn match hsailReg  "\$[cds][0-9]\+"
 syn match hsailReg "%_arg[0-9]+"
+syn match hsailReg "%spillseg"
+syn match hsailReg "%_this"
 
 " All matches - order is important!
-syn match hsailOpcode "mov_[fbusd]\(64\|32\)"
-syn match hsailOpcode "kernarg_[fbusd]\(64\|32\)"
-syn match hsailOpcode "ld_kernarg_[fbusd]\(64\|32\)"
-syn match hsailOpcode "\(ld\|st\)_global_[fbusd]\(64\|32\)"
-syn match hsailOpcode "\(add\|sub\|rem\|div\|mul\|mad\)_[fbusd]\(32\|64\)"
+syn match hsailOpcode "cmov_[fbusd]\(64\|32\|16\|8\)"
+syn match hsailOpcode "mov_[fbusd]\(64\|32\|16\|8\)"
+syn match hsailOpcode "kernarg_[fbusd]\(64\|32\|16\|8\)"
+syn match hsailOpcode "ld_kernarg_[fbusd]\(64\|32\|16\|8\)"
+syn match hsailOpcode "\(ld\|st\)_\(global\|local\|spill\)_[fbusd]\(64\|32\|16\|8\)"
+syn match hsailOpcode "\(add\|sub\|rem\|div\|mul\|mad\)_[fbusd]\(32\|64\|16\|8\)"
 syn match hsailOpcode "cvt_[fbusd]\(64\|32\|16\|8\)_[fbusd]\(64\|32\|16\|8\)"
 syn match hsailOpcode "workitemabsid_[busd]32"
-syn match hsailOpcode "\(cbr\|ret\)"
-syn match hsailOpcode "cmp_\(geu\|ge\|leu\|le\)_b1_[fbusd]\(64\|32\)"
+syn match hsailOpcode "\(cbr\|ret\|brn\)"
+syn match hsailOpcode "cmp_\(ne\|geu\|ge\|leu\|le\|lt\|eq\)_b1_[fbusd]\(64\|32\|16\|8\)"
 
 " Various number formats
 syn match hsaildecNumber    "[+-]\=[0-9]\+\>"
@@ -57,6 +60,8 @@ syn match hsailkeyword       "\$full"
 syn match hsailkeyword       "\$large"
 syn keyword hsailKeyword      kernel
 syn keyword hsailKeyword      version
+syn keyword hsailKeyword      align
+syn match hsailKeyword        "spill_u\(64\|32\|16\|8\)"
 
 " Character string constants
 "       Too complex really. Could be "<...>" but those could also be
