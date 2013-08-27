@@ -12,8 +12,8 @@ import java.util.*;
 public class HSAILRenderer extends TextRenderer<HSAILRenderer>{
 
 
-   public HSAILRenderer label(String callSiteId, int _pc){
-      return (append(String.format("@L%s%d", callSiteId, _pc)));
+   public HSAILRenderer label(String location){
+      return (append(String.format("@L%s", location)));
    }
 
    public HSAILRenderer array_base_offset(){
