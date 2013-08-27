@@ -73,6 +73,7 @@ public abstract class Device{
 
    }
 
+
    public static Device hsa(){
       return (new HSADevice());
 
@@ -147,5 +148,32 @@ public abstract class Device{
       return (Range.create3D(this, _globalWidth, _globalHeight, _globalDepth, _localWidth, _localHeight, _localDepth));
    }
 
-   public abstract Device forEach(int _range, IntConsumer _intConsumer);
+    public abstract  Device forEach(int range, IntConsumer ic);
+
+   static HSADevice hsaDevice;
+   public synchronized static  void hsaForEach(int range, IntConsumer ic){
+      if (hsaDevice == null ){
+          hsaDevice = (HSADevice)hsa();
+
+      }
+      hsaDevice.forEach(range, ic);
+   }
+
+    static JavaSequentialDevice javaSequentialDevice;
+    public synchronized static  void seqForEach(int range, IntConsumer ic){
+        if (javaSequentialDevice == null ){
+            javaSequentialDevice = (JavaSequentialDevice)seq();
+
+        }
+        javaSequentialDevice.forEach(range, ic);
+    }
+
+    static JavaThreadPoolDevice javaThreadPoolDevice;
+    public synchronized static  void jtpForEach(int range, IntConsumer ic){
+        if (javaThreadPoolDevice == null ){
+            javaThreadPoolDevice = (JavaThreadPoolDevice)jtp();
+
+        }
+        javaThreadPoolDevice.forEach(range, ic);
+    }
 }
