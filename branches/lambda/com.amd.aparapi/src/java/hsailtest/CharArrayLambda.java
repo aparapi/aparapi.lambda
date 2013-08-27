@@ -2,12 +2,14 @@ package hsailtest;
 
 import com.amd.aparapi.AparapiException;
 import com.amd.aparapi.Device;
+import static com.amd.aparapi.Device.hsaForEach;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.IntConsumer;
+
 
 
 public class CharArrayLambda {
@@ -96,12 +98,12 @@ public class CharArrayLambda {
 
         Arrays.fill(results, false);
         start = System.currentTimeMillis();
-        Device.hsa().forEach(len, ic);
+        hsaForEach(len, ic);
         System.out.println();
         dump("hsa1= "+(System.currentTimeMillis()-start), strings, results);
         Arrays.fill(results, false);
         start = System.currentTimeMillis();
-        Device.hsa().forEach(len, ic);
+        hsaForEach(len, ic);
         System.out.println();
         dump("hsa2= "+(System.currentTimeMillis()-start), strings, results);
         Arrays.fill(results, false);
