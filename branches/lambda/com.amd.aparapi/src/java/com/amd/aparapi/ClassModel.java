@@ -2523,13 +2523,13 @@ public class ClassModel{
                // then the block between produces stack.  So must be 'then' part of ternary
                if(i.isForwardConditionalBranchTarget()){
                   int maxStackBase = 0;
-                  System.out.print("Current postStackBase = " + i.getPostStackBase() + " branchers are ");
+                 // System.out.print("Current postStackBase = " + i.getPostStackBase() + " branchers are ");
                   for(Branch b : i.getForwardBranches()){
 
-                     System.out.print(b.getPostStackBase() + " ");
+                    // System.out.print(b.getPostStackBase() + " ");
                      maxStackBase = Math.max(maxStackBase, b.getPostStackBase());
                   }
-                  System.out.println(" max = " + maxStackBase);
+                 // System.out.println(" max = " + maxStackBase);
                   if(maxStackBase <= i.getPostStackBase()){
                      // System.out.println("this is first expression in else of ternary");
                      // we pop the stack and mark the instruction targetted by the prev goto.  Which is the end of

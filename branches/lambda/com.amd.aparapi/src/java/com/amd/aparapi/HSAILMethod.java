@@ -16,19 +16,41 @@ public class HSAILMethod {
 
     public static class RenderContext{
         public int baseOffset;
-        public String nameSpace;
+        private String nameSpace;
+        Map<RenderContext,Integer> locMap = new HashMap<RenderContext, Integer>();
+        int loc=0;
+        public String getLocation(RenderContext _renderContext, int pc){
+           if (last != null){
+              return(last.getLocation(_renderContext, pc));
+           }
+           Integer thisLoc = locMap.get(_renderContext);
+           if (thisLoc == null){
+              thisLoc = loc++;
+              locMap.put(_renderContext, thisLoc);
+           }
+           return(String.format("%04d_%04d", thisLoc, pc));
+
+        }
+        public String getLocation(int pc){
+               return(getLocation(this, pc));
+        }
         RenderContext last = null;
         RenderContext(RenderContext _last, String _nameSpace, int _baseOffset){
             last = _last;
             if (last != null){
                baseOffset = last.baseOffset + _baseOffset;
-               nameSpace=last.nameSpace+"_"+_nameSpace;
             }else{
-                baseOffset = _baseOffset;
-                nameSpace=_nameSpace;
+               baseOffset = _baseOffset;
             }
+            nameSpace=_nameSpace;
         }
 
+        public void renderStack(HSAILRenderer rc) {
+            if (last != null){
+                last.renderStack(rc);
+            }
+            rc.pad(5).append(nameSpace).nl();
+        }
     }
 
 
@@ -409,7 +431,7 @@ public class HSAILMethod {
 
         @Override
         public void render(HSAILRenderer r, RenderContext _renderContext) {
-            r.append(branchName).space().label(_renderContext.nameSpace, pc).semicolon();
+            r.append(branchName).space().label(_renderContext.getLocation(pc)).semicolon();
         }
     }
 
@@ -487,7 +509,7 @@ public class HSAILMethod {
 
         @Override
         public void render(HSAILRenderer r, RenderContext _renderContext) {
-            r.append("cbr").space().append("$c1").separator().label(_renderContext.nameSpace,pc).semicolon();
+            r.append("cbr").space().append("$c1").separator().label(_renderContext.getLocation(pc)).semicolon();
 
         }
     }
@@ -503,7 +525,7 @@ public class HSAILMethod {
 
         @Override
         public void render(HSAILRenderer r, RenderContext _renderContext) {
-            r.append("brn").space().label(_renderContext.nameSpace, pc).semicolon();
+            r.append("brn").space().label(_renderContext.getLocation(pc)).semicolon();
 
         }
     }
@@ -1173,10 +1195,10 @@ public class HSAILMethod {
                 if (!(i instanceof ld_kernarg || i instanceof ld_arg) && !s.contains(i.from)) {
                     s.add(i.from);
                     if (i.from.isBranchTarget()) {
-                        r.label("func_",i.from.getThisPC()).colon().nl();
+                        r.label("func_"+i.from.getThisPC()).colon().nl();
                     }
                     if (r.isShowingComments()) {
-                        r.nl().pad(1).lineCommentStart().mark().append(i.from.getThisPC()).relpad(2).space().i(i.from).nl();
+                        r.nl().pad(1).lineCommentStart().mark().append(_renderContext.getLocation(i.from.getThisPC())).relpad(2).space().i(i.from).nl();
                     }
                 }
                 r.pad(9);
@@ -1197,10 +1219,10 @@ public class HSAILMethod {
                if (!s.contains(i.from)) {
                    s.add(i.from);
                      if (i.from.isBranchTarget()) {
-                         r.label(_renderContext.nameSpace, i.from.getThisPC()).colon().nl();
+                         r.label(_renderContext.getLocation(i.from.getThisPC())).colon().nl();
                      }
                     if (r.isShowingComments()) {
-                        r.nl().pad(1).lineCommentStart().append("inlined! ").append(_renderContext.nameSpace).mark().append(i.from.getThisPC()).relpad(2).space().i(i.from).nl();
+                        r.nl().pad(1).lineCommentStart().append(_renderContext.getLocation(i.from.getThisPC())).mark().relpad(2).space().i(i.from).nl();
                     }
                 }
                 if (i instanceof retvoid){
@@ -1270,10 +1292,10 @@ public class HSAILMethod {
                 s.add(i.from);
                 if (i.from.isBranchTarget()) {
 
-                    r.label(rc.nameSpace, i.from.getThisPC()).colon().nl();
+                    r.label(rc.getLocation(i.from.getThisPC())).colon().nl();
                 }
                 if (r.isShowingComments()) {
-                    r.nl().pad(1).lineCommentStart().mark().append(i.from.getThisPC()).relpad(2).space().i(i.from).nl();
+                    r.nl().pad(1).lineCommentStart().mark().append(rc.getLocation(i.from.getThisPC())).relpad(2).space().i(i.from).nl();
                 }
 
             } else {
@@ -1284,6 +1306,13 @@ public class HSAILMethod {
             r.nl();
         }
         r.cbrace().semicolon();
+        r.nl().commentStart();
+        for (Map.Entry<RenderContext, Integer> e:rc.locMap.entrySet()){
+            r.nl().append(String.format("%04d",e.getValue())).append("=").obrace().nl();
+            e.getKey().renderStack(r);
+            r.nl().cbrace().nl();
+        }
+        r.nl().commentEnd();
         return (r);
     }
 
@@ -1361,9 +1390,9 @@ public class HSAILMethod {
         method = _method;
         ParseState parseState = ParseState.NONE;
         Instruction lastInstruction = null;
-        for (Instruction i : method.getInstructions()) {
-            System.out.println(i.getThisPC()+" "+i.getPostStackBase());
-        }
+      //  for (Instruction i : method.getInstructions()) {
+     //      System.out.println(i.getThisPC()+" "+i.getPostStackBase());
+      //  }
         for (Instruction i : method.getInstructions()) {
             if (i.getThisPC() == 0) {
 
