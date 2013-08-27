@@ -33,7 +33,7 @@ public class StringLambda {
 
         IntConsumer ic = gid -> {
             boolean v = text.contains(strings[gid]);
-            results[gid]  = v;
+           // results[gid]  = v;
 
 
         };

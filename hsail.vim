@@ -24,10 +24,14 @@ endif
 syn case ignore
 
 " Partial list of register symbols
-syn match hsailReg  "\$[cds][0-9]\+"
-syn match hsailReg "%_arg[0-9]+"
+syn match hsailReg  "\$[cds][0-9]*"
+syn match hsailReg "%_arg[0-9]*"
 syn match hsailReg "%spillseg"
 syn match hsailReg "%_this"
+
+syn match hsailStackLinePc "@[0-9]+" 
+syn keyword hsailColon : 
+syn region hsailStackTrace start="={" end="}" fold transparent contains=hsailStackLinePc,hsailColon
 
 " All matches - order is important!
 syn match hsailOpcode "cmov_[fbusd]\(64\|32\|16\|8\)"
@@ -39,7 +43,7 @@ syn match hsailOpcode "\(add\|sub\|rem\|div\|mul\|mad\)_[fbusd]\(32\|64\|16\|8\)
 syn match hsailOpcode "cvt_[fbusd]\(64\|32\|16\|8\)_[fbusd]\(64\|32\|16\|8\)"
 syn match hsailOpcode "workitemabsid_[busd]32"
 syn match hsailOpcode "\(cbr\|ret\|brn\)"
-syn match hsailOpcode "cmp_\(ne\|geu\|ge\|leu\|le\|lt\|eq\)_b1_[fbusd]\(64\|32\|16\|8\)"
+syn match hsailOpcode "cmp_\(ne\|geu\|gt\|ge\|leu\|le\|lt\|eq\)_b1_[fbusd]\(64\|32\|16\|8\)"
 
 " Various number formats
 syn match hsaildecNumber    "[+-]\=[0-9]\+\>"
@@ -75,7 +79,7 @@ syn match hsailOperator	"&[a-z][a-z0-9_]*"
 
 
 " Special items for comments
-syn keyword hsailInline		contained inlined
+syn keyword hsailInline	contained inlined
 
 " Comments
 syn match hsailComment		"//.*" contains=hsailInline
@@ -96,14 +100,15 @@ if version >= 508 || !exists("did_macro_syntax_inits")
   HiLink hsailComment		Comment
   HiLink hsailTodo		Todo
 
-  HiLink hsailhexNumber		Number		" Constant
-  HiLink hsailoctNumber		Number		" Constant
-  HiLink hsailbinNumber		Number		" Constant
-  HiLink hsaildecNumber		Number		" Constant
-  HiLink hsailfloatNumber	Number		" Constant
+  HiLink hsailhexNumber		Number
+  HiLink hsailoctNumber		Number
+  HiLink hsailbinNumber		Number
+  HiLink hsaildecNumber		Number
+  HiLink hsailfloatNumber	Number
   HiLink hsailReg		Number
   HiLink hsailOperator		Identifier
-  HiLink hsailKeyword    	Special
+  HiLink hsailKeyword   	Special
+  HiLink hsailStackLinePc    	Comment
   HiLink hsailOpcode		Statement
   HiLink hsailLabel		Type
   delcommand HiLink

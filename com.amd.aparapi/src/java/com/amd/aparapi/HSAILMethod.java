@@ -17,7 +17,7 @@ public class HSAILMethod {
     public static class RenderContext{
         public int baseOffset;
         private String nameSpace;
-        Map<RenderContext,Integer> locMap = new HashMap<RenderContext, Integer>();
+        Map<RenderContext,Integer> locMap = new LinkedHashMap<RenderContext, Integer>();
         int loc=0;
         public String getLocation(RenderContext _renderContext, int pc){
            if (last != null){
@@ -570,7 +570,7 @@ public class HSAILMethod {
 
             sig = from.asMethodCall().getConstantPoolMethodEntry().getNameAndTypeEntry().getDescriptor();
             }
-            mangledName = (dotClassName+"_"+name+sig).replace(".","_").replace(";","_").replace("(","_").replace(")", "_").replace("/", "_").replace("$", "_").replace("[", "_");
+            mangledName = (dotClassName+"_"+name+sig);//.replace(".","_").replace(";","_").replace("(","_").replace(")", "_").replace("/", "_").replace("$", "_").replace("[", "_");
             String intrinsicLookup = dotClassName + "." + name + sig;
             call = null;
             for (IntrinsicCall ic : intrinsicMap.values()) {
@@ -599,7 +599,7 @@ public class HSAILMethod {
 
         @Override
         void render(HSAILRenderer r, RenderContext _renderContext) {
-            RenderContext rc = new RenderContext(_renderContext, mangledName+"_"+from.getThisPC()+"_", base);
+            RenderContext rc = new RenderContext(_renderContext, String.format("@%04d : %s",from.getThisPC(), mangledName), base);
 
             call.renderCallSite(r,rc, from,  name);
 
@@ -1246,7 +1246,7 @@ public class HSAILMethod {
         //r.append("version 1:0:large;").nl();
         r.append("version 0:95: $full : $large").semicolon().nl();
 
-        RenderContext rc = new RenderContext(null, "main_", 0);
+        RenderContext rc = new RenderContext(null, this.method.getClassModel().getDotClassName()+"."+this.method.getName()+this.method.getDescriptor(), 0);
         for (CallType c : calls) {
             c.renderDeclaration(r, rc);
         }
@@ -1310,7 +1310,7 @@ public class HSAILMethod {
         for (Map.Entry<RenderContext, Integer> e:rc.locMap.entrySet()){
             r.nl().append(String.format("%04d",e.getValue())).append("=").obrace().nl();
             e.getKey().renderStack(r);
-            r.nl().cbrace().nl();
+            r.cbrace().nl();
         }
         r.nl().commentEnd();
         return (r);
