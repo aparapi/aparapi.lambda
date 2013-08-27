@@ -9,6 +9,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.IntConsumer;
 
+import static com.amd.aparapi.Device.hsaForEach;
+import static com.amd.aparapi.Device.jtpForEach;
+import static com.amd.aparapi.Device.seqForEach;
+
 
 public class CharArrayLambdaHisto {
 
@@ -78,14 +82,24 @@ public class CharArrayLambdaHisto {
         int[] counts = new int[len];
         IntConsumer ic = gid -> {
             char[] chars = strings[gid];
+            char firstChar=chars[0];
             int count = 0;
             for (int i=0; i<=text.length-chars.length; i++){
-                if (i==0 || (i>0 && (text[i-1]<'a' || text[i-1]>'z'))){
+                char prevChar =0;
+                if (i>0){
+                   prevChar = text[i-1];
+                }
+                if (firstChar==text[i] && (prevChar<'a' || prevChar>'z')){
+
                     boolean result = true; // optimistic!
-                    for (int offset=0; result && offset<chars.length; offset++){
+                    for (int offset=1; result && offset<chars.length; offset++){
                        result = chars[offset] == text[i+offset];
                     }
-                    if (result && !(i+chars.length<text.length && (text[i+chars.length]>='a' && text[i+chars.length]<='z'))){
+                    char endChar=0;
+                    if ((i+chars.length)<text.length){
+                        endChar=text[i+chars.length];
+                    }
+                    if (result && (endChar<'a' || endChar>'z')){
                         count++;
                     }
                 }
@@ -95,23 +109,23 @@ public class CharArrayLambdaHisto {
         Arrays.fill(counts, 0);
 
         long start = System.currentTimeMillis();
-        Device.jtp().forEach(len, ic);
+        jtpForEach(len, ic);
         System.out.println();
         dump("jtp = "+(System.currentTimeMillis()-start), strings, counts);
 
         Arrays.fill(counts, 0);
         start = System.currentTimeMillis();
-        Device.hsa().forEach(len, ic);
+        hsaForEach(len, ic);
         System.out.println();
         dump("hsa1= "+(System.currentTimeMillis()-start), strings, counts);
         Arrays.fill(counts, 0);
         start = System.currentTimeMillis();
-        Device.hsa().forEach(len, ic);
+        hsaForEach(len, ic);
         System.out.println();
         dump("hsa2= "+(System.currentTimeMillis()-start), strings, counts);
         Arrays.fill(counts, 0);
         start = System.currentTimeMillis();
-        Device.seq().forEach(len, ic);
+        seqForEach(len, ic);
         System.out.println();
         dump("seq= "+(System.currentTimeMillis()-start), strings, counts);
     }

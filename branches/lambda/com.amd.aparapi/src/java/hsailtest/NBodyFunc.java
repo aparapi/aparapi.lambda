@@ -65,6 +65,7 @@ public class NBodyFunc {
        void draw(Screen screen){
            int px =  (int)x;
            int py =  (int)y;
+
            int rgb = 0xffffff;
            screen.setPixel(px - 1, py, rgb);
            screen.setPixel(px, py, rgb);
