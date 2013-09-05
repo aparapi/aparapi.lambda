@@ -10,7 +10,13 @@ public abstract class Device{
         return(_deviceName.equals("hsa")?Device.hsa():
                 (_deviceName.equals("jtp")?Device.jtp():
                         (_deviceName.equals("seq")?Device.seq():
-                                (_deviceName.equals("best")?Device.best():null))));
+                                (_deviceName.equals("hyb")?Device.hyb():
+                                        (_deviceName.equals("best")?Device.best():
+                                                 null)
+                                )
+                        )
+                )
+        );
     }
 
     static public enum TYPE{
@@ -19,7 +25,8 @@ public abstract class Device{
       CPU,
       JTP,
       HSA,
-      SEQ
+      SEQ,
+      HYB
    }
 
    ;
@@ -69,9 +76,14 @@ public abstract class Device{
    }
 
    public static Device seq(){
-      return (new JavaSequentialDevice());
+        return (new JavaSequentialDevice());
 
-   }
+    }
+
+    public static Device hyb(){
+        return (new HybridDevice());
+
+    }
 
 
    public static Device hsa(){
@@ -158,6 +170,16 @@ public abstract class Device{
       }
       hsaDevice.forEach(range, ic);
    }
+
+    static HybridDevice hybDevice;
+    public synchronized static  void hybForEach(int range, IntConsumer ic){
+        if (hybDevice == null ){
+            hybDevice = (HybridDevice)hyb();
+
+        }
+        hybDevice.forEach(range, ic);
+    }
+
 
     static JavaSequentialDevice javaSequentialDevice;
     public synchronized static  void seqForEach(int range, IntConsumer ic){

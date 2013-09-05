@@ -12,6 +12,7 @@ import java.util.function.IntConsumer;
 import static com.amd.aparapi.Device.hsaForEach;
 import static com.amd.aparapi.Device.jtpForEach;
 import static com.amd.aparapi.Device.seqForEach;
+import static com.amd.aparapi.Device.hybForEach;
 
 
 public class CharArrayLambdaHisto {
@@ -67,7 +68,7 @@ public class CharArrayLambdaHisto {
                 System.out.println("Comment -> "+line);
             }
         }
-        while(list.size()%64==0){
+        while(list.size()%64!=0){
             list.add("xxxxx".toCharArray());
         }
 
@@ -106,27 +107,53 @@ public class CharArrayLambdaHisto {
             }
             counts[gid] = count;
         };
-        Arrays.fill(counts, 0);
 
-        long start = System.currentTimeMillis();
-        jtpForEach(len, ic);
-        System.out.println();
-        dump("jtp = "+(System.currentTimeMillis()-start), strings, counts);
+        long start=0L;
+        boolean seq = false;
+        boolean jtp = true;
+        boolean hyb = true;
+        boolean hsa = true;
 
+        if (hsa){
         Arrays.fill(counts, 0);
         start = System.currentTimeMillis();
         hsaForEach(len, ic);
         System.out.println();
         dump("hsa1= "+(System.currentTimeMillis()-start), strings, counts);
+
         Arrays.fill(counts, 0);
         start = System.currentTimeMillis();
         hsaForEach(len, ic);
         System.out.println();
         dump("hsa2= "+(System.currentTimeMillis()-start), strings, counts);
+
+        }
+        if (hyb){
+        Arrays.fill(counts, 0);
+        start = System.currentTimeMillis();
+        hybForEach(len, ic);
+        System.out.println();
+        dump("hyb1= "+(System.currentTimeMillis()-start), strings, counts);
+        Arrays.fill(counts, 0);
+        start = System.currentTimeMillis();
+        hybForEach(len, ic);
+        System.out.println();
+        dump("hyb2= "+(System.currentTimeMillis()-start), strings, counts);
+        }
+
+        if (jtp){
+        Arrays.fill(counts, 0);
+        start = System.currentTimeMillis();
+        jtpForEach(len, ic);
+        System.out.println();
+        dump("jtp = "+(System.currentTimeMillis()-start), strings, counts);
+        }
+        if (seq){
         Arrays.fill(counts, 0);
         start = System.currentTimeMillis();
         seqForEach(len, ic);
         System.out.println();
         dump("seq= "+(System.currentTimeMillis()-start), strings, counts);
+        }
     }
 }
