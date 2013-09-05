@@ -115,30 +115,25 @@ public class CharArrayLambdaHisto {
         boolean hsa = true;
 
         if (hsa){
-        Arrays.fill(counts, 0);
-        start = System.currentTimeMillis();
-        hsaForEach(len, ic);
-        System.out.println();
-        dump("hsa1= "+(System.currentTimeMillis()-start), strings, counts);
 
+        for (int i=0; i<4; i++){
         Arrays.fill(counts, 0);
         start = System.currentTimeMillis();
         hsaForEach(len, ic);
         System.out.println();
-        dump("hsa2= "+(System.currentTimeMillis()-start), strings, counts);
+        dump("hsa"+i+"= "+(System.currentTimeMillis()-start), strings, counts);
+        }
+
 
         }
         if (hyb){
-        Arrays.fill(counts, 0);
-        start = System.currentTimeMillis();
-        hybForEach(len, ic);
-        System.out.println();
-        dump("hyb1= "+(System.currentTimeMillis()-start), strings, counts);
-        Arrays.fill(counts, 0);
-        start = System.currentTimeMillis();
-        hybForEach(len, ic);
-        System.out.println();
-        dump("hyb2= "+(System.currentTimeMillis()-start), strings, counts);
+        for (float gpushare : new float[]{.88f,.89f,.9f,.91f, .92f,.93f, .94f,.95f, .96f,.97f,.98f }) {
+            Arrays.fill(counts, 0);
+            start = System.currentTimeMillis();
+            hybForEach(len, gpushare, ic);
+            System.out.println();
+            dump("hyb"+gpushare+"= "+(System.currentTimeMillis()-start), strings, counts);
+        }
         }
 
         if (jtp){

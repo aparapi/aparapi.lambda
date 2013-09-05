@@ -179,7 +179,13 @@ public abstract class Device{
         }
         hybDevice.forEach(range, ic);
     }
+    public synchronized static  void hybForEach(int range, float gpuShare, IntConsumer ic){
+        if (hybDevice == null ){
+            hybDevice = (HybridDevice)hyb();
 
+        }
+        hybDevice.forEach(range, gpuShare, ic);
+    }
 
     static JavaSequentialDevice javaSequentialDevice;
     public synchronized static  void seqForEach(int range, IntConsumer ic){
