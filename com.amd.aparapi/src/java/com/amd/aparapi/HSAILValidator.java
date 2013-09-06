@@ -14,29 +14,69 @@ public class HSAILValidator {
 
     ;
 
+    static abstract class Operand{
+        String name;
+        Operand(String _name){
+            name = _name;
+        }
+        @Override public String toString(){
+            return(name);
+        }
+    }
+
+    static class RegisterOperand extends Operand{
+
+        RegisterOperand(String _name){
+            super(_name);
+        }
+
+    }
+    static class ConstantOperand extends Operand{
+
+        ConstantOperand(String _name){
+            super(_name);
+        }
+
+    }
+    static class LabelOperand extends Operand{
+
+        LabelOperand(String _name){
+            super(_name);
+        }
+
+    }
+    static class MemOperand extends Operand{
+        RegisterOperand reg;
+        ConstantOperand con;
+
+        MemOperand(String _name){
+            super(_name);
+        }
+
+    }
+
+
+
     static class Instruction {
         int lineNumber;
         Label label;
         String content;
         String tailComment;
         String mnemonic;
-        String[] operands;
+        Operand[] sourceOperands;
+        Operand[] destinationOperands;
         boolean special = false;
         static Pattern tailCommentPattern = Pattern.compile("^ *(.*) *; *//(.*)");
         static Pattern noTailCommentPattern = Pattern.compile("^ *(.*) *; *");
 
-        Instruction(int _lineNumber, String _content, String _tailComment, Label _label) {
+        Instruction(int _lineNumber, String _content, String _tailComment, String _mnemonic, Operand[] _sourceOperands, Operand[] _destinationOperands,  Label _label) {
             lineNumber = _lineNumber;
             content = _content;
-            if (content.contains(",")){
-                int firstSpace = content.indexOf(' ');
-                mnemonic = content.substring(0,firstSpace);
-                operands = content.substring(firstSpace).split(",");
-            }             else{
-                mnemonic = content;
-                operands = new String[0];
-            }
+
             tailComment = _tailComment;
+            mnemonic = _mnemonic;
+            sourceOperands = _sourceOperands;
+            destinationOperands = _destinationOperands;
             label = _label;
 
         }
@@ -61,7 +101,85 @@ public class HSAILValidator {
                 }
 
             }
-            return new Instruction(_lineNumber, content, tailComment, _label);
+
+            String mnemonic = null;
+
+            Operand[] operands = null;
+            if (content.contains(",")){
+                int firstSpace = content.indexOf(' ');
+                mnemonic = content.substring(0,firstSpace);
+                String[] operandStrings = content.substring(firstSpace).split(",");
+                operands = new Operand[operandStrings.length];
+                for (int i=0; i< operandStrings.length; i++){
+                    String operandString =  operandStrings[i].trim();
+                    if (operandString.startsWith("@")){
+                        operands[i]=new LabelOperand(operandStrings[i].trim());
+                    }else if (operandString.startsWith("[")){
+                        operands[i]=new MemOperand(operandStrings[i].trim());
+                    } else if (operandString.startsWith("$")){
+                        operands[i]=new RegisterOperand(operandStrings[i].trim().substring(1));
+                    } else {
+                        operands[i]=new ConstantOperand(operandStrings[i].trim());
+                    }
+                }
+            }             else{
+                mnemonic = content;
+                operands = new Operand[0];
+            }
+
+            Operand[] source = null;
+            Operand[] dest = null;
+            switch (operands.length){
+                case 0:
+                    source = new Operand[0];
+                    dest = new Operand[0];
+                    break;
+                case 1:
+                    source = new Operand[1];
+                    dest = new Operand[1];
+                    source[0] = operands[0];
+                    dest[0] = operands[0];
+                    break;
+                case 2:
+                    source = new Operand[1];
+                    dest = new Operand[1];
+
+
+                if (mnemonic.startsWith("st_")){
+                   source[0] = operands[0];
+                   dest[0] = operands[1];
+                }else{
+                    source[0] = operands[1];
+                    dest[0] = operands[0];
+                }
+                    break;
+                case 3:
+                    source = new Operand[2];
+                    dest = new Operand[1];
+
+
+
+                        source[0] = operands[1];
+                        source[1] = operands[2];
+                        dest[0] = operands[0];
+
+                    break;
+                case 4:
+                    source = new Operand[3];
+                    dest = new Operand[1];
+
+
+
+                    source[0] = operands[1];
+                    source[1] = operands[2];
+                    source[2] = operands[3];
+                    dest[0] = operands[0];
+
+                    break;
+            }
+
+
+            return new Instruction(_lineNumber, content, tailComment, mnemonic, source, dest, _label);
         }
 
         @Override
@@ -70,7 +188,17 @@ public class HSAILValidator {
             if (label != null) {
                 sb.append(label.name).append(":\n");
             }
-            sb.append("   " + content + "// {"+mnemonic+"} ");
+          //  sb.append("   " + content +" // ");
+            sb.append("   ");
+            for (Operand operand:destinationOperands){
+                sb.append("{"+operand+"} ");
+            }
+            sb.append("<- {"+mnemonic+"} <- ");
+
+            for (Operand operand:sourceOperands){
+                sb.append("{"+operand+"} ");
+            }
+
             return (sb.toString());
         }
     }
@@ -151,9 +279,7 @@ public class HSAILValidator {
                         break;
                     case NONE:
                         if (versionMatcher.matches(line)) {
-                            // System.out.println("version " + versionMatcher.getGroup(1) + " " + versionMatcher.getGroup(2) + " " + versionMatcher.getGroup(3));
                         } else if (kernelMatcher.matches(line)) {
-                            // System.out.println("kernel " + kernelMatcher.getGroup(0));
                             state.pop(); // replace PREAMBLE with ARGS
                             state.push(State.KERNEL_ARGS);
                         } else if (multiLineStartMatcher.matches(line)) {
@@ -164,7 +290,6 @@ public class HSAILValidator {
                         break;
                     case KERNEL_ARGS:
                         if (kernelArgMatcher.matches(line)) {
-                            //System.out.println("kernarg " + kernelArgMatcher.getGroup(1) + " " + kernelArgMatcher.getGroup(3));
                         } else if (bodyStartMatcher.matches(line)) {
                             state.pop(); // replace ARGS with BODY!
                             state.push(State.BODY);
