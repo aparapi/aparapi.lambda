@@ -35,7 +35,7 @@ public class StringIndexOfLambda {
 
         IntConsumer ic = gid -> {
             int index = text.indexOf(strings[gid], 0);
-          //  indices[gid] = index;
+            indices[gid] = index;
             //results[gid] = (index>=0);
 
 
