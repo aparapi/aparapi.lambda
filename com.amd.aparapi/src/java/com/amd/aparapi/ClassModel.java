@@ -2432,7 +2432,7 @@ public class ClassModel{
 
             // Here we connect the branch nodes to the instruction that they branch to.
             //
-            // Each branch node contains a 'target' field indended to reference the node that the branch targets. Each instruction also contain four separate lists of branch nodes that reference it.
+            // Each branch node contains a 'target' field intended to reference the node that the branch targets. Each instruction also contain four separate lists of branch nodes that reference it.
             // These lists hold forwardConditional, forwardUnconditional, reverseConditional and reverseUnconditional branches that reference it.
             //
             // So assuming that we had a branch node at pc offset 100 which represented 'goto 200'.
@@ -2486,6 +2486,8 @@ public class ClassModel{
 
             }
 
+             // need to treat ternary else goto's special.
+
 
             ConsumedInstructionTypeStack consumedInstructionTypeStack = new ConsumedInstructionTypeStack(codeEntry.getMaxStack() + 1);
 
@@ -2517,7 +2519,8 @@ public class ClassModel{
 
                   }
                }
-
+                boolean oldDealWithTernary = false;
+               if (oldDealWithTernary){ /*
                // So Ternary operators have to be dealt with.
                // If this is a forward conditional target whose stackbase is now greater than or equal to the branch
                // then the block between produces stack.  So must be 'then' part of ternary
@@ -2564,6 +2567,34 @@ public class ClassModel{
                   }else{
                      throw new IllegalStateException("never!");
                   }
+               }
+               */}
+
+               if (!oldDealWithTernary){
+                   // is this the first instruction in a ternary else block
+                   if (i.isForwardConditionalBranchTarget() && i.getPrevPC().isBranch() && i.getPrevPC().asBranch().isUnconditional() && i.getPrevPC().asBranch().isForward()) {
+                       // We now no it is the first in an else block. If this is a normal else the 'then' block will not have left an unbalanced stack.
+                       // So check if the stack base of the first instruction of then is equal to this!
+                       Instruction firstInElseBlock = i;
+                       Instruction elseGoto = firstInElseBlock.getPrevPC();
+                      // Instruction last = elseGoto.getPrevPC();
+
+                           LinkedList<Branch> listOfBranches = firstInElseBlock.getForwardBranches();
+                           Branch lastBranchToHere = listOfBranches.getLast();
+                           Instruction firstInThenBlock = lastBranchToHere.getNextPC();
+                          // System.out.println("firstInThenBlock "+ firstInThenBlock.getPreStackBase()+", "+firstInThenBlock.getPostStackBase()) ;
+                         //  System.out.println("last "+ last.getPreStackBase()+", "+last.getPostStackBase()) ;
+                         //  System.out.println("elseGoto "+ elseGoto.getPreStackBase()+", "+elseGoto.getPostStackBase()) ;
+                           if (elseGoto.getPostStackBase()>firstInThenBlock.getPostStackBase()){
+                               System.out.println("ternary!");
+                               // We need to make sure that we decrement the stackPosition from here on.
+                               firstInElseBlock.getPostStackBase();
+                           }else{
+                               System.out.println("not ternary!");
+                           }
+
+                   }
+
                }
 
             }

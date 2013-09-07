@@ -92,15 +92,15 @@ abstract class Instruction{
 
    protected InstructionType[] consumedInstructionTypes;
 
-   protected boolean endOfTernary = false;
+  // protected boolean endOfTernary = false;
 
-   boolean isEndOfTernary(){
-      return (endOfTernary);
-   }
+  // boolean isEndOfTernary(){
+  //    return (endOfTernary);
+  // }
 
-   void setEndOfTernary(boolean _endOfTernary){
-      endOfTernary = _endOfTernary;
-   }
+  // void setEndOfTernary(boolean _endOfTernary){
+   //   endOfTernary = _endOfTernary;
+  // }
 
 
    abstract String getDescription();
