@@ -114,7 +114,7 @@ public class HSAILRenderer extends TextRenderer<HSAILRenderer>{
             if(typeSpec.getPrimitiveType().equals(PrimitiveType.ref)){
                append(typeSpec.getPrimitiveType().getJavaTypeName());
             }else{
-               append("call to type.toString()");
+               append("ref type");
             }
 
          }
