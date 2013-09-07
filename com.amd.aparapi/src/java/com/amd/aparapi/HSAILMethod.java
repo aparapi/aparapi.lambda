@@ -31,8 +31,24 @@ public class HSAILMethod {
            return(String.format("%04d_%04d", thisLoc, pc));
 
         }
+
+        public String getUniqueNameSpace(RenderContext _renderContext){
+            if (last != null){
+                return(last.getUniqueNameSpace(_renderContext));
+            }
+            Integer thisLoc = locMap.get(_renderContext);
+            if (thisLoc == null){
+                thisLoc = loc++;
+                locMap.put(_renderContext, thisLoc);
+            }
+            return(String.format("%04d", thisLoc));
+
+        }
         public String getLocation(int pc){
                return(getLocation(this, pc));
+        }
+        public String getUniqueNameSpace(){
+            return(getUniqueNameSpace(this));
         }
         RenderContext last = null;
         RenderContext(RenderContext _last, String _nameSpace, int _baseOffset){
@@ -1228,16 +1244,20 @@ public class HSAILMethod {
                 if (i instanceof retvoid){
                     r.pad(9).lineCommentStart().append("ret").semicolon();
                 }else if (i instanceof ret){
-                  r.pad(9).append("mov_").movTypeName(((ret)i).getSrc()).space().regPrefix(((ret)i).getSrc().type).append(base).separator().regName(((ret)i).getSrc(), _renderContext).semicolon();
+                  r.pad(9).append("mov_").movTypeName(((ret)i).getSrc()).space().regPrefix(((ret)i).getSrc().type).append(base).separator().regName(((ret)i).getSrc(), _renderContext).semicolon().nl();
+                  r.pad(9).append("brn @L"+_renderContext.getUniqueNameSpace()+"_END").semicolon();
                   //r.nl().pad(9).lineCommentStart().append("st_arg_").typeName(((ret)i).getSrc()).space().regName(((ret)i).getSrc(), _renderContext).separator().append("[%_result]").semicolon().nl();
                   //r.pad(9).lineCommentStart().append("ret").semicolon();
               }   else{
                   r.pad(9);
                   i.render(r, _renderContext);
               }
-            r.nl();
+                r.nl();
+
+
             }
         }
+        r.append("@L"+_renderContext.getUniqueNameSpace()+"_END").colon().nl();
         return (r);
     }
 

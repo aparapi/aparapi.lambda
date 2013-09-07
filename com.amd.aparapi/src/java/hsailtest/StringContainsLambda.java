@@ -7,16 +7,16 @@ import java.util.Arrays;
 import java.util.function.IntConsumer;
 
 
-public class StringIndexOfLambda {
+public class StringContainsLambda {
 
 
-    static void dump(String type, String[] _strings, int[] indices) {
+    static void dump(String type, String[] _strings, boolean[] results) {
         System.out.print(type + " ->");
         for (int i = 0; i < _strings.length; i++) {
             if (i != 0) {
                 System.out.print(", ");
             }
-            System.out.print(_strings[i]+(indices[i]>-1?"*":"?")+"="+indices[i]);
+            System.out.print(_strings[i]+(results[i]?"*":"?"));
         }
         System.out.println();
     }
@@ -30,19 +30,19 @@ public class StringIndexOfLambda {
         int len = strings.length;
         String text = "the cat sat on the mat";
 
-        int[] indices = new int[len];
+        boolean[] results = new boolean[len];
 
         IntConsumer ic = gid -> {
-            indices[gid] = text.indexOf(strings[gid]);
+            results[gid] = text.contains(strings[gid]);
         };
 
-        Arrays.fill(indices, -1);
+        Arrays.fill(results, false);
         Device.hsa().forEach(len, ic);
-        dump("hsa", strings,  indices);
+        dump("hsa", strings,  results);
 
-        Arrays.fill(indices, -1);
+        Arrays.fill(results, false);
         Device.seq().forEach(len, ic);
-        dump("seq", strings, indices);
+        dump("seq", strings, results);
 
     }
 }
