@@ -32,16 +32,16 @@ public class StringLambda {
 
 
         IntConsumer ic = gid -> {
-            boolean v = text.contains(strings[gid]);
-            results[gid]  = v;
-
-
+            results[gid]  = text.contains(strings[gid]);
         };
         Arrays.fill(results, false);
-        System.out.println(results);
         Device.hsa().forEach(len, ic);
-        System.out.println(results);
         dump("hsa", strings, results);
-
+        Arrays.fill(results, false);
+        Device.jtp().forEach(len, ic);
+        dump("jtp", strings, results);
+        Arrays.fill(results, false);
+        Device.seq().forEach(len, ic);
+        dump("seq", strings, results);
     }
 }
