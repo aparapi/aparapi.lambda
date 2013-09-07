@@ -294,7 +294,7 @@ public class HSAILMethod {
                 "nsqrt_f64  $d${0}, $d${0};"
     ));
         add(new InlineIntrinsicCall("java.lang.String.charAt(I)C", false,
-                "ld_global_b64 $d${2}, [$d${0}+16];   // this string reference into $d${2}",
+                "ld_global_u64 $d${2}, [$d${0}+16];   // this string reference into $d${2}",
                 "mov_b32 $s${3}, $s${1};              // copy index",
                 "cvt_u64_s32 $d${3}, $s${3};          // convert array index to 64 bits",
                 "mad_u64 $d${3}, $d${3}, 2, $d${2};      // get the char address",

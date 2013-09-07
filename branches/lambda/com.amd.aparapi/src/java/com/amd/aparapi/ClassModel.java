@@ -2572,25 +2572,26 @@ public class ClassModel{
 
                if (!oldDealWithTernary){
                    // is this the first instruction in a ternary else block
-                   if (i.isForwardConditionalBranchTarget() && i.getPrevPC().isBranch() && i.getPrevPC().asBranch().isUnconditional() && i.getPrevPC().asBranch().isForward()) {
+                   if (i.isBranch() && i.asBranch().isUnconditional() && i.asBranch().isForward()) {
                        // We now no it is the first in an else block. If this is a normal else the 'then' block will not have left an unbalanced stack.
                        // So check if the stack base of the first instruction of then is equal to this!
-                       Instruction firstInElseBlock = i;
-                       Instruction elseGoto = firstInElseBlock.getPrevPC();
+
+                       Instruction elseGoto = i;
+                       Instruction firstInElseBlock = i.getNextPC();
                       // Instruction last = elseGoto.getPrevPC();
 
                            LinkedList<Branch> listOfBranches = firstInElseBlock.getForwardBranches();
-                           Branch lastBranchToHere = listOfBranches.getLast();
-                           Instruction firstInThenBlock = lastBranchToHere.getNextPC();
-                          // System.out.println("firstInThenBlock "+ firstInThenBlock.getPreStackBase()+", "+firstInThenBlock.getPostStackBase()) ;
+                           Branch lastBranchElseBlock = listOfBranches.getLast();
+                           Instruction firstInThenBlock = lastBranchElseBlock.getNextPC();
+                           System.out.println("firstInThenBlock "+ firstInThenBlock.getPreStackBase()+", "+firstInThenBlock.getPostStackBase()) ;
                          //  System.out.println("last "+ last.getPreStackBase()+", "+last.getPostStackBase()) ;
-                         //  System.out.println("elseGoto "+ elseGoto.getPreStackBase()+", "+elseGoto.getPostStackBase()) ;
+                           System.out.println("elseGoto "+ elseGoto.getPreStackBase()+", "+elseGoto.getPostStackBase()) ;
                            if (elseGoto.getPostStackBase()>firstInThenBlock.getPostStackBase()){
-                               System.out.println("ternary!");
-                               // We need to make sure that we decrement the stackPosition from here on.
-                               firstInElseBlock.getPostStackBase();
+                               System.out.println("@"+i.getStartPC()+" ternary!");
+
+                               consumedInstructionTypeStack.pop(); // We throw one away!
                            }else{
-                               System.out.println("not ternary!");
+                               System.out.println("@"+i.getStartPC()+" not ternary!");
                            }
 
                    }

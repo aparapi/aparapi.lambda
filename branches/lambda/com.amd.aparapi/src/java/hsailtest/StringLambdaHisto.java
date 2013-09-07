@@ -70,9 +70,10 @@ public class StringLambdaHisto {
 
 
     public static void main(String[] args) throws AparapiException, IOException {
-        String[] strings = buildDictionary(new File("C:\\Users\\user1\\aparapi\\branches\\lambda\\names.txt"));
+        File dir = new File("/home/gfrost/aparapi/branches/lambda");
+        String[] strings = buildDictionary(new File(dir, "names.txt"));
         int len = strings.length;
-        String text = getText(new File("C:\\Users\\user1\\aparapi\\branches\\lambda\\alice.txt"));
+        String text = getText(new File(dir, "alice.txt"));
         int[] counts = new int[len];
         IntConsumer ic = gid -> {
             String chars = strings[gid];
@@ -96,13 +97,10 @@ public class StringLambdaHisto {
 
         long start = System.currentTimeMillis();
         Device.jtp().forEach(len, ic);
-        System.out.println();
         dump("jtp = "+(System.currentTimeMillis()-start), strings, counts);
-
         Arrays.fill(counts, 0);
         start = System.currentTimeMillis();
         Device.hsa().forEach(len, ic);
-        System.out.println();
         dump("hsa1= "+(System.currentTimeMillis()-start), strings, counts);
         Arrays.fill(counts, 0);
         start = System.currentTimeMillis();

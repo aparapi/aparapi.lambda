@@ -25,19 +25,7 @@ public class TernaryLambda {
         boolean in[] = new boolean[len];
 
         IntConsumer ic = gid -> {
-            int junk = 1;
-            if (gid%2==0){
-                in[gid]=true;
-            }                else{
-                in[gid]=false;
-            }
-          //  in[gid]=false;
-           // if ((gid%2)==0){
-                in[gid] = gid%2==0?true:false;
-           // } else{
-          //      in[gid] = false;
-          //  }
-           // in[gid] = (gid%2)==0;
+            in[gid] = gid%2==0;
         };
 
         Device.hsa().forEach(len, ic);

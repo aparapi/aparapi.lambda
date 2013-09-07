@@ -41,6 +41,10 @@ public class StringHashLambda {
         System.out.println(results);
         dump("hsa", strings, results);
         Arrays.fill(results, 0);
+        strings[0]="here";
+        strings[1]="is";
+        strings[2]="my";
+        strings[3]="string";
         Device.seq().forEach(len, ic);
         System.out.println(results);
         dump("seq", strings, results);
