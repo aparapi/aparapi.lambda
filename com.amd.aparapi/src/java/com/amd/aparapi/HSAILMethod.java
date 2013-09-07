@@ -261,7 +261,7 @@ public class HSAILMethod {
 
             method.renderInlinedFunctionBody(r, _renderContext, _renderContext.baseOffset);
 
-            r.nl();
+            //r.nl();
             return (this);
         }
 
@@ -1228,13 +1228,12 @@ public class HSAILMethod {
                 if (i instanceof retvoid){
                     r.pad(9).lineCommentStart().append("ret").semicolon();
                 }else if (i instanceof ret){
-                  r.pad(9);
-                  r.append("mov_").typeName(((ret)i).getSrc()).space().regPrefix(((ret)i).getSrc().type).append(base).separator().regName(((ret)i).getSrc(), _renderContext).semicolon().nl();
-                  r.nl().pad(9).lineCommentStart().append("st_arg_").typeName(((ret)i).getSrc()).space().regName(((ret)i).getSrc(), _renderContext).separator().append("[%_result]").semicolon().nl();
-                  r.pad(9).lineCommentStart().append("ret").semicolon();
+                  r.pad(9).append("mov_").movTypeName(((ret)i).getSrc()).space().regPrefix(((ret)i).getSrc().type).append(base).separator().regName(((ret)i).getSrc(), _renderContext).semicolon();
+                  //r.nl().pad(9).lineCommentStart().append("st_arg_").typeName(((ret)i).getSrc()).space().regName(((ret)i).getSrc(), _renderContext).separator().append("[%_result]").semicolon().nl();
+                  //r.pad(9).lineCommentStart().append("ret").semicolon();
               }   else{
                   r.pad(9);
-                  i.render(r, _renderContext);    // note rendering of labels will fail.  we need a namespace
+                  i.render(r, _renderContext);
               }
             r.nl();
             }
