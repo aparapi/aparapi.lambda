@@ -1230,6 +1230,8 @@ public class HSAILMethod {
 
     public HSAILRenderer renderInlinedFunctionBody(HSAILRenderer r,  RenderContext _renderContext,  int base) {
         Set<Instruction> s = new HashSet<Instruction>();
+        boolean endBranchNeeded = false;
+
         for (HSAILInstruction i : instructions) {
             if (!(i instanceof ld_arg)){
                if (!s.contains(i.from)) {
@@ -1244,8 +1246,11 @@ public class HSAILMethod {
                 if (i instanceof retvoid){
                     r.pad(9).lineCommentStart().append("ret").semicolon();
                 }else if (i instanceof ret){
-                  r.pad(9).append("mov_").movTypeName(((ret)i).getSrc()).space().regPrefix(((ret)i).getSrc().type).append(base).separator().regName(((ret)i).getSrc(), _renderContext).semicolon().nl();
-                  r.pad(9).append("brn @L"+_renderContext.getUniqueNameSpace()+"_END").semicolon();
+                  r.pad(9).append("mov_").movTypeName(((ret)i).getSrc()).space().regPrefix(((ret)i).getSrc().type).append(base).separator().regName(((ret)i).getSrc(), _renderContext).semicolon();
+                  if (i != instructions.get(instructions.size()-1)){
+                  r.nl().pad(9).append("brn @L"+_renderContext.getUniqueNameSpace()+"_END").semicolon();
+                  endBranchNeeded = true;
+                  }
                   //r.nl().pad(9).lineCommentStart().append("st_arg_").typeName(((ret)i).getSrc()).space().regName(((ret)i).getSrc(), _renderContext).separator().append("[%_result]").semicolon().nl();
                   //r.pad(9).lineCommentStart().append("ret").semicolon();
               }   else{
@@ -1257,7 +1262,9 @@ public class HSAILMethod {
 
             }
         }
+        if (endBranchNeeded){
         r.append("@L"+_renderContext.getUniqueNameSpace()+"_END").colon().nl();
+        }
         return (r);
     }
 
