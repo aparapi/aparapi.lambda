@@ -28,7 +28,10 @@ public class HSADevice extends Device {
             } else {
                 cachedRunner = new CachedRunner();
                 LambdaKernelCall lkc = new LambdaKernelCall(ic);
+                System.out.println("class="+lkc.getLambdaKernelClass());
                 ClassModel classModel = ClassModel.getClassModel(lkc.getLambdaKernelClass());
+                System.out.println("methodname="+lkc.getLambdaMethodName());
+                System.out.println("methodsig="+lkc.getLambdaMethodSignature());
                 ClassModel.ClassModelMethod method = classModel.getMethod(lkc.getLambdaMethodName(), lkc.getLambdaMethodSignature());
 
 

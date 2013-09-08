@@ -249,15 +249,60 @@ public class HSAILValidator {
     static LineMatcher bodyStartMatcher = new LineMatcher(Pattern.compile("^ *\\)\\{ *"));
     static LineMatcher bodyEndMatcher = new LineMatcher(Pattern.compile("^ *\\}; *"));
 
-    public static void main(String[] _args) throws IOException {
-        String fileName = "C:\\Users\\user1\\aparapi\\branches\\lambda\\sindexof.hsail";
-        BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(fileName)));
+    public static void main(String[] _args) throws IOException, ClassNotFoundException, ClassParseException {
 
+       String className = _args.length>0?_args[0]:"hsailtest.StringLambda";
+
+       ClassModel classModel = ClassModel.getClassModel(Class.forName(className));
+
+       String methodName = null;
+       if (_args.length>1){
+          methodName = _args[1];
+       }else{
+          System.out.println("methods");
+          for (ClassModel.ClassModelMethod m:classModel.getMethods()){
+              if (m.getName().startsWith("lambda")){
+                 System.out.println(m.getName()+","+m.getDescriptor());
+              }
+              
+          }
+          System.exit(1);
+       }
+       String methodSignature = null;
+       if (_args.length>2){
+          methodSignature = _args[2];
+       }else{
+          for (ClassModel.ClassModelMethod m:classModel.getMethods()){
+              if (m.getName().equals(methodName)){
+                 methodSignature = m.getDescriptor();
+                 System.out.println("using descriptor "+methodSignature);
+                 break;
+              }
+          }
+          if (methodSignature==null){
+          for (ClassModel.ClassModelMethod m:classModel.getMethods()){
+              System.out.println(m.getName()+","+m.getDescriptor());
+          }
+          System.exit(1);
+          }
+       }
+
+       ClassModel.ClassModelMethod method = classModel.getMethod(methodName, methodSignature);
+
+
+       HSAILRenderer renderer = new HSAILRenderer().setShowComments(true);
+
+       HSAILMethod.getHSAILMethod(method, null).renderEntryPoint(renderer);
         List<String> input = new ArrayList<String>();
-        for (String line = br.readLine(); line != null; line = br.readLine()) {
-            input.add(line);
+       for (String s:renderer.toString().split("\n")){
+      
+        //String fileName = "C:\\Users\\user1\\aparapi\\branches\\lambda\\sindexof.hsail";
+        //BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(fileName)));
+
+        //for (String line = br.readLine(); line != null; line = br.readLine()) {
+            input.add(s);
         }
-        br.close();
+        //br.close();
         Label label = null;
         int lineNumber = 0;
         Stack<State> state = new Stack<State>();

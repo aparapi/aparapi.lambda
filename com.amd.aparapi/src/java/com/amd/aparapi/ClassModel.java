@@ -2785,6 +2785,10 @@ public class ClassModel{
       return superClazzModel != null ? superClazzModel.getMethod(_name, _descriptor) : (null);
    }
 
+   public List<ClassModelMethod> getMethods(){
+     return(methods);
+   }
+
    List<ClassModelField> getFieldPoolEntries(){
       return (fields);
    }
