@@ -3,7 +3,10 @@ package hsailtest;
 import com.amd.aparapi.AparapiException;
 import com.amd.aparapi.Device;
 
+import java.io.*;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.function.IntConsumer;
 
 
@@ -21,14 +24,44 @@ public class StringContainsLambda {
         System.out.println();
     }
 
+    static String getText(File _file) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(_file)));
+        for (String line=br.readLine(); line != null; line=br.readLine()){
+            sb.append(" ").append(line.toLowerCase());
+        }
+        return(sb.toString());
+    }
 
 
 
-    public static void main(String[] args) throws AparapiException {
-        String[] strings = new String[]{"cat","mat","dog"};
+
+    static String[] buildDictionary(File _file) throws IOException {
+        List<String> list = new ArrayList<String>();
+        StringBuilder sb = new StringBuilder();
+        BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(_file)));
+        for (String line=br.readLine(); line != null; line=br.readLine()){
+            if (!line.trim().startsWith("//")){
+                list.add(line.trim().toLowerCase()) ;
+            }else{
+                System.out.println("Comment -> "+line);
+            }
+        }
+        while(list.size()%64==0){
+            list.add("xxxxx");
+        }
+
+        return(list.toArray(new String[0]));
+    }
+
+
+
+    public static void main(String[] args) throws AparapiException, IOException {
+        File dir = new File("C:\\Users\\user1\\aparapi\\branches\\lambda");
+        String[] strings = buildDictionary(new File(dir, "names.txt"));
 
         int len = strings.length;
-        String text = "the cat sat on the mat";
+        String text =    getText(new File(dir, "alice.txt"));
 
         boolean[] results = new boolean[len];
 
@@ -37,12 +70,26 @@ public class StringContainsLambda {
         };
 
         Arrays.fill(results, false);
+        long start = System.currentTimeMillis();
         Device.hsa().forEach(len, ic);
-        dump("hsa", strings,  results);
+        dump("hsa= "+(System.currentTimeMillis()-start), strings,  results);
 
         Arrays.fill(results, false);
+        start = System.currentTimeMillis();
+        Device.hsa().forEach(len, ic);
+        dump("hsa2= "+(System.currentTimeMillis()-start), strings,  results);
+
+        Arrays.fill(results, false);
+        start = System.currentTimeMillis();
+        Device.jtp().forEach(len, ic);
+        dump("jtp "+(System.currentTimeMillis()-start), strings, results);
+
+        Arrays.fill(results, false);
+        start = System.currentTimeMillis();
         Device.seq().forEach(len, ic);
-        dump("seq", strings, results);
+        dump("seq "+(System.currentTimeMillis()-start), strings, results);
+
+
 
     }
 }
