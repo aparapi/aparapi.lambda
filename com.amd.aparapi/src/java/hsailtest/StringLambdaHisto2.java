@@ -32,60 +32,23 @@ public class StringLambdaHisto2 {
         System.out.println();
     }
 
-    static String getText(File _file) throws IOException {
-       StringBuilder sb = new StringBuilder();
-        BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(_file)));
-        for (String line=br.readLine(); line != null; line=br.readLine()){
-            sb.append(" ").append(line.toLowerCase());
-        }
-        return(sb.toString());
-    }
 
-
-
-
-    static String[] buildDictionary(File _file) throws IOException {
-        List<String> list = new ArrayList<String>();
-        StringBuilder sb = new StringBuilder();
-        BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(_file)));
-        for (String line=br.readLine(); line != null; line=br.readLine()){
-            if (!line.trim().startsWith("//")){
-               list.add(line.trim().toLowerCase()) ;
-            }else{
-                System.out.println("Comment -> "+line);
-            }
-        }
-        while(list.size()%64==0){
-            list.add("xxxxx");
-        }
-
-        return(list.toArray(new String[0]));
-    }
 
 
     public static void main(String[] args) throws AparapiException, IOException {
         File dir = new File("C:\\Users\\user1\\aparapi\\branches\\lambda");
-        String[] strings = buildDictionary(new File(dir, "names.txt"));
+        String[] strings = TextTools.buildLowerCaseDictionary(new File(dir, "names.txt"));
         int len = strings.length;
-        String text = getText(new File(dir, "moby.txt"));
+        String text = TextTools.getLowercaseText(new File(dir, "moby.txt"));
         int[] counts = new int[len];
         IntConsumer ic = gid -> {
-            String word = strings[gid];
-            int wordLen = word.length();
-            int count = 0;
-            int index = 0;
-            int textLen = text.length();
-            while (index <textLen){
-               index = text.indexOf(word, index);
-               if (index == -1){
-                   break;
-               }
-               count++;
-               index+=wordLen;
+           // int count = 0;
+
+            for (int index=0; index<text.length() && ((index = text.indexOf(strings[gid], index))!=-1);  index+=strings[gid].length() ){
+                counts[gid]++;
 
             }
-
-            counts[gid] = count;
+           // counts[gid] = count;
         };
         Arrays.fill(counts, 0);
 

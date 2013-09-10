@@ -32,48 +32,13 @@ public class StringLambdaHisto {
         System.out.println();
     }
 
-    static String getText(File _file) throws IOException {
-       StringBuilder sb = new StringBuilder();
-        BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(_file)));
-        for (String line=br.readLine(); line != null; line=br.readLine()){
-            sb.append(" ").append(line.toLowerCase());
-        }
-        return(sb.toString());
-    }
-
-    static char[][] buildDictionary(String... words){
-        char[][] dict = new char[words.length][];
-        for (int i=0; i<words.length; i++){
-            dict[i]=words[i].toLowerCase().toCharArray();
-        }
-        return(dict);
-    }
-
-
-    static String[] buildDictionary(File _file) throws IOException {
-        List<String> list = new ArrayList<String>();
-        StringBuilder sb = new StringBuilder();
-        BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(_file)));
-        for (String line=br.readLine(); line != null; line=br.readLine()){
-            if (!line.trim().startsWith("//")){
-               list.add(line.trim().toLowerCase()) ;
-            }else{
-                System.out.println("Comment -> "+line);
-            }
-        }
-        while(list.size()%64==0){
-            list.add("xxxxx");
-        }
-
-        return(list.toArray(new String[0]));
-    }
 
 
     public static void main(String[] args) throws AparapiException, IOException {
         File dir = new File("C:\\Users\\user1\\aparapi\\branches\\lambda");
-        String[] strings = buildDictionary(new File(dir, "names.txt"));
+        String[] strings = TextTools.buildLowerCaseDictionary(new File(dir, "names.txt"));
         int len = strings.length;
-        String text = getText(new File(dir, "alice.txt"));
+        String text = TextTools.getLowercaseText(new File(dir, "moby.txt"));
         int[] counts = new int[len];
         IntConsumer ic = gid -> {
             String chars = strings[gid];
