@@ -39,47 +39,14 @@ public class CharArrayLambdaHisto {
         System.out.println();
     }
 
-    static char[] getText(File _file) throws IOException {
-       StringBuilder sb = new StringBuilder();
-        BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(_file)));
-        for (String line=br.readLine(); line != null; line=br.readLine()){
-            sb.append(" ").append(line.toLowerCase());
-        }
-        return(sb.toString().toCharArray());
-    }
-
-    static char[][] buildDictionary(String... words){
-        char[][] dict = new char[words.length][];
-        for (int i=0; i<words.length; i++){
-            dict[i]=words[i].toLowerCase().toCharArray();
-        }
-        return(dict);
-    }
 
 
-    static char[][] buildDictionary(File _file) throws IOException {
-        List<char[]> list = new ArrayList<char[]>();
-        StringBuilder sb = new StringBuilder();
-        BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(_file)));
-        for (String line=br.readLine(); line != null; line=br.readLine()){
-            if (!line.trim().startsWith("//")){
-               list.add(line.trim().toLowerCase().toCharArray()) ;
-            }else{
-                System.out.println("Comment -> "+line);
-            }
-        }
-        while(list.size()%64!=0){
-            list.add("xxxxx".toCharArray());
-        }
-
-        return(list.toArray(new char[0][]));
-    }
 
 
     public static void main(String[] args) throws AparapiException, IOException {
-        char[][] strings = buildDictionary(new File("C:\\Users\\user1\\aparapi\\branches\\lambda\\names.txt"));
+        char[][] strings = TextTools.buildLowerCaseDictionaryChars(new File("C:\\Users\\user1\\aparapi\\branches\\lambda\\names.txt"));
         int len = strings.length;
-        char[] text = getText(new File("C:\\Users\\user1\\aparapi\\branches\\lambda\\moby.txt"));
+        char[] text = TextTools.getLowercaseTextChars(new File("C:\\Users\\user1\\aparapi\\branches\\lambda\\moby.txt"));
         int[] counts = new int[len];
         IntConsumer ic = gid -> {
             char[] chars = strings[gid];
