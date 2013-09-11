@@ -6,6 +6,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Stack;
 import java.util.function.IntConsumer;
 
 import static com.amd.aparapi.Device.*;
@@ -23,6 +24,35 @@ public class TextTools {
         }
         return(sb.toString());
     }
+
+    enum State { WS, TEXT, SINGLE, DOUBLE};
+
+    static String[] getSentences(File _file) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(_file)));
+        for (String line=br.readLine(); line != null; line=br.readLine()){
+            sb.append(" ").append(line);
+        }
+        String asString = sb.toString();
+        List<String> sentences = new ArrayList<String>();
+        Stack<State> stateStack = new Stack<State>();
+        stateStack.push(State.WS);
+        int firstNonWs = 0;
+        for (int index = 0; index<asString.length(); index++){
+           char ch = asString.charAt(index);
+           switch (stateStack.peek()){
+               case WS:
+                   if (Character.isWhitespace(ch)){
+
+                   } else if (ch == '\''){
+                       stateStack.pop();
+                       stateStack.push(State.SINGLE);
+                   }
+           }
+        }
+        return(sentences.toArray(new String[0]));
+    }
+
     static char[] getLowercaseTextChars(File _file) throws IOException {
         return(getLowercaseText(_file).toCharArray());
     }
