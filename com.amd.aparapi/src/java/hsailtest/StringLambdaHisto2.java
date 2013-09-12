@@ -17,22 +17,20 @@ public class StringLambdaHisto2 {
         System.out.print(type + " ->");
         boolean first = true;
         for (int i = 0; i < _strings.length; i++) {
-            if (results[i]>0){
-            if (!first) {
-                System.out.print(", ");
-            }   else{
-                first = false;
-            }
+            if (results[i] > 0) {
+                if (!first) {
+                    System.out.print(", ");
+                } else {
+                    first = false;
+                }
 
 
-                System.out.print(_strings[i]+"=" + results[i]);
+                System.out.print(_strings[i] + "=" + results[i]);
             }
 
         }
         System.out.println();
     }
-
-
 
 
     public static void main(String[] args) throws AparapiException, IOException {
@@ -42,13 +40,31 @@ public class StringLambdaHisto2 {
         String text = TextTools.getLowercaseText(new File(dir, "moby.txt"));
         int[] counts = new int[len];
         IntConsumer ic = gid -> {
-           // int count = 0;
+            int count = 0;
+            String word = strings[gid];
+            int wordLen = word.length();
+            int textLen = text.length();
 
-            for (int index=0; index<text.length() && ((index = text.indexOf(strings[gid], index))!=-1);  index+=strings[gid].length() ){
-                counts[gid]++;
+            int i = 0;
+            while (i <= textLen - wordLen) {
+                int index = text.indexOf(word, i);
 
+                if (index == -1) {
+                    i = textLen; // out!
+                } else {
+                    int indexEnd = index + wordLen;
+
+                    if (index == 0 || text.charAt(index - 1) < 'a' || text.charAt(index - 1) > 'z') {
+                        if (indexEnd == textLen || text.charAt(indexEnd) < 'a' || text.charAt(indexEnd) > 'z') {
+                            count++;
+                        }
+                    }
+                    i = indexEnd;
+                }
             }
-           // counts[gid] = count;
+
+
+            counts[gid] = count;
         };
         Arrays.fill(counts, 0);
 
@@ -58,16 +74,16 @@ public class StringLambdaHisto2 {
         Arrays.fill(counts, 0);
         start = System.currentTimeMillis();
         Device.hsa().forEach(len, ic);
-        dump("hsa1= "+(System.currentTimeMillis()-start), strings, counts);
+        dump("hsa1= " + (System.currentTimeMillis() - start), strings, counts);
         Arrays.fill(counts, 0);
         start = System.currentTimeMillis();
         Device.hsa().forEach(len, ic);
         System.out.println();
-        dump("hsa2= "+(System.currentTimeMillis()-start), strings, counts);
+        dump("hsa2= " + (System.currentTimeMillis() - start), strings, counts);
         Arrays.fill(counts, 0);
         start = System.currentTimeMillis();
         Device.seq().forEach(len, ic);
         System.out.println();
-        dump("seq= "+(System.currentTimeMillis()-start), strings, counts);
+        dump("seq= " + (System.currentTimeMillis() - start), strings, counts);
     }
 }
