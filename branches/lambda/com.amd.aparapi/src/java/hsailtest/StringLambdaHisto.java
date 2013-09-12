@@ -46,7 +46,7 @@ public class StringLambdaHisto {
             int textLen = text.length();
             int charsLen = chars.length();
             for (int i=0; i<=textLen-charsLen; i++){
-                if (i==0 || (i>0 && (text.charAt(i-1)<'a' || text.charAt(i-1)>'z'))){
+                if (i==0 || text.charAt(i-1)<'a' || text.charAt(i-1)>'z'){
                     boolean result = true; // optimistic!
                     for (int offset=0; result && offset<charsLen; offset++){
                        result = chars.charAt(offset) == text.charAt(i+offset);
