@@ -14,14 +14,26 @@ import static com.amd.aparapi.Device.*;
 
 public class TextTools {
 
+    interface LineProcessor{
+        String line(String line);
+    }
+    static void  process(File _inFile, File _outFile, LineProcessor _lineProcessor) throws IOException {
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(_outFile)));
+        BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(_inFile)));
+        for (String line=br.readLine(); line != null; line=br.readLine()){
+            bw.append(_lineProcessor.line(line)).append("\n");
 
-
+        }
+        br.close();
+        bw.close();
+    }
     static String getLowercaseText(File _file) throws IOException {
        StringBuilder sb = new StringBuilder();
         BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(_file)));
         for (String line=br.readLine(); line != null; line=br.readLine()){
             sb.append(" ").append(line.toLowerCase());
         }
+        br.close();
         return(sb.toString());
     }
 
@@ -33,6 +45,7 @@ public class TextTools {
         for (String line=br.readLine(); line != null; line=br.readLine()){
             sb.append(" ").append(line);
         }
+        br.close();
         String asString = sb.toString();
         List<String> sentences = new ArrayList<String>();
         Stack<State> stateStack = new Stack<State>();
@@ -83,6 +96,17 @@ public class TextTools {
         }
 
         return(chars);
+    }
+
+   public  static void main(String[] args) throws IOException {
+        process(new File("C:\\Users\\user1\\aparapi\\branches\\lambda\\names.txt"), new File("C:\\Users\\user1\\aparapi\\branches\\lambda\\names.txt.out"),
+                line->{
+                   if (line.trim().equals("") || line.trim().startsWith("//")){
+                       return(line);
+                   }else{
+                       return(line.substring(0,1).toUpperCase()+line.substring(1).toLowerCase());
+                   }
+                });
     }
 
 
