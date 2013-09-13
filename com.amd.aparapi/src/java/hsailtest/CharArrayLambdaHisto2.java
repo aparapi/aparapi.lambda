@@ -2,14 +2,15 @@ package hsailtest;
 
 import com.amd.aparapi.AparapiException;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.function.IntConsumer;
 
 import static com.amd.aparapi.Device.*;
 
 
-public class CharArrayLambdaHisto {
+public class CharArrayLambdaHisto2 {
 
 
     static void dump(String type, char[][] _strings, int[] results) {
@@ -36,63 +37,44 @@ public class CharArrayLambdaHisto {
 
 
 
-    static final int NON_ALPHA =0;
-    static final int PARTIAL_MATCH =1;
-    static final int FINAL_CHECK=2;
-    static final int ALPHA=3;
+
     public static void main(String[] args) throws AparapiException, IOException {
         char[][] strings = TextTools.buildLowerCaseDictionaryChars(new File("C:\\Users\\user1\\aparapi\\branches\\lambda\\names.txt"));
         int len = strings.length;
-        char[] longText = TextTools.getLowercaseTextChars(new File("C:\\Users\\user1\\aparapi\\branches\\lambda\\moby.txt"));
-        char[] text =  longText;//Arrays.copyOf(longText, 5000);
+        char[] text = TextTools.getLowercaseTextChars(new File("C:\\Users\\user1\\aparapi\\branches\\lambda\\moby.txt"));
         int[] counts = new int[len];
         IntConsumer ic = gid -> {
-
             char[] chars = strings[gid];
             char firstChar=chars[0];
             int count = 0;
-            int state= NON_ALPHA;
-            int chIndex =0;
-            for (int i=0; i<text.length; i++){
-                char ch = text[i];
-                if (state == PARTIAL_MATCH){
-                   if (chars[chIndex]==ch){
-                       chIndex++;
-                       if (chIndex==chars.length){
-                           state = FINAL_CHECK;
-                       }
-                   }else if (ch<'a'|| ch>'z'){
-                       state= NON_ALPHA;
-                   }else{
-                       state=ALPHA;
-                   }
-                }else if (state == NON_ALPHA && firstChar==text[i]){
-                       state= PARTIAL_MATCH;
-                       chIndex = 1;
+            for (int i=0; i<=text.length-chars.length; i++){
+                char prevChar =0;
+                if (i>0){
+                   prevChar = text[i-1];
+                }
+                if (firstChar==text[i] && (prevChar<'a' || prevChar>'z')){
 
-                } else if (state == ALPHA &&  ch<'a'|| ch>'z'){
-                    state= NON_ALPHA;
-                }  else if (state == FINAL_CHECK){
-                    if ( ch<'a'|| ch>'z'){
+                    boolean result = true; // optimistic!
+                    for (int offset=1; result && offset<chars.length; offset++){
+                       result = chars[offset] == text[i+offset];
+                    }
+                    char endChar=0;
+                    if ((i+chars.length)<text.length){
+                        endChar=text[i+chars.length];
+                    }
+                    if (result && (endChar<'a' || endChar>'z')){
                         count++;
-                        state = NON_ALPHA;
-                    }else{
-                        state = ALPHA;
                     }
                 }
             }
-            if (state == FINAL_CHECK){
-                count++;
-            }
             counts[gid] = count;
-
         };
 
         long start=0L;
         boolean seq = false;
-        boolean jtp =true;
+        boolean jtp = true;
         boolean hyb = false;
-        boolean hsa = false;
+        boolean hsa = true;
 
         if (hsa){
 
