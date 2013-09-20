@@ -2108,31 +2108,29 @@ public class HSAILMethod {
                 }
                 break;
                 case GETFIELD: {
-                    TypeHelper.JavaType type = i.asFieldAccessor().getConstantPoolFieldEntry().getType();
+                   // TypeHelper.JavaType type = i.asFieldAccessor().getConstantPoolFieldEntry().getType();
 
                     try {
                         Class clazz = Class.forName(i.asFieldAccessor().getConstantPoolFieldEntry().getClassEntry().getDotClassName());
 
                         Field f = clazz.getDeclaredField(i.asFieldAccessor().getFieldName());
-                        if (type.isArray()) {
+                        if (!f.getType().isPrimitive()) {
                             add(new field_load<ref>(i, new StackReg_ref(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
-
-                            //  add(new and_const<u64, Long>(i, new StackReg_u64(i, 0), new StackReg_ref(i, 0), ADDR_MASK));
-                        } else if (type.isInt()) {
-                            //    add(new and_const<ref, Long>(i, new StackReg_ref(i, 0), new StackReg_ref(i, 0), ADDR_MASK));
+                        } else if (f.getType().equals(int.class)) {
                             add(new field_load<s32>(i, new StackReg_s32(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
-                        } else if (type.isBoolean()) {
-                            //    add(new and_const<ref, Long>(i, new StackReg_ref(i, 0), new StackReg_ref(i, 0), ADDR_MASK));
+                        } else if (f.getType().equals(short.class)) {
+                            add(new field_load<s16>(i, new StackReg_s16(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+                        } else if (f.getType().equals(char.class)) {
+                            add(new field_load<u16>(i, new StackReg_u16(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+                        } else if (f.getType().equals(boolean.class)) {
                             add(new field_load<s8>(i, new StackReg_s8(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
-                        } else if (type.isFloat()) {
+                        } else if (f.getType().equals(float.class)) {
                             add(new field_load<f32>(i, new StackReg_f32(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
-                        } else if (type.isDouble()) {
+                        } else if (f.getType().equals(double.class)) {
                             add(new field_load<f64>(i, new StackReg_f64(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
-                        } else if (type.isLong()) {
+                        } else if (f.getType().equals(long.class)) {
                             add(new field_load<s64>(i, new StackReg_s64(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
 
-                        } else if (type.isObject()) {
-                            add(new field_load<ref>(i, new StackReg_ref(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
                         } else {
                             throw new IllegalStateException("unexpected get field type");
                         }
@@ -2149,29 +2147,29 @@ public class HSAILMethod {
                     add(new nyi(i));
                     break;
                 case PUTFIELD: {
-                    TypeHelper.JavaType type = i.asFieldAccessor().getConstantPoolFieldEntry().getType();
+                   // TypeHelper.JavaType type = i.asFieldAccessor().getConstantPoolFieldEntry().getType();
 
                     try {
                         Class clazz = Class.forName(i.asFieldAccessor().getConstantPoolFieldEntry().getClassEntry().getDotClassName());
 
                         Field f = clazz.getDeclaredField(i.asFieldAccessor().getFieldName());
-                        if (type.isArray()) {
-                            add(new field_store<ref>(i, new StackReg_ref(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
-
-                            //  add(new and_const<u64, Long>(i, new StackReg_u64(i, 1), new StackReg_ref(i, 0), ADDR_MASK);
-                        } else if (type.isInt()) {
+                        if (!f.getType().isPrimitive()) {
+                            add(new field_store<ref>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+                        } else if (f.getType().equals(int.class)) {
                             add(new field_store<s32>(i, new StackReg_s32(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
-                        } else if (type.isBoolean()) {
+                        } else if (f.getType().equals(short.class)) {
+                            add(new field_store<s16>(i, new StackReg_s16(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+                        } else if (f.getType().equals(char.class)) {
+                            add(new field_store<u16>(i, new StackReg_u16(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+                        } else if (f.getType().equals(boolean.class)) {
                             add(new field_store<s8>(i, new StackReg_s8(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
-                        } else if (type.isFloat()) {
+                        } else if (f.getType().equals(float.class)) {
                             add(new field_store<f32>(i, new StackReg_f32(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
-                        } else if (type.isDouble()) {
+                        } else if (f.getType().equals(double.class)) {
                             add(new field_store<f64>(i, new StackReg_f64(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
-                        } else if (type.isLong()) {
+                        } else if (f.getType().equals(long.class)) {
                             add(new field_store<s64>(i, new StackReg_s64(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
 
-                        } else if (type.isObject()) {
-                            add(new field_store<ref>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
                         }   else {
                             throw new IllegalStateException("unexpected put field type");
                         }
