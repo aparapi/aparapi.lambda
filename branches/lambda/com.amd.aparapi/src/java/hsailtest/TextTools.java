@@ -27,6 +27,15 @@ public class TextTools {
         br.close();
         bw.close();
     }
+
+    static void  process(File _inFile,  LineProcessor _lineProcessor) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(_inFile)));
+        for (String line=br.readLine(); line != null; line=br.readLine()){
+            _lineProcessor.line(line);
+
+        }
+        br.close();
+    }
     static String getLowercaseText(File _file) throws IOException {
        StringBuilder sb = new StringBuilder();
         BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(_file)));
