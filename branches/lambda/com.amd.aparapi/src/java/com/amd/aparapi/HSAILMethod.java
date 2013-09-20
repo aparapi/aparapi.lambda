@@ -2121,13 +2121,20 @@ public class HSAILMethod {
                         } else if (type.isInt()) {
                             //    add(new and_const<ref, Long>(i, new StackReg_ref(i, 0), new StackReg_ref(i, 0), ADDR_MASK));
                             add(new field_load<s32>(i, new StackReg_s32(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
-
+                        } else if (type.isBoolean()) {
+                            //    add(new and_const<ref, Long>(i, new StackReg_ref(i, 0), new StackReg_ref(i, 0), ADDR_MASK));
+                            add(new field_load<s8>(i, new StackReg_s8(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
                         } else if (type.isFloat()) {
                             add(new field_load<f32>(i, new StackReg_f32(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
                         } else if (type.isDouble()) {
                             add(new field_load<f64>(i, new StackReg_f64(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
                         } else if (type.isLong()) {
                             add(new field_load<s64>(i, new StackReg_s64(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+
+                        } else if (type.isObject()) {
+                            add(new field_load<ref>(i, new StackReg_ref(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+                        } else {
+                            throw new IllegalStateException("unexpected get field type");
                         }
                     } catch (ClassNotFoundException e) {
                         e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
@@ -2154,13 +2161,19 @@ public class HSAILMethod {
                             //  add(new and_const<u64, Long>(i, new StackReg_u64(i, 1), new StackReg_ref(i, 0), ADDR_MASK);
                         } else if (type.isInt()) {
                             add(new field_store<s32>(i, new StackReg_s32(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
-
+                        } else if (type.isBoolean()) {
+                            add(new field_store<s8>(i, new StackReg_s8(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
                         } else if (type.isFloat()) {
                             add(new field_store<f32>(i, new StackReg_f32(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
                         } else if (type.isDouble()) {
                             add(new field_store<f64>(i, new StackReg_f64(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
                         } else if (type.isLong()) {
                             add(new field_store<s64>(i, new StackReg_s64(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+
+                        } else if (type.isObject()) {
+                            add(new field_store<ref>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+                        }   else {
+                            throw new IllegalStateException("unexpected put field type");
                         }
                     } catch (ClassNotFoundException e) {
                         e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
