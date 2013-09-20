@@ -16,10 +16,8 @@ public class MatchedStringLambda {
            value = _value;
         }
         void containsCheck(String text){
-           boolean result =text.contains(value);
-            matched = result;
-            result = false;
-            result = true;
+
+            matched = text.contains(value);
         }
 
     }
