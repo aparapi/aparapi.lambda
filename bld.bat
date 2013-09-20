@@ -1,2 +1,1 @@
-cd com.amd.aparapi
-ant 
+ant -f com.amd.aparapi\build.xml
