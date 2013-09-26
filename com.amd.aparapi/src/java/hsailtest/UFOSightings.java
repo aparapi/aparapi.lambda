@@ -42,6 +42,9 @@ public class UFOSightings {
         for (String line=br.readLine(); line != null; line=br.readLine()){
             sightingList.add(new Sighting(line.toLowerCase()));
         }
+        while (sightingList.size()%256 != 0){
+            sightingList.add(new Sighting(""));
+        }
         br.close();
         Sighting[] sightings = sightingList.toArray(new Sighting[0]);
         int sightingCount = sightings.length;

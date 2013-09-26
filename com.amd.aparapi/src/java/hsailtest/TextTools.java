@@ -90,7 +90,7 @@ public class TextTools {
                 System.out.println("Comment -> "+line);
             }
         }
-        while(list.size()%64!=0){
+        while((list.size()%64)!=0){
             list.add("xxxxx");
         }
 
