@@ -79,6 +79,16 @@ public class TextTools {
         return(getLowercaseText(_file).toCharArray());
     }
 
+    static char[] getLowercaseTextCharsOnly(File _file) throws IOException {
+        char[] chars =  getLowercaseText(_file).toCharArray();
+        for (int i=0; i<chars.length; i++){
+            if (!Character.isAlphabetic(chars[i])){
+               chars[i]=' ';
+            }
+        }
+        return(chars);
+    }
+
     static String[] buildLowerCaseDictionary(File _file) throws IOException {
         List<String> list = new ArrayList<String>();
         StringBuilder sb = new StringBuilder();
