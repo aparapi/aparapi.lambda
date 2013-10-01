@@ -99,18 +99,23 @@ public class ConvolutionLambda {
    public static void main(final String[] _args) throws IOException {
       float convMatrix3x3_in[] = new float[]{ -1f, 0f, +1f, -2f, 0f, +2f, -1f, 0f, +1f};
       float convMatrix3x3_out[] = new float[]{ -1f, -2f, -1f, -0f, 0f, +0f, +1f, +2f, +1f};
+      float convMatrix3x3[] = new float[9];
+      for (int i=0; i<convMatrix3x3.length; i++){
+         convMatrix3x3[i] = (float)Math.sqrt(Math.abs(convMatrix3x3_in[i]+ convMatrix3x3_out[i]));
+      }
+
       //float convMatrix3x3_2[] = new float[]{ 0f, -10f, 0f, -10f, 40f, -10f, 0f, -20f, 0f, };
       ConvolutionLambda convolution = new ConvolutionLambda(new File("C:\\Users\\user1\\aparapi\\branches\\lambda\\paraglider.jpg"));
       Device device = Device.hsa();
       for (int i = 0; i < 100; i++) {
-         for (float f = -3f; f < 1f; f += .01f) {
-            convMatrix3x3_in[4] = -(f*4);
-            convolution.applyConvolution(convMatrix3x3_in, device);
+         for (float f = 0f; f < 3f; f += .01f) {
+            convMatrix3x3[4] = -f*5;
+            convolution.applyConvolution(convMatrix3x3, device);
          }
-         for (float f = 3; f > -3f; f -= .01f) {
+         for (float f = 3f; f > 0f; f -= .01f) {
             //convMatrix3x3[1] = f; convMatrix3x3[3] = f; convMatrix3x3[5] = f; convMatrix3x3[7] = f;
-            convMatrix3x3_out[4] = -(f*4);
-            convolution.applyConvolution(convMatrix3x3_out, device);
+            convMatrix3x3[4] = -f*5;
+            convolution.applyConvolution(convMatrix3x3, device);
          }
       }
 
