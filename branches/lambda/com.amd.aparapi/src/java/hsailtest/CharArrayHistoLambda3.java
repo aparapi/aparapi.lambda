@@ -40,7 +40,7 @@ public class CharArrayHistoLambda3 {
     public static void main(String[] args) throws AparapiException, IOException {
         char[][] names = TextTools.buildLowerCaseDictionaryChars(new File("C:\\Users\\user1\\aparapi\\branches\\lambda\\names.txt"));
         int len = names.length;
-        char[] text = TextTools.getLowercaseTextChars(new File("C:\\Users\\user1\\aparapi\\branches\\lambda\\moby.txt"));
+        char[] text = TextTools.getLowercaseTextCharsOnly(new File("C:\\Users\\user1\\aparapi\\branches\\lambda\\moby.txt"));
         int textLen = text.length;
         int[] results = new int[len];
         IntConsumer ic = gid -> {
