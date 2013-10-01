@@ -3,6 +3,8 @@ package hsailtest;
 import com.amd.aparapi.AparapiException;
 
 import java.io.*;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -36,14 +38,20 @@ public class TextTools {
         }
         br.close();
     }
-    static String getLowercaseText(File _file) throws IOException {
-       StringBuilder sb = new StringBuilder();
-        BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(_file)));
+
+    static String getLowercaseText(InputStream _is) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        BufferedReader br = new BufferedReader(new InputStreamReader(_is));
         for (String line=br.readLine(); line != null; line=br.readLine()){
             sb.append(" ").append(line.toLowerCase());
         }
         br.close();
+        _is.close();
         return(sb.toString());
+    }
+    static String getLowercaseText(File _file) throws IOException {
+       return(getLowercaseText(new FileInputStream(_file)));
+
     }
 
     enum State { WS, TEXT, SINGLE, DOUBLE};
@@ -79,14 +87,34 @@ public class TextTools {
         return(getLowercaseText(_file).toCharArray());
     }
 
+    static char[] getLowercaseTextChars(InputStream _is) throws IOException {
+        return(getLowercaseText(_is).toCharArray());
+    }
+
     static char[] getLowercaseTextCharsOnly(File _file) throws IOException {
         char[] chars =  getLowercaseText(_file).toCharArray();
         for (int i=0; i<chars.length; i++){
             if (!Character.isAlphabetic(chars[i])){
-               chars[i]=' ';
+                chars[i]=' ';
             }
         }
         return(chars);
+    }
+
+    static char[] getLowercaseTextCharsOnly(InputStream _is) throws IOException {
+        char[] chars =  getLowercaseText(_is).toCharArray();
+        for (int i=0; i<chars.length; i++){
+            if (!Character.isAlphabetic(chars[i])){
+                chars[i]=' ';
+            }
+        }
+        return(chars);
+    }
+
+    static String getString (URL url) throws IOException {
+        URLConnection c = url.openConnection();
+        return(getLowercaseText(c.getInputStream()));
+
     }
 
     static String[] buildLowerCaseDictionary(File _file) throws IOException {
@@ -118,14 +146,17 @@ public class TextTools {
     }
 
    public  static void main(String[] args) throws IOException {
-        process(new File("C:\\Users\\user1\\aparapi\\branches\\lambda\\names.txt"), new File("C:\\Users\\user1\\aparapi\\branches\\lambda\\names.txt.out"),
-                line->{
-                   if (line.trim().equals("") || line.trim().startsWith("//")){
-                       return(line);
-                   }else{
-                       return(line.substring(0,1).toUpperCase()+line.substring(1).toLowerCase());
-                   }
-                });
+
+        String s = getString(new URL("http://www.gutenberg.org/cache/epub/1023/pg1023.txt"));
+        System.out.println(s);
+        //process(new File("C:\\Users\\user1\\aparapi\\branches\\lambda\\names.txt"), new File("C:\\Users\\user1\\aparapi\\branches\\lambda\\names.txt.out"),
+              //  line->{
+              //     if (line.trim().equals("") || line.trim().startsWith("//")){
+                 //      return(line);
+                //  }else{
+                  //     return(line.substring(0,1).toUpperCase()+line.substring(1).toLowerCase());
+                 ///  }
+               // });
     }
 
 
