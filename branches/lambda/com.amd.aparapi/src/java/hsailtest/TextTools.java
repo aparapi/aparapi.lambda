@@ -110,12 +110,24 @@ public class TextTools {
         }
         return(chars);
     }
+   static String getString (InputStream inputStream) throws IOException {
+      String text = getLowercaseText(inputStream);
+      inputStream.close();
+      return(text);
 
+   }
     static String getString (URL url) throws IOException {
-        URLConnection c = url.openConnection();
-        return(getLowercaseText(c.getInputStream()));
+        return (getString(url.openConnection().getInputStream()));
+
 
     }
+
+   static String getString (File _file) throws IOException {
+      InputStream is = new FileInputStream(_file);
+
+      return(getLowercaseText(is));
+
+   }
 
     static String[] buildLowerCaseDictionary(File _file) throws IOException {
         List<String> list = new ArrayList<String>();
