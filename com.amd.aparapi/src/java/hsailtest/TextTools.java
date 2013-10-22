@@ -38,16 +38,20 @@ public class TextTools {
         }
         br.close();
     }
-
-    static String getLowercaseText(InputStream _is) throws IOException {
+    static String getText(InputStream _is) throws IOException {
         StringBuilder sb = new StringBuilder();
         BufferedReader br = new BufferedReader(new InputStreamReader(_is));
         for (String line=br.readLine(); line != null; line=br.readLine()){
-            sb.append(" ").append(line.toLowerCase());
+            sb.append(" ").append(line);
         }
         br.close();
         _is.close();
         return(sb.toString());
+    }
+
+    static String getLowercaseText(InputStream _is) throws IOException {
+
+        return(getText( _is).toLowerCase());
     }
     static String getLowercaseText(File _file) throws IOException {
        return(getLowercaseText(new FileInputStream(_file)));
@@ -122,12 +126,36 @@ public class TextTools {
 
     }
 
-   static String getString (File _file) throws IOException {
+   static String getLowerCaseString (File _file) throws IOException {
       InputStream is = new FileInputStream(_file);
 
       return(getLowercaseText(is));
 
    }
+
+    static String getString (File _file) throws IOException {
+        InputStream is = new FileInputStream(_file);
+
+        return(getText(is));
+
+    }
+    static String[] buildDictionary(File _file) throws IOException {
+        List<String> list = new ArrayList<String>();
+        StringBuilder sb = new StringBuilder();
+        BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(_file)));
+        for (String line=br.readLine(); line != null; line=br.readLine()){
+            if (!line.trim().startsWith("//")){
+                list.add(line.trim()) ;
+            }else{
+                System.out.println("Comment -> "+line);
+            }
+        }
+        while((list.size()%64)!=0){
+            list.add("xxxxx");
+        }
+
+        return(list.toArray(new String[0]));
+    }
 
     static String[] buildLowerCaseDictionary(File _file) throws IOException {
         List<String> list = new ArrayList<String>();
@@ -152,6 +180,16 @@ public class TextTools {
         char[][] chars = new char[lowerCaseDictionary.length][];
         for (int i=0; i<lowerCaseDictionary.length; i++){
             chars[i]=lowerCaseDictionary[i].toCharArray();
+        }
+
+        return(chars);
+    }
+
+    static char[][] buildWhiteSpacePaddedDictionaryChars(File _file) throws IOException {
+        String[] dictionary=buildDictionary(_file);
+        char[][] chars = new char[dictionary.length][];
+        for (int i=0; i<dictionary.length; i++){
+            chars[i]=(" "+dictionary[i]+" ").toCharArray();
         }
 
         return(chars);

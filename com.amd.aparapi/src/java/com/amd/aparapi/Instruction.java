@@ -204,7 +204,10 @@ abstract class Instruction{
    }
 
    int getPreStackBase(){
-      return (postStackBase - getConsumedInstructionTypes().length);
+    //  if (getConsumedInstructionTypes()==null){
+   ///       System.out.println("ouch");
+   //   }
+      return (postStackBase - getConsumedInstructionTypeCount());
    }
 
 
@@ -213,13 +216,16 @@ abstract class Instruction{
    }
 
    void setConsumedInstructionTypes(InstructionType[] _consumedInstructionTypes){
+
       consumedInstructionTypes = _consumedInstructionTypes;
    }
 
    InstructionType[] getConsumedInstructionTypes(){
       return (consumedInstructionTypes);
    }
-
+    int getConsumedInstructionTypeCount(){
+        return (consumedInstructionTypes==null?0:consumedInstructionTypes.length);
+    }
 
    protected Instruction(ClassModel.ClassModelMethod _method, ByteCode _byteCode, int _pc){
       method = _method;
