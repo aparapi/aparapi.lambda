@@ -577,6 +577,7 @@ public class HSAILMethod {
 
                 /** sig to specialize CharSequence to String  - big hack!**/
                 if (dotClassName.equals("java.lang.CharSequence")){
+                    System.out.println("Specializing java.lang.CharSequence to java.lang.String!!!!! ");
                     dotClassName = "java.lang.String";
                 }
 

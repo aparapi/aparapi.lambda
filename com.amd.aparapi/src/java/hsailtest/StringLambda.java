@@ -23,7 +23,7 @@ public class StringLambda {
 
 
     public static void main(String[] args) throws AparapiException {
-        String[] strings = new String[]{"cat","mat","dog"};
+        String[] strings = new String[]{"cat","the","dog","on"};
         int len = strings.length;
         String text = "the cat sat on the mat";
         boolean[] results = new boolean[len];
