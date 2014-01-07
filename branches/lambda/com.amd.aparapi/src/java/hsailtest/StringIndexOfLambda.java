@@ -42,6 +42,10 @@ public class StringIndexOfLambda {
 
         Arrays.fill(indices, -1);
         Device.seq().forEach(len, ic);
+        dump("jtp", strings, indices);
+
+        Arrays.fill(indices, -1);
+        Device.seq().forEach(len, ic);
         dump("seq", strings, indices);
 
     }
