@@ -335,7 +335,7 @@ public class HSAILMethod {
 
     //  final static long ADDR_MASK = ((1L << 32)-1);
 
-    abstract class HSAILInstruction<H extends HSAILInstruction>  {
+    abstract class HSAILInstruction<H extends HSAILInstruction<H>>  {
         Instruction from;
         HSAILRegister[] dests = null;
         HSAILRegister[] sources = null;
@@ -344,11 +344,11 @@ public class HSAILMethod {
                 from = original.from;
                 dests = new HSAILRegister[original.dests.length];
                 for (int i=0; i<dests.length; i++){
-                    //  dests[i] = original.dests[i].cloneMe();
+                      dests[i] = original.dests[i].cloneMe();
                 }
                 sources = new HSAILRegister[original.sources.length];
                 for (int i=0; i<dests.length; i++){
-                    //  sources[i] = original.sources[i].cloneMe();
+                      sources[i] = original.sources[i].cloneMe();
                 }
 
         }
@@ -359,7 +359,7 @@ public class HSAILMethod {
             sources = new HSAILRegister[_sourceCount];
         }
 
-        public abstract  H cloneMe(H original);
+        public abstract  H cloneMe();
 
 
 
@@ -368,120 +368,121 @@ public class HSAILMethod {
 
     }
 
-    abstract class HSAILInstructionWithDest<H extends HSAILInstruction<H>, T extends PrimitiveType> extends HSAILInstruction<H> {
+    abstract class HSAILInstructionWithDest<H extends HSAILInstructionWithDest<H,Rt,T>, Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends HSAILInstruction<H> {
 
         protected HSAILInstructionWithDest(H original){
             super(original);
 
         }
 
-        HSAILInstructionWithDest(Instruction _from, HSAILRegister<T> _dest) {
+        HSAILInstructionWithDest(Instruction _from, Rt _dest) {
             super(_from, 1, 0);
             dests[0] = _dest;
-
         }
 
-        HSAILRegister<T> getDest() {
-            return ((HSAILRegister<T>) dests[0]);
+        Rt getDest() {
+            return ((Rt) dests[0]);
         }
     }
 
-    abstract class HSAILInstructionWithSrc<H extends HSAILInstruction<H>, T extends PrimitiveType> extends HSAILInstruction<H> {
+    abstract class HSAILInstructionWithSrc<H extends HSAILInstructionWithSrc<H,Rt,T>, Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends HSAILInstruction<H> {
 
         protected HSAILInstructionWithSrc(H original){
             super(original);
         }
 
 
-        HSAILInstructionWithSrc(Instruction _from, HSAILRegister<T> _src) {
+        HSAILInstructionWithSrc(Instruction _from, Rt _src) {
             super(_from, 0, 1);
             sources[0] = _src;
         }
 
-        HSAILRegister<T> getSrc() {
-            return ((HSAILRegister<T>) sources[0]);
+        Rt getSrc() {
+            return ((Rt) sources[0]);
         }
     }
 
-    abstract class HSAILInstructionWithSrcSrc<H extends HSAILInstruction<H>,T extends PrimitiveType> extends HSAILInstruction<H> {
+    abstract class HSAILInstructionWithSrcSrc<H extends HSAILInstructionWithSrcSrc<H,Rt,T>, Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends HSAILInstruction<H> {
 
         protected HSAILInstructionWithSrcSrc(H original){
             super(original);
         }
-        HSAILInstructionWithSrcSrc(Instruction _from, HSAILRegister<T> _src_lhs, HSAILRegister<T> _src_rhs) {
+         HSAILInstructionWithSrcSrc(Instruction _from, Rt _src_lhs, Rt _src_rhs) {
             super(_from, 0, 2);
             sources[0] = _src_lhs;
             sources[1] = _src_rhs;
         }
 
-        HSAILRegister<T> getSrcLhs() {
-            return ((HSAILRegister<T>) sources[0]);
+        Rt getSrcLhs() {
+            return ((Rt) sources[0]);
         }
 
-        HSAILRegister<T> getSrcRhs() {
-            return ((HSAILRegister<T>) sources[1]);
+         Rt getSrcRhs() {
+            return ((Rt) sources[1]);
         }
     }
 
-    abstract class HSAILInstructionWithDestSrcSrc<H extends HSAILInstructionWithDestSrcSrc<H,D,T>, D extends PrimitiveType, T extends PrimitiveType> extends HSAILInstruction<H> {
+    abstract class HSAILInstructionWithDestSrcSrc<H extends HSAILInstructionWithDestSrcSrc<H,Rd,Rt,D,T>, Rd extends HSAILRegister<Rd,T>, Rt extends HSAILRegister<Rt,T>, D extends PrimitiveType, T extends PrimitiveType> extends HSAILInstruction<H> {
 
         protected HSAILInstructionWithDestSrcSrc(H original){
             super(original);
         }
-        HSAILInstructionWithDestSrcSrc(Instruction _from, HSAILRegister<D> _dest, HSAILRegister<T> _src_lhs, HSAILRegister<T> _src_rhs) {
+        HSAILInstructionWithDestSrcSrc(Instruction _from, Rd _dest, Rt _src_lhs, Rt _src_rhs) {
             super(_from, 1, 2);
             dests[0] = _dest;
             sources[0] = _src_lhs;
             sources[1] = _src_rhs;
         }
 
-        HSAILRegister<D> getDest() {
-            return ((HSAILRegister<D>) dests[0]);
+        Rd getDest() {
+            return ((Rd) dests[0]);
         }
 
-        HSAILRegister<T> getSrcLhs() {
-            return ((HSAILRegister<T>) sources[0]);
+       Rt getSrcLhs() {
+            return ((Rt) sources[0]);
         }
 
-        HSAILRegister<T> getSrcRhs() {
-            return ((HSAILRegister<T>) sources[1]);
+       Rt getSrcRhs() {
+            return ((Rt) sources[1]);
         }
     }
 
-    abstract class HSAILInstructionWithDestSrc<H extends HSAILInstructionWithDestSrc<H,T>, T extends PrimitiveType> extends HSAILInstruction<H> {
+
+
+    abstract class HSAILInstructionWithDestSrc<H extends HSAILInstructionWithDestSrc<H,Rd,Rt,D,T>, Rd extends HSAILRegister<Rd,D>, Rt extends HSAILRegister<Rt,T>, D extends PrimitiveType, T extends PrimitiveType> extends HSAILInstruction<H> {
         HSAILInstructionWithDestSrc(H original){
             super(original);
         }
-        HSAILInstructionWithDestSrc(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _src) {
+        HSAILInstructionWithDestSrc(Instruction _from, Rd _dest, Rt _src) {
             super(_from, 1, 1);
             dests[0] = _dest;
             sources[0] = _src;
         }
 
-        HSAILRegister<T> getDest() {
-            return ((HSAILRegister<T>) dests[0]);
+        Rd getDest() {
+            return ((Rd) dests[0]);
         }
 
-        HSAILRegister<T> getSrc() {
-            return ((HSAILRegister<T>) sources[0]);
+        Rt  getSrc() {
+            return ((Rt) sources[0]);
         }
     }
 
-    class branch extends HSAILInstructionWithSrc<branch, s32> {
+    class branch <R extends HSAILRegister<R,s32>> extends HSAILInstructionWithSrc<branch<R>,R, s32> {
         String branchName;
         int pc;
 
-        protected branch(branch original){
+        protected branch(branch<R> original){
             super(original);
             branchName = original.branchName;
             pc = original.pc;
         }
 
-        @Override public branch cloneMe(branch original){
-            return(new branch(original));
+        @Override public branch<R> cloneMe(){
+            return(new branch<R>(this));
         }
 
-        branch(Instruction _from, HSAILRegister<s32> _src, String _branchName, int _pc) {
+         branch(Instruction _from, R _src, String _branchName, int _pc) {
             super(_from, _src);
             branchName = _branchName;
             pc = _pc;
@@ -496,17 +497,17 @@ public class HSAILMethod {
         }
     }
 
-    class cmp_s32_const_0 extends HSAILInstructionWithSrc<cmp_s32_const_0, s32> {
+    class cmp_s32_const_0 <R extends HSAILRegister<R,s32>> extends HSAILInstructionWithSrc<cmp_s32_const_0<R>,R, s32> {
 
-        protected cmp_s32_const_0(cmp_s32_const_0 original){
+        protected cmp_s32_const_0(cmp_s32_const_0<R> original){
             super(original);
         }
-        @Override public cmp_s32_const_0 cloneMe(cmp_s32_const_0 original){
-            return(new cmp_s32_const_0(original));
+        @Override public cmp_s32_const_0<R> cloneMe(){
+            return(new cmp_s32_const_0<R>(this));
         }
         String type;
 
-        cmp_s32_const_0(Instruction _from, String _type, Reg_s32 _src) {
+       cmp_s32_const_0(Instruction _from, String _type, R _src) {
             super(_from, _src);
             type = _type;
         }
@@ -519,21 +520,22 @@ public class HSAILMethod {
         }
     }
 
-    class cmp_s32 extends HSAILInstructionWithSrcSrc<cmp_s32, s32> {
+    class cmp_s32 <R extends HSAILRegister<R,s32>> extends HSAILInstructionWithSrcSrc<cmp_s32<R>,R, s32> {
 
-        protected cmp_s32(cmp_s32 original){
+
+        protected cmp_s32(cmp_s32<R> original){
             super(original);
             type = original.type;
 
         }
 
-        @Override public cmp_s32 cloneMe(cmp_s32 original){
-            return(new cmp_s32(original));
+        @Override public cmp_s32<R> cloneMe(){
+            return(new cmp_s32<R>(this));
         }
 
         String type;
 
-        cmp_s32(Instruction _from, String _type, Reg_s32 _srcLhs, Reg_s32 _srcRhs) {
+        cmp_s32(Instruction _from, String _type, R _srcLhs, R _srcRhs) {
             super(_from, _srcLhs, _srcRhs);
             type = _type;
         }
@@ -545,20 +547,20 @@ public class HSAILMethod {
 
         }
     }
-    class cmp_ref extends HSAILInstructionWithSrcSrc<cmp_ref, ref> {
+    class cmp_ref <R extends HSAILRegister<R,ref>> extends HSAILInstructionWithSrcSrc<cmp_ref<R>,R, ref> {
 
-        protected cmp_ref(cmp_ref original){
+        protected cmp_ref(cmp_ref<R> original){
             super(original);
             type = original.type;
         }
 
-        @Override public cmp_ref cloneMe(cmp_ref original){
-            return(new cmp_ref(original));
+        @Override public cmp_ref<R> cloneMe(){
+            return(new cmp_ref<R>(this));
         }
 
         String type;
 
-        cmp_ref(Instruction _from, String _type, Reg_ref _srcLhs, Reg_ref _srcRhs) {
+        cmp_ref(Instruction _from, String _type, R _srcLhs, R _srcRhs) {
             super(_from, _srcLhs, _srcRhs);
             type = _type;
         }
@@ -571,20 +573,20 @@ public class HSAILMethod {
         }
     }
 
-    class cmp<T extends PrimitiveType> extends HSAILInstructionWithSrcSrc<cmp<T>, T> {
+    class cmp<Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends HSAILInstructionWithSrcSrc<cmp<Rt,T>,Rt, T> {
 
-        protected cmp(cmp original){
+        protected cmp(cmp<Rt,T> original){
             super(original);
             type = original.type;
         }
 
-        @Override public cmp cloneMe(cmp original){
-            return(new cmp(original));
+        @Override public cmp<Rt,T> cloneMe(){
+            return(new cmp<Rt,T>(null));
         }
 
         String type;
 
-        cmp(Instruction _from, String _type, HSAILRegister<T> _srcLhs, HSAILRegister<T> _srcRhs) {
+        cmp(Instruction _from, String _type, Rt _srcLhs, Rt _srcRhs) {
             super(_from, _srcLhs, _srcRhs);
             type = _type;
         }
@@ -604,8 +606,8 @@ public class HSAILMethod {
             pc = original.pc;
         }
 
-        @Override public cbr cloneMe(cbr original){
-            return(new cbr(original));
+        @Override public cbr cloneMe(){
+            return(new cbr(this));
         }
 
 
@@ -631,8 +633,8 @@ public class HSAILMethod {
             pc = original.pc;
         }
 
-        @Override public brn cloneMe(brn original){
-            return(new brn(original));
+        @Override public brn cloneMe(){
+            return(new brn(this));
         }
 
         int pc;
@@ -674,8 +676,8 @@ public class HSAILMethod {
             call = original.call;
         }
 
-        @Override public call cloneMe(call original){
-            return(new call(original));
+        @Override public call cloneMe(){
+            return(new call(this));
         }
 
         int base;
@@ -750,8 +752,8 @@ public class HSAILMethod {
 
         }
 
-        @Override public nyi cloneMe(nyi original){
-            return(new nyi(original));
+        @Override public nyi cloneMe(){
+            return(new nyi(this));
         }
         nyi(Instruction _from) {
             super(_from, 0, 0);
@@ -766,18 +768,18 @@ public class HSAILMethod {
         }
     }
 
-    class ld_kernarg<T extends PrimitiveType> extends HSAILInstructionWithDest<ld_kernarg<T>, T> {
+    class ld_kernarg<Rt extends HSAILRegister<Rt,T>,T extends PrimitiveType> extends HSAILInstructionWithDest<ld_kernarg<Rt,T>,Rt, T> {
 
-        protected ld_kernarg(ld_kernarg original){
+        protected ld_kernarg(ld_kernarg<Rt,T> original){
             super(original);
 
         }
 
-        @Override public ld_kernarg cloneMe(ld_kernarg original){
-            return(new ld_kernarg(original));
+        @Override public ld_kernarg<Rt,T> cloneMe(){
+            return(new ld_kernarg<Rt,T>(this));
         }
 
-        ld_kernarg(Instruction _from, HSAILRegister<T> _dest) {
+        ld_kernarg(Instruction _from, Rt _dest) {
             super(_from, _dest);
         }
 
@@ -787,17 +789,17 @@ public class HSAILMethod {
         }
     }
 
-    class ld_arg<T extends PrimitiveType> extends HSAILInstructionWithDest<ld_arg<T>, T> {
+    class ld_arg<Rt extends HSAILRegister<Rt,T>,T extends PrimitiveType> extends HSAILInstructionWithDest<ld_arg<Rt,T>,Rt, T> {
 
-        protected ld_arg(ld_arg original){
+        protected ld_arg(ld_arg<Rt,T> original){
             super(original);
 
         }
 
-        @Override public ld_arg cloneMe(ld_arg original){
-            return(new ld_arg(original));
+        @Override public ld_arg cloneMe(){
+            return(new ld_arg(this));
         }
-        ld_arg(Instruction _from, HSAILRegister<T> _dest) {
+        ld_arg(Instruction _from, Rt _dest) {
             super(_from, _dest);
         }
 
@@ -809,7 +811,7 @@ public class HSAILMethod {
 
     }
 
-    abstract class binary_const<H extends binary_const<H, T, C>, T extends PrimitiveType, C extends Number> extends HSAILInstructionWithDestSrc<H, T> {
+    abstract class binary_const<H extends binary_const<H, Rt, T, C>, Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType, C extends Number> extends HSAILInstructionWithDestSrc<H, Rt,Rt,T,T> {
 
         protected binary_const(H original){
             super(original);
@@ -822,7 +824,7 @@ public class HSAILMethod {
         C value;
         String op;
 
-        binary_const(Instruction _from, String _op, HSAILRegister<T> _dest, HSAILRegister _src, C _value) {
+        binary_const(Instruction _from, String _op, Rt _dest, Rt _src, C _value) {
             super(_from, _dest, _src);
             value = _value;
             op = _op;
@@ -836,33 +838,33 @@ public class HSAILMethod {
 
     }
 
-    class add_const<T extends PrimitiveType, C extends Number> extends binary_const<add_const<T, C>, T, C> {
-        protected add_const(add_const<T,C> original){
+    class add_const<Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType, C extends Number> extends binary_const<add_const<Rt, T, C>, Rt,T, C> {
+        protected add_const(add_const<Rt,T,C> original){
             super(original);
 
 
         }
-       @Override public add_const<T,C> cloneMe(add_const<T,C> original){
-            return(new add_const<T,C>(original));
+       @Override public add_const<Rt,T,C> cloneMe(){
+            return(new add_const<Rt,T,C>(this));
         }
-        add_const(Instruction _from, HSAILRegister<T> _dest, HSAILRegister _src, C _value) {
+        add_const(Instruction _from, Rt _dest, Rt _src, C _value) {
             super(_from, "add_", _dest, _src, _value);
 
         }
 
     }
 
-    class and_const<T extends PrimitiveType, C extends Number> extends binary_const<and_const<T,C>, T, C> {
+    class and_const<Rt extends HSAILRegister<Rt,T>,T extends PrimitiveType, C extends Number> extends binary_const<and_const<Rt, T,C>, Rt, T, C> {
 
-        protected and_const(and_const< T,C> original){
+        protected and_const(and_const<Rt, T,C> original){
             super(original);
 
 
         }
-        @Override public and_const< T,C> cloneMe(and_const<T,C> original){
-            return(new and_const(original));
+        @Override public and_const<Rt, T,C> cloneMe(){
+            return(new and_const<Rt, T,C>(this));
         }
-        and_const(Instruction _from, HSAILRegister<T> _dest, HSAILRegister _src, C _value) {
+        and_const(Instruction _from, Rt _dest,Rt _src, C _value) {
             super(_from, "and_", _dest, _src, _value);
 
         }
@@ -875,33 +877,33 @@ public class HSAILMethod {
 
     }
 
-    class mul_const<T extends PrimitiveType, C extends Number> extends binary_const< mul_const<T,C>, T, C> {
-        protected mul_const(mul_const<T,C> original){
+    class mul_const<Rt extends HSAILRegister<Rt,T>,T extends PrimitiveType, C extends Number> extends binary_const< mul_const<Rt, T,C>, Rt, T, C> {
+        protected mul_const(mul_const<Rt,T,C> original){
             super(original);
         }
-        @Override public mul_const<T,C> cloneMe(mul_const<T,C> original){
-            return(new mul_const(original));
+        @Override public mul_const<Rt,T,C> cloneMe(){
+            return(new mul_const<Rt,T,C>(this));
         }
-        mul_const(Instruction _from, HSAILRegister<T> _dest, HSAILRegister _src, C _value) {
+        mul_const(Instruction _from, Rt _dest, Rt _src, C _value) {
             super(_from, "mul_", _dest, _src, _value);
 
         }
 
     }
 
-    class mad< D extends PrimitiveType, T extends PrimitiveType> extends HSAILInstructionWithDestSrcSrc<mad<D,T>, ref, ref> {
+        class mad<Rd extends HSAILRegister<Rd,ref>, Rt extends HSAILRegister<Rt,ref>> extends HSAILInstructionWithDestSrcSrc<mad<Rd,Rt>, Rd, Rt, ref, ref> {
 
-        protected mad(mad<D,T> original){
+        protected mad(mad<Rd,Rt> original){
             super(original);
 
 
         }
-        @Override public mad cloneMe(mad<D,T> original){
-            return(new mad(original));
+        @Override public mad<Rd,Rt> cloneMe(){
+            return(new mad<Rd,Rt>(this));
         }
         long size;
 
-        mad(Instruction _from, Reg_ref _dest, Reg_ref _src_lhs, Reg_ref _src_rhs, long _size) {
+        mad(Instruction _from, Rd _dest, Rt _src_lhs, Rt _src_rhs, long _size) {
             super(_from, _dest, _src_lhs, _src_rhs);
             size = _size;
         }
@@ -914,28 +916,28 @@ public class HSAILMethod {
     }
 
 
-    class cvt<T1 extends PrimitiveType, T2 extends PrimitiveType> extends HSAILInstruction<cvt<T1,T2>> {
+    class cvt<Rt1 extends HSAILRegister<Rt1,T1>, Rt2 extends HSAILRegister<Rt2,T2>,T1 extends PrimitiveType, T2 extends PrimitiveType> extends HSAILInstruction<cvt<Rt1,Rt2,T1,T2>> {
 
-        protected cvt(cvt<T1,T2> original){
+        protected cvt(cvt<Rt1,Rt2,T1,T2> original){
             super(original);
 
 
         }
-        @Override public cvt<T1,T2> cloneMe(cvt<T1,T2> original){
-            return(new cvt(original));
+        @Override public cvt<Rt1,Rt2,T1,T2> cloneMe(){
+            return(new cvt(this));
         }
-        cvt(Instruction _from, HSAILRegister<T1> _dest, HSAILRegister<T2> _src) {
+        cvt(Instruction _from, Rt1 _dest, Rt2 _src) {
             super(_from, 1, 1);
             dests[0] = _dest;
             sources[0] = _src;
         }
 
-        HSAILRegister<T1> getDest() {
-            return ((HSAILRegister<T1>) dests[0]);
+        Rt1 getDest() {
+            return ((Rt1) dests[0]);
         }
 
-        HSAILRegister<T2> getSrc() {
-            return ((HSAILRegister<T2>) sources[0]);
+        Rt2 getSrc() {
+            return ((Rt2) sources[0]);
         }
 
         @Override
@@ -953,8 +955,8 @@ public class HSAILMethod {
 
 
         }
-        @Override public retvoid cloneMe(retvoid original){
-            return(new retvoid(original));
+        @Override public retvoid cloneMe(){
+            return(new retvoid(this));
         }
 
         retvoid(Instruction _from) {
@@ -970,17 +972,17 @@ public class HSAILMethod {
 
     }
 
-    class ret<T extends PrimitiveType> extends HSAILInstructionWithSrc<ret<T>, T> {
+    class ret<Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends HSAILInstructionWithSrc<ret<Rt,T>,Rt, T> {
 
-        protected ret(ret<T> original){
+        protected ret(ret<Rt,T> original){
             super(original);
 
 
         }
-        @Override public ret<T> cloneMe(ret<T> original){
-            return(new ret(original));
+        @Override public ret<Rt,T> cloneMe(){
+            return(new ret<Rt,T>(this));
         }
-        ret(Instruction _from, HSAILRegister<T> _src) {
+        ret(Instruction _from, Rt _src) {
             super(_from, _src);
 
         }
@@ -994,18 +996,18 @@ public class HSAILMethod {
 
     }
 
-    class array_store<T extends PrimitiveType> extends HSAILInstructionWithSrc<array_store<T>, T> {
-        protected array_store(array_store<T> original){
+    class array_store<Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends HSAILInstructionWithSrc<array_store<Rt, T>,Rt, T> {
+        protected array_store(array_store<Rt, T> original){
             super(original);
             mem = original.mem;
 
         }
-        @Override public array_store<T> cloneMe(array_store<T> original){
-            return(new array_store(original));
+        @Override public array_store<Rt, T> cloneMe(){
+            return(new array_store<Rt, T>(this));
         }
         Reg_ref mem;
 
-        array_store(Instruction _from, Reg_ref _mem, HSAILRegister<T> _src) {
+        array_store(Instruction _from, Reg_ref _mem, Rt _src) {
             super(_from, _src);
 
             mem = _mem;
@@ -1021,20 +1023,20 @@ public class HSAILMethod {
     }
 
 
-    class array_load<T extends PrimitiveType> extends HSAILInstructionWithDest<array_load<T>,T> {
+    class array_load<Rt extends HSAILRegister<Rt,T>,T extends PrimitiveType> extends HSAILInstructionWithDest<array_load<Rt,T>,Rt,T> {
 
-        protected array_load(array_load<T> original){
+        protected array_load(array_load<Rt,T> original){
             super(original);
             mem = original.mem;
 
         }
-        @Override public array_load<T> cloneMe(array_load<T> original){
-            return(new array_load(original));
+        @Override public array_load<Rt,T> cloneMe(){
+            return(new array_load<Rt,T>(this));
         }
         Reg_ref mem;
 
 
-        array_load(Instruction _from, HSAILRegister<T> _dest, Reg_ref _mem) {
+        array_load(Instruction _from, Rt _dest, Reg_ref _mem) {
             super(_from, _dest);
 
             mem = _mem;
@@ -1053,20 +1055,20 @@ public class HSAILMethod {
 
     }
 
-    class array_len extends HSAILInstructionWithDest<array_len, s32> {
-        protected array_len(array_len original){
+    class array_len<Rs32 extends HSAILRegister<Rs32,s32>> extends HSAILInstructionWithDest<array_len<Rs32>, Rs32, s32> {
+        protected array_len(array_len<Rs32> original){
             super(original);
             mem = original.mem;
 
         }
-        @Override public array_len cloneMe(array_len original){
-            return(new array_len(original));
+        @Override public array_len<Rs32> cloneMe(){
+            return(new array_len<Rs32>(this));
         }
 
         Reg_ref mem;
 
 
-        array_len(Instruction _from, Reg_s32 _dest, Reg_ref _mem) {
+        array_len(Instruction _from, Rs32 _dest, Reg_ref _mem) {
             super(_from, _dest);
 
             mem = _mem;
@@ -1080,23 +1082,23 @@ public class HSAILMethod {
 
     }
 
-    class field_load<T extends PrimitiveType> extends HSAILInstructionWithDest<field_load<T>, T> {
+    class field_load<Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends HSAILInstructionWithDest<field_load<Rt,T>, Rt,T> {
 
-        protected field_load(field_load<T> original){
+        protected field_load(field_load<Rt,T> original){
             super(original);
             mem = original.mem;
             offset = original.offset;
 
         }
-        @Override public field_load<T> cloneMe(field_load<T> original){
-            return(new field_load<T>(original));
+        @Override public field_load<Rt,T> cloneMe(){
+            return(new field_load<Rt,T>(this));
         }
 
         Reg_ref mem;
         long offset;
 
 
-        field_load(Instruction _from, HSAILRegister<T> _dest, Reg_ref _mem, long _offset) {
+        field_load(Instruction _from, Rt _dest, Reg_ref _mem, long _offset) {
             super(_from, _dest);
             offset = _offset;
             mem = _mem;
@@ -1110,20 +1112,20 @@ public class HSAILMethod {
 
     }
 
-    class static_field_load<T extends PrimitiveType> extends HSAILInstructionWithDest<static_field_load<T>, T> {
-        protected static_field_load(static_field_load<T> original){
+    class static_field_load<Rt extends HSAILRegister<Rt,T>,T extends PrimitiveType> extends HSAILInstructionWithDest<static_field_load<Rt,T>,Rt, T> {
+        protected static_field_load(static_field_load<Rt,T> original){
             super(original);
             mem = original.mem;
             offset = original.offset;
 
         }
-        @Override public static_field_load<T> cloneMe(static_field_load<T> original){
-            return(new static_field_load<T>(original));
+        @Override public static_field_load<Rt,T> cloneMe(){
+            return(new static_field_load<Rt,T>(this));
         }
         long offset;
         Reg_ref mem;
 
-        static_field_load(Instruction _from, HSAILRegister<T> _dest, Reg_ref _mem, long _offset) {
+        static_field_load(Instruction _from, Rt _dest, Reg_ref _mem, long _offset) {
             super(_from, _dest);
             offset = _offset;
             mem = _mem;
@@ -1139,22 +1141,22 @@ public class HSAILMethod {
     }
 
 
-    class field_store<T extends PrimitiveType> extends HSAILInstructionWithSrc<field_store<T>,T> {
-        protected field_store(field_store<T> original){
+    class field_store<Rt extends HSAILRegister<Rt,T>,T extends PrimitiveType> extends HSAILInstructionWithSrc<field_store<Rt,T>,Rt,T> {
+        protected field_store(field_store<Rt,T> original){
             super(original);
             mem = original.mem;
             offset = original.offset;
 
         }
-        @Override public field_store<T> cloneMe(field_store<T> original){
-            return(new field_store<T>(original));
+        @Override public field_store<Rt,T> cloneMe(){
+            return(new field_store<Rt,T>(this));
         }
 
         Reg_ref mem;
         long offset;
 
 
-        field_store(Instruction _from, HSAILRegister<T> _src, Reg_ref _mem, long _offset) {
+        field_store(Instruction _from, Rt _src, Reg_ref _mem, long _offset) {
             super(_from, _src);
             offset = _offset;
             mem = _mem;
@@ -1169,15 +1171,15 @@ public class HSAILMethod {
     }
 
 
-    final class mov<T extends PrimitiveType> extends HSAILInstructionWithDestSrc<mov<T>, T> {
-        protected mov(mov<T> original){
+    final class mov<Rd extends HSAILRegister<Rd,D>,Rt extends HSAILRegister<Rt,T>,D extends PrimitiveType, T extends PrimitiveType> extends HSAILInstructionWithDestSrc<mov<Rd,Rt,D,T>, Rd, Rt,D,T> {
+        protected mov(mov<Rd,Rt,D,T> original){
             super(original);
 
         }
-        @Override public mov<T> cloneMe(mov<T> original){
-            return(new mov<T>(original));
+        @Override public mov<Rd,Rt,D,T> cloneMe(){
+            return(new mov<Rd,Rt,D,T>(this));
         }
-        public mov(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _src) {
+        public mov(Instruction _from, Rd _dest, Rt _src) {
             super(_from, _dest, _src);
         }
 
@@ -1190,7 +1192,7 @@ public class HSAILMethod {
 
     }
 
-    abstract class unary<H extends unary<H,T>, T extends PrimitiveType> extends HSAILInstructionWithDestSrc<H, T> {
+    abstract class unary<H extends unary<H,Rt,T>, Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends HSAILInstructionWithDestSrc<H,Rt,Rt, T,T> {
         protected unary(H original){
             super(original);
             op = original.op;
@@ -1198,7 +1200,7 @@ public class HSAILMethod {
 
         String op;
 
-        public unary(Instruction _from, String _op, HSAILRegister<T> _destSrc) {
+        public unary(Instruction _from, String _op, Rt _destSrc) {
             super(_from, _destSrc, _destSrc);
 
             op = _op;
@@ -1209,26 +1211,26 @@ public class HSAILMethod {
             r.append(op).typeName(getDest()).space().regName(getDest(), _renderContext).separator().regName(getDest(), _renderContext).semicolon();
         }
 
-        HSAILRegister<T> getDest() {
-            return ((HSAILRegister<T>) dests[0]);
+        Rt getDest() {
+            return ((Rt) dests[0]);
         }
 
-        HSAILRegister<T> getSrc() {
-            return ((HSAILRegister<T>) sources[0]);
+        Rt getSrc() {
+            return ((Rt) sources[0]);
         }
 
 
     }
 
-    abstract class binary<H extends binary<H,T>, T extends PrimitiveType> extends HSAILInstruction<H> {
-        protected binary(binary<H,T> original){
+    abstract class binary<H extends binary<H,Rt,T>, Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends HSAILInstruction<H> {
+        protected binary(H original){
             super(original);
             op = original.op;
 
         }
         String op;
 
-        public binary(Instruction _from, String _op, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs) {
+        public binary(Instruction _from, String _op, Rt _dest, Rt _lhs, Rt _rhs) {
             super(_from, 1, 2);
             dests[0] = _dest;
             sources[0] = _lhs;
@@ -1241,16 +1243,16 @@ public class HSAILMethod {
             r.append(op).typeName(getDest()).space().regName(getDest(), _renderContext).separator().regName(getLhs(), _renderContext).separator().regName(getRhs(), _renderContext).semicolon();
         }
 
-        HSAILRegister<T> getDest() {
-            return ((HSAILRegister<T>) dests[0]);
+        Rt getDest() {
+            return ((Rt) dests[0]);
         }
 
-        HSAILRegister<T> getRhs() {
-            return ((HSAILRegister<T>) sources[1]);
+        Rt getRhs() {
+            return ((Rt) sources[1]);
         }
 
-        HSAILRegister<T> getLhs() {
-            return ((HSAILRegister<T>) sources[0]);
+        Rt getLhs() {
+            return ((Rt) sources[0]);
         }
 
 
@@ -1281,133 +1283,133 @@ public class HSAILMethod {
    }
    */
 
-    class add<T extends PrimitiveType> extends binary<add<T>, T> {
-        protected add(add<T> original){
+    class add<Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends binary<add<Rt,T>, Rt, T> {
+        protected add(add<Rt,T> original){
             super(original);
         }
-        @Override public add<T> cloneMe(add<T> original){
-            return (new add<T>(original));
+        @Override public add<Rt,T> cloneMe(){
+            return (new add<Rt,T>(this));
         }
-        public add(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs) {
+        public add(Instruction _from, Rt _dest, Rt _lhs, Rt _rhs) {
             super(_from, "add_", _dest, _lhs, _rhs);
         }
 
     }
 
-    class sub<T extends PrimitiveType> extends binary<sub<T>, T> {
-        protected sub(sub<T> original){
+    class sub<Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends binary<sub<Rt,T>, Rt, T> {
+        protected sub(sub<Rt,T> original){
             super(original);
         }
-        @Override public sub<T> cloneMe(sub<T> original){
-            return (new sub<T>(original));
+        @Override public sub<Rt,T> cloneMe(){
+            return (new sub<Rt,T>(this));
         }
-        public sub(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs) {
+        public sub(Instruction _from, Rt _dest, Rt _lhs, Rt _rhs) {
             super(_from, "sub_", _dest, _lhs, _rhs);
         }
 
     }
 
-    class div<T extends PrimitiveType> extends binary<div<T>,T> {
-        protected div(div<T> original){
+    class div<Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends binary<div<Rt,T>, Rt, T> {
+        protected div(div<Rt,T> original){
             super(original);
         }
-        @Override public div<T> cloneMe(div<T> original){
-            return (new div<T>(original));
+        @Override public div<Rt,T> cloneMe(){
+            return (new div<Rt,T>(this));
         }
-        public div(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs) {
+        public div(Instruction _from,Rt _dest, Rt _lhs, Rt _rhs) {
             super(_from, "div_", _dest, _lhs, _rhs);
         }
 
     }
 
-    class mul<T extends PrimitiveType> extends binary<mul<T>, T> {
-        protected mul(mul<T> original){
+    class mul<Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends binary<mul<Rt,T>, Rt, T> {
+        protected mul(mul<Rt,T> original){
             super(original);
         }
-        @Override public mul<T> cloneMe(mul<T> original){
-            return (new mul<T>(original));
+        @Override public mul<Rt,T> cloneMe(){
+            return (new mul<Rt,T>(this));
         }
-        public mul(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs) {
+        public mul(Instruction _from, Rt _dest, Rt _lhs, Rt _rhs) {
             super(_from, "mul_", _dest, _lhs, _rhs);
         }
 
     }
 
-    class rem<T extends PrimitiveType> extends binary<rem<T>, T> {
-        protected rem(rem<T> original){
+    class rem<Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends binary<rem<Rt,T>, Rt, T> {
+        protected rem(rem<Rt,T> original){
             super(original);
         }
-        @Override public rem<T> cloneMe(rem<T> original){
-            return (new rem<T>(original));
+        @Override public rem<Rt,T> cloneMe(){
+            return (new rem<Rt,T>(this));
         }
-        public rem(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs) {
+        public rem(Instruction _from, Rt _dest, Rt _lhs, Rt _rhs) {
             super(_from, "rem_", _dest, _lhs, _rhs);
         }
 
     }
 
-    class neg<T extends PrimitiveType> extends unary<neg<T>,T> {
+    class neg<Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends unary<neg<Rt,T>, Rt, T> {
 
-        protected neg(neg<T> original){
+        protected neg(neg<Rt,T> original){
             super(original);
         }
-        @Override public neg<T> cloneMe(neg<T> original){
-            return (new neg<T>(original));
+        @Override public neg<Rt,T> cloneMe(){
+            return (new neg<Rt,T>(this));
         }
-        public neg(Instruction _from, HSAILRegister<T> _destSrc) {
+        public neg(Instruction _from, Rt _destSrc) {
             super(_from, "neg_", _destSrc);
         }
 
     }
 
-    class shl<T extends PrimitiveType> extends binary<shl<T>, T> {
-        protected shl(shl<T> original){
+    class shl<Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends binary<shl<Rt,T>, Rt, T> {
+        protected shl(shl<Rt,T> original){
             super(original);
         }
-        @Override public shl<T> cloneMe(shl<T> original){
-            return (new shl<T>(original));
+        @Override public shl<Rt,T> cloneMe(){
+            return (new shl<Rt,T>(this));
         }
-        public shl(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs) {
+        public shl(Instruction _from, Rt _dest, Rt _lhs, Rt _rhs) {
             super(_from, "shl_", _dest, _lhs, _rhs);
         }
 
     }
 
-    class shr<T extends PrimitiveType>  extends binary<shr<T>, T> {
-        protected shr(shr<T> original){
+    class shr<Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends binary<shr<Rt,T>, Rt, T> {
+        protected shr(shr<Rt,T> original){
             super(original);
         }
-        @Override public shr<T> cloneMe(shr<T> original){
-            return (new shr<T>(original));
+        @Override public shr<Rt,T> cloneMe(){
+            return (new shr<Rt,T>(this));
         }
-        public shr(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs) {
+        public shr(Instruction _from, Rt _dest, Rt _lhs, Rt _rhs) {
             super(_from, "shr_", _dest, _lhs, _rhs);
         }
 
     }
 
-    class ushr<T extends PrimitiveType>  extends binary<ushr<T>, T> {
-        protected ushr(ushr<T> original){
+    class ushr<Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends binary<ushr<Rt,T>, Rt, T> {
+        protected ushr(ushr<Rt,T> original){
             super(original);
         }
-        @Override public ushr<T> cloneMe(ushr<T> original){
-            return (new ushr<T>(original));
+        @Override public ushr<Rt,T> cloneMe(){
+            return (new ushr<Rt,T>(this));
         }
-        public ushr(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs) {
+        public ushr(Instruction _from, Rt _dest, Rt _lhs, Rt _rhs) {
             super(_from, "ushr_", _dest, _lhs, _rhs);
         }
 
     }
 
 
-    class and<T extends PrimitiveType>  extends binary<and<T>, T> {
-        protected and(and<T> original){
+    class and<Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends binary<and<Rt,T>, Rt, T> {
+        protected and(and<Rt,T> original){
             super(original);
         }
-        @Override public and<T> cloneMe(and<T> original){
-            return (new and<T>(original));
+        @Override public and<Rt,T> cloneMe(){
+            return (new and<Rt,T>(this));
         }
-        public and(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs) {
+        public and(Instruction _from, Rt _dest, Rt _lhs, Rt _rhs) {
             super(_from, "and_", _dest, _lhs, _rhs);
         }
 
@@ -1418,14 +1420,14 @@ public class HSAILMethod {
 
     }
 
-    class or<T extends PrimitiveType>  extends binary<or<T>, T> {
-        protected or(or<T> original){
+    class or<Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends binary<or<Rt,T>, Rt, T> {
+        protected or(or<Rt,T> original){
             super(original);
         }
-        @Override public or<T> cloneMe(or<T> original){
-            return (new or<T>(original));
+        @Override public or<Rt,T> cloneMe(){
+            return (new or<Rt,T>(this));
         }
-        public or(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs) {
+        public or(Instruction _from, Rt _dest, Rt _lhs, Rt _rhs) {
             super(_from, "or_", _dest, _lhs, _rhs);
         }
 
@@ -1436,14 +1438,14 @@ public class HSAILMethod {
 
     }
 
-    class xor<T extends PrimitiveType>  extends binary<xor<T>, T> {
-        protected xor(xor<T> original){
+    class xor<Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends binary<xor<Rt,T>, Rt, T> {
+        protected xor(xor<Rt,T> original){
             super(original);
         }
-        @Override public xor<T> cloneMe(xor<T> original){
-            return (new xor<T>(original));
+        @Override public xor<Rt,T> cloneMe(){
+            return (new xor<Rt,T>(this));
         }
-        public xor(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs) {
+        public xor(Instruction _from, Rt _dest, Rt _lhs, Rt _rhs) {
             super(_from, "xor_", _dest, _lhs, _rhs);
         }
 
@@ -1454,17 +1456,17 @@ public class HSAILMethod {
 
     }
 
-    class mov_const<T extends PrimitiveType, C extends Number> extends HSAILInstructionWithDest<mov_const<T,C>,T> {
-        protected mov_const(mov_const<T,C> original){
+    class mov_const<Rt extends HSAILRegister<Rt,T>,T extends PrimitiveType, C extends Number> extends HSAILInstructionWithDest<mov_const<Rt,T,C>,Rt,T> {
+        protected mov_const(mov_const<Rt,T,C> original){
             super(original);
             value = original.value;
         }
-        @Override public mov_const<T,C> cloneMe(mov_const<T,C> original){
-            return (new mov_const<T,C>(original));
+        @Override public mov_const<Rt,T,C> cloneMe(){
+            return (new mov_const<Rt,T,C>(this));
         }
         C value;
 
-        public mov_const(Instruction _from, HSAILRegister<T> _dest, C _value) {
+        public mov_const(Instruction _from, Rt _dest, C _value) {
             super(_from, _dest);
             value = _value;
         }
@@ -1712,9 +1714,9 @@ public class HSAILMethod {
     public void addmov(Instruction _i, PrimitiveType _type, int _from, int _to) {
         if (_type.equals(PrimitiveType.ref) || _type.getHsaBits() == 32) {
             if (_type.equals(PrimitiveType.ref)) {
-                add(new mov<ref>(_i, new StackReg_ref(_i, _to), new StackReg_ref(_i, _from)));
+                add(new mov<StackReg_ref,StackReg_ref,ref,ref>(_i, new StackReg_ref(_i, _to), new StackReg_ref(_i, _from)));
             } else if (_type.equals(PrimitiveType.s32)) {
-                add(new mov<s32>(_i, new StackReg_s32(_i, _to), new StackReg_s32(_i, _from)));
+                add(new mov<StackReg_s32,StackReg_s32,s32,s32>(_i, new StackReg_s32(_i, _to), new StackReg_s32(_i, _from)));
             } else {
                 throw new IllegalStateException(" unknown prefix 1 prefix for first of DUP2");
             }
@@ -1835,20 +1837,20 @@ public class HSAILMethod {
                 case ICONST_5:
                 case BIPUSH:
                 case SIPUSH:
-                    add(new mov_const<s32, Integer>(i, new StackReg_s32(i, 0), i.asIntegerConstant().getValue()));
+                    add(new mov_const<StackReg_s32,s32, Integer>(i, new StackReg_s32(i, 0), i.asIntegerConstant().getValue()));
                     break;
                 case LCONST_0:
                 case LCONST_1:
-                    add(new mov_const<s64, Long>(i, new StackReg_s64(i, 0), i.asLongConstant().getValue()));
+                    add(new mov_const<StackReg_s64,s64, Long>(i, new StackReg_s64(i, 0), i.asLongConstant().getValue()));
                     break;
                 case FCONST_0:
                 case FCONST_1:
                 case FCONST_2:
-                    add(new mov_const<f32, Float>(i, new StackReg_f32(i, 0), i.asFloatConstant().getValue()));
+                    add(new mov_const<StackReg_f32,f32, Float>(i, new StackReg_f32(i, 0), i.asFloatConstant().getValue()));
                     break;
                 case DCONST_0:
                 case DCONST_1:
-                    add(new mov_const<f64, Double>(i, new StackReg_f64(i, 0), i.asDoubleConstant().getValue()));
+                    add(new mov_const<StackReg_f64,f64, Double>(i, new StackReg_f64(i, 0), i.asDoubleConstant().getValue()));
                     break;
                 // case BIPUSH: moved up
                 // case SIPUSH: moved up
@@ -1860,13 +1862,13 @@ public class HSAILMethod {
 
                     ClassModel.ConstantPool.ConstantEntry e = (ClassModel.ConstantPool.ConstantEntry) cpe.getConstantPoolEntry();
                     if (e instanceof ClassModel.ConstantPool.DoubleEntry) {
-                        add(new mov_const<f64, Double>(i, new StackReg_f64(i, 0), ((ClassModel.ConstantPool.DoubleEntry) e).getValue()));
+                        add(new mov_const<StackReg_f64,f64, Double>(i, new StackReg_f64(i, 0), ((ClassModel.ConstantPool.DoubleEntry) e).getValue()));
                     } else if (e instanceof ClassModel.ConstantPool.FloatEntry) {
-                        add(new mov_const<f32, Float>(i, new StackReg_f32(i, 0), ((ClassModel.ConstantPool.FloatEntry) e).getValue()));
+                        add(new mov_const<StackReg_f32,f32, Float>(i, new StackReg_f32(i, 0), ((ClassModel.ConstantPool.FloatEntry) e).getValue()));
                     } else if (e instanceof ClassModel.ConstantPool.IntegerEntry) {
-                        add(new mov_const<s32, Integer>(i, new StackReg_s32(i, 0), ((ClassModel.ConstantPool.IntegerEntry) e).getValue()));
+                        add(new mov_const<StackReg_s32,s32, Integer>(i, new StackReg_s32(i, 0), ((ClassModel.ConstantPool.IntegerEntry) e).getValue()));
                     } else if (e instanceof ClassModel.ConstantPool.LongEntry) {
-                        add(new mov_const<s64, Long>(i, new StackReg_s64(i, 0), ((ClassModel.ConstantPool.LongEntry) e).getValue()));
+                        add(new mov_const<StackReg_s64,s64, Long>(i, new StackReg_s64(i, 0), ((ClassModel.ConstantPool.LongEntry) e).getValue()));
 
                     }
 
@@ -1881,7 +1883,7 @@ public class HSAILMethod {
                 case ILOAD_1:
                 case ILOAD_2:
                 case ILOAD_3:
-                    add(new mov<s32>(i, new StackReg_s32(i, 0), new VarReg_s32(i)));
+                    add(new mov<StackReg_s32,VarReg_s32, s32, s32>(i, new StackReg_s32(i, 0), new VarReg_s32(i)));
 
                     break;
                 case LLOAD:
@@ -1889,70 +1891,70 @@ public class HSAILMethod {
                 case LLOAD_1:
                 case LLOAD_2:
                 case LLOAD_3:
-                    add(new mov<s64>(i, new StackReg_s64(i, 0), new VarReg_s64(i)));
+                    add(new mov<StackReg_s64,VarReg_s64, s64, s64>(i, new StackReg_s64(i, 0), new VarReg_s64(i)));
                     break;
                 case FLOAD:
                 case FLOAD_0:
                 case FLOAD_1:
                 case FLOAD_2:
                 case FLOAD_3:
-                    add(new mov<f32>(i, new StackReg_f32(i, 0), new VarReg_f32(i)));
+                    add(new mov<StackReg_f32,VarReg_f32, f32, f32>(i, new StackReg_f32(i, 0), new VarReg_f32(i)));
                     break;
                 case DLOAD:
                 case DLOAD_0:
                 case DLOAD_1:
                 case DLOAD_2:
                 case DLOAD_3:
-                    add(new mov<f64>(i, new StackReg_f64(i, 0), new VarReg_f64(i)));
+                    add(new mov<StackReg_f64,VarReg_f64, f64, f64>(i, new StackReg_f64(i, 0), new VarReg_f64(i)));
                     break;
                 case ALOAD:
                 case ALOAD_0:
                 case ALOAD_1:
                 case ALOAD_2:
                 case ALOAD_3:
-                    add(new mov<ref>(i, new StackReg_ref(i, 0), new VarReg_ref(i)));
+                    add(new mov<StackReg_ref,VarReg_ref, ref ,ref>(i, new StackReg_ref(i, 0), new VarReg_ref(i)));
                     break;
                 case IALOAD:
-                    add(new cvt<ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
+                    add(new cvt<StackReg_ref,StackReg_s32,ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
                     add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.s32.getHsaBytes()));
-                    add(new array_load<s32>(i, new StackReg_s32(i, 0), new StackReg_ref(i, 1)));
+                    add(new array_load<StackReg_s32,s32>(i, new StackReg_s32(i, 0), new StackReg_ref(i, 1)));
                     break;
                 case LALOAD:
-                    add(new cvt<ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
+                    add(new cvt<StackReg_ref,StackReg_s32,ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
                     add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.s64.getHsaBytes()));
-                    add(new array_load<s64>(i, new StackReg_s64(i, 0), new StackReg_ref(i, 1)));
+                    add(new array_load<StackReg_s64,s64>(i, new StackReg_s64(i, 0), new StackReg_ref(i, 1)));
                     break;
                 case FALOAD:
-                    add(new cvt<ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
+                    add(new cvt<StackReg_ref,StackReg_s32,ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
                     add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.f32.getHsaBytes()));
-                    add(new array_load<f32>(i, new StackReg_f32(i, 0), new StackReg_ref(i, 1)));
+                    add(new array_load<StackReg_f32,f32>(i, new StackReg_f32(i, 0), new StackReg_ref(i, 1)));
 
                     break;
                 case DALOAD:
-                    add(new cvt<ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
+                    add(new cvt<StackReg_ref,StackReg_s32,ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
                     add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.f64.getHsaBytes()));
-                    add(new array_load<f64>(i, new StackReg_f64(i, 0), new StackReg_ref(i, 1)));
+                    add(new array_load<StackReg_f64,f64>(i, new StackReg_f64(i, 0), new StackReg_ref(i, 1)));
 
                     break;
                 case AALOAD:
-                    add(new cvt<ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
+                    add(new cvt<StackReg_ref,StackReg_s32,ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
                     add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.ref.getHsaBytes()));
-                    add(new array_load<ref>(i, new StackReg_ref(i, 0), new StackReg_ref(i, 1)));
+                    add(new array_load<StackReg_ref, ref>(i, new StackReg_ref(i, 0), new StackReg_ref(i, 1)));
                     break;
                 case BALOAD:
-                    add(new cvt<ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
+                    add(new cvt<StackReg_ref,StackReg_s32,ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
                     add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.s8.getHsaBytes()));
-                    add(new array_load<s8>(i, new StackReg_s8(i, 0), new StackReg_ref(i, 1)));
+                    add(new array_load<StackReg_s8, s8>(i, new StackReg_s8(i, 0), new StackReg_ref(i, 1)));
                     break;
                 case CALOAD:
-                    add(new cvt<ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
+                    add(new cvt<StackReg_ref,StackReg_s32,ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
                     add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.u16.getHsaBytes()));
-                    add(new array_load<u16>(i, new StackReg_u16(i, 0), new StackReg_ref(i, 1)));
+                    add(new array_load<StackReg_u16,u16>(i, new StackReg_u16(i, 0), new StackReg_ref(i, 1)));
                     break;
                 case SALOAD:
-                    add(new cvt<ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
+                    add(new cvt<StackReg_ref,StackReg_s32,ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
                     add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.s16.getHsaBytes()));
-                    add(new array_load<s16>(i, new StackReg_s16(i, 0), new StackReg_ref(i, 1)));
+                    add(new array_load<StackReg_s16,s16>(i, new StackReg_s16(i, 0), new StackReg_ref(i, 1)));
                     break;
                 //case ISTORE: moved down
                 // case LSTORE:  moved down
@@ -1964,7 +1966,7 @@ public class HSAILMethod {
                 case ISTORE_1:
                 case ISTORE_2:
                 case ISTORE_3:
-                    add(new mov<s32>(i, new VarReg_s32(i), new StackReg_s32(i, 0)));
+                    add(new mov<VarReg_s32,StackReg_s32,s32,s32>(i, new VarReg_s32(i), new StackReg_s32(i, 0)));
 
                     break;
                 case LSTORE:
@@ -1972,7 +1974,7 @@ public class HSAILMethod {
                 case LSTORE_1:
                 case LSTORE_2:
                 case LSTORE_3:
-                    add(new mov<s64>(i, new VarReg_s64(i), new StackReg_s64(i, 0)));
+                    add(new mov<VarReg_s64,StackReg_s64,s64,s64>(i, new VarReg_s64(i), new StackReg_s64(i, 0)));
 
                     break;
                 case FSTORE:
@@ -1980,64 +1982,64 @@ public class HSAILMethod {
                 case FSTORE_1:
                 case FSTORE_2:
                 case FSTORE_3:
-                    add(new mov<f32>(i, new VarReg_f32(i), new StackReg_f32(i, 0)));
+                    add(new mov<VarReg_f32,StackReg_f32,f32,f32>(i, new VarReg_f32(i), new StackReg_f32(i, 0)));
                     break;
                 case DSTORE:
                 case DSTORE_0:
                 case DSTORE_1:
                 case DSTORE_2:
                 case DSTORE_3:
-                    add(new mov<f64>(i, new VarReg_f64(i), new StackReg_f64(i, 0)));
+                    add(new mov<VarReg_f64,StackReg_f64,f64,f64>(i, new VarReg_f64(i), new StackReg_f64(i, 0)));
                     break;
                 case ASTORE:
                 case ASTORE_0:
                 case ASTORE_1:
                 case ASTORE_2:
                 case ASTORE_3:
-                    add(new mov<ref>(i, new VarReg_ref(i), new StackReg_ref(i, 0)));
+                    add(new mov<VarReg_ref,StackReg_ref,ref,ref>(i, new VarReg_ref(i), new StackReg_ref(i, 0)));
 
                     break;
                 case IASTORE:
-                    add(new cvt<ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));
+                    add(new cvt<StackReg_ref,StackReg_s32,ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));
                     add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.s32.getHsaBytes()));
-                    add(new array_store<s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 2)));
+                    add(new array_store<StackReg_s32,s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 2)));
                     break;
                 case LASTORE:
-                    add(new cvt<ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));
+                    add(new cvt<StackReg_ref,StackReg_s32,ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));
                     add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.s64.getHsaBytes()));
-                    add(new array_store<u64>(i, new StackReg_ref(i, 1), new StackReg_u64(i, 2)));
+                    add(new array_store<StackReg_u64,u64>(i, new StackReg_ref(i, 1), new StackReg_u64(i, 2)));
                     break;
                 case FASTORE:
-                    add(new cvt<ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));
+                    add(new cvt<StackReg_ref,StackReg_s32,ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));
                     add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.f32.getHsaBytes()));
-                    add(new array_store<f32>(i, new StackReg_ref(i, 1), new StackReg_f32(i, 2)));
+                    add(new array_store<StackReg_f32, f32>(i, new StackReg_ref(i, 1), new StackReg_f32(i, 2)));
                     break;
                 case DASTORE:
-                    add(new cvt<ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));
+                    add(new cvt<StackReg_ref,StackReg_s32,ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));
                     add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.f64.getHsaBytes()));
-                    add(new array_store<f64>(i, new StackReg_ref(i, 1), new StackReg_f64(i, 2)));
+                    add(new array_store<StackReg_f64,f64>(i, new StackReg_ref(i, 1), new StackReg_f64(i, 2)));
                     break;
                 case AASTORE:
-                    add(new cvt<ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));
+                    add(new cvt<StackReg_ref,StackReg_s32,ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));
                     add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.ref.getHsaBytes()));
-                    add(new array_store<ref>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 2)));
+                    add(new array_store<StackReg_ref,ref>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 2)));
 
                     break;
                 case BASTORE:
-                    add(new cvt<ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));
+                    add(new cvt<StackReg_ref,StackReg_s32,ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));
                     add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.s8.getHsaBytes()));
-                    add(new array_store<s8>(i, new StackReg_ref(i, 1), new StackReg_s8(i, 2)));
+                    add(new array_store<StackReg_s8,s8>(i, new StackReg_ref(i, 1), new StackReg_s8(i, 2)));
 
                     break;
                 case CASTORE:
-                    add(new cvt<ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));
+                    add(new cvt<StackReg_ref,StackReg_s32,ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));
                     add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.u16.getHsaBytes()));
-                    add(new array_store<u16>(i, new StackReg_ref(i, 1), new StackReg_u16(i, 2)));
+                    add(new array_store<StackReg_u16,u16>(i, new StackReg_ref(i, 1), new StackReg_u16(i, 2)));
                     break;
                 case SASTORE:
-                    add(new cvt<ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));
+                    add(new cvt<StackReg_ref,StackReg_s32,ref, s32>(i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));
                     add(new mad(i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.s16.getHsaBytes()));
-                    add(new array_store<s16>(i, new StackReg_ref(i, 1), new StackReg_s16(i, 2)));
+                    add(new array_store<StackReg_s16,s16>(i, new StackReg_ref(i, 1), new StackReg_s16(i, 2)));
                     break;
                 case POP:
                     add(new nyi(i));
@@ -2077,160 +2079,160 @@ public class HSAILMethod {
                     add(new nyi(i));
                     break;
                 case IADD:
-                    add(new add<s32>(i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
+                    add(new add<StackReg_s32, s32>(i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
                     break;
                 case LADD:
-                    add(new add<s64>(i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
+                    add(new add<StackReg_s64,s64>(i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
                     break;
                 case FADD:
-                    add(new add<f32>(i, new StackReg_f32(i, 0), new StackReg_f32(i, 0), new StackReg_f32(i, 1)));
+                    add(new add<StackReg_f32,f32>(i, new StackReg_f32(i, 0), new StackReg_f32(i, 0), new StackReg_f32(i, 1)));
                     break;
                 case DADD:
-                    add(new add<f64>(i, new StackReg_f64(i, 0), new StackReg_f64(i, 0), new StackReg_f64(i, 1)));
+                    add(new add<StackReg_f64,f64>(i, new StackReg_f64(i, 0), new StackReg_f64(i, 0), new StackReg_f64(i, 1)));
                     break;
                 case ISUB:
-                    add(new sub<s32>(i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
+                    add(new sub<StackReg_s32,s32>(i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
                     break;
                 case LSUB:
-                    add(new sub<s64>(i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
+                    add(new sub<StackReg_s64,s64>(i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
                     break;
                 case FSUB:
-                    add(new sub<f32>(i, new StackReg_f32(i, 0), new StackReg_f32(i, 0), new StackReg_f32(i, 1)));
+                    add(new sub<StackReg_f32,f32>(i, new StackReg_f32(i, 0), new StackReg_f32(i, 0), new StackReg_f32(i, 1)));
                     break;
                 case DSUB:
-                    add(new sub<f64>(i, new StackReg_f64(i, 0), new StackReg_f64(i, 0), new StackReg_f64(i, 1)));
+                    add(new sub<StackReg_f64,f64>(i, new StackReg_f64(i, 0), new StackReg_f64(i, 0), new StackReg_f64(i, 1)));
                     break;
                 case IMUL:
-                    add(new mul<s32>(i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
+                    add(new mul<StackReg_s32,s32>(i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
                     break;
                 case LMUL:
-                    add(new mul<s64>(i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
+                    add(new mul<StackReg_s64,s64>(i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
                     break;
                 case FMUL:
-                    add(new mul<f32>(i, new StackReg_f32(i, 0), new StackReg_f32(i, 0), new StackReg_f32(i, 1)));
+                    add(new mul<StackReg_f32,f32>(i, new StackReg_f32(i, 0), new StackReg_f32(i, 0), new StackReg_f32(i, 1)));
                     break;
                 case DMUL:
-                    add(new mul<f64>(i, new StackReg_f64(i, 0), new StackReg_f64(i, 0), new StackReg_f64(i, 1)));
+                    add(new mul<StackReg_f64,f64>(i, new StackReg_f64(i, 0), new StackReg_f64(i, 0), new StackReg_f64(i, 1)));
                     break;
                 case IDIV:
-                    add(new div<s32>(i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
+                    add(new div<StackReg_s32,s32>(i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
                     break;
                 case LDIV:
-                    add(new div<s64>(i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
+                    add(new div<StackReg_s64,s64>(i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
                     break;
                 case FDIV:
-                    add(new div<f32>(i, new StackReg_f32(i, 0), new StackReg_f32(i, 0), new StackReg_f32(i, 1)));
+                    add(new div<StackReg_f32,f32>(i, new StackReg_f32(i, 0), new StackReg_f32(i, 0), new StackReg_f32(i, 1)));
                     break;
                 case DDIV:
-                    add(new div<f64>(i, new StackReg_f64(i, 0), new StackReg_f64(i, 0), new StackReg_f64(i, 1)));
+                    add(new div<StackReg_f64,f64>(i, new StackReg_f64(i, 0), new StackReg_f64(i, 0), new StackReg_f64(i, 1)));
                     break;
                 case IREM:
-                    add(new rem<s32>(i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
+                    add(new rem<StackReg_s32,s32>(i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
                     break;
                 case LREM:
-                    add(new rem<s64>(i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
+                    add(new rem<StackReg_s64,s64>(i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
                     break;
                 case FREM:
-                    add(new rem<f32>(i, new StackReg_f32(i, 0), new StackReg_f32(i, 0), new StackReg_f32(i, 1)));
+                    add(new rem<StackReg_f32,f32>(i, new StackReg_f32(i, 0), new StackReg_f32(i, 0), new StackReg_f32(i, 1)));
                     break;
                 case DREM:
-                    add(new rem<f64>(i, new StackReg_f64(i, 0), new StackReg_f64(i, 0), new StackReg_f64(i, 1)));
+                    add(new rem<StackReg_f64,f64>(i, new StackReg_f64(i, 0), new StackReg_f64(i, 0), new StackReg_f64(i, 1)));
                     break;
                 case INEG:
-                    add(new neg<s32>(i, new StackReg_s32(i, 0)));
+                    add(new neg<StackReg_s32,s32>(i, new StackReg_s32(i, 0)));
                     break;
                 case LNEG:
-                    add(new neg<s64>(i, new StackReg_s64(i, 0)));
+                    add(new neg<StackReg_s64,s64>(i, new StackReg_s64(i, 0)));
                     break;
                 case FNEG:
-                    add(new neg<f32>(i, new StackReg_f32(i, 0)));
+                    add(new neg<StackReg_f32,f32>(i, new StackReg_f32(i, 0)));
                     break;
                 case DNEG:
-                    add(new neg<f64>(i, new StackReg_f64(i, 0)));
+                    add(new neg<StackReg_f64,f64>(i, new StackReg_f64(i, 0)));
                     break;
                 case ISHL:
-                    add(new shl<s32>(i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
+                    add(new shl<StackReg_s32,s32>(i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
                     break;
                 case LSHL:
-                    add(new shl<s64>(i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
+                    add(new shl<StackReg_s64,s64>(i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
                     break;
                 case ISHR:
-                    add(new shr<s32>(i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
+                    add(new shr<StackReg_s32,s32>(i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
                     break;
                 case LSHR:
-                    add(new shr<s64>(i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
+                    add(new shr<StackReg_s64,s64>(i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
                     break;
                 case IUSHR:
-                    add(new ushr<s32>(i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
+                    add(new ushr<StackReg_s32,s32>(i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
                     break;
                 case LUSHR:
-                    add(new ushr<s64>(i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
+                    add(new ushr<StackReg_s64,s64>(i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
                     break;
                 case IAND:
-                    add(new and<s32>(i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
+                    add(new and<StackReg_s32,s32>(i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
                     break;
                 case LAND:
-                    add(new and<s64>(i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
+                    add(new and<StackReg_s64,s64>(i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
                     break;
                 case IOR:
-                    add(new or<s32>(i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
+                    add(new or<StackReg_s32,s32>(i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
                     break;
                 case LOR:
-                    add(new or<s64>(i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
+                    add(new or<StackReg_s64,s64>(i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
                     break;
                 case IXOR:
-                    add(new xor<s32>(i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
+                    add(new xor<StackReg_s32,s32>(i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
                     break;
                 case LXOR:
-                    add(new xor<s64>(i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
+                    add(new xor<StackReg_s64, s64>(i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
                     break;
                 case IINC:
-                    add(new add_const<s32, Integer>(i, new VarReg_s32(i), new VarReg_s32(i), ((InstructionSet.I_IINC) i).getDelta()));
+                    add(new add_const<VarReg_s32, s32, Integer>(i, new VarReg_s32(i), new VarReg_s32(i), ((InstructionSet.I_IINC) i).getDelta()));
                     break;
                 case I2L:
-                    add(new cvt<s64, s32>(i, new StackReg_s64(i, 0), new StackReg_s32(i, 0)));
+                    add(new cvt<StackReg_s64,StackReg_s32,s64, s32>(i, new StackReg_s64(i, 0), new StackReg_s32(i, 0)));
                     break;
                 case I2F:
-                    add(new cvt<f32, s32>(i, new StackReg_f32(i, 0), new StackReg_s32(i, 0)));
+                    add(new cvt<StackReg_f32,StackReg_s32,f32, s32>(i, new StackReg_f32(i, 0), new StackReg_s32(i, 0)));
                     break;
                 case I2D:
-                    add(new cvt<f64, s32>(i, new StackReg_f64(i, 0), new StackReg_s32(i, 0)));
+                    add(new cvt<StackReg_f64,StackReg_s32,f64, s32>(i, new StackReg_f64(i, 0), new StackReg_s32(i, 0)));
                     break;
                 case L2I:
-                    add(new cvt<s32, s64>(i, new StackReg_s32(i, 0), new StackReg_s64(i, 0)));
+                    add(new cvt<StackReg_s32,StackReg_s64,s32, s64>(i, new StackReg_s32(i, 0), new StackReg_s64(i, 0)));
                     break;
                 case L2F:
-                    add(new cvt<f32, s64>(i, new StackReg_f32(i, 0), new StackReg_s64(i, 0)));
+                    add(new cvt<StackReg_f32,StackReg_s64,f32, s64>(i, new StackReg_f32(i, 0), new StackReg_s64(i, 0)));
                     break;
                 case L2D:
-                    add(new cvt<f64, s64>(i, new StackReg_f64(i, 0), new StackReg_s64(i, 0)));
+                    add(new cvt<StackReg_f64,StackReg_s64,f64, s64>(i, new StackReg_f64(i, 0), new StackReg_s64(i, 0)));
                     break;
                 case F2I:
-                    add(new cvt<s32, f32>(i, new StackReg_s32(i, 0), new StackReg_f32(i, 0)));
+                    add(new cvt<StackReg_s32,StackReg_f32,s32, f32>(i, new StackReg_s32(i, 0), new StackReg_f32(i, 0)));
                     break;
                 case F2L:
-                    add(new cvt<s64, f32>(i, new StackReg_s64(i, 0), new StackReg_f32(i, 0)));
+                    add(new cvt<StackReg_s64,StackReg_f32,s64, f32>(i, new StackReg_s64(i, 0), new StackReg_f32(i, 0)));
                     break;
                 case F2D:
-                    add(new cvt<f64, f32>(i, new StackReg_f64(i, 0), new StackReg_f32(i, 0)));
+                    add(new cvt<StackReg_f64,StackReg_f32,f64, f32>(i, new StackReg_f64(i, 0), new StackReg_f32(i, 0)));
                     break;
                 case D2I:
-                    add(new cvt<s32, f64>(i, new StackReg_s32(i, 0), new StackReg_f64(i, 0)));
+                    add(new cvt<StackReg_s32,StackReg_f64,s32, f64>(i, new StackReg_s32(i, 0), new StackReg_f64(i, 0)));
                     break;
                 case D2L:
-                    add(new cvt<s64, f64>(i, new StackReg_s64(i, 0), new StackReg_f64(i, 0)));
+                    add(new cvt<StackReg_s64,StackReg_f64,s64, f64>(i, new StackReg_s64(i, 0), new StackReg_f64(i, 0)));
                     break;
                 case D2F:
-                    add(new cvt<f32, f64>(i, new StackReg_f32(i, 0), new StackReg_f64(i, 0)));
+                    add(new cvt<StackReg_f32,StackReg_f64,f32, f64>(i, new StackReg_f32(i, 0), new StackReg_f64(i, 0)));
                     break;
                 case I2B:
-                    add(new cvt<s8, s32>(i, new StackReg_s8(i, 0), new StackReg_s32(i, 0)));
+                    add(new cvt<StackReg_s8,StackReg_s32,s8, s32>(i, new StackReg_s8(i, 0), new StackReg_s32(i, 0)));
                     break;
                 case I2C:
-                    add(new cvt<u16, s32>(i, new StackReg_u16(i, 0), new StackReg_s32(i, 0)));
+                    add(new cvt<StackReg_u16,StackReg_s32,u16, s32>(i, new StackReg_u16(i, 0), new StackReg_s32(i, 0)));
                     break;
                 case I2S:
-                    add(new cvt<s16, s32>(i, new StackReg_s16(i, 0), new StackReg_s32(i, 0)));
+                    add(new cvt<StackReg_s16,StackReg_s32,s16, s32>(i, new StackReg_s16(i, 0), new StackReg_s32(i, 0)));
                     break;
                 case LCMP:
                     parseState = ParseState.COMPARE_S64;
@@ -2249,13 +2251,13 @@ public class HSAILMethod {
                     break;
                 case IFEQ:
                     if (parseState.equals(ParseState.COMPARE_F32)) {
-                        add(new cmp<f32>(lastInstruction, "eq", new StackReg_f32(lastInstruction, 0), new StackReg_f32(lastInstruction, 1)));
+                        add(new cmp<StackReg_f32,f32>(lastInstruction, "eq", new StackReg_f32(lastInstruction, 0), new StackReg_f32(lastInstruction, 1)));
                         parseState = ParseState.NONE;
                     } else if (parseState.equals(ParseState.COMPARE_F64)) {
-                        add(new cmp<f64>(lastInstruction, "eq", new StackReg_f64(lastInstruction, 0), new StackReg_f64(lastInstruction, 1)));
+                        add(new cmp<StackReg_f64,f64>(lastInstruction, "eq", new StackReg_f64(lastInstruction, 0), new StackReg_f64(lastInstruction, 1)));
                         parseState = ParseState.NONE;
                     } else if (parseState.equals(ParseState.COMPARE_S64)) {
-                        add(new cmp<s64>(lastInstruction, "eq", new StackReg_s64(lastInstruction, 0), new StackReg_s64(lastInstruction, 1)));
+                        add(new cmp<StackReg_s64,s64>(lastInstruction, "eq", new StackReg_s64(lastInstruction, 0), new StackReg_s64(lastInstruction, 1)));
                         parseState = ParseState.NONE;
                     } else {
                         add(new cmp_s32_const_0(i, "eq", new StackReg_s32(i, 0)));
@@ -2265,13 +2267,13 @@ public class HSAILMethod {
                     break;
                 case IFNE:
                     if (parseState.equals(ParseState.COMPARE_F32)) {
-                        add(new cmp<f32>(lastInstruction, "ne", new StackReg_f32(lastInstruction, 0), new StackReg_f32(lastInstruction, 1)));
+                        add(new cmp<StackReg_f32,f32>(lastInstruction, "ne", new StackReg_f32(lastInstruction, 0), new StackReg_f32(lastInstruction, 1)));
                         parseState = ParseState.NONE;
                     } else if (parseState.equals(ParseState.COMPARE_F64)) {
-                        add(new cmp<f64>(lastInstruction, "ne", new StackReg_f64(lastInstruction, 0), new StackReg_f64(lastInstruction, 1)));
+                        add(new cmp<StackReg_f64,f64>(lastInstruction, "ne", new StackReg_f64(lastInstruction, 0), new StackReg_f64(lastInstruction, 1)));
                         parseState = ParseState.NONE;
                     } else if (parseState.equals(ParseState.COMPARE_S64)) {
-                        add(new cmp<s64>(lastInstruction, "ne", new StackReg_s64(lastInstruction, 0), new StackReg_s64(lastInstruction, 1)));
+                        add(new cmp<StackReg_s64,s64>(lastInstruction, "ne", new StackReg_s64(lastInstruction, 0), new StackReg_s64(lastInstruction, 1)));
                         parseState = ParseState.NONE;
                     } else {
                         add(new cmp_s32_const_0(i, "ne", new StackReg_s32(i, 0)));
@@ -2281,13 +2283,13 @@ public class HSAILMethod {
                     break;
                 case IFLT:
                     if (parseState.equals(ParseState.COMPARE_F32)) {
-                        add(new cmp<f32>(lastInstruction, "lt", new StackReg_f32(lastInstruction, 0), new StackReg_f32(lastInstruction, 1)));
+                        add(new cmp<StackReg_f32,f32>(lastInstruction, "lt", new StackReg_f32(lastInstruction, 0), new StackReg_f32(lastInstruction, 1)));
                         parseState = ParseState.NONE;
                     } else if (parseState.equals(ParseState.COMPARE_F64)) {
-                        add(new cmp<f64>(lastInstruction, "lt", new StackReg_f64(lastInstruction, 0), new StackReg_f64(lastInstruction, 1)));
+                        add(new cmp<StackReg_f64,f64>(lastInstruction, "lt", new StackReg_f64(lastInstruction, 0), new StackReg_f64(lastInstruction, 1)));
                         parseState = ParseState.NONE;
                     } else if (parseState.equals(ParseState.COMPARE_S64)) {
-                        add(new cmp<s64>(lastInstruction, "lt", new StackReg_s64(lastInstruction, 0), new StackReg_s64(lastInstruction, 1)));
+                        add(new cmp<StackReg_s64,s64>(lastInstruction, "lt", new StackReg_s64(lastInstruction, 0), new StackReg_s64(lastInstruction, 1)));
                         parseState = ParseState.NONE;
                     } else {
                         add(new cmp_s32_const_0(i, "lt", new StackReg_s32(i, 0)));
@@ -2297,13 +2299,13 @@ public class HSAILMethod {
                     break;
                 case IFGE:
                     if (parseState.equals(ParseState.COMPARE_F32)) {
-                        add(new cmp<f32>(lastInstruction, "ge", new StackReg_f32(lastInstruction, 0), new StackReg_f32(lastInstruction, 1)));
+                        add(new cmp<StackReg_f32,f32>(lastInstruction, "ge", new StackReg_f32(lastInstruction, 0), new StackReg_f32(lastInstruction, 1)));
                         parseState = ParseState.NONE;
                     } else if (parseState.equals(ParseState.COMPARE_F64)) {
-                        add(new cmp<f64>(lastInstruction, "ge", new StackReg_f64(lastInstruction, 0), new StackReg_f64(lastInstruction, 1)));
+                        add(new cmp<StackReg_f64,f64>(lastInstruction, "ge", new StackReg_f64(lastInstruction, 0), new StackReg_f64(lastInstruction, 1)));
                         parseState = ParseState.NONE;
                     } else if (parseState.equals(ParseState.COMPARE_S64)) {
-                        add(new cmp<s64>(lastInstruction, "ge", new StackReg_s64(lastInstruction, 0), new StackReg_s64(lastInstruction, 1)));
+                        add(new cmp<StackReg_s64,s64>(lastInstruction, "ge", new StackReg_s64(lastInstruction, 0), new StackReg_s64(lastInstruction, 1)));
                         parseState = ParseState.NONE;
                     } else {
                         add(new cmp_s32_const_0(i, "ge", new StackReg_s32(i, 0)));
@@ -2313,13 +2315,13 @@ public class HSAILMethod {
                     break;
                 case IFGT:
                     if (parseState.equals(ParseState.COMPARE_F32)) {
-                        add(new cmp<f32>(lastInstruction, "gt", new StackReg_f32(lastInstruction, 0), new StackReg_f32(lastInstruction, 1)));
+                        add(new cmp<StackReg_f32,f32>(lastInstruction, "gt", new StackReg_f32(lastInstruction, 0), new StackReg_f32(lastInstruction, 1)));
                         parseState = ParseState.NONE;
                     } else if (parseState.equals(ParseState.COMPARE_F64)) {
-                        add(new cmp<f64>(lastInstruction, "gt", new StackReg_f64(lastInstruction, 0), new StackReg_f64(lastInstruction, 1)));
+                        add(new cmp<StackReg_f64,f64>(lastInstruction, "gt", new StackReg_f64(lastInstruction, 0), new StackReg_f64(lastInstruction, 1)));
                         parseState = ParseState.NONE;
                     } else if (parseState.equals(ParseState.COMPARE_S64)) {
-                        add(new cmp<s64>(lastInstruction, "gt", new StackReg_s64(lastInstruction, 0), new StackReg_s64(lastInstruction, 1)));
+                        add(new cmp<StackReg_s64,s64>(lastInstruction, "gt", new StackReg_s64(lastInstruction, 0), new StackReg_s64(lastInstruction, 1)));
                         parseState = ParseState.NONE;
                     } else {
                         add(new cmp_s32_const_0(i, "gt", new StackReg_s32(i, 0)));
@@ -2329,13 +2331,13 @@ public class HSAILMethod {
                     break;
                 case IFLE:
                     if (parseState.equals(ParseState.COMPARE_F32)) {
-                        add(new cmp<f32>(lastInstruction, "le", new StackReg_f32(lastInstruction, 0), new StackReg_f32(lastInstruction, 1)));
+                        add(new cmp<StackReg_f32,f32>(lastInstruction, "le", new StackReg_f32(lastInstruction, 0), new StackReg_f32(lastInstruction, 1)));
                         parseState = ParseState.NONE;
                     } else if (parseState.equals(ParseState.COMPARE_F64)) {
-                        add(new cmp<f64>(lastInstruction, "le", new StackReg_f64(lastInstruction, 0), new StackReg_f64(lastInstruction, 1)));
+                        add(new cmp<StackReg_f64,f64>(lastInstruction, "le", new StackReg_f64(lastInstruction, 0), new StackReg_f64(lastInstruction, 1)));
                         parseState = ParseState.NONE;
                     } else if (parseState.equals(ParseState.COMPARE_S64)) {
-                        add(new cmp<s64>(lastInstruction, "le", new StackReg_s64(lastInstruction, 0), new StackReg_s64(lastInstruction, 1)));
+                        add(new cmp<StackReg_s64, s64>(lastInstruction, "le", new StackReg_s64(lastInstruction, 0), new StackReg_s64(lastInstruction, 1)));
                         parseState = ParseState.NONE;
                     } else {
                         add(new cmp_s32_const_0(i, "le", new StackReg_s32(i, 0)));
@@ -2408,19 +2410,19 @@ public class HSAILMethod {
                     add(new nyi(i));
                     break;
                 case IRETURN:
-                    add(new ret<s32>(i, new StackReg_s32(i, 0)));
+                    add(new ret<StackReg_s32, s32>(i, new StackReg_s32(i, 0)));
                     break;
                 case LRETURN:
-                    add(new ret<s64>(i, new StackReg_s64(i, 0)));
+                    add(new ret<StackReg_s64, s64>(i, new StackReg_s64(i, 0)));
                     break;
                 case FRETURN:
-                    add(new ret<f32>(i, new StackReg_f32(i, 0)));
+                    add(new ret<StackReg_f32, f32>(i, new StackReg_f32(i, 0)));
                     break;
                 case DRETURN:
-                    add(new ret<f64>(i, new StackReg_f64(i, 0)));
+                    add(new ret<StackReg_f64, f64>(i, new StackReg_f64(i, 0)));
                     break;
                 case ARETURN:
-                    add(new ret<ref>(i, new StackReg_ref(i, 0)));
+                    add(new ret<StackReg_ref,ref>(i, new StackReg_ref(i, 0)));
                     break;
                 case RETURN:
                     add(new retvoid(i));
@@ -2434,18 +2436,15 @@ public class HSAILMethod {
                         Field f = clazz.getDeclaredField(i.asFieldAccessor().getFieldName());
 
                         if (type.isArray()) {
-                            add(new static_field_load<ref>(i, new StackReg_ref(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.staticFieldOffset(f)));
-
-                            //  add(new and_const<u64, Long>(i, new StackReg_u64(i, 0), new StackReg_ref(i, 0), (long) 0xffffffffL));
+                            add(new static_field_load<StackReg_ref,ref>(i, new StackReg_ref(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.staticFieldOffset(f)));
                         } else if (type.isInt()) {
-                            add(new static_field_load<s32>(i, new StackReg_s32(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.staticFieldOffset(f)));
-
+                            add(new static_field_load<StackReg_s32,s32>(i, new StackReg_s32(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.staticFieldOffset(f)));
                         } else if (type.isFloat()) {
-                            add(new static_field_load<f32>(i, new StackReg_f32(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.staticFieldOffset(f)));
+                            add(new static_field_load<StackReg_f32,f32>(i, new StackReg_f32(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.staticFieldOffset(f)));
                         } else if (type.isDouble()) {
-                            add(new static_field_load<f64>(i, new StackReg_f64(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.staticFieldOffset(f)));
+                            add(new static_field_load<StackReg_f64,f64>(i, new StackReg_f64(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.staticFieldOffset(f)));
                         } else if (type.isLong()) {
-                            add(new static_field_load<s64>(i, new StackReg_s64(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.staticFieldOffset(f)));
+                            add(new static_field_load<StackReg_s64,s64>(i, new StackReg_s64(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.staticFieldOffset(f)));
                         }
                     } catch (ClassNotFoundException e) {
                         e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
@@ -2464,21 +2463,21 @@ public class HSAILMethod {
 
                         Field f = clazz.getDeclaredField(i.asFieldAccessor().getFieldName());
                         if (!f.getType().isPrimitive()) {
-                            add(new field_load<ref>(i, new StackReg_ref(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+                            add(new field_load<StackReg_ref,ref>(i, new StackReg_ref(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
                         } else if (f.getType().equals(int.class)) {
-                            add(new field_load<s32>(i, new StackReg_s32(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+                            add(new field_load<StackReg_s32,s32>(i, new StackReg_s32(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
                         } else if (f.getType().equals(short.class)) {
-                            add(new field_load<s16>(i, new StackReg_s16(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+                            add(new field_load<StackReg_s16,s16>(i, new StackReg_s16(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
                         } else if (f.getType().equals(char.class)) {
-                            add(new field_load<u16>(i, new StackReg_u16(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+                            add(new field_load<StackReg_u16,u16>(i, new StackReg_u16(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
                         } else if (f.getType().equals(boolean.class)) {
-                            add(new field_load<s8>(i, new StackReg_s8(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+                            add(new field_load<StackReg_s8,s8>(i, new StackReg_s8(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
                         } else if (f.getType().equals(float.class)) {
-                            add(new field_load<f32>(i, new StackReg_f32(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+                            add(new field_load<StackReg_f32,f32>(i, new StackReg_f32(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
                         } else if (f.getType().equals(double.class)) {
-                            add(new field_load<f64>(i, new StackReg_f64(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+                            add(new field_load<StackReg_f64,f64>(i, new StackReg_f64(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
                         } else if (f.getType().equals(long.class)) {
-                            add(new field_load<s64>(i, new StackReg_s64(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+                            add(new field_load<StackReg_s64,s64>(i, new StackReg_s64(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
 
                         } else {
                             throw new IllegalStateException("unexpected get field type");
@@ -2503,21 +2502,21 @@ public class HSAILMethod {
 
                         Field f = clazz.getDeclaredField(i.asFieldAccessor().getFieldName());
                         if (!f.getType().isPrimitive()) {
-                            add(new field_store<ref>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+                            add(new field_store<StackReg_ref, ref>(i, new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
                         } else if (f.getType().equals(int.class)) {
-                            add(new field_store<s32>(i, new StackReg_s32(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+                            add(new field_store<StackReg_s32,s32>(i, new StackReg_s32(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
                         } else if (f.getType().equals(short.class)) {
-                            add(new field_store<s16>(i, new StackReg_s16(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+                            add(new field_store<StackReg_s16,s16>(i, new StackReg_s16(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
                         } else if (f.getType().equals(char.class)) {
-                            add(new field_store<u16>(i, new StackReg_u16(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+                            add(new field_store<StackReg_u16,u16>(i, new StackReg_u16(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
                         } else if (f.getType().equals(boolean.class)) {
-                            add(new field_store<s8>(i, new StackReg_s8(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+                            add(new field_store<StackReg_s8,s8>(i, new StackReg_s8(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
                         } else if (f.getType().equals(float.class)) {
-                            add(new field_store<f32>(i, new StackReg_f32(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+                            add(new field_store<StackReg_f32,f32>(i, new StackReg_f32(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
                         } else if (f.getType().equals(double.class)) {
-                            add(new field_store<f64>(i, new StackReg_f64(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+                            add(new field_store<StackReg_f64,f64>(i, new StackReg_f64(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
                         } else if (f.getType().equals(long.class)) {
-                            add(new field_store<s64>(i, new StackReg_s64(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+                            add(new field_store<StackReg_s64,s64>(i, new StackReg_s64(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
 
                         }   else {
                             throw new IllegalStateException("unexpected put field type");
