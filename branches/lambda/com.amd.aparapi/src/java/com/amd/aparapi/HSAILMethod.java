@@ -335,11 +335,23 @@ public class HSAILMethod {
 
     //  final static long ADDR_MASK = ((1L << 32)-1);
 
-    abstract class HSAILInstruction {
+    abstract class HSAILInstruction<H extends HSAILInstruction>  {
         Instruction from;
         HSAILRegister[] dests = null;
         HSAILRegister[] sources = null;
 
+        HSAILInstruction(HSAILInstruction original) {
+                from = original.from;
+                dests = new HSAILRegister[original.dests.length];
+                for (int i=0; i<dests.length; i++){
+                    //  dests[i] = original.dests[i].cloneMe();
+                }
+                sources = new HSAILRegister[original.sources.length];
+                for (int i=0; i<dests.length; i++){
+                    //  sources[i] = original.sources[i].cloneMe();
+                }
+
+        }
 
         HSAILInstruction(Instruction _from, int _destCount, int _sourceCount) {
             from = _from;
@@ -347,13 +359,21 @@ public class HSAILMethod {
             sources = new HSAILRegister[_sourceCount];
         }
 
+        public abstract  H cloneMe(H original);
+
+
+
 
         abstract void render(HSAILRenderer r, RenderContext _renderContext);
 
     }
 
-    abstract class HSAILInstructionWithDest<T extends PrimitiveType> extends HSAILInstruction {
+    abstract class HSAILInstructionWithDest<H extends HSAILInstruction<H>, T extends PrimitiveType> extends HSAILInstruction<H> {
 
+        protected HSAILInstructionWithDest(H original){
+            super(original);
+
+        }
 
         HSAILInstructionWithDest(Instruction _from, HSAILRegister<T> _dest) {
             super(_from, 1, 0);
@@ -366,7 +386,12 @@ public class HSAILMethod {
         }
     }
 
-    abstract class HSAILInstructionWithSrc<T extends PrimitiveType> extends HSAILInstruction {
+    abstract class HSAILInstructionWithSrc<H extends HSAILInstruction<H>, T extends PrimitiveType> extends HSAILInstruction<H> {
+
+        protected HSAILInstructionWithSrc(H original){
+            super(original);
+        }
+
 
         HSAILInstructionWithSrc(Instruction _from, HSAILRegister<T> _src) {
             super(_from, 0, 1);
@@ -378,8 +403,11 @@ public class HSAILMethod {
         }
     }
 
-    abstract class HSAILInstructionWithSrcSrc<T extends PrimitiveType> extends HSAILInstruction {
+    abstract class HSAILInstructionWithSrcSrc<H extends HSAILInstruction<H>,T extends PrimitiveType> extends HSAILInstruction<H> {
 
+        protected HSAILInstructionWithSrcSrc(H original){
+            super(original);
+        }
         HSAILInstructionWithSrcSrc(Instruction _from, HSAILRegister<T> _src_lhs, HSAILRegister<T> _src_rhs) {
             super(_from, 0, 2);
             sources[0] = _src_lhs;
@@ -395,8 +423,11 @@ public class HSAILMethod {
         }
     }
 
-    abstract class HSAILInstructionWithDestSrcSrc<D extends PrimitiveType, T extends PrimitiveType> extends HSAILInstruction {
+    abstract class HSAILInstructionWithDestSrcSrc<H extends HSAILInstructionWithDestSrcSrc<H,D,T>, D extends PrimitiveType, T extends PrimitiveType> extends HSAILInstruction<H> {
 
+        protected HSAILInstructionWithDestSrcSrc(H original){
+            super(original);
+        }
         HSAILInstructionWithDestSrcSrc(Instruction _from, HSAILRegister<D> _dest, HSAILRegister<T> _src_lhs, HSAILRegister<T> _src_rhs) {
             super(_from, 1, 2);
             dests[0] = _dest;
@@ -417,8 +448,10 @@ public class HSAILMethod {
         }
     }
 
-    abstract class HSAILInstructionWithDestSrc<T extends PrimitiveType> extends HSAILInstruction {
-
+    abstract class HSAILInstructionWithDestSrc<H extends HSAILInstructionWithDestSrc<H,T>, T extends PrimitiveType> extends HSAILInstruction<H> {
+        HSAILInstructionWithDestSrc(H original){
+            super(original);
+        }
         HSAILInstructionWithDestSrc(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _src) {
             super(_from, 1, 1);
             dests[0] = _dest;
@@ -434,9 +467,19 @@ public class HSAILMethod {
         }
     }
 
-    class branch extends HSAILInstructionWithSrc<s32> {
+    class branch extends HSAILInstructionWithSrc<branch, s32> {
         String branchName;
         int pc;
+
+        protected branch(branch original){
+            super(original);
+            branchName = original.branchName;
+            pc = original.pc;
+        }
+
+        @Override public branch cloneMe(branch original){
+            return(new branch(original));
+        }
 
         branch(Instruction _from, HSAILRegister<s32> _src, String _branchName, int _pc) {
             super(_from, _src);
@@ -445,13 +488,22 @@ public class HSAILMethod {
         }
 
 
+
+
         @Override
         public void render(HSAILRenderer r, RenderContext _renderContext) {
             r.append(branchName).space().label(_renderContext.getLocation(pc)).semicolon();
         }
     }
 
-    class cmp_s32_const_0 extends HSAILInstructionWithSrc<s32> {
+    class cmp_s32_const_0 extends HSAILInstructionWithSrc<cmp_s32_const_0, s32> {
+
+        protected cmp_s32_const_0(cmp_s32_const_0 original){
+            super(original);
+        }
+        @Override public cmp_s32_const_0 cloneMe(cmp_s32_const_0 original){
+            return(new cmp_s32_const_0(original));
+        }
         String type;
 
         cmp_s32_const_0(Instruction _from, String _type, Reg_s32 _src) {
@@ -467,7 +519,18 @@ public class HSAILMethod {
         }
     }
 
-    class cmp_s32 extends HSAILInstructionWithSrcSrc<s32> {
+    class cmp_s32 extends HSAILInstructionWithSrcSrc<cmp_s32, s32> {
+
+        protected cmp_s32(cmp_s32 original){
+            super(original);
+            type = original.type;
+
+        }
+
+        @Override public cmp_s32 cloneMe(cmp_s32 original){
+            return(new cmp_s32(original));
+        }
+
         String type;
 
         cmp_s32(Instruction _from, String _type, Reg_s32 _srcLhs, Reg_s32 _srcRhs) {
@@ -482,7 +545,17 @@ public class HSAILMethod {
 
         }
     }
-    class cmp_ref extends HSAILInstructionWithSrcSrc<ref> {
+    class cmp_ref extends HSAILInstructionWithSrcSrc<cmp_ref, ref> {
+
+        protected cmp_ref(cmp_ref original){
+            super(original);
+            type = original.type;
+        }
+
+        @Override public cmp_ref cloneMe(cmp_ref original){
+            return(new cmp_ref(original));
+        }
+
         String type;
 
         cmp_ref(Instruction _from, String _type, Reg_ref _srcLhs, Reg_ref _srcRhs) {
@@ -498,7 +571,17 @@ public class HSAILMethod {
         }
     }
 
-    class cmp<T extends PrimitiveType> extends HSAILInstructionWithSrcSrc<T> {
+    class cmp<T extends PrimitiveType> extends HSAILInstructionWithSrcSrc<cmp<T>, T> {
+
+        protected cmp(cmp original){
+            super(original);
+            type = original.type;
+        }
+
+        @Override public cmp cloneMe(cmp original){
+            return(new cmp(original));
+        }
+
         String type;
 
         cmp(Instruction _from, String _type, HSAILRegister<T> _srcLhs, HSAILRegister<T> _srcRhs) {
@@ -514,7 +597,18 @@ public class HSAILMethod {
         }
     }
 
-    class cbr extends HSAILInstruction {
+    class cbr extends HSAILInstruction<cbr> {
+
+        protected cbr(cbr original){
+            super(original);
+            pc = original.pc;
+        }
+
+        @Override public cbr cloneMe(cbr original){
+            return(new cbr(original));
+        }
+
+
         int pc;
 
         cbr(Instruction _from, int _pc) {
@@ -530,7 +624,17 @@ public class HSAILMethod {
         }
     }
 
-    class brn extends HSAILInstruction {
+    class brn extends HSAILInstruction<brn> {
+
+        protected brn(brn original){
+            super(original);
+            pc = original.pc;
+        }
+
+        @Override public brn cloneMe(brn original){
+            return(new brn(original));
+        }
+
         int pc;
 
         brn(Instruction _from, int _pc) {
@@ -560,7 +664,20 @@ public class HSAILMethod {
         return (entryPoint.getEntryPoint());
     }
 
-    class call extends HSAILInstruction {
+    class call extends HSAILInstruction<call> {
+
+        protected call(call original){
+            super(original);
+            base = original.base;
+            name = original.name;
+            mangledName = original.mangledName;
+            call = original.call;
+        }
+
+        @Override public call cloneMe(call original){
+            return(new call(original));
+        }
+
         int base;
         String name;
         String mangledName;
@@ -626,8 +743,16 @@ public class HSAILMethod {
     }
 
 
-    class nyi extends HSAILInstruction {
+    class nyi extends HSAILInstruction<nyi> {
 
+        protected nyi(nyi original){
+            super(original);
+
+        }
+
+        @Override public nyi cloneMe(nyi original){
+            return(new nyi(original));
+        }
         nyi(Instruction _from) {
             super(_from, 0, 0);
         }
@@ -641,8 +766,16 @@ public class HSAILMethod {
         }
     }
 
-    class ld_kernarg<T extends PrimitiveType> extends HSAILInstructionWithDest<T> {
+    class ld_kernarg<T extends PrimitiveType> extends HSAILInstructionWithDest<ld_kernarg<T>, T> {
 
+        protected ld_kernarg(ld_kernarg original){
+            super(original);
+
+        }
+
+        @Override public ld_kernarg cloneMe(ld_kernarg original){
+            return(new ld_kernarg(original));
+        }
 
         ld_kernarg(Instruction _from, HSAILRegister<T> _dest) {
             super(_from, _dest);
@@ -654,9 +787,16 @@ public class HSAILMethod {
         }
     }
 
-    class ld_arg<T extends PrimitiveType> extends HSAILInstructionWithDest<T> {
+    class ld_arg<T extends PrimitiveType> extends HSAILInstructionWithDest<ld_arg<T>, T> {
 
+        protected ld_arg(ld_arg original){
+            super(original);
 
+        }
+
+        @Override public ld_arg cloneMe(ld_arg original){
+            return(new ld_arg(original));
+        }
         ld_arg(Instruction _from, HSAILRegister<T> _dest) {
             super(_from, _dest);
         }
@@ -669,7 +809,16 @@ public class HSAILMethod {
 
     }
 
-    abstract class binary_const<T extends PrimitiveType, C extends Number> extends HSAILInstructionWithDestSrc<T> {
+    abstract class binary_const<H extends binary_const<H, T, C>, T extends PrimitiveType, C extends Number> extends HSAILInstructionWithDestSrc<H, T> {
+
+        protected binary_const(H original){
+            super(original);
+            value = original.value;
+            op = original.op;
+        }
+
+
+
         C value;
         String op;
 
@@ -687,8 +836,15 @@ public class HSAILMethod {
 
     }
 
-    class add_const<T extends PrimitiveType, C extends Number> extends binary_const<T, C> {
+    class add_const<T extends PrimitiveType, C extends Number> extends binary_const<add_const<T, C>, T, C> {
+        protected add_const(add_const<T,C> original){
+            super(original);
 
+
+        }
+       @Override public add_const<T,C> cloneMe(add_const<T,C> original){
+            return(new add_const<T,C>(original));
+        }
         add_const(Instruction _from, HSAILRegister<T> _dest, HSAILRegister _src, C _value) {
             super(_from, "add_", _dest, _src, _value);
 
@@ -696,8 +852,16 @@ public class HSAILMethod {
 
     }
 
-    class and_const<T extends PrimitiveType, C extends Number> extends binary_const<T, C> {
+    class and_const<T extends PrimitiveType, C extends Number> extends binary_const<and_const<T,C>, T, C> {
 
+        protected and_const(and_const< T,C> original){
+            super(original);
+
+
+        }
+        @Override public and_const< T,C> cloneMe(and_const<T,C> original){
+            return(new and_const(original));
+        }
         and_const(Instruction _from, HSAILRegister<T> _dest, HSAILRegister _src, C _value) {
             super(_from, "and_", _dest, _src, _value);
 
@@ -711,8 +875,13 @@ public class HSAILMethod {
 
     }
 
-    class mul_const<T extends PrimitiveType, C extends Number> extends binary_const<T, C> {
-
+    class mul_const<T extends PrimitiveType, C extends Number> extends binary_const< mul_const<T,C>, T, C> {
+        protected mul_const(mul_const<T,C> original){
+            super(original);
+        }
+        @Override public mul_const<T,C> cloneMe(mul_const<T,C> original){
+            return(new mul_const(original));
+        }
         mul_const(Instruction _from, HSAILRegister<T> _dest, HSAILRegister _src, C _value) {
             super(_from, "mul_", _dest, _src, _value);
 
@@ -720,7 +889,16 @@ public class HSAILMethod {
 
     }
 
-    class mad extends HSAILInstructionWithDestSrcSrc<ref, ref> {
+    class mad< D extends PrimitiveType, T extends PrimitiveType> extends HSAILInstructionWithDestSrcSrc<mad<D,T>, ref, ref> {
+
+        protected mad(mad<D,T> original){
+            super(original);
+
+
+        }
+        @Override public mad cloneMe(mad<D,T> original){
+            return(new mad(original));
+        }
         long size;
 
         mad(Instruction _from, Reg_ref _dest, Reg_ref _src_lhs, Reg_ref _src_rhs, long _size) {
@@ -736,9 +914,16 @@ public class HSAILMethod {
     }
 
 
-    class cvt<T1 extends PrimitiveType, T2 extends PrimitiveType> extends HSAILInstruction {
+    class cvt<T1 extends PrimitiveType, T2 extends PrimitiveType> extends HSAILInstruction<cvt<T1,T2>> {
+
+        protected cvt(cvt<T1,T2> original){
+            super(original);
 
 
+        }
+        @Override public cvt<T1,T2> cloneMe(cvt<T1,T2> original){
+            return(new cvt(original));
+        }
         cvt(Instruction _from, HSAILRegister<T1> _dest, HSAILRegister<T2> _src) {
             super(_from, 1, 1);
             dests[0] = _dest;
@@ -762,7 +947,15 @@ public class HSAILMethod {
     }
 
 
-    class retvoid extends HSAILInstruction {
+    class retvoid extends HSAILInstruction<retvoid> {
+        protected retvoid(retvoid original){
+            super(original);
+
+
+        }
+        @Override public retvoid cloneMe(retvoid original){
+            return(new retvoid(original));
+        }
 
         retvoid(Instruction _from) {
             super(_from, 0, 0);
@@ -777,8 +970,16 @@ public class HSAILMethod {
 
     }
 
-    class ret<T extends PrimitiveType> extends HSAILInstructionWithSrc<T> {
+    class ret<T extends PrimitiveType> extends HSAILInstructionWithSrc<ret<T>, T> {
 
+        protected ret(ret<T> original){
+            super(original);
+
+
+        }
+        @Override public ret<T> cloneMe(ret<T> original){
+            return(new ret(original));
+        }
         ret(Instruction _from, HSAILRegister<T> _src) {
             super(_from, _src);
 
@@ -793,8 +994,15 @@ public class HSAILMethod {
 
     }
 
-    class array_store<T extends PrimitiveType> extends HSAILInstructionWithSrc<T> {
+    class array_store<T extends PrimitiveType> extends HSAILInstructionWithSrc<array_store<T>, T> {
+        protected array_store(array_store<T> original){
+            super(original);
+            mem = original.mem;
 
+        }
+        @Override public array_store<T> cloneMe(array_store<T> original){
+            return(new array_store(original));
+        }
         Reg_ref mem;
 
         array_store(Instruction _from, Reg_ref _mem, HSAILRegister<T> _src) {
@@ -813,7 +1021,16 @@ public class HSAILMethod {
     }
 
 
-    class array_load<T extends PrimitiveType> extends HSAILInstructionWithDest<T> {
+    class array_load<T extends PrimitiveType> extends HSAILInstructionWithDest<array_load<T>,T> {
+
+        protected array_load(array_load<T> original){
+            super(original);
+            mem = original.mem;
+
+        }
+        @Override public array_load<T> cloneMe(array_load<T> original){
+            return(new array_load(original));
+        }
         Reg_ref mem;
 
 
@@ -836,7 +1053,16 @@ public class HSAILMethod {
 
     }
 
-    class array_len extends HSAILInstructionWithDest<s32> {
+    class array_len extends HSAILInstructionWithDest<array_len, s32> {
+        protected array_len(array_len original){
+            super(original);
+            mem = original.mem;
+
+        }
+        @Override public array_len cloneMe(array_len original){
+            return(new array_len(original));
+        }
+
         Reg_ref mem;
 
 
@@ -854,7 +1080,18 @@ public class HSAILMethod {
 
     }
 
-    class field_load<T extends PrimitiveType> extends HSAILInstructionWithDest<T> {
+    class field_load<T extends PrimitiveType> extends HSAILInstructionWithDest<field_load<T>, T> {
+
+        protected field_load(field_load<T> original){
+            super(original);
+            mem = original.mem;
+            offset = original.offset;
+
+        }
+        @Override public field_load<T> cloneMe(field_load<T> original){
+            return(new field_load<T>(original));
+        }
+
         Reg_ref mem;
         long offset;
 
@@ -873,8 +1110,16 @@ public class HSAILMethod {
 
     }
 
-    class static_field_load<T extends PrimitiveType> extends HSAILInstructionWithDest<T> {
+    class static_field_load<T extends PrimitiveType> extends HSAILInstructionWithDest<static_field_load<T>, T> {
+        protected static_field_load(static_field_load<T> original){
+            super(original);
+            mem = original.mem;
+            offset = original.offset;
 
+        }
+        @Override public static_field_load<T> cloneMe(static_field_load<T> original){
+            return(new static_field_load<T>(original));
+        }
         long offset;
         Reg_ref mem;
 
@@ -894,7 +1139,17 @@ public class HSAILMethod {
     }
 
 
-    class field_store<T extends PrimitiveType> extends HSAILInstructionWithSrc<T> {
+    class field_store<T extends PrimitiveType> extends HSAILInstructionWithSrc<field_store<T>,T> {
+        protected field_store(field_store<T> original){
+            super(original);
+            mem = original.mem;
+            offset = original.offset;
+
+        }
+        @Override public field_store<T> cloneMe(field_store<T> original){
+            return(new field_store<T>(original));
+        }
+
         Reg_ref mem;
         long offset;
 
@@ -914,8 +1169,14 @@ public class HSAILMethod {
     }
 
 
-    final class mov<T extends PrimitiveType> extends HSAILInstructionWithDestSrc {
+    final class mov<T extends PrimitiveType> extends HSAILInstructionWithDestSrc<mov<T>, T> {
+        protected mov(mov<T> original){
+            super(original);
 
+        }
+        @Override public mov<T> cloneMe(mov<T> original){
+            return(new mov<T>(original));
+        }
         public mov(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _src) {
             super(_from, _dest, _src);
         }
@@ -929,7 +1190,11 @@ public class HSAILMethod {
 
     }
 
-    abstract class unary<T extends PrimitiveType> extends HSAILInstructionWithDestSrc {
+    abstract class unary<H extends unary<H,T>, T extends PrimitiveType> extends HSAILInstructionWithDestSrc<H, T> {
+        protected unary(H original){
+            super(original);
+            op = original.op;
+        }
 
         String op;
 
@@ -955,8 +1220,12 @@ public class HSAILMethod {
 
     }
 
-    abstract class binary<T extends PrimitiveType> extends HSAILInstruction {
+    abstract class binary<H extends binary<H,T>, T extends PrimitiveType> extends HSAILInstruction<H> {
+        protected binary(binary<H,T> original){
+            super(original);
+            op = original.op;
 
+        }
         String op;
 
         public binary(Instruction _from, String _op, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs) {
@@ -1012,63 +1281,118 @@ public class HSAILMethod {
    }
    */
 
-    class add<T extends PrimitiveType> extends binary<T> {
+    class add<T extends PrimitiveType> extends binary<add<T>, T> {
+        protected add(add<T> original){
+            super(original);
+        }
+        @Override public add<T> cloneMe(add<T> original){
+            return (new add<T>(original));
+        }
         public add(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs) {
             super(_from, "add_", _dest, _lhs, _rhs);
         }
 
     }
 
-    class sub<T extends PrimitiveType> extends binary<T> {
+    class sub<T extends PrimitiveType> extends binary<sub<T>, T> {
+        protected sub(sub<T> original){
+            super(original);
+        }
+        @Override public sub<T> cloneMe(sub<T> original){
+            return (new sub<T>(original));
+        }
         public sub(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs) {
             super(_from, "sub_", _dest, _lhs, _rhs);
         }
 
     }
 
-    class div<T extends PrimitiveType> extends binary<T> {
+    class div<T extends PrimitiveType> extends binary<div<T>,T> {
+        protected div(div<T> original){
+            super(original);
+        }
+        @Override public div<T> cloneMe(div<T> original){
+            return (new div<T>(original));
+        }
         public div(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs) {
             super(_from, "div_", _dest, _lhs, _rhs);
         }
 
     }
 
-    class mul<T extends PrimitiveType> extends binary<T> {
+    class mul<T extends PrimitiveType> extends binary<mul<T>, T> {
+        protected mul(mul<T> original){
+            super(original);
+        }
+        @Override public mul<T> cloneMe(mul<T> original){
+            return (new mul<T>(original));
+        }
         public mul(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs) {
             super(_from, "mul_", _dest, _lhs, _rhs);
         }
 
     }
 
-    class rem<T extends PrimitiveType> extends binary<T> {
+    class rem<T extends PrimitiveType> extends binary<rem<T>, T> {
+        protected rem(rem<T> original){
+            super(original);
+        }
+        @Override public rem<T> cloneMe(rem<T> original){
+            return (new rem<T>(original));
+        }
         public rem(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs) {
             super(_from, "rem_", _dest, _lhs, _rhs);
         }
 
     }
 
-    class neg<T extends PrimitiveType> extends unary<T> {
+    class neg<T extends PrimitiveType> extends unary<neg<T>,T> {
+
+        protected neg(neg<T> original){
+            super(original);
+        }
+        @Override public neg<T> cloneMe(neg<T> original){
+            return (new neg<T>(original));
+        }
         public neg(Instruction _from, HSAILRegister<T> _destSrc) {
             super(_from, "neg_", _destSrc);
         }
 
     }
 
-    class shl<T extends PrimitiveType> extends binary<T> {
+    class shl<T extends PrimitiveType> extends binary<shl<T>, T> {
+        protected shl(shl<T> original){
+            super(original);
+        }
+        @Override public shl<T> cloneMe(shl<T> original){
+            return (new shl<T>(original));
+        }
         public shl(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs) {
             super(_from, "shl_", _dest, _lhs, _rhs);
         }
 
     }
 
-    class shr<T extends PrimitiveType> extends binary<T> {
+    class shr<T extends PrimitiveType>  extends binary<shr<T>, T> {
+        protected shr(shr<T> original){
+            super(original);
+        }
+        @Override public shr<T> cloneMe(shr<T> original){
+            return (new shr<T>(original));
+        }
         public shr(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs) {
             super(_from, "shr_", _dest, _lhs, _rhs);
         }
 
     }
 
-    class ushr<T extends PrimitiveType> extends binary<T> {
+    class ushr<T extends PrimitiveType>  extends binary<ushr<T>, T> {
+        protected ushr(ushr<T> original){
+            super(original);
+        }
+        @Override public ushr<T> cloneMe(ushr<T> original){
+            return (new ushr<T>(original));
+        }
         public ushr(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs) {
             super(_from, "ushr_", _dest, _lhs, _rhs);
         }
@@ -1076,7 +1400,13 @@ public class HSAILMethod {
     }
 
 
-    class and<T extends PrimitiveType> extends binary<T> {
+    class and<T extends PrimitiveType>  extends binary<and<T>, T> {
+        protected and(and<T> original){
+            super(original);
+        }
+        @Override public and<T> cloneMe(and<T> original){
+            return (new and<T>(original));
+        }
         public and(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs) {
             super(_from, "and_", _dest, _lhs, _rhs);
         }
@@ -1088,7 +1418,13 @@ public class HSAILMethod {
 
     }
 
-    class or<T extends PrimitiveType> extends binary<T> {
+    class or<T extends PrimitiveType>  extends binary<or<T>, T> {
+        protected or(or<T> original){
+            super(original);
+        }
+        @Override public or<T> cloneMe(or<T> original){
+            return (new or<T>(original));
+        }
         public or(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs) {
             super(_from, "or_", _dest, _lhs, _rhs);
         }
@@ -1100,7 +1436,13 @@ public class HSAILMethod {
 
     }
 
-    class xor<T extends PrimitiveType> extends binary<T> {
+    class xor<T extends PrimitiveType>  extends binary<xor<T>, T> {
+        protected xor(xor<T> original){
+            super(original);
+        }
+        @Override public xor<T> cloneMe(xor<T> original){
+            return (new xor<T>(original));
+        }
         public xor(Instruction _from, HSAILRegister<T> _dest, HSAILRegister<T> _lhs, HSAILRegister<T> _rhs) {
             super(_from, "xor_", _dest, _lhs, _rhs);
         }
@@ -1112,8 +1454,14 @@ public class HSAILMethod {
 
     }
 
-    class mov_const<T extends PrimitiveType, C extends Number> extends HSAILInstructionWithDest<T> {
-
+    class mov_const<T extends PrimitiveType, C extends Number> extends HSAILInstructionWithDest<mov_const<T,C>,T> {
+        protected mov_const(mov_const<T,C> original){
+            super(original);
+            value = original.value;
+        }
+        @Override public mov_const<T,C> cloneMe(mov_const<T,C> original){
+            return (new mov_const<T,C>(original));
+        }
         C value;
 
         public mov_const(Instruction _from, HSAILRegister<T> _dest, C _value) {
@@ -1133,7 +1481,7 @@ public class HSAILMethod {
     List<HSAILInstruction> instructions = new ArrayList<HSAILInstruction>();
     ClassModel.ClassModelMethod method;
 
-    boolean optimizeMoves = false || Config.enableOptimizeRegMoves;
+    boolean optimizeMoves =  false || Config.enableOptimizeRegMoves;
 
     void add(HSAILInstruction _regInstruction) {
         // before we add lets see if this is a redundant mov
