@@ -20,6 +20,31 @@ public class HSADevice extends Device {
 
     static Map<Class<? extends IntConsumer>, CachedRunner> map = new HashMap<Class<? extends IntConsumer>, CachedRunner>();
 
+    public void dump(IntConsumer ic) {
+        try{
+        LambdaKernelCall lkc = new LambdaKernelCall(ic);
+
+        ClassModel classModel = ClassModel.getClassModel(lkc.getLambdaKernelClass());
+
+        ClassModel.ClassModelMethod method = classModel.getMethod(lkc.getLambdaMethodName(), lkc.getLambdaMethodSignature());
+
+
+        HSAILRenderer renderer = new HSAILRenderer().setShowComments(true);
+
+        HSAILMethod hsailMethod = HSAILMethod.getHSAILMethod(method, null);
+
+
+        hsailMethod.renderEntryPoint(renderer);
+        System.out.println(renderer.toString());
+        }catch(ClassNotFoundException cnfe){
+            cnfe.printStackTrace();
+        } catch (ClassParseException e) {
+            e.printStackTrace();
+        } catch (AparapiException e) {
+            e.printStackTrace();
+        }
+    }
+
     public Device forEach(int size, IntConsumer ic) {
         try {
             CachedRunner cachedRunner = null;
@@ -37,7 +62,10 @@ public class HSADevice extends Device {
 
                 HSAILRenderer renderer = new HSAILRenderer().setShowComments(true);
 
-                HSAILMethod.getHSAILMethod(method, null).renderEntryPoint(renderer);
+                HSAILMethod hsailMethod = HSAILMethod.getHSAILMethod(method, null);
+
+
+                hsailMethod.renderEntryPoint(renderer);
                 cachedRunner.hsail = renderer.toString();
                 System.out.println(cachedRunner.hsail);
                 cachedRunner.runner = new OkraRunner(cachedRunner.hsail);

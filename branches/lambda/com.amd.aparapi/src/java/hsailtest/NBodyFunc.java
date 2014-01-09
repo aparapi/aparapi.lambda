@@ -1,6 +1,7 @@
 package hsailtest;
 
 import com.amd.aparapi.Device;
+import com.amd.aparapi.HSADevice;
 
 import javax.swing.*;
 import java.awt.*;
@@ -104,6 +105,15 @@ public class NBodyFunc {
 
    public static void main(String[] _args){
        (new NBodyFunc()).go(Device.getByName(_args[0]), Integer.parseInt(_args[1]));
+       /**
+       Body[] bodies = new Body[100];
+       Screen screen = null;
+       ((HSADevice)Device.hsa()).dump(gid -> {
+           Body body = bodies[gid];
+           body.updatePosition(bodies);
+           body.draw(screen);
+       });
+        */
    }
 
    void go(Device device, int bodyCount ){
