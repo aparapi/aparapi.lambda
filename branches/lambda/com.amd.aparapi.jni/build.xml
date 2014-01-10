@@ -558,7 +558,9 @@ First consider editing the properties in build.properties
          <arg value="-g" />
          <arg value="-fPIC" />
          <arg value="-DCL_USE_DEPRECATED_OPENCL_1_1_APIS"/>
-         <arg value="-I/System/Library/Frameworks/JavaVM.framework/Headers" />
+         <!--<arg value="-I/System/Library/Frameworks/JavaVM.framework/Headers" />-->
+         <arg value="-I/Library/Java/JavaVirtualMachines/jdk1.8.0.jdk/Contents/Home/include" />
+         <arg value="-I/Library/Java/JavaVirtualMachines/jdk1.8.0.jdk/Contents/Home/include/darwin" />
          <arg value="-Iinclude" />
          <arg value="-shared" />
          <arg value="-o" />
