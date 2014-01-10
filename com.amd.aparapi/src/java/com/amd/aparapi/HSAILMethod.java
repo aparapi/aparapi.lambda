@@ -726,10 +726,10 @@ stackFrame = _stackFrame;
                     Class theClass = Class.forName(dotClassName);
                     ClassModel classModel = ClassModel.getClassModel(theClass);
                     ClassModel.ClassModelMethod method = classModel.getMethod(name, sig);
-                    //StackFrame newStackFrame = new StackFrame(stackFrame, String.format("@%04d : %s",from.getThisPC(), mangledName), base);
+                    StackFrame newStackFrame = new StackFrame(stackFrame, String.format("@%04d : %s",from.getThisPC(), mangledName), base);
                     // Pass StackFrame down here!!!!
-                    HSAILMethod hsailMethod = HSAILMethod.getHSAILMethod(method, getEntryPoint(), stackFrame);
-                    call = new InlineMethodCall(stackFrame, intrinsicLookup, hsailMethod);
+                    HSAILMethod hsailMethod = HSAILMethod.getHSAILMethod(method, getEntryPoint(), newStackFrame);
+                    call = new InlineMethodCall(newStackFrame, intrinsicLookup, hsailMethod);
                 } catch (ClassNotFoundException e) {
                     e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                 } catch (ClassParseException e) {
@@ -1761,7 +1761,10 @@ stackFrame = _stackFrame;
 
 
 
-        StackFrame stackFrame = new StackFrame(_stackFrame, _method.getClassModel().getDotClassName()+"."+_method.getName()+_method.getDescriptor(), 0);
+        StackFrame stackFrame = _stackFrame;
+        if (stackFrame == null){
+           stackFrame = new StackFrame(_stackFrame, _method.getClassModel().getDotClassName()+"."+_method.getName()+_method.getDescriptor(), 0);
+        }
         entryPoint = _entryPoint;
         if (entryPoint == null) {
             calls = new HashSet<CallType>();
