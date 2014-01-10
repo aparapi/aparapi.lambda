@@ -17,29 +17,30 @@ public class HSAILMethod {
     public static class StackFrame{
         public int baseOffset;
         private String nameSpace;
+
+        // The following two fields only have value if this is the root frame.  ie parentStackFrame == null
         Map<StackFrame,Integer> locMap = new LinkedHashMap<StackFrame, Integer>();
         int loc=0;
-        public String getLocation(StackFrame _renderContext, int pc){
-           if (last != null){
-              return(last.getLocation(_renderContext, pc));
+        public String getLocation(StackFrame _parentStackFrame, int pc){
+           if (parentStackFrame != null){
+              return(parentStackFrame.getLocation(_parentStackFrame, pc));
            }
-           Integer thisLoc = locMap.get(_renderContext);
+           Integer thisLoc = locMap.get(_parentStackFrame);
            if (thisLoc == null){
               thisLoc = loc++;
-              locMap.put(_renderContext, thisLoc);
+              locMap.put(_parentStackFrame, thisLoc);
            }
            return(String.format("%04d_%04d", thisLoc, pc));
-
         }
 
-        public String getUniqueNameSpace(StackFrame _renderContext){
-            if (last != null){
-                return(last.getUniqueNameSpace(_renderContext));
+        public String getUniqueNameSpace(StackFrame _parentStackFrame){
+            if (parentStackFrame != null){
+                return(parentStackFrame.getUniqueNameSpace(_parentStackFrame));
             }
-            Integer thisLoc = locMap.get(_renderContext);
+            Integer thisLoc = locMap.get(_parentStackFrame);
             if (thisLoc == null){
                 thisLoc = loc++;
-                locMap.put(_renderContext, thisLoc);
+                locMap.put(_parentStackFrame, thisLoc);
             }
             return(String.format("%04d", thisLoc));
 
@@ -50,11 +51,11 @@ public class HSAILMethod {
         public String getUniqueNameSpace(){
             return(getUniqueNameSpace(this));
         }
-        StackFrame last = null;
-        StackFrame(StackFrame _last, String _nameSpace, int _baseOffset){
-            last = _last;
-            if (last != null){
-               baseOffset = last.baseOffset + _baseOffset;
+        StackFrame parentStackFrame = null;
+        StackFrame(StackFrame _parentStackFrame, String _nameSpace, int _baseOffset){
+            parentStackFrame = _parentStackFrame;
+            if (parentStackFrame != null){
+               baseOffset = parentStackFrame.baseOffset + _baseOffset;
             }else{
                baseOffset = _baseOffset;
             }
@@ -62,8 +63,8 @@ public class HSAILMethod {
         }
 
         public void renderStack(HSAILRenderer rc) {
-            if (last != null){
-                last.renderStack(rc);
+            if (parentStackFrame != null){
+                parentStackFrame.renderStack(rc);
             }
             rc.pad(5).append(nameSpace).nl();
         }
@@ -73,21 +74,27 @@ public class HSAILMethod {
 
     public static abstract class CallType<T extends CallType> {
         private String mappedMethod; // i.e  java.lang.Math.sqrt(D)D
-        protected StackFrame stackFrame;
+
+        List<HSAILInstruction> instructions = new ArrayList<HSAILInstruction>();
 
         String getMappedMethod() {
             return (mappedMethod);
         }
 
-        CallType(StackFrame _stackFrame, String _mappedMethod) {
-            stackFrame = _stackFrame;
+        CallType(String _mappedMethod) {
+
             mappedMethod = _mappedMethod;
         }
 
-        abstract T renderDefinition(HSAILRenderer r);
-        abstract T renderDeclaration(HSAILRenderer r);
-        abstract T renderCallSite(HSAILRenderer r, Instruction from,  String name);
+        abstract T renderDefinition(HSAILRenderer r, StackFrame _stackFrame);
+        abstract T renderDeclaration(HSAILRenderer r, StackFrame _stackFrame);
+        abstract T renderCallSite(HSAILRenderer r, StackFrame _stackFrame, Instruction from,  String name, int base);
         abstract boolean isStatic();
+        T add(HSAILInstruction i){
+            instructions.add(i);
+            return((T)this);
+        }
+
     }
 
 
@@ -96,14 +103,14 @@ public class HSAILMethod {
         boolean isStatic;
 
 
-        IntrinsicCall(StackFrame _stackFrame,String _mappedMethod, boolean _isStatic, String... _lines) {
-            super(_stackFrame, _mappedMethod);
+        IntrinsicCall(String _mappedMethod, boolean _isStatic, String... _lines) {
+            super(_mappedMethod);
             lines = _lines;
             isStatic = _isStatic;
         }
 
         @Override
-        IntrinsicCall renderDefinition(HSAILRenderer r) {
+        IntrinsicCall renderDefinition(HSAILRenderer r, StackFrame _stackFrame) {
             for (String line : lines) {
                 if (!(line.trim().endsWith("{") || line.trim().startsWith("}"))) {
                     r.pad(9);
@@ -113,11 +120,11 @@ public class HSAILMethod {
             return this;
         }
         @Override
-           IntrinsicCall renderCallSite(HSAILRenderer r,   Instruction from,  String name) {
+           IntrinsicCall renderCallSite(HSAILRenderer r, StackFrame _stackFrame,   Instruction from,  String name, int base) {
             return(this);
         }
         @Override
-        IntrinsicCall renderDeclaration(HSAILRenderer r) {
+        IntrinsicCall renderDeclaration(HSAILRenderer r, StackFrame _stackFrame) {
             return(this);
         }
         @Override
@@ -127,22 +134,16 @@ public class HSAILMethod {
     }
 
     public static class InlineIntrinsicCall extends IntrinsicCall {
-
-
-
-        InlineIntrinsicCall(StackFrame _stackFrame,String _mappedMethod, boolean _isStatic,  String... _lines) {
-            super(_stackFrame, _mappedMethod, _isStatic, _lines);
+        InlineIntrinsicCall(String _mappedMethod, boolean _isStatic,  String... _lines) {
+            super( _mappedMethod, _isStatic, _lines);
         }
-
-
-
         final Pattern regex= Pattern.compile("\\$\\{([0-9]+)\\}");
-        String expand(String line){
+        String expand(String line, StackFrame _stackFrame, int base){
             StringBuffer sb= new StringBuffer();
             Matcher matcher = regex.matcher(line);
 
             while (matcher.find()) {
-                matcher.appendReplacement(sb, String.format("%d",Integer.parseInt(matcher.group(1))+((stackFrame == null)?0:stackFrame.baseOffset)));
+                matcher.appendReplacement(sb, String.format("%d",Integer.parseInt(matcher.group(1))+((_stackFrame == null)?0:_stackFrame.baseOffset+base)));
             }
             matcher.appendTail(sb);
 
@@ -150,19 +151,19 @@ public class HSAILMethod {
         }
 
         @Override
-        InlineIntrinsicCall renderCallSite(HSAILRenderer r,  Instruction from, String name) {
+        InlineIntrinsicCall renderCallSite(HSAILRenderer r, StackFrame _stackFrame,  Instruction from, String name, int base) {
             boolean first = false;
             r.lineComment("inlining intrinsic "+getMappedMethod()+"{");
             if (isStatic){
-                r.pad(9).lineComment(expand("This is a static method so $?${0} contains first arg (if any)"));
+                r.pad(9).lineComment(expand("This is a static method so $?${0} contains first arg (if any)",_stackFrame, base));
             }else{
-                r.pad(9).lineComment(expand("This is a virtual method so $d${0} contains this. Other args (if any) from $?${1}"));
+                r.pad(9).lineComment(expand("This is a virtual method so $d${0} contains this. Other args (if any) from $?${1}", _stackFrame, base));
             }
             for (String line : lines) {
                // if (!first){
                     r.pad(9);
               //  }
-                String expandedLine = expand(line);
+                String expandedLine = expand(line, _stackFrame, base);
 
                 r.append(expandedLine).nl();
                 //first = false;
@@ -172,11 +173,11 @@ public class HSAILMethod {
             return this;
         }
         @Override
-        InlineIntrinsicCall renderDefinition(HSAILRenderer r) {
+        InlineIntrinsicCall renderDefinition(HSAILRenderer r, StackFrame _stackFrame) {
             return(this);
         }
         @Override
-        IntrinsicCall renderDeclaration(HSAILRenderer r) {
+        IntrinsicCall renderDeclaration(HSAILRenderer r,StackFrame _stackFrame) {
             return(this);
         }
         @Override
@@ -189,27 +190,27 @@ public class HSAILMethod {
         HSAILMethod method;
 
 
-        MethodCall(StackFrame _stackFrame, String _mappedMethod, HSAILMethod _method) {
-            super(_stackFrame, _mappedMethod);
+        MethodCall(String _mappedMethod, HSAILMethod _method) {
+            super(_mappedMethod);
             method = _method;
         }
 
         @Override
-        MethodCall renderDefinition(HSAILRenderer r) {
+        MethodCall renderDefinition(HSAILRenderer r, StackFrame _stackFrame) {
 
             method.renderFunctionDefinition(r);
             r.nl().nl();
             return (this);
         }
         @Override
-        MethodCall renderCallSite(HSAILRenderer r,  Instruction from, String name) {
+        MethodCall renderCallSite(HSAILRenderer r, StackFrame _stackFrame,  Instruction from, String name, int _base) {
 
             TypeHelper.JavaMethodArgsAndReturnType argsAndReturnType = from.asMethodCall().getConstantPoolMethodEntry().getArgsAndReturnType();
             TypeHelper.JavaType returnType = argsAndReturnType.getReturnType();
             r.obrace().nl();
             if (!isStatic()) {
                 r.pad(12).append("arg_u64 %this").semicolon().nl();
-                r.pad(12).append("st_arg_u64 $d" + stackFrame.baseOffset + ", [%this]").semicolon().nl();
+                r.pad(12).append("st_arg_u64 $d" + _stackFrame.baseOffset + ", [%this]").semicolon().nl();
             }
 
             int offset = 0;
@@ -219,7 +220,7 @@ public class HSAILMethod {
             for (TypeHelper.JavaMethodArg arg : argsAndReturnType.getArgs()) {
                 String argName = "%_arg_" + arg.getArgc();
                 r.pad(12).append("arg_").typeName(arg.getJavaType()).space().append(argName).semicolon().nl();
-                r.pad(12).append("st_arg_").typeName(arg.getJavaType()).space().regPrefix(arg.getJavaType()).append( + (stackFrame.baseOffset + offset) + ", [" + argName + "]").semicolon().nl();
+                r.pad(12).append("st_arg_").typeName(arg.getJavaType()).space().regPrefix(arg.getJavaType()).append( + (_stackFrame.baseOffset + offset) + ", [" + argName + "]").semicolon().nl();
             }
             if (!returnType.isVoid()) {
                 r.pad(12).append("arg_").typeName(returnType).append(" %_result").semicolon().nl();
@@ -245,7 +246,7 @@ public class HSAILMethod {
             }
             r.cparenth().semicolon().nl();
             if (!returnType.isVoid()) {
-                r.pad(12).append("ld_arg_").typeName(returnType).space().regPrefix(returnType).append( stackFrame.baseOffset + ", [%_result]").semicolon().nl();
+                r.pad(12).append("ld_arg_").typeName(returnType).space().regPrefix(returnType).append( _stackFrame.baseOffset + ", [%_result]").semicolon().nl();
             }
             r.pad(9).cbrace();
 
@@ -253,7 +254,7 @@ public class HSAILMethod {
             return(this);
         }
         @Override
-        MethodCall renderDeclaration(HSAILRenderer r) {
+        MethodCall renderDeclaration(HSAILRenderer r, StackFrame _stackFrame) {
             method.renderFunctionDeclaration(r);
             r.semicolon().nl().nl();
             return (this);
@@ -267,25 +268,25 @@ public class HSAILMethod {
     public static class InlineMethodCall extends CallType<InlineMethodCall> {
         HSAILMethod method;
 
-        InlineMethodCall(StackFrame _stackFrame, String _mappedMethod, HSAILMethod _method) {
-            super(_stackFrame, _mappedMethod);
+        InlineMethodCall(String _mappedMethod, HSAILMethod _method) {
+            super( _mappedMethod);
             method = _method;
         }
         @Override
-        InlineMethodCall renderDefinition(HSAILRenderer r) {
+        InlineMethodCall renderDefinition(HSAILRenderer r, StackFrame _stackFrame) {
             return (this);
         }
         @Override
-        InlineMethodCall renderCallSite(HSAILRenderer r, Instruction from, String name) {
+        InlineMethodCall renderCallSite(HSAILRenderer r, StackFrame _stackFrame, Instruction from, String name, int base) {
 
-            method.renderInlinedFunctionBody(r, stackFrame.baseOffset);
+            method.renderInlinedFunctionBody(r, _stackFrame.baseOffset);
 
             //r.nl();
             return (this);
         }
 
         @Override
-        InlineMethodCall renderDeclaration(HSAILRenderer r) {
+        InlineMethodCall renderDeclaration(HSAILRenderer r, StackFrame _stackFrame) {
             return (this);
         }
 
@@ -309,23 +310,26 @@ public class HSAILMethod {
               //  "st_arg_f64  $d0, [%_result];",
                // "ret;",
                // "};"));
-        add(new InlineIntrinsicCall(null, "java.lang.Math.sqrt(D)D", true,
+        add(
+                (new InlineIntrinsicCall("java.lang.Math.sqrt(D)D", true,
                 "nsqrt_f64  $d${0}, $d${0};"
-    ));
-        add(new InlineIntrinsicCall(null, "java.lang.String.charAt(I)C", false,
+                )
+    )/*.add(new nsqrt<StackReg_f64,f64>(null, null, new StackReg_f64(0), new StackReg_f64(0)))*/
+        );
+        add(new InlineIntrinsicCall( "java.lang.String.charAt(I)C", false,
                 "ld_global_u64 $d${2}, [$d${0}+16];   // this string reference into $d${2}",
                 "mov_b32 $s${3}, $s${1};              // copy index",
                 "cvt_u64_s32 $d${3}, $s${3};          // convert array index to 64 bits",
                 "mad_u64 $d${3}, $d${3}, 2, $d${2};      // get the char address",
                 "ld_global_u16 $s${0}, [$d${3}+24];   // ld the char"
         ));
-        add(new InlineIntrinsicCall(null, "java.lang.Math.cos(D)D", true,
+        add(new InlineIntrinsicCall("java.lang.Math.cos(D)D", true,
                 "ncos_f64  $d${0}, $d${0};"
     ));
-        add(new InlineIntrinsicCall(null, "java.lang.Math.sin(D)D", true,
+        add(new InlineIntrinsicCall("java.lang.Math.sin(D)D", true,
                 "nsin_f64  $d${0}, $d${0};"
         ));
-        add(new IntrinsicCall(null, "java.lang.Math.hypot(DD)D", true,
+        add(new IntrinsicCall( "java.lang.Math.hypot(DD)D", true,
                 "function &hypot (arg_f64 %_result) (arg_f64 %_val1, arg_f64 %_val2) {",
                 "ld_arg_f64  $d0, [%_val1];",
                 "ld_arg_f64  $d1, [%_val2];",
@@ -346,7 +350,7 @@ public class HSAILMethod {
 
         HSAILInstruction(HSAILInstruction original) {
                 from = original.from;
-            stackFrame = original.stackFrame;
+                stackFrame = original.stackFrame;
                 if (original.dests == null){
                     dests = null;
                 }else{
@@ -367,7 +371,7 @@ public class HSAILMethod {
         }
 
         HSAILInstruction(StackFrame _stackFrame,Instruction _from, int _destCount, int _sourceCount) {
-stackFrame = _stackFrame;
+            stackFrame = _stackFrame;
             from = _from;
             dests = new HSAILRegister[_destCount];
             sources = new HSAILRegister[_sourceCount];
@@ -678,6 +682,7 @@ stackFrame = _stackFrame;
         String name;
         String mangledName;
         CallType call;
+        HSAILMethod hsailMethod;
 
         protected call(call original){
             super(original);
@@ -685,9 +690,8 @@ stackFrame = _stackFrame;
             name = original.name;
             mangledName = original.mangledName;
             call = original.call;
+            hsailMethod = hsailMethod;
         }
-
-
 
         call(StackFrame _stackFrame,Instruction _from) {
             super(_stackFrame, _from, 0, 0);
@@ -726,10 +730,11 @@ stackFrame = _stackFrame;
                     Class theClass = Class.forName(dotClassName);
                     ClassModel classModel = ClassModel.getClassModel(theClass);
                     ClassModel.ClassModelMethod method = classModel.getMethod(name, sig);
-                    StackFrame newStackFrame = new StackFrame(stackFrame, String.format("@%04d : %s",from.getThisPC(), mangledName), base);
+
+                   // StackFrame newStackFrame = new StackFrame(stackFrame, String.format("@%04d : %s",from.getThisPC(), mangledName), base);
                     // Pass StackFrame down here!!!!
-                    HSAILMethod hsailMethod = HSAILMethod.getHSAILMethod(method, getEntryPoint(), newStackFrame);
-                    call = new InlineMethodCall(newStackFrame, intrinsicLookup, hsailMethod);
+                    hsailMethod = HSAILMethod.getHSAILMethod(method, getEntryPoint(), stackFrame, base);
+                    call = new InlineMethodCall( intrinsicLookup, hsailMethod);
                 } catch (ClassNotFoundException e) {
                     e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                 } catch (ClassParseException e) {
@@ -747,7 +752,7 @@ stackFrame = _stackFrame;
         void render(HSAILRenderer r) {
 
 
-            call.renderCallSite(r, from,  name);
+            call.renderCallSite(r, stackFrame, from,  name, base);
 
         }
 
@@ -1488,7 +1493,7 @@ stackFrame = _stackFrame;
             for (int regIndex = 0; regIndex < _regInstruction.sources.length; regIndex++) {
                 HSAILRegister r = _regInstruction.sources[regIndex];
                 if (r.isStack()) {
-                    // look up the list of reg instructions for the last mov which assigns to r
+                    // look up the list of reg instructions for the parentStackFrame mov which assigns to r
                     int i = instructions.size();
                     while ((--i) >= 0) {
                         if (instructions.get(i) instanceof mov) {
@@ -1622,11 +1627,11 @@ stackFrame = _stackFrame;
 
        // RenderContext rc = new RenderContext(null, this.method.getClassModel().getDotClassName()+"."+this.method.getName()+this.method.getDescriptor(), 0);
         for (CallType c : calls) {
-            c.renderDeclaration(r);
+            c.renderDeclaration(r, null);
         }
 
         for (CallType c : calls) {
-            c.renderDefinition(r);
+            c.renderDefinition(r, null);
         }
         r.append("kernel &run").oparenth();
         int argOffset = method.isStatic() ? 0 : 1;
@@ -1736,35 +1741,39 @@ stackFrame = _stackFrame;
 
     ;
 
-    static Map<ClassModel.ClassModelMethod, HSAILMethod> cache = new HashMap<ClassModel.ClassModelMethod, HSAILMethod>();
+   static Map<ClassModel.ClassModelMethod, HSAILMethod> cache = new HashMap<ClassModel.ClassModelMethod, HSAILMethod>();
+   static boolean useCache = false; // don't turn this on until we have inlining working
 
-    static synchronized HSAILMethod getHSAILMethod(ClassModel.ClassModelMethod _method, HSAILMethod _entryPoint, StackFrame _stackFrame) {
-        HSAILMethod instance = cache.get(_method);
+
+    static synchronized HSAILMethod getHSAILMethod(ClassModel.ClassModelMethod _method, HSAILMethod _entryPoint, StackFrame _stackFrame, int _base) {
+        HSAILMethod instance = null;
+        if (useCache){
+            instance = cache.get(_method);
+        }
         if (instance == null) {
-            instance = new HSAILMethod(_method, _entryPoint, _stackFrame);
-            cache.put(_method, instance);
+            instance = new HSAILMethod(_method, _entryPoint, _stackFrame, _base);
+            if (useCache){
+                cache.put(_method, instance);
+            }
         }
         return (instance);
+    }
+
+
+    static synchronized HSAILMethod getHSAILMethod(ClassModel.ClassModelMethod _method, HSAILMethod _entryPoint, StackFrame _stackFrame) {
+       return(getHSAILMethod(_method, _entryPoint, _stackFrame, 0));
     }
 
     static synchronized HSAILMethod getHSAILMethod(ClassModel.ClassModelMethod _method, HSAILMethod _entryPoint) {
        return getHSAILMethod(_method, _entryPoint, null);
     }
 
-    private HSAILMethod(ClassModel.ClassModelMethod _method) {
-        this(_method, null, null);
-    }
-
     HSAILMethod entryPoint;
+    StackFrame stackFrame;
 
-    private HSAILMethod(ClassModel.ClassModelMethod _method, HSAILMethod _entryPoint, StackFrame _stackFrame) {
+    private HSAILMethod(ClassModel.ClassModelMethod _method, HSAILMethod _entryPoint, StackFrame _stackFrame, int _base) {
+        stackFrame = new StackFrame(_stackFrame, _method.getClassModel().getDotClassName()+"."+_method.getName()+_method.getDescriptor(), _base);
 
-
-
-        StackFrame stackFrame = _stackFrame;
-        if (stackFrame == null){
-           stackFrame = new StackFrame(_stackFrame, _method.getClassModel().getDotClassName()+"."+_method.getName()+_method.getDescriptor(), 0);
-        }
         entryPoint = _entryPoint;
         if (entryPoint == null) {
             calls = new HashSet<CallType>();
