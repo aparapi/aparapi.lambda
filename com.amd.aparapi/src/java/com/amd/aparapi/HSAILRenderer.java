@@ -1,7 +1,5 @@
 package com.amd.aparapi;
 
-import java.util.*;
-
 /**
  * Created with IntelliJ IDEA.
  * User: gfrost
@@ -76,15 +74,15 @@ public class HSAILRenderer extends TextRenderer<HSAILRenderer>{
         return (this);
     }
 
-    public HSAILRenderer regNum(HSAILRegister _reg, HSAILMethod.StackFrame _stackFrame){
+    public HSAILRenderer regNum(HSAILRegister _reg, HSAILStackFrame _HSAIL_stackFrame){
 
 
-        return (this.append(_reg.index + _stackFrame.baseOffset));
+        return (this.append(_reg.index + _HSAIL_stackFrame.baseOffset));
     }
 
-    public HSAILRenderer regName(HSAILRegister _reg, HSAILMethod.StackFrame _stackFrame){
+    public HSAILRenderer regName(HSAILRegister _reg, HSAILStackFrame _HSAIL_stackFrame){
         this.regPrefix(_reg.type);
-        return(this.regNum(_reg, _stackFrame));
+        return(this.regNum(_reg, _HSAIL_stackFrame));
 
    }
 
