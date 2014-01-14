@@ -39,6 +39,7 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 package hsailtest;
 
 import com.amd.aparapi.Device;
+import com.amd.aparapi.HSADevice;
 
 import javax.swing.*;
 import java.awt.*;
@@ -48,6 +49,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
+import java.util.function.IntConsumer;
 
 public class Mandel {
 
@@ -143,18 +145,19 @@ public class Mandel {
       final  int[] rgb = this.rgb;
       final int[] pallette = this.pallette;
 
+      IntConsumer ic =  gid -> {
+          /** Translate the gid into an x an y value. */
 
-       device.forEach(width * height, gid -> {
-         /** Translate the gid into an x an y value. */
-
-         float lx = ((((gid % w) * scale) - ((scale / 2) * w)) / w) + x_offset;
-         float ly = (((gid / w * scale) - ((scale / 2) * h)) / h) + y_offset;
-         int count = getMandelCount(lx, ly, maxIterations);
-
+          float lx = ((((gid % w) * scale) - ((scale / 2) * w)) / w) + x_offset;
+          float ly = (((gid / w * scale) - ((scale / 2) * h)) / h) + y_offset;
+          int count = getMandelCount(lx, ly, maxIterations);
 
 
-        rgb[gid] = pallette[count];
-      });
+
+          rgb[gid] = pallette[count];
+      };
+       device.forEach(width * height, ic);
+       //((HSADevice)device).dump(ic);
    }
 
 

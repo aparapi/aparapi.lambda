@@ -187,24 +187,24 @@ import java.util.regex.Pattern;
         }
     }
 
-    class MethodCall extends CallType<MethodCall> {
+    class SimpleMethodCall extends CallType<SimpleMethodCall> {
         HSAILMethod method;
 
 
-        MethodCall(String _mappedMethod, HSAILMethod _method) {
+        SimpleMethodCall(String _mappedMethod, HSAILMethod _method) {
             super(_mappedMethod);
             method = _method;
         }
 
         @Override
-        MethodCall renderDefinition(HSAILRenderer r, HSAILStackFrame _HSAIL_stackFrame) {
+        SimpleMethodCall renderDefinition(HSAILRenderer r, HSAILStackFrame _HSAIL_stackFrame) {
 
             method.renderFunctionDefinition(r);
             r.nl().nl();
             return (this);
         }
         @Override
-        MethodCall renderCallSite(HSAILRenderer r, HSAILStackFrame _HSAIL_stackFrame,  Instruction from, String name, int _base) {
+        SimpleMethodCall renderCallSite(HSAILRenderer r, HSAILStackFrame _HSAIL_stackFrame,  Instruction from, String name, int _base) {
 
             TypeHelper.JavaMethodArgsAndReturnType argsAndReturnType = from.asMethodCall().getConstantPoolMethodEntry().getArgsAndReturnType();
             TypeHelper.JavaType returnType = argsAndReturnType.getReturnType();
@@ -255,7 +255,7 @@ import java.util.regex.Pattern;
             return(this);
         }
         @Override
-        MethodCall renderDeclaration(HSAILRenderer r, HSAILStackFrame _HSAIL_stackFrame) {
+        SimpleMethodCall renderDeclaration(HSAILRenderer r, HSAILStackFrame _HSAIL_stackFrame) {
             method.renderFunctionDeclaration(r);
             r.semicolon().nl().nl();
             return (this);
