@@ -4233,7 +4233,7 @@ class InstructionSet{
 
    }
 
-   interface MethodCall{
+   interface MethodCall {
       int getConstantPoolMethodIndex();
 
       MethodEntry getConstantPoolMethodEntry();
