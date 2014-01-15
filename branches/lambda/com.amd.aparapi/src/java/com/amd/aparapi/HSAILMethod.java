@@ -280,7 +280,7 @@ import java.util.regex.Pattern;
         @Override
         InlineMethodCall renderCallSite(HSAILRenderer r, HSAILStackFrame _HSAIL_stackFrame, Instruction from, String name, int base) {
 
-            method.renderInlinedFunctionBody(r, _HSAIL_stackFrame.baseOffset);
+            method.renderInlinedFunctionBody(r, base);
 
             //r.nl();
             return (this);

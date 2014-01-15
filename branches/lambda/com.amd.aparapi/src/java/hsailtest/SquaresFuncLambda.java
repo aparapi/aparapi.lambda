@@ -2,11 +2,14 @@ package hsailtest;
 
 import com.amd.aparapi.AparapiException;
 import com.amd.aparapi.Device;
+import com.amd.aparapi.HSADevice;
 
+import java.lang.reflect.Array;
 import java.util.function.IntConsumer;
+import java.util.stream.IntStream;
 
 
-public class SquaresLambda {
+public class SquaresFuncLambda {
 
     static void dump(String type, int[] in, int[] out) {
         System.out.print(type + " ->");
@@ -14,6 +17,10 @@ public class SquaresLambda {
             System.out.print("(" + in[i] + "," + out[i] + "),");
         }
         System.out.println();
+    }
+
+    static int square(int v){
+        return( v*v);
     }
 
     public static void main(String[] args) throws AparapiException {
@@ -25,8 +32,11 @@ public class SquaresLambda {
             in[i]=i;
         }
         IntConsumer ic = gid -> {
-            out[gid] = in[gid] * in[gid];
+            out[gid] = square(in[gid]);
         };
+        ((HSADevice)Device.hsa()).dump(ic);
+      //  System.exit(1);
+
         Device.hsa().forEach(len, ic);
         dump("hsa", in, out);
         Device.jtp().forEach(len, ic);
