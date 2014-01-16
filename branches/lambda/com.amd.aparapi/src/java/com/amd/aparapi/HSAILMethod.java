@@ -644,10 +644,10 @@ public class HSAILMethod {
     }
 
     HSAILMethod entryPoint;
-    HSAILStackFrame HSAILStackFrame;
+    HSAILStackFrame hsailStackFrame;
 
     private HSAILMethod(ClassModel.ClassModelMethod _method, HSAILMethod _entryPoint, HSAILStackFrame _HSAIL_stackFrame, int _base) {
-        HSAILStackFrame = new HSAILStackFrame(_HSAIL_stackFrame, _method.getClassModel().getDotClassName()+"."+_method.getName()+_method.getDescriptor(), _base);
+        hsailStackFrame = new HSAILStackFrame(_HSAIL_stackFrame, _method.getClassModel().getDotClassName()+"."+_method.getName()+_method.getDescriptor(), _base);
 
         entryPoint = _entryPoint;
         if (entryPoint == null) {
@@ -658,7 +658,7 @@ public class HSAILMethod {
         }
         method = _method;
         ParseState parseState = ParseState.NONE;
-        Instruction lastInstruction = null;
+       // Instruction lastInstruction = null;
       //  for (Instruction i : method.getInstructions()) {
      //      System.out.println(i.getThisPC()+" "+i.getPostStackBase());
       //  }
@@ -668,48 +668,48 @@ public class HSAILMethod {
                 int argOffset = 0;
                 if (!method.isStatic()) {
                     if (entryPoint == null) {
-                        add( new HSAILInstructionSet.ld_kernarg(HSAILStackFrame,initial, new VarReg_ref(0)));
+                        add( new HSAILInstructionSet.ld_kernarg(hsailStackFrame,initial, new VarReg_ref(0)));
                     } else {
-                        add( new HSAILInstructionSet.ld_arg(HSAILStackFrame,initial, new VarReg_ref(0)));
+                        add( new HSAILInstructionSet.ld_arg(hsailStackFrame,initial, new VarReg_ref(0)));
                     }
                     argOffset++;
                 }
                 for (TypeHelper.JavaMethodArg arg : method.argsAndReturnType.getArgs()) {
                     if (arg.getJavaType().isArray()) {
                         if (_entryPoint == null) {
-                            add(new HSAILInstructionSet.ld_kernarg(HSAILStackFrame,initial, new VarReg_ref(arg.getArgc() + argOffset)));
+                            add(new HSAILInstructionSet.ld_kernarg(hsailStackFrame,initial, new VarReg_ref(arg.getArgc() + argOffset)));
                         } else {
-                            add(new HSAILInstructionSet.ld_arg(HSAILStackFrame,initial, new VarReg_ref(arg.getArgc() + argOffset)));
+                            add(new HSAILInstructionSet.ld_arg(hsailStackFrame,initial, new VarReg_ref(arg.getArgc() + argOffset)));
                         }
                     } else if (arg.getJavaType().isObject()) {
                         if (_entryPoint == null) {
-                            add(new HSAILInstructionSet.ld_kernarg(HSAILStackFrame,initial, new VarReg_ref(arg.getArgc() + argOffset)));
+                            add(new HSAILInstructionSet.ld_kernarg(hsailStackFrame,initial, new VarReg_ref(arg.getArgc() + argOffset)));
                         } else {
-                            add(new HSAILInstructionSet.ld_arg(HSAILStackFrame,initial, new VarReg_ref(arg.getArgc() + argOffset)));
+                            add(new HSAILInstructionSet.ld_arg(hsailStackFrame,initial, new VarReg_ref(arg.getArgc() + argOffset)));
                         }
                     } else if (arg.getJavaType().isInt()) {
                         if (_entryPoint == null) {
-                            add(new HSAILInstructionSet.ld_kernarg(HSAILStackFrame,initial, new VarReg_s32(arg.getArgc() + argOffset)));
+                            add(new HSAILInstructionSet.ld_kernarg(hsailStackFrame,initial, new VarReg_s32(arg.getArgc() + argOffset)));
                         } else {
-                            add(new HSAILInstructionSet.ld_arg(HSAILStackFrame,initial, new VarReg_s32(arg.getArgc() + argOffset)));
+                            add(new HSAILInstructionSet.ld_arg(hsailStackFrame,initial, new VarReg_s32(arg.getArgc() + argOffset)));
                         }
                     } else if (arg.getJavaType().isFloat()) {
                         if (_entryPoint == null) {
-                            add(new HSAILInstructionSet.ld_kernarg(HSAILStackFrame,initial, new VarReg_f32(arg.getArgc() + argOffset)));
+                            add(new HSAILInstructionSet.ld_kernarg(hsailStackFrame,initial, new VarReg_f32(arg.getArgc() + argOffset)));
                         } else {
-                            add(new HSAILInstructionSet.ld_arg(HSAILStackFrame,initial, new VarReg_f32(arg.getArgc() + argOffset)));
+                            add(new HSAILInstructionSet.ld_arg(hsailStackFrame,initial, new VarReg_f32(arg.getArgc() + argOffset)));
                         }
                     } else if (arg.getJavaType().isDouble()) {
                         if (_entryPoint == null) {
-                            add(new HSAILInstructionSet.ld_kernarg(HSAILStackFrame,initial, new VarReg_f64(arg.getArgc() + argOffset)));
+                            add(new HSAILInstructionSet.ld_kernarg(hsailStackFrame,initial, new VarReg_f64(arg.getArgc() + argOffset)));
                         } else {
-                            add(new HSAILInstructionSet.ld_arg(HSAILStackFrame,initial, new VarReg_f64(arg.getArgc() + argOffset)));
+                            add(new HSAILInstructionSet.ld_arg(hsailStackFrame,initial, new VarReg_f64(arg.getArgc() + argOffset)));
                         }
                     } else if (arg.getJavaType().isLong()) {
                         if (_entryPoint == null) {
-                            add(new HSAILInstructionSet.ld_kernarg(HSAILStackFrame,initial, new VarReg_s64(arg.getArgc() + argOffset)));
+                            add(new HSAILInstructionSet.ld_kernarg(hsailStackFrame,initial, new VarReg_s64(arg.getArgc() + argOffset)));
                         } else {
-                            add(new HSAILInstructionSet.ld_arg(HSAILStackFrame,initial, new VarReg_s64(arg.getArgc() + argOffset)));
+                            add(new HSAILInstructionSet.ld_arg(hsailStackFrame,initial, new VarReg_s64(arg.getArgc() + argOffset)));
                         }
                     }
                 }
@@ -719,7 +719,7 @@ public class HSAILMethod {
             switch (i.getByteCode()) {
 
                 case ACONST_NULL:
-                    add(new HSAILInstructionSet.nyi(HSAILStackFrame, i));
+                    add(new HSAILInstructionSet.nyi(hsailStackFrame, i));
                     break;
                 case ICONST_M1:
                 case ICONST_0:
@@ -730,20 +730,20 @@ public class HSAILMethod {
                 case ICONST_5:
                 case BIPUSH:
                 case SIPUSH:
-                    add(new HSAILInstructionSet.mov_const<StackReg_s32,s32, Integer>(HSAILStackFrame,i, new StackReg_s32(i, 0), i.asIntegerConstant().getValue()));
+                    add(new HSAILInstructionSet.mov_const<StackReg_s32,s32, Integer>(hsailStackFrame,i, new StackReg_s32(i, 0), i.asIntegerConstant().getValue()));
                     break;
                 case LCONST_0:
                 case LCONST_1:
-                    add(new HSAILInstructionSet.mov_const<StackReg_s64,s64, Long>(HSAILStackFrame, i, new StackReg_s64(i, 0), i.asLongConstant().getValue()));
+                    add(new HSAILInstructionSet.mov_const<StackReg_s64,s64, Long>(hsailStackFrame, i, new StackReg_s64(i, 0), i.asLongConstant().getValue()));
                     break;
                 case FCONST_0:
                 case FCONST_1:
                 case FCONST_2:
-                    add(new HSAILInstructionSet.mov_const<StackReg_f32,f32, Float>(HSAILStackFrame, i, new StackReg_f32(i, 0), i.asFloatConstant().getValue()));
+                    add(new HSAILInstructionSet.mov_const<StackReg_f32,f32, Float>(hsailStackFrame, i, new StackReg_f32(i, 0), i.asFloatConstant().getValue()));
                     break;
                 case DCONST_0:
                 case DCONST_1:
-                    add(new HSAILInstructionSet.mov_const<StackReg_f64,f64, Double>(HSAILStackFrame, i, new StackReg_f64(i, 0), i.asDoubleConstant().getValue()));
+                    add(new HSAILInstructionSet.mov_const<StackReg_f64,f64, Double>(hsailStackFrame, i, new StackReg_f64(i, 0), i.asDoubleConstant().getValue()));
                     break;
                 // case BIPUSH: moved up
                 // case SIPUSH: moved up
@@ -755,13 +755,13 @@ public class HSAILMethod {
 
                     ClassModel.ConstantPool.ConstantEntry e = (ClassModel.ConstantPool.ConstantEntry) cpe.getConstantPoolEntry();
                     if (e instanceof ClassModel.ConstantPool.DoubleEntry) {
-                        add(new HSAILInstructionSet.mov_const<StackReg_f64,f64, Double>(HSAILStackFrame, i, new StackReg_f64(i, 0), ((ClassModel.ConstantPool.DoubleEntry) e).getValue()));
+                        add(new HSAILInstructionSet.mov_const<StackReg_f64,f64, Double>(hsailStackFrame, i, new StackReg_f64(i, 0), ((ClassModel.ConstantPool.DoubleEntry) e).getValue()));
                     } else if (e instanceof ClassModel.ConstantPool.FloatEntry) {
-                        add(new HSAILInstructionSet.mov_const<StackReg_f32,f32, Float>(HSAILStackFrame, i, new StackReg_f32(i, 0), ((ClassModel.ConstantPool.FloatEntry) e).getValue()));
+                        add(new HSAILInstructionSet.mov_const<StackReg_f32,f32, Float>(hsailStackFrame, i, new StackReg_f32(i, 0), ((ClassModel.ConstantPool.FloatEntry) e).getValue()));
                     } else if (e instanceof ClassModel.ConstantPool.IntegerEntry) {
-                        add(new HSAILInstructionSet.mov_const<StackReg_s32,s32, Integer>(HSAILStackFrame, i, new StackReg_s32(i, 0), ((ClassModel.ConstantPool.IntegerEntry) e).getValue()));
+                        add(new HSAILInstructionSet.mov_const<StackReg_s32,s32, Integer>(hsailStackFrame, i, new StackReg_s32(i, 0), ((ClassModel.ConstantPool.IntegerEntry) e).getValue()));
                     } else if (e instanceof ClassModel.ConstantPool.LongEntry) {
-                        add(new HSAILInstructionSet.mov_const<StackReg_s64,s64, Long>(HSAILStackFrame, i, new StackReg_s64(i, 0), ((ClassModel.ConstantPool.LongEntry) e).getValue()));
+                        add(new HSAILInstructionSet.mov_const<StackReg_s64,s64, Long>(hsailStackFrame, i, new StackReg_s64(i, 0), ((ClassModel.ConstantPool.LongEntry) e).getValue()));
 
                     }
 
@@ -776,7 +776,7 @@ public class HSAILMethod {
                 case ILOAD_1:
                 case ILOAD_2:
                 case ILOAD_3:
-                    add(new HSAILInstructionSet.mov<StackReg_s32,VarReg_s32, s32, s32>(HSAILStackFrame, i, new StackReg_s32(i, 0), new VarReg_s32(i)));
+                    add(new HSAILInstructionSet.mov<StackReg_s32,VarReg_s32, s32, s32>(hsailStackFrame, i, new StackReg_s32(i, 0), new VarReg_s32(i)));
 
                     break;
                 case LLOAD:
@@ -784,70 +784,70 @@ public class HSAILMethod {
                 case LLOAD_1:
                 case LLOAD_2:
                 case LLOAD_3:
-                    add(new HSAILInstructionSet.mov<StackReg_s64,VarReg_s64, s64, s64>(HSAILStackFrame, i, new StackReg_s64(i, 0), new VarReg_s64(i)));
+                    add(new HSAILInstructionSet.mov<StackReg_s64,VarReg_s64, s64, s64>(hsailStackFrame, i, new StackReg_s64(i, 0), new VarReg_s64(i)));
                     break;
                 case FLOAD:
                 case FLOAD_0:
                 case FLOAD_1:
                 case FLOAD_2:
                 case FLOAD_3:
-                    add(new HSAILInstructionSet.mov<StackReg_f32,VarReg_f32, f32, f32>(HSAILStackFrame, i, new StackReg_f32(i, 0), new VarReg_f32(i)));
+                    add(new HSAILInstructionSet.mov<StackReg_f32,VarReg_f32, f32, f32>(hsailStackFrame, i, new StackReg_f32(i, 0), new VarReg_f32(i)));
                     break;
                 case DLOAD:
                 case DLOAD_0:
                 case DLOAD_1:
                 case DLOAD_2:
                 case DLOAD_3:
-                    add(new HSAILInstructionSet.mov<StackReg_f64,VarReg_f64, f64, f64>(HSAILStackFrame, i, new StackReg_f64(i, 0), new VarReg_f64(i)));
+                    add(new HSAILInstructionSet.mov<StackReg_f64,VarReg_f64, f64, f64>(hsailStackFrame, i, new StackReg_f64(i, 0), new VarReg_f64(i)));
                     break;
                 case ALOAD:
                 case ALOAD_0:
                 case ALOAD_1:
                 case ALOAD_2:
                 case ALOAD_3:
-                    add(new HSAILInstructionSet.mov<StackReg_ref,VarReg_ref, ref ,ref>(HSAILStackFrame, i, new StackReg_ref(i, 0), new VarReg_ref(i)));
+                    add(new HSAILInstructionSet.mov<StackReg_ref,VarReg_ref, ref ,ref>(hsailStackFrame, i, new StackReg_ref(i, 0), new VarReg_ref(i)));
                     break;
                 case IALOAD:
-                    add(new HSAILInstructionSet.cvt<StackReg_ref,StackReg_s32,ref, s32>(HSAILStackFrame, i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
-                    add(new HSAILInstructionSet.mad(HSAILStackFrame,i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.s32.getHsaBytes()));
-                    add(new HSAILInstructionSet.array_load<StackReg_s32,s32>(HSAILStackFrame, i, new StackReg_s32(i, 0), new StackReg_ref(i, 1)));
+                    add(new HSAILInstructionSet.cvt<StackReg_ref,StackReg_s32,ref, s32>(hsailStackFrame, i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
+                    add(new HSAILInstructionSet.mad(hsailStackFrame,i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.s32.getHsaBytes()));
+                    add(new HSAILInstructionSet.array_load<StackReg_s32,s32>(hsailStackFrame, i, new StackReg_s32(i, 0), new StackReg_ref(i, 1)));
                     break;
                 case LALOAD:
-                    add(new HSAILInstructionSet.cvt<StackReg_ref,StackReg_s32,ref, s32>(HSAILStackFrame, i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
-                    add(new HSAILInstructionSet.mad(HSAILStackFrame,i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.s64.getHsaBytes()));
-                    add(new HSAILInstructionSet.array_load<StackReg_s64,s64>(HSAILStackFrame, i, new StackReg_s64(i, 0), new StackReg_ref(i, 1)));
+                    add(new HSAILInstructionSet.cvt<StackReg_ref,StackReg_s32,ref, s32>(hsailStackFrame, i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
+                    add(new HSAILInstructionSet.mad(hsailStackFrame,i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.s64.getHsaBytes()));
+                    add(new HSAILInstructionSet.array_load<StackReg_s64,s64>(hsailStackFrame, i, new StackReg_s64(i, 0), new StackReg_ref(i, 1)));
                     break;
                 case FALOAD:
-                    add(new HSAILInstructionSet.cvt<StackReg_ref,StackReg_s32,ref, s32>(HSAILStackFrame, i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
-                    add(new HSAILInstructionSet.mad(HSAILStackFrame,i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.f32.getHsaBytes()));
-                    add(new HSAILInstructionSet.array_load<StackReg_f32,f32>(HSAILStackFrame, i, new StackReg_f32(i, 0), new StackReg_ref(i, 1)));
+                    add(new HSAILInstructionSet.cvt<StackReg_ref,StackReg_s32,ref, s32>(hsailStackFrame, i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
+                    add(new HSAILInstructionSet.mad(hsailStackFrame,i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.f32.getHsaBytes()));
+                    add(new HSAILInstructionSet.array_load<StackReg_f32,f32>(hsailStackFrame, i, new StackReg_f32(i, 0), new StackReg_ref(i, 1)));
 
                     break;
                 case DALOAD:
-                    add(new HSAILInstructionSet.cvt<StackReg_ref,StackReg_s32,ref, s32>(HSAILStackFrame, i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
-                    add(new HSAILInstructionSet.mad(HSAILStackFrame,i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.f64.getHsaBytes()));
-                    add(new HSAILInstructionSet.array_load<StackReg_f64,f64>(HSAILStackFrame, i, new StackReg_f64(i, 0), new StackReg_ref(i, 1)));
+                    add(new HSAILInstructionSet.cvt<StackReg_ref,StackReg_s32,ref, s32>(hsailStackFrame, i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
+                    add(new HSAILInstructionSet.mad(hsailStackFrame,i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.f64.getHsaBytes()));
+                    add(new HSAILInstructionSet.array_load<StackReg_f64,f64>(hsailStackFrame, i, new StackReg_f64(i, 0), new StackReg_ref(i, 1)));
 
                     break;
                 case AALOAD:
-                    add(new HSAILInstructionSet.cvt<StackReg_ref,StackReg_s32,ref, s32>(HSAILStackFrame, i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
-                    add(new HSAILInstructionSet.mad(HSAILStackFrame,i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.ref.getHsaBytes()));
-                    add(new HSAILInstructionSet.array_load<StackReg_ref, ref>(HSAILStackFrame, i, new StackReg_ref(i, 0), new StackReg_ref(i, 1)));
+                    add(new HSAILInstructionSet.cvt<StackReg_ref,StackReg_s32,ref, s32>(hsailStackFrame, i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
+                    add(new HSAILInstructionSet.mad(hsailStackFrame,i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.ref.getHsaBytes()));
+                    add(new HSAILInstructionSet.array_load<StackReg_ref, ref>(hsailStackFrame, i, new StackReg_ref(i, 0), new StackReg_ref(i, 1)));
                     break;
                 case BALOAD:
-                    add(new HSAILInstructionSet.cvt<StackReg_ref,StackReg_s32,ref, s32>(HSAILStackFrame, i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
-                    add(new HSAILInstructionSet.mad(HSAILStackFrame,i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.s8.getHsaBytes()));
-                    add(new HSAILInstructionSet.array_load<StackReg_s8, s8>(HSAILStackFrame, i, new StackReg_s8(i, 0), new StackReg_ref(i, 1)));
+                    add(new HSAILInstructionSet.cvt<StackReg_ref,StackReg_s32,ref, s32>(hsailStackFrame, i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
+                    add(new HSAILInstructionSet.mad(hsailStackFrame,i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.s8.getHsaBytes()));
+                    add(new HSAILInstructionSet.array_load<StackReg_s8, s8>(hsailStackFrame, i, new StackReg_s8(i, 0), new StackReg_ref(i, 1)));
                     break;
                 case CALOAD:
-                    add(new HSAILInstructionSet.cvt<StackReg_ref,StackReg_s32,ref, s32>(HSAILStackFrame, i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
-                    add(new HSAILInstructionSet.mad(HSAILStackFrame,i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.u16.getHsaBytes()));
-                    add(new HSAILInstructionSet.array_load<StackReg_u16,u16>(HSAILStackFrame, i, new StackReg_u16(i, 0), new StackReg_ref(i, 1)));
+                    add(new HSAILInstructionSet.cvt<StackReg_ref,StackReg_s32,ref, s32>(hsailStackFrame, i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
+                    add(new HSAILInstructionSet.mad(hsailStackFrame,i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.u16.getHsaBytes()));
+                    add(new HSAILInstructionSet.array_load<StackReg_u16,u16>(hsailStackFrame, i, new StackReg_u16(i, 0), new StackReg_ref(i, 1)));
                     break;
                 case SALOAD:
-                    add(new HSAILInstructionSet.cvt<StackReg_ref,StackReg_s32,ref, s32>(HSAILStackFrame, i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
-                    add(new HSAILInstructionSet.mad(HSAILStackFrame,i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.s16.getHsaBytes()));
-                    add(new HSAILInstructionSet.array_load<StackReg_s16,s16>(HSAILStackFrame, i, new StackReg_s16(i, 0), new StackReg_ref(i, 1)));
+                    add(new HSAILInstructionSet.cvt<StackReg_ref,StackReg_s32,ref, s32>(hsailStackFrame, i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));  // index converted to 64 bit
+                    add(new HSAILInstructionSet.mad(hsailStackFrame,i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.s16.getHsaBytes()));
+                    add(new HSAILInstructionSet.array_load<StackReg_s16,s16>(hsailStackFrame, i, new StackReg_s16(i, 0), new StackReg_ref(i, 1)));
                     break;
                 //case ISTORE: moved down
                 // case LSTORE:  moved down
@@ -859,7 +859,7 @@ public class HSAILMethod {
                 case ISTORE_1:
                 case ISTORE_2:
                 case ISTORE_3:
-                    add(new HSAILInstructionSet.mov<VarReg_s32,StackReg_s32,s32,s32>(HSAILStackFrame, i, new VarReg_s32(i), new StackReg_s32(i, 0)));
+                    add(new HSAILInstructionSet.mov<VarReg_s32,StackReg_s32,s32,s32>(hsailStackFrame, i, new VarReg_s32(i), new StackReg_s32(i, 0)));
 
                     break;
                 case LSTORE:
@@ -867,7 +867,7 @@ public class HSAILMethod {
                 case LSTORE_1:
                 case LSTORE_2:
                 case LSTORE_3:
-                    add(new HSAILInstructionSet.mov<VarReg_s64,StackReg_s64,s64,s64>(HSAILStackFrame, i, new VarReg_s64(i), new StackReg_s64(i, 0)));
+                    add(new HSAILInstructionSet.mov<VarReg_s64,StackReg_s64,s64,s64>(hsailStackFrame, i, new VarReg_s64(i), new StackReg_s64(i, 0)));
 
                     break;
                 case FSTORE:
@@ -875,257 +875,257 @@ public class HSAILMethod {
                 case FSTORE_1:
                 case FSTORE_2:
                 case FSTORE_3:
-                    add(new HSAILInstructionSet.mov<VarReg_f32,StackReg_f32,f32,f32>(HSAILStackFrame, i, new VarReg_f32(i), new StackReg_f32(i, 0)));
+                    add(new HSAILInstructionSet.mov<VarReg_f32,StackReg_f32,f32,f32>(hsailStackFrame, i, new VarReg_f32(i), new StackReg_f32(i, 0)));
                     break;
                 case DSTORE:
                 case DSTORE_0:
                 case DSTORE_1:
                 case DSTORE_2:
                 case DSTORE_3:
-                    add(new HSAILInstructionSet.mov<VarReg_f64,StackReg_f64,f64,f64>(HSAILStackFrame, i, new VarReg_f64(i), new StackReg_f64(i, 0)));
+                    add(new HSAILInstructionSet.mov<VarReg_f64,StackReg_f64,f64,f64>(hsailStackFrame, i, new VarReg_f64(i), new StackReg_f64(i, 0)));
                     break;
                 case ASTORE:
                 case ASTORE_0:
                 case ASTORE_1:
                 case ASTORE_2:
                 case ASTORE_3:
-                    add(new HSAILInstructionSet.mov<VarReg_ref,StackReg_ref,ref,ref>(HSAILStackFrame, i, new VarReg_ref(i), new StackReg_ref(i, 0)));
+                    add(new HSAILInstructionSet.mov<VarReg_ref,StackReg_ref,ref,ref>(hsailStackFrame, i, new VarReg_ref(i), new StackReg_ref(i, 0)));
 
                     break;
                 case IASTORE:
-                    add(new HSAILInstructionSet.cvt<StackReg_ref,StackReg_s32,ref, s32>(HSAILStackFrame, i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));
-                    add(new HSAILInstructionSet.mad(HSAILStackFrame,i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.s32.getHsaBytes()));
-                    add(new HSAILInstructionSet.array_store<StackReg_s32,s32>(HSAILStackFrame, i, new StackReg_ref(i, 1), new StackReg_s32(i, 2)));
+                    add(new HSAILInstructionSet.cvt<StackReg_ref,StackReg_s32,ref, s32>(hsailStackFrame, i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));
+                    add(new HSAILInstructionSet.mad(hsailStackFrame,i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.s32.getHsaBytes()));
+                    add(new HSAILInstructionSet.array_store<StackReg_s32,s32>(hsailStackFrame, i, new StackReg_ref(i, 1), new StackReg_s32(i, 2)));
                     break;
                 case LASTORE:
-                    add(new HSAILInstructionSet.cvt<StackReg_ref,StackReg_s32,ref, s32>(HSAILStackFrame, i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));
-                    add(new HSAILInstructionSet.mad(HSAILStackFrame,i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.s64.getHsaBytes()));
-                    add(new HSAILInstructionSet.array_store<StackReg_u64,u64>(HSAILStackFrame, i, new StackReg_ref(i, 1), new StackReg_u64(i, 2)));
+                    add(new HSAILInstructionSet.cvt<StackReg_ref,StackReg_s32,ref, s32>(hsailStackFrame, i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));
+                    add(new HSAILInstructionSet.mad(hsailStackFrame,i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.s64.getHsaBytes()));
+                    add(new HSAILInstructionSet.array_store<StackReg_u64,u64>(hsailStackFrame, i, new StackReg_ref(i, 1), new StackReg_u64(i, 2)));
                     break;
                 case FASTORE:
-                    add(new HSAILInstructionSet.cvt<StackReg_ref,StackReg_s32,ref, s32>(HSAILStackFrame, i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));
-                    add(new HSAILInstructionSet.mad(HSAILStackFrame,i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.f32.getHsaBytes()));
-                    add(new HSAILInstructionSet.array_store<StackReg_f32, f32>(HSAILStackFrame, i, new StackReg_ref(i, 1), new StackReg_f32(i, 2)));
+                    add(new HSAILInstructionSet.cvt<StackReg_ref,StackReg_s32,ref, s32>(hsailStackFrame, i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));
+                    add(new HSAILInstructionSet.mad(hsailStackFrame,i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.f32.getHsaBytes()));
+                    add(new HSAILInstructionSet.array_store<StackReg_f32, f32>(hsailStackFrame, i, new StackReg_ref(i, 1), new StackReg_f32(i, 2)));
                     break;
                 case DASTORE:
-                    add(new HSAILInstructionSet.cvt<StackReg_ref,StackReg_s32,ref, s32>(HSAILStackFrame, i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));
-                    add(new HSAILInstructionSet.mad(HSAILStackFrame,i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.f64.getHsaBytes()));
-                    add(new HSAILInstructionSet.array_store<StackReg_f64,f64>(HSAILStackFrame, i, new StackReg_ref(i, 1), new StackReg_f64(i, 2)));
+                    add(new HSAILInstructionSet.cvt<StackReg_ref,StackReg_s32,ref, s32>(hsailStackFrame, i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));
+                    add(new HSAILInstructionSet.mad(hsailStackFrame,i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.f64.getHsaBytes()));
+                    add(new HSAILInstructionSet.array_store<StackReg_f64,f64>(hsailStackFrame, i, new StackReg_ref(i, 1), new StackReg_f64(i, 2)));
                     break;
                 case AASTORE:
-                    add(new HSAILInstructionSet.cvt<StackReg_ref,StackReg_s32,ref, s32>(HSAILStackFrame, i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));
-                    add(new HSAILInstructionSet.mad(HSAILStackFrame,i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.ref.getHsaBytes()));
-                    add(new HSAILInstructionSet.array_store<StackReg_ref,ref>(HSAILStackFrame, i, new StackReg_ref(i, 1), new StackReg_ref(i, 2)));
+                    add(new HSAILInstructionSet.cvt<StackReg_ref,StackReg_s32,ref, s32>(hsailStackFrame, i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));
+                    add(new HSAILInstructionSet.mad(hsailStackFrame,i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.ref.getHsaBytes()));
+                    add(new HSAILInstructionSet.array_store<StackReg_ref,ref>(hsailStackFrame, i, new StackReg_ref(i, 1), new StackReg_ref(i, 2)));
 
                     break;
                 case BASTORE:
-                    add(new HSAILInstructionSet.cvt<StackReg_ref,StackReg_s32,ref, s32>(HSAILStackFrame, i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));
-                    add(new HSAILInstructionSet.mad(HSAILStackFrame,i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.s8.getHsaBytes()));
-                    add(new HSAILInstructionSet.array_store<StackReg_s8,s8>(HSAILStackFrame, i, new StackReg_ref(i, 1), new StackReg_s8(i, 2)));
+                    add(new HSAILInstructionSet.cvt<StackReg_ref,StackReg_s32,ref, s32>(hsailStackFrame, i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));
+                    add(new HSAILInstructionSet.mad(hsailStackFrame,i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.s8.getHsaBytes()));
+                    add(new HSAILInstructionSet.array_store<StackReg_s8,s8>(hsailStackFrame, i, new StackReg_ref(i, 1), new StackReg_s8(i, 2)));
 
                     break;
                 case CASTORE:
-                    add(new HSAILInstructionSet.cvt<StackReg_ref,StackReg_s32,ref, s32>(HSAILStackFrame, i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));
-                    add(new HSAILInstructionSet.mad(HSAILStackFrame,i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.u16.getHsaBytes()));
-                    add(new HSAILInstructionSet.array_store<StackReg_u16,u16>(HSAILStackFrame, i, new StackReg_ref(i, 1), new StackReg_u16(i, 2)));
+                    add(new HSAILInstructionSet.cvt<StackReg_ref,StackReg_s32,ref, s32>(hsailStackFrame, i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));
+                    add(new HSAILInstructionSet.mad(hsailStackFrame,i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.u16.getHsaBytes()));
+                    add(new HSAILInstructionSet.array_store<StackReg_u16,u16>(hsailStackFrame, i, new StackReg_ref(i, 1), new StackReg_u16(i, 2)));
                     break;
                 case SASTORE:
-                    add(new HSAILInstructionSet.cvt<StackReg_ref,StackReg_s32,ref, s32>(HSAILStackFrame, i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));
-                    add(new HSAILInstructionSet.mad(HSAILStackFrame,i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.s16.getHsaBytes()));
-                    add(new HSAILInstructionSet.array_store<StackReg_s16,s16>(HSAILStackFrame, i, new StackReg_ref(i, 1), new StackReg_s16(i, 2)));
+                    add(new HSAILInstructionSet.cvt<StackReg_ref,StackReg_s32,ref, s32>(hsailStackFrame, i, new StackReg_ref(i, 1), new StackReg_s32(i, 1)));
+                    add(new HSAILInstructionSet.mad(hsailStackFrame,i, new StackReg_ref(i, 1), new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) PrimitiveType.s16.getHsaBytes()));
+                    add(new HSAILInstructionSet.array_store<StackReg_s16,s16>(hsailStackFrame, i, new StackReg_ref(i, 1), new StackReg_s16(i, 2)));
                     break;
                 case POP:
-                    add(new HSAILInstructionSet.nyi(HSAILStackFrame,i));
+                    add(new HSAILInstructionSet.nyi(hsailStackFrame,i));
                     break;
                 case POP2:
-                    add(new HSAILInstructionSet.nyi(HSAILStackFrame,i));
+                    add(new HSAILInstructionSet.nyi(hsailStackFrame,i));
                     break;
                 case DUP:
                    // add(new nyi(i));
-                    addmov(HSAILStackFrame,i, 0, 1);
+                    addmov(hsailStackFrame,i, 0, 1);
                     break;
                 case DUP_X1:
-                    add(new HSAILInstructionSet.nyi(HSAILStackFrame,i));
+                    add(new HSAILInstructionSet.nyi(hsailStackFrame,i));
                     break;
                 case DUP_X2:
 
-                    addmov(HSAILStackFrame,i, 2, 3);
-                    addmov(HSAILStackFrame,i, 1, 2);
-                    addmov(HSAILStackFrame,i, 0, 1);
-                    addmov(HSAILStackFrame,i, 3, 0);
+                    addmov(hsailStackFrame,i, 2, 3);
+                    addmov(hsailStackFrame,i, 1, 2);
+                    addmov(hsailStackFrame,i, 0, 1);
+                    addmov(hsailStackFrame,i, 3, 0);
 
                     break;
                 case DUP2:
                     // DUP2 is problematic. DUP2 either dups top two items or one depending on the 'prefix' of the stack items.
                     // To complicate this further HSA large model wants object/mem references to be 64 bits (prefix 2 in Java) whereas
                     // in java object/array refs are 32 bits (prefix 1).
-                    addmov(HSAILStackFrame, i, 0, 2);
-                    addmov(HSAILStackFrame,i, 1, 3);
+                    addmov(hsailStackFrame, i, 0, 2);
+                    addmov(hsailStackFrame,i, 1, 3);
                     break;
                 case DUP2_X1:
-                    add(new HSAILInstructionSet.nyi(HSAILStackFrame,i));
+                    add(new HSAILInstructionSet.nyi(hsailStackFrame,i));
                     break;
                 case DUP2_X2:
-                    add(new HSAILInstructionSet.nyi(HSAILStackFrame,i));
+                    add(new HSAILInstructionSet.nyi(hsailStackFrame,i));
                     break;
                 case SWAP:
-                    add(new HSAILInstructionSet.nyi(HSAILStackFrame,i));
+                    add(new HSAILInstructionSet.nyi(hsailStackFrame,i));
                     break;
                 case IADD:
-                    add(new HSAILInstructionSet.add<StackReg_s32, s32>(HSAILStackFrame, i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
+                    add(new HSAILInstructionSet.add<StackReg_s32, s32>(hsailStackFrame, i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
                     break;
                 case LADD:
-                    add(new HSAILInstructionSet.add<StackReg_s64,s64>(HSAILStackFrame, i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
+                    add(new HSAILInstructionSet.add<StackReg_s64,s64>(hsailStackFrame, i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
                     break;
                 case FADD:
-                    add(new HSAILInstructionSet.add<StackReg_f32,f32>(HSAILStackFrame, i, new StackReg_f32(i, 0), new StackReg_f32(i, 0), new StackReg_f32(i, 1)));
+                    add(new HSAILInstructionSet.add<StackReg_f32,f32>(hsailStackFrame, i, new StackReg_f32(i, 0), new StackReg_f32(i, 0), new StackReg_f32(i, 1)));
                     break;
                 case DADD:
-                    add(new HSAILInstructionSet.add<StackReg_f64,f64>(HSAILStackFrame, i, new StackReg_f64(i, 0), new StackReg_f64(i, 0), new StackReg_f64(i, 1)));
+                    add(new HSAILInstructionSet.add<StackReg_f64,f64>(hsailStackFrame, i, new StackReg_f64(i, 0), new StackReg_f64(i, 0), new StackReg_f64(i, 1)));
                     break;
                 case ISUB:
-                    add(new HSAILInstructionSet.sub<StackReg_s32,s32>(HSAILStackFrame, i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
+                    add(new HSAILInstructionSet.sub<StackReg_s32,s32>(hsailStackFrame, i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
                     break;
                 case LSUB:
-                    add(new HSAILInstructionSet.sub<StackReg_s64,s64>(HSAILStackFrame, i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
+                    add(new HSAILInstructionSet.sub<StackReg_s64,s64>(hsailStackFrame, i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
                     break;
                 case FSUB:
-                    add(new HSAILInstructionSet.sub<StackReg_f32,f32>(HSAILStackFrame, i, new StackReg_f32(i, 0), new StackReg_f32(i, 0), new StackReg_f32(i, 1)));
+                    add(new HSAILInstructionSet.sub<StackReg_f32,f32>(hsailStackFrame, i, new StackReg_f32(i, 0), new StackReg_f32(i, 0), new StackReg_f32(i, 1)));
                     break;
                 case DSUB:
-                    add(new HSAILInstructionSet.sub<StackReg_f64,f64>(HSAILStackFrame, i, new StackReg_f64(i, 0), new StackReg_f64(i, 0), new StackReg_f64(i, 1)));
+                    add(new HSAILInstructionSet.sub<StackReg_f64,f64>(hsailStackFrame, i, new StackReg_f64(i, 0), new StackReg_f64(i, 0), new StackReg_f64(i, 1)));
                     break;
                 case IMUL:
-                    add(new HSAILInstructionSet.mul<StackReg_s32,s32>(HSAILStackFrame, i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
+                    add(new HSAILInstructionSet.mul<StackReg_s32,s32>(hsailStackFrame, i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
                     break;
                 case LMUL:
-                    add(new HSAILInstructionSet.mul<StackReg_s64,s64>(HSAILStackFrame, i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
+                    add(new HSAILInstructionSet.mul<StackReg_s64,s64>(hsailStackFrame, i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
                     break;
                 case FMUL:
-                    add(new HSAILInstructionSet.mul<StackReg_f32,f32>(HSAILStackFrame, i, new StackReg_f32(i, 0), new StackReg_f32(i, 0), new StackReg_f32(i, 1)));
+                    add(new HSAILInstructionSet.mul<StackReg_f32,f32>(hsailStackFrame, i, new StackReg_f32(i, 0), new StackReg_f32(i, 0), new StackReg_f32(i, 1)));
                     break;
                 case DMUL:
-                    add(new HSAILInstructionSet.mul<StackReg_f64,f64>(HSAILStackFrame, i, new StackReg_f64(i, 0), new StackReg_f64(i, 0), new StackReg_f64(i, 1)));
+                    add(new HSAILInstructionSet.mul<StackReg_f64,f64>(hsailStackFrame, i, new StackReg_f64(i, 0), new StackReg_f64(i, 0), new StackReg_f64(i, 1)));
                     break;
                 case IDIV:
-                    add(new HSAILInstructionSet.div<StackReg_s32,s32>(HSAILStackFrame, i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
+                    add(new HSAILInstructionSet.div<StackReg_s32,s32>(hsailStackFrame, i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
                     break;
                 case LDIV:
-                    add(new HSAILInstructionSet.div<StackReg_s64,s64>(HSAILStackFrame, i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
+                    add(new HSAILInstructionSet.div<StackReg_s64,s64>(hsailStackFrame, i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
                     break;
                 case FDIV:
-                    add(new HSAILInstructionSet.div<StackReg_f32,f32>(HSAILStackFrame, i, new StackReg_f32(i, 0), new StackReg_f32(i, 0), new StackReg_f32(i, 1)));
+                    add(new HSAILInstructionSet.div<StackReg_f32,f32>(hsailStackFrame, i, new StackReg_f32(i, 0), new StackReg_f32(i, 0), new StackReg_f32(i, 1)));
                     break;
                 case DDIV:
-                    add(new HSAILInstructionSet.div<StackReg_f64,f64>(HSAILStackFrame, i, new StackReg_f64(i, 0), new StackReg_f64(i, 0), new StackReg_f64(i, 1)));
+                    add(new HSAILInstructionSet.div<StackReg_f64,f64>(hsailStackFrame, i, new StackReg_f64(i, 0), new StackReg_f64(i, 0), new StackReg_f64(i, 1)));
                     break;
                 case IREM:
-                    add(new HSAILInstructionSet.rem<StackReg_s32,s32>(HSAILStackFrame, i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
+                    add(new HSAILInstructionSet.rem<StackReg_s32,s32>(hsailStackFrame, i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
                     break;
                 case LREM:
-                    add(new HSAILInstructionSet.rem<StackReg_s64,s64>(HSAILStackFrame, i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
+                    add(new HSAILInstructionSet.rem<StackReg_s64,s64>(hsailStackFrame, i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
                     break;
                 case FREM:
-                    add(new HSAILInstructionSet.rem<StackReg_f32,f32>(HSAILStackFrame, i, new StackReg_f32(i, 0), new StackReg_f32(i, 0), new StackReg_f32(i, 1)));
+                    add(new HSAILInstructionSet.rem<StackReg_f32,f32>(hsailStackFrame, i, new StackReg_f32(i, 0), new StackReg_f32(i, 0), new StackReg_f32(i, 1)));
                     break;
                 case DREM:
-                    add(new HSAILInstructionSet.rem<StackReg_f64,f64>(HSAILStackFrame, i, new StackReg_f64(i, 0), new StackReg_f64(i, 0), new StackReg_f64(i, 1)));
+                    add(new HSAILInstructionSet.rem<StackReg_f64,f64>(hsailStackFrame, i, new StackReg_f64(i, 0), new StackReg_f64(i, 0), new StackReg_f64(i, 1)));
                     break;
                 case INEG:
-                    add(new HSAILInstructionSet.neg<StackReg_s32,s32>(HSAILStackFrame, i, new StackReg_s32(i, 0)));
+                    add(new HSAILInstructionSet.neg<StackReg_s32,s32>(hsailStackFrame, i, new StackReg_s32(i, 0)));
                     break;
                 case LNEG:
-                    add(new HSAILInstructionSet.neg<StackReg_s64,s64>(HSAILStackFrame, i, new StackReg_s64(i, 0)));
+                    add(new HSAILInstructionSet.neg<StackReg_s64,s64>(hsailStackFrame, i, new StackReg_s64(i, 0)));
                     break;
                 case FNEG:
-                    add(new HSAILInstructionSet.neg<StackReg_f32,f32>(HSAILStackFrame, i, new StackReg_f32(i, 0)));
+                    add(new HSAILInstructionSet.neg<StackReg_f32,f32>(hsailStackFrame, i, new StackReg_f32(i, 0)));
                     break;
                 case DNEG:
-                    add(new HSAILInstructionSet.neg<StackReg_f64,f64>(HSAILStackFrame, i, new StackReg_f64(i, 0)));
+                    add(new HSAILInstructionSet.neg<StackReg_f64,f64>(hsailStackFrame, i, new StackReg_f64(i, 0)));
                     break;
                 case ISHL:
-                    add(new HSAILInstructionSet.shl<StackReg_s32,s32>(HSAILStackFrame, i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
+                    add(new HSAILInstructionSet.shl<StackReg_s32,s32>(hsailStackFrame, i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
                     break;
                 case LSHL:
-                    add(new HSAILInstructionSet.shl<StackReg_s64,s64>(HSAILStackFrame, i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
+                    add(new HSAILInstructionSet.shl<StackReg_s64,s64>(hsailStackFrame, i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
                     break;
                 case ISHR:
-                    add(new HSAILInstructionSet.shr<StackReg_s32,s32>(HSAILStackFrame, i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
+                    add(new HSAILInstructionSet.shr<StackReg_s32,s32>(hsailStackFrame, i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
                     break;
                 case LSHR:
-                    add(new HSAILInstructionSet.shr<StackReg_s64,s64>(HSAILStackFrame, i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
+                    add(new HSAILInstructionSet.shr<StackReg_s64,s64>(hsailStackFrame, i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
                     break;
                 case IUSHR:
-                    add(new HSAILInstructionSet.ushr<StackReg_s32,s32>(HSAILStackFrame, i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
+                    add(new HSAILInstructionSet.ushr<StackReg_s32,s32>(hsailStackFrame, i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
                     break;
                 case LUSHR:
-                    add(new HSAILInstructionSet.ushr<StackReg_s64,s64>(HSAILStackFrame, i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
+                    add(new HSAILInstructionSet.ushr<StackReg_s64,s64>(hsailStackFrame, i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
                     break;
                 case IAND:
-                    add(new HSAILInstructionSet.and<StackReg_s32,s32>(HSAILStackFrame, i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
+                    add(new HSAILInstructionSet.and<StackReg_s32,s32>(hsailStackFrame, i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
                     break;
                 case LAND:
-                    add(new HSAILInstructionSet.and<StackReg_s64,s64>(HSAILStackFrame, i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
+                    add(new HSAILInstructionSet.and<StackReg_s64,s64>(hsailStackFrame, i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
                     break;
                 case IOR:
-                    add(new HSAILInstructionSet.or<StackReg_s32,s32>(HSAILStackFrame, i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
+                    add(new HSAILInstructionSet.or<StackReg_s32,s32>(hsailStackFrame, i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
                     break;
                 case LOR:
-                    add(new HSAILInstructionSet.or<StackReg_s64,s64>(HSAILStackFrame, i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
+                    add(new HSAILInstructionSet.or<StackReg_s64,s64>(hsailStackFrame, i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
                     break;
                 case IXOR:
-                    add(new HSAILInstructionSet.xor<StackReg_s32,s32>(HSAILStackFrame, i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
+                    add(new HSAILInstructionSet.xor<StackReg_s32,s32>(hsailStackFrame, i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
                     break;
                 case LXOR:
-                    add(new HSAILInstructionSet.xor<StackReg_s64, s64>(HSAILStackFrame, i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
+                    add(new HSAILInstructionSet.xor<StackReg_s64, s64>(hsailStackFrame, i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
                     break;
                 case IINC:
-                    add(new HSAILInstructionSet.add_const<VarReg_s32, s32, Integer>(HSAILStackFrame, i, new VarReg_s32(i), new VarReg_s32(i), ((InstructionSet.I_IINC) i).getDelta()));
+                    add(new HSAILInstructionSet.add_const<VarReg_s32, s32, Integer>(hsailStackFrame, i, new VarReg_s32(i), new VarReg_s32(i), ((InstructionSet.I_IINC) i).getDelta()));
                     break;
                 case I2L:
-                    add(new HSAILInstructionSet.cvt<StackReg_s64,StackReg_s32,s64, s32>(HSAILStackFrame, i, new StackReg_s64(i, 0), new StackReg_s32(i, 0)));
+                    add(new HSAILInstructionSet.cvt<StackReg_s64,StackReg_s32,s64, s32>(hsailStackFrame, i, new StackReg_s64(i, 0), new StackReg_s32(i, 0)));
                     break;
                 case I2F:
-                    add(new HSAILInstructionSet.cvt<StackReg_f32,StackReg_s32,f32, s32>(HSAILStackFrame, i, new StackReg_f32(i, 0), new StackReg_s32(i, 0)));
+                    add(new HSAILInstructionSet.cvt<StackReg_f32,StackReg_s32,f32, s32>(hsailStackFrame, i, new StackReg_f32(i, 0), new StackReg_s32(i, 0)));
                     break;
                 case I2D:
-                    add(new HSAILInstructionSet.cvt<StackReg_f64,StackReg_s32,f64, s32>(HSAILStackFrame, i, new StackReg_f64(i, 0), new StackReg_s32(i, 0)));
+                    add(new HSAILInstructionSet.cvt<StackReg_f64,StackReg_s32,f64, s32>(hsailStackFrame, i, new StackReg_f64(i, 0), new StackReg_s32(i, 0)));
                     break;
                 case L2I:
-                    add(new HSAILInstructionSet.cvt<StackReg_s32,StackReg_s64,s32, s64>(HSAILStackFrame, i, new StackReg_s32(i, 0), new StackReg_s64(i, 0)));
+                    add(new HSAILInstructionSet.cvt<StackReg_s32,StackReg_s64,s32, s64>(hsailStackFrame, i, new StackReg_s32(i, 0), new StackReg_s64(i, 0)));
                     break;
                 case L2F:
-                    add(new HSAILInstructionSet.cvt<StackReg_f32,StackReg_s64,f32, s64>(HSAILStackFrame, i, new StackReg_f32(i, 0), new StackReg_s64(i, 0)));
+                    add(new HSAILInstructionSet.cvt<StackReg_f32,StackReg_s64,f32, s64>(hsailStackFrame, i, new StackReg_f32(i, 0), new StackReg_s64(i, 0)));
                     break;
                 case L2D:
-                    add(new HSAILInstructionSet.cvt<StackReg_f64,StackReg_s64,f64, s64>(HSAILStackFrame, i, new StackReg_f64(i, 0), new StackReg_s64(i, 0)));
+                    add(new HSAILInstructionSet.cvt<StackReg_f64,StackReg_s64,f64, s64>(hsailStackFrame, i, new StackReg_f64(i, 0), new StackReg_s64(i, 0)));
                     break;
                 case F2I:
-                    add(new HSAILInstructionSet.cvt<StackReg_s32,StackReg_f32,s32, f32>(HSAILStackFrame, i, new StackReg_s32(i, 0), new StackReg_f32(i, 0)));
+                    add(new HSAILInstructionSet.cvt<StackReg_s32,StackReg_f32,s32, f32>(hsailStackFrame, i, new StackReg_s32(i, 0), new StackReg_f32(i, 0)));
                     break;
                 case F2L:
-                    add(new HSAILInstructionSet.cvt<StackReg_s64,StackReg_f32,s64, f32>(HSAILStackFrame, i, new StackReg_s64(i, 0), new StackReg_f32(i, 0)));
+                    add(new HSAILInstructionSet.cvt<StackReg_s64,StackReg_f32,s64, f32>(hsailStackFrame, i, new StackReg_s64(i, 0), new StackReg_f32(i, 0)));
                     break;
                 case F2D:
-                    add(new HSAILInstructionSet.cvt<StackReg_f64,StackReg_f32,f64, f32>(HSAILStackFrame, i, new StackReg_f64(i, 0), new StackReg_f32(i, 0)));
+                    add(new HSAILInstructionSet.cvt<StackReg_f64,StackReg_f32,f64, f32>(hsailStackFrame, i, new StackReg_f64(i, 0), new StackReg_f32(i, 0)));
                     break;
                 case D2I:
-                    add(new HSAILInstructionSet.cvt<StackReg_s32,StackReg_f64,s32, f64>(HSAILStackFrame, i, new StackReg_s32(i, 0), new StackReg_f64(i, 0)));
+                    add(new HSAILInstructionSet.cvt<StackReg_s32,StackReg_f64,s32, f64>(hsailStackFrame, i, new StackReg_s32(i, 0), new StackReg_f64(i, 0)));
                     break;
                 case D2L:
-                    add(new HSAILInstructionSet.cvt<StackReg_s64,StackReg_f64,s64, f64>(HSAILStackFrame, i, new StackReg_s64(i, 0), new StackReg_f64(i, 0)));
+                    add(new HSAILInstructionSet.cvt<StackReg_s64,StackReg_f64,s64, f64>(hsailStackFrame, i, new StackReg_s64(i, 0), new StackReg_f64(i, 0)));
                     break;
                 case D2F:
-                    add(new HSAILInstructionSet.cvt<StackReg_f32,StackReg_f64,f32, f64>(HSAILStackFrame, i, new StackReg_f32(i, 0), new StackReg_f64(i, 0)));
+                    add(new HSAILInstructionSet.cvt<StackReg_f32,StackReg_f64,f32, f64>(hsailStackFrame, i, new StackReg_f32(i, 0), new StackReg_f64(i, 0)));
                     break;
                 case I2B:
-                    add(new HSAILInstructionSet.cvt<StackReg_s8,StackReg_s32,s8, s32>(HSAILStackFrame, i, new StackReg_s8(i, 0), new StackReg_s32(i, 0)));
+                    HSAILInstructionSet.cvt_s8_s32(instructions, hsailStackFrame, i);
                     break;
                 case I2C:
-                    add(new HSAILInstructionSet.cvt<StackReg_u16,StackReg_s32,u16, s32>(HSAILStackFrame, i, new StackReg_u16(i, 0), new StackReg_s32(i, 0)));
+                    HSAILInstructionSet.cvt_u16_s32(instructions, hsailStackFrame, i);
                     break;
                 case I2S:
-                    add(new HSAILInstructionSet.cvt<StackReg_s16,StackReg_s32,s16, s32>(HSAILStackFrame, i, new StackReg_s16(i, 0), new StackReg_s32(i, 0)));
+                    HSAILInstructionSet.cvt_s16_s32(instructions, hsailStackFrame, i);
                     break;
                 case LCMP:
                     parseState = ParseState.COMPARE_S64;
@@ -1144,181 +1144,173 @@ public class HSAILMethod {
                     break;
                 case IFEQ:
                     if (parseState.equals(ParseState.COMPARE_F32)) {
-                        add(new HSAILInstructionSet.cmp<StackReg_f32,f32>(HSAILStackFrame,lastInstruction, "eq", new StackReg_f32(lastInstruction, 0), new StackReg_f32(lastInstruction, 1)));
+                        HSAILInstructionSet.cmp_f32_eq(instructions, hsailStackFrame, i);
                         parseState = ParseState.NONE;
                     } else if (parseState.equals(ParseState.COMPARE_F64)) {
-                        add(new HSAILInstructionSet.cmp<StackReg_f64,f64>(HSAILStackFrame,lastInstruction, "eq", new StackReg_f64(lastInstruction, 0), new StackReg_f64(lastInstruction, 1)));
+                        HSAILInstructionSet.cmp_f64_eq(instructions, hsailStackFrame, i);
                         parseState = ParseState.NONE;
                     } else if (parseState.equals(ParseState.COMPARE_S64)) {
-                        add(new HSAILInstructionSet.cmp<StackReg_s64,s64>(HSAILStackFrame,lastInstruction, "eq", new StackReg_s64(lastInstruction, 0), new StackReg_s64(lastInstruction, 1)));
+                        HSAILInstructionSet.cmp_s64_eq(instructions, hsailStackFrame, i);
                         parseState = ParseState.NONE;
                     } else {
-                        add(new HSAILInstructionSet.cmp_s32_const_0(HSAILStackFrame,i, "eq", new StackReg_s32(i, 0)));
-
+                        HSAILInstructionSet.cmp_s32_eq_const_0(instructions, hsailStackFrame, i);
                     }
-                    add(new HSAILInstructionSet.cbr(HSAILStackFrame,i, i.asBranch().getAbsolute()));
+                    HSAILInstructionSet.cbr(instructions, hsailStackFrame, i);
                     break;
                 case IFNE:
                     if (parseState.equals(ParseState.COMPARE_F32)) {
-                        add(new HSAILInstructionSet.cmp<StackReg_f32,f32>(HSAILStackFrame,lastInstruction, "ne", new StackReg_f32(lastInstruction, 0), new StackReg_f32(lastInstruction, 1)));
+                        HSAILInstructionSet.cmp_f32_ne(instructions, hsailStackFrame, i);
                         parseState = ParseState.NONE;
                     } else if (parseState.equals(ParseState.COMPARE_F64)) {
-                        add(new HSAILInstructionSet.cmp<StackReg_f64,f64>(HSAILStackFrame,lastInstruction, "ne", new StackReg_f64(lastInstruction, 0), new StackReg_f64(lastInstruction, 1)));
+                        HSAILInstructionSet.cmp_f64_ne(instructions, hsailStackFrame, i);
                         parseState = ParseState.NONE;
                     } else if (parseState.equals(ParseState.COMPARE_S64)) {
-                        add(new HSAILInstructionSet.cmp<StackReg_s64,s64>(HSAILStackFrame,lastInstruction, "ne", new StackReg_s64(lastInstruction, 0), new StackReg_s64(lastInstruction, 1)));
+                        HSAILInstructionSet.cmp_s64_ne(instructions, hsailStackFrame, i);
                         parseState = ParseState.NONE;
                     } else {
-                        add(new HSAILInstructionSet.cmp_s32_const_0(HSAILStackFrame,i, "ne", new StackReg_s32(i, 0)));
-
+                        HSAILInstructionSet.cmp_s32_ne_const_0(instructions, hsailStackFrame, i);
                     }
-                    add(new HSAILInstructionSet.cbr(HSAILStackFrame,i, i.asBranch().getAbsolute()));
+                    HSAILInstructionSet.cbr(instructions, hsailStackFrame, i);
                     break;
                 case IFLT:
                     if (parseState.equals(ParseState.COMPARE_F32)) {
-                        add(new HSAILInstructionSet.cmp<StackReg_f32,f32>(HSAILStackFrame,lastInstruction, "lt", new StackReg_f32(lastInstruction, 0), new StackReg_f32(lastInstruction, 1)));
+                        HSAILInstructionSet.cmp_f32_lt(instructions, hsailStackFrame, i);
                         parseState = ParseState.NONE;
                     } else if (parseState.equals(ParseState.COMPARE_F64)) {
-                        add(new HSAILInstructionSet.cmp<StackReg_f64,f64>(HSAILStackFrame,lastInstruction, "lt", new StackReg_f64(lastInstruction, 0), new StackReg_f64(lastInstruction, 1)));
+                        HSAILInstructionSet.cmp_f64_lt(instructions, hsailStackFrame, i);
                         parseState = ParseState.NONE;
                     } else if (parseState.equals(ParseState.COMPARE_S64)) {
-                        add(new HSAILInstructionSet.cmp<StackReg_s64,s64>(HSAILStackFrame,lastInstruction, "lt", new StackReg_s64(lastInstruction, 0), new StackReg_s64(lastInstruction, 1)));
+                        HSAILInstructionSet.cmp_s64_lt(instructions, hsailStackFrame, i);
                         parseState = ParseState.NONE;
                     } else {
-                        add(new HSAILInstructionSet.cmp_s32_const_0(HSAILStackFrame,i, "lt", new StackReg_s32(i, 0)));
+                        HSAILInstructionSet.cmp_s32_lt_const_0(instructions, hsailStackFrame, i);
 
                     }
-                    add(new HSAILInstructionSet.cbr(HSAILStackFrame,i, i.asBranch().getAbsolute()));
+                    HSAILInstructionSet.cbr(instructions, hsailStackFrame, i);
                     break;
                 case IFGE:
                     if (parseState.equals(ParseState.COMPARE_F32)) {
-                        add(new HSAILInstructionSet.cmp<StackReg_f32,f32>(HSAILStackFrame,lastInstruction, "ge", new StackReg_f32(lastInstruction, 0), new StackReg_f32(lastInstruction, 1)));
+                        HSAILInstructionSet.cmp_f32_ge(instructions, hsailStackFrame, i);
                         parseState = ParseState.NONE;
                     } else if (parseState.equals(ParseState.COMPARE_F64)) {
-                        add(new HSAILInstructionSet.cmp<StackReg_f64,f64>(HSAILStackFrame,lastInstruction, "ge", new StackReg_f64(lastInstruction, 0), new StackReg_f64(lastInstruction, 1)));
+                        HSAILInstructionSet.cmp_f64_ge(instructions, hsailStackFrame, i);
                         parseState = ParseState.NONE;
                     } else if (parseState.equals(ParseState.COMPARE_S64)) {
-                        add(new HSAILInstructionSet.cmp<StackReg_s64,s64>(HSAILStackFrame,lastInstruction, "ge", new StackReg_s64(lastInstruction, 0), new StackReg_s64(lastInstruction, 1)));
+                        HSAILInstructionSet.cmp_s64_ge(instructions, hsailStackFrame, i);
                         parseState = ParseState.NONE;
                     } else {
-                        add(new HSAILInstructionSet.cmp_s32_const_0(HSAILStackFrame,i, "ge", new StackReg_s32(i, 0)));
+                        HSAILInstructionSet.cmp_s32_ge_const_0(instructions, hsailStackFrame, i);
 
                     }
-                    add(new HSAILInstructionSet.cbr(HSAILStackFrame,i, i.asBranch().getAbsolute()));
+                    HSAILInstructionSet.cbr(instructions, hsailStackFrame, i);
                     break;
                 case IFGT:
                     if (parseState.equals(ParseState.COMPARE_F32)) {
-                        add(new HSAILInstructionSet.cmp<StackReg_f32,f32>(HSAILStackFrame,lastInstruction, "gt", new StackReg_f32(lastInstruction, 0), new StackReg_f32(lastInstruction, 1)));
+                        HSAILInstructionSet.cmp_f32_gt(instructions, hsailStackFrame, i);
                         parseState = ParseState.NONE;
                     } else if (parseState.equals(ParseState.COMPARE_F64)) {
-                        add(new HSAILInstructionSet.cmp<StackReg_f64,f64>(HSAILStackFrame,lastInstruction, "gt", new StackReg_f64(lastInstruction, 0), new StackReg_f64(lastInstruction, 1)));
+                        HSAILInstructionSet.cmp_f64_gt(instructions, hsailStackFrame, i);
                         parseState = ParseState.NONE;
                     } else if (parseState.equals(ParseState.COMPARE_S64)) {
-                        add(new HSAILInstructionSet.cmp<StackReg_s64,s64>(HSAILStackFrame,lastInstruction, "gt", new StackReg_s64(lastInstruction, 0), new StackReg_s64(lastInstruction, 1)));
+                        HSAILInstructionSet.cmp_s64_gt(instructions, hsailStackFrame, i);
                         parseState = ParseState.NONE;
                     } else {
-                        add(new HSAILInstructionSet.cmp_s32_const_0(HSAILStackFrame,i, "gt", new StackReg_s32(i, 0)));
+                        HSAILInstructionSet.cmp_s32_gt_const_0(instructions, hsailStackFrame, i);
 
                     }
-                    add(new HSAILInstructionSet.cbr(HSAILStackFrame,i, i.asBranch().getAbsolute()));
+                    HSAILInstructionSet.cbr(instructions, hsailStackFrame, i);
                     break;
                 case IFLE:
                     if (parseState.equals(ParseState.COMPARE_F32)) {
-                        add(new HSAILInstructionSet.cmp<StackReg_f32,f32>(HSAILStackFrame,lastInstruction, "le", new StackReg_f32(lastInstruction, 0), new StackReg_f32(lastInstruction, 1)));
+                        HSAILInstructionSet.cmp_f32_le(instructions, hsailStackFrame, i);
                         parseState = ParseState.NONE;
                     } else if (parseState.equals(ParseState.COMPARE_F64)) {
-                        add(new HSAILInstructionSet.cmp<StackReg_f64,f64>(HSAILStackFrame,lastInstruction, "le", new StackReg_f64(lastInstruction, 0), new StackReg_f64(lastInstruction, 1)));
+                        HSAILInstructionSet.cmp_f64_le(instructions, hsailStackFrame, i);
                         parseState = ParseState.NONE;
                     } else if (parseState.equals(ParseState.COMPARE_S64)) {
-                        add(new HSAILInstructionSet.cmp<StackReg_s64, s64>(HSAILStackFrame,lastInstruction, "le", new StackReg_s64(lastInstruction, 0), new StackReg_s64(lastInstruction, 1)));
+                        HSAILInstructionSet.cmp_s64_le(instructions, hsailStackFrame, i);
                         parseState = ParseState.NONE;
                     } else {
-                        add(new HSAILInstructionSet.cmp_s32_const_0(HSAILStackFrame,i, "le", new StackReg_s32(i, 0)));
+                        HSAILInstructionSet.cmp_s32_le_const_0(instructions, hsailStackFrame, i);
+                       
 
                     }
-                    add(new HSAILInstructionSet.cbr(HSAILStackFrame,i, i.asBranch().getAbsolute()));
+                    HSAILInstructionSet.cbr(instructions, hsailStackFrame, i);
                     break;
                 case IF_ICMPEQ:
 
-                    add(new HSAILInstructionSet.cmp_s32(HSAILStackFrame,i, "eq", new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
-                    add(new HSAILInstructionSet.cbr(HSAILStackFrame,i, i.asBranch().getAbsolute()));
+                    HSAILInstructionSet.cmp_s32_eq(instructions, hsailStackFrame, i);
+                    HSAILInstructionSet.cbr(instructions, hsailStackFrame, i);
 
                     break;
                 case IF_ICMPNE:
-
-                    add(new HSAILInstructionSet.cmp_s32(HSAILStackFrame,i, "ne", new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
-                    add(new HSAILInstructionSet.cbr(HSAILStackFrame,i, i.asBranch().getAbsolute()));
-
+                    HSAILInstructionSet.cmp_s32_ne(instructions, hsailStackFrame, i);
+                    HSAILInstructionSet.cbr(instructions, hsailStackFrame, i);
                     break;
                 case IF_ICMPLT:
-
-                    add(new HSAILInstructionSet.cmp_s32(HSAILStackFrame,i, "lt", new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
-                    add(new HSAILInstructionSet.cbr(HSAILStackFrame,i, i.asBranch().getAbsolute()));
-
+                    HSAILInstructionSet.cmp_s32_lt(instructions, hsailStackFrame, i);
+                    HSAILInstructionSet.cbr(instructions, hsailStackFrame, i);
                     break;
                 case IF_ICMPGE:
-
-                    add(new HSAILInstructionSet.cmp_s32(HSAILStackFrame,i, "ge", new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
-                    add(new HSAILInstructionSet.cbr(HSAILStackFrame,i, i.asBranch().getAbsolute()));
-
+                    HSAILInstructionSet.cmp_s32_ge(instructions, hsailStackFrame, i);
+                    HSAILInstructionSet.cbr(instructions, hsailStackFrame, i);
                     break;
                 case IF_ICMPGT:
-
-                    add(new HSAILInstructionSet.cmp_s32(HSAILStackFrame,i, "gt", new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
-                    add(new HSAILInstructionSet.cbr(HSAILStackFrame,i, i.asBranch().getAbsolute()));
-
+                    HSAILInstructionSet.cmp_s32_gt(instructions, hsailStackFrame, i);
+                    HSAILInstructionSet.cbr(instructions, hsailStackFrame, i);
                     break;
                 case IF_ICMPLE:
-
-                    add(new HSAILInstructionSet.cmp_s32(HSAILStackFrame,i, "le", new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
-                    add(new HSAILInstructionSet.cbr(HSAILStackFrame,i, i.asBranch().getAbsolute()));
-
+                    HSAILInstructionSet.cmp_s32_le(instructions, hsailStackFrame, i);
+                    HSAILInstructionSet.cbr(instructions, hsailStackFrame, i);
                     break;
                 case IF_ACMPEQ:
-                    add(new HSAILInstructionSet.cmp_ref(HSAILStackFrame,i, "eq", new StackReg_ref(i, 0), new StackReg_ref(i, 1)));
-                    add(new HSAILInstructionSet.cbr(HSAILStackFrame,i, i.asBranch().getAbsolute()));
+                    HSAILInstructionSet.cmp_ref_eq(instructions, hsailStackFrame, i);
+                    HSAILInstructionSet.cbr(instructions, hsailStackFrame, i);
                     break;
                 case IF_ACMPNE:
-                    add(new HSAILInstructionSet.cmp_ref(HSAILStackFrame,i, "ne", new StackReg_ref(i, 0), new StackReg_ref(i, 1)));
-                    add(new HSAILInstructionSet.cbr(HSAILStackFrame,i, i.asBranch().getAbsolute()));
+                    HSAILInstructionSet.cmp_ref_ne(instructions, hsailStackFrame, i);
+                    HSAILInstructionSet.cbr(instructions, hsailStackFrame, i);
                     break;
                 case GOTO:
-                    add(new HSAILInstructionSet.brn(HSAILStackFrame,i, i.asBranch().getAbsolute()));
+                    HSAILInstructionSet.brn(instructions, hsailStackFrame, i);
                     break;
                 case IFNULL:
+                    HSAILInstructionSet.branch(instructions, hsailStackFrame, i);
                 case IFNONNULL:
+                    HSAILInstructionSet.branch(instructions, hsailStackFrame, i);
                 case GOTO_W:
-                    add(new HSAILInstructionSet.branch(HSAILStackFrame,i, new StackReg_s32(i, 0), i.getByteCode().getName(), i.asBranch().getAbsolute()));
+                    HSAILInstructionSet.branch(instructions, hsailStackFrame, i);
                     break;
                 case JSR:
-                    add(new HSAILInstructionSet.nyi(HSAILStackFrame, i));
+                    HSAILInstructionSet.nyi(instructions, hsailStackFrame, i);
                     break;
                 case RET:
-                    add(new HSAILInstructionSet.nyi(HSAILStackFrame, i));
+                    HSAILInstructionSet.nyi(instructions, hsailStackFrame, i);
                     break;
                 case TABLESWITCH:
-                    add(new HSAILInstructionSet.nyi(HSAILStackFrame, i));
+                    HSAILInstructionSet.nyi(instructions, hsailStackFrame, i);
                     break;
                 case LOOKUPSWITCH:
-                    add(new HSAILInstructionSet.nyi(HSAILStackFrame, i));
+                    HSAILInstructionSet.nyi(instructions, hsailStackFrame, i);
                     break;
                 case IRETURN:
-                    add(new HSAILInstructionSet.ret<StackReg_s32, s32>(HSAILStackFrame, i, new StackReg_s32(i, 0)));
+                    HSAILInstructionSet.ret_s32(instructions, hsailStackFrame, i);
                     break;
                 case LRETURN:
-                    add(new HSAILInstructionSet.ret<StackReg_s64, s64>(HSAILStackFrame, i, new StackReg_s64(i, 0)));
+                    HSAILInstructionSet.ret_s64(instructions, hsailStackFrame, i);
                     break;
                 case FRETURN:
-                    add(new HSAILInstructionSet.ret<StackReg_f32, f32>(HSAILStackFrame, i, new StackReg_f32(i, 0)));
+                    HSAILInstructionSet.ret_f32(instructions, hsailStackFrame, i);
                     break;
                 case DRETURN:
-                    add(new HSAILInstructionSet.ret<StackReg_f64, f64>(HSAILStackFrame, i, new StackReg_f64(i, 0)));
+                    HSAILInstructionSet.ret_f64(instructions, hsailStackFrame, i);
                     break;
                 case ARETURN:
-                    add(new HSAILInstructionSet.ret<StackReg_ref,ref>(HSAILStackFrame, i, new StackReg_ref(i, 0)));
+
+                    HSAILInstructionSet.ret_ref(instructions, hsailStackFrame, i);
                     break;
                 case RETURN:
-                    add(new HSAILInstructionSet.retvoid(HSAILStackFrame,i));
+                    HSAILInstructionSet.ret_void(instructions, hsailStackFrame, i);
                     break;
                 case GETSTATIC: {
                     TypeHelper.JavaType type = i.asFieldAccessor().getConstantPoolFieldEntry().getType();
@@ -1328,16 +1320,22 @@ public class HSAILMethod {
 
                         Field f = clazz.getDeclaredField(i.asFieldAccessor().getFieldName());
 
-                        if (type.isArray()) {
-                            add(new HSAILInstructionSet.static_field_load<StackReg_ref,ref>(HSAILStackFrame, i, new StackReg_ref(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.staticFieldOffset(f)));
+                        if (!type.isPrimitive()) {
+                            HSAILInstructionSet.static_field_load_ref(instructions, hsailStackFrame, i, f);
                         } else if (type.isInt()) {
-                            add(new HSAILInstructionSet.static_field_load<StackReg_s32,s32>(HSAILStackFrame, i, new StackReg_s32(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.staticFieldOffset(f)));
+                            HSAILInstructionSet.static_field_load_s32(instructions, hsailStackFrame, i, f);
                         } else if (type.isFloat()) {
-                            add(new HSAILInstructionSet.static_field_load<StackReg_f32,f32>(HSAILStackFrame, i, new StackReg_f32(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.staticFieldOffset(f)));
+                            HSAILInstructionSet.static_field_load_f32(instructions, hsailStackFrame, i, f);
                         } else if (type.isDouble()) {
-                            add(new HSAILInstructionSet.static_field_load<StackReg_f64,f64>(HSAILStackFrame, i, new StackReg_f64(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.staticFieldOffset(f)));
+                            HSAILInstructionSet.static_field_load_f64(instructions, hsailStackFrame, i, f);
                         } else if (type.isLong()) {
-                            add(new HSAILInstructionSet.static_field_load<StackReg_s64,s64>(HSAILStackFrame, i, new StackReg_s64(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.staticFieldOffset(f)));
+                            HSAILInstructionSet.static_field_load_s64(instructions, hsailStackFrame, i, f);
+                        } else if (type.isChar()) {
+                            HSAILInstructionSet.static_field_load_u16(instructions, hsailStackFrame, i, f);
+                        } else if (type.isShort()) {
+                            HSAILInstructionSet.static_field_load_s16(instructions, hsailStackFrame, i, f);
+                        } else if (type.isChar()) {
+                            HSAILInstructionSet.static_field_load_s8(instructions, hsailStackFrame, i, f);
                         }
                     } catch (ClassNotFoundException e) {
                         e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
@@ -1356,22 +1354,21 @@ public class HSAILMethod {
 
                         Field f = clazz.getDeclaredField(i.asFieldAccessor().getFieldName());
                         if (!f.getType().isPrimitive()) {
-                            add(new HSAILInstructionSet.field_load<StackReg_ref,ref>(HSAILStackFrame, i, new StackReg_ref(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+                            HSAILInstructionSet.field_load_ref(instructions, hsailStackFrame, i, f);
                         } else if (f.getType().equals(int.class)) {
-                            add(new HSAILInstructionSet.field_load<StackReg_s32,s32>(HSAILStackFrame, i, new StackReg_s32(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+                            HSAILInstructionSet.field_load_s32(instructions, hsailStackFrame, i, f);
                         } else if (f.getType().equals(short.class)) {
-                            add(new HSAILInstructionSet.field_load<StackReg_s16,s16>(HSAILStackFrame, i, new StackReg_s16(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+                            HSAILInstructionSet.field_load_s16(instructions, hsailStackFrame, i, f);
                         } else if (f.getType().equals(char.class)) {
-                            add(new HSAILInstructionSet.field_load<StackReg_u16,u16>(HSAILStackFrame, i, new StackReg_u16(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+                            HSAILInstructionSet.field_load_u16(instructions, hsailStackFrame, i, f);
                         } else if (f.getType().equals(boolean.class)) {
-                            add(new HSAILInstructionSet.field_load<StackReg_s8,s8>(HSAILStackFrame, i, new StackReg_s8(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+                            HSAILInstructionSet.field_load_s8(instructions, hsailStackFrame, i, f);
                         } else if (f.getType().equals(float.class)) {
-                            add(new HSAILInstructionSet.field_load<StackReg_f32,f32>(HSAILStackFrame, i, new StackReg_f32(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+                            HSAILInstructionSet.field_load_f32(instructions, hsailStackFrame, i, f);
                         } else if (f.getType().equals(double.class)) {
-                            add(new HSAILInstructionSet.field_load<StackReg_f64,f64>(HSAILStackFrame, i, new StackReg_f64(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+                            HSAILInstructionSet.field_load_f64(instructions, hsailStackFrame, i, f);
                         } else if (f.getType().equals(long.class)) {
-                            add(new HSAILInstructionSet.field_load<StackReg_s64,s64>(HSAILStackFrame, i, new StackReg_s64(i, 0), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
-
+                            HSAILInstructionSet.field_load_s64(instructions, hsailStackFrame, i, f);
                         } else {
                             throw new IllegalStateException("unexpected get field type");
                         }
@@ -1385,7 +1382,7 @@ public class HSAILMethod {
                 }
                 break;
                 case PUTSTATIC:
-                    add(new HSAILInstructionSet.nyi(HSAILStackFrame, i));
+                    HSAILInstructionSet.nyi(instructions, hsailStackFrame, i);
                     break;
                 case PUTFIELD: {
                    // TypeHelper.JavaType type = i.asFieldAccessor().getConstantPoolFieldEntry().getType();
@@ -1395,22 +1392,21 @@ public class HSAILMethod {
 
                         Field f = clazz.getDeclaredField(i.asFieldAccessor().getFieldName());
                         if (!f.getType().isPrimitive()) {
-                            add(new HSAILInstructionSet.field_store<StackReg_ref, ref>(HSAILStackFrame, i, new StackReg_ref(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+                            HSAILInstructionSet.field_store_ref(instructions, hsailStackFrame, i, f);
                         } else if (f.getType().equals(int.class)) {
-                            add(new HSAILInstructionSet.field_store<StackReg_s32,s32>(HSAILStackFrame, i, new StackReg_s32(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+                            HSAILInstructionSet.field_store_s32(instructions, hsailStackFrame, i, f);
                         } else if (f.getType().equals(short.class)) {
-                            add(new HSAILInstructionSet.field_store<StackReg_s16,s16>(HSAILStackFrame, i, new StackReg_s16(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+                            HSAILInstructionSet.field_store_s16(instructions, hsailStackFrame, i, f);
                         } else if (f.getType().equals(char.class)) {
-                            add(new HSAILInstructionSet.field_store<StackReg_u16,u16>(HSAILStackFrame, i, new StackReg_u16(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+                            HSAILInstructionSet.field_store_u16(instructions, hsailStackFrame, i, f);
                         } else if (f.getType().equals(boolean.class)) {
-                            add(new HSAILInstructionSet.field_store<StackReg_s8,s8>(HSAILStackFrame, i, new StackReg_s8(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+                            HSAILInstructionSet.field_store_s8(instructions, hsailStackFrame, i, f);
                         } else if (f.getType().equals(float.class)) {
-                            add(new HSAILInstructionSet.field_store<StackReg_f32,f32>(HSAILStackFrame, i, new StackReg_f32(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+                            HSAILInstructionSet.field_store_f32(instructions, hsailStackFrame, i, f);
                         } else if (f.getType().equals(double.class)) {
-                            add(new HSAILInstructionSet.field_store<StackReg_f64,f64>(HSAILStackFrame, i, new StackReg_f64(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
+                            HSAILInstructionSet.field_store_f64(instructions, hsailStackFrame, i, f);
                         } else if (f.getType().equals(long.class)) {
-                            add(new HSAILInstructionSet.field_store<StackReg_s64,s64>(HSAILStackFrame, i, new StackReg_s64(i, 1), new StackReg_ref(i, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
-
+                            HSAILInstructionSet.field_store_s64(instructions, hsailStackFrame, i, f);
                         }   else {
                             throw new IllegalStateException("unexpected put field type");
                         }
@@ -1428,49 +1424,47 @@ public class HSAILMethod {
                 case INVOKESTATIC:
                 case INVOKEINTERFACE:
                 case INVOKEDYNAMIC:
-
-                    add(new HSAILInstructionSet.call(this, HSAILStackFrame,i));
+                    HSAILInstructionSet.call(instructions, this, hsailStackFrame, i);
                     break;
                 case NEW:
-                    add(new HSAILInstructionSet.nyi(HSAILStackFrame, i));
+                    HSAILInstructionSet.nyi(instructions, hsailStackFrame, i);
                     break;
                 case NEWARRAY:
-                    add(new HSAILInstructionSet.nyi(HSAILStackFrame, i));
+                    HSAILInstructionSet.nyi(instructions, hsailStackFrame, i);
                     break;
                 case ANEWARRAY:
-                    add(new HSAILInstructionSet.nyi(HSAILStackFrame, i));
+                    HSAILInstructionSet.nyi(instructions, hsailStackFrame, i);
                     break;
                 case ARRAYLENGTH:
-                    add(new HSAILInstructionSet.array_len(HSAILStackFrame,i, new StackReg_s32(i, 0), new StackReg_ref(i, 0)));
-
+                    HSAILInstructionSet.array_len(instructions, hsailStackFrame, i);
                     break;
                 case ATHROW:
-                    add(new HSAILInstructionSet.nyi(HSAILStackFrame, i));
+                    HSAILInstructionSet.nyi(instructions, hsailStackFrame, i);
                     break;
                 case CHECKCAST:
-                    add(new HSAILInstructionSet.nyi(HSAILStackFrame, i));
+                    HSAILInstructionSet.nyi(instructions, hsailStackFrame, i);
                     break;
                 case INSTANCEOF:
-                    add(new HSAILInstructionSet.nyi(HSAILStackFrame, i));
+                    HSAILInstructionSet.nyi(instructions, hsailStackFrame, i);
                     break;
                 case MONITORENTER:
-                    add(new HSAILInstructionSet.nyi(HSAILStackFrame, i));
+                    HSAILInstructionSet.nyi(instructions, hsailStackFrame, i);
                     break;
                 case MONITOREXIT:
-                    add(new HSAILInstructionSet.nyi(HSAILStackFrame, i));
+                    HSAILInstructionSet.nyi(instructions, hsailStackFrame, i);
                     break;
                 case WIDE:
-                    add(new HSAILInstructionSet.nyi(HSAILStackFrame, i));
+                    HSAILInstructionSet.nyi(instructions, hsailStackFrame, i);
                     break;
                 case MULTIANEWARRAY:
-                    add(new HSAILInstructionSet.nyi(HSAILStackFrame, i));
+                    HSAILInstructionSet.nyi(instructions, hsailStackFrame, i);
                     break;
                 case JSR_W:
-                    add( new HSAILInstructionSet.nyi(HSAILStackFrame, i));
+                    HSAILInstructionSet.nyi(instructions, hsailStackFrame, i);
                     break;
 
             }
-            lastInstruction = i;
+           // lastInstruction = i;
 
 
         }
