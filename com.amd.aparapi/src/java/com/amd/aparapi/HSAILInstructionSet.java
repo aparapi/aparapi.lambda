@@ -1442,6 +1442,10 @@ public class HSAILInstructionSet {
         _instructions.add(new cmp<StackReg_f32, f32>(_hsailStackFrame,lastInstruction, "ne", new StackReg_f32(lastInstruction, 0), new StackReg_f32(lastInstruction, 1)));
         return(_instructions);
     }
+    static public List<HSAILInstruction> cvt_s8_s32(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
+        _instructions.add(new cvt<StackReg_s8,StackReg_s32,s8, s32>(_hsailStackFrame, _i, new StackReg_s8(_i, 0), new StackReg_s32(_i, 0)));
+        return(_instructions);
+    }
     static public List<HSAILInstruction> cvt_s16_s32(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
         _instructions.add(new cvt<StackReg_s16,StackReg_s32,s16, s32>(_hsailStackFrame, _i, new StackReg_s16(_i, 0), new StackReg_s32(_i, 0)));
         return(_instructions);
@@ -1450,8 +1454,203 @@ public class HSAILInstructionSet {
         _instructions.add(new cvt<StackReg_u16,StackReg_s32,u16, s32>(_hsailStackFrame, _i, new StackReg_u16(_i, 0), new StackReg_s32(_i, 0)));
         return(_instructions);
     }
-    static public List<HSAILInstruction> cvt_s8_s32(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
-        _instructions.add(new cvt<StackReg_s8,StackReg_s32,s8, s32>(_hsailStackFrame, _i, new StackReg_s8(_i, 0), new StackReg_s32(_i, 0)));
+    static public List<HSAILInstruction> cvt_f32_s32(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
+        _instructions.add(new cvt<StackReg_f32,StackReg_s32,f32, s32>(_hsailStackFrame, _i, new StackReg_f32(_i, 0), new StackReg_s32(_i, 0)));
         return(_instructions);
     }
+    static public List<HSAILInstruction> cvt_s64_s32(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
+        _instructions.add(new cvt<StackReg_s64,StackReg_s32,s64, s32>(_hsailStackFrame, _i, new StackReg_s64(_i, 0), new StackReg_s32(_i, 0)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> cvt_f64_s32(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
+        _instructions.add(new cvt<StackReg_f64,StackReg_s32,f64, s32>(_hsailStackFrame, _i, new StackReg_f64(_i, 0), new StackReg_s32(_i, 0)));
+        return(_instructions);
+    }
+
+    static public List<HSAILInstruction> cvt_s32_s64(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
+        _instructions.add(new cvt<StackReg_s32,StackReg_s64,s32, s64>(_hsailStackFrame, _i, new StackReg_s32(_i, 0), new StackReg_s64(_i, 0)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> cvt_f32_s64(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
+        _instructions.add(new cvt<StackReg_f32,StackReg_s64,f32, s64>(_hsailStackFrame, _i, new StackReg_f32(_i, 0), new StackReg_s64(_i, 0)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> cvt_f64_s64(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
+        _instructions.add(new cvt<StackReg_f64,StackReg_s64,f64, s64>(_hsailStackFrame, _i, new StackReg_f64(_i, 0), new StackReg_s64(_i, 0)));
+        return(_instructions);
+    }
+
+    static public List<HSAILInstruction> cvt_s32_f32(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
+        _instructions.add(new cvt<StackReg_s32,StackReg_f32,s32, f32>(_hsailStackFrame, _i, new StackReg_s32(_i, 0), new StackReg_f32(_i, 0)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> cvt_f64_f32(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
+        _instructions.add(new cvt<StackReg_f64,StackReg_f32,f64, f32>(_hsailStackFrame, _i, new StackReg_f64(_i, 0), new StackReg_f32(_i, 0)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> cvt_s64_f32(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
+        _instructions.add(new cvt<StackReg_s64,StackReg_f32,s64, f32>(_hsailStackFrame, _i, new StackReg_s64(_i, 0), new StackReg_f32(_i, 0)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> cvt_s32_f64(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
+        _instructions.add(new cvt<StackReg_s32,StackReg_f64,s32, f64>(_hsailStackFrame, _i, new StackReg_s32(_i, 0), new StackReg_f64(_i, 0)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> cvt_f32_f64(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
+        _instructions.add(new cvt<StackReg_f32,StackReg_f64,f32, f64>(_hsailStackFrame, _i, new StackReg_f32(_i, 0), new StackReg_f64(_i, 0)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> cvt_s64_f64(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
+        _instructions.add(new cvt<StackReg_s64,StackReg_f64,s64, f64>(_hsailStackFrame, _i, new StackReg_s64(_i, 0), new StackReg_f64(_i, 0)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> add_const_s32(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
+        _instructions.add(new add_const<VarReg_s32, s32, Integer>(_hsailStackFrame, _i, new VarReg_s32(_i), new VarReg_s32(_i), ((InstructionSet.I_IINC) _i).getDelta()));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> xor_s64(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
+        _instructions.add(new xor<StackReg_s64, s64>(_hsailStackFrame, _i, new StackReg_s64(_i, 0), new StackReg_s64(_i, 0), new StackReg_s64(_i, 1)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> xor_s32(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
+        _instructions.add(new xor<StackReg_s32, s32>(_hsailStackFrame, _i, new StackReg_s32(_i, 0), new StackReg_s32(_i, 0), new StackReg_s32(_i, 1)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> or_s64(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
+        _instructions.add(new or<StackReg_s64, s64>(_hsailStackFrame, _i, new StackReg_s64(_i, 0), new StackReg_s64(_i, 0), new StackReg_s64(_i, 1)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> or_s32(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
+        _instructions.add(new or<StackReg_s32, s32>(_hsailStackFrame, _i, new StackReg_s32(_i, 0), new StackReg_s32(_i, 0), new StackReg_s32(_i, 1)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> and_s64(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
+        _instructions.add(new and<StackReg_s64, s64>(_hsailStackFrame, _i, new StackReg_s64(_i, 0), new StackReg_s64(_i, 0), new StackReg_s64(_i, 1)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> and_s32(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
+        _instructions.add(new and<StackReg_s32, s32>(_hsailStackFrame, _i, new StackReg_s32(_i, 0), new StackReg_s32(_i, 0), new StackReg_s32(_i, 1)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> ushr_s64(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
+        _instructions.add(new ushr<StackReg_s64, s64>(_hsailStackFrame, _i, new StackReg_s64(_i, 0), new StackReg_s64(_i, 0), new StackReg_s64(_i, 1)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> ushr_s32(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
+        _instructions.add(new ushr<StackReg_s32, s32>(_hsailStackFrame, _i, new StackReg_s32(_i, 0), new StackReg_s32(_i, 0), new StackReg_s32(_i, 1)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> shr_s64(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
+        _instructions.add(new shr<StackReg_s64, s64>(_hsailStackFrame, _i, new StackReg_s64(_i, 0), new StackReg_s64(_i, 0), new StackReg_s64(_i, 1)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> shr_s32(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
+        _instructions.add(new shr<StackReg_s32, s32>(_hsailStackFrame, _i, new StackReg_s32(_i, 0), new StackReg_s32(_i, 0), new StackReg_s32(_i, 1)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> shl_s64(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
+        _instructions.add(new shl<StackReg_s64, s64>(_hsailStackFrame, _i, new StackReg_s64(_i, 0), new StackReg_s64(_i, 0), new StackReg_s64(_i, 1)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> shl_s32(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
+        _instructions.add(new shl<StackReg_s32, s32>(_hsailStackFrame, _i, new StackReg_s32(_i, 0), new StackReg_s32(_i, 0), new StackReg_s32(_i, 1)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> neg_f64(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
+        _instructions.add(new neg<StackReg_f64,f64>(_hsailStackFrame, _i, new StackReg_f64(_i, 0)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> neg_s64(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
+        _instructions.add(new neg<StackReg_s64,s64>(_hsailStackFrame, _i, new StackReg_s64(_i, 0)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> neg_f32(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
+        _instructions.add(new neg<StackReg_f32,f32>(_hsailStackFrame, _i, new StackReg_f32(_i, 0)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> neg_s32(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
+        _instructions.add(new neg<StackReg_s32,s32>(_hsailStackFrame, _i, new StackReg_s32(_i, 0)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> rem_s64(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
+        _instructions.add(new rem<StackReg_s64, s64>(_hsailStackFrame, _i, new StackReg_s64(_i, 0), new StackReg_s64(_i, 0), new StackReg_s64(_i, 1)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> rem_s32(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
+        _instructions.add(new rem<StackReg_s32, s32>(_hsailStackFrame, _i, new StackReg_s32(_i, 0), new StackReg_s32(_i, 0), new StackReg_s32(_i, 1)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> rem_f64(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
+        _instructions.add(new rem<StackReg_f64, f64>(_hsailStackFrame, _i, new StackReg_f64(_i, 0), new StackReg_f64(_i, 0), new StackReg_f64(_i, 1)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> rem_f32(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
+        _instructions.add(new rem<StackReg_f32, f32>(_hsailStackFrame, _i, new StackReg_f32(_i, 0), new StackReg_f32(_i, 0), new StackReg_f32(_i, 1)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> div_s64(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
+        _instructions.add(new div<StackReg_s64, s64>(_hsailStackFrame, _i, new StackReg_s64(_i, 0), new StackReg_s64(_i, 0), new StackReg_s64(_i, 1)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> div_s32(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
+        _instructions.add(new div<StackReg_s32, s32>(_hsailStackFrame, _i, new StackReg_s32(_i, 0), new StackReg_s32(_i, 0), new StackReg_s32(_i, 1)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> div_f64(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
+        _instructions.add(new div<StackReg_f64, f64>(_hsailStackFrame, _i, new StackReg_f64(_i, 0), new StackReg_f64(_i, 0), new StackReg_f64(_i, 1)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> div_f32(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
+        _instructions.add(new div<StackReg_f32, f32>(_hsailStackFrame, _i, new StackReg_f32(_i, 0), new StackReg_f32(_i, 0), new StackReg_f32(_i, 1)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> mul_s64(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
+        _instructions.add(new mul<StackReg_s64, s64>(_hsailStackFrame, _i, new StackReg_s64(_i, 0), new StackReg_s64(_i, 0), new StackReg_s64(_i, 1)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> mul_s32(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
+        _instructions.add(new mul<StackReg_s32, s32>(_hsailStackFrame, _i, new StackReg_s32(_i, 0), new StackReg_s32(_i, 0), new StackReg_s32(_i, 1)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> mul_f64(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
+        _instructions.add(new mul<StackReg_f64, f64>(_hsailStackFrame, _i, new StackReg_f64(_i, 0), new StackReg_f64(_i, 0), new StackReg_f64(_i, 1)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> mul_f32(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
+        _instructions.add(new mul<StackReg_f32, f32>(_hsailStackFrame, _i, new StackReg_f32(_i, 0), new StackReg_f32(_i, 0), new StackReg_f32(_i, 1)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> sub_s64(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
+        _instructions.add(new sub<StackReg_s64, s64>(_hsailStackFrame, _i, new StackReg_s64(_i, 0), new StackReg_s64(_i, 0), new StackReg_s64(_i, 1)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> sub_s32(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
+        _instructions.add(new sub<StackReg_s32, s32>(_hsailStackFrame, _i, new StackReg_s32(_i, 0), new StackReg_s32(_i, 0), new StackReg_s32(_i, 1)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> sub_f64(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
+        _instructions.add(new sub<StackReg_f64, f64>(_hsailStackFrame, _i, new StackReg_f64(_i, 0), new StackReg_f64(_i, 0), new StackReg_f64(_i, 1)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> sub_f32(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
+        _instructions.add(new sub<StackReg_f32, f32>(_hsailStackFrame, _i, new StackReg_f32(_i, 0), new StackReg_f32(_i, 0), new StackReg_f32(_i, 1)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> add_s64(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
+        _instructions.add(new add<StackReg_s64, s64>(_hsailStackFrame, _i, new StackReg_s64(_i, 0), new StackReg_s64(_i, 0), new StackReg_s64(_i, 1)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> add_s32(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
+        _instructions.add(new add<StackReg_s32, s32>(_hsailStackFrame, _i, new StackReg_s32(_i, 0), new StackReg_s32(_i, 0), new StackReg_s32(_i, 1)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> add_f64(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
+        _instructions.add(new add<StackReg_f64, f64>(_hsailStackFrame, _i, new StackReg_f64(_i, 0), new StackReg_f64(_i, 0), new StackReg_f64(_i, 1)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> add_f32(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
+        _instructions.add(new add<StackReg_f32, f32>(_hsailStackFrame, _i, new StackReg_f32(_i, 0), new StackReg_f32(_i, 0), new StackReg_f32(_i, 1)));
+        return(_instructions);
+    }
+
 }
