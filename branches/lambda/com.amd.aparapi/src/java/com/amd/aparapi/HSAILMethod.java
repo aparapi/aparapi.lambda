@@ -972,151 +972,151 @@ public class HSAILMethod {
                     add(new HSAILInstructionSet.nyi(hsailStackFrame,i));
                     break;
                 case IADD:
-                    add(new HSAILInstructionSet.add<StackReg_s32, s32>(hsailStackFrame, i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
+                    HSAILInstructionSet.add_s32(instructions, hsailStackFrame, i);
                     break;
                 case LADD:
-                    add(new HSAILInstructionSet.add<StackReg_s64,s64>(hsailStackFrame, i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
+                    HSAILInstructionSet.add_s64(instructions, hsailStackFrame, i);
                     break;
                 case FADD:
-                    add(new HSAILInstructionSet.add<StackReg_f32,f32>(hsailStackFrame, i, new StackReg_f32(i, 0), new StackReg_f32(i, 0), new StackReg_f32(i, 1)));
+                    HSAILInstructionSet.add_f32(instructions, hsailStackFrame, i);
                     break;
                 case DADD:
-                    add(new HSAILInstructionSet.add<StackReg_f64,f64>(hsailStackFrame, i, new StackReg_f64(i, 0), new StackReg_f64(i, 0), new StackReg_f64(i, 1)));
+                    HSAILInstructionSet.add_f64(instructions, hsailStackFrame, i);
                     break;
                 case ISUB:
-                    add(new HSAILInstructionSet.sub<StackReg_s32,s32>(hsailStackFrame, i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
+                    HSAILInstructionSet.sub_s32(instructions, hsailStackFrame, i);
                     break;
                 case LSUB:
-                    add(new HSAILInstructionSet.sub<StackReg_s64,s64>(hsailStackFrame, i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
+                    HSAILInstructionSet.sub_s64(instructions, hsailStackFrame, i);
                     break;
                 case FSUB:
-                    add(new HSAILInstructionSet.sub<StackReg_f32,f32>(hsailStackFrame, i, new StackReg_f32(i, 0), new StackReg_f32(i, 0), new StackReg_f32(i, 1)));
+                    HSAILInstructionSet.sub_f32(instructions, hsailStackFrame, i);
                     break;
                 case DSUB:
-                    add(new HSAILInstructionSet.sub<StackReg_f64,f64>(hsailStackFrame, i, new StackReg_f64(i, 0), new StackReg_f64(i, 0), new StackReg_f64(i, 1)));
+                    HSAILInstructionSet.sub_f64(instructions, hsailStackFrame, i);
                     break;
                 case IMUL:
-                    add(new HSAILInstructionSet.mul<StackReg_s32,s32>(hsailStackFrame, i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
+                    HSAILInstructionSet.mul_s32(instructions, hsailStackFrame, i);
                     break;
                 case LMUL:
-                    add(new HSAILInstructionSet.mul<StackReg_s64,s64>(hsailStackFrame, i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
+                    HSAILInstructionSet.mul_s64(instructions, hsailStackFrame, i);
                     break;
                 case FMUL:
-                    add(new HSAILInstructionSet.mul<StackReg_f32,f32>(hsailStackFrame, i, new StackReg_f32(i, 0), new StackReg_f32(i, 0), new StackReg_f32(i, 1)));
+                    HSAILInstructionSet.mul_f32(instructions, hsailStackFrame, i);
                     break;
                 case DMUL:
-                    add(new HSAILInstructionSet.mul<StackReg_f64,f64>(hsailStackFrame, i, new StackReg_f64(i, 0), new StackReg_f64(i, 0), new StackReg_f64(i, 1)));
+                    HSAILInstructionSet.mul_f64(instructions, hsailStackFrame, i);
                     break;
                 case IDIV:
-                    add(new HSAILInstructionSet.div<StackReg_s32,s32>(hsailStackFrame, i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
+                    HSAILInstructionSet.div_s32(instructions, hsailStackFrame, i);
                     break;
                 case LDIV:
-                    add(new HSAILInstructionSet.div<StackReg_s64,s64>(hsailStackFrame, i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
+                    HSAILInstructionSet.div_s64(instructions, hsailStackFrame, i);
                     break;
                 case FDIV:
-                    add(new HSAILInstructionSet.div<StackReg_f32,f32>(hsailStackFrame, i, new StackReg_f32(i, 0), new StackReg_f32(i, 0), new StackReg_f32(i, 1)));
+                    HSAILInstructionSet.div_f32(instructions, hsailStackFrame, i);
                     break;
                 case DDIV:
-                    add(new HSAILInstructionSet.div<StackReg_f64,f64>(hsailStackFrame, i, new StackReg_f64(i, 0), new StackReg_f64(i, 0), new StackReg_f64(i, 1)));
+                    HSAILInstructionSet.div_f64(instructions, hsailStackFrame, i);
                     break;
                 case IREM:
-                    add(new HSAILInstructionSet.rem<StackReg_s32,s32>(hsailStackFrame, i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
+                    HSAILInstructionSet.rem_s32(instructions, hsailStackFrame, i);
                     break;
                 case LREM:
-                    add(new HSAILInstructionSet.rem<StackReg_s64,s64>(hsailStackFrame, i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
+                    HSAILInstructionSet.rem_s64(instructions, hsailStackFrame, i);
                     break;
                 case FREM:
-                    add(new HSAILInstructionSet.rem<StackReg_f32,f32>(hsailStackFrame, i, new StackReg_f32(i, 0), new StackReg_f32(i, 0), new StackReg_f32(i, 1)));
+                    HSAILInstructionSet.rem_f32(instructions, hsailStackFrame, i);
                     break;
                 case DREM:
-                    add(new HSAILInstructionSet.rem<StackReg_f64,f64>(hsailStackFrame, i, new StackReg_f64(i, 0), new StackReg_f64(i, 0), new StackReg_f64(i, 1)));
+                    HSAILInstructionSet.rem_f64(instructions, hsailStackFrame, i);
                     break;
                 case INEG:
-                    add(new HSAILInstructionSet.neg<StackReg_s32,s32>(hsailStackFrame, i, new StackReg_s32(i, 0)));
+                    HSAILInstructionSet.neg_s32(instructions, hsailStackFrame, i);
                     break;
                 case LNEG:
-                    add(new HSAILInstructionSet.neg<StackReg_s64,s64>(hsailStackFrame, i, new StackReg_s64(i, 0)));
+                    HSAILInstructionSet.neg_s64(instructions, hsailStackFrame, i);
                     break;
                 case FNEG:
-                    add(new HSAILInstructionSet.neg<StackReg_f32,f32>(hsailStackFrame, i, new StackReg_f32(i, 0)));
+                    HSAILInstructionSet.neg_f32(instructions, hsailStackFrame, i);
                     break;
                 case DNEG:
-                    add(new HSAILInstructionSet.neg<StackReg_f64,f64>(hsailStackFrame, i, new StackReg_f64(i, 0)));
+                    HSAILInstructionSet.neg_f64(instructions, hsailStackFrame, i);
                     break;
                 case ISHL:
-                    add(new HSAILInstructionSet.shl<StackReg_s32,s32>(hsailStackFrame, i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
+                    HSAILInstructionSet.shl_s32(instructions, hsailStackFrame, i);
                     break;
                 case LSHL:
-                    add(new HSAILInstructionSet.shl<StackReg_s64,s64>(hsailStackFrame, i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
+                    HSAILInstructionSet.shl_s64(instructions, hsailStackFrame, i);
                     break;
                 case ISHR:
-                    add(new HSAILInstructionSet.shr<StackReg_s32,s32>(hsailStackFrame, i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
+                    HSAILInstructionSet.shr_s32(instructions, hsailStackFrame, i);
                     break;
                 case LSHR:
-                    add(new HSAILInstructionSet.shr<StackReg_s64,s64>(hsailStackFrame, i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
+                    HSAILInstructionSet.shr_s64(instructions, hsailStackFrame, i);
                     break;
                 case IUSHR:
-                    add(new HSAILInstructionSet.ushr<StackReg_s32,s32>(hsailStackFrame, i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
+                    HSAILInstructionSet.ushr_s32(instructions, hsailStackFrame, i);
                     break;
                 case LUSHR:
-                    add(new HSAILInstructionSet.ushr<StackReg_s64,s64>(hsailStackFrame, i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
+                    HSAILInstructionSet.ushr_s64(instructions, hsailStackFrame, i);
                     break;
                 case IAND:
-                    add(new HSAILInstructionSet.and<StackReg_s32,s32>(hsailStackFrame, i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
+                    HSAILInstructionSet.and_s32(instructions, hsailStackFrame, i);
                     break;
                 case LAND:
-                    add(new HSAILInstructionSet.and<StackReg_s64,s64>(hsailStackFrame, i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
+                    HSAILInstructionSet.and_s64(instructions, hsailStackFrame, i);
                     break;
                 case IOR:
-                    add(new HSAILInstructionSet.or<StackReg_s32,s32>(hsailStackFrame, i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
+                    HSAILInstructionSet.or_s32(instructions, hsailStackFrame, i);
                     break;
                 case LOR:
-                    add(new HSAILInstructionSet.or<StackReg_s64,s64>(hsailStackFrame, i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
+                    HSAILInstructionSet.or_s64(instructions, hsailStackFrame, i);
                     break;
                 case IXOR:
-                    add(new HSAILInstructionSet.xor<StackReg_s32,s32>(hsailStackFrame, i, new StackReg_s32(i, 0), new StackReg_s32(i, 0), new StackReg_s32(i, 1)));
+                    HSAILInstructionSet.xor_s32(instructions, hsailStackFrame, i);
                     break;
                 case LXOR:
-                    add(new HSAILInstructionSet.xor<StackReg_s64, s64>(hsailStackFrame, i, new StackReg_s64(i, 0), new StackReg_s64(i, 0), new StackReg_s64(i, 1)));
+                    HSAILInstructionSet.xor_s64(instructions, hsailStackFrame, i);
                     break;
                 case IINC:
-                    add(new HSAILInstructionSet.add_const<VarReg_s32, s32, Integer>(hsailStackFrame, i, new VarReg_s32(i), new VarReg_s32(i), ((InstructionSet.I_IINC) i).getDelta()));
+                    HSAILInstructionSet.add_const_s32(instructions, hsailStackFrame, i);
                     break;
                 case I2L:
-                    add(new HSAILInstructionSet.cvt<StackReg_s64,StackReg_s32,s64, s32>(hsailStackFrame, i, new StackReg_s64(i, 0), new StackReg_s32(i, 0)));
+                    HSAILInstructionSet.cvt_s64_s32(instructions, hsailStackFrame, i);
                     break;
                 case I2F:
-                    add(new HSAILInstructionSet.cvt<StackReg_f32,StackReg_s32,f32, s32>(hsailStackFrame, i, new StackReg_f32(i, 0), new StackReg_s32(i, 0)));
+                    HSAILInstructionSet.cvt_f32_s32(instructions, hsailStackFrame, i);
                     break;
                 case I2D:
-                    add(new HSAILInstructionSet.cvt<StackReg_f64,StackReg_s32,f64, s32>(hsailStackFrame, i, new StackReg_f64(i, 0), new StackReg_s32(i, 0)));
+                    HSAILInstructionSet.cvt_f64_s32(instructions, hsailStackFrame, i);
                     break;
                 case L2I:
-                    add(new HSAILInstructionSet.cvt<StackReg_s32,StackReg_s64,s32, s64>(hsailStackFrame, i, new StackReg_s32(i, 0), new StackReg_s64(i, 0)));
+                    HSAILInstructionSet.cvt_s32_s64(instructions, hsailStackFrame, i);
                     break;
                 case L2F:
-                    add(new HSAILInstructionSet.cvt<StackReg_f32,StackReg_s64,f32, s64>(hsailStackFrame, i, new StackReg_f32(i, 0), new StackReg_s64(i, 0)));
+                    HSAILInstructionSet.cvt_f32_s64(instructions, hsailStackFrame, i);
                     break;
                 case L2D:
-                    add(new HSAILInstructionSet.cvt<StackReg_f64,StackReg_s64,f64, s64>(hsailStackFrame, i, new StackReg_f64(i, 0), new StackReg_s64(i, 0)));
+                    HSAILInstructionSet.cvt_f64_s64(instructions, hsailStackFrame, i);
                     break;
                 case F2I:
-                    add(new HSAILInstructionSet.cvt<StackReg_s32,StackReg_f32,s32, f32>(hsailStackFrame, i, new StackReg_s32(i, 0), new StackReg_f32(i, 0)));
+                    HSAILInstructionSet.cvt_s32_f32(instructions, hsailStackFrame, i);
                     break;
                 case F2L:
-                    add(new HSAILInstructionSet.cvt<StackReg_s64,StackReg_f32,s64, f32>(hsailStackFrame, i, new StackReg_s64(i, 0), new StackReg_f32(i, 0)));
+                    HSAILInstructionSet.cvt_s64_f32(instructions, hsailStackFrame, i);
                     break;
                 case F2D:
-                    add(new HSAILInstructionSet.cvt<StackReg_f64,StackReg_f32,f64, f32>(hsailStackFrame, i, new StackReg_f64(i, 0), new StackReg_f32(i, 0)));
+                    HSAILInstructionSet.cvt_f64_f32(instructions, hsailStackFrame, i);
                     break;
                 case D2I:
-                    add(new HSAILInstructionSet.cvt<StackReg_s32,StackReg_f64,s32, f64>(hsailStackFrame, i, new StackReg_s32(i, 0), new StackReg_f64(i, 0)));
+                    HSAILInstructionSet.cvt_s32_f64(instructions, hsailStackFrame, i);
                     break;
                 case D2L:
-                    add(new HSAILInstructionSet.cvt<StackReg_s64,StackReg_f64,s64, f64>(hsailStackFrame, i, new StackReg_s64(i, 0), new StackReg_f64(i, 0)));
+                    HSAILInstructionSet.cvt_s64_f64(instructions, hsailStackFrame, i);
                     break;
                 case D2F:
-                    add(new HSAILInstructionSet.cvt<StackReg_f32,StackReg_f64,f32, f64>(hsailStackFrame, i, new StackReg_f32(i, 0), new StackReg_f64(i, 0)));
+                    HSAILInstructionSet.cvt_f32_f64(instructions, hsailStackFrame, i);
                     break;
                 case I2B:
                     HSAILInstructionSet.cvt_s8_s32(instructions, hsailStackFrame, i);
