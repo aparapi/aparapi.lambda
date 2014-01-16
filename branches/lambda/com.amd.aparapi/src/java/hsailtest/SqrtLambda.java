@@ -26,8 +26,8 @@ public class SqrtLambda{
             in[gid] = gid;
             out[gid] = Math.sqrt(in[gid]);
         };
-        Device.hyb().forEach(len, ic);
-        dump("hyb", in, out);
+        Device.hsa().forEach(len, ic);
+        dump("hsa", in, out);
         Device.jtp().forEach(len, ic);
         dump("jtp", in, out);
         Device.seq().forEach(len, ic);

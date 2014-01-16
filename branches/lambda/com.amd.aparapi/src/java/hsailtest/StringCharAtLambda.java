@@ -27,9 +27,6 @@ public class StringCharAtLambda {
         int len = string.length();
         char[] results = new char[len];
 
-
-
-
         IntConsumer ic = gid -> {
             results[gid]  = string.charAt(gid);
 
@@ -40,6 +37,12 @@ public class StringCharAtLambda {
         Device.hsa().forEach(len, ic);
         System.out.println(results);
         dump("hsa",  results);
+
+        Arrays.fill(results, '?');
+        System.out.println(results);
+        Device.seq().forEach(len, ic);
+        System.out.println(results);
+        dump("seq",  results);
 
     }
 }
