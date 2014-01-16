@@ -362,42 +362,6 @@ public class HSAILMethod {
 
     boolean optimizeMoves =  false || Config.enableOptimizeRegMoves;
 
-    void add( HSAILInstructionSet.HSAILInstruction _regInstruction) {
-        // before we add lets see if this is a redundant mov
-        if (optimizeMoves && _regInstruction.sources != null && _regInstruction.sources.length > 0) {
-            for (int regIndex = 0; regIndex < _regInstruction.sources.length; regIndex++) {
-                HSAILRegister r = _regInstruction.sources[regIndex];
-                if (r.isStack()) {
-                    // look up the list of reg instructions for the parentHSAILStackFrame mov which assigns to r
-                    int i = instructions.size();
-                    while ((--i) >= 0) {
-                        if (instructions.get(i) instanceof HSAILInstructionSet.mov) {
-                            // we have found a move
-                            HSAILInstructionSet.mov candidateForRemoval = (HSAILInstructionSet.mov) instructions.get(i);
-                            if (candidateForRemoval.from.getBlock() == _regInstruction.from.getBlock()
-                                    && candidateForRemoval.getDest().isStack() && candidateForRemoval.getDest().equals(r)) {
-                                // so i may be a candidate if between i and instruction.size() i.dest() is not mutated
-                                boolean mutated = false;
-                                for (int x = i + 1; !mutated && x < instructions.size(); x++) {
-                                    if (instructions.get(x).dests.length > 0 && instructions.get(x).dests[0].equals(candidateForRemoval.getSrc())) {
-                                        mutated = true;
-                                    }
-                                }
-                                if (!mutated) {
-                                    instructions.remove(i);
-                                    // removed mov
-                                    _regInstruction.sources[regIndex] = candidateForRemoval.getSrc();
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        instructions.add(_regInstruction);
-    }
 
     public HSAILRenderer renderFunctionDeclaration(HSAILRenderer r) {
         r.append("function &").append(method.getName()).append("(");
@@ -570,47 +534,9 @@ public class HSAILMethod {
         return (r);
     }
 
-    public HSAILRegister getRegOfLastWriteToIndex(int _index) {
-
-        int idx = instructions.size();
-        while (--idx >= 0) {
-            HSAILInstructionSet.HSAILInstruction i = instructions.get(idx);
-            if (i.dests != null) {
-                for (HSAILRegister d : i.dests) {
-                    if (d.index == _index) {
-                        return (d);
-                    }
-                }
-            }
-        }
 
 
-        return (null);
-    }
 
-    public void addmov(HSAILStackFrame _HSAIL_stackFrame, Instruction _i, PrimitiveType _type, int _from, int _to) {
-        if (_type.equals(PrimitiveType.ref) || _type.getHsaBits() == 32) {
-            if (_type.equals(PrimitiveType.ref)) {
-                add(new HSAILInstructionSet.mov<StackReg_ref,StackReg_ref,ref,ref>(_HSAIL_stackFrame,_i, new StackReg_ref( _i, _to), new StackReg_ref(_i, _from)));
-            } else if (_type.equals(PrimitiveType.s32)) {
-                add(new HSAILInstructionSet.mov<StackReg_s32,StackReg_s32,s32,s32>(_HSAIL_stackFrame,_i, new StackReg_s32( _i, _to), new StackReg_s32(_i, _from)));
-            } else {
-                throw new IllegalStateException(" unknown prefix 1 prefix for first of DUP2");
-            }
-
-        } else {
-            throw new IllegalStateException(" unknown prefix 2 prefix for DUP2");
-        }
-    }
-
-    public HSAILRegister addmov(HSAILStackFrame _HSAIL_stackFrame, Instruction _i, int _from, int _to) {
-        HSAILRegister r = getRegOfLastWriteToIndex(_i.getPreStackBase() + _i.getMethod().getCodeEntry().getMaxLocals() + _from);
-        if (r == null){
-            System.out.println("damn!");
-        }
-        addmov(_HSAIL_stackFrame, _i, r.type, _from, _to);
-        return (r);
-    }
 
     enum ParseState {NONE, COMPARE_F32, COMPARE_F64, COMPARE_S64}
 
@@ -658,58 +584,48 @@ public class HSAILMethod {
         }
         method = _method;
         ParseState parseState = ParseState.NONE;
-       // Instruction lastInstruction = null;
-      //  for (Instruction i : method.getInstructions()) {
-     //      System.out.println(i.getThisPC()+" "+i.getPostStackBase());
-      //  }
         Instruction initial = method.getInstructions().iterator().next();
 
 
                 int argOffset = 0;
                 if (!method.isStatic()) {
                     if (entryPoint == null) {
-                        add( new HSAILInstructionSet.ld_kernarg(hsailStackFrame,initial, new VarReg_ref(0)));
+                        HSAILInstructionSet.ld_kernarg_ref(instructions, hsailStackFrame, initial, 0);
                     } else {
-                        add( new HSAILInstructionSet.ld_arg(hsailStackFrame,initial, new VarReg_ref(0)));
+                        HSAILInstructionSet.ld_arg_ref(instructions, hsailStackFrame, initial, 0);
                     }
                     argOffset++;
                 }
                 for (TypeHelper.JavaMethodArg arg : method.argsAndReturnType.getArgs()) {
-                    if (arg.getJavaType().isArray()) {
+                    if (arg.getJavaType().isArray() || arg.getJavaType().isObject()) {
                         if (_entryPoint == null) {
-                            add(new HSAILInstructionSet.ld_kernarg(hsailStackFrame,initial, new VarReg_ref(arg.getArgc() + argOffset)));
+                            HSAILInstructionSet.ld_kernarg_ref(instructions, hsailStackFrame, initial, arg.getArgc() + argOffset);
                         } else {
-                            add(new HSAILInstructionSet.ld_arg(hsailStackFrame,initial, new VarReg_ref(arg.getArgc() + argOffset)));
-                        }
-                    } else if (arg.getJavaType().isObject()) {
-                        if (_entryPoint == null) {
-                            add(new HSAILInstructionSet.ld_kernarg(hsailStackFrame,initial, new VarReg_ref(arg.getArgc() + argOffset)));
-                        } else {
-                            add(new HSAILInstructionSet.ld_arg(hsailStackFrame,initial, new VarReg_ref(arg.getArgc() + argOffset)));
+                            HSAILInstructionSet.ld_arg_ref(instructions, hsailStackFrame, initial, arg.getArgc() + argOffset);
                         }
                     } else if (arg.getJavaType().isInt()) {
                         if (_entryPoint == null) {
-                            add(new HSAILInstructionSet.ld_kernarg(hsailStackFrame,initial, new VarReg_s32(arg.getArgc() + argOffset)));
+                            HSAILInstructionSet.ld_kernarg_s32(instructions, hsailStackFrame, initial, arg.getArgc() + argOffset);
                         } else {
-                            add(new HSAILInstructionSet.ld_arg(hsailStackFrame,initial, new VarReg_s32(arg.getArgc() + argOffset)));
+                            HSAILInstructionSet.ld_arg_s32(instructions, hsailStackFrame, initial, arg.getArgc() + argOffset);
                         }
                     } else if (arg.getJavaType().isFloat()) {
                         if (_entryPoint == null) {
-                            add(new HSAILInstructionSet.ld_kernarg(hsailStackFrame,initial, new VarReg_f32(arg.getArgc() + argOffset)));
+                            HSAILInstructionSet.ld_kernarg_f32(instructions, hsailStackFrame, initial, arg.getArgc() + argOffset);
                         } else {
-                            add(new HSAILInstructionSet.ld_arg(hsailStackFrame,initial, new VarReg_f32(arg.getArgc() + argOffset)));
+                            HSAILInstructionSet.ld_arg_f32(instructions, hsailStackFrame, initial, arg.getArgc() + argOffset);
                         }
                     } else if (arg.getJavaType().isDouble()) {
                         if (_entryPoint == null) {
-                            add(new HSAILInstructionSet.ld_kernarg(hsailStackFrame,initial, new VarReg_f64(arg.getArgc() + argOffset)));
+                            HSAILInstructionSet.ld_kernarg_f64(instructions, hsailStackFrame, initial, arg.getArgc() + argOffset);
                         } else {
-                            add(new HSAILInstructionSet.ld_arg(hsailStackFrame,initial, new VarReg_f64(arg.getArgc() + argOffset)));
+                            HSAILInstructionSet.ld_arg_f64(instructions, hsailStackFrame, initial, arg.getArgc() + argOffset);
                         }
                     } else if (arg.getJavaType().isLong()) {
                         if (_entryPoint == null) {
-                            add(new HSAILInstructionSet.ld_kernarg(hsailStackFrame,initial, new VarReg_s64(arg.getArgc() + argOffset)));
+                            HSAILInstructionSet.ld_kernarg_s64(instructions, hsailStackFrame, initial, arg.getArgc() + argOffset);
                         } else {
-                            add(new HSAILInstructionSet.ld_arg(hsailStackFrame,initial, new VarReg_s64(arg.getArgc() + argOffset)));
+                            HSAILInstructionSet.ld_arg_s64(instructions, hsailStackFrame, initial, arg.getArgc() + argOffset);
                         }
                     }
                 }
@@ -940,25 +856,25 @@ public class HSAILMethod {
                     break;
                 case DUP:
                    // add(new nyi(i));
-                    addmov(hsailStackFrame,i, 0, 1);
+                    HSAILInstructionSet.addmov(instructions, hsailStackFrame, i, 0, 1);
                     break;
                 case DUP_X1:
                     HSAILInstructionSet.nyi(instructions, hsailStackFrame,i);
                     break;
                 case DUP_X2:
 
-                    addmov(hsailStackFrame,i, 2, 3);
-                    addmov(hsailStackFrame,i, 1, 2);
-                    addmov(hsailStackFrame,i, 0, 1);
-                    addmov(hsailStackFrame,i, 3, 0);
+                    HSAILInstructionSet.addmov(instructions, hsailStackFrame, i, 2, 3);
+                    HSAILInstructionSet.addmov(instructions, hsailStackFrame, i, 1, 2);
+                    HSAILInstructionSet.addmov(instructions, hsailStackFrame, i, 0, 1);
+                    HSAILInstructionSet.addmov(instructions, hsailStackFrame, i, 3, 0);
 
                     break;
                 case DUP2:
                     // DUP2 is problematic. DUP2 either dups top two items or one depending on the 'prefix' of the stack items.
                     // To complicate this further HSA large model wants object/mem references to be 64 bits (prefix 2 in Java) whereas
                     // in java object/array refs are 32 bits (prefix 1).
-                    addmov(hsailStackFrame, i, 0, 2);
-                    addmov(hsailStackFrame,i, 1, 3);
+                    HSAILInstructionSet.addmov(instructions, hsailStackFrame, i, 0, 2);
+                    HSAILInstructionSet.addmov(instructions, hsailStackFrame, i, 1, 3);
                     break;
                 case DUP2_X1:
                     HSAILInstructionSet.nyi(instructions, hsailStackFrame,i);

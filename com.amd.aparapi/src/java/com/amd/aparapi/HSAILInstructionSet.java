@@ -1789,4 +1789,123 @@ public class HSAILInstructionSet {
         _instructions.add(new  mov_const<StackReg_f32,f32, Float>(_hsailStackFrame, _i, new StackReg_f32(_i, 0), _value));
         return(_instructions);
     }
+    static public List<HSAILInstruction> ld_arg_ref(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i, int _argNum){
+        _instructions.add(new  ld_arg(_hsailStackFrame,_i, new VarReg_ref(_argNum)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> ld_kernarg_ref(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i, int _argNum){
+        _instructions.add(new  ld_kernarg(_hsailStackFrame,_i, new VarReg_ref(_argNum)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> ld_arg_s32(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i, int _argNum){
+        _instructions.add(new  ld_arg(_hsailStackFrame,_i, new VarReg_s32(_argNum)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> ld_kernarg_s32(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i, int _argNum){
+        _instructions.add(new  ld_kernarg(_hsailStackFrame,_i, new VarReg_s32(_argNum)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> ld_arg_f32(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i, int _argNum){
+        _instructions.add(new  ld_arg(_hsailStackFrame,_i, new VarReg_f32(_argNum)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> ld_kernarg_f32(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i, int _argNum){
+        _instructions.add(new  ld_kernarg(_hsailStackFrame,_i, new VarReg_f32(_argNum)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> ld_arg_f64(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i, int _argNum){
+        _instructions.add(new  ld_arg(_hsailStackFrame,_i, new VarReg_f64(_argNum)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> ld_kernarg_f64(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i, int _argNum){
+        _instructions.add(new  ld_kernarg(_hsailStackFrame,_i, new VarReg_f64(_argNum)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> ld_arg_s64(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i, int _argNum){
+        _instructions.add(new  ld_arg(_hsailStackFrame,_i, new VarReg_s64(_argNum)));
+        return(_instructions);
+    }
+    static public List<HSAILInstruction> ld_kernarg_s64(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i, int _argNum){
+        _instructions.add(new  ld_kernarg(_hsailStackFrame,_i, new VarReg_s64(_argNum)));
+        return(_instructions);
+    }
+
+    static public void addmov(List<HSAILInstructionSet.HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i, PrimitiveType _type, int _from, int _to) {
+        if (_type.equals(PrimitiveType.ref) || _type.getHsaBits() == 32) {
+            if (_type.equals(PrimitiveType.ref)) {
+                _instructions.add(new HSAILInstructionSet.mov<StackReg_ref,StackReg_ref,ref,ref>(_hsailStackFrame,_i, new StackReg_ref( _i, _to), new StackReg_ref(_i, _from)));
+            } else if (_type.equals(PrimitiveType.s32)) {
+                _instructions.add(new HSAILInstructionSet.mov<StackReg_s32, StackReg_s32, s32, s32>(_hsailStackFrame, _i, new StackReg_s32(_i, _to), new StackReg_s32(_i, _from)));
+            } else {
+                throw new IllegalStateException(" unknown prefix 1 prefix for first of DUP2");
+            }
+
+        } else {
+            throw new IllegalStateException(" unknown prefix 2 prefix for DUP2");
+        }
+    }
+    static public HSAILRegister getRegOfLastWriteToIndex(List<HSAILInstructionSet.HSAILInstruction>_instructions,int _index) {
+
+        int idx = _instructions.size();
+        while (--idx >= 0) {
+            HSAILInstructionSet.HSAILInstruction i = _instructions.get(idx);
+            if (i.dests != null) {
+                for (HSAILRegister d : i.dests) {
+                    if (d.index == _index) {
+                        return (d);
+                    }
+                }
+            }
+        }
+
+
+        return (null);
+    }
+    static public HSAILRegister addmov(List<HSAILInstructionSet.HSAILInstruction>_instructions, HSAILStackFrame _hsailStackFrame, Instruction _i, int _from, int _to) {
+        HSAILRegister r = getRegOfLastWriteToIndex(_instructions, _i.getPreStackBase() + _i.getMethod().getCodeEntry().getMaxLocals() + _from);
+        if (r == null){
+            System.out.println("damn!");
+        }
+        addmov(_instructions, _hsailStackFrame, _i, r.type, _from, _to);
+        return (r);
+    }
+
+    // for reference
+    static public void add(List<HSAILInstructionSet.HSAILInstruction>_instructions, HSAILInstructionSet.HSAILInstruction _regInstruction) {
+        // before we add lets see if this is a redundant mov
+        if ( _regInstruction.sources != null && _regInstruction.sources.length > 0) {
+            for (int regIndex = 0; regIndex < _regInstruction.sources.length; regIndex++) {
+                HSAILRegister r = _regInstruction.sources[regIndex];
+                if (r.isStack()) {
+                    // look up the list of reg instructions for the parentHSAILStackFrame mov which assigns to r
+                    int i = _instructions.size();
+                    while ((--i) >= 0) {
+                        if (_instructions.get(i) instanceof HSAILInstructionSet.mov) {
+                            // we have found a move
+                            HSAILInstructionSet.mov candidateForRemoval = (HSAILInstructionSet.mov) _instructions.get(i);
+                            if (candidateForRemoval.from.getBlock() == _regInstruction.from.getBlock()
+                                    && candidateForRemoval.getDest().isStack() && candidateForRemoval.getDest().equals(r)) {
+                                // so i may be a candidate if between i and instruction.size() i.dest() is not mutated
+                                boolean mutated = false;
+                                for (int x = i + 1; !mutated && x < _instructions.size(); x++) {
+                                    if (_instructions.get(x).dests.length > 0 && _instructions.get(x).dests[0].equals(candidateForRemoval.getSrc())) {
+                                        mutated = true;
+                                    }
+                                }
+                                if (!mutated) {
+                                    _instructions.remove(i);
+                                    // removed mov
+                                    _regInstruction.sources[regIndex] = candidateForRemoval.getSrc();
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        _instructions.add(_regInstruction);
+    }
+
 }
