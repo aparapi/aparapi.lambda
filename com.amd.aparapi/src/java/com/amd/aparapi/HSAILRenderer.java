@@ -74,15 +74,16 @@ public class HSAILRenderer extends TextRenderer<HSAILRenderer>{
         return (this);
     }
 
-    public HSAILRenderer regNum(HSAILRegister _reg, HSAILStackFrame _HSAIL_stackFrame){
+    public HSAILRenderer regNum(HSAILRegister _reg){
 
 
-        return (this.append(_reg.index + _HSAIL_stackFrame.baseOffset));
+       //old return (this.append(_reg.index + _HSAIL_stackFrame.baseOffset));
+        return (this.append(_reg.index));
     }
 
-    public HSAILRenderer regName(HSAILRegister _reg, HSAILStackFrame _HSAIL_stackFrame){
+    public HSAILRenderer regName(HSAILRegister _reg){
         this.regPrefix(_reg.type);
-        return(this.regNum(_reg, _HSAIL_stackFrame));
+        return(this.regNum(_reg));
 
    }
 

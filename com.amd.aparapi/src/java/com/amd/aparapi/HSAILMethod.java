@@ -136,9 +136,9 @@ import java.util.regex.Pattern;
         CallableCallType(String _mappedMethod) {
             super(_mappedMethod);
         }
-        abstract T renderCallSite(HSAILRenderer r, HSAILStackFrame _HSAIL_stackFrame,  Instruction from, String name, int _base);
+        abstract T renderCallSite(HSAILRenderer r,   Instruction from, String name, int _base);
     }
-
+/*
     class SimpleMethodCall extends CallableCallType<SimpleMethodCall> {
         HSAILMethod method;
 
@@ -156,14 +156,14 @@ import java.util.regex.Pattern;
             return (this);
         }
 
-        @Override SimpleMethodCall renderCallSite(HSAILRenderer r, HSAILStackFrame _HSAIL_stackFrame,  Instruction from, String name, int _base) {
+        @Override SimpleMethodCall renderCallSite(HSAILRenderer r,   Instruction from, String name, int _base) {
 
             TypeHelper.JavaMethodArgsAndReturnType argsAndReturnType = from.asMethodCall().getConstantPoolMethodEntry().getArgsAndReturnType();
             TypeHelper.JavaType returnType = argsAndReturnType.getReturnType();
             r.obrace().nl();
             if (!isStatic()) {
                 r.pad(12).append("arg_u64 %this").semicolon().nl();
-                r.pad(12).append("st_arg_u64 $d" + _HSAIL_stackFrame.baseOffset + ", [%this]").semicolon().nl();
+                r.pad(12).append("st_arg_u64 $d" + hsailStackFrame.baseOffset + ", [%this]").semicolon().nl();
             }
 
             int offset = 0;
@@ -173,7 +173,7 @@ import java.util.regex.Pattern;
             for (TypeHelper.JavaMethodArg arg : argsAndReturnType.getArgs()) {
                 String argName = "%_arg_" + arg.getArgc();
                 r.pad(12).append("arg_").typeName(arg.getJavaType()).space().append(argName).semicolon().nl();
-                r.pad(12).append("st_arg_").typeName(arg.getJavaType()).space().regPrefix(arg.getJavaType()).append( + (_HSAIL_stackFrame.baseOffset + offset) + ", [" + argName + "]").semicolon().nl();
+                r.pad(12).append("st_arg_").typeName(arg.getJavaType()).space().regPrefix(arg.getJavaType()).append( + (hsailStackFrame.baseOffset + offset) + ", [" + argName + "]").semicolon().nl();
             }
             if (!returnType.isVoid()) {
                 r.pad(12).append("arg_").typeName(returnType).append(" %_result").semicolon().nl();
@@ -199,7 +199,7 @@ import java.util.regex.Pattern;
             }
             r.cparenth().semicolon().nl();
             if (!returnType.isVoid()) {
-                r.pad(12).append("ld_arg_").typeName(returnType).space().regPrefix(returnType).append( _HSAIL_stackFrame.baseOffset + ", [%_result]").semicolon().nl();
+                r.pad(12).append("ld_arg_").typeName(returnType).space().regPrefix(returnType).append( hsailStackFrame.baseOffset + ", [%_result]").semicolon().nl();
             }
             r.pad(9).cbrace();
 
@@ -217,7 +217,7 @@ import java.util.regex.Pattern;
             return (method.method.isStatic());
         }
     }
-
+*/
     class InlineMethodCall extends CallableCallType<InlineMethodCall> {
         HSAILMethod method;
 
@@ -227,7 +227,7 @@ import java.util.regex.Pattern;
         }
 
 
-        @Override InlineMethodCall renderCallSite(HSAILRenderer r, HSAILStackFrame _HSAIL_stackFrame, Instruction from, String name, int base) {
+        @Override InlineMethodCall renderCallSite(HSAILRenderer r,  Instruction from, String name, int base) {
 
             method.renderInlinedFunctionBody(r, base);
 
@@ -283,7 +283,7 @@ class HSAILIntrinsics {
         add(new InlineIntrinsicCall("java.lang.Math.sqrt(D)D", true){
             public List<HSAILInstructionSet.HSAILInstruction> add(List<HSAILInstructionSet.HSAILInstruction> _instructions, HSAILStackFrame _hsailStackFrame, Instruction _from){
                 //   nsqrt_f64  $d${0}, $d${0};
-                _instructions.add(new HSAILInstructionSet.nsqrt<StackReg_f64, f64>(_hsailStackFrame, _from, new StackReg_f64(_from, 0)));
+                _instructions.add(new HSAILInstructionSet.nsqrt<StackReg_f64, f64>(_hsailStackFrame, _from, new StackReg_f64(_from, _hsailStackFrame.baseOffset,0)));
                 return(_instructions);
             }
         });
@@ -296,31 +296,31 @@ class HSAILIntrinsics {
                 // ld_global_u16 $s${0}, [$d${3}+24];   // ld the char"
 
                 // ld_global_u64 $d${2}, [$d${0}+16];   // this string reference into $d${2}"
-                _instructions.add(new HSAILInstructionSet.field_load<StackReg_u64, u64>(_hsailStackFrame, _from, new StackReg_u64(_from, 2),  new StackReg_ref(_from, 0), 16));
+                _instructions.add(new HSAILInstructionSet.field_load<StackReg_u64, u64>(_hsailStackFrame, _from, new StackReg_u64(_from,_hsailStackFrame.baseOffset, 2),  new StackReg_ref(_from,_hsailStackFrame.baseOffset, 0), 16));
 
                 // mov_b32 $s${3}, $s${1};              // copy index",
-                _instructions.add(new HSAILInstructionSet.mov<StackReg_s32, StackReg_s32,  s32,  s32>(_hsailStackFrame, _from, new StackReg_s32(_from, 3),  new StackReg_s32(_from, 1)));
+                _instructions.add(new HSAILInstructionSet.mov<StackReg_s32, StackReg_s32,  s32,  s32>(_hsailStackFrame, _from, new StackReg_s32(_from,_hsailStackFrame.baseOffset, 3),  new StackReg_s32(_from, _hsailStackFrame.baseOffset,1)));
 
                 // cvt_u64_s32 $d${3}, $s${3};          // convert array index to 64 bits",
-                _instructions.add(new HSAILInstructionSet.cvt<StackReg_u64, StackReg_s32,  u64,  s32>(_hsailStackFrame, _from, new StackReg_u64(_from, 3),  new StackReg_s32(_from, 3)));
+                _instructions.add(new HSAILInstructionSet.cvt<StackReg_u64, StackReg_s32,  u64,  s32>(_hsailStackFrame, _from, new StackReg_u64(_from,_hsailStackFrame.baseOffset, 3),  new StackReg_s32(_from,_hsailStackFrame.baseOffset, 3)));
 
                 // mad_u64 $d${3}, $d${3}, 2, $d${2};   // get the char address",
-                _instructions.add(new HSAILInstructionSet.mad(_hsailStackFrame, _from, new StackReg_ref(_from, 3),new StackReg_ref(_from, 3),   new StackReg_ref(_from, 2), 2));
+                _instructions.add(new HSAILInstructionSet.mad(_hsailStackFrame, _from, new StackReg_ref(_from,_hsailStackFrame.baseOffset, 3),new StackReg_ref(_from,_hsailStackFrame.baseOffset, 3),   new StackReg_ref(_from, _hsailStackFrame.baseOffset,2), 2));
 
                 // ld_global_u16 $s${0}, [$d${3}+24];   // ld the char"
-                _instructions.add(new HSAILInstructionSet.field_load<StackReg_u16, u16>(_hsailStackFrame, _from, new StackReg_u16(_from, 0),  new StackReg_ref(_from, 3), 24));
+                _instructions.add(new HSAILInstructionSet.field_load<StackReg_u16, u16>(_hsailStackFrame, _from, new StackReg_u16(_from,_hsailStackFrame.baseOffset, 0),  new StackReg_ref(_from,_hsailStackFrame.baseOffset, 3), 24));
                 return(_instructions);
             }
         });
         add(new InlineIntrinsicCall("java.lang.Math.cos(D)D", true){
             public List<HSAILInstructionSet.HSAILInstruction> add(List<HSAILInstructionSet.HSAILInstruction> _instructions, HSAILStackFrame _hsailStackFrame, Instruction _from){
-                _instructions.add(new HSAILInstructionSet.ncos<StackReg_f64, f64>(_hsailStackFrame, _from,  new StackReg_f64(_from, 0)));
+                _instructions.add(new HSAILInstructionSet.ncos<StackReg_f64, f64>(_hsailStackFrame, _from,  new StackReg_f64(_from, _hsailStackFrame.baseOffset,0)));
                 return(_instructions);
             }
         });
         add(new InlineIntrinsicCall("java.lang.Math.sin(D)D", true ){
             public List<HSAILInstructionSet.HSAILInstruction> add(List<HSAILInstructionSet.HSAILInstruction> _instructions, HSAILStackFrame _hsailStackFrame, Instruction _from){
-                _instructions.add(new HSAILInstructionSet.nsin<StackReg_f64, f64>(_hsailStackFrame, _from,  new StackReg_f64(_from, 0)));
+                _instructions.add(new HSAILInstructionSet.nsin<StackReg_f64, f64>(_hsailStackFrame, _from,  new StackReg_f64(_from,_hsailStackFrame.baseOffset, 0)));
                 return(_instructions);
             }
         });
@@ -330,10 +330,10 @@ class HSAILIntrinsics {
                 //mul_f64 $d1, $d1, $d1;",
                 //add_f64 $d0, $d0, $d1;",
                 //nsqrt_f64  $d0, $d0;",
-                _instructions.add(new HSAILInstructionSet.mul<StackReg_f64, f64>(_hsailStackFrame, _from,  new StackReg_f64(_from, 0),  new StackReg_f64(_from, 0),  new StackReg_f64(_from, 0)));
-                _instructions.add(new HSAILInstructionSet.mul<StackReg_f64, f64>(_hsailStackFrame, _from,  new StackReg_f64(_from, 1),  new StackReg_f64(_from, 1),  new StackReg_f64(_from, 1)));
-                _instructions.add(new HSAILInstructionSet.add<StackReg_f64, f64>(_hsailStackFrame, _from,  new StackReg_f64(_from, 0),  new StackReg_f64(_from, 0),  new StackReg_f64(_from, 1)));
-                _instructions.add(new HSAILInstructionSet.nsqrt<StackReg_f64, f64>(_hsailStackFrame, _from,  new StackReg_f64(_from, 0)));
+                _instructions.add(new HSAILInstructionSet.mul<StackReg_f64, f64>(_hsailStackFrame, _from,  new StackReg_f64(_from,_hsailStackFrame.baseOffset, 0),  new StackReg_f64(_from,_hsailStackFrame.baseOffset, 0),  new StackReg_f64(_from,_hsailStackFrame.baseOffset, 0)));
+                _instructions.add(new HSAILInstructionSet.mul<StackReg_f64, f64>(_hsailStackFrame, _from,  new StackReg_f64(_from, _hsailStackFrame.baseOffset,1),  new StackReg_f64(_from, _hsailStackFrame.baseOffset,1),  new StackReg_f64(_from,_hsailStackFrame.baseOffset, 1)));
+                _instructions.add(new HSAILInstructionSet.add<StackReg_f64, f64>(_hsailStackFrame, _from,  new StackReg_f64(_from,_hsailStackFrame.baseOffset, 0),  new StackReg_f64(_from,_hsailStackFrame.baseOffset, 0),  new StackReg_f64(_from,_hsailStackFrame.baseOffset, 1)));
+                _instructions.add(new HSAILInstructionSet.nsqrt<StackReg_f64, f64>(_hsailStackFrame, _from,  new StackReg_f64(_from, _hsailStackFrame.baseOffset,0)));
                 return(_instructions);
             }
         });
@@ -360,13 +360,13 @@ public class HSAILMethod {
     static boolean useCache = false; // don't turn this on until we have inlining working
     HSAILMethod entryPoint;
     HSAILStackFrame hsailStackFrame;
-    private Set<SimpleMethodCall> calls =  new LinkedHashSet<SimpleMethodCall>();
+  //  private Set<SimpleMethodCall> calls =  new LinkedHashSet<SimpleMethodCall>();
     List<HSAILInstructionSet.HSAILInstruction> instructions = new ArrayList<HSAILInstructionSet.HSAILInstruction>();
     ClassModel.ClassModelMethod method;
 
-    public void add(SimpleMethodCall call) {
-        getEntryPoint().calls.add(call);
-    }
+  //  public void add(SimpleMethodCall call) {
+     //   getEntryPoint().calls.add(call);
+  //  }
 
     HSAILMethod getEntryPoint() {
         if (entryPoint == null) {
@@ -417,7 +417,7 @@ public class HSAILMethod {
                         r.label("func_"+i.from.getThisPC()).colon().nl();
                     }
                     if (r.isShowingComments()) {
-                        r.nl().pad(1).lineCommentStart().mark().append(i.getHSAILStackFrame().getLocation(i.from.getThisPC())).relpad(2).space().i(i.from).nl();
+                        r.nl().pad(1).lineCommentStart().mark().append(hsailStackFrame.getLocation(i.from.getThisPC())).relpad(2).space().i(i.from).nl();
                     }
                 }
                 r.pad(9);
@@ -430,49 +430,51 @@ public class HSAILMethod {
 
     public HSAILRenderer renderInlinedFunctionBody(HSAILRenderer r,  int base) {
         Set<Instruction> s = new HashSet<Instruction>();
-        boolean endBranchNeeded = false;
 
+        String endLabel = null;
         for (HSAILInstructionSet.HSAILInstruction i : instructions) {
             if (!(i instanceof HSAILInstructionSet.ld_arg)){
                if (!s.contains(i.from)) {
                    s.add(i.from);
-                     if (i.from.isBranchTarget()) {
-                         r.label(i.getHSAILStackFrame().getLocation(i.from.getThisPC())).colon().nl();
-                     }
-                    if (r.isShowingComments()) {
-                        r.nl().pad(1).lineCommentStart().append(i.getHSAILStackFrame().getLocation(i.from.getThisPC())).mark().relpad(2).space().i(i.from).nl();
-                    }
-                }
-                if (i instanceof HSAILInstructionSet.retvoid){
-                    r.pad(9).lineCommentStart().append(" ret removed as part of inlining");
-                }else if (i instanceof HSAILInstructionSet.ret){
-                    r.pad(9).lineComment("ret removed and replaced by branch to end of code").nl();
-                  r.pad(9).append("mov_").movTypeName(((HSAILInstructionSet.ret)i).getSrc()).space().regPrefix(((HSAILInstructionSet.ret)i).getSrc().type).append(base).separator().regName(((HSAILInstructionSet.ret)i).getSrc(), i.getHSAILStackFrame()).semicolon();
-                  if (i != instructions.get(instructions.size()-1)){
-                      r.nl().pad(9).append("brn @L"+ i.getHSAILStackFrame().getUniqueNameSpace()+"_END").semicolon();
-                      endBranchNeeded = true;
-                  }
-              }   else{
-                  r.pad(9);
-                  i.render(r);
-              }
-                r.nl();
+                   if (i.from.isBranchTarget()) {
+                      r.label(i.location).colon().nl();
+                   }
+                   if (r.isShowingComments()) {
+                      r.nl().pad(1).lineCommentStart().append(i.location).mark().relpad(2).space().i(i.from).nl();
+                   }
+               }
+               if (i instanceof HSAILInstructionSet.retvoid){
+                   r.pad(9).lineCommentStart().append(" ret removed as part of inlining");
+               }else if (i instanceof HSAILInstructionSet.ret){
+
+                   r.pad(9).lineComment("ret removed and replaced by branch to end of code").nl();
+                   r.pad(9).append("mov_").movTypeName(((HSAILInstructionSet.ret) i).getSrc()).space().regPrefix(((HSAILInstructionSet.ret) i).getSrc().type).append(base).separator().regName(((HSAILInstructionSet.ret) i).getSrc()).semicolon();
+                   if (i != instructions.get(instructions.size()-1)){
+                      endLabel = ((HSAILInstructionSet.ret)i).endLabel;
+                      r.nl().pad(9).append("brn ").label(endLabel).semicolon();
+
+                   }
+               }else{
+                   r.pad(9);
+                   i.render(r);
+               }
+               r.nl();
             }
         }
-        if (endBranchNeeded){
-            r.append("@L"+instructions.iterator().next().getHSAILStackFrame().getUniqueNameSpace()+"_END").colon().nl();
+        if (endLabel!=null){
+            r.label(endLabel).colon().nl();
         }
         return (r);
     }
 
     public HSAILRenderer renderEntryPoint(HSAILRenderer r) {
         r.append("version 0:95: $full : $large").semicolon().nl();
-        for (SimpleMethodCall c : calls) {
-            c.renderDeclaration(r, null);
-        }
-        for (SimpleMethodCall c : calls) {
-            c.renderDefinition(r, null);
-        }
+       // for (SimpleMethodCall c : calls) {
+           // c.renderDeclaration(r, null);
+      //  }
+      //  for (SimpleMethodCall c : calls) {
+       //     c.renderDefinition(r, null);
+       // }
 
         r.append("kernel &run").oparenth();
         boolean firstArg=true;
@@ -498,10 +500,10 @@ public class HSAILMethod {
 
             }else if ( (last == null || last != i.from)) {
                 if (i.from.isBranchTarget()) {
-                    r.label(i.getHSAILStackFrame().getLocation(i.from.getThisPC())).colon();
+                    r.label(i.location).colon();
                 }
                 if (r.isShowingComments()) {
-                    r.nl().pad(1).lineCommentStart().mark().append(i.getHSAILStackFrame().getLocation(i.from.getThisPC())).relpad(2).space().i(i.from).nl();
+                    r.nl().pad(1).lineCommentStart().mark().append(i.location).relpad(2).space().i(i.from).nl();
                 }
             }else{
                 last = i.from;
@@ -511,11 +513,13 @@ public class HSAILMethod {
             r.nl();
         }
         r.cbrace().semicolon().nl().commentStart();
+        /*
         for (Map.Entry<HSAILStackFrame, Integer> e:instructions.iterator().next().getHSAILStackFrame().locMap.entrySet()){
             r.nl().append(String.format("%04d",e.getValue())).append("=").obrace().nl();
             e.getKey().renderStack(r);
             r.cbrace().nl();
         }
+        */
         r.nl().commentEnd();
         return (r);
     }
