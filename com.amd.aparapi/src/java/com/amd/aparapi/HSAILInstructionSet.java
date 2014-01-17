@@ -456,6 +456,27 @@ public class HSAILInstructionSet {
             }
         }
 
+    static  class workitemabsid<Rt extends HSAILRegister<Rt,T>,T extends PrimitiveType> extends HSAILInstructionWithDest<workitemabsid<Rt,T>,Rt, T> {
+
+        protected workitemabsid(workitemabsid<Rt,T> original){
+            super(original);
+
+        }
+
+        workitemabsid(HSAILStackFrame _HSAIL_stackFrame,Instruction _from, Rt _dest) {
+            super(_HSAIL_stackFrame, _from, _dest);
+        }
+
+        @Override public workitemabsid<Rt,T> cloneMe(){
+            return(new workitemabsid<Rt,T>(this));
+        }
+
+        @Override
+        void render(HSAILRenderer r) {
+            r.append("workitemabsid_").typeName(getDest()).space().regName(getDest(),HSAILStackFrame).separator().append("0").semicolon();
+        }
+    }
+
         static  class ld_arg<Rt extends HSAILRegister<Rt,T>,T extends PrimitiveType> extends HSAILInstructionWithDest<ld_arg<Rt,T>,Rt, T> {
 
             protected ld_arg(ld_arg<Rt,T> original){
@@ -1829,7 +1850,10 @@ public class HSAILInstructionSet {
         _instructions.add(new  ld_kernarg(_hsailStackFrame,_i, new VarReg_s64(_argNum)));
         return(_instructions);
     }
-
+    static public List<HSAILInstruction> workitemabsid_u32(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i, int _argNum){
+        _instructions.add(new workitemabsid<VarReg_s32, s32>(_hsailStackFrame, _i, new VarReg_s32(_argNum)));
+        return(_instructions);
+    }
     static public void addmov(List<HSAILInstructionSet.HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i, PrimitiveType _type, int _from, int _to) {
         if (_type.equals(PrimitiveType.ref) || _type.getHsaBits() == 32) {
             if (_type.equals(PrimitiveType.ref)) {

@@ -343,13 +343,19 @@ class HSAILIntrinsics {
 }
 
 public class HSAILMethod {
-
+    enum ParseState {NONE, COMPARE_F32, COMPARE_F64, COMPARE_S64}
+    ;
+    static Map<ClassModel.ClassModelMethod, HSAILMethod> cache = new HashMap<ClassModel.ClassModelMethod, HSAILMethod>();
+    static boolean useCache = false; // don't turn this on until we have inlining working
+    HSAILMethod entryPoint;
+    HSAILStackFrame hsailStackFrame;
     private Set<CallType> calls = null;
+    List<HSAILInstructionSet.HSAILInstruction> instructions = new ArrayList<HSAILInstructionSet.HSAILInstruction>();
+    ClassModel.ClassModelMethod method;
 
     public void add(CallType call) {
         getEntryPoint().calls.add(call);
     }
-
 
     HSAILMethod getEntryPoint() {
         if (entryPoint == null) {
@@ -357,11 +363,6 @@ public class HSAILMethod {
         }
         return (entryPoint.getEntryPoint());
     }
-    List<HSAILInstructionSet.HSAILInstruction> instructions = new ArrayList<HSAILInstructionSet.HSAILInstruction>();
-    ClassModel.ClassModelMethod method;
-
-    boolean optimizeMoves =  false || Config.enableOptimizeRegMoves;
-
 
     public HSAILRenderer renderFunctionDeclaration(HSAILRenderer r) {
         r.append("function &").append(method.getName()).append("(");
@@ -395,7 +396,6 @@ public class HSAILMethod {
 
     public HSAILRenderer renderFunctionDefinition(HSAILRenderer r) {
         renderFunctionDeclaration(r);
-
             r.obrace().nl();
             Set<Instruction> s = new HashSet<Instruction>();
 
@@ -414,9 +414,6 @@ public class HSAILMethod {
                 r.nl();
             }
             r.cbrace().semicolon();
-
-
-
         return (r);
     }
 
@@ -450,8 +447,6 @@ public class HSAILMethod {
                   i.render(r);
               }
                 r.nl();
-
-
             }
         }
         if (endBranchNeeded){
@@ -461,14 +456,10 @@ public class HSAILMethod {
     }
 
     public HSAILRenderer renderEntryPoint(HSAILRenderer r) {
-        //r.append("version 1:0:large;").nl();
         r.append("version 0:95: $full : $large").semicolon().nl();
-
-       // RenderContext rc = new RenderContext(null, this.method.getClassModel().getDotClassName()+"."+this.method.getName()+this.method.getDescriptor(), 0);
         for (CallType c : calls) {
             c.renderDeclaration(r, null);
         }
-
         for (CallType c : calls) {
             c.renderDefinition(r, null);
         }
@@ -496,35 +487,26 @@ public class HSAILMethod {
         }
         r.nl().pad(3).cparenth().obrace().nl();
 
-        java.util.Set<Instruction> s = new java.util.HashSet<Instruction>();
-        boolean first = false;
-        int count = 0;
-
+        Instruction last = null;
         for (HSAILInstructionSet.HSAILInstruction i : instructions) {
-            if (!(i instanceof HSAILInstructionSet.ld_kernarg) && !s.contains(i.from)) {
-                if (!first) {
-                    r.pad(9).append("workitemabsid_u32 $s" + (count - 1) + ", 0").semicolon().nl();
-                    // r.pad(9).append("workitemaid $s" + (count - 1) + ", 0;").nl();
-                    first = true;
-                }
-                s.add(i.from);
-                if (i.from.isBranchTarget()) {
 
-                    r.label(i.getHSAILStackFrame().getLocation(i.from.getThisPC())).colon().nl();
+            if ((i  instanceof HSAILInstructionSet.ld_kernarg) || (i instanceof HSAILInstructionSet.workitemabsid)){
+
+            }else if ( (last == null || last != i.from)) {
+                if (i.from.isBranchTarget()) {
+                    r.label(i.getHSAILStackFrame().getLocation(i.from.getThisPC())).colon();
                 }
                 if (r.isShowingComments()) {
                     r.nl().pad(1).lineCommentStart().mark().append(i.getHSAILStackFrame().getLocation(i.from.getThisPC())).relpad(2).space().i(i.from).nl();
                 }
-
-            } else {
-                count++;
+            }else{
+                last = i.from;
             }
             r.pad(9);
             i.render(r);
             r.nl();
         }
-        r.cbrace().semicolon();
-        r.nl().commentStart();
+        r.cbrace().semicolon().nl().commentStart();
         for (Map.Entry<HSAILStackFrame, Integer> e:instructions.iterator().next().getHSAILStackFrame().locMap.entrySet()){
             r.nl().append(String.format("%04d",e.getValue())).append("=").obrace().nl();
             e.getKey().renderStack(r);
@@ -533,18 +515,6 @@ public class HSAILMethod {
         r.nl().commentEnd();
         return (r);
     }
-
-
-
-
-
-    enum ParseState {NONE, COMPARE_F32, COMPARE_F64, COMPARE_S64}
-
-    ;
-
-   static Map<ClassModel.ClassModelMethod, HSAILMethod> cache = new HashMap<ClassModel.ClassModelMethod, HSAILMethod>();
-   static boolean useCache = false; // don't turn this on until we have inlining working
-
 
     static synchronized HSAILMethod getHSAILMethod(ClassModel.ClassModelMethod _method, HSAILMethod _entryPoint, HSAILStackFrame _HSAIL_stackFrame, int _base) {
         HSAILMethod instance = null;
@@ -569,8 +539,7 @@ public class HSAILMethod {
        return getHSAILMethod(_method, _entryPoint, null);
     }
 
-    HSAILMethod entryPoint;
-    HSAILStackFrame hsailStackFrame;
+
 
     private HSAILMethod(ClassModel.ClassModelMethod _method, HSAILMethod _entryPoint, HSAILStackFrame _HSAIL_stackFrame, int _base) {
         hsailStackFrame = new HSAILStackFrame(_HSAIL_stackFrame, _method.getClassModel().getDotClassName()+"."+_method.getName()+_method.getDescriptor(), _base);
@@ -596,7 +565,9 @@ public class HSAILMethod {
                     }
                     argOffset++;
                 }
-                for (TypeHelper.JavaMethodArg arg : method.argsAndReturnType.getArgs()) {
+                TypeHelper.JavaMethodArg[] args = method.argsAndReturnType.getArgs();
+                int argc = args.length;
+                for (TypeHelper.JavaMethodArg arg : args) {
                     if (arg.getJavaType().isArray() || arg.getJavaType().isObject()) {
                         if (_entryPoint == null) {
                             HSAILInstructionSet.ld_kernarg_ref(instructions, hsailStackFrame, initial, arg.getArgc() + argOffset);
@@ -628,6 +599,9 @@ public class HSAILMethod {
                             HSAILInstructionSet.ld_arg_s64(instructions, hsailStackFrame, initial, arg.getArgc() + argOffset);
                         }
                     }
+                }
+                if (_entryPoint ==null){
+                    HSAILInstructionSet.workitemabsid_u32(instructions, hsailStackFrame, initial, argc + argOffset -1); // we overwrite the last arg with the gid
                 }
 
     for (Instruction i : method.getInstructions()) {
