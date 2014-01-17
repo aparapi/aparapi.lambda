@@ -130,8 +130,8 @@ class StackReg_f64 extends Reg_f64<StackReg_f64>{
     @Override public StackReg_f64 cloneMe(){
         return(new StackReg_f64(this));
     }
-   StackReg_f64(Instruction _from, int _offset){
-      super(_from.getPreStackBase() + _from.getMethod().getCodeEntry().getMaxLocals() + _offset, true);
+   StackReg_f64(Instruction _from, int _stackBase, int _offset){
+      super(_from.getPreStackBase() + _from.getMethod().getCodeEntry().getMaxLocals() + _stackBase + _offset, true);
    }
 }
 
@@ -142,8 +142,8 @@ class StackReg_f32 extends Reg_f32<StackReg_f32>{
     @Override public StackReg_f32 cloneMe(){
         return(new StackReg_f32(this));
     }
-   StackReg_f32(Instruction _from, int _offset){
-      super(_from.getPreStackBase() + _from.getMethod().getCodeEntry().getMaxLocals() + _offset, true);
+   StackReg_f32(Instruction _from, int _stackBase, int _offset){
+      super(_from.getPreStackBase() + _from.getMethod().getCodeEntry().getMaxLocals() + _stackBase + _offset, true);
    }
 }
 
@@ -154,8 +154,8 @@ class StackReg_s64 extends Reg_s64<StackReg_s64>{
     @Override public StackReg_s64 cloneMe(){
         return(new StackReg_s64(this));
     }
-   StackReg_s64(Instruction _from, int _offset){
-      super(_from.getPreStackBase() + _from.getMethod().getCodeEntry().getMaxLocals() + _offset, true);
+   StackReg_s64(Instruction _from, int _stackBase,int _offset){
+      super(_from.getPreStackBase() + _from.getMethod().getCodeEntry().getMaxLocals()+ _stackBase + _offset, true);
    }
 }
 
@@ -166,8 +166,8 @@ class StackReg_u64 extends Reg_u64<StackReg_u64>{
     @Override public StackReg_u64 cloneMe(){
         return(new StackReg_u64(this));
     }
-   StackReg_u64(Instruction _from, int _offset){
-      super(_from.getPreStackBase() + _from.getMethod().getCodeEntry().getMaxLocals() + _offset, true);
+   StackReg_u64(Instruction _from, int _stackBase,int _offset){
+      super(_from.getPreStackBase() + _from.getMethod().getCodeEntry().getMaxLocals() + _stackBase+ _offset, true);
    }
 }
 
@@ -178,8 +178,8 @@ class StackReg_s32 extends Reg_s32<StackReg_s32>{
     @Override public StackReg_s32 cloneMe(){
         return(new StackReg_s32(this));
     }
-   StackReg_s32(Instruction _from, int _offset){
-      super(_from.getPreStackBase() + _from.getMethod().getCodeEntry().getMaxLocals() + _offset, true);
+   StackReg_s32(Instruction _from, int _stackBase,int _offset){
+      super(_from.getPreStackBase() + _from.getMethod().getCodeEntry().getMaxLocals()+ _stackBase + _offset, true);
    }
 }
 
@@ -190,8 +190,8 @@ class StackReg_s16 extends Reg_s16<StackReg_s16>{
     @Override public StackReg_s16 cloneMe(){
         return(new StackReg_s16(this));
     }
-   StackReg_s16(Instruction _from, int _offset){
-      super(_from.getPreStackBase() + _from.getMethod().getCodeEntry().getMaxLocals() + _offset, true);
+   StackReg_s16(Instruction _from, int _stackBase,int _offset){
+      super(_from.getPreStackBase() + _from.getMethod().getCodeEntry().getMaxLocals()+ _stackBase + _offset, true);
    }
 }
 
@@ -202,8 +202,8 @@ class StackReg_u16 extends Reg_u16<StackReg_u16>{
     @Override public StackReg_u16 cloneMe(){
         return(new StackReg_u16(this));
     }
-   StackReg_u16(Instruction _from, int _offset){
-      super(_from.getPreStackBase() + _from.getMethod().getCodeEntry().getMaxLocals() + _offset, true);
+   StackReg_u16(Instruction _from, int _stackBase,int _offset){
+      super(_from.getPreStackBase() + _from.getMethod().getCodeEntry().getMaxLocals()+ _stackBase + _offset, true);
    }
 }
 
@@ -214,8 +214,8 @@ class StackReg_s8 extends Reg_s8<StackReg_s8>{
     @Override public StackReg_s8 cloneMe(){
         return(new StackReg_s8(this));
     }
-   StackReg_s8(Instruction _from, int _offset){
-      super(_from.getPreStackBase() + _from.getMethod().getCodeEntry().getMaxLocals() + _offset, true);
+   StackReg_s8(Instruction _from, int _stackBase,int _offset){
+      super(_from.getPreStackBase() + _from.getMethod().getCodeEntry().getMaxLocals() + _stackBase+ _offset, true);
    }
 }
 
@@ -226,8 +226,8 @@ class StackReg_ref extends Reg_ref<StackReg_ref>{
     @Override public StackReg_ref cloneMe(){
         return(new StackReg_ref(this));
     }
-   StackReg_ref(Instruction _from, int _offset){
-      super(_from.getPreStackBase() + _from.getMethod().getCodeEntry().getMaxLocals() + _offset, true);
+   StackReg_ref(Instruction _from, int _stackBase,int _offset){
+      super(_from.getPreStackBase() + _from.getMethod().getCodeEntry().getMaxLocals()+ _stackBase + _offset, true);
    }
 }
 
@@ -238,8 +238,8 @@ class VarReg_f64 extends Reg_f64<VarReg_f64>{
     @Override public VarReg_f64 cloneMe(){
         return(new VarReg_f64(this));
     }
-   VarReg_f64(Instruction _from){
-      super(_from.asLocalVariableAccessor().getLocalVariableTableIndex(), false);
+   VarReg_f64(Instruction _from, int _stackBase){
+      super(_from.asLocalVariableAccessor().getLocalVariableTableIndex()+ _stackBase, false);
    }
     public VarReg_f64(int _index){
         super(_index, false);
@@ -253,8 +253,8 @@ class VarReg_s64 extends Reg_s64<VarReg_s64>{
     @Override public VarReg_s64 cloneMe(){
         return(new VarReg_s64(this));
     }
-   VarReg_s64(Instruction _from){
-      super(_from.asLocalVariableAccessor().getLocalVariableTableIndex(), false);
+   VarReg_s64(Instruction _from, int _stackBase){
+      super(_from.asLocalVariableAccessor().getLocalVariableTableIndex()+ _stackBase, false);
    }
     public VarReg_s64(int _index){
         super(_index, false);
@@ -268,8 +268,8 @@ class VarReg_u64 extends Reg_u64<VarReg_u64>{
     @Override public VarReg_u64 cloneMe(){
         return(new VarReg_u64(this));
     }
-   VarReg_u64(Instruction _from){
-      super(_from.asLocalVariableAccessor().getLocalVariableTableIndex(), false);
+   VarReg_u64(Instruction _from, int _stackBase){
+      super(_from.asLocalVariableAccessor().getLocalVariableTableIndex()+ _stackBase, false);
    }
 }
 
@@ -280,8 +280,8 @@ class VarReg_ref extends Reg_ref<VarReg_ref>{
     @Override public VarReg_ref cloneMe(){
         return(new VarReg_ref(this));
     }
-   VarReg_ref(Instruction _from){
-      super(_from.asLocalVariableAccessor().getLocalVariableTableIndex(), false);
+   VarReg_ref(Instruction _from, int _stackBase){
+      super(_from.asLocalVariableAccessor().getLocalVariableTableIndex()+ _stackBase, false);
    }
 
    public VarReg_ref(int _index){
@@ -296,8 +296,8 @@ class VarReg_s32 extends Reg_s32<VarReg_s32>{
     @Override public VarReg_s32 cloneMe(){
         return(new VarReg_s32(this));
     }
-   VarReg_s32(Instruction _from){
-      super(_from.asLocalVariableAccessor().getLocalVariableTableIndex(), false);
+   VarReg_s32(Instruction _from, int _stackBase){
+      super(_from.asLocalVariableAccessor().getLocalVariableTableIndex()+ _stackBase, false);
    }
 
    public VarReg_s32(int _index){
@@ -312,8 +312,8 @@ class VarReg_f32 extends Reg_f32<VarReg_f32>{
     @Override public VarReg_f32 cloneMe(){
         return(new VarReg_f32(this));
     }
-   VarReg_f32(Instruction _from){
-      super(_from.asLocalVariableAccessor().getLocalVariableTableIndex(), false);
+   VarReg_f32(Instruction _from, int _stackBase){
+      super(_from.asLocalVariableAccessor().getLocalVariableTableIndex()+ _stackBase, false);
    }
 
    public VarReg_f32(int _index){
