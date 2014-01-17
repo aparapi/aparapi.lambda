@@ -12,11 +12,11 @@ public class HSAILInstructionSet {
             Instruction from;
             HSAILRegister[] dests = null;
             HSAILRegister[] sources = null;
-            HSAILStackFrame HSAILStackFrame = null;
+            HSAILStackFrame hsailStackFrame = null;
 
             HSAILInstruction(HSAILInstruction original) {
                 from = original.from;
-                HSAILStackFrame = original.HSAILStackFrame;
+               // HSAILStackFrame = original.HSAILStackFrame;
                 if (original.dests == null){
                     dests = null;
                 }else{
@@ -37,7 +37,7 @@ public class HSAILInstructionSet {
             }
 
             HSAILInstruction(HSAILStackFrame _HSAIL_stackFrame,Instruction _from, int _destCount, int _sourceCount) {
-                HSAILStackFrame = _HSAIL_stackFrame;
+                hsailStackFrame = _HSAIL_stackFrame;
                 from = _from;
                 dests = new HSAILRegister[_destCount];
                 sources = new HSAILRegister[_sourceCount];
@@ -47,7 +47,7 @@ public class HSAILInstructionSet {
 
 
             public HSAILStackFrame getHSAILStackFrame(){
-                return(HSAILStackFrame);
+                return(hsailStackFrame);
             }
             abstract void render(HSAILRenderer r);
 
@@ -156,17 +156,20 @@ public class HSAILInstructionSet {
         static  class branch <R extends HSAILRegister<R,s32>> extends HSAILInstructionWithSrc<branch<R>,R, s32> {
             String branchName;
             int pc;
+            String label;
 
             protected branch(branch<R> original){
                 super(original);
                 branchName = original.branchName;
                 pc = original.pc;
+                label = original.label;
             }
 
             branch(HSAILStackFrame _HSAIL_stackFrame,Instruction _from, R _src, String _branchName, int _pc) {
                 super(_HSAIL_stackFrame,_from, _src);
                 branchName = _branchName;
                 pc = _pc;
+                label = _HSAIL_stackFrame.getLocation(pc);
             }
 
             @Override public branch<R> cloneMe(){
@@ -176,7 +179,7 @@ public class HSAILInstructionSet {
 
             @Override
             public void render(HSAILRenderer r) {
-                r.append(branchName).space().label(HSAILStackFrame.getLocation(pc)).semicolon();
+                r.append(branchName).space().label(label).semicolon();
             }
         }
 
@@ -199,7 +202,7 @@ public class HSAILInstructionSet {
 
             @Override
             public void render(HSAILRenderer r) {
-                r.append("cmp_").append(type).append("_b1_").typeName(getSrc()).space().append("$c1").separator().regName(getSrc(), HSAILStackFrame).separator().append("0").semicolon();
+                r.append("cmp_").append(type).append("_b1_").typeName(getSrc()).space().append("$c1").separator().regName(getSrc(), hsailStackFrame).separator().append("0").semicolon();
 
             }
         }
@@ -224,7 +227,7 @@ public class HSAILInstructionSet {
 
             @Override
             public void render(HSAILRenderer r) {
-                r.append("cmp_").append(type).append("_b1_").typeName(getSrcLhs()).space().append("$c1").separator().regName(getSrcLhs(), HSAILStackFrame).separator().regName(getSrcRhs(), HSAILStackFrame).semicolon();
+                r.append("cmp_").append(type).append("_b1_").typeName(getSrcLhs()).space().append("$c1").separator().regName(getSrcLhs(), hsailStackFrame).separator().regName(getSrcRhs(), hsailStackFrame).semicolon();
 
             }
         }
@@ -249,7 +252,7 @@ public class HSAILInstructionSet {
 
             @Override
             public void render(HSAILRenderer r) {
-                r.append("cmp_").append(type).append("_b1_").typeName(getSrcLhs()).space().append("$c1").separator().regName(getSrcLhs(), HSAILStackFrame).separator().regName(getSrcRhs(), HSAILStackFrame).semicolon();
+                r.append("cmp_").append(type).append("_b1_").typeName(getSrcLhs()).space().append("$c1").separator().regName(getSrcLhs(), hsailStackFrame).separator().regName(getSrcRhs(), hsailStackFrame).semicolon();
 
             }
         }
@@ -274,7 +277,7 @@ public class HSAILInstructionSet {
 
             @Override
             public void render(HSAILRenderer r) {
-                r.append("cmp_").append(type).append("u").append("_b1_").typeName(getSrcLhs()).space().append("$c1").separator().regName(getSrcLhs(), HSAILStackFrame).separator().regName(getSrcRhs(), HSAILStackFrame).semicolon();
+                r.append("cmp_").append(type).append("u").append("_b1_").typeName(getSrcLhs()).space().append("$c1").separator().regName(getSrcLhs(), hsailStackFrame).separator().regName(getSrcRhs(), hsailStackFrame).semicolon();
 
             }
         }
@@ -282,15 +285,18 @@ public class HSAILInstructionSet {
         static  class cbr extends HSAILInstruction<cbr> {
 
             int pc;
+            String label;
 
             protected cbr(cbr original){
                 super(original);
                 pc = original.pc;
+                label = original.label;
             }
 
             cbr(HSAILStackFrame _HSAIL_stackFrame,Instruction _from, int _pc) {
                 super(_HSAIL_stackFrame,_from, 0, 0);
                 pc = _pc;
+                label = _HSAIL_stackFrame.getLocation(pc);
             }
 
             @Override public cbr cloneMe(){
@@ -300,22 +306,24 @@ public class HSAILInstructionSet {
 
             @Override
             public void render(HSAILRenderer r) {
-                r.append("cbr").space().append("$c1").separator().label(HSAILStackFrame.getLocation(pc)).semicolon();
+                r.append("cbr").space().append("$c1").separator().label(label).semicolon();
 
             }
         }
 
         static  class brn extends HSAILInstruction<brn> {
             int pc;
-
+            String label;
             protected brn(brn original){
                 super(original);
                 pc = original.pc;
+                label = original.label;
             }
 
             brn(HSAILStackFrame _HSAIL_stackFrame,Instruction _from, int _pc) {
                 super(_HSAIL_stackFrame, _from, 0, 0);
                 pc = _pc;
+                label = _HSAIL_stackFrame.getLocation(pc);
             }
 
             @Override public brn cloneMe(){
@@ -324,7 +332,7 @@ public class HSAILInstructionSet {
 
             @Override
             public void render(HSAILRenderer r) {
-                r.append("brn").space().label(HSAILStackFrame.getLocation(pc)).semicolon();
+                r.append("brn").space().label(label).semicolon();
 
             }
         }
@@ -357,7 +365,7 @@ public class HSAILInstructionSet {
 
                         // HSAILStackFrame newStackFrame = new HSAILStackFrame(HSAILStackFrame, String.format("@%04d : %s",from.getThisPC(), mangledName), base);
                         // Pass HSAILStackFrame down here!!!!
-                        hsailMethod = HSAILMethod.getHSAILMethod(method, hsailMethod.getEntryPoint(), HSAILStackFrame, base);
+                        hsailMethod = HSAILMethod.getHSAILMethod(method, hsailMethod.getEntryPoint(), hsailStackFrame, base);
 
                         callableMethodCall = new InlineMethodCall( callInfo.intrinsicLookupName, hsailMethod);
                     } catch (ClassNotFoundException e) {
@@ -377,7 +385,7 @@ public class HSAILInstructionSet {
 
             @Override
             void render(HSAILRenderer r) {
-                callableMethodCall.renderCallSite(r, HSAILStackFrame, from,  callInfo.name, base);
+                callableMethodCall.renderCallSite(r, hsailStackFrame, from,  callInfo.name, base);
 
             }
 
@@ -424,7 +432,7 @@ public class HSAILInstructionSet {
 
             @Override
             void render(HSAILRenderer r) {
-                r.append("ld_kernarg_").typeName(getDest()).space().regName(getDest(), HSAILStackFrame).separator().append("[%_arg").append(getDest().index).append("]").semicolon();
+                r.append("ld_kernarg_").typeName(getDest()).space().regName(getDest(), hsailStackFrame).separator().append("[%_arg").append(getDest().index).append("]").semicolon();
             }
         }
 
@@ -445,7 +453,7 @@ public class HSAILInstructionSet {
 
         @Override
         void render(HSAILRenderer r) {
-            r.append("workitemabsid_").typeName(getDest()).space().regName(getDest(),HSAILStackFrame).separator().append("0").semicolon();
+            r.append("workitemabsid_").typeName(getDest()).space().regName(getDest(),hsailStackFrame).separator().append("0").semicolon();
         }
     }
 
@@ -466,7 +474,7 @@ public class HSAILInstructionSet {
 
             @Override
             void render(HSAILRenderer r) {
-                r.append("ld_arg_").typeName(getDest()).space().regName(getDest(), HSAILStackFrame).separator().append("[%_arg").append(getDest().index).append("]").semicolon();
+                r.append("ld_arg_").typeName(getDest()).space().regName(getDest(), hsailStackFrame).separator().append("[%_arg").append(getDest().index).append("]").semicolon();
             }
 
 
@@ -490,7 +498,7 @@ public class HSAILInstructionSet {
 
             @Override
             void render(HSAILRenderer r) {
-                r.append(op).typeName(getDest()).space().regName(getDest(), HSAILStackFrame).separator().regName(getSrc(), HSAILStackFrame).separator().append(value).semicolon();
+                r.append(op).typeName(getDest()).space().regName(getDest(), hsailStackFrame).separator().regName(getSrc(), hsailStackFrame).separator().append(value).semicolon();
             }
 
 
@@ -528,7 +536,7 @@ public class HSAILInstructionSet {
 
             @Override
             void render(HSAILRenderer r) {
-                r.append(op).append("b64").space().regName(getDest(), HSAILStackFrame).separator().regName(getSrc(), HSAILStackFrame).separator().append(value).semicolon();
+                r.append(op).append("b64").space().regName(getDest(), hsailStackFrame).separator().regName(getSrc(), hsailStackFrame).separator().append(value).semicolon();
             }
 
 
@@ -567,7 +575,7 @@ public class HSAILInstructionSet {
             }
 
             @Override void render(HSAILRenderer r) {
-                r.append("mad_").typeName(getDest()).space().regName(getDest(), HSAILStackFrame).separator().regName(getSrcLhs(), HSAILStackFrame).separator().append(size).separator().regName(getSrcRhs(), HSAILStackFrame).semicolon();
+                r.append("mad_").typeName(getDest()).space().regName(getDest(), hsailStackFrame).separator().regName(getSrcLhs(), hsailStackFrame).separator().append(size).separator().regName(getSrcRhs(), hsailStackFrame).semicolon();
             }
         }
 
@@ -598,7 +606,7 @@ public class HSAILInstructionSet {
 
             @Override
             void render(HSAILRenderer r) {
-                r.append("cvt_").typeName(getDest()).append("_").typeName(getSrc()).space().regName(getDest(), HSAILStackFrame).separator().regName(getSrc(), HSAILStackFrame).semicolon();
+                r.append("cvt_").typeName(getDest()).append("_").typeName(getSrc()).space().regName(getDest(), hsailStackFrame).separator().regName(getSrc(), hsailStackFrame).semicolon();
             }
 
 
@@ -645,7 +653,7 @@ public class HSAILInstructionSet {
 
             @Override
             void render(HSAILRenderer r) {
-                r.append("st_arg_").typeName(getSrc()).space().regName(getSrc(), HSAILStackFrame).separator().append("[%_result]").semicolon().nl();
+                r.append("st_arg_").typeName(getSrc()).space().regName(getSrc(), hsailStackFrame).separator().append("[%_result]").semicolon().nl();
                 r.append("ret").semicolon();
             }
 
@@ -672,7 +680,7 @@ public class HSAILInstructionSet {
             @Override
             void render(HSAILRenderer r) {
                 // r.append("st_global_").typeName(getSrc()).space().append("[").regName(mem).append("+").array_len_offset().append("]").separator().regName(getSrc());
-                r.append("st_global_").typeName(getSrc()).space().regName(getSrc(), HSAILStackFrame).separator().append("[").regName(mem, HSAILStackFrame).append("+").array_base_offset().append("]").semicolon();
+                r.append("st_global_").typeName(getSrc()).space().regName(getSrc(), hsailStackFrame).separator().append("[").regName(mem, hsailStackFrame).append("+").array_base_offset().append("]").semicolon();
             }
 
 
@@ -698,11 +706,11 @@ public class HSAILInstructionSet {
 
             @Override
             void render(HSAILRenderer r) {
-                r.append("ld_global_").typeName(getDest()).space().regName(getDest(), HSAILStackFrame).separator().append("[").regName(mem, HSAILStackFrame).append("+").array_base_offset().append("]").semicolon();
+                r.append("ld_global_").typeName(getDest()).space().regName(getDest(), hsailStackFrame).separator().append("[").regName(mem, hsailStackFrame).append("+").array_base_offset().append("]").semicolon();
                 if (getDest().type.getHsaBits()==8){
-                    r.nl().pad(9).append("//cvt_s32_u8 $s").regNum(getDest(), HSAILStackFrame).separator().space().regName(getDest(), HSAILStackFrame).semicolon();
+                    r.nl().pad(9).append("//cvt_s32_u8 $s").regNum(getDest(), hsailStackFrame).separator().space().regName(getDest(), hsailStackFrame).semicolon();
                 }     else   if (getDest().type.getHsaBits()==16){
-                    r.nl().pad(9).append("//cvt_s32_u16 $s").regNum(getDest(), HSAILStackFrame).separator().space().regName(getDest(), HSAILStackFrame).semicolon();
+                    r.nl().pad(9).append("//cvt_s32_u16 $s").regNum(getDest(), hsailStackFrame).separator().space().regName(getDest(), hsailStackFrame).semicolon();
                 }
             }
 
@@ -728,7 +736,7 @@ public class HSAILInstructionSet {
 
             @Override
             void render(HSAILRenderer r) {
-                r.append("ld_global_").typeName(getDest()).space().regName(getDest(), HSAILStackFrame).separator().append("[").regName(mem, HSAILStackFrame).append("+").array_len_offset().append("]").semicolon();
+                r.append("ld_global_").typeName(getDest()).space().regName(getDest(), hsailStackFrame).separator().append("[").regName(mem, hsailStackFrame).append("+").array_len_offset().append("]").semicolon();
             }
 
 
@@ -756,7 +764,7 @@ public class HSAILInstructionSet {
 
             @Override
             void render(HSAILRenderer r) {
-                r.append("ld_global_").typeName(getDest()).space().regName(getDest(), HSAILStackFrame).separator().append("[").regName(mem, HSAILStackFrame).append("+").append(offset).append("]").semicolon();
+                r.append("ld_global_").typeName(getDest()).space().regName(getDest(), hsailStackFrame).separator().append("[").regName(mem, hsailStackFrame).append("+").append(offset).append("]").semicolon();
             }
 
 
@@ -783,7 +791,7 @@ public class HSAILInstructionSet {
 
             @Override
             void render(HSAILRenderer r) {
-                r.append("ld_global_").typeName(getDest()).space().regName(getDest(), HSAILStackFrame).separator().append("[").regName(mem, HSAILStackFrame).append("+").append(offset).append("]").semicolon();
+                r.append("ld_global_").typeName(getDest()).space().regName(getDest(), hsailStackFrame).separator().append("[").regName(mem, hsailStackFrame).append("+").append(offset).append("]").semicolon();
             }
 
 
@@ -813,7 +821,7 @@ public class HSAILInstructionSet {
 
             @Override
             void render(HSAILRenderer r) {
-                r.append("st_global_").typeName(getSrc()).space().regName(getSrc(), HSAILStackFrame).separator().append("[").regName(mem, HSAILStackFrame).append("+").append(offset).append("]").semicolon();
+                r.append("st_global_").typeName(getSrc()).space().regName(getSrc(), hsailStackFrame).separator().append("[").regName(mem, hsailStackFrame).append("+").append(offset).append("]").semicolon();
             }
 
 
@@ -834,7 +842,7 @@ public class HSAILInstructionSet {
             }
             @Override
             void render(HSAILRenderer r) {
-                r.append("mov_").movTypeName(getDest()).space().regName(getDest(), HSAILStackFrame).separator().regName(getSrc(), HSAILStackFrame).semicolon();
+                r.append("mov_").movTypeName(getDest()).space().regName(getDest(), hsailStackFrame).separator().regName(getSrc(), hsailStackFrame).semicolon();
 
             }
 
@@ -856,7 +864,7 @@ public class HSAILInstructionSet {
 
             @Override
             void render(HSAILRenderer r) {
-                r.append(op).typeName(getDest()).space().regName(getDest(), HSAILStackFrame).separator().regName(getDest(), HSAILStackFrame).semicolon();
+                r.append(op).typeName(getDest()).space().regName(getDest(), hsailStackFrame).separator().regName(getDest(), hsailStackFrame).semicolon();
             }
 
             Rt getDest() {
@@ -887,7 +895,7 @@ public class HSAILInstructionSet {
 
             @Override
             void render(HSAILRenderer r) {
-                r.append(op).typeName(getDest()).space().regName(getDest(), HSAILStackFrame).separator().regName(getLhs(), HSAILStackFrame).separator().regName(getRhs(), HSAILStackFrame).semicolon();
+                r.append(op).typeName(getDest()).space().regName(getDest(), hsailStackFrame).separator().regName(getLhs(), hsailStackFrame).separator().regName(getRhs(), hsailStackFrame).semicolon();
             }
 
             Rt getDest() {
@@ -1107,7 +1115,7 @@ public class HSAILInstructionSet {
 
             @Override
             void render(HSAILRenderer r) {
-                r.append(op).movTypeName(getDest()).space().regName(getDest(), HSAILStackFrame).separator().regName(getLhs(), HSAILStackFrame).separator().regName(getRhs(), HSAILStackFrame).semicolon();
+                r.append(op).movTypeName(getDest()).space().regName(getDest(), hsailStackFrame).separator().regName(getLhs(), hsailStackFrame).separator().regName(getRhs(), hsailStackFrame).semicolon();
             }
 
         }
@@ -1125,7 +1133,7 @@ public class HSAILInstructionSet {
 
             @Override
             void render(HSAILRenderer r) {
-                r.append(op).movTypeName(getDest()).space().regName(getDest(), HSAILStackFrame).separator().regName(getLhs(), HSAILStackFrame).separator().regName(getRhs(), HSAILStackFrame).semicolon();
+                r.append(op).movTypeName(getDest()).space().regName(getDest(), hsailStackFrame).separator().regName(getLhs(), hsailStackFrame).separator().regName(getRhs(), hsailStackFrame).semicolon();
             }
 
         }
@@ -1143,7 +1151,7 @@ public class HSAILInstructionSet {
 
             @Override
             void render(HSAILRenderer r) {
-                r.append(op).movTypeName(getDest()).space().regName(getDest(), HSAILStackFrame).separator().regName(getLhs(), HSAILStackFrame).separator().regName(getRhs(), HSAILStackFrame).semicolon();
+                r.append(op).movTypeName(getDest()).space().regName(getDest(), hsailStackFrame).separator().regName(getLhs(), hsailStackFrame).separator().regName(getRhs(), hsailStackFrame).semicolon();
             }
 
         }
@@ -1165,7 +1173,7 @@ public class HSAILInstructionSet {
 
             @Override
             void render(HSAILRenderer r) {
-                r.append("mov_").movTypeName(getDest()).space().regName(getDest(), HSAILStackFrame).separator().append(value).semicolon();
+                r.append("mov_").movTypeName(getDest()).space().regName(getDest(), hsailStackFrame).separator().append(value).semicolon();
 
             }
         }
