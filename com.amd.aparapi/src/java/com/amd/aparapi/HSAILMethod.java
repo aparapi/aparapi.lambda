@@ -75,68 +75,42 @@ import java.util.regex.Pattern;
     abstract class CallType<T extends CallType> {
         private String mappedMethod; // i.e  java.lang.Math.sqrt(D)D
 
-        List<HSAILInstructionSet.HSAILInstruction> instructions = new ArrayList<HSAILInstructionSet.HSAILInstruction>();
-
         String getMappedMethod() {
             return (mappedMethod);
         }
 
         CallType(String _mappedMethod) {
-
             mappedMethod = _mappedMethod;
         }
 
-        abstract T renderDefinition(HSAILRenderer r, HSAILStackFrame _HSAIL_stackFrame);
-        abstract T renderDeclaration(HSAILRenderer r, HSAILStackFrame _HSAIL_stackFrame);
-        abstract T renderCallSite(HSAILRenderer r, HSAILStackFrame _HSAIL_stackFrame, Instruction from,  String name, int base);
+
 
         abstract boolean isStatic();
-        T add(HSAILInstructionSet.HSAILInstruction i){
-            instructions.add(i);
-            return((T)this);
-        }
 
     }
 
 
-   class IntrinsicCall extends CallType<IntrinsicCall> {
-        String[] lines;
+   abstract class IntrinsicCall extends CallType<IntrinsicCall> {
+
         boolean isStatic;
 
 
-        IntrinsicCall(String _mappedMethod, boolean _isStatic, String... _lines) {
+        IntrinsicCall(String _mappedMethod, boolean _isStatic) {
             super(_mappedMethod);
-            lines = _lines;
+
             isStatic = _isStatic;
         }
 
         @Override
-        IntrinsicCall renderDefinition(HSAILRenderer r, HSAILStackFrame _HSAIL_stackFrame) {
-            for (String line : lines) {
-                if (!(line.trim().endsWith("{") || line.trim().startsWith("}"))) {
-                    r.pad(9);
-                }
-                r.append(line).nl();
-            }
-            return this;
-        }
-        @Override
-           IntrinsicCall renderCallSite(HSAILRenderer r, HSAILStackFrame _HSAIL_stackFrame,   Instruction from,  String name, int base) {
-            return(this);
-        }
-        @Override
-        IntrinsicCall renderDeclaration(HSAILRenderer r, HSAILStackFrame _HSAIL_stackFrame) {
-            return(this);
-        }
-        @Override
         boolean isStatic() {
             return (isStatic);
         }
+        public abstract List<HSAILInstructionSet.HSAILInstruction> add(List<HSAILInstructionSet.HSAILInstruction> _instructions, HSAILStackFrame _hsailStackFrame, Instruction _from);
     }
 
-   class InlineIntrinsicCall extends IntrinsicCall {
-        InlineIntrinsicCall(String _mappedMethod, boolean _isStatic,  String... _lines) {
-            super( _mappedMethod, _isStatic, _lines);
+   abstract class InlineIntrinsicCall extends IntrinsicCall {
+        InlineIntrinsicCall(String _mappedMethod, boolean _isStatic) {
+            super( _mappedMethod, _isStatic);
         }
         final Pattern regex= Pattern.compile("\\$\\{([0-9]+)\\}");
         String expand(String line, HSAILStackFrame _HSAIL_stackFrame, int base){
@@ -151,43 +125,21 @@ import java.util.regex.Pattern;
             return(sb.toString());
         }
 
-        @Override
-        InlineIntrinsicCall renderCallSite(HSAILRenderer r, HSAILStackFrame _HSAIL_stackFrame,  Instruction from, String name, int base) {
-            boolean first = false;
-            r.lineComment("inlining intrinsic "+getMappedMethod()+"{");
-            if (isStatic){
-                r.pad(9).lineComment(expand("This is a static method so $?${0} contains first arg (if any)", _HSAIL_stackFrame, base));
-            }else{
-                r.pad(9).lineComment(expand("This is a virtual method so $d${0} contains this. Other args (if any) from $?${1}", _HSAIL_stackFrame, base));
-            }
-            for (String line : lines) {
-               // if (!first){
-                    r.pad(9);
-              //  }
-                String expandedLine = expand(line, _HSAIL_stackFrame, base);
 
-                r.append(expandedLine).nl();
-                //first = false;
-            }
-            r.pad(9);
-            r.lineComment("} inlining intrinsic "+getMappedMethod());
-            return this;
-        }
-        @Override
-        InlineIntrinsicCall renderDefinition(HSAILRenderer r, HSAILStackFrame _HSAIL_stackFrame) {
-            return(this);
-        }
-        @Override
-        IntrinsicCall renderDeclaration(HSAILRenderer r,HSAILStackFrame _HSAIL_stackFrame) {
-            return(this);
-        }
         @Override
         boolean isStatic() {
             return (isStatic);
         }
     }
 
-    class SimpleMethodCall extends CallType<SimpleMethodCall> {
+    abstract class CallableCallType<T extends CallableCallType> extends CallType<T>{
+        CallableCallType(String _mappedMethod) {
+            super(_mappedMethod);
+        }
+        abstract T renderCallSite(HSAILRenderer r, HSAILStackFrame _HSAIL_stackFrame,  Instruction from, String name, int _base);
+    }
+
+    class SimpleMethodCall extends CallableCallType<SimpleMethodCall> {
         HSAILMethod method;
 
 
@@ -196,15 +148,15 @@ import java.util.regex.Pattern;
             method = _method;
         }
 
-        @Override
+
         SimpleMethodCall renderDefinition(HSAILRenderer r, HSAILStackFrame _HSAIL_stackFrame) {
 
             method.renderFunctionDefinition(r);
-            r.nl().nl();
+            r.nl(2);
             return (this);
         }
-        @Override
-        SimpleMethodCall renderCallSite(HSAILRenderer r, HSAILStackFrame _HSAIL_stackFrame,  Instruction from, String name, int _base) {
+
+        @Override SimpleMethodCall renderCallSite(HSAILRenderer r, HSAILStackFrame _HSAIL_stackFrame,  Instruction from, String name, int _base) {
 
             TypeHelper.JavaMethodArgsAndReturnType argsAndReturnType = from.asMethodCall().getConstantPoolMethodEntry().getArgsAndReturnType();
             TypeHelper.JavaType returnType = argsAndReturnType.getReturnType();
@@ -254,7 +206,7 @@ import java.util.regex.Pattern;
             r.nl().nl();
             return(this);
         }
-        @Override
+
         SimpleMethodCall renderDeclaration(HSAILRenderer r, HSAILStackFrame _HSAIL_stackFrame) {
             method.renderFunctionDeclaration(r);
             r.semicolon().nl().nl();
@@ -266,19 +218,16 @@ import java.util.regex.Pattern;
         }
     }
 
-    class InlineMethodCall extends CallType<InlineMethodCall> {
+    class InlineMethodCall extends CallableCallType<InlineMethodCall> {
         HSAILMethod method;
 
         InlineMethodCall(String _mappedMethod, HSAILMethod _method) {
             super( _mappedMethod);
             method = _method;
         }
-        @Override
-        InlineMethodCall renderDefinition(HSAILRenderer r, HSAILStackFrame _HSAIL_stackFrame) {
-            return (this);
-        }
-        @Override
-        InlineMethodCall renderCallSite(HSAILRenderer r, HSAILStackFrame _HSAIL_stackFrame, Instruction from, String name, int base) {
+
+
+        @Override InlineMethodCall renderCallSite(HSAILRenderer r, HSAILStackFrame _HSAIL_stackFrame, Instruction from, String name, int base) {
 
             method.renderInlinedFunctionBody(r, base);
 
@@ -286,10 +235,6 @@ import java.util.regex.Pattern;
             return (this);
         }
 
-        @Override
-        InlineMethodCall renderDeclaration(HSAILRenderer r, HSAILStackFrame _HSAIL_stackFrame) {
-            return (this);
-        }
 
         @Override
         boolean isStatic() {
@@ -312,25 +257,38 @@ class HSAILIntrinsics {
                // "ret;",
                // "};"));
         add(
-                (new InlineIntrinsicCall("java.lang.Math.sqrt(D)D", true,
-                "nsqrt_f64  $d${0}, $d${0};"
-                )
+                (new InlineIntrinsicCall("java.lang.Math.sqrt(D)D", true){
+                    public List<HSAILInstructionSet.HSAILInstruction> add(List<HSAILInstructionSet.HSAILInstruction> _instructions, HSAILStackFrame _hsailStackFrame, Instruction _from){
+                        //   nsqrt_f64  $d${0}, $d${0};
+                        _instructions.add(new HSAILInstructionSet.nsqrt<StackReg_f64, f64>(_hsailStackFrame, _from, new StackReg_f64(_from, 0)));
+                        return(_instructions);
+                    }
+                }
     )/*.add(new nsqrt<StackReg_f64,f64>(null, null, new StackReg_f64(0), new StackReg_f64(0)))*/
         );
-        add(new InlineIntrinsicCall( "java.lang.String.charAt(I)C", false,
-                "ld_global_u64 $d${2}, [$d${0}+16];   // this string reference into $d${2}",
-                "mov_b32 $s${3}, $s${1};              // copy index",
-                "cvt_u64_s32 $d${3}, $s${3};          // convert array index to 64 bits",
-                "mad_u64 $d${3}, $d${3}, 2, $d${2};      // get the char address",
-                "ld_global_u16 $s${0}, [$d${3}+24];   // ld the char"
-        ));
-        add(new InlineIntrinsicCall("java.lang.Math.cos(D)D", true,
-                "ncos_f64  $d${0}, $d${0};"
-    ));
-        add(new InlineIntrinsicCall("java.lang.Math.sin(D)D", true,
-                "nsin_f64  $d${0}, $d${0};"
-        ));
-        add(new IntrinsicCall( "java.lang.Math.hypot(DD)D", true,
+        add(new InlineIntrinsicCall( "java.lang.String.charAt(I)C", false){
+            public List<HSAILInstructionSet.HSAILInstruction> add(List<HSAILInstructionSet.HSAILInstruction> _instructions, HSAILStackFrame _hsailStackFrame, Instruction _from){
+                // ld_global_u64 $d${2}, [$d${0}+16];   // this string reference into $d${2}",
+                // mov_b32 $s${3}, $s${1};              // copy index",
+                // cvt_u64_s32 $d${3}, $s${3};          // convert array index to 64 bits",
+                // mad_u64 $d${3}, $d${3}, 2, $d${2};   // get the char address",
+                // ld_global_u16 $s${0}, [$d${3}+24];   // ld the char"
+                throw new IllegalStateException("java.lang.String.charAt(I)C intrinsic not implemented!");
+            }
+        });
+        add(new InlineIntrinsicCall("java.lang.Math.cos(D)D", true){
+            public List<HSAILInstructionSet.HSAILInstruction> add(List<HSAILInstructionSet.HSAILInstruction> _instructions, HSAILStackFrame _hsailStackFrame, Instruction _from){
+                _instructions.add(new HSAILInstructionSet.ncos<StackReg_f64, f64>(_hsailStackFrame, _from,  new StackReg_f64(_from, 0)));
+                return(_instructions);
+            }
+        });
+        add(new InlineIntrinsicCall("java.lang.Math.sin(D)D", true ){
+            public List<HSAILInstructionSet.HSAILInstruction> add(List<HSAILInstructionSet.HSAILInstruction> _instructions, HSAILStackFrame _hsailStackFrame, Instruction _from){
+                _instructions.add(new HSAILInstructionSet.nsin<StackReg_f64, f64>(_hsailStackFrame, _from,  new StackReg_f64(_from, 0)));
+                return(_instructions);
+            }
+        });
+       /** add(new IntrinsicCall( "java.lang.Math.hypot(DD)D", true,
                 "function &hypot (arg_f64 %_result) (arg_f64 %_val1, arg_f64 %_val2) {",
                 "ld_arg_f64  $d0, [%_val1];",
                 "ld_arg_f64  $d1, [%_val2];",
@@ -338,7 +296,42 @@ class HSAILIntrinsics {
                 "nsqrt_f64  $d0, $d0;",
                 "st_arg_f64  $d0, [%_result];",
                 "ret;",
-                "};"));
+                "};")); **/
+    }
+
+    static InlineIntrinsicCall getInlineIntrinsic(Instruction from){
+
+    int base = from.getPreStackBase() + from.getMethod().getCodeEntry().getMaxLocals();
+        String name = null;
+    String dotClassName = null;
+    String sig = null;
+    if (from.isInterfaceMethodCall()){
+        dotClassName = from.asInterfaceMethodCall().getConstantPoolInterfaceMethodEntry().getClassEntry().getDotClassName();
+        name = from.asInterfaceMethodCall().getConstantPoolInterfaceMethodEntry().getName();
+        sig = from.asInterfaceMethodCall().getConstantPoolInterfaceMethodEntry().getNameAndTypeEntry().getDescriptor();
+
+        /** sig to specialize CharSequence to String  - big hack!**/
+        if (dotClassName.equals("java.lang.CharSequence")){
+            System.out.println("Specializing java.lang.CharSequence to java.lang.String!!!!! ");
+            dotClassName = "java.lang.String";
+        }
+
+    }else{
+        dotClassName = from.asMethodCall().getConstantPoolMethodEntry().getClassEntry().getDotClassName();
+        name = from.asMethodCall().getConstantPoolMethodEntry().getName();
+
+        sig = from.asMethodCall().getConstantPoolMethodEntry().getNameAndTypeEntry().getDescriptor();
+    }
+    String mangledName = (dotClassName+"_"+name+sig);//.replace(".","_").replace(";","_").replace("(","_").replace(")", "_").replace("/", "_").replace("$", "_").replace("[", "_");
+    String intrinsicLookup = dotClassName + "." + name + sig;
+        InlineIntrinsicCall call = null;
+    for (IntrinsicCall ic : HSAILIntrinsics.intrinsicMap.values()) {
+        if (ic.getMappedMethod().equals(intrinsicLookup)) {
+            call = (InlineIntrinsicCall)ic;
+            break;
+        }
+    }
+        return(call);
     }
 }
 
@@ -349,11 +342,11 @@ public class HSAILMethod {
     static boolean useCache = false; // don't turn this on until we have inlining working
     HSAILMethod entryPoint;
     HSAILStackFrame hsailStackFrame;
-    private Set<CallType> calls = null;
+    private Set<SimpleMethodCall> calls =  new LinkedHashSet<SimpleMethodCall>();
     List<HSAILInstructionSet.HSAILInstruction> instructions = new ArrayList<HSAILInstructionSet.HSAILInstruction>();
     ClassModel.ClassModelMethod method;
 
-    public void add(CallType call) {
+    public void add(SimpleMethodCall call) {
         getEntryPoint().calls.add(call);
     }
 
@@ -457,39 +450,33 @@ public class HSAILMethod {
 
     public HSAILRenderer renderEntryPoint(HSAILRenderer r) {
         r.append("version 0:95: $full : $large").semicolon().nl();
-        for (CallType c : calls) {
+        for (SimpleMethodCall c : calls) {
             c.renderDeclaration(r, null);
         }
-        for (CallType c : calls) {
+        for (SimpleMethodCall c : calls) {
             c.renderDefinition(r, null);
         }
+
         r.append("kernel &run").oparenth();
-        int argOffset = method.isStatic() ? 0 : 1;
-        if (!method.isStatic()) {
-            r.nl().pad(3).append("kernarg_u64 %_arg0");
+        boolean firstArg=true;
+        int argc = 0;
+        if (method.isNonStatic()) {
+            r.nl().pad(3).kernarg(ref.ref, 0);
+            firstArg = false;
+            argc++;
         }
 
         for (TypeHelper.JavaMethodArg arg : method.argsAndReturnType.getArgs()) {
-            if ((method.isStatic() && arg.getArgc() == 0)) {
-                r.nl();
-            } else {
-                r.separator().nl();
+            if (!firstArg) {
+                r.separator();
             }
-
-            PrimitiveType type = arg.getJavaType().getPrimitiveType();
-            r.pad(3).append("kernarg_");
-            if (type == null) {
-                r.append("u64");
-            } else {
-                r.append(type.getHSAName());
-            }
-            r.append(" %_arg" + (arg.getArgc() + argOffset));
+            r.nl().pad(3).kernarg(arg.getJavaType().getPrimitiveType(), argc++);
+            firstArg=false;
         }
         r.nl().pad(3).cparenth().obrace().nl();
 
-        Instruction last = null;
+        Instruction last = null; // we track the last bytecode instruction (not HSAIL) here so that we con emit branch labels and comments only once for each mapped instruction
         for (HSAILInstructionSet.HSAILInstruction i : instructions) {
-
             if ((i  instanceof HSAILInstructionSet.ld_kernarg) || (i instanceof HSAILInstructionSet.workitemabsid)){
 
             }else if ( (last == null || last != i.from)) {
@@ -545,9 +532,6 @@ public class HSAILMethod {
         hsailStackFrame = new HSAILStackFrame(_HSAIL_stackFrame, _method.getClassModel().getDotClassName()+"."+_method.getName()+_method.getDescriptor(), _base);
 
         entryPoint = _entryPoint;
-        if (entryPoint == null) {
-            calls = new HashSet<CallType>();
-        }
         if (UnsafeWrapper.addressSize() == 4) {
             throw new IllegalStateException("Object pointer size is 4, you need to use 64 bit JVM and set -XX:-UseCompressedOops!");
         }
@@ -1312,7 +1296,14 @@ public class HSAILMethod {
                 case INVOKESTATIC:
                 case INVOKEINTERFACE:
                 case INVOKEDYNAMIC:
-                    HSAILInstructionSet.call(instructions, this, hsailStackFrame, i);
+                {
+                    InlineIntrinsicCall call = HSAILIntrinsics.getInlineIntrinsic(i);
+                    if (call != null){
+                        call.add(instructions, hsailStackFrame, i);
+                    }else{
+                        HSAILInstructionSet.call(instructions, this, hsailStackFrame, i);
+                    }
+                }
                     break;
                 case NEW:
                     HSAILInstructionSet.nyi(instructions, hsailStackFrame, i);

@@ -128,6 +128,9 @@ public class HSAILRenderer extends TextRenderer<HSAILRenderer>{
       return (this);
    }
 
+    public HSAILRenderer kernarg(PrimitiveType _t, int _argNum){
+        return(append("kernarg_").append(_t.getHSAName()).space().append("%_arg").append(_argNum));
+    }
 
 
 

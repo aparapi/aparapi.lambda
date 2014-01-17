@@ -329,13 +329,47 @@ public class HSAILInstructionSet {
             }
         }
 
+        static class CallInfo{
+            Instruction from;
+            int base;
+            String name;
+            String intrinsicLookupName;
+
+            CallInfo( Instruction _from) {
+                from  = _from;
+
+                    base = from.getPreStackBase() + from.getMethod().getCodeEntry().getMaxLocals();
+                    String dotClassName = null;
+                    String sig = null;
+                    if (from.isInterfaceMethodCall()){
+                        dotClassName = from.asInterfaceMethodCall().getConstantPoolInterfaceMethodEntry().getClassEntry().getDotClassName();
+                        name = from.asInterfaceMethodCall().getConstantPoolInterfaceMethodEntry().getName();
+                        sig = from.asInterfaceMethodCall().getConstantPoolInterfaceMethodEntry().getNameAndTypeEntry().getDescriptor();
+
+                        /** sig to specialize CharSequence to String  - big hack!**/
+                        if (dotClassName.equals("java.lang.CharSequence")){
+                            System.out.println("Specializing java.lang.CharSequence to java.lang.String!!!!! ");
+                            dotClassName = "java.lang.String";
+                        }
+
+                    }else{
+                        dotClassName = from.asMethodCall().getConstantPoolMethodEntry().getClassEntry().getDotClassName();
+                        name = from.asMethodCall().getConstantPoolMethodEntry().getName();
+
+                        sig = from.asMethodCall().getConstantPoolMethodEntry().getNameAndTypeEntry().getDescriptor();
+                    }
+                 //   mangledName = (dotClassName+"_"+name+sig);//.replace(".","_").replace(";","_").replace("(","_").replace(")", "_").replace("/", "_").replace("$", "_").replace("[", "_");
+                    intrinsicLookupName = dotClassName + "." + name + sig;
+            }
+        }
+
 
 
         static  class call extends HSAILInstruction<call> {
             int base;
             String name;
             String mangledName;
-            CallType call;
+            CallableCallType callableMethodCall;
             HSAILMethod hsailMethod;
 
             protected call(call original){
@@ -343,8 +377,8 @@ public class HSAILInstructionSet {
                 base = original.base;
                 name = original.name;
                 mangledName = original.mangledName;
-                call = original.call;
-                hsailMethod = hsailMethod;
+                callableMethodCall = original.callableMethodCall;
+                hsailMethod = original.hsailMethod;
             }
 
             call(HSAILMethod hsailMethod, HSAILStackFrame _HSAIL_stackFrame,Instruction _from) {
@@ -369,16 +403,16 @@ public class HSAILInstructionSet {
 
                     sig = from.asMethodCall().getConstantPoolMethodEntry().getNameAndTypeEntry().getDescriptor();
                 }
-                mangledName = (dotClassName+"_"+name+sig);//.replace(".","_").replace(";","_").replace("(","_").replace(")", "_").replace("/", "_").replace("$", "_").replace("[", "_");
+              //  mangledName = (dotClassName+"_"+name+sig);//.replace(".","_").replace(";","_").replace("(","_").replace(")", "_").replace("/", "_").replace("$", "_").replace("[", "_");
                 String intrinsicLookup = dotClassName + "." + name + sig;
-                call = null;
+                IntrinsicCall intrinsicCall = null;
                 for (IntrinsicCall ic : HSAILIntrinsics.intrinsicMap.values()) {
                     if (ic.getMappedMethod().equals(intrinsicLookup)) {
-                        call = ic;
+                        intrinsicCall = ic;
                         break;
                     }
                 }
-                if (call == null) { // not an intrinsic!
+                if (intrinsicCall == null) { // not an intrinsic!
                     try {
                         Class theClass = Class.forName(dotClassName);
                         ClassModel classModel = ClassModel.getClassModel(theClass);
@@ -387,14 +421,17 @@ public class HSAILInstructionSet {
                         // HSAILStackFrame newStackFrame = new HSAILStackFrame(HSAILStackFrame, String.format("@%04d : %s",from.getThisPC(), mangledName), base);
                         // Pass HSAILStackFrame down here!!!!
                         hsailMethod = HSAILMethod.getHSAILMethod(method, hsailMethod.getEntryPoint(), HSAILStackFrame, base);
-                        call = new InlineMethodCall( intrinsicLookup, hsailMethod);
+
+                        callableMethodCall = new InlineMethodCall( intrinsicLookup, hsailMethod);
                     } catch (ClassNotFoundException e) {
                         e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                     } catch (ClassParseException e) {
                         e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                     }
                 }
-                hsailMethod.add(call);
+                if (callableMethodCall instanceof SimpleMethodCall){
+                   hsailMethod.add((SimpleMethodCall)callableMethodCall);
+                }
             }
 
             @Override public call cloneMe(){
@@ -403,9 +440,7 @@ public class HSAILInstructionSet {
 
             @Override
             void render(HSAILRenderer r) {
-
-
-                call.renderCallSite(r, HSAILStackFrame, from,  name, base);
+                callableMethodCall.renderCallSite(r, HSAILStackFrame, from,  name, base);
 
             }
 
@@ -1037,6 +1072,50 @@ public class HSAILInstructionSet {
             }
 
         }
+
+    static  class nsqrt<Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends unary<nsqrt<Rt,T>, Rt, T> {
+
+        protected nsqrt(nsqrt<Rt,T> original){
+            super(original);
+        }
+        @Override public nsqrt<Rt,T> cloneMe(){
+            return (new nsqrt<Rt,T>(this));
+        }
+        public nsqrt(HSAILStackFrame _HSAIL_stackFrame,Instruction _from, Rt _destSrc) {
+            super(_HSAIL_stackFrame,_from, "nsqrt_", _destSrc);
+        }
+
+    }
+
+    static  class ncos<Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends unary<ncos<Rt,T>, Rt, T> {
+
+        protected ncos(ncos<Rt,T> original){
+            super(original);
+        }
+        @Override public ncos<Rt,T> cloneMe(){
+            return (new ncos<Rt,T>(this));
+        }
+        public ncos(HSAILStackFrame _HSAIL_stackFrame,Instruction _from, Rt _destSrc) {
+            super(_HSAIL_stackFrame,_from, "ncos_", _destSrc);
+        }
+
+    }
+
+    static  class nsin<Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends unary<nsin<Rt,T>, Rt, T> {
+
+        protected nsin(nsin<Rt,T> original){
+            super(original);
+        }
+        @Override public nsin<Rt,T> cloneMe(){
+            return (new nsin<Rt,T>(this));
+        }
+        public nsin(HSAILStackFrame _HSAIL_stackFrame,Instruction _from, Rt _destSrc) {
+            super(_HSAIL_stackFrame,_from, "nsin_", _destSrc);
+        }
+
+    }
+
+
 
         static  class shl<Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends binary<shl<Rt,T>, Rt, T> {
             protected shl(shl<Rt,T> original){
