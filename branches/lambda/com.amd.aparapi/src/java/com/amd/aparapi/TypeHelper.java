@@ -326,6 +326,14 @@ public class TypeHelper{
          return (type);
       }
 
+      String getHSAName(){
+          if (isPrimitive()){
+              return(type.getHSAName());
+          }else{
+              return(ref.ref.getHSAName());
+          }
+      }
+
       PrimitiveType getArrayElementType(){
          return (arrayElementType);
       }

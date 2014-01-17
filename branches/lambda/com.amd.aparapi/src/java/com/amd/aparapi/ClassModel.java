@@ -2178,6 +2178,10 @@ public class ClassModel{
          return (Access.STATIC.bitIsSet(methodAccessFlags));
       }
 
+       public boolean isNonStatic(){
+           return (!isStatic());
+       }
+
       public boolean isVirtual(){
          return (!Access.STATIC.bitIsSet(methodAccessFlags));
       }

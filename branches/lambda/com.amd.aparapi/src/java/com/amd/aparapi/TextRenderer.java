@@ -117,6 +117,13 @@ public class TextRenderer<T extends TextRenderer>{
       return ((T) this);
    }
 
+    final public T nl(int n){
+       for (int i=0; i<n; i++){
+           nl();
+       }
+       return ((T) this);
+    }
+
 
    final public T pad(int n){
       while(sb.length() - lastNewLineIndex < n){
