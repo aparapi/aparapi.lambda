@@ -329,106 +329,43 @@ public class HSAILInstructionSet {
             }
         }
 
-        static class CallInfo{
-            Instruction from;
-            int base;
-            String name;
-            String intrinsicLookupName;
-
-            CallInfo( Instruction _from) {
-                from  = _from;
-
-                    base = from.getPreStackBase() + from.getMethod().getCodeEntry().getMaxLocals();
-                    String dotClassName = null;
-                    String sig = null;
-                    if (from.isInterfaceMethodCall()){
-                        dotClassName = from.asInterfaceMethodCall().getConstantPoolInterfaceMethodEntry().getClassEntry().getDotClassName();
-                        name = from.asInterfaceMethodCall().getConstantPoolInterfaceMethodEntry().getName();
-                        sig = from.asInterfaceMethodCall().getConstantPoolInterfaceMethodEntry().getNameAndTypeEntry().getDescriptor();
-
-                        /** sig to specialize CharSequence to String  - big hack!**/
-                        if (dotClassName.equals("java.lang.CharSequence")){
-                            System.out.println("Specializing java.lang.CharSequence to java.lang.String!!!!! ");
-                            dotClassName = "java.lang.String";
-                        }
-
-                    }else{
-                        dotClassName = from.asMethodCall().getConstantPoolMethodEntry().getClassEntry().getDotClassName();
-                        name = from.asMethodCall().getConstantPoolMethodEntry().getName();
-
-                        sig = from.asMethodCall().getConstantPoolMethodEntry().getNameAndTypeEntry().getDescriptor();
-                    }
-                 //   mangledName = (dotClassName+"_"+name+sig);//.replace(".","_").replace(";","_").replace("(","_").replace(")", "_").replace("/", "_").replace("$", "_").replace("[", "_");
-                    intrinsicLookupName = dotClassName + "." + name + sig;
-            }
-        }
 
 
 
         static  class call extends HSAILInstruction<call> {
-            int base;
-            String name;
-            String mangledName;
+            CallInfo callInfo;
             CallableCallType callableMethodCall;
+            int base;
             HSAILMethod hsailMethod;
 
             protected call(call original){
                 super(original);
-                base = original.base;
-                name = original.name;
-                mangledName = original.mangledName;
-                callableMethodCall = original.callableMethodCall;
+                callInfo = original.callInfo;
                 hsailMethod = original.hsailMethod;
             }
 
-            call(HSAILMethod hsailMethod, HSAILStackFrame _HSAIL_stackFrame,Instruction _from) {
+            call(HSAILMethod hsailMethod, HSAILStackFrame _HSAIL_stackFrame,Instruction _from, CallInfo _callInfo) {
                 super(_HSAIL_stackFrame, _from, 0, 0);
+                callInfo = _callInfo;
+
                 base = from.getPreStackBase() + from.getMethod().getCodeEntry().getMaxLocals();
-                String dotClassName = null;
-                String sig = null;
-                if (from.isInterfaceMethodCall()){
-                    dotClassName = from.asInterfaceMethodCall().getConstantPoolInterfaceMethodEntry().getClassEntry().getDotClassName();
-                    name = from.asInterfaceMethodCall().getConstantPoolInterfaceMethodEntry().getName();
-                    sig = from.asInterfaceMethodCall().getConstantPoolInterfaceMethodEntry().getNameAndTypeEntry().getDescriptor();
 
-                    /** sig to specialize CharSequence to String  - big hack!**/
-                    if (dotClassName.equals("java.lang.CharSequence")){
-                        System.out.println("Specializing java.lang.CharSequence to java.lang.String!!!!! ");
-                        dotClassName = "java.lang.String";
-                    }
-
-                }else{
-                    dotClassName = from.asMethodCall().getConstantPoolMethodEntry().getClassEntry().getDotClassName();
-                    name = from.asMethodCall().getConstantPoolMethodEntry().getName();
-
-                    sig = from.asMethodCall().getConstantPoolMethodEntry().getNameAndTypeEntry().getDescriptor();
-                }
-              //  mangledName = (dotClassName+"_"+name+sig);//.replace(".","_").replace(";","_").replace("(","_").replace(")", "_").replace("/", "_").replace("$", "_").replace("[", "_");
-                String intrinsicLookup = dotClassName + "." + name + sig;
-                IntrinsicCall intrinsicCall = null;
-                for (IntrinsicCall ic : HSAILIntrinsics.intrinsicMap.values()) {
-                    if (ic.getMappedMethod().equals(intrinsicLookup)) {
-                        intrinsicCall = ic;
-                        break;
-                    }
-                }
-                if (intrinsicCall == null) { // not an intrinsic!
                     try {
-                        Class theClass = Class.forName(dotClassName);
+                        Class theClass = Class.forName(callInfo.dotClassName);
                         ClassModel classModel = ClassModel.getClassModel(theClass);
-                        ClassModel.ClassModelMethod method = classModel.getMethod(name, sig);
+                        ClassModel.ClassModelMethod method = classModel.getMethod(callInfo.name, callInfo.sig);
 
                         // HSAILStackFrame newStackFrame = new HSAILStackFrame(HSAILStackFrame, String.format("@%04d : %s",from.getThisPC(), mangledName), base);
                         // Pass HSAILStackFrame down here!!!!
                         hsailMethod = HSAILMethod.getHSAILMethod(method, hsailMethod.getEntryPoint(), HSAILStackFrame, base);
 
-                        callableMethodCall = new InlineMethodCall( intrinsicLookup, hsailMethod);
+                        callableMethodCall = new InlineMethodCall( callInfo.intrinsicLookupName, hsailMethod);
                     } catch (ClassNotFoundException e) {
                         e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                     } catch (ClassParseException e) {
                         e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                     }
-                }
+
                 if (callableMethodCall instanceof SimpleMethodCall){
                    hsailMethod.add((SimpleMethodCall)callableMethodCall);
                 }
@@ -440,7 +377,7 @@ public class HSAILInstructionSet {
 
             @Override
             void render(HSAILRenderer r) {
-                callableMethodCall.renderCallSite(r, HSAILStackFrame, from,  name, base);
+                callableMethodCall.renderCallSite(r, HSAILStackFrame, from,  callInfo.name, base);
 
             }
 
@@ -1278,8 +1215,8 @@ public class HSAILInstructionSet {
         _instructions.add(new field_store<StackReg_ref,ref>(_hsailStackFrame, _i, new StackReg_ref(_i, 1), new StackReg_ref(_i, 0), (long) UnsafeWrapper.objectFieldOffset(_f)));
         return(_instructions);
     }
-    static public List<HSAILInstruction> call(List<HSAILInstruction> _instructions,HSAILMethod _hsailMethod, HSAILStackFrame _hsailStackFrame, Instruction _i){
-       _instructions.add(new call(_hsailMethod, _hsailStackFrame,_i));
+    static public List<HSAILInstruction> call(List<HSAILInstruction> _instructions,HSAILMethod _hsailMethod, HSAILStackFrame _hsailStackFrame, Instruction _i, CallInfo _callInfo){
+       _instructions.add(new call(_hsailMethod, _hsailStackFrame,_i,  _callInfo));
         return(_instructions);
     }
     static public List<HSAILInstruction> field_load_ref(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i, Field _f){

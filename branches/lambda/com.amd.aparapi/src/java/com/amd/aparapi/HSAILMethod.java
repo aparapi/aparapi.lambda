@@ -241,6 +241,37 @@ import java.util.regex.Pattern;
             return (method.method.isStatic());
         }
     }
+
+class CallInfo{
+    Instruction from;
+    String name;
+    String intrinsicLookupName;
+    String dotClassName;
+    String sig = null;
+    CallInfo( Instruction _from) {
+        from  = _from;
+        if (from.isInterfaceMethodCall()){
+            dotClassName = from.asInterfaceMethodCall().getConstantPoolInterfaceMethodEntry().getClassEntry().getDotClassName();
+            name = from.asInterfaceMethodCall().getConstantPoolInterfaceMethodEntry().getName();
+            sig = from.asInterfaceMethodCall().getConstantPoolInterfaceMethodEntry().getNameAndTypeEntry().getDescriptor();
+
+            /** sig to specialize CharSequence to String  - big hack!**/
+            if (dotClassName.equals("java.lang.CharSequence")){
+                System.out.println("Specializing java.lang.CharSequence to java.lang.String!!!!! ");
+                dotClassName = "java.lang.String";
+            }
+
+        }else{
+            dotClassName = from.asMethodCall().getConstantPoolMethodEntry().getClassEntry().getDotClassName();
+            name = from.asMethodCall().getConstantPoolMethodEntry().getName();
+
+            sig = from.asMethodCall().getConstantPoolMethodEntry().getNameAndTypeEntry().getDescriptor();
+        }
+        //   mangledName = (dotClassName+"_"+name+sig);//.replace(".","_").replace(";","_").replace("(","_").replace(")", "_").replace("/", "_").replace("$", "_").replace("[", "_");
+        intrinsicLookupName = dotClassName + "." + name + sig;
+    }
+}
+
 class HSAILIntrinsics {
     public static Map<String, IntrinsicCall> intrinsicMap = new HashMap<String, IntrinsicCall>();
 
@@ -249,31 +280,36 @@ class HSAILIntrinsics {
     }
 
     static {
-       // add(new IntrinsicCall("java.lang.Math.sqrt(D)D", true,
-              //  "function &sqrt (arg_f64 %_result) (arg_f64 %_val) {",
-             //   "ld_arg_f64  $d0, [%_val];",
-              //  "nsqrt_f64  $d0, $d0;",
-              //  "st_arg_f64  $d0, [%_result];",
-               // "ret;",
-               // "};"));
-        add(
-                (new InlineIntrinsicCall("java.lang.Math.sqrt(D)D", true){
-                    public List<HSAILInstructionSet.HSAILInstruction> add(List<HSAILInstructionSet.HSAILInstruction> _instructions, HSAILStackFrame _hsailStackFrame, Instruction _from){
-                        //   nsqrt_f64  $d${0}, $d${0};
-                        _instructions.add(new HSAILInstructionSet.nsqrt<StackReg_f64, f64>(_hsailStackFrame, _from, new StackReg_f64(_from, 0)));
-                        return(_instructions);
-                    }
-                }
-    )/*.add(new nsqrt<StackReg_f64,f64>(null, null, new StackReg_f64(0), new StackReg_f64(0)))*/
-        );
+        add(new InlineIntrinsicCall("java.lang.Math.sqrt(D)D", true){
+            public List<HSAILInstructionSet.HSAILInstruction> add(List<HSAILInstructionSet.HSAILInstruction> _instructions, HSAILStackFrame _hsailStackFrame, Instruction _from){
+                //   nsqrt_f64  $d${0}, $d${0};
+                _instructions.add(new HSAILInstructionSet.nsqrt<StackReg_f64, f64>(_hsailStackFrame, _from, new StackReg_f64(_from, 0)));
+                return(_instructions);
+            }
+        });
         add(new InlineIntrinsicCall( "java.lang.String.charAt(I)C", false){
             public List<HSAILInstructionSet.HSAILInstruction> add(List<HSAILInstructionSet.HSAILInstruction> _instructions, HSAILStackFrame _hsailStackFrame, Instruction _from){
-                // ld_global_u64 $d${2}, [$d${0}+16];   // this string reference into $d${2}",
+                // ld_global_u64 $d${2}, [$d${0}+16];   // this string reference into $d${2}"
                 // mov_b32 $s${3}, $s${1};              // copy index",
                 // cvt_u64_s32 $d${3}, $s${3};          // convert array index to 64 bits",
                 // mad_u64 $d${3}, $d${3}, 2, $d${2};   // get the char address",
                 // ld_global_u16 $s${0}, [$d${3}+24];   // ld the char"
-                throw new IllegalStateException("java.lang.String.charAt(I)C intrinsic not implemented!");
+
+                // ld_global_u64 $d${2}, [$d${0}+16];   // this string reference into $d${2}"
+                _instructions.add(new HSAILInstructionSet.field_load<StackReg_u64, u64>(_hsailStackFrame, _from, new StackReg_u64(_from, 2),  new StackReg_ref(_from, 0), 16));
+
+                // mov_b32 $s${3}, $s${1};              // copy index",
+                _instructions.add(new HSAILInstructionSet.mov<StackReg_s32, StackReg_s32,  s32,  s32>(_hsailStackFrame, _from, new StackReg_s32(_from, 3),  new StackReg_s32(_from, 1)));
+
+                // cvt_u64_s32 $d${3}, $s${3};          // convert array index to 64 bits",
+                _instructions.add(new HSAILInstructionSet.cvt<StackReg_u64, StackReg_s32,  u64,  s32>(_hsailStackFrame, _from, new StackReg_u64(_from, 3),  new StackReg_s32(_from, 3)));
+
+                // mad_u64 $d${3}, $d${3}, 2, $d${2};   // get the char address",
+                _instructions.add(new HSAILInstructionSet.mad(_hsailStackFrame, _from, new StackReg_ref(_from, 3),new StackReg_ref(_from, 3),   new StackReg_ref(_from, 2), 2));
+
+                // ld_global_u16 $s${0}, [$d${3}+24];   // ld the char"
+                _instructions.add(new HSAILInstructionSet.field_load<StackReg_u16, u16>(_hsailStackFrame, _from, new StackReg_u16(_from, 0),  new StackReg_ref(_from, 3), 24));
+                return(_instructions);
             }
         });
         add(new InlineIntrinsicCall("java.lang.Math.cos(D)D", true){
@@ -288,45 +324,27 @@ class HSAILIntrinsics {
                 return(_instructions);
             }
         });
-       /** add(new IntrinsicCall( "java.lang.Math.hypot(DD)D", true,
-                "function &hypot (arg_f64 %_result) (arg_f64 %_val1, arg_f64 %_val2) {",
-                "ld_arg_f64  $d0, [%_val1];",
-                "ld_arg_f64  $d1, [%_val2];",
-                "mul_f64 $d0, $d0, $d1;",
-                "nsqrt_f64  $d0, $d0;",
-                "st_arg_f64  $d0, [%_result];",
-                "ret;",
-                "};")); **/
+        add(new InlineIntrinsicCall("java.lang.Math.hypot(DD)D", true ){
+            public List<HSAILInstructionSet.HSAILInstruction> add(List<HSAILInstructionSet.HSAILInstruction> _instructions, HSAILStackFrame _hsailStackFrame, Instruction _from){
+                //mul_f64 $d0, $d0, $d0;",
+                //mul_f64 $d1, $d1, $d1;",
+                //add_f64 $d0, $d0, $d1;",
+                //nsqrt_f64  $d0, $d0;",
+                _instructions.add(new HSAILInstructionSet.mul<StackReg_f64, f64>(_hsailStackFrame, _from,  new StackReg_f64(_from, 0),  new StackReg_f64(_from, 0),  new StackReg_f64(_from, 0)));
+                _instructions.add(new HSAILInstructionSet.mul<StackReg_f64, f64>(_hsailStackFrame, _from,  new StackReg_f64(_from, 1),  new StackReg_f64(_from, 1),  new StackReg_f64(_from, 1)));
+                _instructions.add(new HSAILInstructionSet.add<StackReg_f64, f64>(_hsailStackFrame, _from,  new StackReg_f64(_from, 0),  new StackReg_f64(_from, 0),  new StackReg_f64(_from, 1)));
+                _instructions.add(new HSAILInstructionSet.nsqrt<StackReg_f64, f64>(_hsailStackFrame, _from,  new StackReg_f64(_from, 0)));
+                return(_instructions);
+            }
+        });
+
     }
 
-    static InlineIntrinsicCall getInlineIntrinsic(Instruction from){
+    static InlineIntrinsicCall getInlineIntrinsic(CallInfo _callInfo){
 
-    int base = from.getPreStackBase() + from.getMethod().getCodeEntry().getMaxLocals();
-        String name = null;
-    String dotClassName = null;
-    String sig = null;
-    if (from.isInterfaceMethodCall()){
-        dotClassName = from.asInterfaceMethodCall().getConstantPoolInterfaceMethodEntry().getClassEntry().getDotClassName();
-        name = from.asInterfaceMethodCall().getConstantPoolInterfaceMethodEntry().getName();
-        sig = from.asInterfaceMethodCall().getConstantPoolInterfaceMethodEntry().getNameAndTypeEntry().getDescriptor();
-
-        /** sig to specialize CharSequence to String  - big hack!**/
-        if (dotClassName.equals("java.lang.CharSequence")){
-            System.out.println("Specializing java.lang.CharSequence to java.lang.String!!!!! ");
-            dotClassName = "java.lang.String";
-        }
-
-    }else{
-        dotClassName = from.asMethodCall().getConstantPoolMethodEntry().getClassEntry().getDotClassName();
-        name = from.asMethodCall().getConstantPoolMethodEntry().getName();
-
-        sig = from.asMethodCall().getConstantPoolMethodEntry().getNameAndTypeEntry().getDescriptor();
-    }
-    String mangledName = (dotClassName+"_"+name+sig);//.replace(".","_").replace(";","_").replace("(","_").replace(")", "_").replace("/", "_").replace("$", "_").replace("[", "_");
-    String intrinsicLookup = dotClassName + "." + name + sig;
-        InlineIntrinsicCall call = null;
+    InlineIntrinsicCall call = null;
     for (IntrinsicCall ic : HSAILIntrinsics.intrinsicMap.values()) {
-        if (ic.getMappedMethod().equals(intrinsicLookup)) {
+        if (ic.getMappedMethod().equals(_callInfo.intrinsicLookupName)) {
             call = (InlineIntrinsicCall)ic;
             break;
         }
@@ -428,13 +446,12 @@ public class HSAILMethod {
                 if (i instanceof HSAILInstructionSet.retvoid){
                     r.pad(9).lineCommentStart().append("ret").semicolon();
                 }else if (i instanceof HSAILInstructionSet.ret){
+                    r.pad(9).lineCommentStart().append("ret removed and replaced by branch to end of code").semicolon();
                   r.pad(9).append("mov_").movTypeName(((HSAILInstructionSet.ret)i).getSrc()).space().regPrefix(((HSAILInstructionSet.ret)i).getSrc().type).append(base).separator().regName(((HSAILInstructionSet.ret)i).getSrc(), i.getHSAILStackFrame()).semicolon();
                   if (i != instructions.get(instructions.size()-1)){
-                  r.nl().pad(9).append("brn @L"+ i.getHSAILStackFrame().getUniqueNameSpace()+"_END").semicolon();
-                  endBranchNeeded = true;
+                      r.nl().pad(9).append("brn @L"+ i.getHSAILStackFrame().getUniqueNameSpace()+"_END").semicolon();
+                      endBranchNeeded = true;
                   }
-                  //r.nl().pad(9).lineCommentStart().append("st_arg_").typeName(((ret)i).getSrc()).space().regName(((ret)i).getSrc(), _renderContext).separator().append("[%_result]").semicolon().nl();
-                  //r.pad(9).lineCommentStart().append("ret").semicolon();
               }   else{
                   r.pad(9);
                   i.render(r);
@@ -443,7 +460,7 @@ public class HSAILMethod {
             }
         }
         if (endBranchNeeded){
-        r.append("@L"+instructions.iterator().next().getHSAILStackFrame().getUniqueNameSpace()+"_END").colon().nl();
+            r.append("@L"+instructions.iterator().next().getHSAILStackFrame().getUniqueNameSpace()+"_END").colon().nl();
         }
         return (r);
     }
@@ -1297,11 +1314,12 @@ public class HSAILMethod {
                 case INVOKEINTERFACE:
                 case INVOKEDYNAMIC:
                 {
-                    InlineIntrinsicCall call = HSAILIntrinsics.getInlineIntrinsic(i);
+                    CallInfo callInfo = new CallInfo(i);
+                    InlineIntrinsicCall call = HSAILIntrinsics.getInlineIntrinsic(callInfo);
                     if (call != null){
                         call.add(instructions, hsailStackFrame, i);
                     }else{
-                        HSAILInstructionSet.call(instructions, this, hsailStackFrame, i);
+                        HSAILInstructionSet.call(instructions, this, hsailStackFrame, i, callInfo);
                     }
                 }
                     break;
