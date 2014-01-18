@@ -19,6 +19,74 @@ abstract class HSAILOperand<R extends HSAILOperand<R,T>, T extends PrimitiveType
    public abstract R cloneMe();
 }
 
+abstract class HSAILConst<R extends HSAILConst<R,T,C>, T extends PrimitiveType, C extends Object> extends HSAILOperand<R,T>{
+   protected C value;
+   HSAILConst(R original){
+      super(original);
+      value = original.value;
+   }
+   HSAILConst(T _type, C _value){
+      super(_type);
+      value = _value;
+
+   }
+   public abstract R cloneMe();
+}
+
+class HSAILConst_f32 extends HSAILConst<HSAILConst_f32, f32,Float>{
+
+   HSAILConst_f32(HSAILConst_f32 original){
+      super(original);
+
+   }
+   HSAILConst_f32(Float _value){
+      super(PrimitiveType.f32, _value);
+   }
+   public HSAILConst_f32 cloneMe(){
+      return (new HSAILConst_f32(value));
+   }
+}
+
+class HSAILConst_s32 extends HSAILConst<HSAILConst_s32, s32,Integer>{
+
+   HSAILConst_s32(HSAILConst_s32 original){
+      super(original);
+
+   }
+   HSAILConst_s32(Integer _value){
+      super(PrimitiveType.s32, _value);
+   }
+   public HSAILConst_s32 cloneMe(){
+      return (new HSAILConst_s32(value));
+   }
+}
+class HSAILConst_f64 extends HSAILConst<HSAILConst_f64, f64,Double>{
+
+   HSAILConst_f64(HSAILConst_f64 original){
+      super(original);
+
+   }
+   HSAILConst_f64(Double _value){
+      super(PrimitiveType.f64, _value);
+   }
+   public HSAILConst_f64 cloneMe(){
+      return (new HSAILConst_f64(value));
+   }
+}
+
+class HSAILConst_s64 extends HSAILConst<HSAILConst_s64, s64,Long>{
+
+   HSAILConst_s64(HSAILConst_s64 original){
+      super(original);
+
+   }
+   HSAILConst_s64(Long _value){
+      super(PrimitiveType.s64, _value);
+   }
+   public HSAILConst_s64 cloneMe(){
+      return (new HSAILConst_s64(value));
+   }
+}
 public abstract class HSAILRegister<R extends HSAILRegister<R,T>, T extends PrimitiveType> extends HSAILOperand<R,T>{
    int index;
 

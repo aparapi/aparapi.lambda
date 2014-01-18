@@ -24,11 +24,11 @@ public class HSAILRenderer extends TextRenderer<HSAILRenderer>{
       return (commaSpace());
    }
 
-   public HSAILRenderer typeName(HSAILRegister _reg){
+   public HSAILRenderer typeName(HSAILOperand _reg){
       return (this.append(_reg.type.getHSAName()));
    }
 
-   public HSAILRenderer movTypeName(HSAILRegister _reg){
+   public HSAILRenderer movTypeName(HSAILOperand _reg){
       return (this.append("b" + _reg.type.getHsaBits()));
    }
 
@@ -81,12 +81,16 @@ public class HSAILRenderer extends TextRenderer<HSAILRenderer>{
         return (this.append(_reg.index));
     }
 
-    public HSAILRenderer regName(HSAILRegister _reg){
-        this.regPrefix(_reg.type);
-        return(this.regNum(_reg));
 
+
+   public HSAILRenderer operandName(HSAILOperand _operand){
+      if (_operand instanceof HSAILConst){
+          return(this.append(((HSAILConst) _operand).value.toString()));
+      }else{
+         this.regPrefix(_operand.type);
+         return(this.regNum((HSAILRegister)_operand));
+      }
    }
-
    public HSAILRenderer i(Instruction from){
 
       mark().append(from.getByteCode().getName()).relpad(8);//InstructionHelper.getLabel(i, false, false, false);
