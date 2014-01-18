@@ -448,7 +448,7 @@ public class HSAILMethod {
                }else if (i instanceof HSAILInstructionSet.ret){
 
                    r.pad(9).lineComment("ret removed and replaced by branch to end of code").nl();
-                   r.pad(9).append("mov_").movTypeName(((HSAILInstructionSet.ret) i).getSrc()).space().regPrefix(((HSAILInstructionSet.ret) i).getSrc().type).append(base).separator().regName(((HSAILInstructionSet.ret) i).getSrc()).semicolon();
+                   r.pad(9).append("mov_").movTypeName(((HSAILInstructionSet.ret) i).getSrc()).space().regPrefix(((HSAILInstructionSet.ret) i).getSrc().type).append(base).separator().operandName(((HSAILInstructionSet.ret) i).getSrc()).semicolon();
                    if (i != instructions.get(instructions.size()-1)){
                       endLabel = ((HSAILInstructionSet.ret)i).endLabel;
                       r.nl().pad(9).append("brn ").label(endLabel).semicolon();
