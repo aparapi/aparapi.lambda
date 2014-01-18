@@ -11,7 +11,7 @@ public class HSAILInstructionSet {
             String location;
             Instruction from;
             HSAILRegister[] dests = null;
-            HSAILRegister[] sources = null;
+            HSAILOperand[] sources = null;
            // HSAILStackFrame hsailStackFrame = null;
 
             HSAILInstruction(HSAILInstruction original) {
@@ -40,7 +40,7 @@ public class HSAILInstructionSet {
               //  hsailStackFrame = _hsailStackFrame;
                 from = _from;
                 dests = new HSAILRegister[_destCount];
-                sources = new HSAILRegister[_sourceCount];
+                sources = new HSAILOperand[_sourceCount];
                 location = _hsailStackFrame.getLocation(from.getStartPC());
             }
 
@@ -1926,7 +1926,7 @@ public class HSAILInstructionSet {
         // before we add lets see if this is a redundant mov
         if ( _regInstruction.sources != null && _regInstruction.sources.length > 0) {
             for (int regIndex = 0; regIndex < _regInstruction.sources.length; regIndex++) {
-                HSAILRegister r = _regInstruction.sources[regIndex];
+                HSAILRegister r = (HSAILRegister)_regInstruction.sources[regIndex];
                 if (r.isStack()) {
                     // look up the list of reg instructions for the parentHSAILStackFrame mov which assigns to r
                     int i = _instructions.size();

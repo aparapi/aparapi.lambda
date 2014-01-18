@@ -8,21 +8,31 @@ package com.amd.aparapi;
  * To change this template use File | Settings | File Templates.
  */
 
+abstract class HSAILOperand<R extends HSAILOperand<R,T>, T extends PrimitiveType>{
+   protected T type;
+   HSAILOperand(R original){
+      type = original.type;
+   }
+   HSAILOperand(T _type){
+      type = _type;
+   }
+   public abstract R cloneMe();
+}
 
-public abstract class HSAILRegister<R extends HSAILRegister<R,T>, T extends PrimitiveType>{
+public abstract class HSAILRegister<R extends HSAILRegister<R,T>, T extends PrimitiveType> extends HSAILOperand<R,T>{
    int index;
-   public T type;
+
    public boolean stack;
 
    HSAILRegister(R original){
+      super(original);
        index = original.index;
-       type = original.type;
        stack = original.stack;
    }
 
    HSAILRegister(int _index, T _type, boolean _stack){
+      super(_type);
       index = _index;
-      type = _type;
       stack = _stack;
    }
 
