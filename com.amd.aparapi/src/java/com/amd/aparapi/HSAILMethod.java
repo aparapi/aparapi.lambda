@@ -15,7 +15,9 @@ import java.util.regex.Pattern;
 
 
     class HSAILStackFrame {
-        public int baseOffset;
+        HSAILInstructionSet.HSAILInstruction caller;
+        public int bottom;
+        public int top;     // VARS + Stack
         private String nameSpace;
 
         // The following two fields only have value if this is the root frame.  ie parentHSAILStackFrame == null
@@ -52,12 +54,15 @@ import java.util.regex.Pattern;
             return(getUniqueNameSpace(this));
         }
         HSAILStackFrame parentHSAILStackFrame = null;
-        HSAILStackFrame(HSAILStackFrame _parentHSAILStackFrame, String _nameSpace, int _baseOffset){
+        HSAILStackFrame(HSAILStackFrame _parentHSAILStackFrame, String _nameSpace, HSAILInstructionSet.HSAILInstruction _caller, int _bottom, int _top){
+            caller = _caller;
             parentHSAILStackFrame = _parentHSAILStackFrame;
             if (parentHSAILStackFrame != null){
-               baseOffset = parentHSAILStackFrame.baseOffset + _baseOffset;
+               top = parentHSAILStackFrame.top + _top;
+               bottom = parentHSAILStackFrame.top + _bottom;
             }else{
-               baseOffset = _baseOffset;
+               top = _top;
+               bottom = _bottom;
             }
             nameSpace=_nameSpace;
         }
@@ -113,12 +118,12 @@ import java.util.regex.Pattern;
             super( _mappedMethod, _isStatic);
         }
         final Pattern regex= Pattern.compile("\\$\\{([0-9]+)\\}");
-        String expand(String line, HSAILStackFrame _HSAIL_stackFrame, int base){
+        String expand(String line, HSAILStackFrame _hsailStackFrame, int base){
             StringBuffer sb= new StringBuffer();
             Matcher matcher = regex.matcher(line);
 
             while (matcher.find()) {
-                matcher.appendReplacement(sb, String.format("%d",Integer.parseInt(matcher.group(1))+((_HSAIL_stackFrame == null)?0: _HSAIL_stackFrame.baseOffset+base)));
+                matcher.appendReplacement(sb, String.format("%d",Integer.parseInt(matcher.group(1))+((_hsailStackFrame == null)?0: _hsailStackFrame.top+base)));
             }
             matcher.appendTail(sb);
 
@@ -283,7 +288,7 @@ class HSAILIntrinsics {
         add(new InlineIntrinsicCall("java.lang.Math.sqrt(D)D", true){
             public List<HSAILInstructionSet.HSAILInstruction> add(List<HSAILInstructionSet.HSAILInstruction> _instructions, HSAILStackFrame _hsailStackFrame, Instruction _from){
                 //   nsqrt_f64  $d${0}, $d${0};
-                _instructions.add(new HSAILInstructionSet.nsqrt<StackReg_f64, f64>(_hsailStackFrame, _from, new StackReg_f64(_from, _hsailStackFrame.baseOffset,0)));
+                _instructions.add(new HSAILInstructionSet.nsqrt<StackReg_f64, f64>(_hsailStackFrame, _from, new StackReg_f64(_from, _hsailStackFrame.top,0)));
                 return(_instructions);
             }
         });
@@ -296,31 +301,31 @@ class HSAILIntrinsics {
                 // ld_global_u16 $s${0}, [$d${3}+24];   // ld the char"
 
                 // ld_global_u64 $d${2}, [$d${0}+16];   // this string reference into $d${2}"
-                _instructions.add(new HSAILInstructionSet.field_load<StackReg_u64, u64>(_hsailStackFrame, _from, new StackReg_u64(_from,_hsailStackFrame.baseOffset, 2),  new StackReg_ref(_from,_hsailStackFrame.baseOffset, 0), 16));
+                _instructions.add(new HSAILInstructionSet.field_load<StackReg_u64, u64>(_hsailStackFrame, _from, new StackReg_u64(_from,_hsailStackFrame.top, 2),  new StackReg_ref(_from,_hsailStackFrame.top, 0), 16));
 
                 // mov_b32 $s${3}, $s${1};              // copy index",
-                _instructions.add(new HSAILInstructionSet.mov<StackReg_s32, StackReg_s32,  s32,  s32>(_hsailStackFrame, _from, new StackReg_s32(_from,_hsailStackFrame.baseOffset, 3),  new StackReg_s32(_from, _hsailStackFrame.baseOffset,1)));
+                _instructions.add(new HSAILInstructionSet.mov<StackReg_s32, StackReg_s32,  s32,  s32>(_hsailStackFrame, _from, new StackReg_s32(_from,_hsailStackFrame.top, 3),  new StackReg_s32(_from, _hsailStackFrame.top,1)));
 
                 // cvt_u64_s32 $d${3}, $s${3};          // convert array index to 64 bits",
-                _instructions.add(new HSAILInstructionSet.cvt<StackReg_u64, StackReg_s32,  u64,  s32>(_hsailStackFrame, _from, new StackReg_u64(_from,_hsailStackFrame.baseOffset, 3),  new StackReg_s32(_from,_hsailStackFrame.baseOffset, 3)));
+                _instructions.add(new HSAILInstructionSet.cvt<StackReg_u64, StackReg_s32,  u64,  s32>(_hsailStackFrame, _from, new StackReg_u64(_from,_hsailStackFrame.top, 3),  new StackReg_s32(_from,_hsailStackFrame.top, 3)));
 
                 // mad_u64 $d${3}, $d${3}, 2, $d${2};   // get the char address",
-                _instructions.add(new HSAILInstructionSet.mad(_hsailStackFrame, _from, new StackReg_ref(_from,_hsailStackFrame.baseOffset, 3),new StackReg_ref(_from,_hsailStackFrame.baseOffset, 3),   new StackReg_ref(_from, _hsailStackFrame.baseOffset,2), 2));
+                _instructions.add(new HSAILInstructionSet.mad(_hsailStackFrame, _from, new StackReg_ref(_from,_hsailStackFrame.top, 3),new StackReg_ref(_from,_hsailStackFrame.top, 3),   new StackReg_ref(_from, _hsailStackFrame.top,2), 2));
 
                 // ld_global_u16 $s${0}, [$d${3}+24];   // ld the char"
-                _instructions.add(new HSAILInstructionSet.field_load<StackReg_u16, u16>(_hsailStackFrame, _from, new StackReg_u16(_from,_hsailStackFrame.baseOffset, 0),  new StackReg_ref(_from,_hsailStackFrame.baseOffset, 3), 24));
+                _instructions.add(new HSAILInstructionSet.field_load<StackReg_u16, u16>(_hsailStackFrame, _from, new StackReg_u16(_from,_hsailStackFrame.top, 0),  new StackReg_ref(_from,_hsailStackFrame.top, 3), 24));
                 return(_instructions);
             }
         });
         add(new InlineIntrinsicCall("java.lang.Math.cos(D)D", true){
             public List<HSAILInstructionSet.HSAILInstruction> add(List<HSAILInstructionSet.HSAILInstruction> _instructions, HSAILStackFrame _hsailStackFrame, Instruction _from){
-                _instructions.add(new HSAILInstructionSet.ncos<StackReg_f64, f64>(_hsailStackFrame, _from,  new StackReg_f64(_from, _hsailStackFrame.baseOffset,0)));
+                _instructions.add(new HSAILInstructionSet.ncos<StackReg_f64, f64>(_hsailStackFrame, _from,  new StackReg_f64(_from, _hsailStackFrame.top,0)));
                 return(_instructions);
             }
         });
         add(new InlineIntrinsicCall("java.lang.Math.sin(D)D", true ){
             public List<HSAILInstructionSet.HSAILInstruction> add(List<HSAILInstructionSet.HSAILInstruction> _instructions, HSAILStackFrame _hsailStackFrame, Instruction _from){
-                _instructions.add(new HSAILInstructionSet.nsin<StackReg_f64, f64>(_hsailStackFrame, _from,  new StackReg_f64(_from,_hsailStackFrame.baseOffset, 0)));
+                _instructions.add(new HSAILInstructionSet.nsin<StackReg_f64, f64>(_hsailStackFrame, _from,  new StackReg_f64(_from,_hsailStackFrame.top, 0)));
                 return(_instructions);
             }
         });
@@ -330,10 +335,10 @@ class HSAILIntrinsics {
                 //mul_f64 $d1, $d1, $d1;",
                 //add_f64 $d0, $d0, $d1;",
                 //nsqrt_f64  $d0, $d0;",
-                _instructions.add(new HSAILInstructionSet.mul<StackReg_f64, f64>(_hsailStackFrame, _from,  new StackReg_f64(_from,_hsailStackFrame.baseOffset, 0),  new StackReg_f64(_from,_hsailStackFrame.baseOffset, 0),  new StackReg_f64(_from,_hsailStackFrame.baseOffset, 0)));
-                _instructions.add(new HSAILInstructionSet.mul<StackReg_f64, f64>(_hsailStackFrame, _from,  new StackReg_f64(_from, _hsailStackFrame.baseOffset,1),  new StackReg_f64(_from, _hsailStackFrame.baseOffset,1),  new StackReg_f64(_from,_hsailStackFrame.baseOffset, 1)));
-                _instructions.add(new HSAILInstructionSet.add<StackReg_f64, f64>(_hsailStackFrame, _from,  new StackReg_f64(_from,_hsailStackFrame.baseOffset, 0),  new StackReg_f64(_from,_hsailStackFrame.baseOffset, 0),  new StackReg_f64(_from,_hsailStackFrame.baseOffset, 1)));
-                _instructions.add(new HSAILInstructionSet.nsqrt<StackReg_f64, f64>(_hsailStackFrame, _from,  new StackReg_f64(_from, _hsailStackFrame.baseOffset,0)));
+                _instructions.add(new HSAILInstructionSet.mul<StackReg_f64, f64>(_hsailStackFrame, _from,  new StackReg_f64(_from,_hsailStackFrame.top, 0),  new StackReg_f64(_from,_hsailStackFrame.top, 0),  new StackReg_f64(_from,_hsailStackFrame.top, 0)));
+                _instructions.add(new HSAILInstructionSet.mul<StackReg_f64, f64>(_hsailStackFrame, _from,  new StackReg_f64(_from, _hsailStackFrame.top,1),  new StackReg_f64(_from, _hsailStackFrame.top,1),  new StackReg_f64(_from,_hsailStackFrame.top, 1)));
+                _instructions.add(new HSAILInstructionSet.add<StackReg_f64, f64>(_hsailStackFrame, _from,  new StackReg_f64(_from,_hsailStackFrame.top, 0),  new StackReg_f64(_from,_hsailStackFrame.top, 0),  new StackReg_f64(_from,_hsailStackFrame.top, 1)));
+                _instructions.add(new HSAILInstructionSet.nsqrt<StackReg_f64, f64>(_hsailStackFrame, _from,  new StackReg_f64(_from, _hsailStackFrame.top,0)));
                 return(_instructions);
             }
         });
@@ -523,13 +528,13 @@ public class HSAILMethod {
         return (r);
     }
 
-    static synchronized HSAILMethod getHSAILMethod(ClassModel.ClassModelMethod _method, HSAILMethod _entryPoint, HSAILStackFrame _HSAIL_stackFrame, int _base) {
+    static synchronized HSAILMethod getHSAILMethod(ClassModel.ClassModelMethod _method, HSAILMethod _entryPoint, HSAILStackFrame _HSAIL_stackFrame, HSAILInstructionSet.HSAILInstruction _caller,  int _bottom, int _top) {
         HSAILMethod instance = null;
         if (useCache){
             instance = cache.get(_method);
         }
         if (instance == null) {
-            instance = new HSAILMethod(_method, _entryPoint, _HSAIL_stackFrame, _base);
+            instance = new HSAILMethod(_method, _entryPoint, _HSAIL_stackFrame, _caller, _bottom, _top);
             if (useCache){
                 cache.put(_method, instance);
             }
@@ -539,7 +544,7 @@ public class HSAILMethod {
 
 
     static synchronized HSAILMethod getHSAILMethod(ClassModel.ClassModelMethod _method, HSAILMethod _entryPoint, HSAILStackFrame _HSAIL_stackFrame) {
-       return(getHSAILMethod(_method, _entryPoint, _HSAIL_stackFrame, 0));
+       return(getHSAILMethod(_method, _entryPoint, _HSAIL_stackFrame, null, 0, 0));
     }
 
     static synchronized HSAILMethod getHSAILMethod(ClassModel.ClassModelMethod _method, HSAILMethod _entryPoint) {
@@ -551,8 +556,8 @@ public class HSAILMethod {
 
 
 
-    private HSAILMethod(ClassModel.ClassModelMethod _method, HSAILMethod _entryPoint, HSAILStackFrame _HSAIL_stackFrame, int _base) {
-        hsailStackFrame = new HSAILStackFrame(_HSAIL_stackFrame, _method.getClassModel().getDotClassName()+"."+_method.getName()+_method.getDescriptor(), _base);
+    private HSAILMethod(ClassModel.ClassModelMethod _method, HSAILMethod _entryPoint, HSAILStackFrame _HSAIL_stackFrame, HSAILInstructionSet.HSAILInstruction _caller, int _bottom, int _top) {
+        hsailStackFrame = new HSAILStackFrame(_HSAIL_stackFrame, _method.getClassModel().getDotClassName()+"."+_method.getName()+_method.getDescriptor(), _caller, _bottom, _top);
 
         entryPoint = _entryPoint;
         if (UnsafeWrapper.addressSize() == 4) {

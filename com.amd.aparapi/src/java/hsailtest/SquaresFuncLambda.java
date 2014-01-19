@@ -20,6 +20,9 @@ public class SquaresFuncLambda {
     }
 
     static int square(int v){
+        int junk = v;
+        int junk1 = v;
+       int junk3 = v;
         return( v*v);
     }
 
@@ -36,12 +39,14 @@ public class SquaresFuncLambda {
         };
         ((HSADevice)Device.hsa()).dump(ic);
       //  System.exit(1);
-
+       ((HSADevice)Device.hsa()).dump(ic);
+       if (false){
         Device.hsa().forEach(len, ic);
         dump("hsa", in, out);
         Device.jtp().forEach(len, ic);
         dump("jtp", in, out);
         Device.seq().forEach(len, ic);
         dump("seq", in, out);
+       }
     }
 }
