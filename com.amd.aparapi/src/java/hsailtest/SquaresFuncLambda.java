@@ -20,13 +20,16 @@ public class SquaresFuncLambda {
     }
 
     static int square(int v){
-        if (v==0){
-           return(0);
-        }
+       // int junk1 = v;
+       // if (v==0){
+          // int junk = v;
+          // return(0);
+       // }
         return( v*v);
     }
 
     public static void main(String[] args) throws AparapiException {
+        SquaresFuncLambda main = new SquaresFuncLambda();
         final int len = 10;
         int in[] = new int[len];
         int out[] = new int[len];
@@ -38,9 +41,9 @@ public class SquaresFuncLambda {
             out[gid] = square(in[gid]);
         };
         ((HSADevice)Device.hsa()).dump(ic);
-      //  System.exit(1);
-       ((HSADevice)Device.hsa()).dump(ic);
-       if (false){
+        ((HSADevice)Device.hsa()).dump(ic);
+
+       if (true){
         Device.hsa().forEach(len, ic);
         dump("hsa", in, out);
         Device.jtp().forEach(len, ic);

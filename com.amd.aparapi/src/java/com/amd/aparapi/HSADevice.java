@@ -31,10 +31,10 @@ public class HSADevice extends Device {
 
         HSAILRenderer renderer = new HSAILRenderer().setShowComments(true);
 
-        HSAILMethod hsailMethod = HSAILMethod.getHSAILMethod(method, null);
+        HSAILMethod hsailMethod = HSAILMethod.getHSAILMethod(method);
 
 
-        hsailMethod.renderEntryPoint(renderer);
+        hsailMethod.render(renderer);
         System.out.println(renderer.toString());
         }catch(ClassNotFoundException cnfe){
             cnfe.printStackTrace();
@@ -62,10 +62,10 @@ public class HSADevice extends Device {
 
                 HSAILRenderer renderer = new HSAILRenderer().setShowComments(true);
 
-                HSAILMethod hsailMethod = HSAILMethod.getHSAILMethod(method, null);
+                HSAILMethod hsailMethod = HSAILMethod.getHSAILMethod(method);
 
 
-                hsailMethod.renderEntryPoint(renderer);
+                hsailMethod.render(renderer);
                 cachedRunner.hsail = renderer.toString();
                 System.out.println(cachedRunner.hsail);
                 cachedRunner.runner = new OkraRunner(cachedRunner.hsail);
