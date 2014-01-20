@@ -20,9 +20,9 @@ public class SquaresFuncLambda {
     }
 
     static int square(int v){
-        int junk = v;
-        int junk1 = v;
-       int junk3 = v;
+        if (v==0){
+           return(0);
+        }
         return( v*v);
     }
 

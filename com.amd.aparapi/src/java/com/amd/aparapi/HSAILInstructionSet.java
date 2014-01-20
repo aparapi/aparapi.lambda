@@ -157,20 +157,20 @@ public class HSAILInstructionSet {
         static  class branch <R extends HSAILRegister<R,s32>> extends HSAILInstructionWithSrc<branch<R>,R, s32> {
             String branchName;
             int pc;
-            String label;
+            String targetLabel;
 
             protected branch(branch<R> original){
                 super(original);
                 branchName = original.branchName;
                 pc = original.pc;
-                label = original.label;
+               targetLabel = original.targetLabel;
             }
 
             branch(HSAILStackFrame _hsailStackFrame,Instruction _from, R _src, String _branchName, int _pc) {
                 super(_hsailStackFrame,_from, _src);
                 branchName = _branchName;
                 pc = _pc;
-                label = _hsailStackFrame.getLocation(pc);
+               targetLabel = _hsailStackFrame.getLocation(pc);
             }
 
             @Override public branch<R> cloneMe(){
@@ -180,7 +180,7 @@ public class HSAILInstructionSet {
 
             @Override
             public void render(HSAILRenderer r) {
-                r.append(branchName).space().label(label).semicolon();
+                r.append(branchName).space().label(targetLabel).semicolon();
             }
         }
 
@@ -286,18 +286,18 @@ public class HSAILInstructionSet {
         static  class cbr extends HSAILInstruction<cbr> {
 
             int pc;
-            String label;
+            String targetLabel;
 
             protected cbr(cbr original){
                 super(original);
                 pc = original.pc;
-                label = original.label;
+               targetLabel = original.targetLabel;
             }
 
             cbr(HSAILStackFrame _hsailStackFrame,Instruction _from, int _pc) {
                 super(_hsailStackFrame,_from, 0, 0);
                 pc = _pc;
-                label = _hsailStackFrame.getLocation(pc);
+               targetLabel = _hsailStackFrame.getLocation(pc);
             }
 
             @Override public cbr cloneMe(){
@@ -307,24 +307,26 @@ public class HSAILInstructionSet {
 
             @Override
             public void render(HSAILRenderer r) {
-                r.append("cbr").space().append("$c1").separator().label(label).semicolon();
+                r.append("cbr").space().append("$c1").separator().label(targetLabel).semicolon();
 
             }
         }
 
         static  class brn extends HSAILInstruction<brn> {
             int pc;
-            String label;
+            String targetLabel;
             protected brn(brn original){
                 super(original);
                 pc = original.pc;
-                label = original.label;
+               targetLabel = original.targetLabel;
             }
+
+
 
             brn(HSAILStackFrame _hsailStackFrame,Instruction _from, int _pc) {
                 super(_hsailStackFrame, _from, 0, 0);
                 pc = _pc;
-                label = _hsailStackFrame.getLocation(pc);
+               targetLabel = _hsailStackFrame.getLocation(pc);
             }
 
             @Override public brn cloneMe(){
@@ -333,66 +335,37 @@ public class HSAILInstructionSet {
 
             @Override
             public void render(HSAILRenderer r) {
-                r.append("brn").space().label(label).semicolon();
+                r.append("brn").space().label(targetLabel).semicolon();
 
             }
         }
+   static  class inlineReturnBrn extends HSAILInstruction<inlineReturnBrn> {
+
+      String targetLabel;
+      protected inlineReturnBrn(inlineReturnBrn original){
+         super(original);
+         targetLabel = original.targetLabel;
+      }
+
+      inlineReturnBrn(HSAILStackFrame _hsailStackFrame,Instruction _from, String _targetLabel) {
+         super(_hsailStackFrame, _from, 0, 0);
+         targetLabel = _targetLabel;
+      }
+
+      @Override public inlineReturnBrn cloneMe(){
+         return(new inlineReturnBrn(this));
+      }
+
+      @Override
+      public void render(HSAILRenderer r) {
+         r.append("brn").space().label(targetLabel).semicolon().lineComment("mapped from return");
+
+      }
+   }
 
 
 
 
-        static  class call extends HSAILInstruction<call> {
-            CallInfo callInfo;
-            CallableCallType callableMethodCall;
-             int bottom;
-            int top;
-            HSAILMethod hsailMethod;
-
-            protected call(call original){
-                super(original);
-                callInfo = original.callInfo;
-                hsailMethod = original.hsailMethod;
-            }
-
-            call(HSAILMethod hsailMethod, HSAILStackFrame _hsailStackFrame,Instruction _from, CallInfo _callInfo) {
-                super(_hsailStackFrame, _from, 0, 0);
-                callInfo = _callInfo;
-                bottom = from.getPreStackBase();
-                top = bottom +from.getMethod().getCodeEntry().getMaxLocals();
-
-                    try {
-                        Class theClass = Class.forName(callInfo.dotClassName);
-                        ClassModel classModel = ClassModel.getClassModel(theClass);
-                        ClassModel.ClassModelMethod method = classModel.getMethod(callInfo.name, callInfo.sig);
-
-                        // HSAILStackFrame newStackFrame = new HSAILStackFrame(HSAILStackFrame, String.format("@%04d : %s",from.getThisPC(), mangledName), base);
-                        // Pass HSAILStackFrame down here!!!!
-                        hsailMethod = HSAILMethod.getHSAILMethod(method, hsailMethod.getEntryPoint(),  _hsailStackFrame, this, bottom, top);
-
-                        callableMethodCall = new InlineMethodCall( callInfo.intrinsicLookupName, hsailMethod);
-                    } catch (ClassNotFoundException e) {
-                        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                    } catch (ClassParseException e) {
-                        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                    }
-
-               // if (callableMethodCall instanceof SimpleMethodCall){
-                   //hsailMethod.add((SimpleMethodCall)callableMethodCall);
-               // }
-            }
-
-            @Override public call cloneMe(){
-                return(new call(this));
-            }
-
-            @Override
-            void render(HSAILRenderer r) {
-               // callableMethodCall.renderCallSite(r, hsailStackFrame, from,  callInfo.name, base);
-
-            }
-
-
-        }
 
 
         static  class nyi extends HSAILInstruction<nyi> {
@@ -853,6 +826,30 @@ public class HSAILInstructionSet {
 
         }
 
+   static final class returnMov<Rd extends HSAILRegister<Rd,D>,Rt extends HSAILRegister<Rt,T>,D extends PrimitiveType, T extends PrimitiveType> extends HSAILInstructionWithDestSrc<returnMov<Rd,Rt,D,T>, Rd, Rt,D,T> {
+       String endLabel;
+
+      protected returnMov(returnMov<Rd,Rt,D,T> original){
+         super(original);
+         endLabel = original.endLabel;
+      }
+
+      public returnMov(HSAILStackFrame _hsailStackFrame,Instruction _from, Rd _dest, Rt _src, String _endLabel) {
+         super(_hsailStackFrame,_from, _dest, _src);
+         endLabel = _endLabel;
+      }
+      @Override public returnMov<Rd,Rt,D,T> cloneMe(){
+         return(new returnMov<Rd,Rt,D,T>(this));
+      }
+      @Override
+      void render(HSAILRenderer r) {
+         r.append("mov_").movTypeName(getDest()).space().operandName(getDest()).separator().operandName(getSrc()).semicolon().nl().label(endLabel).colon();
+
+      }
+
+
+   }
+
         static  abstract class unary<H extends unary<H,Rt,T>, Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends HSAILInstructionWithDestSrc<H,Rt,Rt, T,T> {
             String op;
 
@@ -1227,10 +1224,7 @@ public class HSAILInstructionSet {
         _instructions.add(new field_store<StackReg_ref,ref>(_hsailStackFrame, _i, new StackReg_ref(_i,_hsailStackFrame.top, 1), new StackReg_ref(_i, _hsailStackFrame.top,0), (long) UnsafeWrapper.objectFieldOffset(_f)));
         return(_instructions);
     }
-    static public List<HSAILInstruction> call(List<HSAILInstruction> _instructions,HSAILMethod _hsailMethod, HSAILStackFrame _hsailStackFrame, Instruction _i, CallInfo _callInfo){
-       _instructions.add(new call(_hsailMethod, _hsailStackFrame,_i,  _callInfo));
-        return(_instructions);
-    }
+
     static public List<HSAILInstruction> field_load_ref(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i, Field _f){
        _instructions.add(new field_load<StackReg_ref,ref>(_hsailStackFrame, _i, new StackReg_ref(_i,_hsailStackFrame.top, 0), new StackReg_ref(_i,_hsailStackFrame.top, 0), (long) UnsafeWrapper.objectFieldOffset(_f)));
         return(_instructions);
@@ -1336,40 +1330,40 @@ public class HSAILInstructionSet {
         return(_instructions);
     }
     static public List<HSAILInstruction> cmp_ref_ne(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
-       _instructions.add(new HSAILInstructionSet.cmp_ref(_hsailStackFrame,_i, "ne", new StackReg_ref(_i,_hsailStackFrame.top, 0), new StackReg_ref(_i,_hsailStackFrame.top, 1)));
+       _instructions.add(new cmp_ref(_hsailStackFrame,_i, "ne", new StackReg_ref(_i,_hsailStackFrame.top, 0), new StackReg_ref(_i,_hsailStackFrame.top, 1)));
         return(_instructions);
     }
     static public List<HSAILInstruction> cmp_ref_eq(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
-        _instructions.add(new HSAILInstructionSet.cmp_ref(_hsailStackFrame,_i, "eq", new StackReg_ref(_i, _hsailStackFrame.top,0), new StackReg_ref(_i,_hsailStackFrame.top, 1)));
+        _instructions.add(new cmp_ref(_hsailStackFrame,_i, "eq", new StackReg_ref(_i, _hsailStackFrame.top,0), new StackReg_ref(_i,_hsailStackFrame.top, 1)));
         return(_instructions);
     }
     static public List<HSAILInstruction> cmp_s32_ne(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
-        _instructions.add(new HSAILInstructionSet.cmp_s32(_hsailStackFrame,_i, "ne", new StackReg_s32(_i, _hsailStackFrame.top,0), new StackReg_s32(_i,_hsailStackFrame.top, 1)));
+        _instructions.add(new cmp_s32(_hsailStackFrame,_i, "ne", new StackReg_s32(_i, _hsailStackFrame.top,0), new StackReg_s32(_i,_hsailStackFrame.top, 1)));
         return(_instructions);
     }
 
     static public List<HSAILInstruction> cmp_s32_eq(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
-        _instructions.add(new HSAILInstructionSet.cmp_s32(_hsailStackFrame,_i, "eq", new StackReg_s32(_i,_hsailStackFrame.top, 0), new StackReg_s32(_i,_hsailStackFrame.top, 1)));
+        _instructions.add(new cmp_s32(_hsailStackFrame,_i, "eq", new StackReg_s32(_i,_hsailStackFrame.top, 0), new StackReg_s32(_i,_hsailStackFrame.top, 1)));
         return(_instructions);
     }
 
     static public List<HSAILInstruction> cmp_s32_lt(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
-        _instructions.add(new HSAILInstructionSet.cmp_s32(_hsailStackFrame,_i, "lt", new StackReg_s32(_i, _hsailStackFrame.top,0), new StackReg_s32(_i,_hsailStackFrame.top, 1)));
+        _instructions.add(new cmp_s32(_hsailStackFrame,_i, "lt", new StackReg_s32(_i, _hsailStackFrame.top,0), new StackReg_s32(_i,_hsailStackFrame.top, 1)));
         return(_instructions);
     }
 
     static public List<HSAILInstruction> cmp_s32_gt(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
-        _instructions.add(new HSAILInstructionSet.cmp_s32(_hsailStackFrame,_i, "gt", new StackReg_s32(_i, _hsailStackFrame.top,0), new StackReg_s32(_i, _hsailStackFrame.top,1)));
+        _instructions.add(new cmp_s32(_hsailStackFrame,_i, "gt", new StackReg_s32(_i, _hsailStackFrame.top,0), new StackReg_s32(_i, _hsailStackFrame.top,1)));
         return(_instructions);
     }
 
     static public List<HSAILInstruction> cmp_s32_ge(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
-        _instructions.add(new HSAILInstructionSet.cmp_s32(_hsailStackFrame,_i, "ge", new StackReg_s32(_i,_hsailStackFrame.top, 0), new StackReg_s32(_i, _hsailStackFrame.top,1)));
+        _instructions.add(new cmp_s32(_hsailStackFrame,_i, "ge", new StackReg_s32(_i,_hsailStackFrame.top, 0), new StackReg_s32(_i, _hsailStackFrame.top,1)));
         return(_instructions);
     }
 
     static public List<HSAILInstruction> cmp_s32_le(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
-        _instructions.add(new HSAILInstructionSet.cmp_s32(_hsailStackFrame,_i, "le", new StackReg_s32(_i, _hsailStackFrame.top,0), new StackReg_s32(_i,_hsailStackFrame.top, 1)));
+        _instructions.add(new cmp_s32(_hsailStackFrame,_i, "le", new StackReg_s32(_i, _hsailStackFrame.top,0), new StackReg_s32(_i,_hsailStackFrame.top, 1)));
         return(_instructions);
     }
 
@@ -1741,7 +1735,7 @@ public class HSAILInstructionSet {
         return(_instructions);
     }
     static public List<HSAILInstruction> mad(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i, int _size){
-       _instructions.add(new HSAILInstructionSet.mad(_hsailStackFrame, _i, new StackReg_ref(_i,_hsailStackFrame.top, 1), new StackReg_ref(_i, _hsailStackFrame.top,1), new StackReg_ref(_i,_hsailStackFrame.top, 0), (long) _size));
+       _instructions.add(new mad(_hsailStackFrame, _i, new StackReg_ref(_i,_hsailStackFrame.top, 1), new StackReg_ref(_i, _hsailStackFrame.top,1), new StackReg_ref(_i,_hsailStackFrame.top, 0), (long) _size));
         return(_instructions);
     }
     static public List<HSAILInstruction> mov_var_ref(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
@@ -1882,12 +1876,12 @@ public class HSAILInstructionSet {
         _instructions.add(new workitemabsid<VarReg_s32, s32>(_hsailStackFrame, _i, new VarReg_s32(_argNum)));
         return(_instructions);
     }
-    static public void addmov(List<HSAILInstructionSet.HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i, PrimitiveType _type, int _from, int _to) {
+    static public void addmov(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i, PrimitiveType _type, int _from, int _to) {
         if (_type.equals(PrimitiveType.ref) || _type.getHsaBits() == 32) {
             if (_type.equals(PrimitiveType.ref)) {
-                _instructions.add(new HSAILInstructionSet.mov<StackReg_ref,StackReg_ref,ref,ref>(_hsailStackFrame,_i, new StackReg_ref( _i,_hsailStackFrame.top, _to), new StackReg_ref(_i, _hsailStackFrame.top,_from)));
+                _instructions.add(new mov<StackReg_ref,StackReg_ref,ref,ref>(_hsailStackFrame,_i, new StackReg_ref( _i,_hsailStackFrame.top, _to), new StackReg_ref(_i, _hsailStackFrame.top,_from)));
             } else if (_type.equals(PrimitiveType.s32)) {
-                _instructions.add(new HSAILInstructionSet.mov<StackReg_s32, StackReg_s32, s32, s32>(_hsailStackFrame, _i, new StackReg_s32(_i,_hsailStackFrame.top, _to), new StackReg_s32(_i,_hsailStackFrame.top, _from)));
+                _instructions.add(new mov<StackReg_s32, StackReg_s32, s32, s32>(_hsailStackFrame, _i, new StackReg_s32(_i,_hsailStackFrame.top, _to), new StackReg_s32(_i,_hsailStackFrame.top, _from)));
             } else {
                 throw new IllegalStateException(" unknown prefix 1 prefix for first of DUP2");
             }
@@ -1896,11 +1890,11 @@ public class HSAILInstructionSet {
             throw new IllegalStateException(" unknown prefix 2 prefix for DUP2");
         }
     }
-    static public HSAILRegister getRegOfLastWriteToIndex(List<HSAILInstructionSet.HSAILInstruction>_instructions,int _index) {
+    static public HSAILRegister getRegOfLastWriteToIndex(List<HSAILInstruction>_instructions,int _index) {
 
         int idx = _instructions.size();
         while (--idx >= 0) {
-            HSAILInstructionSet.HSAILInstruction i = _instructions.get(idx);
+            HSAILInstruction i = _instructions.get(idx);
             if (i.dests != null) {
                 for (HSAILRegister d : i.dests) {
                     if (d.index == _index) {
@@ -1913,7 +1907,7 @@ public class HSAILInstructionSet {
 
         return (null);
     }
-    static public HSAILRegister addmov(List<HSAILInstructionSet.HSAILInstruction>_instructions, HSAILStackFrame _hsailStackFrame, Instruction _i, int _from, int _to) {
+    static public HSAILRegister addmov(List<HSAILInstruction>_instructions, HSAILStackFrame _hsailStackFrame, Instruction _i, int _from, int _to) {
         HSAILRegister r = getRegOfLastWriteToIndex(_instructions, _i.getPreStackBase() + _i.getMethod().getCodeEntry().getMaxLocals() + _from);
         if (r == null){
             System.out.println("damn!");
@@ -1923,7 +1917,7 @@ public class HSAILInstructionSet {
     }
 
     // for reference
-    static public void add(List<HSAILInstructionSet.HSAILInstruction>_instructions, HSAILInstructionSet.HSAILInstruction _regInstruction) {
+    static public void add(List<HSAILInstruction>_instructions, HSAILInstruction _regInstruction) {
         // before we add lets see if this is a redundant mov
         if ( _regInstruction.sources != null && _regInstruction.sources.length > 0) {
             for (int regIndex = 0; regIndex < _regInstruction.sources.length; regIndex++) {
@@ -1932,9 +1926,9 @@ public class HSAILInstructionSet {
                     // look up the list of reg instructions for the parentHSAILStackFrame mov which assigns to r
                     int i = _instructions.size();
                     while ((--i) >= 0) {
-                        if (_instructions.get(i) instanceof HSAILInstructionSet.mov) {
+                        if (_instructions.get(i) instanceof mov) {
                             // we have found a move
-                            HSAILInstructionSet.mov candidateForRemoval = (HSAILInstructionSet.mov) _instructions.get(i);
+                            mov candidateForRemoval = (mov) _instructions.get(i);
                             if (candidateForRemoval.from.getBlock() == _regInstruction.from.getBlock()
                                     && candidateForRemoval.getDest().isStack() && candidateForRemoval.getDest().equals(r)) {
                                 // so i may be a candidate if between i and instruction.size() i.dest() is not mutated
@@ -1965,12 +1959,13 @@ public class HSAILInstructionSet {
    public static void addInstructions(List<HSAILInstruction> instructions, HSAILStackFrame hsailStackFrame, ClassModel.ClassModelMethod  method){
       ParseState parseState = ParseState.NONE;
       boolean inlining = true;
+      boolean needsReturnBranch = false;
       for (Instruction i : method.getInstructions()) {
 
          switch (i.getByteCode()) {
 
             case ACONST_NULL:
-               HSAILInstructionSet.nyi(instructions, hsailStackFrame, i);
+               nyi(instructions, hsailStackFrame, i);
                break;
             case ICONST_M1:
             case ICONST_0:
@@ -1981,20 +1976,20 @@ public class HSAILInstructionSet {
             case ICONST_5:
             case BIPUSH:
             case SIPUSH:
-               HSAILInstructionSet.mov_s32_const(instructions, hsailStackFrame, i,  i.asIntegerConstant().getValue());
+               mov_s32_const(instructions, hsailStackFrame, i,  i.asIntegerConstant().getValue());
                break;
             case LCONST_0:
             case LCONST_1:
-               HSAILInstructionSet.mov_s64_const(instructions, hsailStackFrame, i, i.asLongConstant().getValue());
+               mov_s64_const(instructions, hsailStackFrame, i, i.asLongConstant().getValue());
                break;
             case FCONST_0:
             case FCONST_1:
             case FCONST_2:
-               HSAILInstructionSet.mov_f32_const(instructions, hsailStackFrame, i, i.asFloatConstant().getValue());
+               mov_f32_const(instructions, hsailStackFrame, i, i.asFloatConstant().getValue());
                break;
             case DCONST_0:
             case DCONST_1:
-               HSAILInstructionSet.mov_f64_const(instructions, hsailStackFrame, i, i.asDoubleConstant().getValue());
+               mov_f64_const(instructions, hsailStackFrame, i, i.asDoubleConstant().getValue());
 
                break;
             // case BIPUSH: moved up
@@ -2007,13 +2002,13 @@ public class HSAILInstructionSet {
 
                ClassModel.ConstantPool.ConstantEntry e = (ClassModel.ConstantPool.ConstantEntry) cpe.getConstantPoolEntry();
                if (e instanceof ClassModel.ConstantPool.DoubleEntry) {
-                  HSAILInstructionSet.mov_f64_const(instructions, hsailStackFrame, i, ((ClassModel.ConstantPool.DoubleEntry) e).getValue());
+                  mov_f64_const(instructions, hsailStackFrame, i, ((ClassModel.ConstantPool.DoubleEntry) e).getValue());
                } else if (e instanceof ClassModel.ConstantPool.FloatEntry) {
-                  HSAILInstructionSet.mov_f32_const(instructions, hsailStackFrame, i, ((ClassModel.ConstantPool.FloatEntry) e).getValue());
+                  mov_f32_const(instructions, hsailStackFrame, i, ((ClassModel.ConstantPool.FloatEntry) e).getValue());
                } else if (e instanceof ClassModel.ConstantPool.IntegerEntry) {
-                  HSAILInstructionSet.mov_s32_const(instructions, hsailStackFrame, i, ((ClassModel.ConstantPool.IntegerEntry) e).getValue());
+                  mov_s32_const(instructions, hsailStackFrame, i, ((ClassModel.ConstantPool.IntegerEntry) e).getValue());
                } else if (e instanceof ClassModel.ConstantPool.LongEntry) {
-                  HSAILInstructionSet.mov_s64_const(instructions, hsailStackFrame, i, ((ClassModel.ConstantPool.LongEntry) e).getValue());
+                  mov_s64_const(instructions, hsailStackFrame, i, ((ClassModel.ConstantPool.LongEntry) e).getValue());
                }
 
             }
@@ -2027,7 +2022,7 @@ public class HSAILInstructionSet {
             case ILOAD_1:
             case ILOAD_2:
             case ILOAD_3:
-               HSAILInstructionSet.mov_s32_var(instructions, hsailStackFrame, i);
+               mov_s32_var(instructions, hsailStackFrame, i);
 
                break;
             case LLOAD:
@@ -2035,7 +2030,7 @@ public class HSAILInstructionSet {
             case LLOAD_1:
             case LLOAD_2:
             case LLOAD_3:
-               HSAILInstructionSet.mov_s64_var(instructions, hsailStackFrame, i);
+               mov_s64_var(instructions, hsailStackFrame, i);
                break;
             case FLOAD:
             case FLOAD_0:
@@ -2043,7 +2038,7 @@ public class HSAILInstructionSet {
             case FLOAD_2:
             case FLOAD_3:
 
-               HSAILInstructionSet.mov_f32_var(instructions, hsailStackFrame, i);
+               mov_f32_var(instructions, hsailStackFrame, i);
                break;
             case DLOAD:
             case DLOAD_0:
@@ -2051,55 +2046,55 @@ public class HSAILInstructionSet {
             case DLOAD_2:
             case DLOAD_3:
 
-               HSAILInstructionSet.mov_f64_var(instructions, hsailStackFrame, i);
+               mov_f64_var(instructions, hsailStackFrame, i);
                break;
             case ALOAD:
             case ALOAD_0:
             case ALOAD_1:
             case ALOAD_2:
             case ALOAD_3:
-               HSAILInstructionSet.mov_ref_var(instructions, hsailStackFrame, i);
+               mov_ref_var(instructions, hsailStackFrame, i);
 
                break;
             case IALOAD:
-               HSAILInstructionSet.cvt_ref_s32_1(instructions, hsailStackFrame, i);
-               HSAILInstructionSet.mad(instructions, hsailStackFrame, i, PrimitiveType.s32.getHsaBytes());
-               HSAILInstructionSet.array_load_s32(instructions, hsailStackFrame, i);
+               cvt_ref_s32_1(instructions, hsailStackFrame, i);
+               mad(instructions, hsailStackFrame, i, PrimitiveType.s32.getHsaBytes());
+               array_load_s32(instructions, hsailStackFrame, i);
                break;
             case LALOAD:
-               HSAILInstructionSet.cvt_ref_s32_1(instructions, hsailStackFrame, i);
-               HSAILInstructionSet.mad(instructions, hsailStackFrame, i, PrimitiveType.s64.getHsaBytes());
-               HSAILInstructionSet.array_load_s64(instructions, hsailStackFrame, i);
+               cvt_ref_s32_1(instructions, hsailStackFrame, i);
+               mad(instructions, hsailStackFrame, i, PrimitiveType.s64.getHsaBytes());
+               array_load_s64(instructions, hsailStackFrame, i);
                break;
             case FALOAD:
-               HSAILInstructionSet.cvt_ref_s32_1(instructions, hsailStackFrame, i);
-               HSAILInstructionSet.mad(instructions, hsailStackFrame, i, PrimitiveType.f32.getHsaBytes());
-               HSAILInstructionSet.array_load_f32(instructions, hsailStackFrame, i);
+               cvt_ref_s32_1(instructions, hsailStackFrame, i);
+               mad(instructions, hsailStackFrame, i, PrimitiveType.f32.getHsaBytes());
+               array_load_f32(instructions, hsailStackFrame, i);
                break;
             case DALOAD:
-               HSAILInstructionSet.cvt_ref_s32_1(instructions, hsailStackFrame, i);
-               HSAILInstructionSet.mad(instructions, hsailStackFrame, i, PrimitiveType.f64.getHsaBytes());
-               HSAILInstructionSet.array_load_f64(instructions, hsailStackFrame, i);
+               cvt_ref_s32_1(instructions, hsailStackFrame, i);
+               mad(instructions, hsailStackFrame, i, PrimitiveType.f64.getHsaBytes());
+               array_load_f64(instructions, hsailStackFrame, i);
                break;
             case AALOAD:
-               HSAILInstructionSet.cvt_ref_s32_1(instructions, hsailStackFrame, i);
-               HSAILInstructionSet.mad(instructions, hsailStackFrame, i, PrimitiveType.ref.getHsaBytes());
-               HSAILInstructionSet.array_load_ref(instructions, hsailStackFrame, i);
+               cvt_ref_s32_1(instructions, hsailStackFrame, i);
+               mad(instructions, hsailStackFrame, i, PrimitiveType.ref.getHsaBytes());
+               array_load_ref(instructions, hsailStackFrame, i);
                break;
             case BALOAD:
-               HSAILInstructionSet.cvt_ref_s32_1(instructions, hsailStackFrame, i);
-               HSAILInstructionSet.mad(instructions, hsailStackFrame, i, PrimitiveType.s8.getHsaBytes());
-               HSAILInstructionSet.array_load_s8(instructions, hsailStackFrame, i);
+               cvt_ref_s32_1(instructions, hsailStackFrame, i);
+               mad(instructions, hsailStackFrame, i, PrimitiveType.s8.getHsaBytes());
+               array_load_s8(instructions, hsailStackFrame, i);
                break;
             case CALOAD:
-               HSAILInstructionSet.cvt_ref_s32_1(instructions, hsailStackFrame, i);
-               HSAILInstructionSet.mad(instructions, hsailStackFrame, i, PrimitiveType.u16.getHsaBytes());
-               HSAILInstructionSet.array_load_u16(instructions, hsailStackFrame, i);
+               cvt_ref_s32_1(instructions, hsailStackFrame, i);
+               mad(instructions, hsailStackFrame, i, PrimitiveType.u16.getHsaBytes());
+               array_load_u16(instructions, hsailStackFrame, i);
                break;
             case SALOAD:
-               HSAILInstructionSet.cvt_ref_s32_1(instructions, hsailStackFrame, i);
-               HSAILInstructionSet.mad(instructions, hsailStackFrame, i, PrimitiveType.s32.getHsaBytes());
-               HSAILInstructionSet.array_load_s16(instructions, hsailStackFrame, i);
+               cvt_ref_s32_1(instructions, hsailStackFrame, i);
+               mad(instructions, hsailStackFrame, i, PrimitiveType.s32.getHsaBytes());
+               array_load_s16(instructions, hsailStackFrame, i);
                break;
             //case ISTORE: moved down
             // case LSTORE:  moved down
@@ -2111,7 +2106,7 @@ public class HSAILInstructionSet {
             case ISTORE_1:
             case ISTORE_2:
             case ISTORE_3:
-               HSAILInstructionSet.mov_var_s32(instructions, hsailStackFrame, i);
+               mov_var_s32(instructions, hsailStackFrame, i);
 
                break;
             case LSTORE:
@@ -2119,7 +2114,7 @@ public class HSAILInstructionSet {
             case LSTORE_1:
             case LSTORE_2:
             case LSTORE_3:
-               HSAILInstructionSet.mov_var_s64(instructions, hsailStackFrame, i);
+               mov_var_s64(instructions, hsailStackFrame, i);
 
                break;
             case FSTORE:
@@ -2127,254 +2122,254 @@ public class HSAILInstructionSet {
             case FSTORE_1:
             case FSTORE_2:
             case FSTORE_3:
-               HSAILInstructionSet.mov_var_f32(instructions, hsailStackFrame, i);
+               mov_var_f32(instructions, hsailStackFrame, i);
                break;
             case DSTORE:
             case DSTORE_0:
             case DSTORE_1:
             case DSTORE_2:
             case DSTORE_3:
-               HSAILInstructionSet.mov_var_f64(instructions, hsailStackFrame, i);
+               mov_var_f64(instructions, hsailStackFrame, i);
                break;
             case ASTORE:
             case ASTORE_0:
             case ASTORE_1:
             case ASTORE_2:
             case ASTORE_3:
-               HSAILInstructionSet.mov_var_ref(instructions, hsailStackFrame, i);
+               mov_var_ref(instructions, hsailStackFrame, i);
                break;
             case IASTORE:
-               HSAILInstructionSet.cvt_ref_s32_1(instructions, hsailStackFrame, i);
-               HSAILInstructionSet.mad(instructions, hsailStackFrame, i, PrimitiveType.s32.getHsaBytes());
-               HSAILInstructionSet.array_store_s32(instructions, hsailStackFrame, i);
+               cvt_ref_s32_1(instructions, hsailStackFrame, i);
+               mad(instructions, hsailStackFrame, i, PrimitiveType.s32.getHsaBytes());
+               array_store_s32(instructions, hsailStackFrame, i);
                break;
             case LASTORE:
-               HSAILInstructionSet.cvt_ref_s32_1(instructions, hsailStackFrame, i);
-               HSAILInstructionSet.mad(instructions, hsailStackFrame, i, PrimitiveType.s64.getHsaBytes());
-               HSAILInstructionSet.array_store_s64(instructions, hsailStackFrame, i);
+               cvt_ref_s32_1(instructions, hsailStackFrame, i);
+               mad(instructions, hsailStackFrame, i, PrimitiveType.s64.getHsaBytes());
+               array_store_s64(instructions, hsailStackFrame, i);
                break;
             case FASTORE:
-               HSAILInstructionSet.cvt_ref_s32_1(instructions, hsailStackFrame, i);
-               HSAILInstructionSet.mad(instructions, hsailStackFrame, i, PrimitiveType.f32.getHsaBytes());
-               HSAILInstructionSet.array_store_f32(instructions, hsailStackFrame, i);
+               cvt_ref_s32_1(instructions, hsailStackFrame, i);
+               mad(instructions, hsailStackFrame, i, PrimitiveType.f32.getHsaBytes());
+               array_store_f32(instructions, hsailStackFrame, i);
                break;
             case DASTORE:
-               HSAILInstructionSet.cvt_ref_s32_1(instructions, hsailStackFrame, i);
-               HSAILInstructionSet.mad(instructions, hsailStackFrame, i, PrimitiveType.f64.getHsaBytes());
-               HSAILInstructionSet.array_store_f64(instructions, hsailStackFrame, i);
+               cvt_ref_s32_1(instructions, hsailStackFrame, i);
+               mad(instructions, hsailStackFrame, i, PrimitiveType.f64.getHsaBytes());
+               array_store_f64(instructions, hsailStackFrame, i);
                break;
             case AASTORE:
-               HSAILInstructionSet.cvt_ref_s32_1(instructions, hsailStackFrame, i);
-               HSAILInstructionSet.mad(instructions, hsailStackFrame, i, PrimitiveType.ref.getHsaBytes());
-               HSAILInstructionSet.array_store_ref(instructions, hsailStackFrame, i);
+               cvt_ref_s32_1(instructions, hsailStackFrame, i);
+               mad(instructions, hsailStackFrame, i, PrimitiveType.ref.getHsaBytes());
+               array_store_ref(instructions, hsailStackFrame, i);
                break;
             case BASTORE:
-               HSAILInstructionSet.cvt_ref_s32_1(instructions, hsailStackFrame, i);
-               HSAILInstructionSet.mad(instructions, hsailStackFrame, i, PrimitiveType.s8.getHsaBytes());
-               HSAILInstructionSet.array_store_s8(instructions, hsailStackFrame, i);
+               cvt_ref_s32_1(instructions, hsailStackFrame, i);
+               mad(instructions, hsailStackFrame, i, PrimitiveType.s8.getHsaBytes());
+               array_store_s8(instructions, hsailStackFrame, i);
                break;
             case CASTORE:
-               HSAILInstructionSet.cvt_ref_s32_1(instructions, hsailStackFrame, i);
-               HSAILInstructionSet.mad(instructions, hsailStackFrame, i, PrimitiveType.u16.getHsaBytes());
-               HSAILInstructionSet.array_store_u16(instructions, hsailStackFrame, i);
+               cvt_ref_s32_1(instructions, hsailStackFrame, i);
+               mad(instructions, hsailStackFrame, i, PrimitiveType.u16.getHsaBytes());
+               array_store_u16(instructions, hsailStackFrame, i);
                break;
             case SASTORE:
-               HSAILInstructionSet.cvt_ref_s32_1(instructions, hsailStackFrame, i);
-               HSAILInstructionSet.mad(instructions, hsailStackFrame, i, PrimitiveType.s16.getHsaBytes());
-               HSAILInstructionSet.array_store_s16(instructions, hsailStackFrame, i);
+               cvt_ref_s32_1(instructions, hsailStackFrame, i);
+               mad(instructions, hsailStackFrame, i, PrimitiveType.s16.getHsaBytes());
+               array_store_s16(instructions, hsailStackFrame, i);
                break;
             case POP:
-               HSAILInstructionSet.nyi(instructions, hsailStackFrame,i);
+               nyi(instructions, hsailStackFrame,i);
                break;
             case POP2:
-               HSAILInstructionSet.nyi(instructions, hsailStackFrame,i);
+               nyi(instructions, hsailStackFrame,i);
                break;
             case DUP:
                // add(new nyi(i));
-               HSAILInstructionSet.addmov(instructions, hsailStackFrame, i, 0, 1);
+               addmov(instructions, hsailStackFrame, i, 0, 1);
                break;
             case DUP_X1:
-               HSAILInstructionSet.nyi(instructions, hsailStackFrame,i);
+               nyi(instructions, hsailStackFrame,i);
                break;
             case DUP_X2:
 
-               HSAILInstructionSet.addmov(instructions, hsailStackFrame, i, 2, 3);
-               HSAILInstructionSet.addmov(instructions, hsailStackFrame, i, 1, 2);
-               HSAILInstructionSet.addmov(instructions, hsailStackFrame, i, 0, 1);
-               HSAILInstructionSet.addmov(instructions, hsailStackFrame, i, 3, 0);
+               addmov(instructions, hsailStackFrame, i, 2, 3);
+               addmov(instructions, hsailStackFrame, i, 1, 2);
+               addmov(instructions, hsailStackFrame, i, 0, 1);
+               addmov(instructions, hsailStackFrame, i, 3, 0);
 
                break;
             case DUP2:
                // DUP2 is problematic. DUP2 either dups top two items or one depending on the 'prefix' of the stack items.
                // To complicate this further HSA large model wants object/mem references to be 64 bits (prefix 2 in Java) whereas
                // in java object/array refs are 32 bits (prefix 1).
-               HSAILInstructionSet.addmov(instructions, hsailStackFrame, i, 0, 2);
-               HSAILInstructionSet.addmov(instructions, hsailStackFrame, i, 1, 3);
+               addmov(instructions, hsailStackFrame, i, 0, 2);
+               addmov(instructions, hsailStackFrame, i, 1, 3);
                break;
             case DUP2_X1:
-               HSAILInstructionSet.nyi(instructions, hsailStackFrame,i);
+               nyi(instructions, hsailStackFrame,i);
                break;
             case DUP2_X2:
-               HSAILInstructionSet.nyi(instructions, hsailStackFrame,i);
+               nyi(instructions, hsailStackFrame,i);
                break;
             case SWAP:
-               HSAILInstructionSet.nyi(instructions, hsailStackFrame,i);
+               nyi(instructions, hsailStackFrame,i);
                break;
             case IADD:
-               HSAILInstructionSet.add_s32(instructions, hsailStackFrame, i);
+               add_s32(instructions, hsailStackFrame, i);
                break;
             case LADD:
-               HSAILInstructionSet.add_s64(instructions, hsailStackFrame, i);
+               add_s64(instructions, hsailStackFrame, i);
                break;
             case FADD:
-               HSAILInstructionSet.add_f32(instructions, hsailStackFrame, i);
+               add_f32(instructions, hsailStackFrame, i);
                break;
             case DADD:
-               HSAILInstructionSet.add_f64(instructions, hsailStackFrame, i);
+               add_f64(instructions, hsailStackFrame, i);
                break;
             case ISUB:
-               HSAILInstructionSet.sub_s32(instructions, hsailStackFrame, i);
+               sub_s32(instructions, hsailStackFrame, i);
                break;
             case LSUB:
-               HSAILInstructionSet.sub_s64(instructions, hsailStackFrame, i);
+               sub_s64(instructions, hsailStackFrame, i);
                break;
             case FSUB:
-               HSAILInstructionSet.sub_f32(instructions, hsailStackFrame, i);
+               sub_f32(instructions, hsailStackFrame, i);
                break;
             case DSUB:
-               HSAILInstructionSet.sub_f64(instructions, hsailStackFrame, i);
+               sub_f64(instructions, hsailStackFrame, i);
                break;
             case IMUL:
-               HSAILInstructionSet.mul_s32(instructions, hsailStackFrame, i);
+               mul_s32(instructions, hsailStackFrame, i);
                break;
             case LMUL:
-               HSAILInstructionSet.mul_s64(instructions, hsailStackFrame, i);
+               mul_s64(instructions, hsailStackFrame, i);
                break;
             case FMUL:
-               HSAILInstructionSet.mul_f32(instructions, hsailStackFrame, i);
+               mul_f32(instructions, hsailStackFrame, i);
                break;
             case DMUL:
-               HSAILInstructionSet.mul_f64(instructions, hsailStackFrame, i);
+               mul_f64(instructions, hsailStackFrame, i);
                break;
             case IDIV:
-               HSAILInstructionSet.div_s32(instructions, hsailStackFrame, i);
+               div_s32(instructions, hsailStackFrame, i);
                break;
             case LDIV:
-               HSAILInstructionSet.div_s64(instructions, hsailStackFrame, i);
+               div_s64(instructions, hsailStackFrame, i);
                break;
             case FDIV:
-               HSAILInstructionSet.div_f32(instructions, hsailStackFrame, i);
+               div_f32(instructions, hsailStackFrame, i);
                break;
             case DDIV:
-               HSAILInstructionSet.div_f64(instructions, hsailStackFrame, i);
+               div_f64(instructions, hsailStackFrame, i);
                break;
             case IREM:
-               HSAILInstructionSet.rem_s32(instructions, hsailStackFrame, i);
+               rem_s32(instructions, hsailStackFrame, i);
                break;
             case LREM:
-               HSAILInstructionSet.rem_s64(instructions, hsailStackFrame, i);
+               rem_s64(instructions, hsailStackFrame, i);
                break;
             case FREM:
-               HSAILInstructionSet.rem_f32(instructions, hsailStackFrame, i);
+               rem_f32(instructions, hsailStackFrame, i);
                break;
             case DREM:
-               HSAILInstructionSet.rem_f64(instructions, hsailStackFrame, i);
+               rem_f64(instructions, hsailStackFrame, i);
                break;
             case INEG:
-               HSAILInstructionSet.neg_s32(instructions, hsailStackFrame, i);
+               neg_s32(instructions, hsailStackFrame, i);
                break;
             case LNEG:
-               HSAILInstructionSet.neg_s64(instructions, hsailStackFrame, i);
+               neg_s64(instructions, hsailStackFrame, i);
                break;
             case FNEG:
-               HSAILInstructionSet.neg_f32(instructions, hsailStackFrame, i);
+               neg_f32(instructions, hsailStackFrame, i);
                break;
             case DNEG:
-               HSAILInstructionSet.neg_f64(instructions, hsailStackFrame, i);
+               neg_f64(instructions, hsailStackFrame, i);
                break;
             case ISHL:
-               HSAILInstructionSet.shl_s32(instructions, hsailStackFrame, i);
+               shl_s32(instructions, hsailStackFrame, i);
                break;
             case LSHL:
-               HSAILInstructionSet.shl_s64(instructions, hsailStackFrame, i);
+               shl_s64(instructions, hsailStackFrame, i);
                break;
             case ISHR:
-               HSAILInstructionSet.shr_s32(instructions, hsailStackFrame, i);
+               shr_s32(instructions, hsailStackFrame, i);
                break;
             case LSHR:
-               HSAILInstructionSet.shr_s64(instructions, hsailStackFrame, i);
+               shr_s64(instructions, hsailStackFrame, i);
                break;
             case IUSHR:
-               HSAILInstructionSet.ushr_s32(instructions, hsailStackFrame, i);
+               ushr_s32(instructions, hsailStackFrame, i);
                break;
             case LUSHR:
-               HSAILInstructionSet.ushr_s64(instructions, hsailStackFrame, i);
+               ushr_s64(instructions, hsailStackFrame, i);
                break;
             case IAND:
-               HSAILInstructionSet.and_s32(instructions, hsailStackFrame, i);
+               and_s32(instructions, hsailStackFrame, i);
                break;
             case LAND:
-               HSAILInstructionSet.and_s64(instructions, hsailStackFrame, i);
+               and_s64(instructions, hsailStackFrame, i);
                break;
             case IOR:
-               HSAILInstructionSet.or_s32(instructions, hsailStackFrame, i);
+               or_s32(instructions, hsailStackFrame, i);
                break;
             case LOR:
-               HSAILInstructionSet.or_s64(instructions, hsailStackFrame, i);
+               or_s64(instructions, hsailStackFrame, i);
                break;
             case IXOR:
-               HSAILInstructionSet.xor_s32(instructions, hsailStackFrame, i);
+               xor_s32(instructions, hsailStackFrame, i);
                break;
             case LXOR:
-               HSAILInstructionSet.xor_s64(instructions, hsailStackFrame, i);
+               xor_s64(instructions, hsailStackFrame, i);
                break;
             case IINC:
-               HSAILInstructionSet.add_const_s32(instructions, hsailStackFrame, i);
+               add_const_s32(instructions, hsailStackFrame, i);
                break;
             case I2L:
-               HSAILInstructionSet.cvt_s64_s32(instructions, hsailStackFrame, i);
+               cvt_s64_s32(instructions, hsailStackFrame, i);
                break;
             case I2F:
-               HSAILInstructionSet.cvt_f32_s32(instructions, hsailStackFrame, i);
+               cvt_f32_s32(instructions, hsailStackFrame, i);
                break;
             case I2D:
-               HSAILInstructionSet.cvt_f64_s32(instructions, hsailStackFrame, i);
+               cvt_f64_s32(instructions, hsailStackFrame, i);
                break;
             case L2I:
-               HSAILInstructionSet.cvt_s32_s64(instructions, hsailStackFrame, i);
+               cvt_s32_s64(instructions, hsailStackFrame, i);
                break;
             case L2F:
-               HSAILInstructionSet.cvt_f32_s64(instructions, hsailStackFrame, i);
+               cvt_f32_s64(instructions, hsailStackFrame, i);
                break;
             case L2D:
-               HSAILInstructionSet.cvt_f64_s64(instructions, hsailStackFrame, i);
+               cvt_f64_s64(instructions, hsailStackFrame, i);
                break;
             case F2I:
-               HSAILInstructionSet.cvt_s32_f32(instructions, hsailStackFrame, i);
+               cvt_s32_f32(instructions, hsailStackFrame, i);
                break;
             case F2L:
-               HSAILInstructionSet.cvt_s64_f32(instructions, hsailStackFrame, i);
+               cvt_s64_f32(instructions, hsailStackFrame, i);
                break;
             case F2D:
-               HSAILInstructionSet.cvt_f64_f32(instructions, hsailStackFrame, i);
+               cvt_f64_f32(instructions, hsailStackFrame, i);
                break;
             case D2I:
-               HSAILInstructionSet.cvt_s32_f64(instructions, hsailStackFrame, i);
+               cvt_s32_f64(instructions, hsailStackFrame, i);
                break;
             case D2L:
-               HSAILInstructionSet.cvt_s64_f64(instructions, hsailStackFrame, i);
+               cvt_s64_f64(instructions, hsailStackFrame, i);
                break;
             case D2F:
-               HSAILInstructionSet.cvt_f32_f64(instructions, hsailStackFrame, i);
+               cvt_f32_f64(instructions, hsailStackFrame, i);
                break;
             case I2B:
-               HSAILInstructionSet.cvt_s8_s32(instructions, hsailStackFrame, i);
+               cvt_s8_s32(instructions, hsailStackFrame, i);
                break;
             case I2C:
-               HSAILInstructionSet.cvt_u16_s32(instructions, hsailStackFrame, i);
+               cvt_u16_s32(instructions, hsailStackFrame, i);
                break;
             case I2S:
-               HSAILInstructionSet.cvt_s16_s32(instructions, hsailStackFrame, i);
+               cvt_s16_s32(instructions, hsailStackFrame, i);
                break;
             case LCMP:
                parseState = ParseState.COMPARE_S64;
@@ -2393,177 +2388,188 @@ public class HSAILInstructionSet {
                break;
             case IFEQ:
                if (parseState.equals(ParseState.COMPARE_F32)) {
-                  HSAILInstructionSet.cmp_f32_eq(instructions, hsailStackFrame, i);
+                  cmp_f32_eq(instructions, hsailStackFrame, i);
                   parseState = ParseState.NONE;
                } else if (parseState.equals(ParseState.COMPARE_F64)) {
-                  HSAILInstructionSet.cmp_f64_eq(instructions, hsailStackFrame, i);
+                  cmp_f64_eq(instructions, hsailStackFrame, i);
                   parseState = ParseState.NONE;
                } else if (parseState.equals(ParseState.COMPARE_S64)) {
-                  HSAILInstructionSet.cmp_s64_eq(instructions, hsailStackFrame, i);
+                  cmp_s64_eq(instructions, hsailStackFrame, i);
                   parseState = ParseState.NONE;
                } else {
-                  HSAILInstructionSet.cmp_s32_eq_const_0(instructions, hsailStackFrame, i);
+                  cmp_s32_eq_const_0(instructions, hsailStackFrame, i);
                }
-               HSAILInstructionSet.cbr(instructions, hsailStackFrame, i);
+               cbr(instructions, hsailStackFrame, i);
                break;
             case IFNE:
                if (parseState.equals(ParseState.COMPARE_F32)) {
-                  HSAILInstructionSet.cmp_f32_ne(instructions, hsailStackFrame, i);
+                  cmp_f32_ne(instructions, hsailStackFrame, i);
                   parseState = ParseState.NONE;
                } else if (parseState.equals(ParseState.COMPARE_F64)) {
-                  HSAILInstructionSet.cmp_f64_ne(instructions, hsailStackFrame, i);
+                  cmp_f64_ne(instructions, hsailStackFrame, i);
                   parseState = ParseState.NONE;
                } else if (parseState.equals(ParseState.COMPARE_S64)) {
-                  HSAILInstructionSet.cmp_s64_ne(instructions, hsailStackFrame, i);
+                  cmp_s64_ne(instructions, hsailStackFrame, i);
                   parseState = ParseState.NONE;
                } else {
-                  HSAILInstructionSet.cmp_s32_ne_const_0(instructions, hsailStackFrame, i);
+                  cmp_s32_ne_const_0(instructions, hsailStackFrame, i);
                }
-               HSAILInstructionSet.cbr(instructions, hsailStackFrame, i);
+               cbr(instructions, hsailStackFrame, i);
                break;
             case IFLT:
                if (parseState.equals(ParseState.COMPARE_F32)) {
-                  HSAILInstructionSet.cmp_f32_lt(instructions, hsailStackFrame, i);
+                  cmp_f32_lt(instructions, hsailStackFrame, i);
                   parseState = ParseState.NONE;
                } else if (parseState.equals(ParseState.COMPARE_F64)) {
-                  HSAILInstructionSet.cmp_f64_lt(instructions, hsailStackFrame, i);
+                  cmp_f64_lt(instructions, hsailStackFrame, i);
                   parseState = ParseState.NONE;
                } else if (parseState.equals(ParseState.COMPARE_S64)) {
-                  HSAILInstructionSet.cmp_s64_lt(instructions, hsailStackFrame, i);
+                  cmp_s64_lt(instructions, hsailStackFrame, i);
                   parseState = ParseState.NONE;
                } else {
-                  HSAILInstructionSet.cmp_s32_lt_const_0(instructions, hsailStackFrame, i);
+                  cmp_s32_lt_const_0(instructions, hsailStackFrame, i);
 
                }
-               HSAILInstructionSet.cbr(instructions, hsailStackFrame, i);
+               cbr(instructions, hsailStackFrame, i);
                break;
             case IFGE:
                if (parseState.equals(ParseState.COMPARE_F32)) {
-                  HSAILInstructionSet.cmp_f32_ge(instructions, hsailStackFrame, i);
+                  cmp_f32_ge(instructions, hsailStackFrame, i);
                   parseState = ParseState.NONE;
                } else if (parseState.equals(ParseState.COMPARE_F64)) {
-                  HSAILInstructionSet.cmp_f64_ge(instructions, hsailStackFrame, i);
+                  cmp_f64_ge(instructions, hsailStackFrame, i);
                   parseState = ParseState.NONE;
                } else if (parseState.equals(ParseState.COMPARE_S64)) {
-                  HSAILInstructionSet.cmp_s64_ge(instructions, hsailStackFrame, i);
+                  cmp_s64_ge(instructions, hsailStackFrame, i);
                   parseState = ParseState.NONE;
                } else {
-                  HSAILInstructionSet.cmp_s32_ge_const_0(instructions, hsailStackFrame, i);
+                  cmp_s32_ge_const_0(instructions, hsailStackFrame, i);
 
                }
-               HSAILInstructionSet.cbr(instructions, hsailStackFrame, i);
+               cbr(instructions, hsailStackFrame, i);
                break;
             case IFGT:
                if (parseState.equals(ParseState.COMPARE_F32)) {
-                  HSAILInstructionSet.cmp_f32_gt(instructions, hsailStackFrame, i);
+                  cmp_f32_gt(instructions, hsailStackFrame, i);
                   parseState = ParseState.NONE;
                } else if (parseState.equals(ParseState.COMPARE_F64)) {
-                  HSAILInstructionSet.cmp_f64_gt(instructions, hsailStackFrame, i);
+                  cmp_f64_gt(instructions, hsailStackFrame, i);
                   parseState = ParseState.NONE;
                } else if (parseState.equals(ParseState.COMPARE_S64)) {
-                  HSAILInstructionSet.cmp_s64_gt(instructions, hsailStackFrame, i);
+                  cmp_s64_gt(instructions, hsailStackFrame, i);
                   parseState = ParseState.NONE;
                } else {
-                  HSAILInstructionSet.cmp_s32_gt_const_0(instructions, hsailStackFrame, i);
+                  cmp_s32_gt_const_0(instructions, hsailStackFrame, i);
 
                }
-               HSAILInstructionSet.cbr(instructions, hsailStackFrame, i);
+               cbr(instructions, hsailStackFrame, i);
                break;
             case IFLE:
                if (parseState.equals(ParseState.COMPARE_F32)) {
-                  HSAILInstructionSet.cmp_f32_le(instructions, hsailStackFrame, i);
+                  cmp_f32_le(instructions, hsailStackFrame, i);
                   parseState = ParseState.NONE;
                } else if (parseState.equals(ParseState.COMPARE_F64)) {
-                  HSAILInstructionSet.cmp_f64_le(instructions, hsailStackFrame, i);
+                  cmp_f64_le(instructions, hsailStackFrame, i);
                   parseState = ParseState.NONE;
                } else if (parseState.equals(ParseState.COMPARE_S64)) {
-                  HSAILInstructionSet.cmp_s64_le(instructions, hsailStackFrame, i);
+                  cmp_s64_le(instructions, hsailStackFrame, i);
                   parseState = ParseState.NONE;
                } else {
-                  HSAILInstructionSet.cmp_s32_le_const_0(instructions, hsailStackFrame, i);
+                  cmp_s32_le_const_0(instructions, hsailStackFrame, i);
 
 
                }
-               HSAILInstructionSet.cbr(instructions, hsailStackFrame, i);
+               cbr(instructions, hsailStackFrame, i);
                break;
             case IF_ICMPEQ:
 
-               HSAILInstructionSet.cmp_s32_eq(instructions, hsailStackFrame, i);
-               HSAILInstructionSet.cbr(instructions, hsailStackFrame, i);
+               cmp_s32_eq(instructions, hsailStackFrame, i);
+               cbr(instructions, hsailStackFrame, i);
 
                break;
             case IF_ICMPNE:
-               HSAILInstructionSet.cmp_s32_ne(instructions, hsailStackFrame, i);
-               HSAILInstructionSet.cbr(instructions, hsailStackFrame, i);
+               cmp_s32_ne(instructions, hsailStackFrame, i);
+               cbr(instructions, hsailStackFrame, i);
                break;
             case IF_ICMPLT:
-               HSAILInstructionSet.cmp_s32_lt(instructions, hsailStackFrame, i);
-               HSAILInstructionSet.cbr(instructions, hsailStackFrame, i);
+               cmp_s32_lt(instructions, hsailStackFrame, i);
+               cbr(instructions, hsailStackFrame, i);
                break;
             case IF_ICMPGE:
-               HSAILInstructionSet.cmp_s32_ge(instructions, hsailStackFrame, i);
-               HSAILInstructionSet.cbr(instructions, hsailStackFrame, i);
+               cmp_s32_ge(instructions, hsailStackFrame, i);
+               cbr(instructions, hsailStackFrame, i);
                break;
             case IF_ICMPGT:
-               HSAILInstructionSet.cmp_s32_gt(instructions, hsailStackFrame, i);
-               HSAILInstructionSet.cbr(instructions, hsailStackFrame, i);
+               cmp_s32_gt(instructions, hsailStackFrame, i);
+               cbr(instructions, hsailStackFrame, i);
                break;
             case IF_ICMPLE:
-               HSAILInstructionSet.cmp_s32_le(instructions, hsailStackFrame, i);
-               HSAILInstructionSet.cbr(instructions, hsailStackFrame, i);
+               cmp_s32_le(instructions, hsailStackFrame, i);
+               cbr(instructions, hsailStackFrame, i);
                break;
             case IF_ACMPEQ:
-               HSAILInstructionSet.cmp_ref_eq(instructions, hsailStackFrame, i);
-               HSAILInstructionSet.cbr(instructions, hsailStackFrame, i);
+               cmp_ref_eq(instructions, hsailStackFrame, i);
+               cbr(instructions, hsailStackFrame, i);
                break;
             case IF_ACMPNE:
-               HSAILInstructionSet.cmp_ref_ne(instructions, hsailStackFrame, i);
-               HSAILInstructionSet.cbr(instructions, hsailStackFrame, i);
+               cmp_ref_ne(instructions, hsailStackFrame, i);
+               cbr(instructions, hsailStackFrame, i);
                break;
             case GOTO:
-               HSAILInstructionSet.brn(instructions, hsailStackFrame, i);
+               brn(instructions, hsailStackFrame, i);
                break;
             case IFNULL:
-               HSAILInstructionSet.branch(instructions, hsailStackFrame, i);
+               branch(instructions, hsailStackFrame, i);
             case IFNONNULL:
-               HSAILInstructionSet.branch(instructions, hsailStackFrame, i);
+               branch(instructions, hsailStackFrame, i);
             case GOTO_W:
-               HSAILInstructionSet.branch(instructions, hsailStackFrame, i);
+               branch(instructions, hsailStackFrame, i);
                break;
             case JSR:
-               HSAILInstructionSet.nyi(instructions, hsailStackFrame, i);
+               nyi(instructions, hsailStackFrame, i);
                break;
             case RET:
-               HSAILInstructionSet.nyi(instructions, hsailStackFrame, i);
+               nyi(instructions, hsailStackFrame, i);
                break;
             case TABLESWITCH:
-               HSAILInstructionSet.nyi(instructions, hsailStackFrame, i);
+               nyi(instructions, hsailStackFrame, i);
                break;
             case LOOKUPSWITCH:
-               HSAILInstructionSet.nyi(instructions, hsailStackFrame, i);
+               nyi(instructions, hsailStackFrame, i);
                break;
             case IRETURN:
                if (inlining && hsailStackFrame.parentHSAILStackFrame != null){
-                 instructions.add(new HSAILInstructionSet.mov<StackReg_s32, StackReg_s32, s32, s32>(hsailStackFrame, i, new StackReg_s32(i,hsailStackFrame.bottom,1), new StackReg_s32(i,hsailStackFrame.top,0)));           // -1 is wrong
+                  if (i.getNextPC()!=null){
+                    instructions.add(new mov<StackReg_s32, StackReg_s32, s32, s32>(hsailStackFrame, i, new StackReg_s32(i,hsailStackFrame.bottom,1), new StackReg_s32(i,hsailStackFrame.top,0)));           // -1 is wrong
+                    instructions.add(new inlineReturnBrn(hsailStackFrame, i,hsailStackFrame.getUniqueNameSpace()));
+                    needsReturnBranch=true;
+                 } else if (needsReturnBranch){
+                     instructions.add(new returnMov<StackReg_s32, StackReg_s32, s32, s32>(hsailStackFrame, i, new StackReg_s32(i,hsailStackFrame.bottom,1), new StackReg_s32(i,hsailStackFrame.top,0), hsailStackFrame.getUniqueNameSpace()));           // -1 is wrong
+                  }else{
+                     instructions.add(new mov<StackReg_s32, StackReg_s32, s32, s32>(hsailStackFrame, i, new StackReg_s32(i,hsailStackFrame.bottom,1), new StackReg_s32(i,hsailStackFrame.top,0)));           // -1 is wrong
+
+
+                  }
+
                }else{
-                  HSAILInstructionSet.ret_s32(instructions, hsailStackFrame, i);
+                  ret_s32(instructions, hsailStackFrame, i);
                }
                break;
             case LRETURN:
-               HSAILInstructionSet.ret_s64(instructions, hsailStackFrame, i);
+               ret_s64(instructions, hsailStackFrame, i);
                break;
             case FRETURN:
-               HSAILInstructionSet.ret_f32(instructions, hsailStackFrame, i);
+               ret_f32(instructions, hsailStackFrame, i);
                break;
             case DRETURN:
-               HSAILInstructionSet.ret_f64(instructions, hsailStackFrame, i);
+               ret_f64(instructions, hsailStackFrame, i);
                break;
             case ARETURN:
 
-               HSAILInstructionSet.ret_ref(instructions, hsailStackFrame, i);
+               ret_ref(instructions, hsailStackFrame, i);
                break;
             case RETURN:
-               HSAILInstructionSet.ret_void(instructions, hsailStackFrame, i);
+               ret_void(instructions, hsailStackFrame, i);
                break;
             case GETSTATIC: {
                TypeHelper.JavaType type = i.asFieldAccessor().getConstantPoolFieldEntry().getType();
@@ -2574,21 +2580,21 @@ public class HSAILInstructionSet {
                   Field f = clazz.getDeclaredField(i.asFieldAccessor().getFieldName());
 
                   if (!type.isPrimitive()) {
-                     HSAILInstructionSet.static_field_load_ref(instructions, hsailStackFrame, i, f);
+                     static_field_load_ref(instructions, hsailStackFrame, i, f);
                   } else if (type.isInt()) {
-                     HSAILInstructionSet.static_field_load_s32(instructions, hsailStackFrame, i, f);
+                     static_field_load_s32(instructions, hsailStackFrame, i, f);
                   } else if (type.isFloat()) {
-                     HSAILInstructionSet.static_field_load_f32(instructions, hsailStackFrame, i, f);
+                     static_field_load_f32(instructions, hsailStackFrame, i, f);
                   } else if (type.isDouble()) {
-                     HSAILInstructionSet.static_field_load_f64(instructions, hsailStackFrame, i, f);
+                     static_field_load_f64(instructions, hsailStackFrame, i, f);
                   } else if (type.isLong()) {
-                     HSAILInstructionSet.static_field_load_s64(instructions, hsailStackFrame, i, f);
+                     static_field_load_s64(instructions, hsailStackFrame, i, f);
                   } else if (type.isChar()) {
-                     HSAILInstructionSet.static_field_load_u16(instructions, hsailStackFrame, i, f);
+                     static_field_load_u16(instructions, hsailStackFrame, i, f);
                   } else if (type.isShort()) {
-                     HSAILInstructionSet.static_field_load_s16(instructions, hsailStackFrame, i, f);
+                     static_field_load_s16(instructions, hsailStackFrame, i, f);
                   } else if (type.isChar()) {
-                     HSAILInstructionSet.static_field_load_s8(instructions, hsailStackFrame, i, f);
+                     static_field_load_s8(instructions, hsailStackFrame, i, f);
                   }
                } catch (ClassNotFoundException e) {
                   e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
@@ -2607,21 +2613,21 @@ public class HSAILInstructionSet {
 
                   Field f = clazz.getDeclaredField(i.asFieldAccessor().getFieldName());
                   if (!f.getType().isPrimitive()) {
-                     HSAILInstructionSet.field_load_ref(instructions, hsailStackFrame, i, f);
+                     field_load_ref(instructions, hsailStackFrame, i, f);
                   } else if (f.getType().equals(int.class)) {
-                     HSAILInstructionSet.field_load_s32(instructions, hsailStackFrame, i, f);
+                     field_load_s32(instructions, hsailStackFrame, i, f);
                   } else if (f.getType().equals(short.class)) {
-                     HSAILInstructionSet.field_load_s16(instructions, hsailStackFrame, i, f);
+                     field_load_s16(instructions, hsailStackFrame, i, f);
                   } else if (f.getType().equals(char.class)) {
-                     HSAILInstructionSet.field_load_u16(instructions, hsailStackFrame, i, f);
+                     field_load_u16(instructions, hsailStackFrame, i, f);
                   } else if (f.getType().equals(boolean.class)) {
-                     HSAILInstructionSet.field_load_s8(instructions, hsailStackFrame, i, f);
+                     field_load_s8(instructions, hsailStackFrame, i, f);
                   } else if (f.getType().equals(float.class)) {
-                     HSAILInstructionSet.field_load_f32(instructions, hsailStackFrame, i, f);
+                     field_load_f32(instructions, hsailStackFrame, i, f);
                   } else if (f.getType().equals(double.class)) {
-                     HSAILInstructionSet.field_load_f64(instructions, hsailStackFrame, i, f);
+                     field_load_f64(instructions, hsailStackFrame, i, f);
                   } else if (f.getType().equals(long.class)) {
-                     HSAILInstructionSet.field_load_s64(instructions, hsailStackFrame, i, f);
+                     field_load_s64(instructions, hsailStackFrame, i, f);
                   } else {
                      throw new IllegalStateException("unexpected get field type");
                   }
@@ -2635,7 +2641,7 @@ public class HSAILInstructionSet {
             }
             break;
             case PUTSTATIC:
-               HSAILInstructionSet.nyi(instructions, hsailStackFrame, i);
+               nyi(instructions, hsailStackFrame, i);
                break;
             case PUTFIELD: {
                // TypeHelper.JavaType type = i.asFieldAccessor().getConstantPoolFieldEntry().getType();
@@ -2645,21 +2651,21 @@ public class HSAILInstructionSet {
 
                   Field f = clazz.getDeclaredField(i.asFieldAccessor().getFieldName());
                   if (!f.getType().isPrimitive()) {
-                     HSAILInstructionSet.field_store_ref(instructions, hsailStackFrame, i, f);
+                     field_store_ref(instructions, hsailStackFrame, i, f);
                   } else if (f.getType().equals(int.class)) {
-                     HSAILInstructionSet.field_store_s32(instructions, hsailStackFrame, i, f);
+                     field_store_s32(instructions, hsailStackFrame, i, f);
                   } else if (f.getType().equals(short.class)) {
-                     HSAILInstructionSet.field_store_s16(instructions, hsailStackFrame, i, f);
+                     field_store_s16(instructions, hsailStackFrame, i, f);
                   } else if (f.getType().equals(char.class)) {
-                     HSAILInstructionSet.field_store_u16(instructions, hsailStackFrame, i, f);
+                     field_store_u16(instructions, hsailStackFrame, i, f);
                   } else if (f.getType().equals(boolean.class)) {
-                     HSAILInstructionSet.field_store_s8(instructions, hsailStackFrame, i, f);
+                     field_store_s8(instructions, hsailStackFrame, i, f);
                   } else if (f.getType().equals(float.class)) {
-                     HSAILInstructionSet.field_store_f32(instructions, hsailStackFrame, i, f);
+                     field_store_f32(instructions, hsailStackFrame, i, f);
                   } else if (f.getType().equals(double.class)) {
-                     HSAILInstructionSet.field_store_f64(instructions, hsailStackFrame, i, f);
+                     field_store_f64(instructions, hsailStackFrame, i, f);
                   } else if (f.getType().equals(long.class)) {
-                     HSAILInstructionSet.field_store_s64(instructions, hsailStackFrame, i, f);
+                     field_store_s64(instructions, hsailStackFrame, i, f);
                   }   else {
                      throw new IllegalStateException("unexpected put field type");
                   }
@@ -2692,7 +2698,36 @@ public class HSAILInstructionSet {
                         int top = bottom+ i.getMethod().getCodeEntry().getMaxLocals();
                         String frameName =  calledMethod.getClassModel().getDotClassName()+"."+calledMethod.getName()+calledMethod.getDescriptor();
                         HSAILStackFrame newHsailStackFrame = new HSAILStackFrame(hsailStackFrame,frameName, null, bottom, top);
-                        HSAILInstructionSet.addInstructions(instructions, newHsailStackFrame, calledMethod);
+                        addInstructions(instructions, newHsailStackFrame, calledMethod);
+
+
+
+                        /*
+                         if (!s.contains(i.from)) {
+                   s.add(i.from);
+                   if (i.from.isBranchTarget()) {
+                      r.label(i.location).colon().nl();
+                   }
+                   if (r.isShowingComments()) {
+                      r.nl().pad(1).lineCommentStart().append(i.location).mark().relpad(2).space().i(i.from).nl();
+                   }
+               }
+               if (i instanceof retvoid){
+                   r.pad(9).lineCommentStart().append(" ret removed as part of inlining");
+               }else if (i instanceof ret){
+
+                   r.pad(9).lineComment("ret removed and replaced by branch to end of code").nl();
+                   r.pad(9).append("mov_").movTypeName(((ret) i).getSrc()).space().regPrefix(((ret) i).getSrc().type).append(base).separator().operandName(((ret) i).getSrc()).semicolon();
+                   if (i != instructions.get(instructions.size()-1)){
+                      endLabel = ((ret)i).endLabel;
+                      r.nl().pad(9).append("brn ").label(endLabel).semicolon();
+
+                   }
+               }else{
+                   r.pad(9);
+                   i.render(r);
+               }
+                         */
 
 
                      }catch (ClassParseException cpe){
@@ -2702,7 +2737,7 @@ public class HSAILInstructionSet {
                      }
 
                   }  else {
-                    // HSAILInstructionSet.call(instructions, this, hsailStackFrame, i, callInfo);
+                    // call(instructions, this, hsailStackFrame, i, callInfo);
                   }
 
 
@@ -2710,40 +2745,40 @@ public class HSAILInstructionSet {
             }
             break;
             case NEW:
-               HSAILInstructionSet.nyi(instructions, hsailStackFrame, i);
+               nyi(instructions, hsailStackFrame, i);
                break;
             case NEWARRAY:
-               HSAILInstructionSet.nyi(instructions, hsailStackFrame, i);
+               nyi(instructions, hsailStackFrame, i);
                break;
             case ANEWARRAY:
-               HSAILInstructionSet.nyi(instructions, hsailStackFrame, i);
+               nyi(instructions, hsailStackFrame, i);
                break;
             case ARRAYLENGTH:
-               HSAILInstructionSet.array_len(instructions, hsailStackFrame, i);
+               array_len(instructions, hsailStackFrame, i);
                break;
             case ATHROW:
-               HSAILInstructionSet.nyi(instructions, hsailStackFrame, i);
+               nyi(instructions, hsailStackFrame, i);
                break;
             case CHECKCAST:
-               HSAILInstructionSet.nyi(instructions, hsailStackFrame, i);
+               nyi(instructions, hsailStackFrame, i);
                break;
             case INSTANCEOF:
-               HSAILInstructionSet.nyi(instructions, hsailStackFrame, i);
+               nyi(instructions, hsailStackFrame, i);
                break;
             case MONITORENTER:
-               HSAILInstructionSet.nyi(instructions, hsailStackFrame, i);
+               nyi(instructions, hsailStackFrame, i);
                break;
             case MONITOREXIT:
-               HSAILInstructionSet.nyi(instructions, hsailStackFrame, i);
+               nyi(instructions, hsailStackFrame, i);
                break;
             case WIDE:
-               HSAILInstructionSet.nyi(instructions, hsailStackFrame, i);
+               nyi(instructions, hsailStackFrame, i);
                break;
             case MULTIANEWARRAY:
-               HSAILInstructionSet.nyi(instructions, hsailStackFrame, i);
+               nyi(instructions, hsailStackFrame, i);
                break;
             case JSR_W:
-               HSAILInstructionSet.nyi(instructions, hsailStackFrame, i);
+               nyi(instructions, hsailStackFrame, i);
                break;
 
          }
