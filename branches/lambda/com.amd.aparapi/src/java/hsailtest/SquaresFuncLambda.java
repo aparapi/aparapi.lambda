@@ -19,8 +19,8 @@ public class SquaresFuncLambda {
         System.out.println();
     }
 
-    static int square(int v){
-       // int junk1 = v;
+     static int square(int v, int i){
+      // int junk1 = v;
        // if (v==0){
           // int junk = v;
           // return(0);
@@ -38,12 +38,11 @@ public class SquaresFuncLambda {
             in[i]=i;
         }
         IntConsumer ic = gid -> {
-            out[gid] = square(in[gid]);
+            out[gid] = square(in[gid],2);
         };
         ((HSADevice)Device.hsa()).dump(ic);
-        ((HSADevice)Device.hsa()).dump(ic);
 
-       if (true){
+       if (false){
         Device.hsa().forEach(len, ic);
         dump("hsa", in, out);
         Device.jtp().forEach(len, ic);
