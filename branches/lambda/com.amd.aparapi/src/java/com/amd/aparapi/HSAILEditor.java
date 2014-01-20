@@ -1071,9 +1071,9 @@ public class HSAILEditor implements Config.InstructionListener{
       ClassModel.ClassModelMethod method = classModel.getMethod(_args[1], _args[2]);
       HSAILRenderer renderer = new HSAILRenderer().setShowComments(true);
 
-      HSAILMethod hsailMethod = HSAILMethod.getHSAILMethod(method, null);
+      HSAILMethod hsailMethod = HSAILMethod.getHSAILMethod(method);
 
-      hsailMethod.renderEntryPoint(renderer);
+      hsailMethod.render(renderer);
 
       String hsail = renderer.toString();
       System.out.println(hsail);
