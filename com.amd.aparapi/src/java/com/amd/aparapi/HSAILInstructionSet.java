@@ -2701,6 +2701,7 @@ public class HSAILInstructionSet {
                        // if (calledMethod.isVirtual()){
                           //  size++;
                       //  }
+                         System.out.println("!!!!!size="+size+" bottom="+bottom);
                   
                         _frames.push(new HSAILStackFrame(hsailStackFrame,  calledMethod.getClassModel().getDotClassName()+"."+calledMethod.getName()+calledMethod.getDescriptor(), i.getThisPC(), bottom, size ));
                         _frameSet.add(_frames.peek());
