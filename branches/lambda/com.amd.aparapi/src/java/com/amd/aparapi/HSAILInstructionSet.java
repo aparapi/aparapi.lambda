@@ -9,16 +9,17 @@ import java.util.Stack;
  */
 public class HSAILInstructionSet {
         abstract static class HSAILInstruction<H extends HSAILInstruction<H>>  {
+            static  HSAILRegister[] NONE=new HSAILRegister[0];
             String location;
             Instruction from;
-            HSAILRegister[] dests = null;
-            HSAILOperand[] sources = null;
+            HSAILRegister[] dests = NONE;
+            HSAILOperand[] sources = NONE;
 
 
             HSAILInstruction(HSAILStackFrame _hsailStackFrame,Instruction _from, int _destCount, int _sourceCount) {
                 from = _from;
-                dests = new HSAILRegister[_destCount];
-                sources = new HSAILOperand[_sourceCount];
+                dests = _destCount>0?new HSAILRegister[_destCount]:NONE;
+                sources = _sourceCount>0?new HSAILOperand[_sourceCount]:NONE;
                 location = _hsailStackFrame.getUniqueLocation(from.getStartPC());
             }
 
