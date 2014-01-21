@@ -100,7 +100,6 @@ public class NBodyFunc {
            if (x>=0 && x<width && y>=0 && y<height){
                offscreenPixels[x+y*width]=rgb;
            }
-           rgb=rgb;
        }
    }
 

@@ -33,6 +33,9 @@ public class StringContainsambda {
         boolean[] indices = new boolean[len];
 
         IntConsumer ic = gid -> {
+          //  if (text.contains(strings[gid])){
+            //    indices[gid]=true;
+           // }
             indices[gid] = text.contains(strings[gid]);
         };
 
