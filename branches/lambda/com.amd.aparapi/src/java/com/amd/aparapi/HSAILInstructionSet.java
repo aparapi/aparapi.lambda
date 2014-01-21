@@ -28,12 +28,16 @@ public class HSAILInstructionSet {
         }
 
         static class nop extends HSAILInstruction<nop>{
-
-            nop(HSAILStackFrame _hsailStackFrame,Instruction _from) {
+            String endLabel;
+            nop(HSAILStackFrame _hsailStackFrame,Instruction _from, String _endLabel) {
                super(_hsailStackFrame, _from, 0,0);
+               endLabel = _endLabel;
             }
             @Override
             public void render(HSAILRenderer r) {
+                if (endLabel!=null){
+                    r.label(endLabel).colon().space();
+                }
                 r.append("// nop").semicolon();
 
             }
@@ -266,24 +270,6 @@ public class HSAILInstructionSet {
 
             }
         }
-   static  class inlineReturnBrn extends HSAILInstruction<inlineReturnBrn> {
-
-      String targetLabel;
-
-
-      inlineReturnBrn(HSAILStackFrame _hsailStackFrame,Instruction _from, String _targetLabel) {
-         super(_hsailStackFrame, _from, 0, 0);
-         targetLabel = _targetLabel;
-      }
-
-
-
-      @Override
-      public void render(HSAILRenderer r) {
-         r.append("brn").space().label(targetLabel).semicolon().lineComment("mapped from return");
-
-      }
-   }
 
 
 
@@ -530,11 +516,7 @@ public class HSAILInstructionSet {
             @Override
             void render(HSAILRenderer r) {
                 r.append("ld_global_").typeName(getDest()).space().operandName(getDest()).separator().append("[").operandName(mem).append("+").array_base_offset().append("]").semicolon();
-                if (getDest().type.getHsaBits()==8){
-                    r.nl().pad(9).append("//cvt_s32_u8 $s").regNum(getDest()).separator().space().operandName(getDest()).semicolon();
-                }     else   if (getDest().type.getHsaBits()==16){
-                    r.nl().pad(9).append("//cvt_s32_u16 $s").regNum(getDest()).separator().space().operandName(getDest()).semicolon();
-                }
+
             }
 
 
@@ -653,12 +635,28 @@ public class HSAILInstructionSet {
 
       @Override
       void render(HSAILRenderer r) {
-         r.append("mov_").movTypeName(getDest()).space().operandName(getDest()).separator().operandName(getSrc()).semicolon().nl().label(endLabel).colon();
-
+         r.append("mov_").movTypeName(getDest()).space().operandName(getDest()).separator().operandName(getSrc()).semicolon();
       }
 
 
    }
+
+    static final class returnBranch extends  HSAILInstruction<returnBranch> {
+        String endLabel;
+
+
+        public returnBranch(HSAILStackFrame _hsailStackFrame,Instruction _from, String _endLabel) {
+            super(_hsailStackFrame,_from,0,0);
+            endLabel = _endLabel;
+        }
+
+        @Override
+        void render(HSAILRenderer r) {
+            r.append("brn").space().label(endLabel).semicolon();
+        }
+
+
+    }
 
         static  abstract class unary<H extends unary<H,Rt,T>, Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends HSAILInstructionWithDestSrc<H,Rt,Rt, T,T> {
             String op;
@@ -1689,7 +1687,7 @@ public class HSAILInstructionSet {
       HSAILStackFrame hsailStackFrame = _frames.peek();
       ParseState parseState = ParseState.NONE;
       boolean inlining = true;
-      boolean needsReturnBranch = false;
+      boolean needsReturnLabel = false;
       for (Instruction i : method.getInstructions()) {
 
          switch (i.getByteCode()) {
@@ -2268,94 +2266,50 @@ public class HSAILInstructionSet {
                nyi(instructions, hsailStackFrame, i);
                break;
             case IRETURN:
+             case LRETURN:
+             case FRETURN:
+             case DRETURN:
+             case ARETURN:
                if (inlining && _frames.size()>1){
                   int maxLocals=i.getMethod().getCodeEntry().getMaxLocals(); // hsailStackFrame.stackOffset -maxLocals is the slot for the return value
-                  if (i.getNextPC()!=null){
-                     instructions.add(new mov<StackReg_s32, StackReg_s32, s32, s32>(hsailStackFrame, i, new StackReg_s32(i,hsailStackFrame.stackOffset,-maxLocals), new StackReg_s32(i,hsailStackFrame.stackOffset,0)));
-                     instructions.add(new inlineReturnBrn(hsailStackFrame, i,hsailStackFrame.getUniqueName()));
-                     needsReturnBranch=true;
-                  }else if (needsReturnBranch){
-                     instructions.add(new returnMov<StackReg_s32, StackReg_s32, s32, s32>(hsailStackFrame, i, new StackReg_s32(i,hsailStackFrame.stackOffset,-maxLocals), new StackReg_s32(i,hsailStackFrame.stackOffset,0), hsailStackFrame.getUniqueName()));           // -1 is wrong
+                  switch(i.getByteCode()){
+                      case IRETURN: instructions.add(new mov<StackReg_s32, StackReg_s32, s32, s32>(hsailStackFrame, i, new StackReg_s32(i,hsailStackFrame.stackOffset,-maxLocals), new StackReg_s32(i,hsailStackFrame.stackOffset,0)));
+                      case LRETURN: instructions.add(new mov<StackReg_s64, StackReg_s64, s64, s64>(hsailStackFrame, i, new StackReg_s64(i,hsailStackFrame.stackOffset,-maxLocals), new StackReg_s64(i,hsailStackFrame.stackOffset,0)));
+                      case FRETURN: instructions.add(new mov<StackReg_f32, StackReg_f32, f32, f32>(hsailStackFrame, i, new StackReg_f32(i,hsailStackFrame.stackOffset,-maxLocals), new StackReg_f32(i,hsailStackFrame.stackOffset,0)));
+                      case DRETURN: instructions.add(new mov<StackReg_f64, StackReg_f64, f64, f64>(hsailStackFrame, i, new StackReg_f64(i,hsailStackFrame.stackOffset,-maxLocals), new StackReg_f64(i,hsailStackFrame.stackOffset,0)));
+                      case ARETURN: instructions.add(new mov<StackReg_ref, StackReg_ref, ref, ref>(hsailStackFrame, i, new StackReg_ref(i,hsailStackFrame.stackOffset,-maxLocals), new StackReg_ref(i,hsailStackFrame.stackOffset,0)));
+                  }
+                   if (i.isLastInstruction()){
+                      if (needsReturnLabel){
+                         instructions.add(new nop(hsailStackFrame, i, hsailStackFrame.getUniqueName()));
+                      }
                   }else{
-                     instructions.add(new mov<StackReg_s32, StackReg_s32, s32, s32>(hsailStackFrame, i, new StackReg_s32(i,hsailStackFrame.stackOffset,-maxLocals), new StackReg_s32(i,hsailStackFrame.stackOffset,0)));
+                      instructions.add(new returnBranch(hsailStackFrame, i, hsailStackFrame.getUniqueName()));
+                      needsReturnLabel=true;
                   }
                }else{
-                  ret_s32(instructions, hsailStackFrame, i);
-               }
-               break;
-            case LRETURN:
-                if (inlining && _frames.size()>1){
-                    int maxLocals=i.getMethod().getCodeEntry().getMaxLocals(); // hsailStackFrame.stackOffset -maxLocals is the slot for the return value
-                    if (i.getNextPC()!=null){
-                        instructions.add(new mov<StackReg_s64, StackReg_s64, s64, s64>(hsailStackFrame, i, new StackReg_s64(i,hsailStackFrame.stackOffset,-maxLocals), new StackReg_s64(i,hsailStackFrame.stackOffset,0)));
-                        instructions.add(new inlineReturnBrn(hsailStackFrame, i,hsailStackFrame.getUniqueName()));
-                        needsReturnBranch=true;
-                    }else if (needsReturnBranch){
-                        instructions.add(new returnMov<StackReg_s64, StackReg_s64, s64, s64>(hsailStackFrame, i, new StackReg_s64(i,hsailStackFrame.stackOffset,-maxLocals), new StackReg_s64(i,hsailStackFrame.stackOffset,0), hsailStackFrame.getUniqueName()));           // -1 is wrong
-                    }else{
-                        instructions.add(new mov<StackReg_s64, StackReg_s64, s64, s64>(hsailStackFrame, i, new StackReg_s64(i,hsailStackFrame.stackOffset,-maxLocals), new StackReg_s64(i,hsailStackFrame.stackOffset,0)));
-                    }
-                }else{
-                   ret_s64(instructions, hsailStackFrame, i);
-                }
-               break;
-            case FRETURN:
-                if (inlining && _frames.size()>1){
-                    int maxLocals=i.getMethod().getCodeEntry().getMaxLocals(); // hsailStackFrame.stackOffset -maxLocals is the slot for the return value
-                    if (i.getNextPC()!=null){
-                        instructions.add(new mov<StackReg_f32, StackReg_f32, f32, f32>(hsailStackFrame, i, new StackReg_f32(i,hsailStackFrame.stackOffset,-maxLocals), new StackReg_f32(i,hsailStackFrame.stackOffset,0)));
-                        instructions.add(new inlineReturnBrn(hsailStackFrame, i,hsailStackFrame.getUniqueName()));
-                        needsReturnBranch=true;
-                    }else if (needsReturnBranch){
-                        instructions.add(new returnMov<StackReg_f32, StackReg_f32, f32, f32>(hsailStackFrame, i, new StackReg_f32(i,hsailStackFrame.stackOffset,-maxLocals), new StackReg_f32(i,hsailStackFrame.stackOffset,0), hsailStackFrame.getUniqueName()));           // -1 is wrong
-                    }else{
-                        instructions.add(new mov<StackReg_f32, StackReg_f32, f32, f32>(hsailStackFrame, i, new StackReg_f32(i,hsailStackFrame.stackOffset,-maxLocals), new StackReg_f32(i,hsailStackFrame.stackOffset,0)));
-                    }
-                }else{
-                    ret_f32(instructions, hsailStackFrame, i);
-                }
-               break;
-            case DRETURN:
-                if (inlining && _frames.size()>1){
-                    int maxLocals=i.getMethod().getCodeEntry().getMaxLocals(); // hsailStackFrame.stackOffset -maxLocals is the slot for the return value
-                    if (i.getNextPC()!=null){
-                        instructions.add(new mov<StackReg_f64, StackReg_f64, f64, f64>(hsailStackFrame, i, new StackReg_f64(i,hsailStackFrame.stackOffset,-maxLocals), new StackReg_f64(i,hsailStackFrame.stackOffset,0)));
-                        instructions.add(new inlineReturnBrn(hsailStackFrame, i,hsailStackFrame.getUniqueName()));
-                        needsReturnBranch=true;
-                    }else if (needsReturnBranch){
-                        instructions.add(new returnMov<StackReg_f64, StackReg_f64, f64, f64>(hsailStackFrame, i, new StackReg_f64(i,hsailStackFrame.stackOffset,-maxLocals), new StackReg_f64(i,hsailStackFrame.stackOffset,0), hsailStackFrame.getUniqueName()));           // -1 is wrong
-                    }else{
-                        instructions.add(new mov<StackReg_f64, StackReg_f64, f64, f64>(hsailStackFrame, i, new StackReg_f64(i,hsailStackFrame.stackOffset,-maxLocals), new StackReg_f64(i,hsailStackFrame.stackOffset,0)));
-                    }
-                }else{
-                    ret_f64(instructions, hsailStackFrame, i);
-                }
+                   switch(i.getByteCode()){
+                       case IRETURN:  ret_s32(instructions, hsailStackFrame, i);
+                       case LRETURN:  ret_s64(instructions, hsailStackFrame, i);
+                       case FRETURN:  ret_f32(instructions, hsailStackFrame, i);
+                       case DRETURN:  ret_s64(instructions, hsailStackFrame, i);
+                       case ARETURN:  ret_ref(instructions, hsailStackFrame, i);
 
-               break;
-            case ARETURN:
-                if (inlining && _frames.size()>1){
-                    int maxLocals=i.getMethod().getCodeEntry().getMaxLocals(); // hsailStackFrame.stackOffset -maxLocals is the slot for the return value
-                    if (i.getNextPC()!=null){
-                        instructions.add(new mov<StackReg_ref, StackReg_ref, ref, ref>(hsailStackFrame, i, new StackReg_ref(i,hsailStackFrame.stackOffset,-maxLocals), new StackReg_ref(i,hsailStackFrame.stackOffset,0)));
-                        instructions.add(new inlineReturnBrn(hsailStackFrame, i,hsailStackFrame.getUniqueName()));
-                        needsReturnBranch=true;
-                    }else if (needsReturnBranch){
-                        instructions.add(new returnMov<StackReg_ref, StackReg_ref, ref, ref>(hsailStackFrame, i, new StackReg_ref(i,hsailStackFrame.stackOffset,-maxLocals), new StackReg_ref(i,hsailStackFrame.stackOffset,0), hsailStackFrame.getUniqueName()));           // -1 is wrong
-                    }else{
-                        instructions.add(new mov<StackReg_ref, StackReg_ref, ref, ref>(hsailStackFrame, i, new StackReg_ref(i,hsailStackFrame.stackOffset,-maxLocals), new StackReg_ref(i,hsailStackFrame.stackOffset,0)));
-                    }
-                }else{
-                    ret_ref(instructions, hsailStackFrame, i);
-                }
+                   }
+
+               }
                break;
             case RETURN:
                 if (inlining && _frames.size()>1){
-
                     if (i.getNextPC()!=null){
-                        instructions.add(new inlineReturnBrn(hsailStackFrame, i,hsailStackFrame.getUniqueName()));
-                        needsReturnBranch=true;
+                        instructions.add(new returnBranch(hsailStackFrame, i,hsailStackFrame.getUniqueName()));
+                        needsReturnLabel=true;
                     }else{
-                        instructions.add(new nop(hsailStackFrame, i));
+                        if (i.isBranchTarget()){
+                           instructions.add(new nop(hsailStackFrame, i, null));
+                        }else if (needsReturnLabel){
+                            instructions.add(new nop(hsailStackFrame, i, hsailStackFrame.getUniqueName()));
+                        }
                     }
                 }else{
                     ret_void(instructions, hsailStackFrame, i);

@@ -338,6 +338,10 @@ abstract class Instruction{
       return (nextPC);
    }
 
+   boolean isLastInstruction(){
+        return (nextPC==null);
+    }
+
    Instruction getPrevPC(){
       return (prevPC);
    }
