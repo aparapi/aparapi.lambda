@@ -127,7 +127,7 @@ public class NBodyFunc {
            bodies[body] = new Body();
        });
 
-       device.forEach(bodies.length, body -> {
+       Device.jtp().forEach(bodies.length, body -> {
            bodies[body].init(screen.width, screen.height, body);
        });
 
