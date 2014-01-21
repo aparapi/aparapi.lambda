@@ -4,14 +4,12 @@ import com.amd.aparapi.AparapiException;
 import com.amd.aparapi.Device;
 import com.amd.aparapi.HSADevice;
 
-import java.lang.reflect.Array;
 import java.util.function.IntConsumer;
-import java.util.stream.IntStream;
 
 
-public class SquaresFuncLambda {
+public class FloatSquaresFuncLambda {
 
-    static void dump(String type, int[] in, int[] out) {
+    static void dump(String type, float[] in, float[] out) {
         System.out.print(type + " ->");
         for (int i = 0; i < in.length; i++) {
             System.out.print("(" + in[i] + "," + out[i] + "),");
@@ -19,19 +17,19 @@ public class SquaresFuncLambda {
         System.out.println();
     }
 
-    static int mul(int lhs, int rhs){
+    static float mul(float lhs, float rhs){
         return(lhs*rhs);
     }
 
-    static int square(int v){
+    static float square(float v){
         return(mul(v,v));
     }
 
     public static void main(String[] args) throws AparapiException {
-        SquaresFuncLambda main = new SquaresFuncLambda();
+        FloatSquaresFuncLambda main = new FloatSquaresFuncLambda();
         final int len = 10;
-        int in[] = new int[len];
-        int out[] = new int[len];
+        float out[] = new float[len];
+        float in[] = new float[len];
         for (int i=0; i<len; i++){
             out[i]=0;
             in[i]=i;
