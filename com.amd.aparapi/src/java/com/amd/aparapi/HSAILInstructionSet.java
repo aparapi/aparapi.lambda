@@ -903,25 +903,16 @@ public class HSAILInstructionSet {
             }
         }
 
-    static public  List<HSAILInstruction>  array_len(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i){
-        _instructions.add (new array_len(_hsailStackFrame,_i, new StackReg_s32(_i, _hsailStackFrame.stackOffset,0), new StackReg_ref(_i,_hsailStackFrame.stackOffset, 0)));
-        return(_instructions);
-    }
 
-    static public List<HSAILInstruction> nyi(List<HSAILInstruction> _instructions, HSAILStackFrame _hsailStackFrame, Instruction _i){
-        _instructions.add(new nyi(_hsailStackFrame, _i));
-        return(_instructions);
-    }
 
-    static public List<HSAILInstruction> field_store_s64(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i, Field _f){
-       _instructions.add(new field_store<StackReg_s64,s64>(_hsailStackFrame, _i, new StackReg_s64(_i, _hsailStackFrame.stackOffset,1), new StackReg_ref(_i,_hsailStackFrame.stackOffset, 0), (long) UnsafeWrapper.objectFieldOffset(_f)));
-        return(_instructions);
-    }
 
-    static public List<HSAILInstruction> field_store_f64(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i, Field _f){
-        _instructions.add(new field_store<StackReg_f64,f64>(_hsailStackFrame, _i, new StackReg_f64(_i, _hsailStackFrame.stackOffset, 1), new StackReg_ref(_i, _hsailStackFrame.stackOffset,0), (long) UnsafeWrapper.objectFieldOffset(_f)));
-        return(_instructions);
-    }
+
+
+
+
+
+
+
 
     static public List<HSAILInstruction> field_store_f32(List<HSAILInstruction> _instructions,HSAILStackFrame _hsailStackFrame, Instruction _i, Field _f){
         _instructions.add(new field_store<StackReg_f32,f32>(_hsailStackFrame, _i, new StackReg_f32(_i,_hsailStackFrame.stackOffset, 1), new StackReg_ref(_i,_hsailStackFrame.stackOffset, 0), (long) UnsafeWrapper.objectFieldOffset(_f)));
@@ -1693,7 +1684,7 @@ public class HSAILInstructionSet {
          switch (i.getByteCode()) {
 
             case ACONST_NULL:
-               nyi(instructions, hsailStackFrame, i);
+                instructions.add(new nyi(hsailStackFrame, i));
                break;
             case ICONST_M1:
             case ICONST_0:
@@ -1907,17 +1898,17 @@ public class HSAILInstructionSet {
                array_store_s16(instructions, hsailStackFrame, i);
                break;
             case POP:
-               nyi(instructions, hsailStackFrame,i);
+                instructions.add(new nyi(hsailStackFrame, i));
                break;
             case POP2:
-               nyi(instructions, hsailStackFrame,i);
+                instructions.add(new nyi(hsailStackFrame, i));
                break;
             case DUP:
                // add(new nyi(i));
                addmov(instructions, hsailStackFrame, i, 0, 1);
                break;
             case DUP_X1:
-               nyi(instructions, hsailStackFrame,i);
+                instructions.add(new nyi(hsailStackFrame, i));
                break;
             case DUP_X2:
 
@@ -1935,13 +1926,13 @@ public class HSAILInstructionSet {
                addmov(instructions, hsailStackFrame, i, 1, 3);
                break;
             case DUP2_X1:
-               nyi(instructions, hsailStackFrame,i);
+                instructions.add(new nyi(hsailStackFrame, i));
                break;
             case DUP2_X2:
-               nyi(instructions, hsailStackFrame,i);
+                instructions.add(new nyi(hsailStackFrame, i));
                break;
             case SWAP:
-               nyi(instructions, hsailStackFrame,i);
+                instructions.add(new nyi(hsailStackFrame, i));
                break;
             case IADD:
                add_s32(instructions, hsailStackFrame, i);
@@ -2254,16 +2245,16 @@ public class HSAILInstructionSet {
                branch(instructions, hsailStackFrame, i);
                break;
             case JSR:
-               nyi(instructions, hsailStackFrame, i);
+                instructions.add(new nyi(hsailStackFrame, i));
                break;
             case RET:
-               nyi(instructions, hsailStackFrame, i);
+                instructions.add(new nyi(hsailStackFrame, i));
                break;
             case TABLESWITCH:
-               nyi(instructions, hsailStackFrame, i);
+                instructions.add(new nyi(hsailStackFrame, i));
                break;
             case LOOKUPSWITCH:
-               nyi(instructions, hsailStackFrame, i);
+                instructions.add(new nyi(hsailStackFrame, i));
                break;
             case IRETURN:
              case LRETURN:
@@ -2273,11 +2264,11 @@ public class HSAILInstructionSet {
                if (inlining && _frames.size()>1){
                   int maxLocals=i.getMethod().getCodeEntry().getMaxLocals(); // hsailStackFrame.stackOffset -maxLocals is the slot for the return value
                   switch(i.getByteCode()){
-                      case IRETURN: instructions.add(new mov<StackReg_s32, StackReg_s32, s32, s32>(hsailStackFrame, i, new StackReg_s32(i,hsailStackFrame.stackOffset,-maxLocals), new StackReg_s32(i,hsailStackFrame.stackOffset,0)));
-                      case LRETURN: instructions.add(new mov<StackReg_s64, StackReg_s64, s64, s64>(hsailStackFrame, i, new StackReg_s64(i,hsailStackFrame.stackOffset,-maxLocals), new StackReg_s64(i,hsailStackFrame.stackOffset,0)));
-                      case FRETURN: instructions.add(new mov<StackReg_f32, StackReg_f32, f32, f32>(hsailStackFrame, i, new StackReg_f32(i,hsailStackFrame.stackOffset,-maxLocals), new StackReg_f32(i,hsailStackFrame.stackOffset,0)));
-                      case DRETURN: instructions.add(new mov<StackReg_f64, StackReg_f64, f64, f64>(hsailStackFrame, i, new StackReg_f64(i,hsailStackFrame.stackOffset,-maxLocals), new StackReg_f64(i,hsailStackFrame.stackOffset,0)));
-                      case ARETURN: instructions.add(new mov<StackReg_ref, StackReg_ref, ref, ref>(hsailStackFrame, i, new StackReg_ref(i,hsailStackFrame.stackOffset,-maxLocals), new StackReg_ref(i,hsailStackFrame.stackOffset,0)));
+                      case IRETURN: instructions.add(new mov<StackReg_s32, StackReg_s32, s32, s32>(hsailStackFrame, i, new StackReg_s32(i,hsailStackFrame.stackOffset,-maxLocals), new StackReg_s32(i,hsailStackFrame.stackOffset,0)));break;
+                      case LRETURN: instructions.add(new mov<StackReg_s64, StackReg_s64, s64, s64>(hsailStackFrame, i, new StackReg_s64(i,hsailStackFrame.stackOffset,-maxLocals), new StackReg_s64(i,hsailStackFrame.stackOffset,0)));break;
+                      case FRETURN: instructions.add(new mov<StackReg_f32, StackReg_f32, f32, f32>(hsailStackFrame, i, new StackReg_f32(i,hsailStackFrame.stackOffset,-maxLocals), new StackReg_f32(i,hsailStackFrame.stackOffset,0)));break;
+                      case DRETURN: instructions.add(new mov<StackReg_f64, StackReg_f64, f64, f64>(hsailStackFrame, i, new StackReg_f64(i,hsailStackFrame.stackOffset,-maxLocals), new StackReg_f64(i,hsailStackFrame.stackOffset,0)));break;
+                      case ARETURN: instructions.add(new mov<StackReg_ref, StackReg_ref, ref, ref>(hsailStackFrame, i, new StackReg_ref(i,hsailStackFrame.stackOffset,-maxLocals), new StackReg_ref(i,hsailStackFrame.stackOffset,0)));break;
                   }
                    if (i.isLastInstruction()){
                       if (needsReturnLabel){
@@ -2289,11 +2280,11 @@ public class HSAILInstructionSet {
                   }
                }else{
                    switch(i.getByteCode()){
-                       case IRETURN:  ret_s32(instructions, hsailStackFrame, i);
-                       case LRETURN:  ret_s64(instructions, hsailStackFrame, i);
-                       case FRETURN:  ret_f32(instructions, hsailStackFrame, i);
-                       case DRETURN:  ret_s64(instructions, hsailStackFrame, i);
-                       case ARETURN:  ret_ref(instructions, hsailStackFrame, i);
+                       case IRETURN:  ret_s32(instructions, hsailStackFrame, i);break;
+                       case LRETURN:  ret_s64(instructions, hsailStackFrame, i);break;
+                       case FRETURN:  ret_f32(instructions, hsailStackFrame, i);break;
+                       case DRETURN:  ret_s64(instructions, hsailStackFrame, i);break;
+                       case ARETURN:  ret_ref(instructions, hsailStackFrame, i);break;
 
                    }
 
@@ -2385,7 +2376,7 @@ public class HSAILInstructionSet {
             }
             break;
             case PUTSTATIC:
-               nyi(instructions, hsailStackFrame, i);
+                instructions.add(new nyi(hsailStackFrame, i));
                break;
             case PUTFIELD: {
                // TypeHelper.JavaType type = i.asFieldAccessor().getConstantPoolFieldEntry().getType();
@@ -2407,9 +2398,9 @@ public class HSAILInstructionSet {
                   } else if (f.getType().equals(float.class)) {
                      field_store_f32(instructions, hsailStackFrame, i, f);
                   } else if (f.getType().equals(double.class)) {
-                     field_store_f64(instructions, hsailStackFrame, i, f);
+                      instructions.add(new field_store<StackReg_f64, f64>(hsailStackFrame, i, new StackReg_f64(i, hsailStackFrame.stackOffset, 1), new StackReg_ref(i, hsailStackFrame.stackOffset, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
                   } else if (f.getType().equals(long.class)) {
-                     field_store_s64(instructions, hsailStackFrame, i, f);
+                      instructions.add(new field_store<StackReg_s64,s64>(hsailStackFrame, i, new StackReg_s64(i, hsailStackFrame.stackOffset,1), new StackReg_ref(i,hsailStackFrame.stackOffset, 0), (long) UnsafeWrapper.objectFieldOffset(f)));
                   }   else {
                      throw new IllegalStateException("unexpected put field type");
                   }
@@ -2458,40 +2449,40 @@ public class HSAILInstructionSet {
             }
             break;
             case NEW:
-               nyi(instructions, hsailStackFrame, i);
+                instructions.add(new nyi(hsailStackFrame, i));
                break;
             case NEWARRAY:
-               nyi(instructions, hsailStackFrame, i);
+                instructions.add(new nyi(hsailStackFrame, i));
                break;
             case ANEWARRAY:
-               nyi(instructions, hsailStackFrame, i);
+                instructions.add(new nyi(hsailStackFrame, i));
                break;
             case ARRAYLENGTH:
-               array_len(instructions, hsailStackFrame, i);
+                instructions.add (new array_len(hsailStackFrame,i, new StackReg_s32(i, hsailStackFrame.stackOffset,0), new StackReg_ref(i,hsailStackFrame.stackOffset, 0)));
                break;
             case ATHROW:
-               nyi(instructions, hsailStackFrame, i);
+                instructions.add(new nyi(hsailStackFrame, i));
                break;
             case CHECKCAST:
-               nyi(instructions, hsailStackFrame, i);
+                instructions.add(new nyi(hsailStackFrame, i));
                break;
             case INSTANCEOF:
-               nyi(instructions, hsailStackFrame, i);
+                instructions.add(new nyi(hsailStackFrame, i));
                break;
             case MONITORENTER:
-               nyi(instructions, hsailStackFrame, i);
+                instructions.add(new nyi(hsailStackFrame, i));
                break;
             case MONITOREXIT:
-               nyi(instructions, hsailStackFrame, i);
+                instructions.add(new nyi(hsailStackFrame, i));
                break;
             case WIDE:
-               nyi(instructions, hsailStackFrame, i);
+                instructions.add(new nyi(hsailStackFrame, i));
                break;
             case MULTIANEWARRAY:
-               nyi(instructions, hsailStackFrame, i);
+                instructions.add(new nyi(hsailStackFrame, i));
                break;
             case JSR_W:
-               nyi(instructions, hsailStackFrame, i);
+                instructions.add(new nyi(hsailStackFrame, i));
                break;
 
          }
