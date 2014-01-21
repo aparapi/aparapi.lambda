@@ -27,6 +27,19 @@ public class HSAILInstructionSet {
 
         }
 
+        static class nop extends HSAILInstruction<nop>{
+
+            nop(HSAILStackFrame _hsailStackFrame,Instruction _from) {
+               super(_hsailStackFrame, _from, 0,0);
+            }
+            @Override
+            public void render(HSAILRenderer r) {
+                r.append("// nop").semicolon();
+
+            }
+        }
+
+
         abstract static class HSAILInstructionWithDest<H extends HSAILInstructionWithDest<H,Rt,T>, Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends HSAILInstruction<H> {
 
 
@@ -2341,6 +2354,8 @@ public class HSAILInstructionSet {
                     if (i.getNextPC()!=null){
                         instructions.add(new inlineReturnBrn(hsailStackFrame, i,hsailStackFrame.getUniqueName()));
                         needsReturnBranch=true;
+                    }else{
+                        instructions.add(new nop(hsailStackFrame, i));
                     }
                 }else{
                     ret_void(instructions, hsailStackFrame, i);
