@@ -1,5 +1,8 @@
 package com.amd.aparapi;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Created with IntelliJ IDEA.
  * User: gfrost
@@ -223,6 +226,7 @@ class StackReg_f32 extends Reg_f32<StackReg_f32>{
    StackReg_f32(Instruction _from, int _stackBase, int _offset){
       super(_from.getPreStackBase() + _from.getMethod().getCodeEntry().getMaxLocals() + _stackBase + _offset, true);
    }
+
 }
 
 class StackReg_s64 extends Reg_s64<StackReg_s64>{
@@ -297,6 +301,10 @@ class StackReg_s8 extends Reg_s8<StackReg_s8>{
    }
 }
 
+interface Factory<T extends HSAILOperand>{
+    public T create(Instruction _from, int _stackBase,int _offset);
+}
+
 class StackReg_ref extends Reg_ref<StackReg_ref>{
     StackReg_ref(StackReg_ref original){
         super(original);
@@ -307,6 +315,19 @@ class StackReg_ref extends Reg_ref<StackReg_ref>{
    StackReg_ref(Instruction _from, int _stackBase,int _offset){
       super(_from.getPreStackBase() + _from.getMethod().getCodeEntry().getMaxLocals()+ _stackBase + _offset, true);
    }
+   static Map<Integer,StackReg_ref> map = new HashMap<Integer, StackReg_ref>();
+   static StackReg_ref get(int _index,int _offset){
+       StackReg_ref returnValue = map.get(_index);
+       if (returnValue == null){
+           map.put(_index, returnValue);
+       }
+       return(returnValue);
+   }
+   static Factory<StackReg_ref> factory = new Factory<StackReg_ref>(){
+       public StackReg_ref create(Instruction _from, int _stackBase,int _offset){
+           return(new  StackReg_ref(_from, _stackBase, _offset));
+       }
+   };
 }
 
 class VarReg_f64 extends Reg_f64<VarReg_f64>{
