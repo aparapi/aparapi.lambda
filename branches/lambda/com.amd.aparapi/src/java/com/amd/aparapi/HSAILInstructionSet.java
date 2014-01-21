@@ -13,54 +13,23 @@ public class HSAILInstructionSet {
             Instruction from;
             HSAILRegister[] dests = null;
             HSAILOperand[] sources = null;
-           // HSAILStackFrame hsailStackFrame = null;
 
-            HSAILInstruction(HSAILInstruction original) {
-                from = original.from;
-               // hsailStackFrame = original.hsailStackFrame;
-                if (original.dests == null){
-                    dests = null;
-                }else{
-                    dests = new HSAILRegister[original.dests.length];
-                    for (int i=0; i<dests.length; i++){
-                        dests[i] = original.dests[i].cloneMe();
-                    }
-                }
-                if (original.sources == null){
-                    sources = null;
-                }else{
-                    sources = new HSAILRegister[original.sources.length];
-                    for (int i=0; i<sources.length; i++){
-                        sources[i] = original.sources[i].cloneMe();
-                    }
-                }
-
-            }
 
             HSAILInstruction(HSAILStackFrame _hsailStackFrame,Instruction _from, int _destCount, int _sourceCount) {
-              //  hsailStackFrame = _hsailStackFrame;
                 from = _from;
                 dests = new HSAILRegister[_destCount];
                 sources = new HSAILOperand[_sourceCount];
                 location = _hsailStackFrame.getUniqueLocation(from.getStartPC());
             }
 
-            public abstract  H cloneMe();
 
-
-           // public HSAILStackFrame getHSAILStackFrame(){
-             //   return(hsailStackFrame);
-           // }
             abstract void render(HSAILRenderer r);
 
         }
 
         abstract static class HSAILInstructionWithDest<H extends HSAILInstructionWithDest<H,Rt,T>, Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends HSAILInstruction<H> {
 
-            protected HSAILInstructionWithDest(  H original){
-                super(original);
 
-            }
 
             HSAILInstructionWithDest(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _dest) {
                 super(_hsailStackFrame, _from, 1, 0);
@@ -74,9 +43,6 @@ public class HSAILInstructionSet {
 
         abstract static class HSAILInstructionWithSrc<H extends HSAILInstructionWithSrc<H,Rt,T>, Rt extends HSAILOperand<Rt,T>, T extends PrimitiveType> extends HSAILInstruction<H> {
 
-            protected HSAILInstructionWithSrc( H original){
-                super(original);
-            }
 
 
             HSAILInstructionWithSrc(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _src) {
@@ -91,9 +57,7 @@ public class HSAILInstructionSet {
 
         abstract static class HSAILInstructionWithSrcSrc<H extends HSAILInstructionWithSrcSrc<H,Rt,T>, Rt extends HSAILOperand<Rt,T>, T extends PrimitiveType> extends HSAILInstruction<H> {
 
-            protected HSAILInstructionWithSrcSrc(H original){
-                super(original);
-            }
+
             HSAILInstructionWithSrcSrc(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _src_lhs, Rt _src_rhs) {
                 super(_hsailStackFrame,_from, 0, 2);
                 sources[0] = _src_lhs;
@@ -111,9 +75,7 @@ public class HSAILInstructionSet {
 
         abstract static class HSAILInstructionWithDestSrcSrc<H extends HSAILInstructionWithDestSrcSrc<H,Rd,Rlhs,Rrhs,D,Tlhs, Trhs>, Rd extends HSAILRegister<Rd,D>, Rlhs extends HSAILOperand<Rlhs,Tlhs>, Rrhs extends HSAILOperand<Rrhs,Trhs>,D extends PrimitiveType, Tlhs extends PrimitiveType, Trhs extends PrimitiveType> extends HSAILInstruction<H> {
 
-            protected HSAILInstructionWithDestSrcSrc(H original){
-                super(original);
-            }
+
             HSAILInstructionWithDestSrcSrc(HSAILStackFrame _hsailStackFrame,Instruction _from, Rd _dest, Rlhs _src_lhs, Rrhs _src_rhs) {
                 super(_hsailStackFrame,_from, 1, 2);
                 dests[0] = _dest;
@@ -137,9 +99,7 @@ public class HSAILInstructionSet {
 
 
         abstract static class HSAILInstructionWithDestSrc<H extends HSAILInstructionWithDestSrc<H,Rd,Rt,D,T>, Rd extends HSAILRegister<Rd,D>, Rt extends HSAILOperand<Rt,T>, D extends PrimitiveType, T extends PrimitiveType> extends HSAILInstruction<H> {
-            HSAILInstructionWithDestSrc(H original){
-                super(original);
-            }
+
             HSAILInstructionWithDestSrc(HSAILStackFrame _hsailStackFrame,Instruction _from, Rd _dest, Rt _src) {
                 super(_hsailStackFrame,_from, 1, 1);
                 dests[0] = _dest;
@@ -160,12 +120,7 @@ public class HSAILInstructionSet {
             int pc;
             String targetLabel;
 
-            protected branch(branch<R> original){
-                super(original);
-                branchName = original.branchName;
-                pc = original.pc;
-               targetLabel = original.targetLabel;
-            }
+
 
             branch(HSAILStackFrame _hsailStackFrame,Instruction _from, R _src, String _branchName, int _pc) {
                 super(_hsailStackFrame,_from, _src);
@@ -174,9 +129,7 @@ public class HSAILInstructionSet {
                targetLabel = _hsailStackFrame.getUniqueLocation(pc);
             }
 
-            @Override public branch<R> cloneMe(){
-                return(new branch<R>(this));
-            }
+
 
 
             @Override
@@ -188,19 +141,14 @@ public class HSAILInstructionSet {
         static  class cmp_s32_const_0 <R extends HSAILRegister<R,s32>> extends HSAILInstructionWithSrc<cmp_s32_const_0<R>,R, s32> {
             String type;
 
-            protected cmp_s32_const_0(cmp_s32_const_0<R> original){
-                super(original);
-                type = original.type;
-            }
+
 
             cmp_s32_const_0(HSAILStackFrame _hsailStackFrame,Instruction _from, String _type, R _src) {
                 super(_hsailStackFrame, _from, _src);
                 type = _type;
             }
 
-            @Override public cmp_s32_const_0<R> cloneMe(){
-                return(new cmp_s32_const_0<R>(this));
-            }
+
 
             @Override
             public void render(HSAILRenderer r) {
@@ -213,19 +161,13 @@ public class HSAILInstructionSet {
 
             String type;
 
-            protected cmp_s32(cmp_s32<R> original){
-                super(original);
-                type = original.type;
-            }
+
 
             cmp_s32(HSAILStackFrame _hsailStackFrame,Instruction _from, String _type, R _srcLhs, R _srcRhs) {
                 super(_hsailStackFrame,_from, _srcLhs, _srcRhs);
                 type = _type;
             }
 
-            @Override public cmp_s32<R> cloneMe(){
-                return(new cmp_s32<R>(this));
-            }
 
             @Override
             public void render(HSAILRenderer r) {
@@ -237,18 +179,11 @@ public class HSAILInstructionSet {
 
             String type;
 
-            protected cmp_ref(cmp_ref<R> original){
-                super(original);
-                type = original.type;
-            }
+
 
             cmp_ref(HSAILStackFrame _hsailStackFrame,Instruction _from, String _type, R _srcLhs, R _srcRhs) {
                 super(_hsailStackFrame, _from, _srcLhs, _srcRhs);
                 type = _type;
-            }
-
-            @Override public cmp_ref<R> cloneMe(){
-                return(new cmp_ref<R>(this));
             }
 
 
@@ -263,19 +198,12 @@ public class HSAILInstructionSet {
 
             String type;
 
-            protected cmp(cmp<Rt,T> original){
-                super(original);
-                type = original.type;
-            }
 
             cmp(HSAILStackFrame _hsailStackFrame,Instruction _from, String _type, Rt _srcLhs, Rt _srcRhs) {
                 super(_hsailStackFrame,_from, _srcLhs, _srcRhs);
                 type = _type;
             }
 
-            @Override public cmp<Rt,T> cloneMe(){
-                return(new cmp<Rt,T>(this));
-            }
 
             @Override
             public void render(HSAILRenderer r) {
@@ -289,11 +217,7 @@ public class HSAILInstructionSet {
             int pc;
             String targetLabel;
 
-            protected cbr(cbr original){
-                super(original);
-                pc = original.pc;
-               targetLabel = original.targetLabel;
-            }
+
 
             cbr(HSAILStackFrame _hsailStackFrame,Instruction _from, int _pc) {
                 super(_hsailStackFrame,_from, 0, 0);
@@ -301,9 +225,6 @@ public class HSAILInstructionSet {
                targetLabel = _hsailStackFrame.getUniqueLocation(pc);
             }
 
-            @Override public cbr cloneMe(){
-                return(new cbr(this));
-            }
 
 
             @Override
@@ -316,11 +237,6 @@ public class HSAILInstructionSet {
         static  class brn extends HSAILInstruction<brn> {
             int pc;
             String targetLabel;
-            protected brn(brn original){
-                super(original);
-                pc = original.pc;
-               targetLabel = original.targetLabel;
-            }
 
 
 
@@ -330,9 +246,6 @@ public class HSAILInstructionSet {
                targetLabel = _hsailStackFrame.getUniqueLocation(pc);
             }
 
-            @Override public brn cloneMe(){
-                return(new brn(this));
-            }
 
             @Override
             public void render(HSAILRenderer r) {
@@ -343,19 +256,14 @@ public class HSAILInstructionSet {
    static  class inlineReturnBrn extends HSAILInstruction<inlineReturnBrn> {
 
       String targetLabel;
-      protected inlineReturnBrn(inlineReturnBrn original){
-         super(original);
-         targetLabel = original.targetLabel;
-      }
+
 
       inlineReturnBrn(HSAILStackFrame _hsailStackFrame,Instruction _from, String _targetLabel) {
          super(_hsailStackFrame, _from, 0, 0);
          targetLabel = _targetLabel;
       }
 
-      @Override public inlineReturnBrn cloneMe(){
-         return(new inlineReturnBrn(this));
-      }
+
 
       @Override
       public void render(HSAILRenderer r) {
@@ -371,17 +279,13 @@ public class HSAILInstructionSet {
 
         static  class nyi extends HSAILInstruction<nyi> {
 
-            protected nyi(nyi original){
-                super(original);
-            }
+
 
             nyi(HSAILStackFrame _hsailStackFrame,Instruction _from) {
                 super(_hsailStackFrame, _from, 0, 0);
             }
 
-            @Override public nyi cloneMe(){
-                return(new nyi(this));
-            }
+
 
             @Override
             void render(HSAILRenderer r) {
@@ -393,18 +297,12 @@ public class HSAILInstructionSet {
 
         static  class ld_kernarg<Rt extends HSAILRegister<Rt,T>,T extends PrimitiveType> extends HSAILInstructionWithDest<ld_kernarg<Rt,T>,Rt, T> {
 
-            protected ld_kernarg(ld_kernarg<Rt,T> original){
-                super(original);
 
-            }
 
             ld_kernarg(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _dest) {
                 super(_hsailStackFrame, _from, _dest);
             }
 
-            @Override public ld_kernarg<Rt,T> cloneMe(){
-                return(new ld_kernarg<Rt,T>(this));
-            }
 
             @Override
             void render(HSAILRenderer r) {
@@ -414,18 +312,11 @@ public class HSAILInstructionSet {
 
     static  class workitemabsid<Rt extends HSAILRegister<Rt,T>,T extends PrimitiveType> extends HSAILInstructionWithDest<workitemabsid<Rt,T>,Rt, T> {
 
-        protected workitemabsid(workitemabsid<Rt,T> original){
-            super(original);
-
-        }
 
         workitemabsid(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _dest) {
             super(_hsailStackFrame, _from, _dest);
         }
 
-        @Override public workitemabsid<Rt,T> cloneMe(){
-            return(new workitemabsid<Rt,T>(this));
-        }
 
         @Override
         void render(HSAILRenderer r) {
@@ -435,18 +326,12 @@ public class HSAILInstructionSet {
 
         static  class ld_arg<Rt extends HSAILRegister<Rt,T>,T extends PrimitiveType> extends HSAILInstructionWithDest<ld_arg<Rt,T>,Rt, T> {
 
-            protected ld_arg(ld_arg<Rt,T> original){
-                super(original);
 
-            }
 
             ld_arg(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _dest) {
                 super(_hsailStackFrame, _from, _dest);
             }
 
-            @Override public ld_arg cloneMe(){
-                return(new ld_arg(this));
-            }
 
             @Override
             void render(HSAILRenderer r) {
@@ -460,11 +345,7 @@ public class HSAILInstructionSet {
             C value;
             String op;
 
-            protected binary_const(H original){
-                super(original);
-                value = original.value;
-                op = original.op;
-            }
+
 
             binary_const(HSAILStackFrame _hsailStackFrame,Instruction _from, String _op, Rt _dest, Rt _src, C _value) {
                 super(_hsailStackFrame,_from, _dest, _src);
@@ -481,34 +362,25 @@ public class HSAILInstructionSet {
         }
 
         static  class add_const<Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType, C extends Number> extends binary_const<add_const<Rt, T, C>, Rt,T, C> {
-            protected add_const(add_const<Rt,T,C> original){
-                super(original);
-            }
+
 
             add_const(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _dest, Rt _src, C _value) {
                 super(_hsailStackFrame,_from, "add_", _dest, _src, _value);
 
             }
-            @Override public add_const<Rt,T,C> cloneMe(){
-                return(new add_const<Rt,T,C>(this));
-            }
+
 
         }
 
         static   class and_const<Rt extends HSAILRegister<Rt,T>,T extends PrimitiveType, C extends Number> extends binary_const<and_const<Rt, T,C>, Rt, T, C> {
 
-            protected and_const(and_const<Rt, T,C> original){
-                super(original);
-            }
+
 
             and_const(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _dest,Rt _src, C _value) {
                 super(_hsailStackFrame,_from, "and_", _dest, _src, _value);
 
             }
 
-            @Override public and_const<Rt, T,C> cloneMe(){
-                return(new and_const<Rt, T,C>(this));
-            }
 
             @Override
             void render(HSAILRenderer r) {
@@ -519,36 +391,27 @@ public class HSAILInstructionSet {
         }
 
         static  class mul_const<Rt extends HSAILRegister<Rt,T>,T extends PrimitiveType, C extends Number> extends binary_const< mul_const<Rt, T,C>, Rt, T, C> {
-            protected mul_const(mul_const<Rt,T,C> original){
-                super(original);
-            }
+
 
             mul_const(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _dest, Rt _src, C _value) {
                 super(_hsailStackFrame,_from, "mul_", _dest, _src, _value);
 
             }
 
-            @Override public mul_const<Rt,T,C> cloneMe(){
-                return(new mul_const<Rt,T,C>(this));
-            }
+
 
         }
 
         static class mad<Rd extends HSAILRegister<Rd,ref>, Rt extends HSAILRegister<Rt,ref>> extends HSAILInstructionWithDestSrcSrc<mad<Rd,Rt>, Rd, Rt,Rt, ref, ref, ref> {
             long size;
-            protected mad(mad<Rd,Rt> original){
-                super(original);
-                size = original.size;
-            }
+
 
             mad(HSAILStackFrame _hsailStackFrame,Instruction _from, Rd _dest, Rt _src_lhs, Rt _src_rhs, long _size) {
                 super(_hsailStackFrame, _from, _dest, _src_lhs, _src_rhs);
                 size = _size;
             }
 
-            @Override public mad<Rd,Rt> cloneMe(){
-                return(new mad<Rd,Rt>(this));
-            }
+
 
             @Override void render(HSAILRenderer r) {
                 r.append("mad_").typeName(getDest()).space().operandName(getDest()).separator().operandName(getSrcLhs()).separator().append(size).separator().operandName(getSrcRhs()).semicolon();
@@ -558,14 +421,8 @@ public class HSAILInstructionSet {
 
         static   class cvt<Rt1 extends HSAILRegister<Rt1,T1>, Rt2 extends HSAILRegister<Rt2,T2>,T1 extends PrimitiveType, T2 extends PrimitiveType> extends HSAILInstruction<cvt<Rt1,Rt2,T1,T2>> {
 
-            protected cvt(cvt<Rt1,Rt2,T1,T2> original){
-                super(original);
 
 
-            }
-            @Override public cvt<Rt1,Rt2,T1,T2> cloneMe(){
-                return(new cvt(this));
-            }
             cvt(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt1 _dest, Rt2 _src) {
                 super(_hsailStackFrame,_from, 1, 1);
                 dests[0] = _dest;
@@ -590,14 +447,7 @@ public class HSAILInstructionSet {
 
 
         static  class retvoid extends HSAILInstruction<retvoid> {
-            protected retvoid(retvoid original){
-                super(original);
 
-
-            }
-            @Override public retvoid cloneMe(){
-                return(new retvoid(this));
-            }
 
             retvoid(HSAILStackFrame _hsailStackFrame,Instruction _from) {
                 super(_hsailStackFrame,_from, 0, 0);
@@ -615,14 +465,7 @@ public class HSAILInstructionSet {
         static  class ret<Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends HSAILInstructionWithSrc<ret<Rt,T>,Rt, T> {
 
             String endLabel;
-            protected ret(ret<Rt,T> original){
-                super(original);
 
-
-            }
-            @Override public ret<Rt,T> cloneMe(){
-                return(new ret<Rt,T>(this));
-            }
             ret(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _src) {
                 super(_hsailStackFrame,_from, _src);
                 endLabel = _hsailStackFrame.getUniqueName()+"_END";
@@ -641,19 +484,14 @@ public class HSAILInstructionSet {
         static  class array_store<Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends HSAILInstructionWithSrc<array_store<Rt, T>,Rt, T> {
             Reg_ref mem;
 
-            protected array_store(array_store<Rt, T> original){
-                super(original);
-                mem = original.mem;
-            }
+
 
             array_store(HSAILStackFrame _hsailStackFrame,Instruction _from, Reg_ref _mem, Rt _src) {
                 super(_hsailStackFrame,_from, _src);
                 mem = _mem;
             }
 
-            @Override public array_store<Rt, T> cloneMe(){
-                return(new array_store<Rt, T>(this));
-            }
+
 
             @Override
             void render(HSAILRenderer r) {
@@ -668,19 +506,13 @@ public class HSAILInstructionSet {
         static   class array_load<Rt extends HSAILRegister<Rt,T>,T extends PrimitiveType> extends HSAILInstructionWithDest<array_load<Rt,T>,Rt,T> {
             Reg_ref mem;
 
-            protected array_load(array_load<Rt,T> original){
-                super(original);
-                mem = original.mem;
-            }
+
 
             array_load(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _dest, Reg_ref _mem) {
                 super(_hsailStackFrame,_from, _dest);
                 mem = _mem;
             }
 
-            @Override public array_load<Rt,T> cloneMe(){
-                return(new array_load<Rt,T>(this));
-            }
 
             @Override
             void render(HSAILRenderer r) {
@@ -698,19 +530,13 @@ public class HSAILInstructionSet {
         static  class array_len<Rs32 extends HSAILRegister<Rs32,s32>> extends HSAILInstructionWithDest<array_len<Rs32>, Rs32, s32> {
             Reg_ref mem;
 
-            protected array_len(array_len<Rs32> original){
-                super(original);
-                mem = original.mem;
-            }
+
 
             array_len(HSAILStackFrame _hsailStackFrame,Instruction _from, Rs32 _dest, Reg_ref _mem) {
                 super(_hsailStackFrame,_from, _dest);
                 mem = _mem;
             }
 
-            @Override public array_len<Rs32> cloneMe(){
-                return(new array_len<Rs32>(this));
-            }
 
             @Override
             void render(HSAILRenderer r) {
@@ -724,11 +550,7 @@ public class HSAILInstructionSet {
 
             Reg_ref mem;
             long offset;
-            protected field_load(field_load<Rt,T> original){
-                super(original);
-                mem = original.mem;
-                offset = original.offset;
-            }
+
 
             field_load(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _dest, Reg_ref _mem, long _offset) {
                 super(_hsailStackFrame,_from, _dest);
@@ -736,9 +558,7 @@ public class HSAILInstructionSet {
                 mem = _mem;
             }
 
-            @Override public field_load<Rt,T> cloneMe(){
-                return(new field_load<Rt,T>(this));
-            }
+
 
             @Override
             void render(HSAILRenderer r) {
@@ -751,11 +571,7 @@ public class HSAILInstructionSet {
         static  class static_field_load<Rt extends HSAILRegister<Rt,T>,T extends PrimitiveType> extends HSAILInstructionWithDest<static_field_load<Rt,T>,Rt, T> {
             long offset;
             Reg_ref mem;
-            protected static_field_load(static_field_load<Rt,T> original){
-                super(original);
-                mem = original.mem;
-                offset = original.offset;
-            }
+
 
             static_field_load(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _dest, Reg_ref _mem, long _offset) {
                 super(_hsailStackFrame,_from, _dest);
@@ -763,9 +579,7 @@ public class HSAILInstructionSet {
                 mem = _mem;
             }
 
-            @Override public static_field_load<Rt,T> cloneMe(){
-                return(new static_field_load<Rt,T>(this));
-            }
+
 
             @Override
             void render(HSAILRenderer r) {
@@ -781,11 +595,6 @@ public class HSAILInstructionSet {
             Reg_ref mem;
             long offset;
 
-            protected field_store(field_store<Rt,T> original){
-                super(original);
-                mem = original.mem;
-                offset = original.offset;
-            }
 
             field_store(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _src, Reg_ref _mem, long _offset) {
                 super(_hsailStackFrame,_from, _src);
@@ -793,9 +602,7 @@ public class HSAILInstructionSet {
                 mem = _mem;
             }
 
-            @Override public field_store<Rt,T> cloneMe(){
-                return(new field_store<Rt,T>(this));
-            }
+
 
             @Override
             void render(HSAILRenderer r) {
@@ -807,17 +614,12 @@ public class HSAILInstructionSet {
 
 
         static final class mov<Rd extends HSAILRegister<Rd,D>,Rt extends HSAILRegister<Rt,T>,D extends PrimitiveType, T extends PrimitiveType> extends HSAILInstructionWithDestSrc<mov<Rd,Rt,D,T>, Rd, Rt,D,T> {
-            protected mov(mov<Rd,Rt,D,T> original){
-                super(original);
 
-            }
 
             public mov(HSAILStackFrame _hsailStackFrame,Instruction _from, Rd _dest, Rt _src) {
                 super(_hsailStackFrame,_from, _dest, _src);
             }
-            @Override public mov<Rd,Rt,D,T> cloneMe(){
-                return(new mov<Rd,Rt,D,T>(this));
-            }
+
             @Override
             void render(HSAILRenderer r) {
                 r.append("mov_").movTypeName(getDest()).space().operandName(getDest()).separator().operandName(getSrc()).semicolon();
@@ -830,18 +632,12 @@ public class HSAILInstructionSet {
    static final class returnMov<Rd extends HSAILRegister<Rd,D>,Rt extends HSAILRegister<Rt,T>,D extends PrimitiveType, T extends PrimitiveType> extends HSAILInstructionWithDestSrc<returnMov<Rd,Rt,D,T>, Rd, Rt,D,T> {
        String endLabel;
 
-      protected returnMov(returnMov<Rd,Rt,D,T> original){
-         super(original);
-         endLabel = original.endLabel;
-      }
 
       public returnMov(HSAILStackFrame _hsailStackFrame,Instruction _from, Rd _dest, Rt _src, String _endLabel) {
          super(_hsailStackFrame,_from, _dest, _src);
          endLabel = _endLabel;
       }
-      @Override public returnMov<Rd,Rt,D,T> cloneMe(){
-         return(new returnMov<Rd,Rt,D,T>(this));
-      }
+
       @Override
       void render(HSAILRenderer r) {
          r.append("mov_").movTypeName(getDest()).space().operandName(getDest()).separator().operandName(getSrc()).semicolon().nl().label(endLabel).colon();
@@ -854,10 +650,7 @@ public class HSAILInstructionSet {
         static  abstract class unary<H extends unary<H,Rt,T>, Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends HSAILInstructionWithDestSrc<H,Rt,Rt, T,T> {
             String op;
 
-            protected unary(H original){
-                super(original);
-                op = original.op;
-            }
+
 
             public unary(HSAILStackFrame _hsailStackFrame,Instruction _from, String _op, Rt _destSrc) {
                 super(_hsailStackFrame,_from, _destSrc, _destSrc);
@@ -882,11 +675,7 @@ public class HSAILInstructionSet {
 
         static  abstract class binary<H extends binary<H,Rt,T>, Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends HSAILInstruction<H> {
             String op;
-            protected binary(H original){
-                super(original);
-                op = original.op;
 
-            }
             public binary(HSAILStackFrame _hsailStackFrame,Instruction _from, String _op, Rt _dest, Rt _lhs, Rt _rhs) {
                 super(_hsailStackFrame,_from, 1, 2);
                 dests[0] = _dest;
@@ -941,52 +730,36 @@ public class HSAILInstructionSet {
    */
 
         static   class add<Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends binary<add<Rt,T>, Rt, T> {
-            protected add(add<Rt,T> original){
-                super(original);
-            }
+
 
             public add(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _dest, Rt _lhs, Rt _rhs) {
                 super(_hsailStackFrame,_from, "add_", _dest, _lhs, _rhs);
             }
-            @Override public add<Rt,T> cloneMe(){
-                return (new add<Rt,T>(this));
-            }
+
 
         }
 
         static   class sub<Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends binary<sub<Rt,T>, Rt, T> {
-            protected sub(sub<Rt,T> original){
-                super(original);
-            }
+
 
             public sub(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _dest, Rt _lhs, Rt _rhs) {
                 super(_hsailStackFrame,_from, "sub_", _dest, _lhs, _rhs);
             }
-            @Override public sub<Rt,T> cloneMe(){
-                return (new sub<Rt,T>(this));
-            }
+
         }
 
         static  class div<Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends binary<div<Rt,T>, Rt, T> {
 
-            @Override public div<Rt,T> cloneMe(){
-                return (new div<Rt,T>(this));
-            }
+
             public div(HSAILStackFrame _hsailStackFrame,Instruction _from,Rt _dest, Rt _lhs, Rt _rhs) {
                 super(_hsailStackFrame,_from, "div_", _dest, _lhs, _rhs);
             }
-            protected div(div<Rt,T> original){
-                super(original);
-            }
+
         }
 
         static  class mul<Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends binary<mul<Rt,T>, Rt, T> {
-            protected mul(mul<Rt,T> original){
-                super(original);
-            }
-            @Override public mul<Rt,T> cloneMe(){
-                return (new mul<Rt,T>(this));
-            }
+
+
             public mul(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _dest, Rt _lhs, Rt _rhs) {
                 super(_hsailStackFrame,_from, "mul_", _dest, _lhs, _rhs);
             }
@@ -994,12 +767,7 @@ public class HSAILInstructionSet {
         }
 
         static   class rem<Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends binary<rem<Rt,T>, Rt, T> {
-            protected rem(rem<Rt,T> original){
-                super(original);
-            }
-            @Override public rem<Rt,T> cloneMe(){
-                return (new rem<Rt,T>(this));
-            }
+
             public rem(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _dest, Rt _lhs, Rt _rhs) {
                 super(_hsailStackFrame,_from, "rem_", _dest, _lhs, _rhs);
             }
@@ -1008,12 +776,7 @@ public class HSAILInstructionSet {
 
         static  class neg<Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends unary<neg<Rt,T>, Rt, T> {
 
-            protected neg(neg<Rt,T> original){
-                super(original);
-            }
-            @Override public neg<Rt,T> cloneMe(){
-                return (new neg<Rt,T>(this));
-            }
+
             public neg(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _destSrc) {
                 super(_hsailStackFrame,_from, "neg_", _destSrc);
             }
@@ -1022,12 +785,7 @@ public class HSAILInstructionSet {
 
     static  class nsqrt<Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends unary<nsqrt<Rt,T>, Rt, T> {
 
-        protected nsqrt(nsqrt<Rt,T> original){
-            super(original);
-        }
-        @Override public nsqrt<Rt,T> cloneMe(){
-            return (new nsqrt<Rt,T>(this));
-        }
+
         public nsqrt(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _destSrc) {
             super(_hsailStackFrame,_from, "nsqrt_", _destSrc);
         }
@@ -1036,12 +794,7 @@ public class HSAILInstructionSet {
 
     static  class ncos<Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends unary<ncos<Rt,T>, Rt, T> {
 
-        protected ncos(ncos<Rt,T> original){
-            super(original);
-        }
-        @Override public ncos<Rt,T> cloneMe(){
-            return (new ncos<Rt,T>(this));
-        }
+
         public ncos(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _destSrc) {
             super(_hsailStackFrame,_from, "ncos_", _destSrc);
         }
@@ -1050,12 +803,7 @@ public class HSAILInstructionSet {
 
     static  class nsin<Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends unary<nsin<Rt,T>, Rt, T> {
 
-        protected nsin(nsin<Rt,T> original){
-            super(original);
-        }
-        @Override public nsin<Rt,T> cloneMe(){
-            return (new nsin<Rt,T>(this));
-        }
+
         public nsin(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _destSrc) {
             super(_hsailStackFrame,_from, "nsin_", _destSrc);
         }
@@ -1065,12 +813,7 @@ public class HSAILInstructionSet {
 
 
         static  class shl<Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends binary<shl<Rt,T>, Rt, T> {
-            protected shl(shl<Rt,T> original){
-                super(original);
-            }
-            @Override public shl<Rt,T> cloneMe(){
-                return (new shl<Rt,T>(this));
-            }
+
             public shl(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _dest, Rt _lhs, Rt _rhs) {
                 super(_hsailStackFrame,_from, "shl_", _dest, _lhs, _rhs);
             }
@@ -1078,12 +821,7 @@ public class HSAILInstructionSet {
         }
 
         static  class shr<Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends binary<shr<Rt,T>, Rt, T> {
-            protected shr(shr<Rt,T> original){
-                super(original);
-            }
-            @Override public shr<Rt,T> cloneMe(){
-                return (new shr<Rt,T>(this));
-            }
+
             public shr(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _dest, Rt _lhs, Rt _rhs) {
                 super(_hsailStackFrame,_from, "shr_", _dest, _lhs, _rhs);
             }
@@ -1091,12 +829,7 @@ public class HSAILInstructionSet {
         }
 
         static  class ushr<Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends binary<ushr<Rt,T>, Rt, T> {
-            protected ushr(ushr<Rt,T> original){
-                super(original);
-            }
-            @Override public ushr<Rt,T> cloneMe(){
-                return (new ushr<Rt,T>(this));
-            }
+
             public ushr(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _dest, Rt _lhs, Rt _rhs) {
                 super(_hsailStackFrame,_from, "ushr_", _dest, _lhs, _rhs);
             }
@@ -1105,12 +838,7 @@ public class HSAILInstructionSet {
 
 
         static  class and<Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends binary<and<Rt,T>, Rt, T> {
-            protected and(and<Rt,T> original){
-                super(original);
-            }
-            @Override public and<Rt,T> cloneMe(){
-                return (new and<Rt,T>(this));
-            }
+
             public and(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _dest, Rt _lhs, Rt _rhs) {
                 super(_hsailStackFrame,_from, "and_", _dest, _lhs, _rhs);
             }
@@ -1123,12 +851,7 @@ public class HSAILInstructionSet {
         }
 
         static  class or<Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends binary<or<Rt,T>, Rt, T> {
-            protected or(or<Rt,T> original){
-                super(original);
-            }
-            @Override public or<Rt,T> cloneMe(){
-                return (new or<Rt,T>(this));
-            }
+
             public or(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _dest, Rt _lhs, Rt _rhs) {
                 super(_hsailStackFrame,_from, "or_", _dest, _lhs, _rhs);
             }
@@ -1141,12 +864,7 @@ public class HSAILInstructionSet {
         }
 
         static  class xor<Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends binary<xor<Rt,T>, Rt, T> {
-            protected xor(xor<Rt,T> original){
-                super(original);
-            }
-            @Override public xor<Rt,T> cloneMe(){
-                return (new xor<Rt,T>(this));
-            }
+
             public xor(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _dest, Rt _lhs, Rt _rhs) {
                 super(_hsailStackFrame,_from, "xor_", _dest, _lhs, _rhs);
             }
@@ -1159,13 +877,7 @@ public class HSAILInstructionSet {
         }
 
         static class mov_const<Rt extends HSAILRegister<Rt,T>,T extends PrimitiveType, C extends Number> extends HSAILInstructionWithDest<mov_const<Rt,T,C>,Rt,T> {
-            protected mov_const(mov_const<Rt,T,C> original){
-                super(original);
-                value = original.value;
-            }
-            @Override public mov_const<Rt,T,C> cloneMe(){
-                return (new mov_const<Rt,T,C>(this));
-            }
+
             C value;
 
             public mov_const(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _dest, C _value) {
@@ -1883,6 +1595,9 @@ public class HSAILInstructionSet {
                 _instructions.add(new mov<StackReg_ref,StackReg_ref,ref,ref>(_hsailStackFrame,_i, new StackReg_ref( _i,_hsailStackFrame.stackOffset, _to), new StackReg_ref(_i, _hsailStackFrame.stackOffset,_from)));
             } else if (_type.equals(PrimitiveType.s32)) {
                 _instructions.add(new mov<StackReg_s32, StackReg_s32, s32, s32>(_hsailStackFrame, _i, new StackReg_s32(_i,_hsailStackFrame.stackOffset, _to), new StackReg_s32(_i,_hsailStackFrame.stackOffset, _from)));
+            } else if (_type.equals(PrimitiveType.f32)) {
+                _instructions.add(new mov<StackReg_f32, StackReg_f32, f32, f32>(_hsailStackFrame, _i, new StackReg_f32(_i,_hsailStackFrame.stackOffset, _to), new StackReg_f32(_i,_hsailStackFrame.stackOffset, _from)));
+
             } else {
                 throw new IllegalStateException(" unknown prefix 1 prefix for first of DUP2");
             }
@@ -2757,7 +2472,7 @@ public class HSAILInstructionSet {
                         ClassModel.ClassModelMethod calledMethod = classModel.getMethod(callInfo.name, callInfo.sig);
                         _frames.push(new HSAILStackFrame(hsailStackFrame,  calledMethod, i.getThisPC(), i.getPreStackBase()+i.getMethod().getCodeEntry().getMaxLocals()+hsailStackFrame.stackOffset));
                         _frameSet.add(_frames.peek());
-                        addInstructions(instructions, _frames, _frames, calledMethod);
+                        addInstructions(instructions, _frameSet, _frames, calledMethod);
                         _frames.pop();
                      }catch (ClassParseException cpe){
 

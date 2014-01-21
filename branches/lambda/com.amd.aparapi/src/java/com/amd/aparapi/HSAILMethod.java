@@ -48,11 +48,12 @@ import java.util.regex.Pattern;
 
 
 
-        public void renderStack(HSAILRenderer rc) {
+        public HSAILRenderer renderStack(HSAILRenderer rc) {
            if (parent != null){
                parent.renderStack(rc);
            }
            rc.pad(5).append(String.format("%04d -> %s", callPc, nameSpace)).nl();
+           return(rc);
         }
     }
 
@@ -215,6 +216,7 @@ public class HSAILMethod {
                 if (r.isShowingComments()) {
                     r.nl().pad(1).lineCommentStart().mark().append(i.location).relpad(2).space().i(i.from).nl();
                 }
+                last = i.from;
             }else{
                 last = i.from;
             }
@@ -223,13 +225,10 @@ public class HSAILMethod {
             r.nl();
         }
         r.cbrace().semicolon().nl().commentStart();
-
         for (HSAILStackFrame hsailStackFrame:frameSet){
             r.nl().append(hsailStackFrame.getUniqueName()).append("=").obrace().nl();
-            hsailStackFrame.renderStack(r);
-            r.cbrace().nl();
+            hsailStackFrame.renderStack(r).cbrace().nl();
         }
-
         r.nl().commentEnd();
         return (r);
     }

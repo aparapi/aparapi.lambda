@@ -156,8 +156,8 @@ public class Mandel {
 
           rgb[gid] = pallette[count];
       };
-       //device.forEach(width * height, ic);
-       ((HSADevice)device).dump(ic);
+       device.forEach(width * height, ic);
+       //((HSADevice)device).dump(ic);
    }
 
 
