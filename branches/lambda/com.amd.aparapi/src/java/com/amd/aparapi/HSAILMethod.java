@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
         int id=0;
         private int callPc;
 
-    int idx(Instruction _i){
+    int stackIdx(Instruction _i){
         return(_i.getPreStackBase() + _i.getMethod().getCodeEntry().getMaxLocals()+ stackOffset);
     }
     String getUniqueName(){
@@ -123,7 +123,7 @@ class HSAILIntrinsics {
         add(new InlineIntrinsicCall("java.lang.Math.sqrt(D)D", true){
             public List<HSAILInstructionSet.HSAILInstruction> add(List<HSAILInstructionSet.HSAILInstruction> _instructions, HSAILStackFrame _hsailStackFrame, Instruction _from){
                 //   nsqrt_f64  $d${0}, $d${0};
-                _instructions.add(new HSAILInstructionSet.nsqrt<StackReg_f64, f64>(_hsailStackFrame, _from, new StackReg_f64(_from, _hsailStackFrame.stackOffset,0)));
+                _instructions.add(new HSAILInstructionSet.nsqrt(_hsailStackFrame, _from, new StackReg_f64(_hsailStackFrame.stackIdx(_from))));
                 return(_instructions);
             }
         });
@@ -136,31 +136,31 @@ class HSAILIntrinsics {
                 // ld_global_u16 $s${0}, [$d${3}+24];   // ld the char"
 
                 // ld_global_u64 $d${2}, [$d${0}+16];   // this string reference into $d${2}"
-                _instructions.add(new HSAILInstructionSet.field_load<StackReg_u64, u64>(_hsailStackFrame, _from, new StackReg_u64(_from,_hsailStackFrame.stackOffset, 2),  new StackReg_ref(_from,_hsailStackFrame.stackOffset, 0), 16));
+                _instructions.add(new HSAILInstructionSet.field_load(_hsailStackFrame, _from, new StackReg_u64(_hsailStackFrame.stackIdx(_from)+2),  new StackReg_ref(_hsailStackFrame.stackIdx(_from)), 16));
 
                 // mov_b32 $s${3}, $s${1};              // copy index",
-                _instructions.add(new HSAILInstructionSet.mov<StackReg_s32, StackReg_s32,  s32,  s32>(_hsailStackFrame, _from, new StackReg_s32(_from,_hsailStackFrame.stackOffset, 3),  new StackReg_s32(_from, _hsailStackFrame.stackOffset,1)));
+                _instructions.add(new HSAILInstructionSet.mov(_hsailStackFrame, _from, new StackReg_s32(_hsailStackFrame.stackIdx(_from)+3),  new StackReg_s32(_hsailStackFrame.stackIdx(_from)+1)));
 
                 // cvt_u64_s32 $d${3}, $s${3};          // convert array index to 64 bits",
-                _instructions.add(new HSAILInstructionSet.cvt<StackReg_u64, StackReg_s32,  u64,  s32>(_hsailStackFrame, _from, new StackReg_u64(_from,_hsailStackFrame.stackOffset, 3),  new StackReg_s32(_from,_hsailStackFrame.stackOffset, 3)));
+                _instructions.add(new HSAILInstructionSet.cvt(_hsailStackFrame, _from, new StackReg_u64(_hsailStackFrame.stackIdx(_from)+3),  new StackReg_s32(_hsailStackFrame.stackIdx(_from)+3)));
 
                 // mad_u64 $d${3}, $d${3}, 2, $d${2};   // get the char address",
-                _instructions.add(new HSAILInstructionSet.mad(_hsailStackFrame, _from, new StackReg_ref(_from,_hsailStackFrame.stackOffset, 3),new StackReg_ref(_from,_hsailStackFrame.stackOffset, 3),   new StackReg_ref(_from, _hsailStackFrame.stackOffset,2), 2));
+                _instructions.add(new HSAILInstructionSet.mad(_hsailStackFrame, _from, new StackReg_ref(_hsailStackFrame.stackIdx(_from)+3),new StackReg_ref(_hsailStackFrame.stackIdx(_from)+3), new StackReg_ref(_hsailStackFrame.stackIdx(_from)+2), 2));
 
                 // ld_global_u16 $s${0}, [$d${3}+24];   // ld the char"
-                _instructions.add(new HSAILInstructionSet.field_load<StackReg_u16, u16>(_hsailStackFrame, _from, new StackReg_u16(_from,_hsailStackFrame.stackOffset, 0),  new StackReg_ref(_from,_hsailStackFrame.stackOffset, 3), 24));
+                _instructions.add(new HSAILInstructionSet.field_load(_hsailStackFrame, _from, new StackReg_u16(_hsailStackFrame.stackIdx(_from)),  new StackReg_ref(_hsailStackFrame.stackIdx(_from)+3), 24));
                 return(_instructions);
             }
         });
         add(new InlineIntrinsicCall("java.lang.Math.cos(D)D", true){
             public List<HSAILInstructionSet.HSAILInstruction> add(List<HSAILInstructionSet.HSAILInstruction> _instructions, HSAILStackFrame _hsailStackFrame, Instruction _from){
-                _instructions.add(new HSAILInstructionSet.ncos<StackReg_f64, f64>(_hsailStackFrame, _from,  new StackReg_f64(_from, _hsailStackFrame.stackOffset,0)));
+                _instructions.add(new HSAILInstructionSet.ncos(_hsailStackFrame, _from,  new StackReg_f64(_hsailStackFrame.stackIdx(_from))));
                 return(_instructions);
             }
         });
         add(new InlineIntrinsicCall("java.lang.Math.sin(D)D", true ){
             public List<HSAILInstructionSet.HSAILInstruction> add(List<HSAILInstructionSet.HSAILInstruction> _instructions, HSAILStackFrame _hsailStackFrame, Instruction _from){
-                _instructions.add(new HSAILInstructionSet.nsin<StackReg_f64, f64>(_hsailStackFrame, _from,  new StackReg_f64(_from,_hsailStackFrame.stackOffset, 0)));
+                _instructions.add(new HSAILInstructionSet.nsin(_hsailStackFrame, _from,  new StackReg_f64(_hsailStackFrame.stackIdx(_from))));
                 return(_instructions);
             }
         });
@@ -170,10 +170,10 @@ class HSAILIntrinsics {
                 //mul_f64 $d1, $d1, $d1;",
                 //add_f64 $d0, $d0, $d1;",
                 //nsqrt_f64  $d0, $d0;",
-                _instructions.add(new HSAILInstructionSet.mul<StackReg_f64, f64>(_hsailStackFrame, _from,  new StackReg_f64(_from,_hsailStackFrame.stackOffset, 0),  new StackReg_f64(_from,_hsailStackFrame.stackOffset, 0),  new StackReg_f64(_from,_hsailStackFrame.stackOffset, 0)));
-                _instructions.add(new HSAILInstructionSet.mul<StackReg_f64, f64>(_hsailStackFrame, _from,  new StackReg_f64(_from, _hsailStackFrame.stackOffset,1),  new StackReg_f64(_from, _hsailStackFrame.stackOffset,1),  new StackReg_f64(_from,_hsailStackFrame.stackOffset, 1)));
-                _instructions.add(new HSAILInstructionSet.add<StackReg_f64, f64>(_hsailStackFrame, _from,  new StackReg_f64(_from,_hsailStackFrame.stackOffset, 0),  new StackReg_f64(_from,_hsailStackFrame.stackOffset, 0),  new StackReg_f64(_from,_hsailStackFrame.stackOffset, 1)));
-                _instructions.add(new HSAILInstructionSet.nsqrt<StackReg_f64, f64>(_hsailStackFrame, _from,  new StackReg_f64(_from, _hsailStackFrame.stackOffset,0)));
+                _instructions.add(new HSAILInstructionSet.mul(_hsailStackFrame, _from,  new StackReg_f64(_hsailStackFrame.stackIdx(_from)),  new StackReg_f64(_hsailStackFrame.stackIdx(_from)),  new StackReg_f64(_hsailStackFrame.stackIdx(_from))));
+                _instructions.add(new HSAILInstructionSet.mul(_hsailStackFrame, _from,  new StackReg_f64(_hsailStackFrame.stackIdx(_from)+1),  new StackReg_f64(_hsailStackFrame.stackIdx(_from)+1),  new StackReg_f64(_hsailStackFrame.stackIdx(_from)+1)));
+                _instructions.add(new HSAILInstructionSet.add(_hsailStackFrame, _from,  new StackReg_f64(_hsailStackFrame.stackIdx(_from)),  new StackReg_f64(_hsailStackFrame.stackIdx(_from)),  new StackReg_f64(_hsailStackFrame.stackIdx(_from)+1)));
+                _instructions.add(new HSAILInstructionSet.nsqrt(_hsailStackFrame, _from,  new StackReg_f64(_hsailStackFrame.stackIdx(_from))));
                 return(_instructions);
             }
         });
