@@ -62,22 +62,22 @@ class NameToBytes{
 };
 
 NameToBytes *head = NULL;
- JNI_JAVA(jbyteArray, OpenCLJNI, getBytes)
+JNI_JAVA(jbyteArray, OpenCLJNI, getBytes)
    (JNIEnv *jenv, jobject instance, jstring className){
       jbyteArray bytes = NULL;
       const char *nameChars = jenv->GetStringUTFChars(className, NULL);
       fprintf(stdout, "inside getBytes(\"%s\")\n", nameChars);
       for (NameToBytes *ptr = head; ptr != NULL; ptr=(NameToBytes *)ptr->getNext()){
-        
-         ClassInfo classInfo(ptr->getByteBuffer());
-        // char *superClassName = classInfo.getSuperClassName();
-        // if (!strcmp(superClassName,"com/amd/aparapi/Kernel")){
-        //    fprintf(stdout, "%s is a kernel!\n", ptr->getName()); 
-        // }
-         fprintf(stdout, "testing \"%s\"==\"%s\"   ", nameChars, ptr->getName());
-         fflush(stdout);
-         fprintf(stdout, "classinfo name  \"%s\"\n", classInfo.getClassName());
-         fflush(stdout);
+
+         //ClassInfo classInfo(ptr->getByteBuffer());  don't uncomment this.  It cauese segv
+         // char *superClassName = classInfo.getSuperClassName();
+         // if (!strcmp(superClassName,"com/amd/aparapi/Kernel")){
+         //    fprintf(stdout, "%s is a kernel!\n", ptr->getName()); 
+         // }
+         //fprintf(stdout, "testing \"%s\"==\"%s\"   ", nameChars, ptr->getName());
+         //fflush(stdout);
+         //fprintf(stdout, "classinfo name  \"%s\"\n", classInfo.getClassName());
+         //fflush(stdout);
          if (!strcmp(ptr->getName(), nameChars)){
             fprintf(stderr, "found bytes for \"%s\"\n", nameChars);
             ByteBuffer *byteBuffer = ptr->getByteBuffer();
@@ -95,7 +95,41 @@ NameToBytes *head = NULL;
       return (bytes);
    }
 
-
+void dumpClassAscii( jint class_data_len, const unsigned char* class_data){
+   fprintf(stdout, "\n      ");
+   for (int i=0; i<128; i++){
+      fprintf(stdout, "%x",i/16);
+   }
+   fprintf(stdout, "\n      ");
+   for (int i=0; i<128; i++){
+      fprintf(stdout, "%x",i%16);
+   }
+   for (int i=0; i<class_data_len; i++){
+      if (i==0 || (i%128)==0){
+         fprintf(stdout, "\n %04x ", i);
+      }
+      if (   (class_data[i]>='a' && class_data[i]<='z')
+          || (class_data[i]>='A' && class_data[i]<='Z')
+          || (class_data[i]>='0' && class_data[i]<='9')
+          || (class_data[i]=='(')
+          || (class_data[i]==')')
+          || (class_data[i]=='<')
+          || (class_data[i]=='>')
+          || (class_data[i]==';')
+          || (class_data[i]=='.')
+          || (class_data[i]=='/')
+          || (class_data[i]=='[')
+          || (class_data[i]=='$')
+          || (class_data[i]==' ')){
+         fprintf(stdout, "%c", class_data[i]);
+      }else if ( class_data[i]=='\0'){
+         fprintf(stdout, "|");
+      }else{
+         fprintf(stdout, ".");
+      }
+   }
+   fprintf(stdout, "\n");
+}
 
 static void JNICALL cbClassFileLoadHook(jvmtiEnv *jvmti_env, JNIEnv* jni_env,
       jclass class_being_redefined,
@@ -108,27 +142,17 @@ static void JNICALL cbClassFileLoadHook(jvmtiEnv *jvmti_env, JNIEnv* jni_env,
       unsigned char** new_class_data){
    if (name == NULL){
       fprintf(stdout, "JVMTI_EVENT_CLASS_FILE_LOAD agent was NULL %d \n", class_data_len);
-      if (class_data_len ==0){
-
-      }else{
-      int len=class_data[11]*256;
-      len+=class_data[12];
-      //fprintf(stdout, "len = %d = '",len);
-      unsigned char * nameFromClass = new unsigned char[len+1];
+      dumpClassAscii(class_data_len, class_data);
+      int len=(class_data[11]*256)+class_data[12];
+      unsigned char *nameFromClass = new unsigned char[len+1];
       memcpy((void*)nameFromClass, (void*)(class_data+13), (size_t)len);
-      //for (int i=0; i<len+1; i++){
-       //  nameFromClass[i] = class_data[i+13];
-         //fprintf(stdout, "%c", class_data[i+13]);
-     // }
       nameFromClass[len+1] = '\0';
       fprintf(stdout, "JVMTI_EVENT_CLASS_FILE_LOAD_HOOK agent got from class %s %d %lx %lx\n", nameFromClass, class_data_len, jvmti_env, jni_env);
       byte_t *buf = new byte_t[class_data_len];
-
       memcpy((void*)buf, (void*)class_data, (size_t)class_data_len);
       ByteBuffer *byteBuffer = new ByteBuffer(buf, (size_t)class_data_len);
       head = new NameToBytes(head, (char *)nameFromClass, byteBuffer);
       delete nameFromClass;
-      }
    }else{
       fprintf(stdout, "JVMTI_EVENT_CLASS_FILE_LOAD_HOOK agent got %s %d %lx %lx\n", name, class_data_len, jvmti_env, jni_env);
       byte_t *buf = new byte_t[class_data_len];
@@ -137,54 +161,10 @@ static void JNICALL cbClassFileLoadHook(jvmtiEnv *jvmti_env, JNIEnv* jni_env,
       ByteBuffer *byteBuffer = new ByteBuffer(buf, (size_t)class_data_len);
       head = new NameToBytes(head, (char *)name, byteBuffer);
    }
-#ifdef NEEDTODUMPCLASS
-      fprintf(stdout, "JVMTI_EVENT_CLASS_FILE_LOAD agent NULL %d \n", class_data_len);
-      int len=class_data[11]*256;
-      len+=class_data[12];
-      fprintf(stdout, "len = %d = '",len);
-      unsigned char * nameFromClass = (unsigned char *)malloc(len+1);
-      for (int i=0; i<len; i++){
-         nameFromClass[i] = class_data[i+13];
-         fprintf(stdout, "%c", class_data[i+13]);
-      }
-      nameFromClass[13+len] = '\0';
-
-      fprintf(stdout, "'\n");
-      fprintf(stdout, " or '%s'", nameFromClass);
-
-      fprintf(stdout, "\n      ");
-      for (int i=0; i<64; i++){
-         fprintf(stdout, "%x",i/16);
-      }
-      fprintf(stdout, "\n      ");
-      for (int i=0; i<64; i++){
-         fprintf(stdout, "%x",i%16);
-      }
-      for (int i=0; i<class_data_len; i++){
-         if (i==0 || (i%64)==0){
-            fprintf(stdout, "\n %04x ", i);
-         }
-         if ((class_data[i]>='a' && class_data[i]<='z')
-             || (class_data[i]>='A' && class_data[i]<='Z')
-             || (class_data[i]>='0' && class_data[i]<='9')
-             || (class_data[i]=='.')
-             || (class_data[i]=='/')
-             || (class_data[i]=='[')
-             || (class_data[i]=='$')
-             || (class_data[i]==' ')){
-             fprintf(stdout, "%c", class_data[i]);
-         }else if ( class_data[i]=='\0'){
-             fprintf(stdout, "|");
-         }else{
-             fprintf(stdout, ".");
-         }
-      }
-      fprintf(stdout, "\n");
-   }
-#endif
 
    //fprintf(stdout, "class \"%s\"  ", name); 
 }
+
 
 
 JNIEXPORT jint JNICALL Agent_OnLoad(JavaVM *vm, char *options, void *reserved) {
