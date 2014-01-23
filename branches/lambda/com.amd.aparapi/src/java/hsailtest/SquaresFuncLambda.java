@@ -42,7 +42,7 @@ public class SquaresFuncLambda {
         };
         ((HSADevice)Device.hsa()).dump(ic);
 
-       if (true){
+       if (false){
         Device.hsa().forEach(len, ic);
         dump("hsa", in, out);
         Device.jtp().forEach(len, ic);
