@@ -22,6 +22,9 @@ import java.util.regex.Pattern;
         int id=0;
         private int callPc;
 
+    int idx(Instruction _i){
+        return(_i.getPreStackBase() + _i.getMethod().getCodeEntry().getMaxLocals()+ stackOffset);
+    }
     String getUniqueName(){
         return(uniqueName);
     }
