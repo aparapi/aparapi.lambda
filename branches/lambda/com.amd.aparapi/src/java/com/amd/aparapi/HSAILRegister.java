@@ -92,23 +92,13 @@ class HSAILConst_s64 extends HSAILConst<HSAILConst_s64, s64,Long>{
 }
 public abstract class HSAILRegister<R extends HSAILRegister<R,T>, T extends PrimitiveType> extends HSAILOperand<R,T>{
    int index;
-
-   public boolean stack;
-
    HSAILRegister(R original){
       super(original);
        index = original.index;
-       stack = original.stack;
    }
-
-   HSAILRegister(int _index, T _type, boolean _stack){
+   HSAILRegister(int _index, T _type){
       super(_type);
       index = _index;
-      stack = _stack;
-   }
-
-   public boolean isStack(){
-      return (stack);
    }
 
    @Override
@@ -123,88 +113,23 @@ public abstract class HSAILRegister<R extends HSAILRegister<R,T>, T extends Prim
     public abstract R cloneMe();
 }
 
-abstract class Reg_f64 <R extends Reg_f64<R>> extends HSAILRegister<R, f64>{
-   Reg_f64(R original){
-       super(original);
-   }
-   Reg_f64(int _index, boolean _stack){
-      super(_index, PrimitiveType.f64, _stack);
-   }
-}
 
-abstract class Reg_ref <R extends Reg_ref<R>>extends HSAILRegister<R, ref>{
-    Reg_ref(R original){
+
+
+abstract class StackReg<R extends StackReg<R,T>, T extends PrimitiveType> extends HSAILRegister<R,T>{
+    StackReg(int _index, T _type){
+        super(_index, _type);
+    }
+    StackReg(Instruction _from, int _offset, T _type){
+        super( _from.getPreStackBase() + _from.getMethod().getCodeEntry().getMaxLocals() + _offset, _type);
+    }
+    StackReg(R original){
         super(original);
     }
-   Reg_ref(int _index, boolean _stack){
-      super(_index, PrimitiveType.ref, _stack);
-   }
 }
 
-abstract class Reg_u64 <R extends Reg_u64<R>>extends HSAILRegister<R, u64>{
-    Reg_u64(R original){
-        super(original);
-    }
-   Reg_u64(int _index, boolean _stack){
-      super(_index, PrimitiveType.u64, _stack);
-   }
-}
 
-abstract class Reg_s64  <R extends Reg_s64<R>>extends HSAILRegister<R, s64>{
-    Reg_s64(R original){
-        super(original);
-    }
-   Reg_s64(int _index, boolean _stack){
-      super(_index, PrimitiveType.s64, _stack);
-   }
-}
-
-abstract class Reg_s32  <R extends Reg_s32<R>>extends HSAILRegister<R, s32>{
-    Reg_s32(R original){
-        super(original);
-    }
-   Reg_s32(int _index, boolean _stack){
-      super(_index, PrimitiveType.s32, _stack);
-   }
-}
-
-abstract class Reg_s16  <R extends Reg_s16<R>>extends HSAILRegister<R, s16>{
-    Reg_s16(R original){
-        super(original);
-    }
-   Reg_s16(int _index, boolean _stack){
-      super(_index, PrimitiveType.s16, _stack);
-   }
-}
-
-abstract class Reg_u16 <R extends Reg_u16<R>>extends HSAILRegister<R, u16>{
-    Reg_u16(R original){
-        super(original);
-    }
-   Reg_u16(int _index, boolean _stack){
-      super(_index, PrimitiveType.u16, _stack);
-   }
-}
-
-abstract class Reg_s8 <R extends Reg_s8<R>>extends HSAILRegister<R, s8>{
-    Reg_s8(R original){
-        super(original);
-    }
-   Reg_s8(int _index, boolean _stack){
-      super(_index, PrimitiveType.s8, _stack);
-   }
-}
-
-abstract class Reg_f32 <R extends Reg_f32<R>>extends HSAILRegister<R, f32>{
-   Reg_f32(R original){
-      super(original);
-   }
-   Reg_f32(int _index, boolean _stack){
-      super(_index, PrimitiveType.f32, _stack);
-   }
-}
-
-class StackReg_f64 extends Reg_f64<StackReg_f64>{
+class StackReg_f64 extends StackReg<StackReg_f64, f64>{
     StackReg_f64(StackReg_f64 original){
         super(original);
     }
@@ -212,11 +137,14 @@ class StackReg_f64 extends Reg_f64<StackReg_f64>{
         return(new StackReg_f64(this));
     }
    StackReg_f64(Instruction _from, int _stackBase, int _offset){
-      super(_from.getPreStackBase() + _from.getMethod().getCodeEntry().getMaxLocals() + _stackBase + _offset, true);
+      super( _from,  + _stackBase + _offset, PrimitiveType.f64);
    }
+    StackReg_f64(int _idx){
+        super(_idx,  PrimitiveType.f64);
+    }
 }
 
-class StackReg_f32 extends Reg_f32<StackReg_f32>{
+class StackReg_f32 extends StackReg<StackReg_f32, f32>{
     StackReg_f32(StackReg_f32 original){
         super(original);
     }
@@ -224,12 +152,14 @@ class StackReg_f32 extends Reg_f32<StackReg_f32>{
         return(new StackReg_f32(this));
     }
    StackReg_f32(Instruction _from, int _stackBase, int _offset){
-      super(_from.getPreStackBase() + _from.getMethod().getCodeEntry().getMaxLocals() + _stackBase + _offset, true);
+      super(_from, _stackBase + _offset, PrimitiveType.f32);
    }
-
+    StackReg_f32(int _idx){
+        super(_idx, PrimitiveType.f32);
+    }
 }
 
-class StackReg_s64 extends Reg_s64<StackReg_s64>{
+class StackReg_s64 extends StackReg<StackReg_s64, s64>{
     StackReg_s64(StackReg_s64 original){
         super(original);
     }
@@ -237,11 +167,14 @@ class StackReg_s64 extends Reg_s64<StackReg_s64>{
         return(new StackReg_s64(this));
     }
    StackReg_s64(Instruction _from, int _stackBase,int _offset){
-      super(_from.getPreStackBase() + _from.getMethod().getCodeEntry().getMaxLocals()+ _stackBase + _offset, true);
+      super(_from,  _stackBase + _offset, PrimitiveType.s64);
    }
+    StackReg_s64(int _idx){
+        super(_idx, PrimitiveType.s64);
+    }
 }
 
-class StackReg_u64 extends Reg_u64<StackReg_u64>{
+class StackReg_u64 extends StackReg<StackReg_u64, u64>{
     StackReg_u64(StackReg_u64 original){
         super(original);
     }
@@ -249,11 +182,14 @@ class StackReg_u64 extends Reg_u64<StackReg_u64>{
         return(new StackReg_u64(this));
     }
    StackReg_u64(Instruction _from, int _stackBase,int _offset){
-      super(_from.getPreStackBase() + _from.getMethod().getCodeEntry().getMaxLocals() + _stackBase+ _offset, true);
+      super(_from,  _stackBase+ _offset, PrimitiveType.u64);
    }
+    StackReg_u64(int _idx){
+        super(_idx, PrimitiveType.u64);
+    }
 }
 
-class StackReg_s32 extends Reg_s32<StackReg_s32>{
+class StackReg_s32 extends StackReg<StackReg_s32, s32>{
     StackReg_s32(StackReg_s32 original){
         super(original);
     }
@@ -261,11 +197,14 @@ class StackReg_s32 extends Reg_s32<StackReg_s32>{
         return(new StackReg_s32(this));
     }
    StackReg_s32(Instruction _from, int _stackBase,int _offset){
-      super(_from.getPreStackBase() + _from.getMethod().getCodeEntry().getMaxLocals()+ _stackBase + _offset, true);
+      super(_from,  _stackBase + _offset, PrimitiveType.s32);
    }
+    StackReg_s32(int _idx){
+        super(_idx, PrimitiveType.s32);
+    }
 }
 
-class StackReg_s16 extends Reg_s16<StackReg_s16>{
+class StackReg_s16 extends StackReg<StackReg_s16, s16>{
     StackReg_s16(StackReg_s16 original){
         super(original);
     }
@@ -273,11 +212,14 @@ class StackReg_s16 extends Reg_s16<StackReg_s16>{
         return(new StackReg_s16(this));
     }
    StackReg_s16(Instruction _from, int _stackBase,int _offset){
-      super(_from.getPreStackBase() + _from.getMethod().getCodeEntry().getMaxLocals()+ _stackBase + _offset, true);
+      super(_from,  _stackBase + _offset, PrimitiveType.s16);
    }
+    StackReg_s16(int _idx){
+        super(_idx, PrimitiveType.s16);
+    }
 }
 
-class StackReg_u16 extends Reg_u16<StackReg_u16>{
+class StackReg_u16 extends StackReg<StackReg_u16, u16>{
     StackReg_u16(StackReg_u16 original){
         super(original);
     }
@@ -285,11 +227,14 @@ class StackReg_u16 extends Reg_u16<StackReg_u16>{
         return(new StackReg_u16(this));
     }
    StackReg_u16(Instruction _from, int _stackBase,int _offset){
-      super(_from.getPreStackBase() + _from.getMethod().getCodeEntry().getMaxLocals()+ _stackBase + _offset, true);
+      super(_from,  _stackBase + _offset, PrimitiveType.u16);
    }
+    StackReg_u16(int _idx){
+        super(_idx, PrimitiveType.u16);
+    }
 }
 
-class StackReg_s8 extends Reg_s8<StackReg_s8>{
+class StackReg_s8 extends StackReg<StackReg_s8, s8>{
     StackReg_s8(StackReg_s8 original){
         super(original);
     }
@@ -297,15 +242,16 @@ class StackReg_s8 extends Reg_s8<StackReg_s8>{
         return(new StackReg_s8(this));
     }
    StackReg_s8(Instruction _from, int _stackBase,int _offset){
-      super(_from.getPreStackBase() + _from.getMethod().getCodeEntry().getMaxLocals() + _stackBase+ _offset, true);
+      super(_from,  _stackBase+ _offset, PrimitiveType.s8);
    }
+    StackReg_s8(int _idx){
+        super(_idx, PrimitiveType.s8);
+    }
 }
 
-interface Factory<T extends HSAILOperand>{
-    public T create(Instruction _from, int _stackBase,int _offset);
-}
 
-class StackReg_ref extends Reg_ref<StackReg_ref>{
+
+class StackReg_ref extends StackReg<StackReg_ref, ref>{
     StackReg_ref(StackReg_ref original){
         super(original);
     }
@@ -313,24 +259,25 @@ class StackReg_ref extends Reg_ref<StackReg_ref>{
         return(new StackReg_ref(this));
     }
    StackReg_ref(Instruction _from, int _stackBase,int _offset){
-      super(_from.getPreStackBase() + _from.getMethod().getCodeEntry().getMaxLocals()+ _stackBase + _offset, true);
+      super(_from,  _stackBase + _offset, PrimitiveType.ref);
    }
-   static Map<Integer,StackReg_ref> map = new HashMap<Integer, StackReg_ref>();
-   static StackReg_ref get(int _index,int _offset){
-       StackReg_ref returnValue = map.get(_index);
-       if (returnValue == null){
-           map.put(_index, returnValue);
-       }
-       return(returnValue);
-   }
-   static Factory<StackReg_ref> factory = new Factory<StackReg_ref>(){
-       public StackReg_ref create(Instruction _from, int _stackBase,int _offset){
-           return(new  StackReg_ref(_from, _stackBase, _offset));
-       }
-   };
+    StackReg_ref(int _idx){
+        super(_idx, PrimitiveType.ref);
+    }
 }
 
-class VarReg_f64 extends Reg_f64<VarReg_f64>{
+abstract class VarReg<R extends VarReg<R,T>, T extends PrimitiveType> extends HSAILRegister<R,T>{
+    VarReg(int _index, T _type){
+        super(_index, _type);
+    }
+    VarReg(R original){
+        super(original);
+    }
+    VarReg(Instruction _from, int offset, T _type){
+        super(_from.asLocalVariableAccessor().getLocalVariableTableIndex()+offset, _type);
+    }
+}
+class VarReg_f64 extends VarReg<VarReg_f64, f64>{
     VarReg_f64(VarReg_f64 original){
         super(original);
     }
@@ -338,14 +285,14 @@ class VarReg_f64 extends Reg_f64<VarReg_f64>{
         return(new VarReg_f64(this));
     }
    VarReg_f64(Instruction _from, int _stackBase){
-      super(_from.asLocalVariableAccessor().getLocalVariableTableIndex()+ _stackBase, false);
+      super(_from, _stackBase, PrimitiveType.f64);
    }
     public VarReg_f64(int _index){
-        super(_index, false);
+        super(_index,  PrimitiveType.f64);
     }
 }
 
-class VarReg_s64 extends Reg_s64<VarReg_s64>{
+class VarReg_s64 extends VarReg<VarReg_s64, s64>{
     VarReg_s64(VarReg_s64 original){
         super(original);
     }
@@ -353,14 +300,14 @@ class VarReg_s64 extends Reg_s64<VarReg_s64>{
         return(new VarReg_s64(this));
     }
    VarReg_s64(Instruction _from, int _stackBase){
-      super(_from.asLocalVariableAccessor().getLocalVariableTableIndex()+ _stackBase, false);
+      super(_from, _stackBase, PrimitiveType.s64);
    }
     public VarReg_s64(int _index){
-        super(_index, false);
+        super(_index, PrimitiveType.s64);
     }
 }
 
-class VarReg_u64 extends Reg_u64<VarReg_u64>{
+class VarReg_u64 extends VarReg<VarReg_u64, u64>{
     VarReg_u64(VarReg_u64 original){
         super(original);
     }
@@ -368,11 +315,14 @@ class VarReg_u64 extends Reg_u64<VarReg_u64>{
         return(new VarReg_u64(this));
     }
    VarReg_u64(Instruction _from, int _stackBase){
-      super(_from.asLocalVariableAccessor().getLocalVariableTableIndex()+ _stackBase, false);
+      super(_from, _stackBase, PrimitiveType.u64);
    }
+    public VarReg_u64(int _index){
+        super(_index, PrimitiveType.u64);
+    }
 }
 
-class VarReg_ref extends Reg_ref<VarReg_ref>{
+class VarReg_ref extends VarReg<VarReg_ref, ref>{
     VarReg_ref(VarReg_ref original){
         super(original);
     }
@@ -380,15 +330,15 @@ class VarReg_ref extends Reg_ref<VarReg_ref>{
         return(new VarReg_ref(this));
     }
    VarReg_ref(Instruction _from, int _stackBase){
-      super(_from.asLocalVariableAccessor().getLocalVariableTableIndex()+ _stackBase, false);
+      super(_from, _stackBase, PrimitiveType.ref);
    }
 
    public VarReg_ref(int _index){
-      super(_index, false);
+      super(_index, PrimitiveType.ref);
    }
 }
 
-class VarReg_s32 extends Reg_s32<VarReg_s32>{
+class VarReg_s32 extends VarReg<VarReg_s32, s32>{
     VarReg_s32(VarReg_s32 original){
         super(original);
     }
@@ -396,15 +346,15 @@ class VarReg_s32 extends Reg_s32<VarReg_s32>{
         return(new VarReg_s32(this));
     }
    VarReg_s32(Instruction _from, int _stackBase){
-      super(_from.asLocalVariableAccessor().getLocalVariableTableIndex()+ _stackBase, false);
+      super(_from, _stackBase, PrimitiveType.s32);
    }
 
    public VarReg_s32(int _index){
-      super(_index, false);
+      super(_index, PrimitiveType.s32);
    }
 }
 
-class VarReg_f32 extends Reg_f32<VarReg_f32>{
+class VarReg_f32 extends VarReg<VarReg_f32,f32>{
     VarReg_f32(VarReg_f32 original){
         super(original);
     }
@@ -412,11 +362,11 @@ class VarReg_f32 extends Reg_f32<VarReg_f32>{
         return(new VarReg_f32(this));
     }
    VarReg_f32(Instruction _from, int _stackBase){
-      super(_from.asLocalVariableAccessor().getLocalVariableTableIndex()+ _stackBase, false);
+      super(_from, _stackBase, PrimitiveType.f32);
    }
 
    public VarReg_f32(int _index){
-      super(_index, false);
+      super(_index, PrimitiveType.f32);
    }
 }
 
