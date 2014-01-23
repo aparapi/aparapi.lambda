@@ -88,7 +88,12 @@ public class ClassModel{
 
 
    private ClassModel(Class<?> _clazz) throws ClassParseException{
-      byte[] _bytes = OpenCLJNI.getJNI().getBytes(_clazz.getName());
+      String name = _clazz.getName();
+      int index = name.indexOf('/');
+      if (index >0){
+          name = name.substring(0,index);
+      }
+      byte[] _bytes = OpenCLJNI.getJNI().getBytes(name);
       clazz = _clazz;
       parse(new ByteArrayInputStream(_bytes));
    }
