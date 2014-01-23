@@ -136,9 +136,9 @@ class StackReg_f64 extends StackReg<StackReg_f64, f64>{
     @Override public StackReg_f64 cloneMe(){
         return(new StackReg_f64(this));
     }
-   StackReg_f64(Instruction _from, int _stackBase, int _offset){
-      super( _from,  + _stackBase + _offset, PrimitiveType.f64);
-   }
+ //  StackReg_f64(Instruction _from, int _stackBase, int _offset){
+  //    super( _from,  + _stackBase + _offset, PrimitiveType.f64);
+ //  }
     StackReg_f64(int _idx){
         super(_idx,  PrimitiveType.f64);
     }
@@ -151,9 +151,9 @@ class StackReg_f32 extends StackReg<StackReg_f32, f32>{
     @Override public StackReg_f32 cloneMe(){
         return(new StackReg_f32(this));
     }
-   StackReg_f32(Instruction _from, int _stackBase, int _offset){
-      super(_from, _stackBase + _offset, PrimitiveType.f32);
-   }
+//   StackReg_f32(Instruction _from, int _stackBase, int _offset){
+ //     super(_from, _stackBase + _offset, PrimitiveType.f32);
+ //  }
     StackReg_f32(int _idx){
         super(_idx, PrimitiveType.f32);
     }
@@ -166,9 +166,9 @@ class StackReg_s64 extends StackReg<StackReg_s64, s64>{
     @Override public StackReg_s64 cloneMe(){
         return(new StackReg_s64(this));
     }
-   StackReg_s64(Instruction _from, int _stackBase,int _offset){
-      super(_from,  _stackBase + _offset, PrimitiveType.s64);
-   }
+  // StackReg_s64(Instruction _from, int _stackBase,int _offset){
+   //   super(_from,  _stackBase + _offset, PrimitiveType.s64);
+  // }
     StackReg_s64(int _idx){
         super(_idx, PrimitiveType.s64);
     }
@@ -181,9 +181,9 @@ class StackReg_u64 extends StackReg<StackReg_u64, u64>{
     @Override public StackReg_u64 cloneMe(){
         return(new StackReg_u64(this));
     }
-   StackReg_u64(Instruction _from, int _stackBase,int _offset){
-      super(_from,  _stackBase+ _offset, PrimitiveType.u64);
-   }
+  // StackReg_u64(Instruction _from, int _stackBase,int _offset){
+   //   super(_from,  _stackBase+ _offset, PrimitiveType.u64);
+ //  }
     StackReg_u64(int _idx){
         super(_idx, PrimitiveType.u64);
     }
@@ -196,9 +196,9 @@ class StackReg_s32 extends StackReg<StackReg_s32, s32>{
     @Override public StackReg_s32 cloneMe(){
         return(new StackReg_s32(this));
     }
-   StackReg_s32(Instruction _from, int _stackBase,int _offset){
-      super(_from,  _stackBase + _offset, PrimitiveType.s32);
-   }
+//   StackReg_s32(Instruction _from, int _stackBase,int _offset){
+   //   super(_from,  _stackBase + _offset, PrimitiveType.s32);
+  // }
     StackReg_s32(int _idx){
         super(_idx, PrimitiveType.s32);
     }
@@ -211,9 +211,9 @@ class StackReg_s16 extends StackReg<StackReg_s16, s16>{
     @Override public StackReg_s16 cloneMe(){
         return(new StackReg_s16(this));
     }
-   StackReg_s16(Instruction _from, int _stackBase,int _offset){
-      super(_from,  _stackBase + _offset, PrimitiveType.s16);
-   }
+//   StackReg_s16(Instruction _from, int _stackBase,int _offset){
+  //    super(_from,  _stackBase + _offset, PrimitiveType.s16);
+ //  }
     StackReg_s16(int _idx){
         super(_idx, PrimitiveType.s16);
     }
@@ -226,9 +226,9 @@ class StackReg_u16 extends StackReg<StackReg_u16, u16>{
     @Override public StackReg_u16 cloneMe(){
         return(new StackReg_u16(this));
     }
-   StackReg_u16(Instruction _from, int _stackBase,int _offset){
-      super(_from,  _stackBase + _offset, PrimitiveType.u16);
-   }
+ //  StackReg_u16(Instruction _from, int _stackBase,int _offset){
+   //   super(_from,  _stackBase + _offset, PrimitiveType.u16);
+  // }
     StackReg_u16(int _idx){
         super(_idx, PrimitiveType.u16);
     }
@@ -241,9 +241,9 @@ class StackReg_s8 extends StackReg<StackReg_s8, s8>{
     @Override public StackReg_s8 cloneMe(){
         return(new StackReg_s8(this));
     }
-   StackReg_s8(Instruction _from, int _stackBase,int _offset){
-      super(_from,  _stackBase+ _offset, PrimitiveType.s8);
-   }
+  // StackReg_s8(Instruction _from, int _stackBase,int _offset){
+   //   super(_from,  _stackBase+ _offset, PrimitiveType.s8);
+ //  }
     StackReg_s8(int _idx){
         super(_idx, PrimitiveType.s8);
     }
@@ -258,9 +258,9 @@ class StackReg_ref extends StackReg<StackReg_ref, ref>{
     @Override public StackReg_ref cloneMe(){
         return(new StackReg_ref(this));
     }
-   StackReg_ref(Instruction _from, int _stackBase,int _offset){
-      super(_from,  _stackBase + _offset, PrimitiveType.ref);
-   }
+ //  StackReg_ref(Instruction _from, int _stackBase,int _offset){
+ //     super(_from,  _stackBase + _offset, PrimitiveType.ref);
+ //  }
     StackReg_ref(int _idx){
         super(_idx, PrimitiveType.ref);
     }
