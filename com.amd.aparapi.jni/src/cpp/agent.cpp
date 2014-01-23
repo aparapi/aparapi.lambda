@@ -66,7 +66,7 @@ JNI_JAVA(jbyteArray, OpenCLJNI, getBytes)
    (JNIEnv *jenv, jobject instance, jstring className){
       jbyteArray bytes = NULL;
       const char *nameChars = jenv->GetStringUTFChars(className, NULL);
-      fprintf(stdout, "inside getBytes(\"%s\")\n", nameChars);
+      //fprintf(stdout, "inside getBytes(\"%s\")\n", nameChars);
       for (NameToBytes *ptr = head; ptr != NULL; ptr=(NameToBytes *)ptr->getNext()){
 
          //ClassInfo classInfo(ptr->getByteBuffer());  don't uncomment this.  It cauese segv
@@ -79,7 +79,7 @@ JNI_JAVA(jbyteArray, OpenCLJNI, getBytes)
          //fprintf(stdout, "classinfo name  \"%s\"\n", classInfo.getClassName());
          //fflush(stdout);
          if (!strcmp(ptr->getName(), nameChars)){
-            fprintf(stderr, "found bytes for \"%s\"\n", nameChars);
+            //fprintf(stderr, "found bytes for \"%s\"\n", nameChars);
             ByteBuffer *byteBuffer = ptr->getByteBuffer();
             bytes = jenv->NewByteArray(byteBuffer->getLen());
             //fprintf(stdout, "created byte array size= %d\n", ptr->getLen());
@@ -141,20 +141,20 @@ static void JNICALL cbClassFileLoadHook(jvmtiEnv *jvmti_env, JNIEnv* jni_env,
       jint* new_class_data_len,
       unsigned char** new_class_data){
    if (name == NULL){
-      fprintf(stdout, "JVMTI_EVENT_CLASS_FILE_LOAD agent was NULL %d \n", class_data_len);
-      dumpClassAscii(class_data_len, class_data);
+      //fprintf(stdout, "JVMTI_EVENT_CLASS_FILE_LOAD agent was NULL %d \n", class_data_len);
+      //dumpClassAscii(class_data_len, class_data);
       int len=(class_data[11]*256)+class_data[12];
       unsigned char *nameFromClass = new unsigned char[len+1];
       memcpy((void*)nameFromClass, (void*)(class_data+13), (size_t)len);
       nameFromClass[len+1] = '\0';
-      fprintf(stdout, "JVMTI_EVENT_CLASS_FILE_LOAD_HOOK agent got from class %s %d %lx %lx\n", nameFromClass, class_data_len, jvmti_env, jni_env);
+      //fprintf(stdout, "JVMTI_EVENT_CLASS_FILE_LOAD_HOOK name was null but agent got name from class %s %d %lx %lx\n", nameFromClass, class_data_len, jvmti_env, jni_env);
       byte_t *buf = new byte_t[class_data_len];
       memcpy((void*)buf, (void*)class_data, (size_t)class_data_len);
       ByteBuffer *byteBuffer = new ByteBuffer(buf, (size_t)class_data_len);
       head = new NameToBytes(head, (char *)nameFromClass, byteBuffer);
       delete nameFromClass;
    }else{
-      fprintf(stdout, "JVMTI_EVENT_CLASS_FILE_LOAD_HOOK agent got %s %d %lx %lx\n", name, class_data_len, jvmti_env, jni_env);
+      //fprintf(stdout, "JVMTI_EVENT_CLASS_FILE_LOAD_HOOK agent got %s %d %lx %lx\n", name, class_data_len, jvmti_env, jni_env);
       byte_t *buf = new byte_t[class_data_len];
 
       memcpy((void*)buf, (void*)class_data, (size_t)class_data_len);
