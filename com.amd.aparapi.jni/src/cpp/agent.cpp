@@ -48,7 +48,8 @@ class NameToBytes{
             next = _head;
          }
       ~NameToBytes(){
-         delete name;
+         delete[] name;
+         delete[] byteBuffer;
       }
       char *getName(){
          return(name);
@@ -146,13 +147,13 @@ static void JNICALL cbClassFileLoadHook(jvmtiEnv *jvmti_env, JNIEnv* jni_env,
       int len=(class_data[11]*256)+class_data[12];
       unsigned char *nameFromClass = new unsigned char[len+1];
       memcpy((void*)nameFromClass, (void*)(class_data+13), (size_t)len);
-      nameFromClass[len+1] = '\0';
+      nameFromClass[len] = '\0';
       //fprintf(stdout, "JVMTI_EVENT_CLASS_FILE_LOAD_HOOK name was null but agent got name from class %s %d %lx %lx\n", nameFromClass, class_data_len, jvmti_env, jni_env);
       byte_t *buf = new byte_t[class_data_len];
       memcpy((void*)buf, (void*)class_data, (size_t)class_data_len);
       ByteBuffer *byteBuffer = new ByteBuffer(buf, (size_t)class_data_len);
       head = new NameToBytes(head, (char *)nameFromClass, byteBuffer);
-      delete nameFromClass;
+      delete[] nameFromClass;
    }else{
       //fprintf(stdout, "JVMTI_EVENT_CLASS_FILE_LOAD_HOOK agent got %s %d %lx %lx\n", name, class_data_len, jvmti_env, jni_env);
       byte_t *buf = new byte_t[class_data_len];
