@@ -28,7 +28,6 @@ public class NBodyFunc {
           x = (float) (radius * Math.cos(theta) * Math.sin(phi)) + width / 2;
           y = (float) (radius * Math.sin(theta) * Math.sin(phi)) + height / 2;
           z = (float) (radius * Math.cos(phi));
-
       }
 
        void updatePosition(Body[] bodies){
@@ -91,7 +90,6 @@ public class NBodyFunc {
            Arrays.fill(offscreenPixels, 0);
        }
        void print(int x, int y, String _string){
-
            offscreen.getGraphics().setColor(Color.WHITE);
            offscreen.getGraphics().drawString(_string, x, y);
        }
@@ -131,6 +129,12 @@ public class NBodyFunc {
        });
 
       JComponent viewer = new JComponent(){
+              @Override
+              public void paintComponent(Graphics g){
+                  g.drawImage(screen.offscreen, 0, 0, screen.width, screen.height, this);
+              }
+
+
       };
 
       viewer.setPreferredSize(new Dimension(screen.width, screen.height));
@@ -157,7 +161,7 @@ public class NBodyFunc {
             first = System.currentTimeMillis() ;
             frame=0;
          }
-         viewer.getGraphics().drawImage(screen.offscreen, 0, 0, null);
+        // viewer.getGraphics().drawImage(screen.offscreen, 0, 0, null);
       }
    }
 }
