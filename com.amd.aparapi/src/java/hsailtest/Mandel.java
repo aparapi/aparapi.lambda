@@ -39,6 +39,9 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 package hsailtest;
 
 import com.amd.aparapi.Device;
+import common.SumatraModeToggleButton;
+import hsailtest.common.AparapiModeToggleButton;
+import hsailtest.common.FPSCounter;
 
 import javax.swing.*;
 import java.awt.*;
@@ -48,7 +51,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
-import java.util.function.IntConsumer;
 
 public class Mandel {
 
@@ -104,7 +106,7 @@ public class Mandel {
       }
    };
 
-
+    final FPSCounter fpsCounter = new FPSCounter(20);
    enum ZoomDirection{
       ZOOM_IN(-1), ZOOM_OUT(1);
       private int sign;
@@ -148,6 +150,7 @@ public class Mandel {
          y = y - sign * (toy / frames);
          getNextImage(device, x, y, scale);
          viewer.repaint();
+         fpsCounter.nextFrame();
       }
    }
 
@@ -173,8 +176,26 @@ public class Mandel {
             }
          }
       });
+       final AparapiModeToggleButton modeToggleButton = new AparapiModeToggleButton(100, AparapiModeToggleButton.Mode.SingleCore);
+       final JPanel controlPanel = new JPanel(new FlowLayout());
+       Font font = new JLabel().getFont();
+       Font biggerFont = new Font(font.getName(), font.getStyle(), font.getSize() + 14);
+       JLabel modeLabel = new JLabel("Execute using :");
+       modeLabel.setFont(biggerFont);
+       controlPanel.add(modeLabel);
 
-      frame.getContentPane().add(viewer);
+
+       controlPanel.add(modeToggleButton);
+
+       JLabel fpsLabel = new JLabel("  FPS :");
+       fpsLabel.setFont(biggerFont);
+       controlPanel.add(fpsLabel);
+
+       controlPanel.add(fpsCounter.getContainer());
+       frame.getContentPane().add(controlPanel, BorderLayout.NORTH);
+       frame.getContentPane().add(viewer, BorderLayout.CENTER);
+
+     // frame.getContentPane().add(viewer);
       frame.pack();
       frame.setLocationRelativeTo(null);
       frame.setVisible(true);
@@ -210,12 +231,10 @@ public class Mandel {
                   }
                }
             }
-
-            long startMillis = System.currentTimeMillis();
+            fpsCounter.start();
+             device = modeToggleButton.getDevice();
             zoomInAndOut(device, to);
-            long elapsedMillis = System.currentTimeMillis() - startMillis;
-            System.out.println("FPS = " + frames * 1000 / elapsedMillis);
-            to = null;
+           to = null;
          }
       }
    }
