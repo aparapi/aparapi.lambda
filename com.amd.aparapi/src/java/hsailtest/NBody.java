@@ -66,14 +66,12 @@ public class NBody{
    }
 
    void go(Device device, int bodyCount ){
-      float frame = 0f;
+
       int width = Integer.getInteger("width", 1024);
       int height =  Integer.getInteger("height", 1024);
-      BufferedImage offscreen = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-      int[] offscreenPixels= ((DataBufferInt) offscreen.getRaster().getDataBuffer()).getData();
+      PixelRenderer pr = new PixelRenderer(width, height);
       JFrame jframe = new JFrame("NBody");
       Body[] bodies = new Body[bodyCount];
-       //Initialize palette values
        int[] palette = new int[16];
        for(int i = 0; i < palette.length; i++){
            float h = i / (float) palette.length;
@@ -85,21 +83,16 @@ public class NBody{
          bodies[body] = new Body(width, height);
       });
 
-      JComponent viewer = new JComponent(){
-      };
 
-      viewer.setPreferredSize(new Dimension(width, height));
-      jframe.getContentPane().add(viewer);
+      jframe.getContentPane().add(pr.component);
       jframe.pack();
       jframe.setVisible(true);
 
       jframe.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-      long first = System.currentTimeMillis();
-      float fps  =0;
+
       while(true){
-         Arrays.fill(offscreenPixels, 0);
-         offscreen.getGraphics().setColor(Color.WHITE);
-         offscreen.getGraphics().drawString(String.format("%5.2f\n",fps), 100, 100);
+         pr.clear();
+
          device.forEach(bodies.length, gid -> {
             Body thisBody = bodies[gid];
             float accx = 0.f;
@@ -135,28 +128,18 @@ public class NBody{
             thisBody.z += thisBody.vz * delT + (accz * .5f * delT);
             thisBody.incVx(accx);
             thisBody.incVy(accy);
-             thisBody.incVz(accz);
+            thisBody.incVz(accz);
 
             int x =  (int)thisBody.x;
             int y =  (int)thisBody.y;
             if (x>1&&x<width-1&&y>1&&y<height-1){
                int rgb = palette[thisBody.paletteIndex];
-               offscreenPixels[x-1+y*width]=rgb;
-               offscreenPixels[x+y*width]=rgb;
-               offscreenPixels[x+1+y*width]=rgb;
-               offscreenPixels[x+(y-1)*width]=rgb;
-               offscreenPixels[x+(y+1)*width]=rgb;
+               pr.cross(x,y, rgb);
             }
          });
-         long delta = System.currentTimeMillis()-first;
-         frame+=1;
-         if (delta > 1000){
-             fps =(frame*1000)/delta; 
-            
-            first = System.currentTimeMillis() ;
-            frame=0;
-         }
-         viewer.getGraphics().drawImage(offscreen, 0, 0, null);
+
+          pr.sync();;
+
       }
    }
 }
