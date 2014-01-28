@@ -10,9 +10,10 @@ public class FieldAccess {
 
     public void test(){
         IntConsumer ic = gid -> {
-            int local =value;
+            value = gid;
         };
-        Device.hsa().forEach(1, ic);
+        Device.hsa().forEach(100, ic);
+        System.out.println(value);
     }
 
     public static void main(String[] args) throws Exception {
