@@ -35,8 +35,8 @@ public class NBodyFunc {
            float accy = 0.f;
            float accz = 0.f;
            for(int i = 0; i < bodies.length; i++){
-               Body other = bodies[i];
-               if (this != other){
+              Body other = bodies[i];
+              if (this != other){
                    float dx = other.x-x;
                    float dy = other.y-y;
                    float dz = other.z-z;
@@ -56,112 +56,57 @@ public class NBodyFunc {
            x += vx * delT + accx * delT_2;
            y += vy * delT + accy * delT_2;
            z += vz * delT + accz * delT_2;
-           vx+=accx;
-           vy+=accy;
-           vz+=accz;
+           vx += accx;
+           vy += accy;
+           vz += accz;
        }
 
 
-       void draw(Screen screen){
+       void draw(PixelRenderer _pr){
            int px =  (int)x;
            int py =  (int)y;
 
            int rgb = 0xffffff;
-           screen.setPixel(px - 1, py, rgb);
-           screen.setPixel(px, py, rgb);
-           screen.setPixel(px + 1, py, rgb);
-           screen.setPixel(px, py - 1, rgb);
-           screen.setPixel(px, py + 1, rgb);
+           _pr.x(px, py, rgb);
+
        }
    }
 
-   static class Screen {
-       int width;
-       int height;
-       BufferedImage offscreen ;
-       int[] offscreenPixels;
-       Screen(int _width, int _height){
-           width=_width;
-           height = _height;
-           offscreen = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-           offscreenPixels= ((DataBufferInt) offscreen.getRaster().getDataBuffer()).getData();
-       }
-       void clear(){
-           Arrays.fill(offscreenPixels, 0);
-       }
-       void print(int x, int y, String _string){
-           offscreen.getGraphics().setColor(Color.WHITE);
-           offscreen.getGraphics().drawString(_string, x, y);
-       }
 
-       void setPixel(int x, int y,int rgb){
-           if (x>=0 && x<width && y>=0 && y<height){
-               offscreenPixels[x+y*width]=rgb;
-           }
-       }
-   }
 
    public static void main(String[] _args){
        (new NBodyFunc()).go(Device.getByName(_args[0]), Integer.parseInt(_args[1]));
-       /**
-       Body[] bodies = new Body[100];
-       Screen screen = null;
-       ((HSADevice)Device.hsa()).dump(gid -> {
-           Body body = bodies[gid];
-           body.updatePosition(bodies);
-           body.draw(screen);
-       });
-        */
    }
 
    void go(Device device, int bodyCount ){
-      float frame = 0f;
 
-      Screen screen = new Screen(Integer.getInteger("width", 1024),  Integer.getInteger("height", 1024));
+
+      PixelRenderer pr = new PixelRenderer(Integer.getInteger("width", 1024),  Integer.getInteger("height", 1024));
       JFrame jframe = new JFrame("NBody");
       Body[] bodies = new Body[bodyCount];
       Device.jtp().forEach(bodies.length, body -> {
            bodies[body] = new Body();
        });
 
-       Device.jtp().forEach(bodies.length, body -> {
-           bodies[body].init(screen.width, screen.height, body);
+       Device.hsa().forEach(bodies.length, body -> {
+           bodies[body].init(pr.width, pr.height, body);
        });
 
-      JComponent viewer = new JComponent(){
-              @Override
-              public void paintComponent(Graphics g){
-                  g.drawImage(screen.offscreen, 0, 0, screen.width, screen.height, this);
-              }
 
-
-      };
-
-      viewer.setPreferredSize(new Dimension(screen.width, screen.height));
-      jframe.getContentPane().add(viewer);
+      jframe.getContentPane().add(pr.component);
       jframe.pack();
       jframe.setVisible(true);
 
       jframe.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-      long first = System.currentTimeMillis();
-      float fps  =0;
+
       while(true){
-         screen.clear();
-         screen.print(100, 100, String.format("fps %5.2f ",fps));
+         pr.clear();
          device.forEach(bodies.length, gid -> {
             Body body = bodies[gid];
             body.updatePosition(bodies);
-            body.draw(screen);
+            body.draw(pr);
          });
-         long delta = System.currentTimeMillis()-first;
-         frame+=1;
-         if (delta > 1000){
-             fps =(frame*1000)/delta; 
-            
-            first = System.currentTimeMillis() ;
-            frame=0;
-         }
-        // viewer.getGraphics().drawImage(screen.offscreen, 0, 0, null);
+         pr.sync();
       }
    }
 }
