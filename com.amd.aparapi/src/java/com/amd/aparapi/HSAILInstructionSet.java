@@ -116,6 +116,8 @@ public class HSAILInstructionSet {
 
 
 
+
+
         abstract static class HSAILInstructionWithDestSrc<H extends HSAILInstructionWithDestSrc<H,Rd,Rt,D,T>, Rd extends HSAILRegister<Rd,D>, Rt extends HSAILOperand<Rt,T>, D extends PrimitiveType, T extends PrimitiveType> extends HSAILInstruction<H> {
 
             HSAILInstructionWithDestSrc(HSAILStackFrame _hsailStackFrame,Instruction _from, Rd _dest, Rt _src) {
@@ -417,6 +419,21 @@ public class HSAILInstructionSet {
                 r.append("mad_").typeName(getDest()).space().operandName(getDest()).separator().operandName(getSrcLhs()).separator().append(size).separator().operandName(getSrcRhs()).semicolon();
             }
         }
+
+    static class cmov<Rd extends HSAILRegister<Rd,ref>, Rt extends HSAILRegister<Rt,ref>> extends HSAILInstructionWithDestSrcSrc<cmov<Rd,Rt>, Rd, Rt,Rt, ref, ref, ref> {
+
+
+
+        cmov(HSAILStackFrame _hsailStackFrame, Instruction _from, Rd _dest, Rt _src_lhs, Rt _src_rhs) {
+            super(_hsailStackFrame, _from, _dest, _src_lhs, _src_rhs);
+        }
+
+
+
+        @Override void render(HSAILRenderer r) {
+            r.append("cmov_").movTypeName(getDest()).space().operandName(getDest()).separator().append("$c1").separator().operandName(getSrcLhs()).separator().operandName(getSrcRhs()).semicolon();
+        }
+    }
 
 
         static   class cvt<Rt1 extends HSAILRegister<Rt1,T1>, Rt2 extends HSAILRegister<Rt2,T2>,T1 extends PrimitiveType, T2 extends PrimitiveType> extends HSAILInstruction<cvt<Rt1,Rt2,T1,T2>> {

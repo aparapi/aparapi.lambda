@@ -44,7 +44,8 @@ public class ConvolutionLambda {
             accum += rgb * _convMatrix3x3[count++];
          }
       }
-      byte value = (byte) (Math.max(0, Math.min((int) accum, 255)));
+      int min = Math.min((int) accum, 255);
+      byte value = (byte) (Math.max(0,min));
       outBytes[y * w + x] = value;
 
    }
@@ -105,7 +106,7 @@ public class ConvolutionLambda {
       }
 
       //float convMatrix3x3_2[] = new float[]{ 0f, -10f, 0f, -10f, 40f, -10f, 0f, -20f, 0f, };
-      ConvolutionLambda convolution = new ConvolutionLambda(new File("C:\\Users\\user1\\aparapi\\branches\\lambda\\paraglider.jpg"));
+      ConvolutionLambda convolution = new ConvolutionLambda(new File("tube.gif"));
       Device device = Device.hsa();
       for (int i = 0; i < 100; i++) {
          for (float f = 0f; f < 3f; f += .01f) {
