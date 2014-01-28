@@ -177,6 +177,27 @@ class HSAILIntrinsics {
                 return(_instructions);
             }
         });
+        add(new InlineIntrinsicCall("java.lang.Math.min(II)I", true ){
+            public List<HSAILInstructionSet.HSAILInstruction> add(List<HSAILInstructionSet.HSAILInstruction> _instructions, HSAILStackFrame _hsailStackFrame, Instruction _from){
+                // cmp_ge_b1_s32 $c1, $s0, $s1;
+                // cmov_b32 $s0, $c1, $s1, $s0;
+                _instructions.add(new HSAILInstructionSet.cmp_s32(_hsailStackFrame, _from, "ge", new StackReg_s32(_hsailStackFrame.stackIdx(_from)),  new StackReg_s32(_hsailStackFrame.stackIdx(_from)+1))) ;
+                _instructions.add(new HSAILInstructionSet.cmov(_hsailStackFrame, _from,  new StackReg_s32(_hsailStackFrame.stackIdx(_from)),  new StackReg_s32(_hsailStackFrame.stackIdx(_from)+1),  new StackReg_s32(_hsailStackFrame.stackIdx(_from))));
+
+                return(_instructions);
+            }
+        });
+        add(new InlineIntrinsicCall("java.lang.Math.max(II)I", true ){
+            public List<HSAILInstructionSet.HSAILInstruction> add(List<HSAILInstructionSet.HSAILInstruction> _instructions, HSAILStackFrame _hsailStackFrame, Instruction _from){
+                // cmp_le_b1_s32 $c1, $s0, $s1;
+                // cmov_b32 $s0, $c1, $s1, $s0;
+                _instructions.add(new HSAILInstructionSet.cmp_s32(_hsailStackFrame, _from, "le", new StackReg_s32(_hsailStackFrame.stackIdx(_from)),  new StackReg_s32(_hsailStackFrame.stackIdx(_from)+1))) ;
+                _instructions.add(new HSAILInstructionSet.cmov(_hsailStackFrame, _from,  new StackReg_s32(_hsailStackFrame.stackIdx(_from)),  new StackReg_s32(_hsailStackFrame.stackIdx(_from)+1),  new StackReg_s32(_hsailStackFrame.stackIdx(_from))));
+
+                return(_instructions);
+            }
+        });
+
 
     }
 
