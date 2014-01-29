@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 
 <project name="hsailtest" default="build" basedir=".">
+    <property environment="env"/>
    <property name="build.compiler" value="javac1.7"/>
    <property name="ant.build.javac.source" value="1.8"/>
    <property name="ant.build.javac.target" value="1.8"/>
@@ -52,18 +53,19 @@
       <get src="${junit.base.url}/${junit.jar.version}/${junit.jar.name}" dest="${junit.home}"/>
    </target>
 
-
-
    <path id="classpath">
       <pathelement path="${junit.home}/${junit.jar.name}"/>
       <pathelement path="${basedir}/../../com.amd.aparapi/dist/aparapi.jar"/>
-      <pathelement path="../../samples/common/common.jar"/>
+      <pathelement path="${basedir}/../../samples/common/common.jar"/>
    </path>
 
-
-
-
-
+   <path id="classpath-run">
+      <pathelement path="${junit.home}/${junit.jar.name}"/>
+      <pathelement path="${basedir}/../../com.amd.aparapi/dist/aparapi.jar"/>
+      <pathelement path="${basedir}/../../samples/common/common.jar"/>
+      <pathelement path="${env.OKRA_HOME}/dist/okra.jar"/>
+      <pathelement path="classes"/>
+   </path>
 
    <target name="build" depends="clean, install.junit">
       <mkdir dir="classes"/>
@@ -83,15 +85,19 @@
    <target name="junit" depends="clean, build">
       <mkdir dir="junit"/>
       <mkdir dir="junit/data"/>
+      <echo>OKRA=${env.OKRA_HOME}</echo>
 
-      <junit printsummary="false" fork="true" haltonfailure="false" failureproperty="tests.failed" showoutput="false">
+      <junit printsummary="false" fork="true" haltonfailure="false" failureproperty="tests.failed" showoutput="true">
+         <jvmarg value="-agentpath:../../com.amd.aparapi.jni/dist/aparapi_x86_64.dll"/>
+         <jvmarg value="-Ddispatch=true"/>
+         <jvmarg value="-XX:-UseCompressedOops"/>
+         <jvmarg value="-Djava.library.path=${env.OKRA_HOME}/dist/bin;${env.OKRA_HOME}/hsa/bin/x86_64"/>
          <formatter type="xml" />
-         <classpath refid="classpath"/>
+         <classpath refid="classpath-run"/>
          <batchtest todir="junit/data">
             <fileset dir="src/hsailtest">
                <include name="**/*Test.java"/>
             </fileset>
-
          </batchtest>
       </junit>
 
