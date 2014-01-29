@@ -2,17 +2,72 @@
 
 <project name="hsailtest" default="build" basedir=".">
    <property name="build.compiler" value="javac1.7"/>
-	<property name="ant.build.javac.source" value="1.8"/>
+   <property name="ant.build.javac.source" value="1.8"/>
    <property name="ant.build.javac.target" value="1.8"/>
 
-   <target name="build" depends="clean">
+
+   <!-- 
+         USER CONFIGURABLE PROPERTIES 
+   -->	
+   <property name="junit.jar.version" value="4.10"/>
+   <property name="junit.jar.name" value="junit-${junit.jar.version}.jar"/>
+   <property name="junit.home" value="${basedir}/.libs"/>
+   <property name="junit.base.url" value="http://repo1.maven.org/maven2/junit/junit"/>
+
+   <!-- 
+         DO NOT EDIT BELOW THIS LINE 
+   -->
+   <echo>OS Name:    ${os.name}</echo>
+   <echo>OS Version: ${os.version}</echo>
+   <echo>OS Arch:    ${os.arch}</echo>
+
+   <property name="build.compiler" value="javac1.6"/>
+   <property name="ant.build.javac.source" value="1.6"/>
+   <property name="ant.build.javac.target" value="1.6"/>
+
+   <condition property="lib.suffix" value=".dylib">
+      <os family="mac" />
+   </condition>
+
+   <condition property="lib.suffix" value=".so">
+      <and>
+         <os family="unix" />
+         <not>
+            <os family="mac" />
+         </not>
+      </and>
+   </condition>
+
+
+
+   <available property="junit.installed" file="${junit.home}/${junit.jar.name}"/>
+
+   <target name="install.junit" unless="junit.installed">
+      <mkdir dir="${junit.home}"/>
+      <!-- Cleanup all existing JUnit installations -->
+      <delete failonerror="false" includeEmptyDirs="true">
+         <fileset dir="${junit.home}" includes="junit*/"/>
+      </delete>
+      <!-- Download and unzip requested JUnit version -->
+      <get src="${junit.base.url}/${junit.jar.version}/${junit.jar.name}" dest="${junit.home}"/>
+   </target>
+
+
+
+   <path id="classpath">
+      <pathelement path="${junit.home}/${junit.jar.name}"/>
+      <pathelement path="${basedir}/../../com.amd.aparapi/dist/aparapi.jar"/>
+      <pathelement path="../../samples/common/common.jar"/>
+   </path>
+
+
+
+
+
+
+   <target name="build" depends="clean, install.junit">
       <mkdir dir="classes"/>
-      <javac srcdir="src" destdir="classes" debug="on" includeantruntime="false" >
-         <classpath>
-            <pathelement path="../../samples/common/common.jar"/>
-            <pathelement path="../../com.amd.aparapi/dist/aparapi.jar"/>
-         </classpath>
-      </javac>
+      <javac srcdir="src" destdir="classes" debug="on" includeantruntime="false" classpathref="classpath"/>
       <!--<copy todir="classes/com/amd/aparapi/sample/common/icons">
          <fileset dir="src/com/amd/aparapi/sample/common/icons" includes="**/*.png"/>
       </copy>-->
@@ -20,9 +75,29 @@
    </target>
 
    <target name="clean">
+      <delete dir="junit"/>
       <delete dir="classes"/>
       <delete file="${ant.project.name}.jar"/>
    </target>
 
+   <target name="junit" depends="clean, build">
+      <mkdir dir="junit"/>
+      <mkdir dir="junit/data"/>
 
+      <junit printsummary="false" fork="true" haltonfailure="false" failureproperty="tests.failed" showoutput="false">
+         <formatter type="xml" />
+         <classpath refid="classpath"/>
+         <batchtest todir="junit/data">
+            <fileset dir="src/hsailtest">
+               <include name="**/*Test.java"/>
+            </fileset>
+
+         </batchtest>
+      </junit>
+
+      <junitreport todir="junit/data">
+         <fileset dir="junit/data"/>
+         <report format="frames" todir="junit/html" />
+      </junitreport>
+   </target>
 </project>
