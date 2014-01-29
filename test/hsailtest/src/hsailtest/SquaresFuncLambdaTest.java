@@ -28,6 +28,7 @@ public class SquaresFuncLambdaTest {
     static int square(int v){
         return(mul(v,v));
     }
+
     @Test public void testMain() throws Exception {
         final int len = 10;
         int in[] = new int[len];
@@ -39,7 +40,7 @@ public class SquaresFuncLambdaTest {
         IntConsumer ic = gid -> {
             out[gid] = square(in[gid]);
         };
-        ((HSADevice) Device.hsa()).dump(ic);
+      //  ((HSADevice) Device.hsa()).dump(ic);
 
         if (true){
             Device.hsa().forEach(len, ic);
@@ -54,5 +55,5 @@ public class SquaresFuncLambdaTest {
     }
 
 
-    
+
 }
