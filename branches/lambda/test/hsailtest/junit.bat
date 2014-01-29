@@ -23,6 +23,8 @@ java ^
  -Dcom.amd.aparapi.dumpFlags=true ^
  -Dcom.amd.aparapi.enableInstructionDecodeViewer=false ^
  -classpath ../../samples/common/common.jar;../../com.amd.aparapi/dist/aparapi.jar;hsailtest.jar;%OKRA_HOME%\dist\okra.jar;.libs/junit-4.10.jar ^
- org.junit.runner.JUnitCore %1 %2 %3 %4 %5 %6 %7 %8 %9
+ org.junit.runner.JUnitCore ^
+    hsailtest.SquaresFuncLambdaTest ^
+    hsailtest.HypotLambdaTest 
 endlocal
 
