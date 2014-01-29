@@ -39,7 +39,6 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 package hsailtest;
 
 import com.amd.aparapi.Device;
-import common.SumatraModeToggleButton;
 import com.amd.aparapi.sample.common.AparapiModeToggleButton;
 import com.amd.aparapi.sample.common.FPSCounter;
 
