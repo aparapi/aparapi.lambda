@@ -40,8 +40,8 @@ package hsailtest;
 
 import com.amd.aparapi.Device;
 import common.SumatraModeToggleButton;
-import hsailtest.common.AparapiModeToggleButton;
-import hsailtest.common.FPSCounter;
+import com.amd.aparapi.sample.common.AparapiModeToggleButton;
+import com.amd.aparapi.sample.common.FPSCounter;
 
 import javax.swing.*;
 import java.awt.*;
