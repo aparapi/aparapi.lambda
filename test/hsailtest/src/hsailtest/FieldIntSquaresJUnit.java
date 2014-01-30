@@ -1,32 +1,36 @@
 package hsailtest;
 
+import com.amd.aparapi.AparapiException;
 import com.amd.aparapi.Device;
 import org.junit.Test;
 
-import java.util.Arrays;
 import java.util.function.IntConsumer;
 
 import static org.junit.Assert.assertTrue;
 
-/**
- * Created by user1 on 1/29/14.
- */
-public class HypotJUnit {
+
+public class FieldIntSquaresJUnit {
+    public final int len = JunitHelper.getPreferredArraySize();
+    public int in[] = new int[len];
+    public int out[] = new int[len];
+
+
+
     @Test
-    public void testMain() throws Exception {
-        int len = JunitHelper.getPreferredArraySize();
-        double in[] = new double[len];
-        double out[] = new double[len];
+    public void test(){
         IntConsumer ic = gid -> {
             in[gid] = gid;
-            out[gid] = Math.hypot(in[gid], 4.0);
+            out[gid] = in[gid] * in[gid];
         };
         Device.hsa().forEach(len, ic);
-        double[] hsaOut= JunitHelper.copy(out);
+        int[] hsaOut = JunitHelper.copy(out);
         JunitHelper.dump("hsa", in, out);
         Device.jtp().forEach(len, ic);
         JunitHelper.dump("jtp", in, out);
-
+        Device.seq().forEach(len, ic);
+        JunitHelper.dump("seq", in, out);
         assertTrue("HSA equals JTP results", JunitHelper.compare(hsaOut,out) );
     }
+
+
 }

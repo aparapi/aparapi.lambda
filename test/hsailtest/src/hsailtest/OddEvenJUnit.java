@@ -3,32 +3,35 @@ package hsailtest;
 import com.amd.aparapi.Device;
 import org.junit.Test;
 
-import java.util.Arrays;
 import java.util.function.IntConsumer;
 
 import static org.junit.Assert.assertTrue;
 
 
-public class IntMinJUnit {
+public class OddEvenJUnit {
 
 
 
-   @Test public void test() {
+
+
+
+
+    @Test
+    public void test(){
         final int len = JunitHelper.getPreferredArraySize();
-        int in[] = new int[len];
-        int out[] = new int[len];
-        IntConsumer ic = gid -> {
-            in[gid] = gid;
-            out[gid] = Math.min(4, in[gid]);
-        };
-        Device.hsa().forEach(len, ic);
-        int[] hsaOut = JunitHelper.copy(out);
-        JunitHelper.dump("hsa", in, out);
-        Device.jtp().forEach(len, ic);
-        JunitHelper.dump("jtp", in, out);
-        Device.seq().forEach(len, ic);
-        JunitHelper.dump("seq", in, out);
-        assertTrue("HSA equals JTP results", JunitHelper.compare(hsaOut,out) );
+        boolean out[] = new boolean[len];
 
+        IntConsumer ic = gid -> {
+            out[gid] = gid%2==0;
+        };
+
+        Device.hsa().forEach(len, ic);
+        boolean[] hsaOut=JunitHelper.copy(out);
+        JunitHelper.dump("hsa", out);
+        Device.jtp().forEach(len, ic);
+        JunitHelper.dump("jtp", out);
+        Device.seq().forEach(len, ic);
+        JunitHelper.dump("seq", out);
+        assertTrue("HSA equals JTP results", JunitHelper.compare(hsaOut,out) );
     }
 }

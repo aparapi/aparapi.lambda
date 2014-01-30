@@ -23,7 +23,7 @@ public class IntMaxJUnit {
             out[gid] = Math.max(4, in[gid]);
         };
         Device.hsa().forEach(len, ic);
-        int[] hsaOut = Arrays.copyOf(out, out.length);
+        int[] hsaOut = JunitHelper.copy(out);
         JunitHelper.dump("hsa", in, out);
         Device.jtp().forEach(len, ic);
         JunitHelper.dump("jtp", in, out);
