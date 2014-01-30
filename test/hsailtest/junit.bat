@@ -35,9 +35,14 @@ java ^
     hsailtest.IntFieldAssignJUnit ^
     hsailtest.DoubleSquaresJUnit ^
     hsailtest.OddEvenJUnit ^
+    hsailtest.OddEvenFuncJUnit ^
     hsailtest.TernaryOddEvenJUnit ^
     hsailtest.StringContainsJUnit ^
     hsailtest.StringCharAtJUnit ^
+    hsailtest.IntArray2DJUnit ^
+    hsailtest.StringHashCodeJUnit ^
+    hsailtest.StringLenJUnit ^
+    hsailtest.StringIndexOfJUnit ^
     hsailtest.HypotJUnit
 endlocal
 
