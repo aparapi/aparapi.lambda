@@ -22,7 +22,7 @@ java ^
  -Dcom.amd.aparapi.enableVerboseJNIOpenCLResourceTracking=false ^
  -Dcom.amd.aparapi.dumpFlags=true ^
  -Dcom.amd.aparapi.enableInstructionDecodeViewer=false ^
- -classpath ../../samples/common/common.jar;../../com.amd.aparapi/dist/aparapi.jar;hsailtest.jar;%OKRA_HOME%\dist\okra.jar ^
+ -classpath ../../samples/common/common.jar;../../com.amd.aparapi/dist/aparapi.jar;hsailtest.jar;%OKRA_HOME%\dist\okra.jar;.libs/junit-4.10.jar ^
  hsailtest.%1 %2 %3 %4 %5 %6 %7 %8 %9
 endlocal
 

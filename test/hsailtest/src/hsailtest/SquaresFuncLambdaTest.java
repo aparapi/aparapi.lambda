@@ -5,6 +5,7 @@ import org.junit.Test;
 import com.amd.aparapi.Device;
 import com.amd.aparapi.HSADevice;
 
+import java.util.Arrays;
 import java.util.function.IntConsumer;
 
 /**
@@ -12,13 +13,7 @@ import java.util.function.IntConsumer;
  */
 public class SquaresFuncLambdaTest {
 
-    static void dump(String type, int[] in, int[] out) {
-        System.out.print(type + " ->");
-        for (int i = 0; i < in.length; i++) {
-            System.out.print("(" + in[i] + "," + out[i] + "),");
-        }
-        System.out.println();
-    }
+
 
     static int mul(int lhs, int rhs){
 
@@ -30,7 +25,7 @@ public class SquaresFuncLambdaTest {
     }
 
     @Test public void testMain() throws Exception {
-        final int len = 10;
+        final int len = JunitHelper.getPreferredArraySize();
         int in[] = new int[len];
         int out[] = new int[len];
         for (int i=0; i<len; i++){
@@ -40,20 +35,12 @@ public class SquaresFuncLambdaTest {
         IntConsumer ic = gid -> {
             out[gid] = square(in[gid]);
         };
-      //  ((HSADevice) Device.hsa()).dump(ic);
-
-        if (true){
-            Device.hsa().forEach(len, ic);
-            dump("hsa", in, out);
-            Device.jtp().forEach(len, ic);
-            dump("jtp", in, out);
-            Device.seq().forEach(len, ic);
-            dump("seq", in, out);
-        }
-        assertTrue("Range > max work size", true);
-
+        Device.hsa().forEach(len, ic);
+        JunitHelper.dump("hsa", in, out);
+        int[] hsaOut= Arrays.copyOf(out,out.length);
+        Device.jtp().forEach(len, ic);
+        JunitHelper.dump("jtp", in, out);
+        assertTrue("HSA equals JTP results", JunitHelper.compare(hsaOut,out) );
     }
-
-
 
 }
