@@ -1,9 +1,39 @@
 package hsailtest;
 
+import java.util.Arrays;
+
 /**
  * Created by user1 on 1/30/14.
  */
 public class JunitHelper {
+    static void dump(String type,  char[] results) {
+        System.out.print(type + " ->");
+        for (int i = 0; i < results.length; i++) {
+            if (i != 0) {
+                System.out.print(", ");
+            }
+            System.out.print(results[i]);
+        }
+        System.out.println();
+    }
+    static void dump(String type, String[] _strings, boolean[] results) {
+        System.out.print(type + " ->");
+        for (int i = 0; i < _strings.length; i++) {
+            if (i != 0) {
+                System.out.print(", ");
+            }
+            System.out.print(_strings[i]+(results[i]?"*":"?"));
+        }
+        System.out.println();
+    }
+
+    static void dump(String type, boolean[] in) {
+        System.out.print(type + " ->");
+        for (int i = 0; i < in.length; i++) {
+            System.out.print("(" + in[i] + "),");
+        }
+        System.out.println();
+    }
 
     static void dump(String type, int[] in, int[] out) {
         System.out.print(type + " ->");
@@ -41,6 +71,22 @@ public class JunitHelper {
         }
         return(true);
     }
+    static boolean compare( boolean[] in, boolean[] out) {
+        for (int i=0; i<in.length; i++){
+            if (in[i]!=out[i]){
+                return(false);
+            }
+        }
+        return(true);
+    }
+    static boolean compare( char[] in, char[] out) {
+        for (int i=0; i<in.length; i++){
+            if (in[i]!=out[i]){
+                return(false);
+            }
+        }
+        return(true);
+    }
     static boolean compare( double[] in, double[] out) {
         for (int i=0; i<in.length; i++){
             if (!withinTolerance(in[i], out[i])){
@@ -65,5 +111,21 @@ public class JunitHelper {
     }
     static boolean withinTolerance(double lhs, double rhs){
         return(Math.abs(lhs-rhs)<doubleTolerance);
+    }
+
+    static int[] copy(int[] in){
+        return(Arrays.copyOf(in, in.length));
+    }
+    static boolean[] copy(boolean[] in){
+        return(Arrays.copyOf(in, in.length));
+    }
+    static float[] copy(float[] in){
+        return(Arrays.copyOf(in, in.length));
+    }
+    static double[] copy(double[] in){
+        return(Arrays.copyOf(in, in.length));
+    }
+    static char[] copy(char[] in){
+        return(Arrays.copyOf(in, in.length));
     }
 }

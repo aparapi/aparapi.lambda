@@ -31,6 +31,13 @@ java ^
     hsailtest.SqrtJUnit ^
     hsailtest.OopArray2DJUnit ^
     hsailtest.InitBodyJUnit ^
+    hsailtest.FieldIntSquaresJUnit ^
+    hsailtest.IntFieldAssignJUnit ^
+    hsailtest.DoubleSquaresJUnit ^
+    hsailtest.OddEvenJUnit ^
+    hsailtest.TernaryOddEvenJUnit ^
+    hsailtest.StringContainsJUnit ^
+    hsailtest.StringCharAtJUnit ^
     hsailtest.HypotJUnit
 endlocal
 

@@ -37,7 +37,7 @@ public class IntSquaresFuncJUnit {
         };
         Device.hsa().forEach(len, ic);
         JunitHelper.dump("hsa", in, out);
-        int[] hsaOut= Arrays.copyOf(out,out.length);
+        int[] hsaOut= JunitHelper.copy(out);
         Device.jtp().forEach(len, ic);
         JunitHelper.dump("jtp", in, out);
         assertTrue("HSA equals JTP results", JunitHelper.compare(hsaOut,out) );
