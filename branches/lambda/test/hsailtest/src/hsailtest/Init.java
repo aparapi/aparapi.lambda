@@ -16,8 +16,8 @@ public class Init {
         String first;
         String last;
         Person(String _first, String _last){
-            first = _first;
-            last = _last;
+           first = _first;
+           last = _last;
         }
 
 

@@ -11,7 +11,7 @@ import java.util.function.IntConsumer;
 /**
  * Created by user1 on 1/29/14.
  */
-public class SquaresFuncLambdaTest {
+public class IntSquaresFuncJUnit {
 
 
 

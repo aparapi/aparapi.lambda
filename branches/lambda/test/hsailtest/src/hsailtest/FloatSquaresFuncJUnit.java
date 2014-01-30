@@ -3,11 +3,15 @@ package hsailtest;
 import com.amd.aparapi.AparapiException;
 import com.amd.aparapi.Device;
 import com.amd.aparapi.HSADevice;
+import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.function.IntConsumer;
 
+import static org.junit.Assert.assertTrue;
 
-public class FloatSquaresFuncLambda {
+
+public class FloatSquaresFuncJUnit {
 
     static void dump(String type, float[] in, float[] out) {
         System.out.print(type + " ->");
@@ -25,11 +29,10 @@ public class FloatSquaresFuncLambda {
         return(mul(v,v));
     }
 
-    public static void main(String[] args) throws AparapiException {
-        FloatSquaresFuncLambda main = new FloatSquaresFuncLambda();
-        final int len = 10;
-        float out[] = new float[len];
+   @Test public void test(){
+        final int len = JunitHelper.getPreferredArraySize();
         float in[] = new float[len];
+        float out[] = new float[len];
         for (int i=0; i<len; i++){
             out[i]=0;
             in[i]=i;
@@ -37,15 +40,12 @@ public class FloatSquaresFuncLambda {
         IntConsumer ic = gid -> {
             out[gid] = square(in[gid]);
         };
-        ((HSADevice)Device.hsa()).dump(ic);
-
-       if (true){
         Device.hsa().forEach(len, ic);
-        dump("hsa", in, out);
+        JunitHelper.dump("hsa", in, out);
+        float[] hsaOut= Arrays.copyOf(out, out.length);
         Device.jtp().forEach(len, ic);
-        dump("jtp", in, out);
-        Device.seq().forEach(len, ic);
-        dump("seq", in, out);
+        JunitHelper.dump("jtp", in, out);
+        assertTrue("HSA equals JTP results", JunitHelper.compare(hsaOut,out, 0.001f) );
        }
-    }
+
 }
