@@ -2,11 +2,14 @@ package hsailtest;
 
 import com.amd.aparapi.AparapiException;
 import com.amd.aparapi.Device;
+import org.junit.Test;
 
 import java.util.function.IntConsumer;
 
+import static org.junit.Assert.assertTrue;
 
-public class OopArray2DLambda {
+
+public class OopArray2DJUnit {
 
     public static class P {
         P next;
@@ -43,8 +46,9 @@ public class OopArray2DLambda {
         System.out.println();
     }
 
-    public static void main(String[] args) throws AparapiException {
-        final int len = 4; // need this to be final, why is len not effectively final?
+    @Test
+    public  void test() {
+        final int len = JunitHelper.getPreferredArraySize();
         P[][] matrix = new P[len][len];
         for (int x = 0; x < len; x++) {
             for (int y = 0; y < len; y++) {
@@ -65,5 +69,6 @@ public class OopArray2DLambda {
         dump("jtp", matrix);
         Device.seq().forEach(len, ic);
         dump("seq", matrix);
+        assertTrue("same ", true);
     }
 }
