@@ -39,6 +39,14 @@
       </and>
    </condition>
 
+    <condition property="lib.suffix" value=".dll">
+      <and>
+         <os family="windows" />
+      </and>
+   </condition>
+
+   <echo> lib suffix = ${lib.suffix} </echo>
+
 
 
    <available property="junit.installed" file="${junit.home}/${junit.jar.name}"/>
@@ -88,14 +96,14 @@
       <echo>OKRA=${env.OKRA_HOME}</echo>
 
       <junit printsummary="false" fork="true" haltonfailure="false" failureproperty="tests.failed" showoutput="true">
-         <jvmarg value="-agentpath:../../com.amd.aparapi.jni/dist/aparapi_x86_64.dll"/>
+         <jvmarg value="-agentpath:../../com.amd.aparapi.jni/dist/aparapi_x86_64${lib.suffix}"/>
          <jvmarg value="-Ddispatch=true"/>
          <jvmarg value="-XX:-UseCompressedOops"/>
          <jvmarg value="-Djava.library.path=${env.OKRA_HOME}/dist/bin;${env.OKRA_HOME}/hsa/bin/x86_64"/>
          <formatter type="xml" />
          <classpath refid="classpath-run"/>
          <batchtest todir="junit/data">
-            <fileset dir="src/hsailtest">
+            <fileset dir="src">
                <include name="**/*Test.java"/>
             </fileset>
          </batchtest>
