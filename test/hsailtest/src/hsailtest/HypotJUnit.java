@@ -27,6 +27,6 @@ public class HypotJUnit {
         Device.jtp().forEach(len, ic);
         JunitHelper.dump("jtp", in, out);
 
-        assertTrue("HSA equals JTP results", JunitHelper.compare(hsaOut,out, .01) );
+        assertTrue("HSA equals JTP results", JunitHelper.compare(hsaOut,out) );
     }
 }

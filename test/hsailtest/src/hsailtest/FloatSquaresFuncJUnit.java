@@ -45,7 +45,7 @@ public class FloatSquaresFuncJUnit {
         float[] hsaOut= Arrays.copyOf(out, out.length);
         Device.jtp().forEach(len, ic);
         JunitHelper.dump("jtp", in, out);
-        assertTrue("HSA equals JTP results", JunitHelper.compare(hsaOut,out, 0.001f) );
+        assertTrue("HSA equals JTP results", JunitHelper.compare(hsaOut,out) );
        }
 
 }

@@ -29,6 +29,8 @@ java ^
     hsailtest.IntMaxJUnit ^
     hsailtest.IntMinJUnit ^
     hsailtest.SqrtJUnit ^
+    hsailtest.OopArray2DJUnit ^
+    hsailtest.InitBodyJUnit ^
     hsailtest.HypotJUnit
 endlocal
 

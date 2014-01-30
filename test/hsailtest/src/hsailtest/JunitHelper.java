@@ -41,20 +41,29 @@ public class JunitHelper {
         }
         return(true);
     }
-    static boolean compare( double[] in, double[] out, double _variance) {
+    static boolean compare( double[] in, double[] out) {
         for (int i=0; i<in.length; i++){
-            if (Math.abs(in[i]-out[i])>_variance){
+            if (!withinTolerance(in[i], out[i])){
                 return(false);
             }
         }
         return(true);
     }
-    static boolean compare( float[] in, float[] out, float _variance) {
+    static float floatTolerance = 0.0001f;
+    static float doubleTolerance = 0.000001f;
+    static boolean compare( float[] in, float[] out) {
         for (int i=0; i<in.length; i++){
-            if (Math.abs(in[i]-out[i])>_variance){
+            if (!withinTolerance(in[i], out[i])){
                 return(false);
             }
         }
         return(true);
+    }
+
+    static boolean withinTolerance(float lhs, float rhs){
+        return(Math.abs(lhs-rhs)<floatTolerance);
+    }
+    static boolean withinTolerance(double lhs, double rhs){
+        return(Math.abs(lhs-rhs)<doubleTolerance);
     }
 }

@@ -30,6 +30,6 @@ public class SqrtJUnit {
         JunitHelper.dump("jtp", in, out);
         Device.seq().forEach(len, ic);
         JunitHelper.dump("seq", in, out);
-        assertTrue("HSA equals JTP results", JunitHelper.compare(hsaOut,out, 0.00001) );
+        assertTrue("HSA equals JTP results", JunitHelper.compare(hsaOut,out) );
     }
 }
