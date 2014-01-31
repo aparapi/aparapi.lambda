@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 
 <project name="hsailtest" default="build" basedir=".">
-    <property environment="env"/>
+   <property environment="env"/>
    <property name="build.compiler" value="javac1.7"/>
    <property name="ant.build.javac.source" value="1.8"/>
    <property name="ant.build.javac.target" value="1.8"/>
@@ -26,6 +26,14 @@
    <property name="ant.build.javac.source" value="1.6"/>
    <property name="ant.build.javac.target" value="1.6"/>
 
+
+
+   <condition property="lib.prefix" value="lib">
+      <and>
+         <os family="unix" />
+      </and>
+   </condition>
+
    <condition property="lib.suffix" value=".dylib">
       <os family="mac" />
    </condition>
@@ -39,7 +47,7 @@
       </and>
    </condition>
 
-    <condition property="lib.suffix" value=".dll">
+   <condition property="lib.suffix" value=".dll">
       <and>
          <os family="windows" />
       </and>
@@ -96,7 +104,7 @@
       <echo>OKRA=${env.OKRA_HOME}</echo>
 
       <junit printsummary="false" fork="true" haltonfailure="false" failureproperty="tests.failed" showoutput="true">
-         <jvmarg value="-agentpath:../../com.amd.aparapi.jni/dist/aparapi_x86_64${lib.suffix}"/>
+         <jvmarg value="-agentpath:../../com.amd.aparapi.jni/dist/${lib.prefix}aparapi_x86_64${lib.suffix}"/>
          <jvmarg value="-Ddispatch=true"/>
          <jvmarg value="-XX:-UseCompressedOops"/>
          <jvmarg value="-Djava.library.path=${env.OKRA_HOME}/dist/bin;${env.OKRA_HOME}/hsa/bin/x86_64"/>

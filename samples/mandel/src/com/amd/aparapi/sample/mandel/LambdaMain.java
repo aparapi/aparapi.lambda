@@ -214,7 +214,8 @@ public class LambdaMain{
          pallette[i] = Color.HSBtoRGB(h, 1f, b);
       }
 
-      Device device = Device.firstGPU();
+      //Device device = Device.firstGPU();
+      Device device = Device.hsa();
 
       getNextImage(device, x, y, scale);
 

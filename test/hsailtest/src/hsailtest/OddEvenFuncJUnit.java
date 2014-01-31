@@ -14,7 +14,7 @@ public class OddEvenFuncJUnit {
 
 
    boolean odd(int value){
-       return(value%0==0);
+       return(value%2==0);
    }
 
 

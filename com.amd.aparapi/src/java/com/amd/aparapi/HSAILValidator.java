@@ -251,7 +251,7 @@ public class HSAILValidator {
 
     public static void main(String[] _args) throws IOException, ClassNotFoundException, ClassParseException {
 
-       String className = _args.length>0?_args[0]:"hsailtest.StringLambda";
+       String className = _args.length>0?_args[0]:"hsailtest.StringContainsJUnit";
 
        ClassModel classModel = ClassModel.getClassModel(Class.forName(className));
 
