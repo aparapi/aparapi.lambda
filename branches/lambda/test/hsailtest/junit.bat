@@ -1,10 +1,6 @@
 setlocal 
 call ..\..\env.bat
-%JAVA% ^
- -Dcom.amd.aparapi.logLevel=OFF^
- -Dcom.amd.aparapi.dumpFlags=false ^
- -classpath %JARS%;../../samples/common/common.jar;hsailtest.jar;.libs/junit-4.10.jar ^
- org.junit.runner.JUnitCore ^
+set TESTS= ^
     hsailtest.FloatSquaresFuncJUnit ^
     hsailtest.IntSquaresFuncJUnit ^
     hsailtest.IntMaxJUnit ^
@@ -25,5 +21,13 @@ call ..\..\env.bat
     hsailtest.StringLenJUnit ^
     hsailtest.StringIndexOfJUnit ^
     hsailtest.HypotJUnit
+
+set JARS=%JARS%;../../samples/common/common.jar
+set JARS=%JARS%;hsailtest.jar
+set JARS=%JARS%;.libs/junit-4.10.jar
+
+set CLASS=org.junit.runner.JUnitCore 
+
+%JAVA% -classpath %JARS% %CLASS% %TESTS%
 endlocal
 
