@@ -34,6 +34,12 @@
       </and>
    </condition>
 
+   <condition property="lib.prefix" value="">
+      <and>
+         <os family="windows" />
+      </and>
+   </condition>
+
    <condition property="lib.suffix" value=".dylib">
       <os family="mac" />
    </condition>
