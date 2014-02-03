@@ -559,7 +559,7 @@ public class Dickens {
     UI ui;
 
     public void go() {
-        File dataDir = new File("c:\\Users\\user1\\apu2013\\data");
+        File dataDir = new File("data");
         File booksDir = new File(dataDir, "dickens");
         Book[] library = new Book[]{
                 new Book("A Tail Of Two Cities", new File(booksDir, "ATailOfTwoCities.txt"), true),
