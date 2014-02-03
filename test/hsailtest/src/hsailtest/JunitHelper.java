@@ -91,7 +91,20 @@ public class JunitHelper {
     static boolean compare( int[] in, int[] out) {
         for (int i=0; i<in.length; i++){
             if (in[i]!=out[i]){
+
                 return(false);
+            }
+        }
+        return(true);
+    }
+
+    static boolean compare( int[] in, int[] out, int _tolerance) {
+        for (int i=0; i<in.length; i++){
+            if (in[i] != out[i]){
+                if (Math.abs(in[i]-out[i])>_tolerance){
+                   System.out.println("failed "+i+" "+in[i]+" vs "+out[i]);
+                   return(false);
+                }
             }
         }
         return(true);
@@ -142,7 +155,9 @@ public class JunitHelper {
         }
         return(true);
     }
-
+    static boolean withinTolerance(int lhs, int rhs, int tolerance){
+        return(Math.abs(lhs-rhs)<tolerance);
+    }
     static boolean withinTolerance(float lhs, float rhs){
         return(Math.abs(lhs-rhs)<floatTolerance);
     }
