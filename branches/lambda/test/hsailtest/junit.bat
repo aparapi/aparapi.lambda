@@ -20,7 +20,8 @@ set TESTS= ^
     hsailtest.StringHashCodeJUnit ^
     hsailtest.StringLenJUnit ^
     hsailtest.StringIndexOfJUnit ^
-    hsailtest.HypotJUnit
+    hsailtest.HypotJUnit ^
+    hsailtest.MandelJUnit
 
 set JARS=%JARS%;../../samples/common/common.jar
 set JARS=%JARS%;hsailtest.jar
@@ -28,6 +29,6 @@ set JARS=%JARS%;.libs/junit-4.10.jar
 
 set CLASS=org.junit.runner.JUnitCore 
 
-%JAVA% -classpath %JARS% %CLASS% %TESTS%
+%JAVA% -DshowUI=false -classpath %JARS% %CLASS% %TESTS%
 endlocal
 
