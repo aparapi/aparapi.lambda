@@ -113,6 +113,7 @@
          <jvmarg value="-agentpath:../../com.amd.aparapi.jni/dist/${lib.prefix}aparapi_x86_64${lib.suffix}"/>
          <jvmarg value="-Ddispatch=true"/>
          <jvmarg value="-XX:-UseCompressedOops"/>
+         <jvmarg value="-Dcom.amd.aparapi.enableShowGeneratedHSAIL=false"/>
          <jvmarg value="-Djava.library.path=${env.OKRA_HOME}/dist/bin;${env.OKRA_HOME}/hsa/bin/x86_64"/>
          <formatter type="xml" />
          <classpath refid="classpath-run"/>

@@ -33,37 +33,6 @@ public class NBodySimple {
        _pr.cross(px, py, 0xffffff);
        }
 
-       void updatePosition(Body[] bodies){
-           Body thisBody = this;
-           float accx = 0.f;
-           float accy = 0.f;
-           float accz = 0.f;
-           for(int i = 0; i < bodies.length; i++){
-               Body otherBody = bodies[i];
-               if (this != otherBody){
-                   float dx = otherBody.x-thisBody.x;
-                   float dy = otherBody.y-thisBody.y;
-                   float dz = otherBody.z-thisBody.z;
-                   float dist =  (float) Math.sqrt(((dx * dx) + (dy * dy) + (dz * dz) + .1f /* +.1f in case dx,dy,dz are 0!*/));
-                   float invDist = 1f / dist;
-                   float massInvDist_3 = otherBody.mass * invDist * invDist * invDist;
-                   accx += massInvDist_3 * dx;
-                   accy += massInvDist_3 * dy;
-                   accz += massInvDist_3 * dz;
-               }
-           }
-           float delT = .05f;
-           float delT_2 = delT/2;
-           accx *= delT;
-           accy *= delT;
-           accz *= delT;
-           thisBody.x +=  thisBody.vx * delT + accx * delT_2;
-           thisBody.y += thisBody.vy * delT + accy * delT_2;
-           thisBody.z += thisBody.vz * delT + accz * delT_2;
-           thisBody.vx += accx;
-           thisBody.vy +=  accy;
-           thisBody.vz += accz;
-       }
    }
 
    public static void main(String[] _args){
@@ -89,18 +58,11 @@ public class NBodySimple {
       jframe.pack();
       jframe.setVisible(true);
       jframe.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-      boolean useFunc = Boolean.getBoolean("useFunc");
+
 
       while(true){
          pr.clear();
-          if (useFunc){
-              device.forEach(bodies.length, gid -> {
-                  Body body = bodies[gid];
-                  body.updatePosition(bodies);
 
-                  body.draw(pr);
-              });
-          }else{
          device.forEach(bodies.length, gid -> {
             Body thisBody = bodies[gid];
             float accx = 0.f;
@@ -134,7 +96,7 @@ public class NBodySimple {
              thisBody.vz = thisBody.vz + accz;
             thisBody.draw(pr);
          });
-          }
+
          pr.sync();
 
       }

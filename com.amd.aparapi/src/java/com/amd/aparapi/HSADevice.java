@@ -66,7 +66,9 @@ public class HSADevice extends Device {
 
               //  hsailMethod.render(renderer);
                 cachedRunner.hsail = _hsailText;
-                System.out.println(cachedRunner.hsail);
+                if (Config.enableShowGeneratedHSAIL){
+                   System.out.println(cachedRunner.hsail);
+                }
                 cachedRunner.runner = new OkraRunner(cachedRunner.hsail);
                 cachedRunner.isStatic = lkc.isStatic();
                 if (!cachedRunner.isStatic) {
@@ -118,10 +120,10 @@ public class HSADevice extends Device {
             } else {
                 cachedRunner = new CachedRunner();
                 LambdaKernelCall lkc = new LambdaKernelCall(ic);
-                System.out.println("class="+lkc.getLambdaKernelClass());
+                //System.out.println("class="+lkc.getLambdaKernelClass());
                 ClassModel classModel = ClassModel.getClassModel(lkc.getLambdaKernelClass());
-                System.out.println("methodname="+lkc.getLambdaMethodName());
-                System.out.println("methodsig="+lkc.getLambdaMethodSignature());
+                //System.out.println("methodname="+lkc.getLambdaMethodName());
+               // System.out.println("methodsig="+lkc.getLambdaMethodSignature());
                 ClassModel.ClassModelMethod method = classModel.getMethod(lkc.getLambdaMethodName(), lkc.getLambdaMethodSignature());
 
 
@@ -132,7 +134,9 @@ public class HSADevice extends Device {
 
                 hsailMethod.render(renderer);
                 cachedRunner.hsail = renderer.toString();
-                System.out.println(cachedRunner.hsail);
+                if (Config.enableShowGeneratedHSAIL){
+                   System.out.println(cachedRunner.hsail);
+                }
                 cachedRunner.runner = new OkraRunner(cachedRunner.hsail);
                 cachedRunner.isStatic = lkc.isStatic();
                 if (!cachedRunner.isStatic) {
