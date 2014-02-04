@@ -45,14 +45,12 @@ import org.junit.Test;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class MandelJUnit {
     final static int FRAMES_PER_ZOOM = 128;
@@ -71,10 +69,7 @@ public class MandelJUnit {
     //Palette which maps iteration values to RGB values.
     final int pallette[] = new int[maxIterations + 1];
 
-
-
     // These are members so zoom out continues from where zoom in stopped
-
 
     int getMandelCount(float x, float y, int maxIterations) {
         float zx = x;
@@ -158,7 +153,6 @@ public class MandelJUnit {
             for (int sign : new int[]{-1, 1}) {
                 float tox = 1;
                 float toy = 1;
-
                 for (int i = 0; i < FRAMES_PER_ZOOM - 4; i++) {
                     scale = scale + sign * 3f / FRAMES_PER_ZOOM;
                     x = x - sign * (tox / FRAMES_PER_ZOOM);
@@ -174,17 +168,13 @@ public class MandelJUnit {
 
         long endMs = System.currentTimeMillis();
         long elapsedMs = (endMs - startMs);
-
-       // System.out.println("elapsedMs=" + elapsedMs);
-      //  System.out.println("frameCount=" + frameCount);
         System.out.println((deviceIndex==0?"jtp":"hsa")+" fps=" + (((float) frameCount*1000) / elapsedMs));
         }
         for (int i=0; i< FRAMES_PER_DEVICE; i++){
             if (!JunitHelper.compare(frameRgb[0][i], frameRgb[1][i],8)){ // we allow a variance of 8 this seems too wide
-                assertTrue("failed at index "+i, false);
+                fail("failed at index " + i);
             }
         }
-       // assertTrue("yeah", true);
     }
 
 

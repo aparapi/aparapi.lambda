@@ -5,7 +5,9 @@ set JARS=%JARS%;../../samples/common/common.jar
 set JARS=%JARS%;hsailtest.jar
 set JARS=%JARS%;.libs/junit-4.10.jar
 
+
 %JAVA% ^
+ -DuseFunc=true ^
  -Dcom.amd.aparapi.logLevel=OFF ^
  -Dcom.amd.aparapi.enableVerboseJNI=false ^
  -Dcom.amd.aparapi.dumpFlags=false ^

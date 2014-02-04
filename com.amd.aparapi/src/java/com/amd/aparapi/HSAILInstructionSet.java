@@ -1644,7 +1644,7 @@ public class HSAILInstructionSet {
         return (null);
     }
     static public HSAILRegister addmov(List<HSAILInstruction>_instructions, HSAILStackFrame _hsailStackFrame, Instruction _i, int _from, int _to) {
-        HSAILRegister r = getRegOfLastWriteToIndex(_instructions, _i.getPreStackBase() + _i.getMethod().getCodeEntry().getMaxLocals() + _from);
+        HSAILRegister r = getRegOfLastWriteToIndex(_instructions, _hsailStackFrame.stackIdx(_i) + _from);
         if (r == null){
             System.out.println("damn!");
         }
