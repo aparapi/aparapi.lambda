@@ -261,7 +261,7 @@ public class Dickens {
             };
             sw1.execute();
 
-            Device device = Device.hsa();
+            Device device = hsaToggleButton.getDevice();
             SwingWorker sw = new SwingWorker<Void, Void>() {
                 @Override
                 public Void doInBackground() {
@@ -273,7 +273,6 @@ public class Dickens {
                             .forEach(book -> { // this outer loop is processed sequentially
                                 book.start();
 
-                                if (hsaToggleButton.getMode().equals(AparapiModeToggleButton.Mode.GPU)){
                                     char[] text = book.getText();
                                     int textLen = text.length;
                                     Name[] localNames = names;
@@ -283,14 +282,13 @@ public class Dickens {
                                         int nameLen = nameChars.length;
                                         for (int i = 0; i < textLen - nameLen; i++) {
                                             int offset = 0;
-                                            // for (offset = 0; offset < nameLen && (nameChars[offset] == text[i + offset]); offset++)
-                                            //    ;
-                                            // if (offset == nameLen) {
-                                            name.incrementCount();
-                                            //  }
+                                             for (offset = 0; offset < nameLen && (nameChars[offset] == text[i + offset]); offset++)
+                                                ;
+                                             if (offset == nameLen) {
+                                                name.incrementCount();
+                                             }
                                         }
                                     });
-                                }
                                 book.done();
                             });
                     clockRunning = false;
