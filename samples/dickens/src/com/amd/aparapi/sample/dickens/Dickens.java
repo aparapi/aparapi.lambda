@@ -49,7 +49,7 @@ import java.util.stream.IntStream;
  */
 public class Dickens {
 
-    public  static  class Book implements Comparable<Book> {
+      static class Book implements Comparable<Book> {
 
         private String title;
         private char[] text;
@@ -121,52 +121,32 @@ public class Dickens {
         }
 
 
-        void checkNames(Name[] names) {
-            started = true;
-            //  System.out.println("started "+title);
 
-            IntStream.range(0, names.length).parallel().forEach(gid -> { // process name array in parallel
-                Name name = names[gid];
-                char[] nameChars = name.getName();
-                int nameLen = nameChars.length;
-                int textLen = text.length;
-                for (int i = 0; i < textLen - nameLen; i++) {
-                    int offset = 0;
-                    // search i + offset to i + nameLen and bump offset if chars match
-                    while (offset < nameLen && (nameChars[offset] == text[i + offset])) {
-                        offset++;
-                    }
-                    if (offset == nameLen) {
-                        name.incrementCount();
-                    }
-                }
-
-            });
-
-            done = true;
-
-        }
     }
 
-    static public class Name implements Comparable<Name> {
-        private char[] name;
-        private int count;
+    static  class Name implements Comparable<Name> {
+        char[] nameChars;
+        String nameAsString;
+        int count;
 
         void clear() {
             count = 0;
         }
 
-        void incrementCount() {
-            count++;
+        void incrementCount(int _delta) {
+            count+=_delta;
         }
 
         int getCount() {
             return (count);
         }
+        void setCount(int _count) {
+            count = _count;
+        }
 
-
-        Name(char[] _chars) {
-            name = _chars;
+        Name(String _nameAsString) {
+            nameAsString=_nameAsString;
+            nameChars = nameAsString.toCharArray();
             count = 0;
         }
 
@@ -175,12 +155,13 @@ public class Dickens {
             return (other.count - count);
         }
 
+
         String getNameAsString() {
-            return (new String(name));
+            return (new String(nameChars));
         }
 
-        char[] getName() {
-            return (name);
+        char[] getNameChars() {
+            return (nameChars);
         }
     }
 
@@ -252,6 +233,7 @@ public class Dickens {
                             Thread.sleep(500);
                             nameTable.update();
                             bookList.update();
+                            System.out.print(">");
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -268,6 +250,7 @@ public class Dickens {
                     Arrays.stream(library).forEach(Book::clear);
                     Arrays.stream(names).forEach(Name::clear);
                     watch.start(); // start the timer
+                    clockRunning = true;
                     Arrays.stream(library)
                             .filter(Book::isSelected)
                             .forEach(book -> { // this outer loop is processed sequentially
@@ -276,23 +259,31 @@ public class Dickens {
                                     char[] text = book.getText();
                                     int textLen = text.length;
                                     Name[] localNames = names;
+                                    long startMs=System.currentTimeMillis();
                                     device.forEach(names.length, id -> {
                                         Name name = localNames[id];
-                                        char[] nameChars = name.getName();
+                                        char[] nameChars = name.getNameChars();
                                         int nameLen = nameChars.length;
+                                        int count = 0;
                                         for (int i = 0; i < textLen - nameLen; i++) {
                                             int offset = 0;
-                                             for (offset = 0; offset < nameLen && (nameChars[offset] == text[i + offset]); offset++)
-                                                ;
-                                             if (offset == nameLen) {
-                                                name.incrementCount();
-                                             }
+                                            while(offset < nameLen && (nameChars[offset] == text[i + offset])){
+                                                offset++;
+                                            }
+                                            if (offset == nameLen) {
+                                               count++;
+
+                                            }
                                         }
+                                        name.incrementCount(count);
                                     });
+                                    long endMs = System.currentTimeMillis();
+                                    long elapsedMs =endMs-startMs;
+                                    System.out.println("book "+book.getTitle()+" "+elapsedMs);
                                 book.done();
                             });
-                    clockRunning = false;
                     watch.stop();  // stop the timer
+                    clockRunning=false;
                     return (null);
                 }
             };
@@ -531,7 +522,6 @@ public class Dickens {
 
         AbstractTableModel tableModel = new MyTableModel();
         JTable table = new JTable(tableModel);
-
         BookList(Book[] _books) {
             books = _books;
             container = new JPanel();
@@ -549,14 +539,10 @@ public class Dickens {
         }
     }
 
-
-    public static void main(String[] args) {
-        new Dickens().go();
-    }
-
     UI ui;
 
-    public void go() {
+    public static void main(String[] args) {
+
         File dataDir = new File("data");
         File booksDir = new File(dataDir, "dickens");
         Book[] library = new Book[]{
@@ -570,63 +556,32 @@ public class Dickens {
                 new Book("Little Dorrit", new File(booksDir, "LittleDorrit.txt"), false),
                 new Book("Dombey And Son", new File(booksDir, "DombeyAndSon.txt"), false),
                 new Book("The Old Curiosity Shop", new File(booksDir, "TheOldCuriosityShop.txt"), false),
-                new Book("Hard Times", new File(booksDir, "HardTimes.txt"), false),
-                //   new Book("The Lamplighter", new File(booksDir, "TheLampLighter.txt"), false)
+                new Book("Hard Times", new File(booksDir, "HardTimes.txt"), false)
         };
 
         List<Name> list = new ArrayList<Name>();
         try {
             BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(dataDir, "names.txt"))));
             for (String line = br.readLine(); line != null; line = br.readLine()) {
-                list.add(new Name((" " + line.trim() + " ").toCharArray()));
+                list.add(new Name((" " + line.trim() + " ")));
             }
             int padNames = Integer.getInteger("padNames", 64);
             System.out.println("padName=" + padNames);
             // We pad the name list to a group boundary.
             while (padNames > 0 && (list.size() % padNames) != 0) {
-                list.add(new Name("xxxxx".toCharArray()));
+                list.add(new Name("xxxxx"));
             }
         } catch (IOException ioe) {
             ioe.printStackTrace();
         }
         Name[] names = list.toArray(new Name[0]);
-        Arrays.stream(names).forEach(Name::clear);
 
-        new Book("empty", " this text ").checkNames(names);   // We run once so we can extract initial HSA generation from timing.
-
-        if (Boolean.getBoolean("NoUI")) {
-            Arrays.stream(library).forEach(Book::clear);
-            Arrays.stream(names).forEach(Name::clear);
-            long gpuStart = System.currentTimeMillis();
-            System.out.println("Starting on GPU");
-            for (Book book : library) {
-                if (book.isSelected()) {
-                    System.out.println("   GPU processing " + book.getTitle());
-                    book.checkNames(names);
-                }
-            }
-            long gpuEnd = System.currentTimeMillis();
-            System.out.println("GPU = " + (gpuEnd - gpuStart));
-            Arrays.stream(library).forEach(Book::clear);
-            Arrays.stream(names).forEach(Name::clear);
-            long cpuStart = System.currentTimeMillis();
-            System.out.println("Starting on CPU");
-            for (Book book : library) {
-                if (book.isSelected()) {
-                    System.out.println("   CPU processing " + book.getTitle());
-                    book.checkNames(names);
-                }
-            }
-            long cpuEnd = System.currentTimeMillis();
-            System.out.println("CPU = " + (cpuEnd - cpuStart));
-            System.out.println("ratio = " + (((float) (cpuEnd - cpuStart)) / (gpuEnd - gpuStart)));
-        } else {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    ui = new UI(library, names);
+                    new UI(library, names);
                 }
             });
-        }
+
     }
 
 
