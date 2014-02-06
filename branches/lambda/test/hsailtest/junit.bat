@@ -23,7 +23,8 @@ set TESTS= ^
     hsailtest.HypotJUnit ^
     hsailtest.MandelJUnit ^
     hsailtest.DickensJUnit ^
-    hsailtest.MatchedStringJUnit
+    hsailtest.MatchedStringJUnit ^
+    hsailtest.CharArrayStateMachineJUnit
 
 set JARS=%JARS%;../../samples/common/common.jar
 set JARS=%JARS%;hsailtest.jar

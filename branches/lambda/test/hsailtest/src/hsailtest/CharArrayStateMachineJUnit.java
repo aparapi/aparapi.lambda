@@ -1,15 +1,19 @@
 package hsailtest;
 
 import com.amd.aparapi.AparapiException;
+import com.amd.aparapi.Device;
+import org.junit.Test;
 
 import java.io.*;
 import java.util.Arrays;
 import java.util.function.IntConsumer;
 
 import static com.amd.aparapi.Device.*;
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertTrue;
 
 
-public class CharArrayLambdaHisto {
+public class CharArrayStateMachineJUnit {
 
 
     static void dump(String type, char[][] _strings, int[] results) {
@@ -40,11 +44,16 @@ public class CharArrayLambdaHisto {
     static final int PARTIAL_MATCH =1;
     static final int FINAL_CHECK=2;
     static final int ALPHA=3;
-    public static void main(String[] args) throws AparapiException, IOException {
-        char[][] strings = TextTools.buildLowerCaseDictionaryChars(new File("C:\\Users\\user1\\aparapi\\branches\\lambda\\names.txt"));
+    @Test
+    public void test(){
+        File dataDir = new File("../../samples/dickens/data");
+        assertTrue("Data Dir Exists", dataDir.exists() && dataDir.isDirectory());
+        char[][] strings = TextTools.buildLowerCaseDictionaryChars(new File(dataDir, "names.txt"));
+        assertNotNull("names dictionary", strings);
         int len = strings.length;
-        char[] longText = TextTools.getLowercaseTextChars(new File("C:\\Users\\user1\\aparapi\\branches\\lambda\\moby.txt"));
-        char[] text =  longText;//Arrays.copyOf(longText, 5000);
+
+        char[] text =  TextTools.getLowercaseTextChars(new File(dataDir, "dickens/OliverTwist.txt"));
+        assertNotNull("names dictionary", text);
         int[] counts = new int[len];
         IntConsumer ic = gid -> {
 
@@ -89,46 +98,22 @@ public class CharArrayLambdaHisto {
         };
 
         long start=0L;
-        boolean seq = false;
-        boolean jtp =true;
-        boolean hyb = false;
-        boolean hsa = false;
 
-        if (hsa){
-
-        for (int i=0; i<4; i++){
+        for (int i=0; i<2; i++){
         Arrays.fill(counts, 0);
         start = System.currentTimeMillis();
-        hsaForEach(len, ic);
+        Device.hsa().forEach(len, ic);
         System.out.println();
         dump("hsa"+i+"= "+(System.currentTimeMillis()-start), strings, counts);
         }
+        int[] hsaCounts = JunitHelper.copy(counts);
 
-
-        }
-        if (hyb){
-        for (float gpushare : new float[]{.88f,.89f,.9f,.91f, .92f,.93f, .94f,.95f, .96f,.97f,.98f }) {
-            Arrays.fill(counts, 0);
-            start = System.currentTimeMillis();
-            hybForEach(len, gpushare, ic);
-            System.out.println();
-            dump("hyb"+gpushare+"= "+(System.currentTimeMillis()-start), strings, counts);
-        }
-        }
-
-        if (jtp){
         Arrays.fill(counts, 0);
         start = System.currentTimeMillis();
-        jtpForEach(len, ic);
+        Device.jtp().forEach(len, ic);
         System.out.println();
-        dump("jtp = "+(System.currentTimeMillis()-start), strings, counts);
-        }
-        if (seq){
-        Arrays.fill(counts, 0);
-        start = System.currentTimeMillis();
-        seqForEach(len, ic);
-        System.out.println();
-        dump("seq= "+(System.currentTimeMillis()-start), strings, counts);
-        }
+        dump("jtp = " + (System.currentTimeMillis() - start), strings, counts);
+        JunitHelper.compare(hsaCounts, counts);
+
     }
 }
