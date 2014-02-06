@@ -21,7 +21,8 @@ set TESTS= ^
     hsailtest.StringLenJUnit ^
     hsailtest.StringIndexOfJUnit ^
     hsailtest.HypotJUnit ^
-    hsailtest.MandelJUnit
+    hsailtest.MandelJUnit ^
+    hsailtest.DickensJUnit
 
 set JARS=%JARS%;../../samples/common/common.jar
 set JARS=%JARS%;hsailtest.jar

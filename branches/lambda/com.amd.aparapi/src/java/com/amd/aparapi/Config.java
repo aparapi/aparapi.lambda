@@ -130,7 +130,14 @@ class Config{
      */
     static final boolean enableShowGeneratedHSAIL = Boolean.getBoolean(propPkgName + ".enableShowGeneratedHSAIL");
 
-   // Pragma/OpenCL codegen related flags
+    /**
+     * Allows the user to request that generated HSAIL code is dumped to standard out.
+     * <p/>
+     * Usage -Dcom.amd.aparapi.enableShowGeneratedHSAIL={true|false}
+     */
+    static final boolean enableShowGeneratedHSAILAndExit = Boolean.getBoolean(propPkgName + ".enableShowGeneratedHSAILAndExit");
+
+    // Pragma/OpenCL codegen related flags
    static final boolean enableAtomic32 = Boolean.getBoolean(propPkgName + ".enableAtomic32");
 
    static final boolean enableAtomic64 = Boolean.getBoolean(propPkgName + ".enableAtomic64");
@@ -249,7 +256,8 @@ class Config{
          System.out.println(propPkgName + ".enableVerboseJNIOpenCLResourceTracking{true|false}="
                + enableVerboseJNIOpenCLResourceTracking);
          System.out.println(propPkgName + ".enableShowGeneratedOpenCL{true|false}=" + enableShowGeneratedOpenCL);
-          System.out.println(propPkgName + ".enableShowGeneratedHSAIL{true|false}=" + enableShowGeneratedHSAIL);
+         System.out.println(propPkgName + ".enableShowGeneratedHSAIL{true|false}=" + enableShowGeneratedHSAIL);
+          System.out.println(propPkgName + ".enableShowGeneratedHSAILAndExit{true|false}=" + enableShowGeneratedHSAILAndExit);
          System.out.println(propPkgName + ".enableShowJavaP{true|false}=" + enableShowJavaP);
          System.out.println(propPkgName + ".enableExecutionModeReporting{true|false}=" + enableExecutionModeReporting);
          //    System.out.println(propPkgName + ".enableUseRealLocalVariableTableIfAvailable{true|false}="+enableUseRealLocalVariableTableIfAvailable);

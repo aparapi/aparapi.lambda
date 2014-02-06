@@ -66,8 +66,11 @@ public class HSADevice extends Device {
 
               //  hsailMethod.render(renderer);
                 cachedRunner.hsail = _hsailText;
-                if (Config.enableShowGeneratedHSAIL){
-                   System.out.println(cachedRunner.hsail);
+                if (Config.enableShowGeneratedHSAIL || Config.enableShowGeneratedHSAILAndExit){
+                    System.out.println(cachedRunner.hsail);
+                    if (Config.enableShowGeneratedHSAILAndExit){
+                        System.exit(1);
+                    }
                 }
                 cachedRunner.runner = new OkraRunner(cachedRunner.hsail);
                 cachedRunner.isStatic = lkc.isStatic();
@@ -134,8 +137,11 @@ public class HSADevice extends Device {
 
                 hsailMethod.render(renderer);
                 cachedRunner.hsail = renderer.toString();
-                if (Config.enableShowGeneratedHSAIL){
+                if (Config.enableShowGeneratedHSAIL || Config.enableShowGeneratedHSAILAndExit){
                    System.out.println(cachedRunner.hsail);
+                   if (Config.enableShowGeneratedHSAILAndExit){
+                      System.exit(1);
+                   }
                 }
                 cachedRunner.runner = new OkraRunner(cachedRunner.hsail);
                 cachedRunner.isStatic = lkc.isStatic();
