@@ -12,6 +12,7 @@ import java.util.Stack;
 import java.util.function.IntConsumer;
 
 import static com.amd.aparapi.Device.*;
+import static junit.framework.Assert.fail;
 
 
 public class TextTools {
@@ -38,24 +39,32 @@ public class TextTools {
         }
         br.close();
     }
-    static String getText(InputStream _is) throws IOException {
+    static String getText(InputStream _is) {
         StringBuilder sb = new StringBuilder();
         BufferedReader br = new BufferedReader(new InputStreamReader(_is));
+        try{
         for (String line=br.readLine(); line != null; line=br.readLine()){
             sb.append(" ").append(line);
         }
         br.close();
         _is.close();
         return(sb.toString());
+        }catch(IOException ioe){
+            fail(ioe.getMessage());
+            return(null);
+        }
     }
 
-    static String getLowercaseText(InputStream _is) throws IOException {
+    static String getLowercaseText(InputStream _is)  {
 
         return(getText( _is).toLowerCase());
     }
-    static String getLowercaseText(File _file) throws IOException {
+    static String getLowercaseText(File _file)  {
+        try{
        return(getLowercaseText(new FileInputStream(_file)));
-
+        }catch(IOException ioe){
+            return(null);
+        }
     }
 
     enum State { WS, TEXT, SINGLE, DOUBLE};
@@ -87,7 +96,7 @@ public class TextTools {
         return(sentences.toArray(new String[0]));
     }
 
-    static char[] getLowercaseTextChars(File _file) throws IOException {
+    static char[] getLowercaseTextChars(File _file)  {
         return(getLowercaseText(_file).toCharArray());
     }
 
@@ -157,9 +166,10 @@ public class TextTools {
         return(list.toArray(new String[0]));
     }
 
-    static String[] buildLowerCaseDictionary(File _file) throws IOException {
+    static String[] buildLowerCaseDictionary(File _file) {
         List<String> list = new ArrayList<String>();
         StringBuilder sb = new StringBuilder();
+        try{
         BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(_file)));
         for (String line=br.readLine(); line != null; line=br.readLine()){
             if (!line.trim().startsWith("//")){
@@ -173,9 +183,13 @@ public class TextTools {
         }
 
         return(list.toArray(new String[0]));
+        }catch(IOException ioe){
+            fail(ioe.getMessage());
+            return(null);
+        }
     }
 
-    static char[][] buildLowerCaseDictionaryChars(File _file) throws IOException {
+    static char[][] buildLowerCaseDictionaryChars(File _file)  {
         String[] lowerCaseDictionary=buildLowerCaseDictionary(_file);
         char[][] chars = new char[lowerCaseDictionary.length][];
         for (int i=0; i<lowerCaseDictionary.length; i++){
