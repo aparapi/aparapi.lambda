@@ -145,8 +145,8 @@ public class JunitHelper {
         }
         return(true);
     }
-    static float floatTolerance = 0.0001f;
-    static float doubleTolerance = 0.000001f;
+    static float floatTolerance = 0.01f;
+    static float doubleTolerance = 0.00001f;
     static boolean compare( float[] in, float[] out) {
         for (int i=0; i<in.length; i++){
             if (!withinTolerance(in[i], out[i])){
