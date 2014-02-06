@@ -9,6 +9,7 @@
       <mkdir dir="classes"/>
       <javac srcdir="src" destdir="classes" debug="on" includeantruntime="false" >
          <classpath>
+            <pathelement path="../common/common.jar"/>
             <pathelement path="../../com.amd.aparapi/dist/aparapi.jar"/>
          </classpath>
       </javac>

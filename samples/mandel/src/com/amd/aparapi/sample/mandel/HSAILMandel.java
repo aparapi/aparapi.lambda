@@ -36,7 +36,7 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 
  */
 
-package hsailtest;
+package com.amd.aparapi.sample.mandel;
 
 import com.amd.aparapi.Device;
 import com.amd.aparapi.sample.common.AparapiModeToggleButton;
@@ -51,7 +51,7 @@ import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 
-public class Mandel {
+public class HSAILMandel {
 
    /**
     * Width of Mandelbrot view.
@@ -239,6 +239,7 @@ public class Mandel {
    }
 
    public static void main(String[] _args){
-      (new Mandel()).doIt();
+      (new HSAILMandel()).doIt();
    }
 }
+
