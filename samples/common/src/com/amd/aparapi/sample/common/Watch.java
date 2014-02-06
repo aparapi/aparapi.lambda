@@ -16,26 +16,34 @@ public class Watch extends LEDWidget {
 
     private long startTime = 0L;
     private long stopTime = 0L;
-    private boolean running = false;
+    private volatile boolean running=false;
 
-    private Timer timer = new Timer(97, (e) -> {
+    private Timer timer = new Timer(33, (e) -> {
         stopTime = System.currentTimeMillis();
         setMilliValue((int) (stopTime - startTime));
     });
 
     public void start() {
         startTime = System.currentTimeMillis();
-        running = true;
         setColor(Color.RED);
         timer.start();
+        running = true;
     }
 
     public void stop() {
+        running = false;
         timer.stop();
         stopTime = System.currentTimeMillis();
         setMilliValue((int) (stopTime - startTime));
         setColor(Color.GREEN);
+
     }
+
+    public boolean isRunning(){
+        return(running);
+    }
+
+
 
     public Watch() {
         super();
