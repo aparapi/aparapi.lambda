@@ -21,14 +21,16 @@ export TESTS=" \
     hsailtest.StringLenJUnit \
     hsailtest.StringIndexOfJUnit \
     hsailtest.HypotJUnit \
-	hsailtest.MandelJUnit \
-	hsailtest.DickensJUnit \
-	hsailtest.MatchedStringJUnit \
-	hsailtest.CharArrayStateMachineJUnit \
-	hsailtest.CharAddJUnit \
-	hsailtest.SinCosJUnit \
-	hsailtest.IntVectorMultiplyAddJUnit \
-	hsailtest.StaticFieldAccess"
+    hsailtest.MandelJUnit \
+    hsailtest.DickensJUnit \
+    hsailtest.MatchedStringJUnit \
+    hsailtest.CharArrayStateMachineJUnit \
+    hsailtest.CharAddJUnit \
+    hsailtest.SinCosJUnit \
+    hsailtest.IntVectorMultiplyAddJUnit \
+    hsailtest.OopPointsJUnit \
+    hsailtest.OopPointsDefaultFieldsNoAccessorsJUnit \
+    hsailtest.StaticFieldAccess"
 
 export JARS="$JARS:../../samples/common/common.jar"
 export JARS="$JARS:hsailtest.jar"
