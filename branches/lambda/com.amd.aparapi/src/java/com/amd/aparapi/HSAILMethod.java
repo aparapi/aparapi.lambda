@@ -249,14 +249,12 @@ public class HSAILMethod {
             r.nl();
         }
         r.cbrace().semicolon().nl();
-		if (false){ // hack to fix eric's crazy code
         r.commentStart();
         for (HSAILStackFrame hsailStackFrame:frameSet){
             r.nl().append(hsailStackFrame.getUniqueName()).append("=").obrace().nl();
             hsailStackFrame.renderStack(r).cbrace().nl();
         }
         r.nl().commentEnd();
-		}
         return (r);
     }
 

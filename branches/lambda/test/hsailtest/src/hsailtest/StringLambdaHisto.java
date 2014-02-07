@@ -36,9 +36,9 @@ public class StringLambdaHisto {
 
     public static void main(String[] args) throws AparapiException, IOException {
         File dir = new File("C:\\Users\\user1\\aparapi\\branches\\lambda");
-        String[] strings = TextTools.buildLowerCaseDictionary(new File(dir, "names.txt"));
+        String[] strings = JunitHelper.buildLowerCaseDictionary(new File(dir, "names.txt"));
         int len = strings.length;
-        String text = TextTools.getLowercaseText(new File(dir, "moby.txt"));
+        String text = JunitHelper.getLowercaseText(new File(dir, "moby.txt"));
         int[] counts = new int[len];
         IntConsumer ic = gid -> {
             String chars = strings[gid];

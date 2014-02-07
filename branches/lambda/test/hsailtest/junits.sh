@@ -26,4 +26,5 @@ java \
     hsailtest.StringHashCodeJUnit \
     hsailtest.StringLenJUnit \
     hsailtest.StringIndexOfJUnit \
+    hsailtest.IntVectorMultiplyAddJUnit \
     hsailtest.HypotJUnit

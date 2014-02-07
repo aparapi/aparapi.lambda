@@ -48,11 +48,11 @@ public class CharArrayStateMachineJUnit {
     public void test(){
         File dataDir = new File("../../samples/dickens/data");
         assertTrue("Data Dir Exists", dataDir.exists() && dataDir.isDirectory());
-        char[][] strings = TextTools.buildLowerCaseDictionaryChars(new File(dataDir, "names.txt"));
+        char[][] strings = JunitHelper.buildLowerCaseDictionaryChars(new File(dataDir, "names.txt"));
         assertNotNull("names dictionary", strings);
         int len = strings.length;
 
-        char[] text =  TextTools.getLowercaseTextChars(new File(dataDir, "dickens/OliverTwist.txt"));
+        char[] text =  JunitHelper.getLowercaseTextChars(new File(dataDir, "dickens/OliverTwist.txt"));
         assertNotNull("names dictionary", text);
         int[] counts = new int[len];
         IntConsumer ic = gid -> {
