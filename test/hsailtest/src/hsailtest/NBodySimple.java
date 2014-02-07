@@ -1,6 +1,7 @@
 package hsailtest;
 
 import com.amd.aparapi.Device;
+import com.amd.aparapi.sample.common.PixelRenderer;
 
 import javax.swing.*;
 import java.awt.*;

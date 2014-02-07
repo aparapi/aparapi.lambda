@@ -1,6 +1,8 @@
 package hsailtest;
 
 import com.amd.aparapi.Device;
+import com.amd.aparapi.sample.common.PixelRenderer;
+
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
