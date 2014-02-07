@@ -1,3 +1,4 @@
+. ../../env.sh
 LIBPREFIX=../../com.amd.aparapi.jni/dist/libaparapi_$(uname -m)
 case $(uname -s) in 
   Darwin) LIBNAME=${LIBPREFIX}.dyLib;;
