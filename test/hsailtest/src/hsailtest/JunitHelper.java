@@ -66,7 +66,13 @@ public class JunitHelper {
         }
         System.out.println();
     }
-
+    static void dump(String type, int[] out) {
+        System.out.print(type + " ->");
+        for (int i = 0; i < out.length; i++) {
+            System.out.print( out[i] + ",");
+        }
+        System.out.println();
+    }
     static void dump(String type, int[] in, int[] out) {
         System.out.print(type + " ->");
         for (int i = 0; i < in.length; i++) {
