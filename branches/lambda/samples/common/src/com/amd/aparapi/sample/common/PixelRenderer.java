@@ -1,4 +1,4 @@
-package hsailtest;
+package com.amd.aparapi.sample.common;
 
 import javax.swing.*;
 import java.awt.*;
@@ -14,12 +14,12 @@ public class PixelRenderer {
     float frame;
     long first = System.currentTimeMillis();
 
-    JComponent component;
-    int width;
-    int height;
+    public JComponent component;
+    public int width;
+    public int height;
     BufferedImage offscreen ;
     int[] offscreenPixels;
-    PixelRenderer(int _width, int _height){
+    public PixelRenderer(int _width, int _height){
         width=_width;
         height = _height;
         component= new JComponent(){};
