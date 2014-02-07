@@ -1,12 +1,9 @@
-java \
- -Xmx2G \
- -agentpath:../../com.amd.aparapi.jni/dist/libaparapi_x86_64.so  \
- -Ddispatch=true \
- -Dcom.amd.aparapi.enableShowGeneratedHSAIL=true \
- -XX:-UseCompressedOops \
- -Djava.library.path=${OKRA_HOME}/dist/bin:${OKRA_HOME}/hsa/bin/x86_64 \
- -Dcom.amd.aparapi.logLevel=OFF\
- -Dcom.amd.aparapi.dumpFlags=false \
- -classpath ../../samples/common/common.jar:../../com.amd.aparapi/dist/aparapi.jar:hsailtest.jar:${OKRA_HOME}/dist/okra.jar:.libs/junit-4.10.jar \
- org.junit.runner.JUnitCore \
-    hsailtest.${1}JUnit
+. ../../env.sh
+
+export JARS="$JARS:../../samples/common/common.jar"
+export JARS="$JARS:hsailtest.jar"
+export JARS="$JARS:.libs/junit-4.10.jar"
+
+export CLASS=org.junit.runner.JUnitCore
+ 
+$JAVA -DshowUI=false -Dcom.amd.aparapi.enableShowGeneratedHSAIL=false -classpath $JARS $CLASS hsailtest.${1}JUnit
