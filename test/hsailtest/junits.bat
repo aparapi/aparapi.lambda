@@ -26,7 +26,8 @@ set TESTS= ^
     hsailtest.MatchedStringJUnit ^
     hsailtest.CharArrayStateMachineJUnit ^
     hsailtest.CharAddJUnit ^
-    hsailtest.SinCosJUnit 
+    hsailtest.SinCosJUnit ^
+    hsailtest.IntVectorMultiplyAddJUnit 
 
 set JARS=%JARS%;../../samples/common/common.jar
 set JARS=%JARS%;hsailtest.jar
