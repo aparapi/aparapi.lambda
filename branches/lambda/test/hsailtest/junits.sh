@@ -28,4 +28,5 @@ java \
     hsailtest.StringIndexOfJUnit \
     hsailtest.IntVectorMultiplyAddJUnit \
     hsailtest.StaticFieldAccess \
+    hsailtest.OopPointsJUnit \
     hsailtest.HypotJUnit

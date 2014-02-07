@@ -28,7 +28,8 @@ set TESTS= ^
     hsailtest.CharAddJUnit ^
     hsailtest.SinCosJUnit ^
     hsailtest.IntVectorMultiplyAddJUnit ^
-    hsailtest.StaticFieldAccessJUnit 
+    hsailtest.StaticFieldAccessJUnit ^
+    hsailtest.OopPointsJUnit 
 
 set JARS=%JARS%;../../samples/common/common.jar
 set JARS=%JARS%;hsailtest.jar

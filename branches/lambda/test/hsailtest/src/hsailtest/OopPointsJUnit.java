@@ -2,16 +2,18 @@ package hsailtest;
 
 import com.amd.aparapi.AparapiException;
 import com.amd.aparapi.Device;
+import org.junit.Test;
 
 import java.util.function.IntConsumer;
 
+import static junit.framework.Assert.assertTrue;
 
-public class OopLambda {
+
+public class OopPointsJUnit {
     public static class P {
       public int x;
        public int y;
         public int v;
-       int xy = 0;
 
         int getX(){
             return(x);
@@ -56,8 +58,9 @@ public class OopLambda {
     }
 
 
-    public static void main(String[] args) throws AparapiException {
-        System.out.println("PATH="+System.getenv("PATH"));
+    @Test
+    public void test() {
+
         int len = 12;
         P[] points = new P[len];
 
@@ -65,28 +68,33 @@ public class OopLambda {
             points[i] = new P();
         }
 
-
-
         IntConsumer ic = gid -> {
             P p = points[gid];
-            //p.x = gid;
-           // p.y = gid*2;
+
             p.setX(gid);
             p.setY(gid*2);
             p.setV(p.getXY());
-           // p.setX(p.getX()+gid);
 
-          //  p.setY(p.getY()+gid * 2);
-         //   points[gid].xy=points[gid].getXY();
         };
 
         Device.hsa().forEach(len, ic);
         dump("hsa", points);
+        P[] hsaPoints = new P[points.length];
+        for (int i=0; i<points.length; i++){
+            hsaPoints[i]=points[i];
+            points[i]=new P();
+        }
         Device.jtp().forEach(len, i-> points[i].clear());
         Device.jtp().forEach(len, ic);
         dump("jtp", points);
-        Device.jtp().forEach(len, i-> points[i].clear());
-        Device.seq().forEach(len, ic);
-        dump("seq", points);
+
+        for (int i=0; i<points.length; i++){
+            assertTrue("hsaPoint["+i+"]==points["+i+"]",
+                    hsaPoints[i].x==points[i].x &&
+                    hsaPoints[i].y==points[i].y &&
+                    hsaPoints[i].getXY()==points[i].getXY());
+
+        }
+
     }
 }
