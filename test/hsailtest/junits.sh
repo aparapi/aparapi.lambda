@@ -1,12 +1,6 @@
-java \
- -agentpath:../../com.amd.aparapi.jni/dist/libaparapi_x86_64.so  \
- -Ddispatch=true \
- -XX:-UseCompressedOops \
- -Djava.library.path=${OKRA_HOME}/dist/bin:${OKRA_HOME}/hsa/bin/x86_64 \
- -Dcom.amd.aparapi.logLevel=OFF\
- -Dcom.amd.aparapi.dumpFlags=false \
- -classpath ../../samples/common/common.jar:../../com.amd.aparapi/dist/aparapi.jar:hsailtest.jar:${OKRA_HOME}/dist/okra.jar:.libs/junit-4.10.jar \
- org.junit.runner.JUnitCore \
+. ../../env.sh
+
+export TESTS=" \
     hsailtest.FloatSquaresFuncJUnit \
     hsailtest.IntSquaresFuncJUnit \
     hsailtest.IntMaxJUnit \
@@ -26,7 +20,21 @@ java \
     hsailtest.StringHashCodeJUnit \
     hsailtest.StringLenJUnit \
     hsailtest.StringIndexOfJUnit \
-    hsailtest.IntVectorMultiplyAddJUnit \
-    hsailtest.StaticFieldAccess \
-    hsailtest.OopPointsJUnit \
-    hsailtest.HypotJUnit
+    hsailtest.HypotJUnit \
+	hsailtest.MandelJUnit \
+	hsailtest.DickensJUnit \
+	hsailtest.MatchedStringJUnit \
+	hsailtest.CharArrayStateMachineJUnit \
+	hsailtest.CharAddJUnit \
+	hsailtest.SinCosJUnit \
+	hsailtest.IntVectorMultiplyAddJUnit \
+	hsailtest.StaticFieldAccess"
+
+export JARS="$JARS:../../samples/common/common.jar"
+export JARS="$JARS:hsailtest.jar"
+export JARS="$JARS:.libs/junit-4.10.jar"
+
+export CLASS=org.junit.runner.JUnitCore
+
+$JAVA -DshowUI=false -Dcom.amd.aparapi.enableShowGeneratedHSAIL=false -classpath $JARS $CLASS $TESTS
+
