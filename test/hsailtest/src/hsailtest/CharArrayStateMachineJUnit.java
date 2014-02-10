@@ -47,6 +47,9 @@ public class CharArrayStateMachineJUnit {
     @Test
     public void test(){
         File dataDir = new File("../../samples/dickens/data");
+        if (!dataDir.exists()){
+            dataDir = new File("samples/dickens/data");
+        }
         assertTrue("Data Dir Exists", dataDir.exists() && dataDir.isDirectory());
         char[][] strings = JunitHelper.buildLowerCaseDictionaryChars(new File(dataDir, "names.txt"));
         assertNotNull("names dictionary", strings);

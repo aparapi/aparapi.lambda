@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" inherit-compiler-output="true">
+    <exclude-output />
+    <content url="file://$MODULE_DIR$/com.amd.aparapi.jni/src/cpp" />
+    <content url="file://$MODULE_DIR$/com.amd.aparapi/src/java">
+      <sourceFolder url="file://$MODULE_DIR$/com.amd.aparapi/src/java" isTestSource="false" />
+    </content>
+    <content url="file://$MODULE_DIR$/samples/common/src">
+      <sourceFolder url="file://$MODULE_DIR$/samples/common/src" isTestSource="false" />
+    </content>
+    <content url="file://$MODULE_DIR$/test/hsailtest/src">
+      <sourceFolder url="file://$MODULE_DIR$/test/hsailtest/src" isTestSource="false" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="junit-4.10" level="project" />
+  </component>
+</module>
+

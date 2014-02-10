@@ -125,6 +125,9 @@ public class DickensJUnit {
     @Test
     public void test() {
         File dataDir = new File("../../samples/dickens/data"); // we do assume standard layout of samples!
+        if (!dataDir.exists()){
+            dataDir = new File("samples/dickens/data"); // but we might be running from root (IntelliJ project)
+        }
         File booksDir = new File(dataDir, "dickens");
         Book[] library = new Book[]{
                 new Book("A Tail Of Two Cities", new File(booksDir, "ATailOfTwoCities.txt")),
