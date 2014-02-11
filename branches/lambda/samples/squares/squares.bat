@@ -1,6 +1,10 @@
-java ^
- -agentpath:..\..\com.amd.aparapi.jni\dist\aparapi_x86_64.dll ^
- -Dcom.amd.aparapi.executionMode=%1 ^
- -classpath ..\..\com.amd.aparapi\dist\aparapi.jar;squares.jar ^
- com.amd.aparapi.sample.squares.Main
+setlocal 
+call ../../env.bat
+
+set JARS=%JARS%;squares.jar
+set JVM_OPTS=%JVM_OPTS% -Dcom.amd.aparapi.executionMode=%1
+set JVM_OPTS=%JVM_OPTS% -Dcom.amd.aparapi.enableShowGeneratedOpenCL=true
+
+java %JVM_OPTS% -classpath %JARS% com.amd.aparapi.sample.squares.Main
+endlocal
 

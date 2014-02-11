@@ -1,5 +1,8 @@
-java ^
- -agentpath:..\..\com.amd.aparapi.jni\dist\aparapi_x86_64.dll ^
- -classpath ..\..\com.amd.aparapi\dist\aparapi.jar;info.jar ^
- com.amd.aparapi.sample.info.Main
+setlocal 
+call ../../env.bat
+
+set JARS=%JARS%;info.jar
+
+java %JVM_OPTS% -classpath %JARS% com.amd.aparapi.sample.info.Main
+endlocal
 
