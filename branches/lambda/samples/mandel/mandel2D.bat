@@ -1,12 +1,11 @@
-java ^
- -agentpath:../../com.amd.aparapi.jni/dist/aparapi_x86_64.dll ^
- -Dcom.amd.aparapi.executionMode=%1 ^
- -Dcom.amd.aparapi.logLevel=OFF^
- -Dcom.amd.aparapi.enableVerboseJNI=false ^
- -Dcom.amd.aparapi.enableProfiling=false ^
- -Dcom.amd.aparapi.enableShowGeneratedOpenCL=true ^
- -Dcom.amd.aparapi.enableVerboseJNIOpenCLResourceTracking=false ^
- -Dcom.amd.aparapi.dumpFlags=true ^
- -Dcom.amd.aparapi.enableInstructionDecodeViewer=false ^
- -classpath ../../com.amd.aparapi/dist/aparapi.jar;mandel.jar ^
- com.amd.aparapi.sample.mandel.Main2D
+setlocal 
+call ../../env.bat
+
+set JARS=%JARS%;mandel.jar 
+set JVM_OPTS=%JVM_OPTS% -Dcom.amd.aparapi.dumpFlags=true 
+set JVM_OPTS=%JVM_OPTS% -Dcom.amd.aparapi.executionMode=%1 
+set JVM_OPTS=%JVM_OPTS% -Dcom.amd.aparapi.logLevel=FINE
+set JVM_OPTS=%JVM_OPTS% -Dcom.amd.aparapi.enableShowGeneratedOpenCL=true 
+
+java %JVM_OPTS% -classpath %JARS% com.amd.aparapi.sample.mandel.Main2D
+endlocal 
