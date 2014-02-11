@@ -1,7 +1,8 @@
-java ^
- -agentpath:..\..\com.amd.aparapi.jni\dist\aparapi_x86_64.dll ^
- -Dcom.amd.aparapi.executionMode=%1 ^
- -Dcom.amd.aparapi.enableShowGeneratedOpenCL=true ^
- -classpath ..\..\com.amd.aparapi\dist\aparapi.jar;add.jar ^
- com.amd.aparapi.sample.add.Main
+setlocal 
+call ../../env.bat
+
+set JARS=%JARS%;add.jar 
+
+java %JVM_OPTS% -classpath %JARS% com.amd.aparapi.sample.add.Main
+endlocal 
 
