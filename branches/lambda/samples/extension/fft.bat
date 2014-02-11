@@ -1,9 +1,13 @@
-java ^
- -Djava.library.path=../../com.amd.aparapi.jni/dist ^
- -Dcom.amd.aparapi.executionMode=%1 ^
- -Dcom.amd.aparapi.enableProfiling=false ^
- -Dcom.amd.aparapi.enableShowGeneratedOpenCL=true ^
- -classpath ../../com.amd.aparapi/dist/aparapi.jar;extension.jar ^
- com.amd.aparapi.sample.extension.FFTExample
+setlocal 
+call ../../env.bat
+
+set JARS=%JARS%;extension.jar
+set JVM_OPTS=%JVM_OPTS% -Dcom.amd.aparapi.dumpFlags=true 
+set JVM_OPTS=%JVM_OPTS% -Dcom.amd.aparapi.executionMode=%1
+set JVM_OPTS=%JVM_OPTS% -Dcom.amd.aparapi.enableShowGeneratedOpenCL=true
+set JVM_OPTS=%JVM_OPTS% -Dcom.amd.aparapi.enableShowGeneratedHSAILAndExit=false
+
+java %JVM_OPTS% -classpath %JARS% com.amd.aparapi.sample.extension.FFTExample
+endlocal
 
 
