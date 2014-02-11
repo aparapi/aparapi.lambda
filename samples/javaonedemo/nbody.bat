@@ -1,8 +1,14 @@
 @echo off
-java ^
-  -agentpath:..\..\com.amd.aparapi.jni\dist\aparapi_x86_64.dll ^
-  -Djava.library.path=..\third-party\jogamp\windows-%PROCESSOR_ARCHITECTURE% ^
-  -classpath ..\third-party\jogamp\gluegen-rt.jar;..\third-party\jogamp\jogl-all.jar;..\..\com.amd.aparapi\dist\aparapi.jar;javaonedemo.jar ^
-  com.amd.aparapi.examples.javaonedemo.NBody 
+setlocal 
+call ../../env.bat
+
+set JARS=%JARS%;javaonedemo.jar
+set JARS=%JARS%;..\common\common.jar
+set JARS=%JARS%;..\third-party\jogamp\gluegen-rt.jar
+set JARS=%JARS%;..\third-party\jogamp\jogl-all.jar
+set JVM_OPTS=%JVM_OPTS% -Djava.library.path=..\third-party\jogamp\windows-%PROCESSOR_ARCHITECTURE%
+
+java %JVM_OPTS% -classpath %JARS% com.amd.aparapi.examples.javaonedemo.NBody
+endlocal
 
 

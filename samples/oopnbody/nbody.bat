@@ -1,15 +1,20 @@
 @echo off
+setlocal 
+call ../../env.bat
 
-java ^
-  -agentpath:..\..\com.amd.aparapi.jni\dist\aparapi_x86_64.dll ^
-  -Djava.library.path=..\third-party\jogamp ^
-  -Dcom.amd.aparapi.executionMode=%1 ^
-  -Dcom.amd.aparapi.enableProfiling=false ^
-  -Dcom.amd.aparapi.enableShowGeneratedOpenCL=true ^
-  -Dbodies=%2 ^
-  -Dheight=600 ^
-  -Dwidth=600 ^
-  -classpath ..\third-party\jogamp\jogl-all.jar;..\third-party\jogamp\gluegen-rt.jar;..\..\com.amd.aparapi\dist\aparapi.jar;oopnbody.jar ^
-  com.amd.aparapi.examples.oopnbody.Main 
+set JARS=%JARS%;oopnbody.jar
+set JARS=%JARS%;..\common\common.jar
+set JARS=%JARS%;..\third-party\jogamp\gluegen-rt.jar
+set JARS=%JARS%;..\third-party\jogamp\jogl-all.jar
+set JVM_OPTS=%JVM_OPTS% -Djava.library.path=..\third-party\jogamp\windows-%PROCESSOR_ARCHITECTURE%
+set JVM_OPTS=%JVM_OPTS% -Dcom.amd.aparapi.executionMode=%1
+set JVM_OPTS=%JVM_OPTS% -Dbodies=%2
+set JVM_OPTS=%JVM_OPTS% -Dheight=600
+set JVM_OPTS=%JVM_OPTS% -Dwidth=600
+
+java %JVM_OPTS% -classpath %JARS% com.amd.aparapi.examples.oopnbody.Main 
+endlocal
+
+
 
 

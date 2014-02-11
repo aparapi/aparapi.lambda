@@ -1,7 +1,12 @@
-java ^
- -agentpath:..\..\com.amd.aparapi.jni\dist\aparapi_x86_64.dll ^
- -Dcom.amd.aparapi.executionMode=%1 ^
- -Dcom.amd.aparapi.enableShowGeneratedOpenCL=true ^
- -classpath ..\..\com.amd.aparapi\dist\aparapi.jar;convolution.jar ^
- com.amd.aparapi.sample.convolution.Convolution %2
+setlocal 
+call ../../env.bat
+
+set JARS=%JARS%;convolution.jar
+set JVM_OPTS=%JVM_OPTS% -Dcom.amd.aparapi.dumpFlags=true 
+set JVM_OPTS=%JVM_OPTS% -Dcom.amd.aparapi.executionMode=%1
+set JVM_OPTS=%JVM_OPTS% -Dcom.amd.aparapi.enableShowGeneratedOpenCL=true
+set JVM_OPTS=%JVM_OPTS% -Dcom.amd.aparapi.enableShowGeneratedHSAILAndExit=false
+
+java %JVM_OPTS% -classpath %JARS% com.amd.aparapi.sample.convolution.Convolution %2
+endlocal
 
