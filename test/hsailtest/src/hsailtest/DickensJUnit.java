@@ -9,12 +9,13 @@ package hsailtest;
 import com.amd.aparapi.Device;
 import org.junit.Test;
 
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.fail;
+import static junit.framework.Assert.fail;
 
 
 class Book implements Comparable<Book> {
