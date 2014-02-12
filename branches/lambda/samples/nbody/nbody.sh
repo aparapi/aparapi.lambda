@@ -1,14 +1,15 @@
-LIBPREFIX=../../com.amd.aparapi.jni/dist/libaparapi_$(uname -m)
-case $(uname -s) in 
-  Darwin) LIBNAME=${LIBPREFIX}.dyLib;;
-  Linux)  LIBNAME=${LIBPREFIX}.so;;
-esac
-java\
-  -agentpath:${LIBNAME}\
-  -Dcom.amd.aparapi.executionMode=$1 \
-  -Dbodies=$2 \
-  -Dheight=600 \
-  -Dwidth=600 \
-  -classpath ../third-party/jogamp/jogl-all.jar:../third-party/jogamp/gluegen-rt.jar:../../com.amd.aparapi/dist/aparapi.jar:nbody.jar \
-  com.amd.aparapi.examples.nbody.Main
+#!/bin/sh
+. ../../env.sh
+export JARS="${JARS}:nbody.jar"
+export JARS="${JARS}:../third-party/jogamp/jogl-all.jar"
+export JARS="${JARS}:../third-party/jogamp/gluegen-rt.jar"
+
+export JVM_OPTS="${JVM_OPTS} -Dcom.amd.aparapi.useAgent=true"
+export JVM_OPTS="${JVM_OPTS} -Dcom.amd.aparapi.executionMode=${1}"
+export JVM_OPTS="${JVM_OPTS} -Dbodies=${2}"
+export JVM_OPTS="${JVM_OPTS} -Dwidth=600"
+export JVM_OPTS="${JVM_OPTS} -Dheight=600"
+export JVM_OPTS="${JVM_OPTS} -Dcom.amd.aparapi.enableVerboseJNI=false"
+
+java ${JVM_OPTS} -classpath ${JARS} com.amd.aparapi.examples.nbody.Main
 

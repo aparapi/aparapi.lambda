@@ -1,12 +1,10 @@
+#!/bin/sh
 . ../../env.sh
-java \
- -Xmx2G \
- -agentpath:../../com.amd.aparapi.jni/dist/libaparapi_x86_64.so  \
- -Ddispatch=true \
- -Dcom.amd.aparapi.enableShowGeneratedHSAIL=true \
- -XX:-UseCompressedOops \
- -Djava.library.path=${OKRA_HOME}/dist/bin:${OKRA_HOME}/hsa/bin/x86_64 \
- -Dcom.amd.aparapi.logLevel=OFF\
- -Dcom.amd.aparapi.dumpFlags=false \
- -classpath ../../samples/common/common.jar:../../com.amd.aparapi/dist/aparapi.jar:dickens.jar:${OKRA_HOME}/dist/okra.jar:.libs/junit-4.10.jar \
- com.amd.aparapi.sample.dickens.Dickens
+export JARS="${JARS}:dickens.jar"
+export JARS="${JARS}:../commons/commons.jar"
+
+export JVM_OPTS="${JVM_OPTS} -Dcom.amd.aparapi.useAgent=true"
+export JVM_OPTS="${JVM_OPTS} -Dcom.amd.aparapi.executionMode=${1}"
+export JVM_OPTS="${JVM_OPTS} -Dcom.amd.aparapi.enableVerboseJNI=false"
+
+java ${JVM_OPTS} -classpath ${JARS} com.amd.aparapi.sample.dickens.Dickens

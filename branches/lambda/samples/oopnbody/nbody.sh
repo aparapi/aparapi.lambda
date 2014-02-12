@@ -1,16 +1,14 @@
-LIBPREFIX=../../com.amd.aparapi.jni/dist/libaparapi_$(uname -m)
-case $(uname -s) in 
-  Darwin) LIBNAME=${LIBPREFIX}.dyLib;;
-  Linux)  LIBNAME=${LIBPREFIX}.so;;
-esac
-java\
-  -agentpath:${LIBNAME}\
-  -Dcom.amd.aparapi.executionMode=$1 \
-  -Dcom.amd.aparapi.logLevel=INFO \
-  -Dcom.amd.aparapi.enableShowGeneratedOpenCL=true \
-  -Dbodies=$2 \
-  -Dheight=800 \
-  -Dwidth=1200 \
-  -classpath ../third-party/jogamp/jogl-all.jar:../third-party/jogamp/gluegen-rt.jar:../../com.amd.aparapi/dist/aparapi.jar:oopnbody.jar \
-  com.amd.aparapi.examples.oopnbody.Main 
+#!/bin/sh
+. ../../env.sh
+export JARS="${JARS}:oopnbody.jar"
+export JARS="${JARS}:../third-party/jogamp/jogl-all.jar"
+export JARS="${JARS}:../third-party/jogamp/gluegen-rt.jar"
 
+export JVM_OPTS="${JVM_OPTS} -Dcom.amd.aparapi.useAgent=true"
+export JVM_OPTS="${JVM_OPTS} -Dcom.amd.aparapi.executionMode=${1}"
+export JVM_OPTS="${JVM_OPTS} -Dbodies=${2}"
+export JVM_OPTS="${JVM_OPTS} -Dwidth=600"
+export JVM_OPTS="${JVM_OPTS} -Dheight=600"
+export JVM_OPTS="${JVM_OPTS} -Dcom.amd.aparapi.enableVerboseJNI=false"
+
+java ${JVM_OPTS} -classpath ${JARS} com.amd.aparapi.examples.oopnbody.Main
