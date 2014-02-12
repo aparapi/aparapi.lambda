@@ -32,11 +32,13 @@ export TESTS=" \
     hsailtest.OopPointsDefaultFieldsNoAccessorsJUnit \
     hsailtest.StaticFieldAccess"
 
-export JARS="$JARS:../../samples/common/common.jar"
-export JARS="$JARS:hsailtest.jar"
-export JARS="$JARS:.libs/junit-4.10.jar"
+export JARS="${JARS}:../../samples/common/common.jar"
+export JARS="${JARS}:hsailtest.jar"
+export JARS="${JARS}:.libs/junit-4.10.jar"
 
-export CLASS=org.junit.runner.JUnitCore
+export JVM_OPTS="${JVM_OPTS} -DshowUI=false"
+export JVM_OPTS="${JVM_OPTS} -Dcom.amd.aparapi.enableShowGeneratedHSAIL=false"
 
-$JAVA -DshowUI=false -Dcom.amd.aparapi.enableShowGeneratedHSAIL=false -classpath $JARS $CLASS $TESTS
-
+export CLASS=org.junit.runner.JUnitCore 
+ 
+java ${JVM_OPTS} -classpath ${JARS} ${CLASS} ${TESTS}

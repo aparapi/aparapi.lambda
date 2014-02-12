@@ -5,6 +5,7 @@
    <!-- 
 			USER CONFIGURABLE PROPERTIES 
    -->	
+   <property environment="env"/>
    <property name="junit.jar.version" value="4.10"/>
    <property name="junit.jar.name" value="junit-${junit.jar.version}.jar"/>
    <property name="junit.home" value="${basedir}/.libs"/>
@@ -21,18 +22,46 @@
    <property name="ant.build.javac.source" value="1.6"/>
    <property name="ant.build.javac.target" value="1.6"/>
 
+   <condition property="lib.prefix" value="lib">
+      <and>
+        <os family="unix" />
+     </and>
+   </condition>
+
+
+
+   <condition property="lib.prefix" value="lib">
+      <and>
+         <os family="unix" />
+      </and>
+   </condition>
+
+   <condition property="lib.prefix" value="">
+      <and>
+         <os family="windows" />
+      </and>
+   </condition>
+
    <condition property="lib.suffix" value=".dylib">
-        <os family="mac" />
+      <os family="mac" />
    </condition>
 
    <condition property="lib.suffix" value=".so">
-         <and>
-            <os family="unix" />
-            <not>
-               <os family="mac" />
-            </not>
-         </and>
-      </condition>
+      <and>
+         <os family="unix" />
+         <not>
+            <os family="mac" />
+         </not>
+      </and>
+   </condition>
+
+   <condition property="lib.suffix" value=".dll">
+      <and>
+         <os family="windows" />
+      </and>
+   </condition>
+
+   <echo> lib suffix = ${lib.suffix} </echo>
 
 
 	
@@ -99,7 +128,14 @@
    	<mkdir dir="junit"/>
       <mkdir dir="junit/data"/>
       
-   	<junit printsummary="false" fork="false" haltonfailure="false" failureproperty="tests.failed" showoutput="false">
+      <junit printsummary="false" fork="true" haltonfailure="false" failureproperty="tests.failed" showoutput="true">
+         <jvmarg value="-agentpath:../../com.amd.aparapi.jni/dist/${lib.prefix}aparapi_x86_64${lib.suffix}"/>
+         <jvmarg value="-Xmx2G"/>
+         <jvmarg value="-Ddispatch=true"/>
+         <jvmarg value="-XX:-UseCompressedOops"/>
+         <jvmarg value="-Dcom.amd.aparapi.enableShowGeneratedHSAIL=false"/>
+         <jvmarg value="-Djava.library.path=${env.OKRA_HOME}/dist/bin;${env.OKRA_HOME}/hsa/bin/x86_64"/>
+
          <formatter type="xml" />
          <classpath refid="classpath"/>
          <batchtest todir="junit/data">

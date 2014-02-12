@@ -5,8 +5,8 @@ export ANT_HOME=/Users/garyfrost/apache-ant-1.9.2
 export ANT_HOME=/usr/share/ant
 echo "ANT_HOME:${ANT_HOME}"
 
-export APARAPI_HOME=/home/user1/aparapi-lambda
 export APARAPI_HOME=/Users/garyfrost/aparapi/aparapi/branches/lambda
+export APARAPI_HOME=/home/user1/aparapi-lambda
 echo "APARAPI_HOME:${APARAPI_HOME}"
 
 test -d ${APARAPI_HOME}/com.amd.aparapi.jni/dist && export APARAPI_JNI_HOME=${APARAPI_HOME}/com.amd.aparapi.jni/dist  || export APARAPI_JNI_HOME=${APARAPI_HOME}
