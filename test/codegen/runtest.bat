@@ -1,4 +1,4 @@
 setlocal
-set ANT_OPTS=-agentpath:../../com.amd.aparapi.jni/dist/aparapi_x86_64.dll
-ant 
+call ..\..\env.bat
+ant junit
 endlocal
