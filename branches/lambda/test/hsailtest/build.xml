@@ -65,6 +65,7 @@
    </condition>
 
    <echo> lib suffix = ${lib.suffix} </echo>
+   <echo> lib prefix = ${lib.prefix} </echo>
 
 
 

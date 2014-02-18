@@ -9,15 +9,17 @@ First consider editing the properties in build.properties
    <!-- 
    DO NOT EDIT BELOW THIS LINE 
    -->
+   <property environment="env" />
    <echo>OS Name:    ${os.name}</echo>
    <echo>OS Version: ${os.version}</echo>
    <echo>OS Arch:    ${os.arch}</echo>
+   <echo>LOGNAME:    ${env.LOGNAME}</echo>
+   <echo>OCL:        ${env.OCL}</echo>
 
    <!--<property name="build.compiler" value="javac1.6"/>-->
    <!--  <property name="ant.build.javac.source" value="1.6"/>-->
    <!-- <property name="ant.build.javac.target" value="1.6"/> -->
 
-   <property environment="env" />
    <!-- we need env.PATH for msvc only -->
 
    <!-- uncomment this if you want to use mingw! -->
@@ -51,6 +53,23 @@ First consider editing the properties in build.properties
 
       <available property="linux.amd.app.sdk.exists" file="/opt/AMDAPP" type="dir"/>
       <condition property="amd.app.sdk.dir" value="/opt/AMDAPP">
+         <and>
+            <os family="unix" />
+            <not>
+               <os family="mac" />
+            </not>
+            <isset property="linux.amd.app.sdk.exists" />
+            <not>
+               <isset property="win32.amd.app.sdk.exists" />
+            </not>
+            <not>
+               <isset property="win64.amd.app.sdk.exists" />
+            </not>
+         </and>
+      </condition>
+
+      <available property="linux.amd.app.sdk.exists" file="/home/gfrost/ocl" type="dir"/>
+      <condition property="amd.app.sdk.dir" value="/home/gfrost/ocl">
          <and>
             <os family="unix" />
             <not>
