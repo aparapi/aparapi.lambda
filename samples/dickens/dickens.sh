@@ -1,7 +1,7 @@
 #!/bin/sh
 . ../../env.sh
 export JARS="${JARS}:dickens.jar"
-export JARS="${JARS}:../commons/commons.jar"
+export JARS="${JARS}:../common/common.jar"
 
 export JVM_OPTS="${JVM_OPTS} -Dcom.amd.aparapi.useAgent=true"
 export JVM_OPTS="${JVM_OPTS} -Dcom.amd.aparapi.executionMode=${1}"
