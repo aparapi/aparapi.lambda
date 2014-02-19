@@ -16,12 +16,12 @@ public class OkraRunner{
     OkraContext context;
     OkraKernel k;
     OkraRunner(String _hsail){
-        context = new OkraContext();
         if (first){
-           System.out.println("setting coherence to "+Config.enableSetOKRACoherence);
-           context.setCoherence(Config.enableSetOKRACoherence);
+           System.out.println("Setting coherence to "+Config.enableSetOKRACoherence);
+           OkraContext.setCoherence(Config.enableSetOKRACoherence);
            first = false;
         }
+        context = new OkraContext();
         k = new OkraKernel(context, _hsail, "&run");
     }
    public void run(int _size, Object... args){
