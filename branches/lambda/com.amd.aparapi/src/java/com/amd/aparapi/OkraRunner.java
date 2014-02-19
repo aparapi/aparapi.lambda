@@ -12,10 +12,16 @@ import java.util.function.IntConsumer;
  * To change this template use File | Settings | File Templates.
  */
 public class OkraRunner{
+    static boolean first = true;
     OkraContext context;
     OkraKernel k;
     OkraRunner(String _hsail){
         context = new OkraContext();
+        if (first){
+           System.out.println("setting coherence to "+Config.enableSetOKRACoherence);
+           context.setCoherence(Config.enableSetOKRACoherence);
+           first = false;
+        }
         k = new OkraKernel(context, _hsail, "&run");
     }
    public void run(int _size, Object... args){
