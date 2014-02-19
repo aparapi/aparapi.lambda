@@ -117,6 +117,13 @@ class Config{
    static final boolean enableExecutionModeReporting = Boolean.getBoolean(propPkgName + ".enableExecutionModeReporting");
 
    /**
+    * Allows the user to request OKRA coherence mode (true|false).
+    * <p/>
+    * Usage -Dcom.amd.aparapi.enableSetOKRACoherence={true|false}
+    */
+   static final boolean enableSetOKRACoherence = Boolean.getBoolean(propPkgName + ".enableSetOKRACoherence");
+
+   /**
     * Allows the user to request that generated OpenCL code is dumped to standard out.
     * <p/>
     * Usage -Dcom.amd.aparapi.enableShowGeneratedOpenCL={true|false}
@@ -259,6 +266,7 @@ class Config{
          System.out.println(propPkgName + ".enableShowGeneratedHSAIL{true|false}=" + enableShowGeneratedHSAIL);
           System.out.println(propPkgName + ".enableShowGeneratedHSAILAndExit{true|false}=" + enableShowGeneratedHSAILAndExit);
          System.out.println(propPkgName + ".enableShowJavaP{true|false}=" + enableShowJavaP);
+         System.out.println(propPkgName + ".enableSetOKRACoherence{true|false}=" + enableSetOKRACoherence);
          System.out.println(propPkgName + ".enableExecutionModeReporting{true|false}=" + enableExecutionModeReporting);
          //    System.out.println(propPkgName + ".enableUseRealLocalVariableTableIfAvailable{true|false}="+enableUseRealLocalVariableTableIfAvailable);
          System.out.println(propPkgName + ".enableShowLocalVariableTable{true|false}=" + enableShowLocalVariableTable);
