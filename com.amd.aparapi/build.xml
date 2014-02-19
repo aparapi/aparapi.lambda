@@ -68,7 +68,7 @@
     </target>
 
  <path id="compiler.class.path">
-    <pathelement path="${env.OKRA}/dist/okra.jar"/>
+    <pathelement path="${env.OKRA_HOME}/dist/okra.jar"/>
     <pathelement path="../mockra/mockra.jar"/>
  </path>
 
