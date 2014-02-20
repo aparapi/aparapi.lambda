@@ -8,6 +8,6 @@ export JVM_OPTS="${JVM_OPTS} -DshowUI=false"
 export JVM_OPTS="${JVM_OPTS} -Dcom.amd.aparapi.enableShowGeneratedHSAIL=false"
 export JVM_OPTS="${JVM_OPTS} -Dcom.amd.aparapi.enableSetOKRACoherence=true"
 
-export CLASS=org.junit.runner.JUnitCore
+export CLASS=hsailtest.JUnitTester
  
-java ${JVM_OPTS} -classpath ${JARS} ${CLASS} hsailtest.${1}JUnit
+java ${JVM_OPTS} -classpath ${JARS} ${CLASS} ${1}
