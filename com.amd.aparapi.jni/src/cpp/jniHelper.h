@@ -129,18 +129,6 @@ class JNIHelper{
 
 #define CHECK(condition, msg) CHECK_RETURN(condition, msg, 0)
 
-#define ASSERT_CL_NO_RETURN(msg) if (status != CL_SUCCESS){\
-   fprintf(stderr, "!!!!!!! %s failed: %s\n", msg, CLHelper::errString(status));\
-}
-
-#define ASSERT_CL_RETURN(msg, val) if (status != CL_SUCCESS){\
-   ASSERT_CL_NO_RETURN(msg)\
-   return val;\
-}
-
-#define ASSERT_CL(msg) ASSERT_CL_RETURN(msg, 0)
-
-#define PRINT_CL_ERR(status, msg) fprintf(stderr, "!!!!!!! %s failed %s\n", msg, CLHelper::errString(status));
 
 #define ASSERT_FIELD(id) CHECK_NO_RETURN(id##FieldID == 0, "No such field as " #id)
 

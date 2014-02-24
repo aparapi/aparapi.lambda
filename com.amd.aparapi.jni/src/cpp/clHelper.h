@@ -153,5 +153,18 @@ extern List<cl_event> executeEventList;
 extern List<cl_event> writeEventList;
 #endif
 
+#define ASSERT_CL_NO_RETURN(msg) if (status != CL_SUCCESS){\
+   fprintf(stderr, "!!!!!!! %s failed: %s\n", msg, CLHelper::errString(status));\
+}
+
+#define ASSERT_CL_RETURN(msg, val) if (status != CL_SUCCESS){\
+   ASSERT_CL_NO_RETURN(msg)\
+   return val;\
+}
+
+#define ASSERT_CL(msg) ASSERT_CL_RETURN(msg, 0)
+
+#define PRINT_CL_ERR(status, msg) fprintf(stderr, "!!!!!!! %s failed %s\n", msg, CLHelper::errString(status));
+
 #endif // CLHELPER_H
 
