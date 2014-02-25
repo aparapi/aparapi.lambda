@@ -27,6 +27,7 @@ First consider editing the properties in build.properties
             <and>
                <not><isset property="ocl_lib.exists" /></not>
                <not><isset property="ocl_include.exists" /></not>
+               <not> <os family="mac" /> </not>
             </and>
          </condition>
          <![CDATA[
