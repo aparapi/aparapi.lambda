@@ -8,4 +8,5 @@ package com.amd.okra;
  * To change this template use File | Settings | File Templates.
  */
 public class OkraContext{
+  static public void setCoherence(boolean _flag){}
 }
