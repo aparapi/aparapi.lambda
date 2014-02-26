@@ -14,7 +14,7 @@ import java.awt.*;
 import java.awt.geom.Line2D;
 
 public class LEDWidget {
-    JPanel panel;
+    JComponent component;
 
 
     enum SEGMENT {
@@ -65,32 +65,28 @@ public class LEDWidget {
     }
 
     public void setMilliValue(int _milliValue) {
-
-        milliValue = _milliValue;
-        panel.updateUI();
+        if (milliValue!=_milliValue){
+          milliValue = _milliValue;
+          component.repaint();
+        }
     }
 
     public LEDWidget() {
-        panel = new JPanel() {
+        component = new JComponent() {
             @Override
             public void paint(Graphics g) {
-                super.paint(g);
+        //        super.paint(g);
                 render(g);
             }
         };
-        panel.setBackground(Color.BLACK);
-        panel.setPreferredSize(new Dimension(250, 80));
-
-
+        component.setPreferredSize(new Dimension(250, 80));
         milliValue = 0;
-
     }
 
     protected int milliValue = 0;
 
-
     public Container getContainer() {
-        return (panel);
+        return (component);
     }
 
     Color color = Color.GREEN;
@@ -99,16 +95,48 @@ public class LEDWidget {
         color = _color;
     }
 
+    public void line(Graphics2D g2, double x1, double y1, double x2, double y2){
+          g2.drawLine((int)x1, (int)y1, (int)x2, (int)y2);
+    }
+
+    Stroke s = new BasicStroke(4f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER);
+    DIGIT digits[] = new DIGIT[5];
+
+    public void renderDigit(Graphics2D g2, DIGIT digit, double left, double right, double top, double mid, double bot,  double cut, double glyphWidth, double glyphHeight){
+        for (SEGMENT seg : digit.segments) {
+                switch (seg) {
+                    case TOP:
+                        line(g2, left + cut, top, left + glyphWidth, top);
+                        break;
+                    case UPL:
+                        line(g2, left, top + cut, left, top + glyphHeight);
+                        break;
+                    case UPR:
+                        line(g2, right + cut, top + cut, right + cut, top + glyphHeight);
+                        break;
+                    case MID:
+                        line(g2, left + cut, mid, left + glyphWidth, mid);
+                        break;
+                    case LOL:
+                        line(g2, left, mid + cut, left, mid + glyphHeight);
+                        break;
+                    case LOR:
+                        line(g2, right + cut, mid + cut, right + cut, mid + glyphHeight);
+                        break;
+                    case LOW:
+                        line(g2, left + cut, bot, left + glyphWidth, bot);
+                        break;
+                }
+            }
+    }
 
     public void render(Graphics g) {
-
         Graphics2D g2 = (Graphics2D) g;
-
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         double
-                width = panel.getWidth(),
-                height = panel.getHeight(),
+                width = component.getWidth(),
+                height = component.getHeight(),
                 cut = 4,
                 vertMargin = .08 * height,
                 glyphWidth = .100 * width,
@@ -122,26 +150,23 @@ public class LEDWidget {
                 mid = top + cut + glyphHeight,
                 bot = mid + cut + glyphHeight;
         int fudge = 12;
+        g2.setColor(Color.BLACK);
+        g2.fillRect(0,0,(int)width, (int)height);
         g2.setColor(color);
-        Stroke s = new BasicStroke(4f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER);
         g2.setStroke(s);
-        g2.draw(new Line2D.Double(left + 4 * glyphWidth + fudge + cut / 2, top + glyphHeight / 2, left + 4 * glyphWidth + fudge + cut / 2, top + glyphHeight / 2));
-        g2.draw(new Line2D.Double(left + 4 * glyphWidth + fudge + cut / 2, top + glyphHeight * 7 / 4, left + 4 * glyphWidth + fudge + cut / 2, top + glyphHeight * 7 / 4));
+        line(g2, left + 4 * glyphWidth + fudge + cut / 2, top + glyphHeight / 2, left + 4 * glyphWidth + fudge + cut / 2, top + glyphHeight / 2);
+        line(g2, left + 4 * glyphWidth + fudge + cut / 2, top + glyphHeight * 7 / 4, left + 4 * glyphWidth + fudge + cut / 2, top + glyphHeight * 7 / 4);
 
         int hundreds = (milliValue / 100000) % 10;
         int tens = (milliValue / 10000) % 10;
         int units = (milliValue / 1000) % 10;
         int tenths = (milliValue / 100) % 10;
         int hundredths = (milliValue / 10) % 10;
-        DIGIT digits[] = new DIGIT[]{
-                DIGIT.get(hundreds, true),
-                DIGIT.get(tens, hundreds == 0),
-                DIGIT.get(units, hundreds == 0 && tens == 0),
-                DIGIT.get(tenths, false),
-                DIGIT.get(hundredths, false),
-
-        };
-
+        digits[0]= DIGIT.get(hundreds, true);
+        digits[1]= DIGIT.get(tens, hundreds == 0);
+        digits[2]= DIGIT.get(units, hundreds == 0 && tens == 0);
+        digits[3]= DIGIT.get(tenths, false);
+        digits[4]= DIGIT.get(hundredths, false);
 
         for (int j = 0; j < 5; j++) {
             DIGIT digit = digits[j];
@@ -149,37 +174,11 @@ public class LEDWidget {
                 left += glyphWidth - horzPad;
                 right += glyphWidth - horzPad;
             }
-            for (SEGMENT seg : digit.segments) {
-                switch (seg) {
-                    case TOP:
-                        g2.draw(new Line2D.Double(left + cut, top, left + glyphWidth, top));
-                        break;
-                    case UPL:
-                        g2.draw(new Line2D.Double(left, top + cut, left, top + glyphHeight));
-                        break;
-                    case UPR:
-                        g2.draw(new Line2D.Double(right + cut, top + cut, right + cut, top + glyphHeight));
-                        break;
-                    case MID:
-                        g2.draw(new Line2D.Double(left + cut, mid, left + glyphWidth, mid));
-                        break;
-                    case LOL:
-                        g2.draw(new Line2D.Double(left, mid + cut, left, mid + glyphHeight));
-                        break;
-                    case LOR:
-                        g2.draw(new Line2D.Double(right + cut, mid + cut, right + cut, mid + glyphHeight));
-                        break;
-                    case LOW:
-                        g2.draw(new Line2D.Double(left + cut, bot, left + glyphWidth, bot));
-                        break;
-                }
-            }
-
-
+            renderDigit(g2, digit, left, right, top, mid, bot,  cut,  glyphWidth, glyphHeight);
+           
             left += horzPad + glyphWidth;
             right += horzPad + glyphWidth;
         }
-        panel.updateUI();
     }
 
 
