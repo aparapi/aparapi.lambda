@@ -23,17 +23,27 @@ We also have some software dependencies.
 
 || *Component* || *Suggested*||
 ||Java 8 JDK|| http://www.oracle.com/technetwork/java/javase/downloads/ea-jsp-142245.html||
-||Ubuntu 13.10|| http://www.ubuntu.com/download ||
-||Ubuntu HSA enabled kernel image|| See instructions below ||
+||Ubuntu 13.10 64-bit edition|| http://www.ubuntu.com/download ||
+||Ubuntu 13.10 64-bit edition HSA enabled kernel image|| See instructions below ||
 ||OKRA HSA enabled runtime||  See instructions below  ||
 
-Our hope is that the list of HW/SW support widens, but for early adopters this is the set of HW/SW we have been testing with.
+The hope is that the list of HW/SW support widens, but for early adopters this is the set of HW/SW we have been testing with.
 
-= Setting up the hardware =
+= Setting up your System =
 
-HSA enablement requires that your BIOS has *IOMMUv2* enabled.  Remember HSA allows the GPU and CPU cores to access main memory at the same time (no more memory buffer transfers!). IOMMUv2 feature is what allows this sharing of memory to happen. Each BIOS is different but for the motherboard above. You will need to set the option
+== Configure your BIOS to support IOMMU ===
 
-{{{ add info here }}}
+Once you have built your {{{AMD A10-7850K APU}}} based system you should make sure that your system is configured to use IOMMU. 
+
+Remember HSA allows the GPU and CPU cores to share the same memory. IOMMU  needs to be enabled for this. 
+
+For the recommended ASUS board above you will need to make sure that your BIOS is updated to version 0802. New BIOS versions can be downloaded from the ASUS support pages, at the following link. 
+
+http://www.asus.com/Motherboards/A88XPRO
+
+Click on "Support" in the light gray bar (under the black bar at the top) then choose "Other" for OS..
+
+Once you have the latest BIOS you will need to enable IOMMU in the system BIOS. This is done using the "CPU Configuration" screen under "Advanced Mode" and then enabling IOMMU.
 
 ==Installing Ubuntu 13.10 ==
 Once you have your BIOS setup you need to install Ubuntu http://www.ubuntu.com/download
