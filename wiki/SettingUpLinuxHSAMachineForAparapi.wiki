@@ -72,7 +72,7 @@ From here we can install our new image and setup the HSA KFD (the driver for HSA
 
 {{{
 $ cd Linux-HSA-Drivers-And-Images-AMD
-$ echo  "KERNEL=\"kfd\", MODE=\"0666\"" | sudo tee /etc/udev/rules.d/kfd.rules 
+$ echo  "KERNEL==\"kfd\", MODE=\"0666\"" | sudo tee /etc/udev/rules.d/kfd.rules 
 $ sudo dpkg -i ubuntu12.10-based-alpha1/linux-image-3.13.0-kfd+_3.1....
 $ sudo reboot
 }}}
@@ -137,5 +137,6 @@ Specifically the build system has been changed to support OKRA, Aparapi JNI code
 
 You will need to edit *{{{env.sh}}}* and make sure that *{{{APARAPI_HOME}}}*,  *{{{OKRA_HOME}}}* and *{{{JAVA_HOME}}}* are all set correctly. 
 
+... to be continued....
 
  
