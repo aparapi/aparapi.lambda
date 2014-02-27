@@ -1,0 +1,101 @@
+#summary How to setup a Linux HSA machine for testing HSA enabled Aparapi
+
+=Incomplete - Under construction! move along
+
+= Introduction =
+
+Now HSA hardware is generally available I figured it was time to describe how to setup a HSA enabled Linux platform so that it can run Aparapi. 
+
+These instructions were based on my experience setting up a platform using the following hardware.
+
+||APU||AMD A10-7850K APU||
+||Motherboard||ASUS A88X-PRO motherboard (ATX form factor)||
+||Memory||G.SKILL Ripjaws X Series 16GB (2 x 8GB) 240-Pin DDR3 SDRAM DDR3 2133||
+
+At this stage (early adoption) we will limit our install to ubuntu 13.10 or later 64 bit installs. 
+
+http://www.ubuntu.com/download
+ 
+
+= Setting up the hardware =
+
+HSA enablement requires that your BIOS has *IOMMUv2* enabled.  Remember HSA allows the GPU and CPU cores to access main memory at the same time (no more memory buffer transfers!). IOMMUv2 feature is what allows this sharing of memory to happen. Each BIOS is different but for the motherboard above. You will need to set the option
+
+{{{ add info here }}}
+
+Once you have your BIOS setup you need to install Ubuntu http://www.ubuntu.com/download
+
+Until all of the HSA drivers and features are available in *stock* linux and have been pulled down into Ubuntu distro we will need a special HSA enabled kernel image.  
+
+A Ubuntu compatible kernel can be pulled from github
+
+{{{
+$ git clone https://github.com/HSAFoundation/Linux-HSA-Drivers-And-Images-AMD.git
+}}}
+
+This will create the following subdir on your machine
+{{{
+Linux-HSA-Drivers-And-Images-AMD/
+   LICENSE
+   README.md
+   ubuntu12.10-based-alpha1/
+       3.13.0.0-config
+       xorg.conf
+       kfd-alpha-1/
+           linux-image-3.13.0-kfd+_3.1....
+             
+}}}
+
+From here we can install our new image and setup the HSA KFD (the driver for HSA)and reboot to the new kernel.
+
+{{{
+$ cd Linux-HSA-Drivers-And-Images-AMD
+$ echo  "KERNEL=\"kfd\", MODE=\"0666\"" | sudo tee /etc/udev/rules.d/kfd.rules 
+$ sudo dpkg -i ubuntu12.10-based-alpha1/kfd-alpha-1/linux-image-3.13.0-kfd+_3.1....
+$ sudo reboot
+}}}
+
+Now we need a runtime for executing HSAIL code.  We share common infrastructure used by our sister OpenJDK project called *Sumatra*. Both Aparapi and Sumatra use OKRA to execute HSAIL code on a HSA enabled platform. 
+
+OKRA (Offloadable Kernel Runtime API) is also available from HSA foundation site. 
+
+We can get the latest version using
+
+{{{
+$ git clone https://github.com/HSAFoundation/Okra-Interface-to-HSA-Device.git
+}}}
+
+This will create the following dir structure. 
+
+{{{
+Okra-Interface-to-HSA-Device/
+   README.md
+   okra/
+      README
+      dist/
+         okra.jar
+         bin/
+            libamdhsacl64.so
+            libnewhsacore64.so
+            libokra_x86_64.so
+         include/
+            common.h
+            okraContext.h
+             
+      samples/
+         dist/
+           Squares
+           Squares.hsail
+         runSquares.sh 
+}}}
+
+ 
+To sanity check your install you can 
+{{{
+$ cd okra/samples
+$ sh runSquares.sh
+}}}
+
+If everything is OK this should run the C Squares test app. 
+
+Now we can pull the Aparapi code from SVN 
