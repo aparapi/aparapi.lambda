@@ -6,12 +6,19 @@
 
 Now HSA hardware is generally available I figured it was time to describe how to setup a HSA enabled Linux platform so that it can run Aparapi. 
 
+Here is a nice introduction to HSA http://developer.amd.com/resources/heterogeneous-computing/what-is-heterogeneous-system-architecture-hsa/
+
+But for Aparapi users the main advantage is that we are no longer limited to the GPU memory for running GPU tasks.  Also because the CPU and the GPU can both see the same memory (the Java heap) Aparapi code can now access Java objects directly.  This removes a number of Aparapi constraints.  So more of your code can now run on the GPU.
+
+== Hardware Required ==
+
 These instructions were based on my experience setting up a platform using the following hardware.
 || *Component* || *Suggested*||
-||APU||AMD A10-7850K APU||
+||APU||AMD A10-7850K APU http://www.amd.com/us/products/desktop/processors/a-series/Pages/a-series-apu.aspx||
 ||Motherboard||ASUS A88X-PRO http://www.asus.com/Motherboards/A88XPRO ||
 ||Memory||G.SKILL Ripjaws X Series 16GB (2 x 8GB) 240-Pin DDR3 SDRAM DDR3 2133||
 
+== Software Required ==
 We also have some software dependencies. 
 
 || *Component* || *Suggested*||
