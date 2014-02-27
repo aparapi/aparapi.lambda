@@ -7,7 +7,7 @@
 Now HSA hardware is generally available I figured it was time to describe how to setup a HSA enabled Linux platform so that it can run Aparapi. 
 
 These instructions were based on my experience setting up a platform using the following hardware.
-
+|| *Component* || *Suggested*||
 ||APU||AMD A10-7850K APU||
 ||Motherboard||ASUS A88X-PRO motherboard (ATX form factor)||
 ||Memory||G.SKILL Ripjaws X Series 16GB (2 x 8GB) 240-Pin DDR3 SDRAM DDR3 2133||
@@ -34,7 +34,7 @@ $ git clone https://github.com/HSAFoundation/Linux-HSA-Drivers-And-Images-AMD.gi
 }}}
 
 This will create the following subdir on your machine
-{{{
+<pre>
 Linux-HSA-Drivers-And-Images-AMD/
    LICENSE
    README.md
@@ -44,7 +44,7 @@ Linux-HSA-Drivers-And-Images-AMD/
        kfd-alpha-1/
            linux-image-3.13.0-kfd+_3.1....
              
-}}}
+</pre>
 
 From here we can install our new image and setup the HSA KFD (the driver for HSA)and reboot to the new kernel.
 
@@ -67,7 +67,7 @@ $ git clone https://github.com/HSAFoundation/Okra-Interface-to-HSA-Device.git
 
 This will create the following dir structure. 
 
-{{{
+<pre>
 Okra-Interface-to-HSA-Device/
    README.md
    okra/
@@ -87,7 +87,7 @@ Okra-Interface-to-HSA-Device/
            Squares
            Squares.hsail
          runSquares.sh 
-}}}
+</pre>
 
  
 To sanity check your install you can 
@@ -98,4 +98,16 @@ $ sh runSquares.sh
 
 If everything is OK this should run the C Squares test app. 
 
-Now we can pull the Aparapi code from SVN 
+Now we can pull the Aparapi lambda/HSA branch from SVN 
+
+{{{
+$ svn checkout https://aparapi.googlecode.com/svn/branches/lambda aparapi-lambda
+}}}
+
+If you are familiar with Aparapi structure then this tree should not be a suprise.
+
+You will need to edit {{{env.sh}}} and make sure that APRAPI_HOME,  OKRA_HOME and JAVA_HOME are all set correctly. 
+
+Remember you will need Java 8 for Aparapi.
+
+ 
