@@ -55,6 +55,13 @@ A Ubuntu compatible kernel can be pulled from github
 $ git clone https://github.com/HSAFoundation/Linux-HSA-Drivers-And-Images-AMD.git
 }}}
 
+Or you can pull the zip and unzip using curl if you don't have git
+
+{{{
+$ curl -L https://github.com/HSAFoundation/Linux-HSA-Drivers-And-Images-AMD/archive/master.zip > drivers.zip
+$ unzip drivers.zip
+}}}
+
 This will create the following subdir on your machine
 <pre>
 Linux-HSA-Drivers-And-Images-AMD/
@@ -85,6 +92,12 @@ We can get the latest version using of OKRA (Offloadable Kernel Runtime API) fro
 $ git clone https://github.com/HSAFoundation/Okra-Interface-to-HSA-Device.git
 }}}
 
+or if you prefer curl/unzip
+
+{{{
+$ curl -L https://github.com/HSAFoundation/Okra-Interface-to-HSA-Device/archive/master.zip > okra.zip
+$ unzip okra.zip
+}}}
 This will create the following dir structure. 
 
 <pre>
