@@ -138,7 +138,27 @@ $ sh runSquares.sh
 If everything is OK this should run the C Squares test app. 
 
 Congratulations, you have executed your first HSA enabled app.
-== Installing the HSA enabled Aparapi branch ==
+
+
+== Getting OpenCL headers and libraries ==
+
+We need OpenCL headers and libraries to build Aparapi (remember we still support OpenCL). 
+
+My recommendation is to download *{{{AMD-APP-SDK-v2.9-lnx64.tgz}}}* from  http://developer.amd.com/tools-and-sdks/heterogeneous-computing/amd-accelerated-parallel-processing-app-sdk/downloads
+ and then extracting the libraries and headers. 
+
+Note that we have nested zipped jars in this archive.
+
+{{{
+$ gunzip AMD-APP-SDK-v2.9-lnx64.tgz
+$ tar xvf AMD-APP-SDK-v2.9-lnx64.tar
+$ gunzip AMD-APP-SDK-v2.9-RC-lnx64.tgz
+$ tar xvf AMD-APP-SDK-v2.9-RC-lnx64
+}}} 
+
+Note where *AMD-APP-SDK-v2.9-RC-lnx64* is located, you need this in the following step. 
+
+== Pulling the HSA enabled Aparapi branch and building ==
 
 Now we can pull the Aparapi lambda/HSA branch from SVN 
 {{{
@@ -149,8 +169,37 @@ If you are familiar with Aparapi structure then this tree should not be _that mu
 
 Specifically the build system has been changed to support OKRA, Aparapi JNI code is provided as a Java agent and the execution scripts all refer to *{{{${APARAPI_HOME}/env.sh}}}* to setup a reasonable execution environment.
 
-You will need to edit *{{{env.sh}}}* and make sure that *{{{APARAPI_HOME}}}*,  *{{{OKRA_HOME}}}* and *{{{JAVA_HOME}}}* are all set correctly. 
+You will need to edit *{{{env.sh}}}* and make sure that *{{{APARAPI_HOME}}}*,  *{{{OKRA_HOME}}}*, *{{{OCL_HOME}}}* and *{{{JAVA_HOME}}}* correctly.
 
-... to be continued....
+Here are how I set my vars. 
 
+|| *environment variable* || * value * ||
+|| JAVA_HOME || /usr/lib/jvm/java-7-openjdk-amd64/ ||
+|| OCL_HOME || /home/${LOGNAME}/AMD-APP-SDK-v2.9-RC-lnx64||
+|| APARAPI_HOME || /home/${LOGNAME}/aparapi-lambda ||
+|| OKRA_HOME || /home/${LOGNAME}/okra ||
+
+Now you should source *{{{env.sh}}}*
+
+{{{
+$ cd /home/${LOGNAME}/aparapi-lambda
+$ . env.sh
+}}}
+ 
+And now you should be good to go!
+
+{{{
+$ ant
+}}}
+
+If you get any problems check the env vars first.
+
+If all is well you should be able to run some samples. 
+
+{{{
+$ cd samples/mandel
+$ sh hsailmandel.sh 
+}}}
+
+ 
  
