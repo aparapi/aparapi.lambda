@@ -1,4 +1,5 @@
 #summary How to setup a Linux HSA machine for testing HSA enabled Aparapi
+#sidebar HSASidebar
 
 <img src="http://poojachopragoel.com/wp-content/uploads/2013/02/coming-soon.jpg" width="200" height="200"/>
 
