@@ -39,9 +39,9 @@ Remember HSA allows the GPU and CPU cores to share the same memory. IOMMU  needs
 
 For the recommended ASUS board above you will need to make sure that your BIOS is updated to version 0802. New BIOS versions can be downloaded from the ASUS support pages, at the following link. 
 
-http://www.asus.com/Motherboards/A88XPRO
+This is a direct link to the 0802 version of the BIOS from ASUS's site as of 2/28/2014. 
 
-Click on "Support" in the light gray bar (under the black bar at the top) then choose "Other" for OS..
+http://dlcdnet.asus.com/pub/ASUS/mb/SocketFM2/A88X-PRO/A88X-PRO-ASUS-0802.zip
 
 Once you have the latest BIOS you will need to enable IOMMU in the system BIOS. This is done using the "CPU Configuration" screen under "Advanced Mode" and then enabling IOMMU.
 
