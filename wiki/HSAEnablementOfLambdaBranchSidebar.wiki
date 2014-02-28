@@ -1,4 +1,4 @@
 #summary Sidebar for HSAEnablementOfLambdaBranchAparapi
 
  * [SettingUpLinuxHSAMachineForAparapi How to setup a HSA enabled Linux Platform]
- * [http://www.youtube.com/watch?v=caEPq4KvTTA How to setup a HSA simulator on a Linux Platform]
+ * [UsingAparapiLambdaBranchWithHSASimulator How to setup a HSA simulator on a Linux Platform]
