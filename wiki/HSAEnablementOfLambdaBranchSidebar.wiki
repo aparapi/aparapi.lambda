@@ -1,4 +1,4 @@
 #summary Sidebar for HSAEnablementOfLambdaBranchAparapi
 
- * [http://www.youtube.com/watch?v=5ntILiXTuhE Introduction Video]
- * [http://www.youtube.com/watch?v=caEPq4KvTTA Phil Rogers' presentation at IFA 2012]
+ * [SettingUpLinuxHSAMachineForAparapi How to setup a HSA enabled Linux Platform]
+ * [http://www.youtube.com/watch?v=caEPq4KvTTA How to setup a HSA simulator on a Linux Platform]
