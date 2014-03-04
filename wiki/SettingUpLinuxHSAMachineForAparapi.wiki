@@ -1,13 +1,14 @@
 #summary How to setup a Linux HSA machine for testing HSA enabled Aparapi
 #sidebar SettingUpLinuxHSAMachineForAparapiSidebar
 
+<wiki:comment>
 <img src="http://poojachopragoel.com/wp-content/uploads/2013/02/coming-soon.jpg" width="200" height="200"/>
 
 =Incomplete - Under construction! move along :)
-
+</wiki:comment>
 = Introduction =
 
-Now HSA hardware is generally available I figured it was time to describe how to setup a HSA enabled Linux platform so that it can run Aparapi. 
+Now that HSA hardware is generally available I figured it was time to describe how to setup a HSA enabled Linux platform so that it can run Aparapi. 
 
 Here is a nice introduction to HSA http://developer.amd.com/resources/heterogeneous-computing/what-is-heterogeneous-system-architecture-hsa/
 
