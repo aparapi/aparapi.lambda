@@ -28,8 +28,8 @@ We also have some software dependencies.
 || *Component* || *Suggested*||
 ||Java 8 JDK|| http://www.oracle.com/technetwork/java/javase/downloads/ea-jsp-142245.html||
 ||Ubuntu 13.10 64-bit edition|| http://www.ubuntu.com/download ||
-||Ubuntu 13.10 64-bit edition HSA enabled kernel image|| See instructions below ||
-||OKRA HSA enabled runtime||  See instructions below  ||
+||Ubuntu 13.10 64-bit edition HSA enabled kernel image||https://github.com/HSAFoundation/Linux-HSA-Drivers-And-Images-AMD  ||
+||OKRA HSA enabled runtime||  https://github.com/HSAFoundation/Okra-Interface-to-HSA-Device  ||
 
 The hope is that the list of HW/SW support widens, but for early adopters this is the set of HW/SW we have been testing with.
 
