@@ -56,6 +56,7 @@ Until all of the HSA drivers and features are available in *stock* linux and hav
 A Ubuntu compatible kernel can be pulled from github
 
 {{{
+$ sudo apt-get install git
 $ git clone https://github.com/HSAFoundation/Linux-HSA-Drivers-And-Images-AMD.git
 }}}
 
@@ -82,7 +83,7 @@ From here we can install our new image and setup the HSA KFD (the driver for HSA
 {{{
 $ cd Linux-HSA-Drivers-And-Images-AMD
 $ echo  "KERNEL==\"kfd\", MODE=\"0666\"" | sudo tee /etc/udev/rules.d/kfd.rules 
-$ sudo dpkg -i ubuntu12.10-based-alpha1/linux-image-3.13.0-kfd+_3.1....
+$ sudo dpkg -i ubuntu13.10-based-alpha1/linux-image-3.13.0-kfd+_3.13.0-kfd+-2_amd64.deb
 $ sudo reboot
 }}}
 
