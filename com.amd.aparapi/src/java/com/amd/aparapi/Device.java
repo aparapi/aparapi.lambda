@@ -6,6 +6,79 @@ import com.amd.aparapi.OpenCLDevice.DeviceSelector;
 import java.util.function.IntConsumer;
 
 public abstract class Device{
+
+
+
+    static public class IntRange{
+       int from;
+       int to;
+       public ParallelIntRange parallel(){
+          return(new ParallelIntRange(this));
+       }
+       IntRange(int _from, int _to){
+          from =_from;
+          to =_to;
+       }
+       public void forEach(IntConsumer _ic){
+          Device device = Device.seq();
+          device.forEach(to, _ic);
+       }
+    }
+
+    static public class ParallelIntRange {
+       IntRange intRange;
+       ParallelIntRange(IntRange _intRange){
+          intRange = _intRange;
+       }
+       public void forEach(IntConsumer _ic){
+          Device device = Device.hsa();
+          device.forEach(intRange.to, _ic);
+       }
+    }
+
+    static public interface ObjectConsumer<T>{
+       void accept(T t);
+    }
+
+     static public class ParallelArrayRange<T> {
+       ArrayRange<T> arrayRange;
+       ParallelArrayRange(ArrayRange _arrayRange){
+          arrayRange = _arrayRange;
+       }
+       public void forEach(ObjectConsumer<T> _oc){
+          for (T i:arrayRange.arr){
+             _oc.accept(i);
+          }
+       }
+    }
+
+    static public class ArrayRange<T>{
+       T[] arr;
+       ArrayRange(T[] _arr){
+          arr = _arr;
+       }
+       public ParallelArrayRange<T> parallel(){
+          return(new ParallelArrayRange(this));
+       }
+       public void forEach(ObjectConsumer<T> _oc){
+          for (T i :arr){
+             _oc.accept(i);
+          }
+       }
+    }
+
+    static public <T> ArrayRange<T> range(T[] _arr){
+       return((ArrayRange<T>)new ArrayRange(_arr));
+    }
+
+    static public IntRange range(int _from, int _to){
+       return(new IntRange(_from, _to));
+    }
+
+    static void foo(){
+       range(new String[0]);
+    }
+
     public static Device getByName(String _deviceName) {
         return(_deviceName.equals("hsa")?Device.hsa():
                 (_deviceName.equals("jtp")?Device.jtp():
