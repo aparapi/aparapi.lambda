@@ -115,6 +115,7 @@ public class HSADevice extends Device {
         return(this);
 
     }
+
     public Device forEach(int size, IntConsumer ic) {
         try {
             CachedRunner cachedRunner = null;
