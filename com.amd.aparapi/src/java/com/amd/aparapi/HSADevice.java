@@ -45,6 +45,11 @@ public class HSADevice extends Device {
         }
     }
     public Device forEach(int size, String _hsailText, IntConsumer ic) {
+       return(forEach(size, 0, _hsailText, ic));
+    }
+    
+
+    public Device forEach(int size, int offset, String _hsailText, IntConsumer ic) {
         try {
             CachedRunner cachedRunner = null;
             if (map.containsKey(ic.getClass())) {
@@ -104,7 +109,7 @@ public class HSADevice extends Device {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
             cachedRunner.args[arg++]=0;
-            cachedRunner.runner.run(size, cachedRunner.args);
+            cachedRunner.runner.run(size, offset, cachedRunner.args);
 
 
         } catch (AparapiException e) {
@@ -117,6 +122,10 @@ public class HSADevice extends Device {
     }
 
     public Device forEach(int size, IntConsumer ic) {
+        return(forEach(size, 0, ic));
+    }
+
+    public Device forEach(int size, int offset, IntConsumer ic) {
         try {
             CachedRunner cachedRunner = null;
             if (map.containsKey(ic.getClass())) {
@@ -176,7 +185,7 @@ public class HSADevice extends Device {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
             cachedRunner.args[arg++]=0;
-            cachedRunner.runner.run(size, cachedRunner.args);
+            cachedRunner.runner.run(size, offset, cachedRunner.args);
 
 
         } catch (AparapiException e) {

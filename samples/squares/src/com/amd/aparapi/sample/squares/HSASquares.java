@@ -39,6 +39,7 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 package com.amd.aparapi.sample.squares;
 
 import com.amd.aparapi.Device;
+import com.amd.aparapi.HSADevice;
 
 /**
  * An example Aparapi application which computes and displays squares of a set of 512 input values.
@@ -69,7 +70,8 @@ public class HSASquares{
       /** Aparapi Kernel which computes squares of input array elements and populates them in corresponding elements of 
        * output array. 
        **/
-      Device.range(0, size).parallel().forEach(gid-> squares[gid] = values[gid] * values[gid]);
+      //Device.range(0, size).parallel().forEach(gid-> squares[gid] = values[gid] * values[gid]);
+      ((HSADevice)Device.hsa()).forEach(32, 32,  gid-> squares[gid] = values[gid] * values[gid]);
 
       // Display computed square values.
       for (int i = 0; i < size; i++) {
