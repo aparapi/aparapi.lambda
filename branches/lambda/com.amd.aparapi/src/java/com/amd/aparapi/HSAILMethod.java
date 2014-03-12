@@ -301,7 +301,9 @@ public class HSAILMethod {
                 // HSAILInstructionSet.ld_arg_s64(instructions, hsailStackFrame, initial, arg.getArgc() + argOffset); // if we need to support real calls.
             }
         }
-        HSAILInstructionSet.workitemabsid_u32(instructions,  frames.peek(), initial, argc + argOffset -1); // we overwrite the last arg with the gid
+        HSAILInstructionSet.workitemabsid_u32(instructions,  frames.peek(), initial, argc + argOffset ); // we overwrite the last arg +1 with the gid
+
+        HSAILInstructionSet.add(instructions, new HSAILInstructionSet.add<StackReg_s32, s32>(frames.peek(), initial, new StackReg_s32(argc+argOffset-1), new StackReg_s32(argc+argOffset-1), new StackReg_s32(argc+argOffset)));
         HSAILInstructionSet.addInstructions(instructions, frameSet, frames, method);
     }
 }
