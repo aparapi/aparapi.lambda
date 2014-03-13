@@ -191,6 +191,16 @@ $ tar xvf ~/Downloads/jdk-8-fcs-bin-b132-linux-x64-04_mar_2014.tar
 
 I now have {{{~/jdk1.8.0}}} as my java 8 install dir.
 
+Alternatively the following will pull from Oracles site using curl
+{{{
+$ cd ~
+$ curl http://download.java.net/jdk8/archive/b132/binaries/jdk-8-fcs-bin-b132-linux-x64-04_mar_2014.tar.gz?q=download/jdk8/archive/b132/binaries/jdk-8-fcs-bin-b132-linux-x64-04_mar_2014.tar.gz > jdk-8-fcs-bin-b132-linux-x64-04_mar_2014.tar.gz
+$ gunzip jdk-8-fcs-bin-b132-linux-x64-04_mar_2014.tar.gz
+$ tar xvf jdk-8-fcs-bin-b132-linux-x64-04_mar_2014.tar
+}}}
+
+I now have {{{~/jdk1.8.0}}} as my java 8 install dir.
+
 == You will need ant == 
 
 {{{
