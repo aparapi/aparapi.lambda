@@ -39,7 +39,10 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 package com.amd.aparapi.sample.squares;
 
 import com.amd.aparapi.Device;
-import com.amd.aparapi.HSADevice;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * An example Aparapi application which computes and displays squares of a set of 512 input values.
@@ -50,27 +53,27 @@ import com.amd.aparapi.HSADevice;
  *
  */
 
-public class HSASquares{
+public class HSALab {
 
    public static void main(String[] _args) {
+      String[] strings = new String[]{"one", "two", "three", "four"};
+      ArrayList<String> stringList = new ArrayList<String>();
+      stringList.addAll(Arrays.asList(strings));
 
-      final int size = 64;
 
-      /** Input float array for which square values need to be computed. */
-      final float[] values = new float[size];
+      int sum = 0;// Device.seq().range(0,strings.length).sum(i-> strings[i].length()>3?1:0);
+    //  sum = Device.seq().range(strings).sum(s-> s.length()>3?1:0);
+      Device.IntReducer reducer= (l,r)-> {return(Math.max(l,r));};
+      Device.Mapper<String> mapper= s-> {return(s.length());};
+      // Device.IntMapper mapper= i-> {return(strings[i].length());};
 
-      /** Initialize input array. */
-      Device.jtp().range(size).forEach(gid->  values[gid] = gid);
+      //sum = Device.seq().range(strings).mapReduce(mapper, reducer);
 
-      /** Output array which will be populated with square values of corresponding input array elements. */
-      final float[] squares = new float[size];
+     sum = Device.seq().range(stringList).mapReduce(mapper, reducer);
 
-      /** computes squares of input array elements and populates them in corresponding elements of output array. **/
-      //Device.hsa().forEach(24, 40, gid-> squares[gid] = values[gid] * values[gid]);
-      Device.hsa().range(size).forEach(gid-> squares[gid] = values[gid] * values[gid]);
 
-      // Display computed square values.
-      Device.seq().range(size).forEach(id->System.out.printf("%6.0f %8.0f\n", values[id], squares[id]));
+
+       System.out.println(sum);
    }
 
 }
