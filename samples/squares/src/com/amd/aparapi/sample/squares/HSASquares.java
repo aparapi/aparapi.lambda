@@ -60,23 +60,17 @@ public class HSASquares{
       final float[] values = new float[size];
 
       /** Initialize input array. */
-      for (int i = 0; i < size; i++) {
-         values[i] = i;
-      }
+      Device.jtp().range(0,32).forEach(gid->  values[gid] = gid);
 
       /** Output array which will be populated with square values of corresponding input array elements. */
       final float[] squares = new float[size];
 
-      /** Aparapi Kernel which computes squares of input array elements and populates them in corresponding elements of 
-       * output array. 
-       **/
-      //Device.range(0, size).parallel().forEach(gid-> squares[gid] = values[gid] * values[gid]);
-      ((HSADevice)Device.hsa()).forEach(32, 32,  gid-> squares[gid] = values[gid] * values[gid]);
+      /** computes squares of input array elements and populates them in corresponding elements of output array. **/
+      //Device.hsa().forEach(24, 40, gid-> squares[gid] = values[gid] * values[gid]);
+      Device.hsa().range(24,40).forEach(gid-> squares[gid] = values[gid] * values[gid]);
 
       // Display computed square values.
-      for (int i = 0; i < size; i++) {
-         System.out.printf("%6.0f %8.0f\n", values[i], squares[i]);
-      }
+      Device.seq().range(64).forEach(id->System.out.printf("%6.0f %8.0f\n", values[id], squares[id]));
    }
 
 }

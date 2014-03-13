@@ -24,8 +24,8 @@ public class OkraRunner{
         context = new OkraContext();
         k = new OkraKernel(context, _hsail, "&run");
     }
-   public void run(int _size, int _offset,   Object... args){
-      args[args.length-1]=_offset;
+   public void run(int _from, int _to,   Object... args){
+      args[args.length-1]=_from;
       // The args will be the captured args followed by the fake 'id' arg which is passed to the kernel
       // but subsequently clobbered by generated HSAIL
       //
@@ -68,7 +68,7 @@ public class OkraRunner{
       //
       // forEach(0, 1024, IntConsumer) can be mapped to forEach(0, 512, IntConsumer)+forEach(0, 512, IntConsumer)
       //
-      k.setLaunchAttributes(_size, 0);
+      k.setLaunchAttributes(_to-_from, 0);
       k.dispatchWithArgs(args);
    }
 

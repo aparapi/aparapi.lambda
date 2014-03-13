@@ -5,14 +5,16 @@ import java.util.concurrent.CyclicBarrier;
 import java.util.function.IntConsumer;
 
 public class JavaSequentialDevice extends Device{
+    @Override public void forEach(int _to, final IntConsumer _intConsumer){
 
+        forEach(0, _to, _intConsumer);
+    }
 
-   public Device forEach(int _range, final IntConsumer _intConsumer){
+   public void forEach(int _from, int _to, final IntConsumer _intConsumer){
 
-      for(int t = 0; t < _range; t++){
+      for(int t = _from; t < _to; t++){
          _intConsumer.accept(t);
       }
-      return (this);
    }
 
 }
