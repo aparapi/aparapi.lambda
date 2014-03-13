@@ -14,12 +14,11 @@ public class JavaThreadPoolDevice extends Device {
         }
     }
 
-    public Device forEach(int _range, final IntConsumer _intConsumer) {
-        return(forEach(0, _range, threads, _intConsumer));
+    public void forEach(int _range, final IntConsumer _intConsumer) {
+        forEach(0, _range, threads, _intConsumer);
     }
-    public Device forEach(int _from, int _to, int _threads, final IntConsumer _intConsumer) {
 
-
+    public void forEach(int _from, int _to, int _threads, final IntConsumer _intConsumer) {
         int range = _to-_from;
         if (range < _threads) {
             for (int t = 0; t < range; t++) {
@@ -38,7 +37,6 @@ public class JavaThreadPoolDevice extends Device {
             }
             wait(barrier);
         }
-        return (this);
     }
 
 }

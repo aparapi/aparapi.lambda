@@ -11,12 +11,12 @@ export ANT_HOME=/usr/share/ant
 export JAVA_HOME=/usr/lib/jvm/java-8-oracle
 
 # set OCL_LIB and OCL_INCLUDE to point to your OpenCL SDK installation lib and include dirs (so Aparapi com.amd.aparapi.jni can build)
-export OCL_HOME=${APARAPI_HOME}/../ocl
+export OCL_HOME=/home/${LOGNAME}/ocl
 export OCL_LIB=${OCL_HOME}/lib/x86_64
 export OCL_INCLUDE=${OCL_HOME}/include
 
 # set OKRA_HOME to your OKRA directory (/dist is underneath here)
-export OKRA_HOME=${APARAPI_HOME}/../okra
+export OKRA_HOME=/home/${LOGNAME}/okra
 
 if test -f ${APARAPI_HOME}/myEnv.sh ; then 
    echo "${APARAPI_HOME}/myEnv.sh content start #########{"

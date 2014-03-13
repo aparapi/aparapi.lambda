@@ -6,8 +6,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.IntConsumer;
 
-public class HSADevice extends Device {
-    // TODO: We need to cache somewhere to avoid creating HSAIl each time
+public class  HSADevice extends Device<HSADevice> {
+
     static class CachedRunner {
         String hsail;
         Object instance;
@@ -44,12 +44,12 @@ public class HSADevice extends Device {
             e.printStackTrace();
         }
     }
-    public Device forEach(int size, String _hsailText, IntConsumer ic) {
-       return(forEach(size, 0, _hsailText, ic));
+    public Device forEach(int to, String _hsailText, IntConsumer ic) {
+       return(forEach(0, to, _hsailText, ic));
     }
     
 
-    public Device forEach(int size, int offset, String _hsailText, IntConsumer ic) {
+    public Device forEach(int from, int to, String _hsailText, IntConsumer ic) {
         try {
             CachedRunner cachedRunner = null;
             if (map.containsKey(ic.getClass())) {
@@ -109,7 +109,7 @@ public class HSADevice extends Device {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
             cachedRunner.args[arg++]=0;
-            cachedRunner.runner.run(size, offset, cachedRunner.args);
+            cachedRunner.runner.run(from, to, cachedRunner.args);
 
 
         } catch (AparapiException e) {
@@ -121,11 +121,11 @@ public class HSADevice extends Device {
 
     }
 
-    public Device forEach(int size, IntConsumer ic) {
-        return(forEach(size, 0, ic));
+    public void forEach(int to, IntConsumer ic) {
+        forEach(0, to, ic);
     }
 
-    public Device forEach(int size, int offset, IntConsumer ic) {
+    public void forEach(int from, int to, IntConsumer ic) {
         try {
             CachedRunner cachedRunner = null;
             if (map.containsKey(ic.getClass())) {
@@ -185,7 +185,7 @@ public class HSADevice extends Device {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
             cachedRunner.args[arg++]=0;
-            cachedRunner.runner.run(size, offset, cachedRunner.args);
+            cachedRunner.runner.run(from, to, cachedRunner.args);
 
 
         } catch (AparapiException e) {
@@ -193,7 +193,7 @@ public class HSADevice extends Device {
         } catch (ClassNotFoundException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
-        return (this);
+
 
     }
 }

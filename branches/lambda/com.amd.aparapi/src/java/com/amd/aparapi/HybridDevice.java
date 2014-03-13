@@ -13,8 +13,8 @@ public class HybridDevice extends Device {
     HSADevice hsaDevice = (HSADevice)Device.hsa();
     JavaThreadPoolDevice jtpDevice = (JavaThreadPoolDevice)Device.jtp();
     @Override
-    public Device forEach(int range,  IntConsumer ic) {
-       return(forEach(range, .8f, ic));
+    public void forEach(int range,  IntConsumer ic) {
+       forEach(range, .8f, ic);
     }
 
     public Device forEach(int range, float gpuShare, IntConsumer ic) {

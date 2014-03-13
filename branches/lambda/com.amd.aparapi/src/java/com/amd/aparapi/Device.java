@@ -5,7 +5,7 @@ import com.amd.aparapi.OpenCLDevice.DeviceSelector;
 
 import java.util.function.IntConsumer;
 
-public abstract class Device{
+public abstract class Device<T extends Device>{
 
 
 
@@ -20,8 +20,8 @@ public abstract class Device{
           to =_to;
        }
        public void forEach(IntConsumer _ic){
-          Device device = Device.seq();
-          device.forEach(to, _ic);
+
+           Device.seq().forEach(from, to, _ic);
        }
     }
 
@@ -31,8 +31,7 @@ public abstract class Device{
           intRange = _intRange;
        }
        public void forEach(IntConsumer _ic){
-          Device device = Device.hsa();
-          device.forEach(intRange.to, _ic);
+          Device.hsa().forEach(intRange.from, intRange.to, _ic);
        }
     }
 
@@ -74,12 +73,16 @@ public abstract class Device{
     static public IntRange range(int _from, int _to){
        return(new IntRange(_from, _to));
     }
+    static public IntRange range(int _to){
+        return(new IntRange(0, _to));
+    }
 
     static void foo(){
        range(new String[0]);
     }
-
+   
     public static Device getByName(String _deviceName) {
+        TYPE type = TYPE.valueOf(_deviceName.toUpperCase());
         return(_deviceName.equals("hsa")?Device.hsa():
                 (_deviceName.equals("jtp")?Device.jtp():
                         (_deviceName.equals("seq")?Device.seq():
@@ -143,23 +146,23 @@ public abstract class Device{
 
    }
 
-   public static Device jtp(){
+   public static JavaThreadPoolDevice jtp(){
       return (new JavaThreadPoolDevice());
 
    }
 
-   public static Device seq(){
+   public static JavaSequentialDevice seq(){
         return (new JavaSequentialDevice());
 
     }
 
-    public static Device hyb(){
+    public static HybridDevice hyb(){
         return (new HybridDevice());
 
     }
 
 
-   public static Device hsa(){
+   public static HSADevice hsa(){
       return (new HSADevice());
 
    }
@@ -233,7 +236,7 @@ public abstract class Device{
       return (Range.create3D(this, _globalWidth, _globalHeight, _globalDepth, _localWidth, _localHeight, _localDepth));
    }
 
-    public abstract  Device forEach(int range, IntConsumer ic);
+    public abstract  void forEach(int range, IntConsumer ic);
 
    static HSADevice hsaDevice;
    public synchronized static  void hsaForEach(int range, IntConsumer ic){
