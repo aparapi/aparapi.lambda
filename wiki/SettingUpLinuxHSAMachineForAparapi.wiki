@@ -217,8 +217,6 @@ We use g++ to build the JNI side of Aparapi
 $ sudo apt-get install g++
 }}}
 
-This takes a long time because in also installs a java7 jdk.
-
 == Pulling the HSA enabled Aparapi branch and building ==
 
 Now we can pull the Aparapi lambda/HSA branch from SVN 
