@@ -116,7 +116,7 @@ Aparapi.range(strings).map(s->string.length())...
 
 Now the result is a stream of int's which can be 'reduced' by a reduction lambda. 
 
-In this case the reduction reduces two int's to one, by choosing the max of k and v. 
+In this case the reduction reduces two int's to one, by choosing the max of k and v.  All reductions must be commutative style operations (max, min, add) where the order of execution is not important. 
 
 {{{
 int lengthOfLongestString = Aparapi.range(strings).map(s->string.length()).reduce((k,v)-> k>v?k:v);
