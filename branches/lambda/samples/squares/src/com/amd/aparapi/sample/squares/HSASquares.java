@@ -38,6 +38,7 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 
 package com.amd.aparapi.sample.squares;
 
+import com.amd.aparapi.Aparapi;
 import com.amd.aparapi.Device;
 import com.amd.aparapi.HSADevice;
 
@@ -60,17 +61,17 @@ public class HSASquares{
       final float[] values = new float[size];
 
       /** Initialize input array. */
-      Device.jtp().range(size).forEach(gid->  values[gid] = gid);
+      Aparapi.range(size).forEach(gid->  values[gid] = gid);
 
       /** Output array which will be populated with square values of corresponding input array elements. */
       final float[] squares = new float[size];
 
       /** computes squares of input array elements and populates them in corresponding elements of output array. **/
       //Device.hsa().forEach(24, 40, gid-> squares[gid] = values[gid] * values[gid]);
-      Device.hsa().range(size).forEach(gid-> squares[gid] = values[gid] * values[gid]);
+      Aparapi.range(size).parallel().forEach(gid-> squares[gid] = values[gid] * values[gid]);
 
       // Display computed square values.
-      Device.seq().range(size).forEach(id->System.out.printf("%6.0f %8.0f\n", values[id], squares[id]));
+      Aparapi.range(size).forEach(id->System.out.printf("%6.0f %8.0f\n", values[id], squares[id]));
    }
 
 }
