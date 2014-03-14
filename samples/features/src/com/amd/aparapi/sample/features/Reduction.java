@@ -36,24 +36,16 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 
 */
 
-package com.amd.aparapi.sample.squares;
+package com.amd.aparapi.sample.features;
 
+import com.amd.aparapi.Aparapi;
 import com.amd.aparapi.Device;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
-/**
- * An example Aparapi application which computes and displays squares of a set of 512 input values.
- * While executing on GPU using Aparpi framework, each square value is computed in a separate kernel invocation and 
- * can thus maximize performance by optimally utilizing all GPU computing units 
- *  
- * @author gfrost
- *
- */
-
-public class HSALab {
+public class Reduction {
 
    public static void main(String[] _args) {
       String[] strings = new String[]{"one", "two", "three", "four"};
@@ -61,19 +53,19 @@ public class HSALab {
       stringList.addAll(Arrays.asList(strings));
 
 
-      int sum = 0;// Device.seq().range(0,strings.length).sum(i-> strings[i].length()>3?1:0);
-    //  sum = Device.seq().range(strings).sum(s-> s.length()>3?1:0);
-      Device.IntReducer reducer= (l,r)-> {return(Math.max(l,r));};
-      Device.Mapper<String> mapper= s-> {return(s.length());};
-      // Device.IntMapper mapper= i-> {return(strings[i].length());};
+      //int sum = 0;// Aparapi.range(0,strings.length).sum(i-> strings[i].length()>3?1:0);
+    //  sum = Aparapi.range(strings).sum(s-> s.length()>3?1:0);
+      Aparapi.IntReducer reducer= (l,r)-> {return(Math.max(l,r));};
+     // Aparapi.Mapper<String> mapper= s-> {return(s.length());};
+      // Aparapi.IntMapper mapper= i-> {return(strings[i].length());};
 
-      //sum = Device.seq().range(strings).mapReduce(mapper, reducer);
+    //  sum = Aparapi.range(strings).mapReduce(mapper, reducer);
+     Aparapi.IntMapper imapper = i-> i+2;
+     int sum = Aparapi.range(0,12).map(i->i*2).reduce((l,r)-> {return(l>r?l:r);});
 
-     sum = Device.seq().range(stringList).mapReduce(mapper, reducer);
+     String str = Aparapi.range(strings).map(s->{return(s.length());}).select((k,l) -> {return( k>l);});
 
-
-
-       System.out.println(sum);
+       System.out.println(str);
    }
 
 }
