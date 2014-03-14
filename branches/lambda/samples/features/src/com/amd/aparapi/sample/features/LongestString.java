@@ -39,24 +39,19 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 package com.amd.aparapi.sample.features;
 
 import com.amd.aparapi.Aparapi;
-import com.amd.aparapi.Device;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.concurrent.atomic.AtomicInteger;
 
-public class Reduction {
+public class LongestString {
 
    public static void main(String[] _args) {
 
 
-     int max = Aparapi.range(0,12).map(i->i*2).reduce((l,r)-> l>r?l:r);
-     int min = Aparapi.range(0,12).map(i->i).reduce((l,r)-> l<r?l:r);
-       int sum = Aparapi.range(0,12).map(i->i).reduce((l,r)-> l+r);
 
-       System.out.println("min "+min);
-       System.out.println("max "+max);
-       System.out.println("sum "+sum);
+     String str = Aparapi.range(new String[]{"one", "two", "three", "four"}).map(s->{return(s.length());}).select((k,l) -> {return( k>l);});
+
+       System.out.println(str);
    }
 
 }
