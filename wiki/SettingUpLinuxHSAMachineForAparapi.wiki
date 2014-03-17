@@ -149,7 +149,7 @@ OKRA offers a C API (for those that are so inclined ;) ) as well as a java jar f
 
 So to sanity check your install you can run a small sample app (binary) 
 {{{
-$ cd ~/Okra-Interface-to-HSA-Device/okra/samples/dist/
+$ cd ~/Okra-Interface-to-HSA-Device/okra/samples/
 $ sh runSquares.sh
 }}}
 
