@@ -94,7 +94,7 @@ public class HSAILMandel {
 
    // These are members so zoom out continues from where zoom in stopped
    float scale = defaultScale;
-   float x = 0f;
+   float x = -1f;
    float y = 0f;
 
    // Draw Mandelbrot image
