@@ -134,7 +134,7 @@ public class HSAILRenderer extends TextRenderer<HSAILRenderer>{
    }
 
     public HSAILRenderer kernarg(PrimitiveType _t, int _argNum){
-        return(append("kernarg_").append(_t.getHSAName()).space().append("%_arg").append(_argNum));
+        return(append(" align 8  kernarg_").append(_t.getHSAName()).space().append("%_arg").append(_argNum));
     }
 
 
