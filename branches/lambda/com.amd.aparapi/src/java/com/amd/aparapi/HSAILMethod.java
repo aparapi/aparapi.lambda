@@ -123,7 +123,9 @@ class HSAILIntrinsics {
         add(new InlineIntrinsicCall("java.lang.Math.sqrt(D)D", true){
             public List<HSAILInstructionSet.HSAILInstruction> add(List<HSAILInstructionSet.HSAILInstruction> _instructions, HSAILStackFrame _hsailStackFrame, Instruction _from){
                 //   nsqrt_f64  $d${0}, $d${0};
-                _instructions.add(new HSAILInstructionSet.nsqrt(_hsailStackFrame, _from, new StackReg_f64(_hsailStackFrame.stackIdx(_from))));
+                HSAILAssembler assembler = new HSAILAssembler(_instructions, _hsailStackFrame);
+                assembler.nsqrt(_from, _hsailStackFrame.stackIdx(_from));
+
                 return(_instructions);
             }
         });
@@ -268,6 +270,7 @@ public class HSAILMethod {
         Stack<HSAILStackFrame> frames = new Stack<HSAILStackFrame>();
         frames.push(new HSAILStackFrame(null, method, 0, 0));
         frameSet.add(frames.peek());
+        HSAILAssembler assembler = new HSAILAssembler(instructions,frames.peek());
 
         if (UnsafeWrapper.addressSize() == 4) {
             throw new IllegalStateException("Object pointer size is 4, you need to use 64 bit JVM and set -XX:-UseCompressedOops!");
@@ -277,33 +280,32 @@ public class HSAILMethod {
         Instruction initial = method.getInstructions().iterator().next();
         int argOffset = 0;
         if (!method.isStatic()) {
-            HSAILInstructionSet.ld_kernarg_ref(instructions, frames.peek(), initial, 0);
-            // HSAILInstructionSet.ld_arg_ref(instructions, hsailStackFrame, initial, 0); // if we need to support real calls.
+            assembler.ld_kernarg_ref(initial, 0);
+            // HSAILInstructionSet.ld_arg_ref( initial, 0); // if we need to support real calls.
             argOffset++;
         }
         TypeHelper.JavaMethodArg[] args = method.argsAndReturnType.getArgs();
         int argc = args.length;
         for (TypeHelper.JavaMethodArg arg : args) {
             if (arg.getJavaType().isArray() || arg.getJavaType().isObject()) {
-                HSAILInstructionSet.ld_kernarg_ref(instructions,  frames.peek(), initial, arg.getArgc() + argOffset);
-                // HSAILInstructionSet.ld_arg_ref(instructions, hsailStackFrame, initial, arg.getArgc() + argOffset); // if we need to support real calls.
+                assembler.ld_kernarg_ref( initial, arg.getArgc() + argOffset);
+                // assembler.ld_arg_ref( initial, arg.getArgc() + argOffset); // if we need to support real calls.
             } else if (arg.getJavaType().isInt()) {
-                HSAILInstructionSet.ld_kernarg_s32(instructions,  frames.peek(), initial, arg.getArgc() + argOffset);
-                // HSAILInstructionSet.ld_arg_s32(instructions, hsailStackFrame, initial, arg.getArgc() + argOffset); // if we need to support real calls.
+                assembler.ld_kernarg_s32(initial, arg.getArgc() + argOffset);
+                // assembler.ld_arg_s32( initial, arg.getArgc() + argOffset); // if we need to support real calls.
             } else if (arg.getJavaType().isFloat()) {
-                HSAILInstructionSet.ld_kernarg_f32(instructions,  frames.peek(), initial, arg.getArgc() + argOffset);
-                // HSAILInstructionSet.ld_arg_f32(instructions, hsailStackFrame, initial, arg.getArgc() + argOffset); // if we need to support real calls.
+                assembler.ld_kernarg_f32(initial, arg.getArgc() + argOffset);
+                // assembler.ld_arg_f32( initial, arg.getArgc() + argOffset); // if we need to support real calls.
             } else if (arg.getJavaType().isDouble()) {
-                HSAILInstructionSet.ld_kernarg_f64(instructions,  frames.peek(), initial, arg.getArgc() + argOffset);
-                // HSAILInstructionSet.ld_arg_f64(instructions, hsailStackFrame, initial, arg.getArgc() + argOffset); // if we need to support real calls.
+                assembler.ld_kernarg_f64(initial, arg.getArgc() + argOffset);
+                // assembler.ld_arg_f64( initial, arg.getArgc() + argOffset); // if we need to support real calls.
             } else if (arg.getJavaType().isLong()) {
-                HSAILInstructionSet.ld_kernarg_s64(instructions,  frames.peek(), initial, arg.getArgc() + argOffset);
-                // HSAILInstructionSet.ld_arg_s64(instructions, hsailStackFrame, initial, arg.getArgc() + argOffset); // if we need to support real calls.
+                assembler.ld_kernarg_s64(initial, arg.getArgc() + argOffset);
+                // assembler.ld_arg_s64( initial, arg.getArgc() + argOffset); // if we need to support real calls.
             }
         }
-        HSAILInstructionSet.workitemabsid_u32(instructions,  frames.peek(), initial, argc + argOffset ); // we overwrite the last arg +1 with the gid
-
-        HSAILInstructionSet.add(instructions, new HSAILInstructionSet.add<StackReg_s32, s32>(frames.peek(), initial, new StackReg_s32(argc+argOffset-1), new StackReg_s32(argc+argOffset-1), new StackReg_s32(argc+argOffset)));
+        assembler.workitemabsid_u32(initial, argc + argOffset); // we overwrite the last arg +1 with the gid
+        assembler.add_s32(initial, argc + argOffset - 1, argc + argOffset - 1, argc + argOffset);
         HSAILInstructionSet.addInstructions(instructions, frameSet, frames, method);
     }
 }
