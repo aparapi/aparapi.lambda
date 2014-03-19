@@ -71,7 +71,7 @@ import java.util.regex.Pattern;
          return (mappedMethod);
       }
 
-      public abstract List<HSAILInstructionSet.HSAILInstruction> add(List<HSAILInstructionSet.HSAILInstruction> _instructions, HSAILStackFrame _hsailStackFrame, Instruction _from);
+      public abstract void add(HSAILAssembler _assembler,  Instruction _from);
 
 
       InlineIntrinsicCall(String _mappedMethod, boolean _isStatic) {
@@ -121,16 +121,13 @@ class HSAILIntrinsics {
     }
     static {
         add(new InlineIntrinsicCall("java.lang.Math.sqrt(D)D", true){
-            public List<HSAILInstructionSet.HSAILInstruction> add(List<HSAILInstructionSet.HSAILInstruction> _instructions, HSAILStackFrame _hsailStackFrame, Instruction _from){
+            public void add(HSAILAssembler _assembler,  Instruction _from){
                 //   nsqrt_f64  $d${0}, $d${0};
-                HSAILAssembler assembler = new HSAILAssembler(_instructions, _hsailStackFrame);
-                assembler.nsqrt(_from, _hsailStackFrame.stackIdx(_from));
-
-                return(_instructions);
+                  _assembler.nsqrt(_from, _assembler.frames.peek().stackIdx(_from));
             }
         });
         add(new InlineIntrinsicCall( "java.lang.String.charAt(I)C", false){
-            public List<HSAILInstructionSet.HSAILInstruction> add(List<HSAILInstructionSet.HSAILInstruction> _instructions, HSAILStackFrame _hsailStackFrame, Instruction _from){
+            public void  add(HSAILAssembler _assembler,  Instruction _from){
                 // ld_global_u64 $d${2}, [$d${0}+16];   // this string reference into $d${2}"
                 // mov_b32 $s${3}, $s${1};              // copy index",
                 // cvt_u64_s32 $d${3}, $s${3};          // convert array index to 64 bits",
@@ -138,65 +135,65 @@ class HSAILIntrinsics {
                 // ld_global_u16 $s${0}, [$d${3}+24];   // ld the char"
 
                 // ld_global_u64 $d${2}, [$d${0}+16];   // this string reference into $d${2}"
-                _instructions.add(new HSAILInstructionSet.field_load(_hsailStackFrame, _from, new StackReg_u64(_hsailStackFrame.stackIdx(_from)+2),  new StackReg_ref(_hsailStackFrame.stackIdx(_from)), 16));
+                _assembler.add(new HSAILInstructionSet.field_load(_assembler.frames.peek(), _from, new StackReg_u64(_assembler.frames.peek().stackIdx(_from)+2),  new StackReg_ref(_assembler.frames.peek().stackIdx(_from)), 16));
 
                 // mov_b32 $s${3}, $s${1};              // copy index",
-                _instructions.add(new HSAILInstructionSet.mov(_hsailStackFrame, _from, new StackReg_s32(_hsailStackFrame.stackIdx(_from)+3),  new StackReg_s32(_hsailStackFrame.stackIdx(_from)+1)));
+                _assembler.add(new HSAILInstructionSet.mov(_assembler.frames.peek(), _from, new StackReg_s32(_assembler.frames.peek().stackIdx(_from)+3),  new StackReg_s32(_assembler.frames.peek().stackIdx(_from)+1)));
 
                 // cvt_u64_s32 $d${3}, $s${3};          // convert array index to 64 bits",
-                _instructions.add(new HSAILInstructionSet.cvt(_hsailStackFrame, _from, new StackReg_u64(_hsailStackFrame.stackIdx(_from)+3),  new StackReg_s32(_hsailStackFrame.stackIdx(_from)+3)));
+                _assembler.add(new HSAILInstructionSet.cvt(_assembler.frames.peek(), _from, new StackReg_u64(_assembler.frames.peek().stackIdx(_from)+3),  new StackReg_s32(_assembler.frames.peek().stackIdx(_from)+3)));
 
                 // mad_u64 $d${3}, $d${3}, 2, $d${2};   // get the char address",
-                _instructions.add(new HSAILInstructionSet.mad(_hsailStackFrame, _from, new StackReg_ref(_hsailStackFrame.stackIdx(_from)+3),new StackReg_ref(_hsailStackFrame.stackIdx(_from)+3), new StackReg_ref(_hsailStackFrame.stackIdx(_from)+2), 2));
+                _assembler.add(new HSAILInstructionSet.mad(_assembler.frames.peek(), _from, new StackReg_ref(_assembler.frames.peek().stackIdx(_from)+3),new StackReg_ref(_assembler.frames.peek().stackIdx(_from)+3), new StackReg_ref(_assembler.frames.peek().stackIdx(_from)+2), 2));
 
                 // ld_global_u16 $s${0}, [$d${3}+24];   // ld the char"
-                _instructions.add(new HSAILInstructionSet.field_load(_hsailStackFrame, _from, new StackReg_u16(_hsailStackFrame.stackIdx(_from)),  new StackReg_ref(_hsailStackFrame.stackIdx(_from)+3), 24));
-                return(_instructions);
+                _assembler.add(new HSAILInstructionSet.field_load(_assembler.frames.peek(), _from, new StackReg_u16(_assembler.frames.peek().stackIdx(_from)),  new StackReg_ref(_assembler.frames.peek().stackIdx(_from)+3), 24));
+
             }
         });
         add(new InlineIntrinsicCall("java.lang.Math.cos(D)D", true){
-            public List<HSAILInstructionSet.HSAILInstruction> add(List<HSAILInstructionSet.HSAILInstruction> _instructions, HSAILStackFrame _hsailStackFrame, Instruction _from){
-                _instructions.add(new HSAILInstructionSet.ncos(_hsailStackFrame, _from,  new StackReg_f64(_hsailStackFrame.stackIdx(_from))));
-                return(_instructions);
+            public void add(HSAILAssembler _assembler,  Instruction _from){
+                _assembler.add(new HSAILInstructionSet.ncos(_assembler.frames.peek(), _from,  new StackReg_f64(_assembler.frames.peek().stackIdx(_from))));
+
             }
         });
         add(new InlineIntrinsicCall("java.lang.Math.sin(D)D", true ){
-            public List<HSAILInstructionSet.HSAILInstruction> add(List<HSAILInstructionSet.HSAILInstruction> _instructions, HSAILStackFrame _hsailStackFrame, Instruction _from){
-                _instructions.add(new HSAILInstructionSet.nsin(_hsailStackFrame, _from,  new StackReg_f64(_hsailStackFrame.stackIdx(_from))));
-                return(_instructions);
+            public void add(HSAILAssembler _assembler,  Instruction _from){
+                _assembler.add(new HSAILInstructionSet.nsin(_assembler.frames.peek(), _from,  new StackReg_f64(_assembler.frames.peek().stackIdx(_from))));
+
             }
         });
         add(new InlineIntrinsicCall("java.lang.Math.hypot(DD)D", true ){
-            public List<HSAILInstructionSet.HSAILInstruction> add(List<HSAILInstructionSet.HSAILInstruction> _instructions, HSAILStackFrame _hsailStackFrame, Instruction _from){
+            public void add(HSAILAssembler _assembler,  Instruction _from){
                 //mul_f64 $d0, $d0, $d0;",
                 //mul_f64 $d1, $d1, $d1;",
                 //add_f64 $d0, $d0, $d1;",
                 //nsqrt_f64  $d0, $d0;",
-                _instructions.add(new HSAILInstructionSet.mul(_hsailStackFrame, _from,  new StackReg_f64(_hsailStackFrame.stackIdx(_from)),  new StackReg_f64(_hsailStackFrame.stackIdx(_from)),  new StackReg_f64(_hsailStackFrame.stackIdx(_from))));
-                _instructions.add(new HSAILInstructionSet.mul(_hsailStackFrame, _from,  new StackReg_f64(_hsailStackFrame.stackIdx(_from)+1),  new StackReg_f64(_hsailStackFrame.stackIdx(_from)+1),  new StackReg_f64(_hsailStackFrame.stackIdx(_from)+1)));
-                _instructions.add(new HSAILInstructionSet.add(_hsailStackFrame, _from,  new StackReg_f64(_hsailStackFrame.stackIdx(_from)),  new StackReg_f64(_hsailStackFrame.stackIdx(_from)),  new StackReg_f64(_hsailStackFrame.stackIdx(_from)+1)));
-                _instructions.add(new HSAILInstructionSet.nsqrt(_hsailStackFrame, _from,  new StackReg_f64(_hsailStackFrame.stackIdx(_from))));
-                return(_instructions);
+                _assembler.add(new HSAILInstructionSet.mul(_assembler.frames.peek(), _from,  new StackReg_f64(_assembler.frames.peek().stackIdx(_from)),  new StackReg_f64(_assembler.frames.peek().stackIdx(_from)),  new StackReg_f64(_assembler.frames.peek().stackIdx(_from))));
+                _assembler.add(new HSAILInstructionSet.mul(_assembler.frames.peek(), _from,  new StackReg_f64(_assembler.frames.peek().stackIdx(_from)+1),  new StackReg_f64(_assembler.frames.peek().stackIdx(_from)+1),  new StackReg_f64(_assembler.frames.peek().stackIdx(_from)+1)));
+                _assembler.add(new HSAILInstructionSet.add(_assembler.frames.peek(), _from,  new StackReg_f64(_assembler.frames.peek().stackIdx(_from)),  new StackReg_f64(_assembler.frames.peek().stackIdx(_from)),  new StackReg_f64(_assembler.frames.peek().stackIdx(_from)+1)));
+                _assembler.add(new HSAILInstructionSet.nsqrt(_assembler.frames.peek(), _from,  new StackReg_f64(_assembler.frames.peek().stackIdx(_from))));
+
             }
         });
         add(new InlineIntrinsicCall("java.lang.Math.min(II)I", true ){
-            public List<HSAILInstructionSet.HSAILInstruction> add(List<HSAILInstructionSet.HSAILInstruction> _instructions, HSAILStackFrame _hsailStackFrame, Instruction _from){
+            public void add(HSAILAssembler _assembler,  Instruction _from){
                 // cmp_ge_b1_s32 $c1, $s0, $s1;
                 // cmov_b32 $s0, $c1, $s1, $s0;
-                _instructions.add(new HSAILInstructionSet.cmp_s32(_hsailStackFrame, _from, "ge", new StackReg_s32(_hsailStackFrame.stackIdx(_from)),  new StackReg_s32(_hsailStackFrame.stackIdx(_from)+1))) ;
-                _instructions.add(new HSAILInstructionSet.cmov(_hsailStackFrame, _from,  new StackReg_s32(_hsailStackFrame.stackIdx(_from)),  new StackReg_s32(_hsailStackFrame.stackIdx(_from)+1),  new StackReg_s32(_hsailStackFrame.stackIdx(_from))));
+                _assembler.add(new HSAILInstructionSet.cmp_s32(_assembler.frames.peek(), _from, "ge", new StackReg_s32(_assembler.frames.peek().stackIdx(_from)),  new StackReg_s32(_assembler.frames.peek().stackIdx(_from)+1))) ;
+                _assembler.add(new HSAILInstructionSet.cmov(_assembler.frames.peek(), _from,  new StackReg_s32(_assembler.frames.peek().stackIdx(_from)),  new StackReg_s32(_assembler.frames.peek().stackIdx(_from)+1),  new StackReg_s32(_assembler.frames.peek().stackIdx(_from))));
 
-                return(_instructions);
+
             }
         });
         add(new InlineIntrinsicCall("java.lang.Math.max(II)I", true ){
-            public List<HSAILInstructionSet.HSAILInstruction> add(List<HSAILInstructionSet.HSAILInstruction> _instructions, HSAILStackFrame _hsailStackFrame, Instruction _from){
+            public void add(HSAILAssembler _assembler,  Instruction _from){
                 // cmp_le_b1_s32 $c1, $s0, $s1;
                 // cmov_b32 $s0, $c1, $s1, $s0;
-                _instructions.add(new HSAILInstructionSet.cmp_s32(_hsailStackFrame, _from, "le", new StackReg_s32(_hsailStackFrame.stackIdx(_from)),  new StackReg_s32(_hsailStackFrame.stackIdx(_from)+1))) ;
-                _instructions.add(new HSAILInstructionSet.cmov(_hsailStackFrame, _from,  new StackReg_s32(_hsailStackFrame.stackIdx(_from)),  new StackReg_s32(_hsailStackFrame.stackIdx(_from)+1),  new StackReg_s32(_hsailStackFrame.stackIdx(_from))));
+                _assembler.add(new HSAILInstructionSet.cmp_s32(_assembler.frames.peek(), _from, "le", new StackReg_s32(_assembler.frames.peek().stackIdx(_from)),  new StackReg_s32(_assembler.frames.peek().stackIdx(_from)+1))) ;
+                _assembler.add(new HSAILInstructionSet.cmov(_assembler.frames.peek(), _from,  new StackReg_s32(_assembler.frames.peek().stackIdx(_from)),  new StackReg_s32(_assembler.frames.peek().stackIdx(_from)+1),  new StackReg_s32(_assembler.frames.peek().stackIdx(_from))));
 
-                return(_instructions);
+
             }
         });
 
@@ -270,7 +267,7 @@ public class HSAILMethod {
         Stack<HSAILStackFrame> frames = new Stack<HSAILStackFrame>();
         frames.push(new HSAILStackFrame(null, method, 0, 0));
         frameSet.add(frames.peek());
-        HSAILAssembler assembler = new HSAILAssembler(instructions,frames.peek());
+        HSAILAssembler assembler = new HSAILAssembler(instructions,frames, frameSet);
 
         if (UnsafeWrapper.addressSize() == 4) {
             throw new IllegalStateException("Object pointer size is 4, you need to use 64 bit JVM and set -XX:-UseCompressedOops!");
@@ -306,6 +303,6 @@ public class HSAILMethod {
         }
         assembler.workitemabsid_u32(initial, argc + argOffset); // we overwrite the last arg +1 with the gid
         assembler.add_s32(initial, argc + argOffset - 1, argc + argOffset - 1, argc + argOffset);
-        HSAILInstructionSet.addInstructions(instructions, frameSet, frames, method);
+        assembler.addInstructions( method);
     }
 }
