@@ -118,9 +118,9 @@ class HSAILIntrinsics {
     }
     static {
         add(new InlineIntrinsicCall("java.lang.Math.sqrt(D)D", true){
-            public void add(HSAILAssembler _assembler,  Instruction _from){
+            public void add(HSAILAssembler _ass,  Instruction _from){
                 //   nsqrt_f64  $d${0}, $d${0};
-                  _assembler.nsqrt(_from, _assembler.stackIdx(_from));
+                _ass.nsqrt(_from, _ass.stackReg_f64(_from));
             }
         });
         add(new InlineIntrinsicCall( "java.lang.String.charAt(I)C", false){
