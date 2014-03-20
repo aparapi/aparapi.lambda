@@ -135,13 +135,14 @@ class HSAILIntrinsics {
                 // ld_global_u16 $s${0}, [$d${3}+24];   // ld the char"
 
                 // ld_global_u64 $d${2}, [$d${0}+16];   // this string reference into $d${2}"
-                _assembler.add(new HSAILInstructionSet.field_load(_assembler.topFrame(), _from, new StackReg_u64(_assembler.stackIdx(_from)+2),  new StackReg_ref(_assembler.stackIdx(_from)), 16));
+                _assembler.ld_global_u64(_from, _assembler.stackIdx(_from)+2, _assembler.stackIdx(_from), 16);
 
                 // mov_b32 $s${3}, $s${1};              // copy index",
-                _assembler.add(new HSAILInstructionSet.mov(_assembler.topFrame(), _from, new StackReg_s32(_assembler.stackIdx(_from)+3),  new StackReg_s32(_assembler.stackIdx(_from)+1)));
+                _assembler.mov_s32(_from, _assembler.stackIdx(_from)+3, _assembler.stackIdx(_from)+1);
 
                 // cvt_u64_s32 $d${3}, $s${3};          // convert array index to 64 bits",
-                _assembler.add(new HSAILInstructionSet.cvt(_assembler.topFrame(), _from, new StackReg_u64(_assembler.stackIdx(_from)+3),  new StackReg_s32(_assembler.stackIdx(_from)+3)));
+                _assembler.cvt_u64_s32(_from, _assembler.stackIdx(_from)+3, _assembler.stackIdx(_from)+3);
+
 
                 // mad_u64 $d${3}, $d${3}, 2, $d${2};   // get the char address",
                 _assembler.add(new HSAILInstructionSet.mad(_assembler.topFrame(), _from, new StackReg_ref(_assembler.stackIdx(_from)+3),new StackReg_ref(_assembler.stackIdx(_from)+3), new StackReg_ref(_assembler.stackIdx(_from)+2), 2));

@@ -788,6 +788,15 @@ public class HSAILAssembler {
         return(this);
     }
 
+    public HSAILAssembler cvt_u64_s32( Instruction _i, int _destStackOffset, int _sourceStackOffset) {
+        add(new HSAILInstructionSet.cvt(frames.peek(), _i, new StackReg_u64(_destStackOffset), new StackReg_s32(_sourceStackOffset)));
+        return (this);
+    }
+
+    public HSAILAssembler ld_global_u64( Instruction _i,  int _destStackOffset, int _sourceStackOffset, int _offset) {
+        add(new HSAILInstructionSet.ld_global_64(frames.peek(), _i, new StackReg_u64(_destStackOffset), new StackReg_ref(_sourceStackOffset), _offset));
+        return(this);
+    }
 
     public void addmov( Instruction _i, PrimitiveType _type, int _from, int _to) {
         if (_type.equals(PrimitiveType.ref) || _type.getHsaBits() == 32) {

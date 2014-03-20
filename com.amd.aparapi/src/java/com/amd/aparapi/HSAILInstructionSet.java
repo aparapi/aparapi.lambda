@@ -575,8 +575,30 @@ public class HSAILInstructionSet {
 
 
         }
+    static  class ld_global_64<Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends HSAILInstructionWithDest<field_load<Rt,T>, Rt,T> {
 
-        static  class static_field_load<Rt extends HSAILRegister<Rt,T>,T extends PrimitiveType> extends HSAILInstructionWithDest<static_field_load<Rt,T>,Rt, T> {
+        StackReg_ref mem;
+        long offset;
+
+
+        ld_global_64(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _dest, StackReg_ref _mem, long _offset) {
+            super(_hsailStackFrame,_from, _dest);
+            offset = _offset;
+            mem = _mem;
+        }
+
+
+
+        @Override
+        void render(HSAILRenderer r) {
+            r.append("ld_global_").typeName(getDest()).space().operandName(getDest()).separator().append("[").operandName(mem).append("+").append(offset).append("]").semicolon();
+        }
+
+
+    }
+
+
+    static  class static_field_load<Rt extends HSAILRegister<Rt,T>,T extends PrimitiveType> extends HSAILInstructionWithDest<static_field_load<Rt,T>,Rt, T> {
             long offset;
             StackReg_ref mem;
 
