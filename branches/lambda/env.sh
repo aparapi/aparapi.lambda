@@ -29,6 +29,7 @@ fi
 
 # OCL_LIB + OCL_INCLUDE point to OpenCL SDK installation lib and include dirs (so Aparapi com.amd.aparapi.jni can build)
 export OCL_HOME=${TOP}/ocl
+export OCL_HOME=${TOP}/AMD-APP-SDK-v2.9-RC-lnx64
 export OCL_LIB=${OCL_HOME}/lib/x86_64
 export OCL_INCLUDE=${OCL_HOME}/include
 if test ! -d ${OCL_HOME}/include ; then 
@@ -37,7 +38,7 @@ if test ! -d ${OCL_HOME}/include ; then
 fi
 
 # set OKRA_HOME to your OKRA directory (/dist is underneath here)
-export OKRA_HOME=${TOP}/okra
+export OKRA_HOME=${TOP}/Okra-Interface-to-HSA-Device/okra
 if test ! -d ${OKRA_HOME}/dist ; then 
    echo "OKRA_HOME is not set correctly (currently set to ${OKRA_HOME})"
    exit 1
