@@ -723,14 +723,11 @@ public class HSAILAssembler {
        return(this);
     }
 
-    public HSAILAssembler nsqrt( Instruction _i, int _stackOffset){
-       add( new HSAILInstructionSet.nsqrt(currentFrame(), _i, stackReg_f64(_stackOffset)));
+    public HSAILAssembler nsqrt( Instruction _i, StackReg_f64 _reg){
+       add( new HSAILInstructionSet.nsqrt(currentFrame(), _i, _reg));
         return(this);
     }
-    public HSAILAssembler nsqrt( Instruction _i){
-        nsqrt(_i, stackIdx(_i));
-        return(this);
-    }
+
 
     public HSAILAssembler nyi( Instruction _i){
       add( new HSAILInstructionSet.nyi(currentFrame(), _i));
@@ -1693,7 +1690,7 @@ public class HSAILAssembler {
         return(new StackReg_f64(_slot));
     }
     StackReg_f64 stackReg_f64(Instruction _i, int _offset){
-        return(stackReg_f64(stackIdx(_i)+_offset));
+        return(stackReg_f64(stackIdx(_i) + _offset));
     }
     StackReg_f64 stackReg_f64(Instruction _i){
         return(stackReg_f64(_i, 0));
@@ -1702,7 +1699,7 @@ public class HSAILAssembler {
         return(new StackReg_s32(_slot));
     }
     StackReg_s32 stackReg_s32(Instruction _i, int _offset){
-        return(stackReg_s32(stackIdx(_i)+_offset));
+        return(stackReg_s32(stackIdx(_i) + _offset));
     }
     StackReg_s32 stackReg_s32(Instruction _i){
         return(stackReg_s32(_i, 0));
@@ -1711,7 +1708,7 @@ public class HSAILAssembler {
         return(new StackReg_f32(_slot));
     }
     StackReg_f32 stackReg_f32(Instruction _i, int _offset){
-        return(stackReg_f32(stackIdx(_i)+_offset));
+        return(stackReg_f32(stackIdx(_i) + _offset));
     }
     StackReg_f32 stackReg_f32(Instruction _i){
         return(stackReg_f32(_i, 0));
@@ -1721,7 +1718,7 @@ public class HSAILAssembler {
         return(new StackReg_s16(_slot));
     }
     StackReg_s16 stackReg_s16(Instruction _i, int _offset){
-        return(stackReg_s16(stackIdx(_i)+_offset));
+        return(stackReg_s16(stackIdx(_i) + _offset));
     }
     StackReg_s16 stackReg_s16(Instruction _i){
         return(stackReg_s16(_i, 0));
@@ -1731,7 +1728,7 @@ public class HSAILAssembler {
         return(new StackReg_u16(_slot));
     }
     StackReg_u16 stackReg_u16(Instruction _i, int _offset){
-        return(stackReg_u16(stackIdx(_i)+_offset));
+        return(stackReg_u16(stackIdx(_i) + _offset));
     }
     StackReg_u16 stackReg_u16(Instruction _i){
         return(stackReg_u16(_i, 0));
@@ -1741,7 +1738,7 @@ public class HSAILAssembler {
         return(new StackReg_s8(_slot));
     }
     StackReg_s8 stackReg_s8(Instruction _i, int _offset){
-        return(stackReg_s8(stackIdx(_i)+_offset));
+        return(stackReg_s8(stackIdx(_i) + _offset));
     }
     StackReg_s8 stackReg_s8(Instruction _i){
         return(stackReg_s8(_i, 0));
@@ -1752,7 +1749,7 @@ public class HSAILAssembler {
         return(new StackReg_ref(_slot));
     }
     StackReg_ref stackReg_ref(Instruction _i, int _offset){
-        return(stackReg_ref(stackIdx(_i)+_offset));
+        return(stackReg_ref(stackIdx(_i) + _offset));
     }
     StackReg_ref stackReg_ref(Instruction _i){
         return(stackReg_ref(_i, 0));
