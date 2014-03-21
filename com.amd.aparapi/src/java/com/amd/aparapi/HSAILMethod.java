@@ -59,8 +59,9 @@ import java.util.*;
 
 
 
-   abstract class InlineIntrinsicCall {
-
+    class InlineIntrinsicCall {
+      interface IntrinsicAssembler{ void assemble(HSAILAssembler _assembler,  Instruction _from);}
+      IntrinsicAssembler intrinsicAssembler;
       boolean isStatic;
       private String mappedMethod; // i.e  java.lang.Math.sqrt(D)D
 
@@ -68,12 +69,15 @@ import java.util.*;
          return (mappedMethod);
       }
 
-      public abstract void add(HSAILAssembler _assembler,  Instruction _from);
+      public void add(HSAILAssembler _assembler,  Instruction _from){
+          intrinsicAssembler.assemble(_assembler, _from);
+      }
 
 
-      InlineIntrinsicCall(String _mappedMethod, boolean _isStatic) {
+      InlineIntrinsicCall(String _mappedMethod, boolean _isStatic, IntrinsicAssembler _intrinsicAssembler) {
          mappedMethod = _mappedMethod;
          isStatic = _isStatic;
+          intrinsicAssembler = _intrinsicAssembler;
         }
 
     }
@@ -117,14 +121,12 @@ class HSAILIntrinsics {
         return(intrinsicMap.get(_callInfo.intrinsicLookupName));
     }
     static {
-        add(new InlineIntrinsicCall("java.lang.Math.sqrt(D)D", true){
-            public void add(HSAILAssembler _ass,  Instruction _from){
-                //   nsqrt_f64  $d${0}, $d${0};
-                _ass.nsqrt(_from, _ass.stackReg_f64(_from));
-            }
-        });
-        add(new InlineIntrinsicCall( "java.lang.String.charAt(I)C", false){
-            public void  add(HSAILAssembler _assembler,  Instruction _from){
+        add(new InlineIntrinsicCall("java.lang.Math.sqrt(D)D", true, ( _ass,  _from)->{
+             //   nsqrt_f64  $d${0}, $d${0};
+             _ass.nsqrt(_from, _ass.stackReg_f64(_from));
+
+        }));
+        add(new InlineIntrinsicCall( "java.lang.String.charAt(I)C", false, ( _ass,  _from)->{
                 // ld_global_u64 $d${2}, [$d${0}+16];   // this string reference into $d${2}"
                 // mov_b32 $s${3}, $s${1};              // copy index",
                 // cvt_u64_s32 $d${3}, $s${3};          // convert array index to 64 bits",
@@ -132,68 +134,60 @@ class HSAILIntrinsics {
                 // ld_global_u16 $s${0}, [$d${3}+24];   // ld the char"
 
                 // ld_global_u64 $d${2}, [$d${0}+16];   // this string reference into $d${2}"
-                _assembler.ld_global_u64(_from, _assembler.stackIdx(_from) + 2, _assembler.stackIdx(_from), 16);
+                _ass.ld_global(_from, _ass.stackReg_ref(_from, 2), _ass.stackReg_ref(_from), 16); // 16 is known hardcoded offset of char[] in String
 
                 // mov_b32 $s${3}, $s${1};              // copy index",
-                _assembler.mov_s32(_from, _assembler.stackIdx(_from) + 3, _assembler.stackIdx(_from) + 1);
+                _ass.mov(_from, _ass.stackReg_s32(_from, +3), _ass.stackReg_s32(_from, 1));
 
                 // cvt_u64_s32 $d${3}, $s${3};          // convert array index to 64 bits",
-                _assembler.cvt_u64_s32(_from, new StackReg_u64(_assembler.stackIdx(_from) + 3), new StackReg_s32(_assembler.stackIdx(_from) + 3));
-
+                _ass.cvt(_from, _ass.stackReg_u64(_from, 3), _ass.stackReg_s32(_from, 3));
 
                 // mad_u64 $d${3}, $d${3}, 2, $d${2};   // get the char address",
-                _assembler.add(new HSAILInstructionSet.mad(_assembler.currentFrame(), _from, new StackReg_ref(_assembler.stackIdx(_from)+3),new StackReg_ref(_assembler.stackIdx(_from)+3), new StackReg_ref(_assembler.stackIdx(_from)+2), 2));
+                _ass.mad(_from, _ass.stackReg_ref(_from,3), _ass.stackReg_ref(_from,3), _ass.stackReg_ref(_from,2), 2);
 
                 // ld_global_u16 $s${0}, [$d${3}+24];   // ld the char"
-                _assembler.add(new HSAILInstructionSet.field_load(_assembler.currentFrame(), _from, new StackReg_u16(_assembler.stackIdx(_from)),  new StackReg_ref(_assembler.stackIdx(_from)+3), 24));
+                _ass.ld_global(_from, _ass.stackReg_u16(_from), _ass.stackReg_ref(_from,3), 24); // 24 is known offset from beginning of array to step over length
 
-            }
-        });
-        add(new InlineIntrinsicCall("java.lang.Math.cos(D)D", true){
-            public void add(HSAILAssembler _assembler,  Instruction _from){
-                _assembler.add(new HSAILInstructionSet.ncos(_assembler.currentFrame(), _from,  new StackReg_f64(_assembler.stackIdx(_from))));
 
-            }
-        });
-        add(new InlineIntrinsicCall("java.lang.Math.sin(D)D", true ){
-            public void add(HSAILAssembler _assembler,  Instruction _from){
-                _assembler.add(new HSAILInstructionSet.nsin(_assembler.currentFrame(), _from,  new StackReg_f64(_assembler.stackIdx(_from))));
+        }));
+        add(new InlineIntrinsicCall("java.lang.Math.cos(D)D", true, ( _ass,  _from)->{
+            _ass.ncos(_from, _ass.stackReg_f64(_from));
 
-            }
-        });
-        add(new InlineIntrinsicCall("java.lang.Math.hypot(DD)D", true ){
-            public void add(HSAILAssembler _assembler,  Instruction _from){
+        }));
+        add(new InlineIntrinsicCall("java.lang.Math.sin(D)D", true , ( _ass,  _from)->{
+                _ass.nsin(_from, _ass.stackReg_f64(_from));
+
+        }));
+        add(new InlineIntrinsicCall("java.lang.Math.hypot(DD)D", true , ( _ass,  _from)->{
                 //mul_f64 $d0, $d0, $d0;",
                 //mul_f64 $d1, $d1, $d1;",
                 //add_f64 $d0, $d0, $d1;",
                 //nsqrt_f64  $d0, $d0;",
-                _assembler.add(new HSAILInstructionSet.mul(_assembler.currentFrame(), _from,  new StackReg_f64(_assembler.stackIdx(_from)),  new StackReg_f64(_assembler.stackIdx(_from)),  new StackReg_f64(_assembler.stackIdx(_from))));
-                _assembler.add(new HSAILInstructionSet.mul(_assembler.currentFrame(), _from,  new StackReg_f64(_assembler.stackIdx(_from)+1),  new StackReg_f64(_assembler.stackIdx(_from)+1),  new StackReg_f64(_assembler.stackIdx(_from)+1)));
-                _assembler.add(new HSAILInstructionSet.add(_assembler.currentFrame(), _from,  new StackReg_f64(_assembler.stackIdx(_from)),  new StackReg_f64(_assembler.stackIdx(_from)),  new StackReg_f64(_assembler.stackIdx(_from)+1)));
-                _assembler.add(new HSAILInstructionSet.nsqrt(_assembler.currentFrame(), _from,  new StackReg_f64(_assembler.stackIdx(_from))));
+                _ass.mul(_from, _ass.stackReg_f64(_from),  _ass.stackReg_f64(_from),  _ass.stackReg_f64(_from));
+                _ass.mul(_from, _ass.stackReg_f64(_from, 1),  _ass.stackReg_f64(_from, 1),  _ass.stackReg_f64(_from, 1));
+                _ass.add( _from, _ass.stackReg_f64(_from),  _ass.stackReg_f64(_from),  _ass.stackReg_f64(_from, 1));
+                _ass.nsqrt(_from, _ass.stackReg_f64(_from));
 
-            }
-        });
-        add(new InlineIntrinsicCall("java.lang.Math.min(II)I", true ){
-            public void add(HSAILAssembler _assembler,  Instruction _from){
+
+        }));
+        add(new InlineIntrinsicCall("java.lang.Math.min(II)I", true , ( _ass,  _from)->{
                 // cmp_ge_b1_s32 $c1, $s0, $s1;
                 // cmov_b32 $s0, $c1, $s1, $s0;
-                _assembler.add(new HSAILInstructionSet.cmp_s32(_assembler.currentFrame(), _from, "ge", new StackReg_s32(_assembler.stackIdx(_from)),  new StackReg_s32(_assembler.stackIdx(_from)+1))) ;
-                _assembler.add(new HSAILInstructionSet.cmov(_assembler.currentFrame(), _from,  new StackReg_s32(_assembler.stackIdx(_from)),  new StackReg_s32(_assembler.stackIdx(_from)+1),  new StackReg_s32(_assembler.stackIdx(_from))));
+                _ass.add(new HSAILInstructionSet.cmp_s32(_ass.currentFrame(), _from, "ge", new StackReg_s32(_ass.stackIdx(_from)),  new StackReg_s32(_ass.stackIdx(_from)+1))) ;
+                _ass.add(new HSAILInstructionSet.cmov(_ass.currentFrame(), _from,  new StackReg_s32(_ass.stackIdx(_from)),  new StackReg_s32(_ass.stackIdx(_from)+1),  new StackReg_s32(_ass.stackIdx(_from))));
 
 
-            }
-        });
-        add(new InlineIntrinsicCall("java.lang.Math.max(II)I", true ){
-            public void add(HSAILAssembler _assembler,  Instruction _from){
+
+        }));
+        add(new InlineIntrinsicCall("java.lang.Math.max(II)I", true , ( _ass,  _from)->{
                 // cmp_le_b1_s32 $c1, $s0, $s1;
                 // cmov_b32 $s0, $c1, $s1, $s0;
-                _assembler.add(new HSAILInstructionSet.cmp_s32(_assembler.currentFrame(), _from, "le", new StackReg_s32(_assembler.stackIdx(_from)),  new StackReg_s32(_assembler.stackIdx(_from)+1))) ;
-                _assembler.add(new HSAILInstructionSet.cmov(_assembler.currentFrame(), _from,  new StackReg_s32(_assembler.stackIdx(_from)),  new StackReg_s32(_assembler.stackIdx(_from)+1),  new StackReg_s32(_assembler.stackIdx(_from))));
+                _ass.add(new HSAILInstructionSet.cmp_s32(_ass.currentFrame(), _from, "le", new StackReg_s32(_ass.stackIdx(_from)),  new StackReg_s32(_ass.stackIdx(_from)+1))) ;
+                _ass.add(new HSAILInstructionSet.cmov(_ass.currentFrame(), _from,  new StackReg_s32(_ass.stackIdx(_from)),  new StackReg_s32(_ass.stackIdx(_from)+1),  new StackReg_s32(_ass.stackIdx(_from))));
 
 
-            }
-        });
+
+        }));
 
 
     }
@@ -298,7 +292,7 @@ public class HSAILMethod {
             }
         }
         assembler.workitemabsid_u32(initial, argc + argOffset); // we overwrite the last arg +1 with the gid
-        assembler.add_s32(initial, argc + argOffset - 1, argc + argOffset - 1, argc + argOffset);
+        assembler.add(initial, assembler.stackReg_s32(argc + argOffset - 1), assembler.stackReg_s32(argc + argOffset - 1), assembler.stackReg_s32(argc + argOffset));
         assembler.addInstructions( method);
     }
 }
