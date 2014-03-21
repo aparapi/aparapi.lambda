@@ -496,57 +496,24 @@ public class HSAILAssembler {
         add( new HSAILInstructionSet.div<StackReg_f32, f32>(currentFrame(), _i, stackReg_f32(_i), stackReg_f32(_i), stackReg_f32(_i, 1)));
        return(this);
     }
-    public HSAILAssembler mul_s64( Instruction _i){
-        add( new HSAILInstructionSet.mul<StackReg_s64, s64>(currentFrame(), _i, stackReg_s64(_i), stackReg_s64(_i), stackReg_s64(_i,1)));
+
+    public <T extends StackReg> HSAILAssembler mul( Instruction _i, T _dest, T _lhs, T _rhs){
+        add( new HSAILInstructionSet.mul(currentFrame(), _i, _dest, _lhs, _rhs));
        return(this);
     }
-    public HSAILAssembler mul_s32( Instruction _i){
-        add( new HSAILInstructionSet.mul<StackReg_s32, s32>(currentFrame(), _i, stackReg_s32(_i), stackReg_s32(_i), stackReg_s32(_i, 1)));
+
+    public <T extends StackReg> HSAILAssembler sub( Instruction _i, T _dest, T _lhs, T _rhs){
+        add(new HSAILInstructionSet.sub(currentFrame(), _i, _dest, _lhs, _rhs));
+        return(this);
+    }
+    public <T extends StackReg> HSAILAssembler add( Instruction _i, T _dest, T _lhs, T _rhs){
+        add( new HSAILInstructionSet.add(currentFrame(), _i, _dest, _lhs, _rhs));
        return(this);
     }
-    public HSAILAssembler mul_f64( Instruction _i){
-        add( new HSAILInstructionSet.mul<StackReg_f64, f64>(currentFrame(), _i, stackReg_f64(_i), stackReg_f64(_i), stackReg_f64(_i, 1)));
-       return(this);
-    }
-    public HSAILAssembler mul_f32( Instruction _i){
-        add( new HSAILInstructionSet.mul<StackReg_f32, f32>(currentFrame(), _i, stackReg_f32(_i), stackReg_f32(_i), stackReg_f32(_i, 1)));
-       return(this);
-    }
-    public HSAILAssembler sub_s64( Instruction _i){
-        add( new HSAILInstructionSet.sub<StackReg_s64, s64>(currentFrame(), _i, stackReg_s64(_i), stackReg_s64(_i), stackReg_s64(_i,1)));
-       return(this);
-    }
-    public HSAILAssembler sub_s32( Instruction _i){
-        add( new HSAILInstructionSet.sub<StackReg_s32, s32>(currentFrame(), _i, stackReg_s32(_i), stackReg_s32(_i), stackReg_s32(_i, 1)));
-       return(this);
-    }
-    public HSAILAssembler sub_f64( Instruction _i){
-        add( new HSAILInstructionSet.sub<StackReg_f64, f64>(currentFrame(), _i, stackReg_f64(_i), stackReg_f64(_i), stackReg_f64(_i, 1)));
-       return(this);
-    }
-    public HSAILAssembler sub_f32( Instruction _i){
-        add( new HSAILInstructionSet.sub<StackReg_f32, f32>(currentFrame(), _i, stackReg_f32(_i), stackReg_f32(_i), stackReg_f32(_i, 1)));
-       return(this);
-    }
-    public HSAILAssembler add_s64( Instruction _i){
-        add( new HSAILInstructionSet.add<StackReg_s64, s64>(currentFrame(), _i, stackReg_s64(_i), stackReg_s64(_i), stackReg_s64(_i,1)));
-       return(this);
-    }
-    public HSAILAssembler add_s32( Instruction _i){
-        add( new HSAILInstructionSet.add<StackReg_s32, s32>(currentFrame(), _i, stackReg_s32(_i), stackReg_s32(_i), stackReg_s32(_i, 1)));
-       return(this);
-    }
-    public HSAILAssembler add_s32( Instruction _i, int _dest, int _lhs, int _rhs){
-        add( new HSAILInstructionSet.add<StackReg_s32, s32>(currentFrame(), _i, stackReg_s32(_dest), stackReg_s32(_lhs), stackReg_s32(_rhs)));
-       return(this);
-    }
-    public HSAILAssembler add_f64( Instruction _i){
-        add( new HSAILInstructionSet.add<StackReg_f64, f64>(currentFrame(), _i, stackReg_f64(_i), stackReg_f64(_i), stackReg_f64(_i, 1)));
-       return(this);
-    }
-    public HSAILAssembler add_f32( Instruction _i){
-        add( new HSAILInstructionSet.add<StackReg_f32, f32>(currentFrame(), _i, stackReg_f32(_i), stackReg_f32(_i), stackReg_f32(_i, 1)));
-       return(this);
+
+    public <T extends StackReg> HSAILAssembler mad( Instruction _i, T _dest, T _lhs, T _rhs, int _constant){
+        add( new HSAILInstructionSet.mad(currentFrame(), _i, _dest, _lhs, _rhs, _constant));
+        return(this);
     }
     public HSAILAssembler array_store_s16( Instruction _i){
         add( new HSAILInstructionSet.array_store<StackReg_s16, s16>(currentFrame(), _i, stackReg_ref(_i, 1), stackReg_s16(_i, 2)));
@@ -727,18 +694,19 @@ public class HSAILAssembler {
        add( new HSAILInstructionSet.nsqrt(currentFrame(), _i, _reg));
         return(this);
     }
-
+    public HSAILAssembler ncos( Instruction _i, StackReg_f64 _reg){
+        add( new HSAILInstructionSet.ncos(currentFrame(), _i, _reg));
+        return(this);
+    }
+    public HSAILAssembler nsin( Instruction _i, StackReg_f64 _reg){
+        add( new HSAILInstructionSet.nsin(currentFrame(), _i, _reg));
+        return(this);
+    }
 
     public HSAILAssembler nyi( Instruction _i){
       add( new HSAILInstructionSet.nyi(currentFrame(), _i));
         return(this);
     }
-
-   // public HSAILAssembler mov_s32_const( Instruction _i){
-    //   add( new HSAILInstructionSet.nyi(currentFrame(), _i));
-  //      return(this);
-   // }
-   // mov_s32_const(instructions, hsailStackcurrentFrame(), i,  i.asIntegerConstant().getValue());
 
     public HSAILAssembler array_len(Instruction _i){
        add( new HSAILInstructionSet.array_len(currentFrame(),_i, stackReg_s32(_i), stackReg_ref(_i)));
@@ -755,54 +723,36 @@ public class HSAILAssembler {
     public HSAILAssembler nopUniqueLabel( Instruction _i){
         return(nop(_i, currentFrame().getUniqueName()));
     }
-    public HSAILAssembler mov_ref( Instruction _i, int _destStackOffset, int _sourceStackOffset){
+    public <T extends StackReg>HSAILAssembler mov( Instruction _i, T _dest, T _source){
 
-       add( new HSAILInstructionSet.mov(currentFrame(), _i, stackReg_ref(_destStackOffset), stackReg_ref(_sourceStackOffset)));
+        add( new HSAILInstructionSet.mov(currentFrame(), _i, _dest, _source));
         return(this);
     }
-    public HSAILAssembler mov_s32( Instruction _i, int _destStackOffset, int _sourceStackOffset){
 
-       add( new HSAILInstructionSet.mov(currentFrame(), _i, stackReg_s32(_destStackOffset), stackReg_s32(_sourceStackOffset)));
-        return(this);
-    }
-    public HSAILAssembler mov_f32( Instruction _i, int _destStackOffset, int _sourceStackOffset){
-
-       add( new HSAILInstructionSet.mov(currentFrame(), _i, stackReg_f32(_destStackOffset), stackReg_f32(_sourceStackOffset)));
-        return(this);
-    }
-    public HSAILAssembler mov_s64( Instruction _i, int _destStackOffset, int _sourceStackOffset){
-
-        add(new HSAILInstructionSet.mov(currentFrame(), _i, stackReg_s64(_destStackOffset), stackReg_s64(_sourceStackOffset)));
-        return(this);
-    }
-    public HSAILAssembler mov_f64( Instruction _i, int _destStackOffset, int _sourceStackOffset){
-
-       add( new HSAILInstructionSet.mov(currentFrame(), _i, stackReg_f64(_destStackOffset), stackReg_f64(_sourceStackOffset)));
-        return(this);
-    }
     public HSAILAssembler returnBranchUniqueName( Instruction _i){
        add( new HSAILInstructionSet.returnBranch(currentFrame(), _i, currentFrame().getUniqueName()));
         return(this);
     }
 
-    public HSAILAssembler cvt_u64_s32( Instruction _i, StackReg_u64 _dest, StackReg_s32 _source) {
+    public HSAILAssembler cvt( Instruction _i, StackReg_u64 _dest, StackReg_s32 _source) {
         add(new HSAILInstructionSet.cvt(currentFrame(), _i, _dest, _source));
         return (this);
     }
 
-    public HSAILAssembler ld_global_u64( Instruction _i,  int _destStackOffset, int _sourceStackOffset, int _offset) {
-        add(new HSAILInstructionSet.ld_global_64(currentFrame(), _i, stackReg_u64(_destStackOffset), stackReg_ref(_sourceStackOffset), _offset));
+    public <T extends StackReg> HSAILAssembler ld_global( Instruction _i,  T _dest, StackReg_ref _source, int _offset) {
+        add(new HSAILInstructionSet.ld_global(currentFrame(), _i, _dest, _source, _offset));
         return(this);
     }
 
     public void addmov( Instruction _i, PrimitiveType _type, int _from, int _to) {
         if (_type.equals(PrimitiveType.ref) || _type.getHsaBits() == 32) {
             if (_type.equals(PrimitiveType.ref)) {
-                mov_ref(_i, stackIdx(_i) + _to, stackIdx(_i) + _from);
+                mov(_i, stackReg_ref(_i, _to), stackReg_ref(_i, _from));
             } else if (_type.equals(PrimitiveType.s32)) {
-                mov_s32(_i, stackIdx(_i) + _to, stackIdx(_i) + _from);
+                mov(_i, stackReg_s32(_i, _to), stackReg_s32(_i, _from));
             } else if (_type.equals(PrimitiveType.f32)) {
-                mov_f32(_i, stackIdx(_i) + _to, stackIdx(_i) + _from);
+
+                mov(_i, stackReg_f32(_i, _to), stackReg_f32(_i, _from));
             } else {
                 throw new IllegalStateException(" unknown prefix 1 prefix for first of DUP2");
             }
@@ -1111,40 +1061,40 @@ public class HSAILAssembler {
                     nyi(i);
                     break;
                 case IADD:
-                    add_s32(i);
+                    add(i, stackReg_s32(i), stackReg_s32(i), stackReg_s32(i, 1));
                     break;
                 case LADD:
-                    add_s64(i);
+                    add(i, stackReg_s64(i), stackReg_s64(i), stackReg_s64(i, 1));
                     break;
                 case FADD:
-                    add_f32(i);
+                    add(i, stackReg_f32(i), stackReg_f32(i), stackReg_f32(i, 1));
                     break;
                 case DADD:
-                    add_f64(i);
+                    add(i, stackReg_f64(i), stackReg_f64(i), stackReg_f64(i, 1));
                     break;
                 case ISUB:
-                    sub_s32(i);
+                    sub(i, stackReg_s32(i), stackReg_s32(i), stackReg_s32(i, 1));
                     break;
                 case LSUB:
-                    sub_s64(i);
+                    sub(i, stackReg_s64(i), stackReg_s64(i), stackReg_s64(i, 1));
                     break;
                 case FSUB:
-                    sub_f32(i);
+                    sub(i, stackReg_f32(i), stackReg_f32(i), stackReg_f32(i, 1));
                     break;
                 case DSUB:
-                    sub_f64(i);
+                    sub(i, stackReg_f64(i), stackReg_f64(i), stackReg_f64(i, 1));
                     break;
                 case IMUL:
-                    mul_s32(i);
+                    mul(i, stackReg_s32(i), stackReg_s32(i), stackReg_s32(i, 1));
                     break;
                 case LMUL:
-                    mul_s64(i);
+                    mul(i, stackReg_s64(i), stackReg_s64(i), stackReg_s64(i, 1));
                     break;
                 case FMUL:
-                    mul_f32(i);
+                    mul(i, stackReg_f32(i), stackReg_f32(i), stackReg_f32(i, 1));
                     break;
                 case DMUL:
-                    mul_f64(i);
+                    mul(i, stackReg_f64(i), stackReg_f64(i), stackReg_f64(i, 1));
                     break;
                 case IDIV:
                     div_s32(i);
@@ -1433,11 +1383,11 @@ public class HSAILAssembler {
                         int maxLocals=i.getMethod().getCodeEntry().getMaxLocals(); // hsailStackFrame.stackOffset -maxLocals is the slot for the return value
 
                         switch(i.getByteCode()){
-                            case IRETURN: mov_s32(i, stackIdx(i) - maxLocals, stackIdx(i));break;
-                            case LRETURN: mov_s64(i, stackIdx(i) - maxLocals, stackIdx(i));break;
-                            case FRETURN: mov_f32(i, stackIdx(i) - maxLocals, stackIdx(i));break;
-                            case DRETURN: mov_f64(i, stackIdx(i) - maxLocals, stackIdx(i));break;
-                            case ARETURN: mov_ref(i, stackIdx(i) - maxLocals, stackIdx(i));break;
+                            case IRETURN: mov(i, stackReg_s32(i, -maxLocals), stackReg_s32(i));break;
+                            case LRETURN: mov(i, stackReg_s64(i, -maxLocals), stackReg_s64(i));break;
+                            case FRETURN: mov(i, stackReg_f32(i, -maxLocals), stackReg_f32(i));break;
+                            case DRETURN: mov(i, stackReg_f64(i, -maxLocals), stackReg_f64(i));break;
+                            case ARETURN: mov(i, stackReg_ref(i, -maxLocals), stackReg_ref(i));break;
                         }
                         if (i.isLastInstruction()){
                             if (needsReturnLabel){
@@ -1676,6 +1626,12 @@ public class HSAILAssembler {
     }
     StackReg_u64 stackReg_u64(int _slot){
         return(new StackReg_u64(_slot));
+    }
+    StackReg_u64 stackReg_u64(Instruction _i, int _offset){
+        return(stackReg_u64(stackIdx(_i) + _offset));
+    }
+    StackReg_u64 stackReg_u64(Instruction _i){
+        return(stackReg_u64(_i, 0));
     }
     StackReg_s64 stackReg_s64(int _slot){
         return(new StackReg_s64(_slot));

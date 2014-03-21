@@ -575,13 +575,13 @@ public class HSAILInstructionSet {
 
 
         }
-    static  class ld_global_64<Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends HSAILInstructionWithDest<field_load<Rt,T>, Rt,T> {
+    static  class ld_global<Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends HSAILInstructionWithDest<field_load<Rt,T>, Rt,T> {
 
         StackReg_ref mem;
         long offset;
 
 
-        ld_global_64(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _dest, StackReg_ref _mem, long _offset) {
+        ld_global(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _dest, StackReg_ref _mem, long _offset) {
             super(_hsailStackFrame,_from, _dest);
             offset = _offset;
             mem = _mem;
