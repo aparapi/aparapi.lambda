@@ -30,7 +30,7 @@ public class HSA {
 
     }
 
-    public static int barrier(){ // barrier_fgroup
+    public static void barrier(){ // barrier_fgroup
         throw new IllegalStateException("you don't want to call this from Java");
     }
 

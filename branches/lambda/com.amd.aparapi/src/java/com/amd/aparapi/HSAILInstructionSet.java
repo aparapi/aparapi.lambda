@@ -46,7 +46,22 @@ public class HSAILInstructionSet {
         }
 
 
-        abstract static class HSAILInstructionWithDest<H extends HSAILInstructionWithDest<H,Rt,T>, Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends HSAILInstruction<H> {
+    static class barrier_fgroup extends HSAILInstruction<barrier_fgroup>{
+
+        barrier_fgroup(HSAILStackFrame _hsailStackFrame,Instruction _from) {
+            super(_hsailStackFrame, _from, 0,0);
+        }
+        @Override
+        public void render(HSAILRenderer r) {
+
+            r.append("barrier_fgroup").semicolon();
+
+        }
+    }
+
+
+
+    abstract static class HSAILInstructionWithDest<H extends HSAILInstructionWithDest<H,Rt,T>, Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends HSAILInstruction<H> {
 
 
 

@@ -58,16 +58,17 @@ public class Internal {
    }
    public static void main(String[] _args) {
 ;
-       int len = 512;
+       int len = 2048;
        Dims[] dims = new Dims[len];
        for (int i=0; i< len; i++){
            dims[i] = new Dims();
        }
-       /*
+       if(false){
+       int[] global = new int[256];
        int[] partials=new int[global.length/64];
        Device.hsa().forEach(global.length, 64, id -> {
            int[] local = local(64);
-           int lid = getWorkGroupId();
+           int lid = getWorkItemId();
            local[lid] = global[id];
            barrier();
            for (int i = 2; i < getWorkGroupSize(); i *= 2) {
@@ -78,14 +79,16 @@ public class Internal {
            }
            partials[getWorkGroupId()] = local[0]; // race here is ok
        });
-   */
 
+       }
        Device.hsa().forEach(len, id -> {
            dims[id].id=id;
            dims[id].gridSize=getGridSize();
            dims[id].workGroupId=getWorkGroupId();
+
            dims[id].workGroupSize=getWorkGroupSize();
            dims[id].workItemId=getWorkItemId();
+
 
        });
        for (int i=0; i<len; i++){
