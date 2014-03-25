@@ -1,5 +1,8 @@
 package com.amd.aparapi;
 
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.util.*;
 
 /**
@@ -56,15 +59,22 @@ import java.util.*;
            return(rc);
         }
     }
+    interface CallSignature{}
+    interface IItoI extends CallSignature{int op(int lhs, int rhs);}
+    interface DDtoD extends CallSignature{double op(double lhs, double rhs);}
+    class Call<T extends CallSignature>{
+        T call;
+        Call(T _call){call = _call;}
 
-
+    }
 
     class InlineIntrinsicCall {
+
       interface IntrinsicAssembler{ void assemble(HSAILAssembler _assembler,  Instruction _from);}
       IntrinsicAssembler intrinsicAssembler;
       boolean isStatic;
       private String mappedMethod; // i.e  java.lang.Math.sqrt(D)D
-
+      public Call call;
       String getMappedMethod() {
          return (mappedMethod);
       }
@@ -78,6 +88,13 @@ import java.util.*;
          mappedMethod = _mappedMethod;
          isStatic = _isStatic;
           intrinsicAssembler = _intrinsicAssembler;
+        }
+
+        InlineIntrinsicCall(Call _call, boolean _isStatic, IntrinsicAssembler _intrinsicAssembler) {
+            call = _call;
+
+            isStatic = _isStatic;
+            intrinsicAssembler = _intrinsicAssembler;
         }
 
     }
@@ -120,10 +137,31 @@ class HSAILIntrinsics {
     static InlineIntrinsicCall getInlineIntrinsic(CallInfo _callInfo){
         return(intrinsicMap.get(_callInfo.intrinsicLookupName));
     }
+
     static {
-        add(new InlineIntrinsicCall("java.lang.Math.sqrt(D)D", true, ( _ass,  _from)->{
-             //   nsqrt_f64  $d${0}, $d${0};
-             _ass.nsqrt(_from, _ass.stackReg_f64(_from));
+        add(new InlineIntrinsicCall("com.amd.aparapi.HSA.getGridSize()I", true, (_ass, _from) -> {
+            //   gridsize_s32  $s${0}, 0;
+            _ass.gridsize_s32(_from, _ass.stackReg_s32(_from));
+
+        }));
+        add(new InlineIntrinsicCall("com.amd.aparapi.HSA.getWorkGroupId()I", true, (_ass, _from) -> {
+            //   workgroupid_s32  $s${0}, 0;
+            _ass.workgroupid_s32(_from, _ass.stackReg_s32(_from));
+
+        }));
+        add(new InlineIntrinsicCall("com.amd.aparapi.HSA.getWorkGroupSize()I", true, (_ass, _from) -> {
+            //   workgroupsize_s32  $s${0}, 0;
+            _ass.workgroupsize_s32(_from, _ass.stackReg_s32(_from));
+
+        }));
+        add(new InlineIntrinsicCall("com.amd.aparapi.HSA.getWorkItemId()I", true, (_ass, _from) -> {
+            //   workitemid_s32  $s${0}, 0;
+            _ass.workitemid_s32(_from, _ass.stackReg_s32(_from));
+
+        }));
+        add(new InlineIntrinsicCall("java.lang.Math.sqrt(D)D", true, (_ass, _from) -> {
+            //   nsqrt_f64  $d${0}, $d${0};
+            _ass.nsqrt(_from, _ass.stackReg_f64(_from));
 
         }));
         add(new InlineIntrinsicCall( "java.lang.String.charAt(I)C", false, ( _ass,  _from)->{
@@ -170,15 +208,34 @@ class HSAILIntrinsics {
 
 
         }));
-        add(new InlineIntrinsicCall("java.lang.Math.min(II)I", true , ( _ass,  _from)->{
-                // cmp_ge_b1_s32 $c1, $s0, $s1;
-                // cmov_b32 $s0, $c1, $s1, $s0;
-                _ass.add(new HSAILInstructionSet.cmp_s32(_ass.currentFrame(), _from, "ge", new StackReg_s32(_ass.stackIdx(_from)),  new StackReg_s32(_ass.stackIdx(_from)+1))) ;
-                _ass.add(new HSAILInstructionSet.cmov(_ass.currentFrame(), _from,  new StackReg_s32(_ass.stackIdx(_from)),  new StackReg_s32(_ass.stackIdx(_from)+1),  new StackReg_s32(_ass.stackIdx(_from))));
-
+        add(new InlineIntrinsicCall("java.lang.Math.min(II)I", true, (_ass, _from) -> {
+            // cmp_ge_b1_s32 $c1, $s0, $s1;
+            // cmov_b32 $s0, $c1, $s1, $s0;
+            _ass.add(new HSAILInstructionSet.cmp_s32(_ass.currentFrame(), _from, "ge", new StackReg_s32(_ass.stackIdx(_from)), new StackReg_s32(_ass.stackIdx(_from) + 1)));
+            _ass.add(new HSAILInstructionSet.cmov(_ass.currentFrame(), _from, new StackReg_s32(_ass.stackIdx(_from)), new StackReg_s32(_ass.stackIdx(_from) + 1), new StackReg_s32(_ass.stackIdx(_from))));
 
 
         }));
+        /*
+        add(new InlineIntrinsicCall(new Call((DDtoD)Math::min), true, (_ass, _from) -> {
+
+            // cmp_ge_b1_s32 $c1, $s0, $s1;
+            // cmov_b32 $s0, $c1, $s1, $s0;
+            _ass.add(new HSAILInstructionSet.cmp_s32(_ass.currentFrame(), _from, "ge", new StackReg_s32(_ass.stackIdx(_from)), new StackReg_s32(_ass.stackIdx(_from) + 1)));
+            _ass.add(new HSAILInstructionSet.cmov(_ass.currentFrame(), _from, new StackReg_s32(_ass.stackIdx(_from)), new StackReg_s32(_ass.stackIdx(_from) + 1), new StackReg_s32(_ass.stackIdx(_from))));
+
+
+        }));
+        add(new InlineIntrinsicCall(new Call((IItoI)Math::min), true, (_ass, _from) -> {
+
+            // cmp_ge_b1_s32 $c1, $s0, $s1;
+            // cmov_b32 $s0, $c1, $s1, $s0;
+            _ass.add(new HSAILInstructionSet.cmp_s32(_ass.currentFrame(), _from, "ge", new StackReg_s32(_ass.stackIdx(_from)), new StackReg_s32(_ass.stackIdx(_from) + 1)));
+            _ass.add(new HSAILInstructionSet.cmov(_ass.currentFrame(), _from, new StackReg_s32(_ass.stackIdx(_from)), new StackReg_s32(_ass.stackIdx(_from) + 1), new StackReg_s32(_ass.stackIdx(_from))));
+
+
+        }));
+        */
         add(new InlineIntrinsicCall("java.lang.Math.max(II)I", true , ( _ass,  _from)->{
                 // cmp_le_b1_s32 $c1, $s0, $s1;
                 // cmov_b32 $s0, $c1, $s1, $s0;

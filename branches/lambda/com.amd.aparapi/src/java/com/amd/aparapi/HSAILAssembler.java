@@ -689,6 +689,22 @@ public class HSAILAssembler {
         add( new HSAILInstructionSet.workitemabsid(currentFrame(), _i, new VarReg_s32(_varOffset)));
        return(this);
     }
+    public HSAILAssembler gridsize_s32( Instruction _i, StackReg_s32 _dest){
+        add( new HSAILInstructionSet.gridsize(currentFrame(), _i, _dest));
+        return(this);
+    }
+    public HSAILAssembler workgroupid_s32( Instruction _i, StackReg_s32 _dest){
+        add( new HSAILInstructionSet.workgroupid(currentFrame(), _i, _dest));
+        return(this);
+    }
+    public HSAILAssembler workgroupsize_s32( Instruction _i, StackReg_s32 _dest){
+        add( new HSAILInstructionSet.workgroupsize(currentFrame(), _i, _dest));
+        return(this);
+    }
+    public HSAILAssembler workitemid_s32( Instruction _i, StackReg_s32 _dest){
+        add( new HSAILInstructionSet.workitemid(currentFrame(), _i, _dest));
+        return(this);
+    }
 
     public HSAILAssembler nsqrt( Instruction _i, StackReg_f64 _reg){
        add( new HSAILInstructionSet.nsqrt(currentFrame(), _i, _reg));

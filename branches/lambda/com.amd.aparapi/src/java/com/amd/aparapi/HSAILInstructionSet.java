@@ -321,7 +321,61 @@ public class HSAILInstructionSet {
         }
     }
 
-        static  class ld_arg<Rt extends HSAILRegister<Rt,T>,T extends PrimitiveType> extends HSAILInstructionWithDest<ld_arg<Rt,T>,Rt, T> {
+    static  class gridsize<Rt extends HSAILRegister<Rt,T>,T extends PrimitiveType> extends HSAILInstructionWithDest<gridsize<Rt,T>,Rt, T> {
+
+
+        gridsize(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _dest) {
+            super(_hsailStackFrame, _from, _dest);
+        }
+
+
+        @Override
+        void render(HSAILRenderer r) {
+            r.append("gridsize_").typeName(getDest()).space().operandName(getDest()).separator().append("0").semicolon();
+        }
+    }
+    static  class workgroupid<Rt extends HSAILRegister<Rt,T>,T extends PrimitiveType> extends HSAILInstructionWithDest<workgroupid<Rt,T>,Rt, T> {
+
+
+        workgroupid(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _dest) {
+            super(_hsailStackFrame, _from, _dest);
+        }
+
+
+        @Override
+        void render(HSAILRenderer r) {
+            r.append("workgroupid_").typeName(getDest()).space().operandName(getDest()).separator().append("0").semicolon();
+        }
+    }
+
+    static  class workgroupsize<Rt extends HSAILRegister<Rt,T>,T extends PrimitiveType> extends HSAILInstructionWithDest<workgroupsize<Rt,T>,Rt, T> {
+
+
+        workgroupsize(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _dest) {
+            super(_hsailStackFrame, _from, _dest);
+        }
+
+
+        @Override
+        void render(HSAILRenderer r) {
+            r.append("workgroupsize_").typeName(getDest()).space().operandName(getDest()).separator().append("0").semicolon();
+        }
+    }
+    static  class workitemid<Rt extends HSAILRegister<Rt,T>,T extends PrimitiveType> extends HSAILInstructionWithDest<workitemid<Rt,T>,Rt, T> {
+
+
+        workitemid(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _dest) {
+            super(_hsailStackFrame, _from, _dest);
+        }
+
+
+        @Override
+        void render(HSAILRenderer r) {
+            r.append("workitemid_").typeName(getDest()).space().operandName(getDest()).separator().append("0").semicolon();
+        }
+    }
+
+    static  class ld_arg<Rt extends HSAILRegister<Rt,T>,T extends PrimitiveType> extends HSAILInstructionWithDest<ld_arg<Rt,T>,Rt, T> {
 
 
 
