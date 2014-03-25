@@ -159,6 +159,12 @@ class HSAILIntrinsics {
             _ass.workitemid_s32(_from, _ass.stackReg_s32(_from));
 
         }));
+        add(new InlineIntrinsicCall("com.amd.aparapi.HSA.barrier()V", true, (_ass, _from) -> {
+            //   barrier_fgroup;
+
+            _ass.barrier_fgroup(_from);
+
+        }));
         add(new InlineIntrinsicCall("java.lang.Math.sqrt(D)D", true, (_ass, _from) -> {
             //   nsqrt_f64  $d${0}, $d${0};
             _ass.nsqrt(_from, _ass.stackReg_f64(_from));

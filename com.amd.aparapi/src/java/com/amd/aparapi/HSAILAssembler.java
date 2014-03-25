@@ -733,6 +733,11 @@ public class HSAILAssembler {
        add( new HSAILInstructionSet.nop(currentFrame(), _i, _label));
         return(this);
     }
+
+    public HSAILAssembler barrier_fgroup( Instruction _i){
+        add( new HSAILInstructionSet.barrier_fgroup(currentFrame(), _i));
+        return(this);
+    }
     public HSAILAssembler nop( Instruction _i){
         return(nop(_i, null));
     }
