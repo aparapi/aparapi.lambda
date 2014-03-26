@@ -349,6 +349,73 @@ public class HSAILInstructionSet {
             r.append("gridsize_").typeName(getDest()).space().operandName(getDest()).separator().append("0").semicolon();
         }
     }
+
+    static  class countuplane<Rt extends HSAILRegister<Rt,T>,T extends PrimitiveType> extends HSAILInstructionWithDest<countuplane<Rt,T>,Rt, T> {
+
+
+        countuplane(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _dest) {
+            super(_hsailStackFrame, _from, _dest);
+        }
+
+
+        @Override
+        void render(HSAILRenderer r) {
+            r.append("countuplane_").typeName(getDest()).space().operandName(getDest()).semicolon();
+        }
+    }
+
+    static  class masklane<Rt extends HSAILRegister<Rt,T>,T extends PrimitiveType> extends HSAILInstructionWithDest<masklane<Rt,T>,Rt, T> {
+
+
+        masklane(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _dest) {
+            super(_hsailStackFrame, _from, _dest);
+        }
+
+
+        @Override
+        void render(HSAILRenderer r) {
+            r.append("masklane_").typeName(getDest()).space().operandName(getDest()).semicolon();
+        }
+    }
+    static  class laneid<Rt extends HSAILRegister<Rt,T>,T extends PrimitiveType> extends HSAILInstructionWithDest<laneid<Rt,T>,Rt, T> {
+
+
+        laneid(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _dest) {
+            super(_hsailStackFrame, _from, _dest);
+        }
+
+
+        @Override
+        void render(HSAILRenderer r) {
+            r.append("laneid_").typeName(getDest()).space().operandName(getDest()).semicolon();
+        }
+    }
+    static  class cuid<Rt extends HSAILRegister<Rt,T>,T extends PrimitiveType> extends HSAILInstructionWithDest<cuid<Rt,T>,Rt, T> {
+
+
+        cuid(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _dest) {
+            super(_hsailStackFrame, _from, _dest);
+        }
+
+
+        @Override
+        void render(HSAILRenderer r) {
+            r.append("cuid_").typeName(getDest()).space().operandName(getDest()).semicolon();
+        }
+    }
+    static  class clock<Rt extends HSAILRegister<Rt,T>,T extends PrimitiveType> extends HSAILInstructionWithDest<clock<Rt,T>,Rt, T> {
+
+
+        clock(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _dest) {
+            super(_hsailStackFrame, _from, _dest);
+        }
+
+
+        @Override
+        void render(HSAILRenderer r) {
+            r.append("clock_").typeName(getDest()).space().operandName(getDest()).semicolon();
+        }
+    }
     static  class workgroupid<Rt extends HSAILRegister<Rt,T>,T extends PrimitiveType> extends HSAILInstructionWithDest<workgroupid<Rt,T>,Rt, T> {
 
 
@@ -374,6 +441,19 @@ public class HSAILInstructionSet {
         @Override
         void render(HSAILRenderer r) {
             r.append("workgroupsize_").typeName(getDest()).space().operandName(getDest()).separator().append("0").semicolon();
+        }
+    }
+    static  class currentworkgroupsize<Rt extends HSAILRegister<Rt,T>,T extends PrimitiveType> extends HSAILInstructionWithDest<currentworkgroupsize<Rt,T>,Rt, T> {
+
+
+        currentworkgroupsize(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _dest) {
+            super(_hsailStackFrame, _from, _dest);
+        }
+
+
+        @Override
+        void render(HSAILRenderer r) {
+            r.append("currentworkgroupsize_").typeName(getDest()).space().operandName(getDest()).separator().append("0").semicolon();
         }
     }
     static  class workitemid<Rt extends HSAILRegister<Rt,T>,T extends PrimitiveType> extends HSAILInstructionWithDest<workitemid<Rt,T>,Rt, T> {

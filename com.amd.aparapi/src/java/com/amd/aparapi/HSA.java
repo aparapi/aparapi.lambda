@@ -25,16 +25,42 @@ public class HSA {
         throw new IllegalStateException("you don't want to call this from Java");
 
     }
+    public static int getLaneId(){ // laneid_u32 $s0;
+        throw new IllegalStateException("you don't want to call this from Java");
+
+    }
     public static int getWorkGroupSize(){ // workgroupsize_u32 $s0, 0;
         throw new IllegalStateException("you don't want to call this from Java");
 
     }
+    public static int getCurrentWorkGroupSize(){ // currentworkgroupsize_u32 $s0, 0;
+        throw new IllegalStateException("you don't want to call this from Java");
 
+    }
+
+
+    public static int getCountUpLane(){ // countuplane_u32 $s0;
+        throw new IllegalStateException("you don't want to call this from Java");
+
+    }
+
+    public static int getMaskLane(){ // masklane_u32 $s0;
+        throw new IllegalStateException("you don't want to call this from Java");
+
+    }
+    public static int getComputeUnitId(){ // cuid_u32 $s0;
+        throw new IllegalStateException("you don't want to call this from Java");
+
+    }
+    public static long getClock(){ // clock_u64 $d0;
+        throw new IllegalStateException("you don't want to call this from Java");
+
+    }
     public static void barrier(){ // barrier_fgroup
         throw new IllegalStateException("you don't want to call this from Java");
     }
 
-    public static int[] local(int size){ // 	align 4 group_u32 %run_cllocal_scratch[256];" + "\n" +
+    public static int[] localInt(int size){ // 	align 4 group_u32 %run_cllocal_scratch[256];" + "\n" +
         throw new IllegalStateException("you don't want to call this from Java");
     }
 }

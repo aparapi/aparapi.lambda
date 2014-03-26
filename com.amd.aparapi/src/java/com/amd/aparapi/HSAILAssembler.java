@@ -693,12 +693,36 @@ public class HSAILAssembler {
         add( new HSAILInstructionSet.gridsize(currentFrame(), _i, _dest));
         return(this);
     }
+    public HSAILAssembler countuplane_s32( Instruction _i, StackReg_s32 _dest){
+        add( new HSAILInstructionSet.countuplane(currentFrame(), _i, _dest));
+        return(this);
+    }
+    public HSAILAssembler masklane_s32( Instruction _i, StackReg_s32 _dest){
+        add( new HSAILInstructionSet.masklane(currentFrame(), _i, _dest));
+        return(this);
+    }
+    public HSAILAssembler laneid_s32( Instruction _i, StackReg_s32 _dest){
+        add( new HSAILInstructionSet.laneid(currentFrame(), _i, _dest));
+        return(this);
+    }
+    public HSAILAssembler cuid_s32( Instruction _i, StackReg_s32 _dest){
+        add( new HSAILInstructionSet.cuid(currentFrame(), _i, _dest));
+        return(this);
+    }
+    public HSAILAssembler clock_s64( Instruction _i, StackReg_s64 _dest){
+        add( new HSAILInstructionSet.clock(currentFrame(), _i, _dest));
+        return(this);
+    }
     public HSAILAssembler workgroupid_s32( Instruction _i, StackReg_s32 _dest){
         add( new HSAILInstructionSet.workgroupid(currentFrame(), _i, _dest));
         return(this);
     }
     public HSAILAssembler workgroupsize_s32( Instruction _i, StackReg_s32 _dest){
         add( new HSAILInstructionSet.workgroupsize(currentFrame(), _i, _dest));
+        return(this);
+    }
+    public HSAILAssembler currentworkgroupsize_s32( Instruction _i, StackReg_s32 _dest){
+        add( new HSAILInstructionSet.currentworkgroupsize(currentFrame(), _i, _dest));
         return(this);
     }
     public HSAILAssembler workitemid_s32( Instruction _i, StackReg_s32 _dest){

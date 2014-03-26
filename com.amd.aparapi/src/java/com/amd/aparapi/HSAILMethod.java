@@ -154,6 +154,11 @@ class HSAILIntrinsics {
             _ass.workgroupsize_s32(_from, _ass.stackReg_s32(_from));
 
         }));
+        add(new InlineIntrinsicCall("com.amd.aparapi.HSA.getCurrentWorkGroupSize()I", true, (_ass, _from) -> {
+            //   currentworkgroupsize_s32  $s${0}, 0;
+            _ass.currentworkgroupsize_s32(_from, _ass.stackReg_s32(_from));
+
+        }));
         add(new InlineIntrinsicCall("com.amd.aparapi.HSA.getWorkItemId()I", true, (_ass, _from) -> {
             //   workitemid_s32  $s${0}, 0;
             _ass.workitemid_s32(_from, _ass.stackReg_s32(_from));
@@ -163,6 +168,48 @@ class HSAILIntrinsics {
             //   barrier_fgroup;
 
             _ass.barrier_fgroup(_from);
+
+        }));
+        add(new InlineIntrinsicCall("com.amd.aparapi.HSA.localInt(I)[I", true, (_ass, _from) -> {
+            //   align 4 group_u32 %uniquename[$s${0}]
+            //   lda_group_u64 $d${0}, [%uniquename];" + "\n" +
+
+        //    _ass.group_alloc_load_u32(_from, _ass.stackReg_ref(_from), _ass.stackReg_s32(_from));
+
+        }));
+        add(new InlineIntrinsicCall("com.amd.aparapi.HSA.getCountUpLane()I", true, (_ass, _from) -> {
+            //   countuplane_s32 $s${0}
+
+
+            _ass.countuplane_s32(_from, _ass.stackReg_s32(_from));
+
+        }));
+        add(new InlineIntrinsicCall("com.amd.aparapi.HSA.getMaskLane()I", true, (_ass, _from) -> {
+            //   masklane_s32 $s${0}
+
+
+            _ass.masklane_s32(_from, _ass.stackReg_s32(_from));
+
+        }));
+        add(new InlineIntrinsicCall("com.amd.aparapi.HSA.getLaneId()I", true, (_ass, _from) -> {
+            //   laneid_s32 $s${0}
+
+
+            _ass.laneid_s32(_from, _ass.stackReg_s32(_from));
+
+        }));
+        add(new InlineIntrinsicCall("com.amd.aparapi.HSA.getComputeUnitId()I", true, (_ass, _from) -> {
+            //   cuid_s32 $s${0}
+
+
+            _ass.cuid_s32(_from, _ass.stackReg_s32(_from));
+
+        }));
+        add(new InlineIntrinsicCall("com.amd.aparapi.HSA.getClock()J", true, (_ass, _from) -> {
+            //   clock_u64 $s${0}
+
+
+            _ass.clock_s64(_from, _ass.stackReg_s64(_from));
 
         }));
         add(new InlineIntrinsicCall("java.lang.Math.sqrt(D)D", true, (_ass, _from) -> {
