@@ -54,7 +54,13 @@ public class Internal {
        int id =0;
        int workItemId=0;
        int workGroupSize=0;
+       int currentWorkGroupSize=0;
        int workGroupId=0;
+       int laneId=0;
+       int countUpLane =0;
+       long clock=0L;
+       int computeUnitId=0;
+       int maskLane=0;
    }
    public static void main(String[] _args) {
 ;
@@ -67,12 +73,14 @@ public class Internal {
        int[] global = new int[256];
        int[] partials=new int[global.length/64];
        Device.hsa().forEach(global.length, 64, id -> {
-           int[] local = local(64);
+           int[] local = localInt(64);
            int lid = getWorkItemId();
+
            local[lid] = global[id];
            barrier();
            for (int i = 2; i < getWorkGroupSize(); i *= 2) {
                if (lid % i == 0) {
+
                    local[lid] = reduce(local[lid + i / 2], local[lid]);
                }
                barrier();
@@ -87,7 +95,16 @@ public class Internal {
            dims[id].workGroupId=getWorkGroupId();
 
            dims[id].workGroupSize=getWorkGroupSize();
+           dims[id].currentWorkGroupSize=getCurrentWorkGroupSize();
+           dims[id].laneId=getLaneId();
            dims[id].workItemId=getWorkItemId();
+           if (id%4==0){
+               dims[id].countUpLane = getCountUpLane();
+               dims[id].maskLane = getMaskLane();
+           }
+           dims[id].computeUnitId = getComputeUnitId();
+           dims[id].clock = getClock();
+
 
 
        });
@@ -97,9 +114,17 @@ public class Internal {
                   +" gridsize="+dims[i].gridSize
                   +" workitemid="+dims[i].workItemId
                   +" workGroupId="+dims[i].workGroupId
+                  +" laneId="+dims[i].laneId
+                  +" computeUnitId="+dims[i].computeUnitId
                   +" workGroupSize="+dims[i].workGroupSize
+                  +" currentWorkGroupSize="+dims[i].currentWorkGroupSize
+                  +" countUpLane="+dims[i].countUpLane
+                  +" maskLane="+dims[i].maskLane
+                  +" clock="+dims[i].clock
           );
        }
+
+
    }
 
 }
