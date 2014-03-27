@@ -214,7 +214,7 @@ class HSAILIntrinsics {
         }));
         add(new InlineIntrinsicCall("java.lang.Math.sqrt(D)D", true, (_ass, _from) -> {
             //   nsqrt_f64  $d${0}, $d${0};
-            _ass.nsqrt(_from, _ass.stackReg_f64(_from));
+            _ass.nsqrt(_from, _ass.stackReg_f64(_from), _ass.stackReg_f64(_from));
 
         }));
         add(new InlineIntrinsicCall( "java.lang.String.charAt(I)C", false, ( _ass,  _from)->{
@@ -242,11 +242,11 @@ class HSAILIntrinsics {
 
         }));
         add(new InlineIntrinsicCall("java.lang.Math.cos(D)D", true, ( _ass,  _from)->{
-            _ass.ncos(_from, _ass.stackReg_f64(_from));
+            _ass.ncos(_from, _ass.stackReg_f64(_from),_ass.stackReg_f64(_from));
 
         }));
         add(new InlineIntrinsicCall("java.lang.Math.sin(D)D", true , ( _ass,  _from)->{
-                _ass.nsin(_from, _ass.stackReg_f64(_from));
+                _ass.nsin(_from, _ass.stackReg_f64(_from),_ass.stackReg_f64(_from));
 
         }));
         add(new InlineIntrinsicCall("java.lang.Math.hypot(DD)D", true , ( _ass,  _from)->{
@@ -257,7 +257,7 @@ class HSAILIntrinsics {
                 _ass.mul(_from, _ass.stackReg_f64(_from),  _ass.stackReg_f64(_from),  _ass.stackReg_f64(_from));
                 _ass.mul(_from, _ass.stackReg_f64(_from, 1),  _ass.stackReg_f64(_from, 1),  _ass.stackReg_f64(_from, 1));
                 _ass.add( _from, _ass.stackReg_f64(_from),  _ass.stackReg_f64(_from),  _ass.stackReg_f64(_from, 1));
-                _ass.nsqrt(_from, _ass.stackReg_f64(_from));
+                _ass.nsqrt(_from, _ass.stackReg_f64(_from), _ass.stackReg_f64(_from));
 
 
         }));
@@ -377,28 +377,28 @@ public class HSAILMethod {
         Instruction initial = method.getInstructions().iterator().next();
         int argOffset = 0;
         if (!method.isStatic()) {
-            assembler.ld_kernarg_ref(initial, 0);
-            // HSAILInstructionSet.ld_arg_ref( initial, 0); // if we need to support real calls.
+            assembler.ld_kernarg(initial, assembler.varReg_ref(0));
+            // HSAILInstructionSet.ld_arg( initial, assembler.varReg_ref(0)); // if we need to support real calls.
             argOffset++;
         }
         TypeHelper.JavaMethodArg[] args = method.argsAndReturnType.getArgs();
         int argc = args.length;
         for (TypeHelper.JavaMethodArg arg : args) {
             if (arg.getJavaType().isArray() || arg.getJavaType().isObject()) {
-                assembler.ld_kernarg_ref( initial, arg.getArgc() + argOffset);
-                // assembler.ld_arg_ref( initial, arg.getArgc() + argOffset); // if we need to support real calls.
+                assembler.ld_kernarg( initial, assembler.varReg_ref(arg.getArgc() + argOffset));
+                // assembler.ld_arg( initial, assembler.varReg_ref(arg.getArgc() + argOffset)); // if we need to support real calls.
             } else if (arg.getJavaType().isInt()) {
-                assembler.ld_kernarg_s32(initial, arg.getArgc() + argOffset);
-                // assembler.ld_arg_s32( initial, arg.getArgc() + argOffset); // if we need to support real calls.
+                assembler.ld_kernarg(initial, assembler.varReg_s32(arg.getArgc() + argOffset));
+                // assembler.ld_arg( initial, assembler.varReg_s32(arg.getArgc() + argOffset)); // if we need to support real calls.
             } else if (arg.getJavaType().isFloat()) {
-                assembler.ld_kernarg_f32(initial, arg.getArgc() + argOffset);
-                // assembler.ld_arg_f32( initial, arg.getArgc() + argOffset); // if we need to support real calls.
+                assembler.ld_kernarg(initial, assembler.varReg_f32(arg.getArgc() + argOffset));
+                // assembler.ld_arg( initial, assembler.varReg_s32(arg.getArgc() + argOffset)); // if we need to support real calls.
             } else if (arg.getJavaType().isDouble()) {
-                assembler.ld_kernarg_f64(initial, arg.getArgc() + argOffset);
-                // assembler.ld_arg_f64( initial, arg.getArgc() + argOffset); // if we need to support real calls.
+                assembler.ld_kernarg(initial, assembler.varReg_f64(arg.getArgc() + argOffset));
+                // assembler.ld_arg( initial, assembler.varReg_s32(arg.getArgc() + argOffset)); // if we need to support real calls.
             } else if (arg.getJavaType().isLong()) {
-                assembler.ld_kernarg_s64(initial, arg.getArgc() + argOffset);
-                // assembler.ld_arg_s64( initial, arg.getArgc() + argOffset); // if we need to support real calls.
+                assembler.ld_kernarg(initial, assembler.varReg_s64(arg.getArgc() + argOffset));
+                // assembler.ld_arg( initial, assembler.varReg_s32(arg.getArgc() + argOffset)); // if we need to support real calls.
             }
         }
         assembler.workitemabsid_u32(initial, argc + argOffset); // we overwrite the last arg +1 with the gid

@@ -243,7 +243,12 @@ public class HSAILInstructionSet {
 
             @Override
             public void render(HSAILRenderer r) {
-                r.append("cmp_").append(type).append("u").append("_b1_").typeName(getSrcLhs()).space().append("$c1").separator().operandName(getSrcLhs()).separator().operandName(getSrcRhs()).semicolon();
+
+                r.append("cmp_").append(type);
+                if (getSrcLhs().type == PrimitiveType.f32 || getSrcLhs().type == PrimitiveType.f64 ){
+                  r.append("u");
+                }
+                r.append("_b1_").typeName(getSrcLhs()).space().append("$c1").separator().operandName(getSrcLhs()).separator().operandName(getSrcRhs()).semicolon();
 
             }
         }
@@ -518,35 +523,6 @@ public class HSAILInstructionSet {
 
         }
 
-        static   class and_const<Rt extends HSAILRegister<Rt,T>,T extends PrimitiveType, C extends Number> extends binary_const<and_const<Rt, T,C>, Rt, T, C> {
-
-
-
-            and_const(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _dest,Rt _src, C _value) {
-                super(_hsailStackFrame,_from, "and_", _dest, _src, _value);
-
-            }
-
-
-            @Override
-            void render(HSAILRenderer r) {
-                r.append(op).append("b64").space().operandName(getDest()).separator().operandName(getSrc()).separator().append(value).semicolon();
-            }
-
-
-        }
-
-        static  class mul_const<Rt extends HSAILRegister<Rt,T>,T extends PrimitiveType, C extends Number> extends binary_const< mul_const<Rt, T,C>, Rt, T, C> {
-
-
-            mul_const(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _dest, Rt _src, C _value) {
-                super(_hsailStackFrame,_from, "mul_", _dest, _src, _value);
-
-            }
-
-
-
-        }
 
         static class mad<Rd extends HSAILRegister<Rd,ref>, Rt extends HSAILRegister<Rt,ref>> extends HSAILInstructionWithDestSrcSrc<mad<Rd,Rt>, Rd, Rt,Rt, ref, ref, ref> {
             long size;
@@ -808,22 +784,7 @@ public class HSAILInstructionSet {
 
         }
 
-   static final class returnMov<Rd extends HSAILRegister<Rd,D>,Rt extends HSAILRegister<Rt,T>,D extends PrimitiveType, T extends PrimitiveType> extends HSAILInstructionWithDestSrc<returnMov<Rd,Rt,D,T>, Rd, Rt,D,T> {
-       String endLabel;
 
-
-      public returnMov(HSAILStackFrame _hsailStackFrame,Instruction _from, Rd _dest, Rt _src, String _endLabel) {
-         super(_hsailStackFrame,_from, _dest, _src);
-         endLabel = _endLabel;
-      }
-
-      @Override
-      void render(HSAILRenderer r) {
-         r.append("mov_").movTypeName(getDest()).space().operandName(getDest()).separator().operandName(getSrc()).semicolon();
-      }
-
-
-   }
 
     static final class returnBranch extends  HSAILInstruction<returnBranch> {
         String endLabel;
@@ -847,8 +808,8 @@ public class HSAILInstructionSet {
 
 
 
-            public unary(HSAILStackFrame _hsailStackFrame,Instruction _from, String _op, Rt _destSrc) {
-                super(_hsailStackFrame,_from, _destSrc, _destSrc);
+            public unary(HSAILStackFrame _hsailStackFrame,Instruction _from, String _op, Rt _dest, Rt _source) {
+                super(_hsailStackFrame,_from, _dest, _source);
                 op = _op;
             }
 
@@ -948,8 +909,8 @@ public class HSAILInstructionSet {
         static  class neg<Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends unary<neg<Rt,T>, Rt, T> {
 
 
-            public neg(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _destSrc) {
-                super(_hsailStackFrame,_from, "neg_", _destSrc);
+            public neg(HSAILStackFrame _hsailStackFrame,Instruction _from,  Rt _dest, Rt _source) {
+                super(_hsailStackFrame,_from, "neg_", _dest, _source);
             }
 
         }
@@ -957,8 +918,8 @@ public class HSAILInstructionSet {
     static  class nsqrt<Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends unary<nsqrt<Rt,T>, Rt, T> {
 
 
-        public nsqrt(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _destSrc) {
-            super(_hsailStackFrame,_from, "nsqrt_", _destSrc);
+        public nsqrt(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _dest, Rt _source) {
+            super(_hsailStackFrame,_from, "nsqrt_", _dest, _source);
         }
 
     }
@@ -966,8 +927,8 @@ public class HSAILInstructionSet {
     static  class ncos<Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends unary<ncos<Rt,T>, Rt, T> {
 
 
-        public ncos(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _destSrc) {
-            super(_hsailStackFrame,_from, "ncos_", _destSrc);
+        public ncos(HSAILStackFrame _hsailStackFrame,Instruction _from,  Rt _dest, Rt _source) {
+            super(_hsailStackFrame,_from, "ncos_", _dest, _source);
         }
 
     }
@@ -975,8 +936,8 @@ public class HSAILInstructionSet {
     static  class nsin<Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends unary<nsin<Rt,T>, Rt, T> {
 
 
-        public nsin(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _destSrc) {
-            super(_hsailStackFrame,_from, "nsin_", _destSrc);
+        public nsin(HSAILStackFrame _hsailStackFrame,Instruction _from,  Rt _dest, Rt _source) {
+            super(_hsailStackFrame,_from, "nsin_", _dest, _source);
         }
 
     }
