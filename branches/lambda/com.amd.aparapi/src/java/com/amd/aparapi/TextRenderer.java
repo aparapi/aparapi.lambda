@@ -170,6 +170,12 @@ public class TextRenderer<T extends TextRenderer>{
     final public T cbrace(){
         return (append("}"));
     }
+    final public T osbrace(){
+        return (append("["));
+    }
+    final public T csbrace(){
+        return (append("]"));
+    }
 
     final public T oparenth(){
         return (append("("));

@@ -173,7 +173,9 @@ class HSAILIntrinsics {
         add(new InlineIntrinsicCall("com.amd.aparapi.HSA.localInt(I)[I", true, (_ass, _from) -> {
             //   align 4 group_u32 %uniquename[$s${0}]
             //   lda_group_u64 $d${0}, [%uniquename];" + "\n" +
-
+            String unique="local_buf_"+_ass.currentFrame().getUniqueName()+"_"+_from.getThisPC();
+            _ass.group_u32(_from, unique, 64);
+            _ass.lda_group_u64(_from, _ass.stackReg_ref(_from), unique);
         //    _ass.group_alloc_load_u32(_from, _ass.stackReg_ref(_from), _ass.stackReg_s32(_from));
 
         }));

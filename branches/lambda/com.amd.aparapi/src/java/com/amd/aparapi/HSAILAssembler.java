@@ -69,6 +69,18 @@ public class HSAILAssembler {
        add( new HSAILInstructionSet.cbr(currentFrame(), _i, _i.asBranch().getAbsolute()));
        return(this);
     }
+
+
+
+
+    public HSAILAssembler lda_group_u64( Instruction _i, StackReg_ref _dest, String _uniqueName){
+        add( new HSAILInstructionSet.lda_group_u64(currentFrame(), _i, _dest, _uniqueName));
+        return(this);
+    }
+    public HSAILAssembler group_u32( Instruction _i, String _uniqueName, int _size){
+        add( new HSAILInstructionSet.group_u32(currentFrame(), _i, _uniqueName , _size));
+        return(this);
+    }
      public <T extends StackReg> HSAILAssembler cmp( Instruction _i, String _type, T _lhs, T _rhs){
        add( new HSAILInstructionSet.cmp(currentFrame(), _i, _type , _lhs, _rhs));
        return(this);
