@@ -292,8 +292,27 @@ class HSAILIntrinsics {
         add(new InlineIntrinsicCall("java.lang.Math.max(II)I", true , ( _ass,  _from)->{
                 // cmp_le_b1_s32 $c1, $s0, $s1;
                 // cmov_b32 $s0, $c1, $s1, $s0;
-                _ass.add(new HSAILInstructionSet.cmp_s32(_ass.currentFrame(), _from, "le", new StackReg_s32(_ass.stackIdx(_from)),  new StackReg_s32(_ass.stackIdx(_from)+1))) ;
+                _ass.add(new HSAILInstructionSet.cmp(_ass.currentFrame(), _from, "le", new StackReg_s32(_ass.stackIdx(_from)),  new StackReg_s32(_ass.stackIdx(_from)+1))) ;
                 _ass.add(new HSAILInstructionSet.cmov(_ass.currentFrame(), _from,  new StackReg_s32(_ass.stackIdx(_from)),  new StackReg_s32(_ass.stackIdx(_from)+1),  new StackReg_s32(_ass.stackIdx(_from))));
+
+
+
+        }));
+        add(new InlineIntrinsicCall("java.lang.Math.max(DD)D", true , ( _ass,  _from)->{
+            // cmp_le_b1_s32 $c1, $d0, $d1;
+            // cmov_b32 $d0, $c1, $d1, $d0;
+            _ass.add(new HSAILInstructionSet.cmp(_ass.currentFrame(), _from, "le", new StackReg_f64(_ass.stackIdx(_from)),  new StackReg_f64(_ass.stackIdx(_from)+1))) ;
+            _ass.add(new HSAILInstructionSet.cmov(_ass.currentFrame(), _from,  new StackReg_f64(_ass.stackIdx(_from)),  new StackReg_f64(_ass.stackIdx(_from)+1),  new StackReg_f64(_ass.stackIdx(_from))));
+
+
+
+        }));
+
+        add(new InlineIntrinsicCall("java.lang.Math.min(DD)D", true , ( _ass,  _from)->{
+            // cmp_ge_b1_s32 $c1, $d0, $d1;
+            // cmov_b32 $d0, $c1, $d1, $d0;
+            _ass.add(new HSAILInstructionSet.cmp(_ass.currentFrame(), _from, "ge", new StackReg_f64(_ass.stackIdx(_from)),  new StackReg_f64(_ass.stackIdx(_from)+1))) ;
+            _ass.add(new HSAILInstructionSet.cmov(_ass.currentFrame(), _from,  new StackReg_f64(_ass.stackIdx(_from)),  new StackReg_f64(_ass.stackIdx(_from)+1),  new StackReg_f64(_ass.stackIdx(_from))));
 
 
 
