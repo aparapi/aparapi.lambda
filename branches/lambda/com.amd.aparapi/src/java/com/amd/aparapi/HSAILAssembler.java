@@ -70,7 +70,7 @@ public class HSAILAssembler {
        return(this);
     }
      public <T extends StackReg> HSAILAssembler cmp( Instruction _i, String _type, T _lhs, T _rhs){
-       add( new HSAILInstructionSet.cmp_ref(currentFrame(), _i, _type , _lhs, _rhs));
+       add( new HSAILInstructionSet.cmp(currentFrame(), _i, _type , _lhs, _rhs));
        return(this);
     }
 
@@ -85,13 +85,9 @@ public class HSAILAssembler {
        return(this);
     }
 
-    //public HSAILAssembler cvt_ref_s32_1( Instruction _i){
-     //   add( new HSAILInstructionSet.cvt<StackReg_ref, StackReg_s32, ref, s32>(currentFrame(), _i, stackReg_ref(_i, 1), stackReg_s32(_i, 1)));
-     //  return(this);
-   // }
 
-    public HSAILAssembler incvar( Instruction _i){
-        add( new HSAILInstructionSet.add_const<VarReg_s32, s32, Integer>(currentFrame(), _i, new VarReg_s32(_i, currentStackOffset()), new VarReg_s32(_i, currentStackOffset()), ((InstructionSet.I_IINC) _i).getDelta()));
+    public HSAILAssembler incvar( Instruction _i, VarReg_s32 _dest, VarReg_s32 _source, int _delta){
+        add( new HSAILInstructionSet.add_const(currentFrame(), _i, _dest, _source, _delta));
        return(this);
     }
 
@@ -119,20 +115,8 @@ public class HSAILAssembler {
         add( new HSAILInstructionSet.shl(currentFrame(), _i, _dest, _lhs, _rhs));
         return(this);
     }
-    public HSAILAssembler neg_f64( Instruction _i){
-        add( new HSAILInstructionSet.neg<StackReg_f64, f64>(currentFrame(), _i, stackReg_f64(_i)));
-       return(this);
-    }
-    public HSAILAssembler neg_s64( Instruction _i){
-        add( new HSAILInstructionSet.neg<StackReg_s64, s64>(currentFrame(), _i, stackReg_s64(_i)));
-       return(this);
-    }
-    public HSAILAssembler neg_f32( Instruction _i){
-        add( new HSAILInstructionSet.neg<StackReg_f32, f32>(currentFrame(), _i, stackReg_f32(_i)));
-       return(this);
-    }
-    public HSAILAssembler neg_s32( Instruction _i){
-        add( new HSAILInstructionSet.neg<StackReg_s32, s32>(currentFrame(), _i, stackReg_s32(_i)));
+    public <T extends StackReg> HSAILAssembler neg( Instruction _i, T _dest, T _source){
+        add( new HSAILInstructionSet.neg(currentFrame(), _i, _dest, _source));
        return(this);
     }
 
@@ -191,32 +175,20 @@ public class HSAILAssembler {
        return(this);
     }
     public HSAILAssembler array_store_s64( Instruction _i){
-        add( new HSAILInstructionSet.array_store<StackReg_s64, s64>(currentFrame(), _i, stackReg_ref(_i, 1), stackReg_s64(_i,2)));
+        add( new HSAILInstructionSet.array_store<StackReg_s64, s64>(currentFrame(), _i, stackReg_ref(_i, 1), stackReg_s64(_i, 2)));
        return(this);
     }
     public HSAILAssembler mad( Instruction _i, int _size){
        add( new HSAILInstructionSet.mad(currentFrame(), _i, stackReg_ref(_i, 1), stackReg_ref(_i, 1), stackReg_ref(_i), (long) _size));
        return(this);
     }
-    public HSAILAssembler mov_var_ref( Instruction _i){
-        add( new HSAILInstructionSet.mov<VarReg_ref, StackReg_ref, ref, ref>(currentFrame(), _i, new VarReg_ref(_i, currentStackOffset()), stackReg_ref(_i)));
+    public <Td extends VarReg, Ts extends StackReg>HSAILAssembler mov( Instruction _i, Td _dest, Ts _source){
+        add( new HSAILInstructionSet.mov(currentFrame(), _i, _dest, _source));
        return(this);
     }
-    public HSAILAssembler mov_var_s32( Instruction _i){
-        add( new HSAILInstructionSet.mov<VarReg_s32, StackReg_s32, s32, s32>(currentFrame(), _i, new VarReg_s32(_i, currentStackOffset()), stackReg_s32(_i)));
-       return(this);
-    }
-    public HSAILAssembler mov_var_f32( Instruction _i){
-        add( new HSAILInstructionSet.mov<VarReg_f32, StackReg_f32, f32, f32>(currentFrame(), _i, new VarReg_f32(_i, currentStackOffset()), stackReg_f32(_i)));
-       return(this);
-    }
-    public HSAILAssembler mov_var_f64( Instruction _i){
-        add( new HSAILInstructionSet.mov<VarReg_f64, StackReg_f64, f64, f64>(currentFrame(), _i, new VarReg_f64(_i, currentStackOffset()), stackReg_f64(_i)));
-       return(this);
-    }
-    public HSAILAssembler mov_var_s64( Instruction _i){
-        add( new HSAILInstructionSet.mov<VarReg_s64, StackReg_s64, s64, s64>(currentFrame(), _i, new VarReg_s64(_i, currentStackOffset()), stackReg_s64(_i)));
-       return(this);
+    public <Td extends StackReg, Ts extends VarReg>HSAILAssembler mov( Instruction _i, Td _dest, Ts _source){
+        add( new HSAILInstructionSet.mov(currentFrame(), _i, _dest, _source));
+        return(this);
     }
 
     public HSAILAssembler array_load_s32( Instruction _i){
@@ -252,29 +224,7 @@ public class HSAILAssembler {
         add( new HSAILInstructionSet.array_load<StackReg_ref, ref>(currentFrame(), _i, stackReg_ref(_i), stackReg_ref(_i, 1)));
        return(this);
     }
-    public HSAILAssembler mov_f64_var( Instruction _i){
-        add( new HSAILInstructionSet.mov<StackReg_f64, VarReg_f64, f64, f64>(currentFrame(), _i, stackReg_f64(_i), new VarReg_f64(_i, currentStackOffset())));
-       return(this);
-    }
-    public HSAILAssembler mov_f32_var( Instruction _i){
-        add( new HSAILInstructionSet.mov<StackReg_f32, VarReg_f32, f32, f32>(currentFrame(), _i, stackReg_f32(_i), new VarReg_f32(_i, currentStackOffset())));
-       return(this);
-    }
 
-    public HSAILAssembler mov_s64_var( Instruction _i){
-        add( new HSAILInstructionSet.mov<StackReg_s64, VarReg_s64, s64, s64>(currentFrame(), _i, stackReg_s64(_i), new VarReg_s64(_i, currentStackOffset())));
-       return(this);
-    }
-    public HSAILAssembler mov_s32_var( Instruction _i){
-        add( new HSAILInstructionSet.mov<StackReg_s32, VarReg_s32, s32, s32>(currentFrame(), _i, stackReg_s32(_i), new VarReg_s32(_i, currentStackOffset())));
-       return(this);
-    }
-
-
-    public HSAILAssembler mov_ref_var( Instruction _i){
-        add( new HSAILInstructionSet.mov<StackReg_ref, VarReg_ref, ref, ref>(currentFrame(), _i, stackReg_ref(_i), new VarReg_ref(_i, currentStackOffset())));
-       return(this);
-    }
     public HSAILAssembler mov_s64_const( Instruction _i, long _value){
         add( new HSAILInstructionSet.mov_const<StackReg_s64, s64, Long>(currentFrame(), _i, stackReg_s64(_i), _value));
        return(this);
@@ -292,46 +242,15 @@ public class HSAILAssembler {
         add( new HSAILInstructionSet.mov_const<StackReg_f32, f32, Float>(currentFrame(), _i, stackReg_f32(_i), _value));
        return(this);
     }
-    public HSAILAssembler ld_arg_ref( Instruction _i, int _varOffset){
-        add( new HSAILInstructionSet.ld_arg(currentFrame(), _i, new VarReg_ref(_varOffset)));
+    public <T extends VarReg> HSAILAssembler ld_kernarg( Instruction _i, T _var){
+        add( new HSAILInstructionSet.ld_kernarg(currentFrame(), _i, _var));
        return(this);
     }
-    public HSAILAssembler ld_kernarg_ref( Instruction _i, int _varOffset){
-        add( new HSAILInstructionSet.ld_kernarg(currentFrame(), _i, new VarReg_ref(_varOffset)));
+    public <T extends VarReg>  HSAILAssembler ld_arg( Instruction _i,T _var){
+        add( new HSAILInstructionSet.ld_arg(currentFrame(), _i, _var));
        return(this);
     }
-    public HSAILAssembler ld_arg_s32( Instruction _i, int _varOffset){
-        add( new HSAILInstructionSet.ld_arg(currentFrame(), _i, new VarReg_s32(_varOffset)));
-       return(this);
-    }
-    public HSAILAssembler ld_kernarg_s32( Instruction _i, int _varOffset){
-        add( new HSAILInstructionSet.ld_kernarg(currentFrame(), _i, new VarReg_s32(_varOffset)));
-       return(this);
-    }
-    public HSAILAssembler ld_arg_f32( Instruction _i, int _varOffset){
-        add( new HSAILInstructionSet.ld_arg(currentFrame(), _i, new VarReg_f32(_varOffset)));
-       return(this);
-    }
-    public HSAILAssembler ld_kernarg_f32( Instruction _i, int _varOffset){
-        add( new HSAILInstructionSet.ld_kernarg(currentFrame(), _i, new VarReg_f32(_varOffset)));
-       return(this);
-    }
-    public HSAILAssembler ld_arg_f64( Instruction _i, int _varOffset){
-        add( new HSAILInstructionSet.ld_arg(currentFrame(), _i, new VarReg_f64(_varOffset)));
-       return(this);
-    }
-    public HSAILAssembler ld_kernarg_f64( Instruction _i, int _varOffset){
-        add( new HSAILInstructionSet.ld_kernarg(currentFrame(), _i, new VarReg_f64(_varOffset)));
-       return(this);
-    }
-    public HSAILAssembler ld_arg_s64( Instruction _i, int _varOffset){
-        add( new HSAILInstructionSet.ld_arg(currentFrame(), _i, new VarReg_s64(_varOffset)));
-       return(this);
-    }
-    public HSAILAssembler ld_kernarg_s64( Instruction _i, int _varOffset){
-        add( new HSAILInstructionSet.ld_kernarg(currentFrame(), _i, new VarReg_s64(_varOffset)));
-       return(this);
-    }
+
     public HSAILAssembler workitemabsid_u32( Instruction _i, int _varOffset){
         add( new HSAILInstructionSet.workitemabsid(currentFrame(), _i, new VarReg_s32(_varOffset)));
        return(this);
@@ -377,16 +296,16 @@ public class HSAILAssembler {
         return(this);
     }
 
-    public HSAILAssembler nsqrt( Instruction _i, StackReg_f64 _reg){
-       add( new HSAILInstructionSet.nsqrt(currentFrame(), _i, _reg));
+    public HSAILAssembler nsqrt( Instruction _i, StackReg_f64 _dest, StackReg_f64 _source){
+       add( new HSAILInstructionSet.nsqrt(currentFrame(), _i, _dest, _source));
         return(this);
     }
-    public HSAILAssembler ncos( Instruction _i, StackReg_f64 _reg){
-        add( new HSAILInstructionSet.ncos(currentFrame(), _i, _reg));
+    public HSAILAssembler ncos( Instruction _i, StackReg_f64 _dest, StackReg_f64 _source){
+        add( new HSAILInstructionSet.ncos(currentFrame(), _i, _dest, _source));
         return(this);
     }
-    public HSAILAssembler nsin( Instruction _i, StackReg_f64 _reg){
-        add( new HSAILInstructionSet.nsin(currentFrame(), _i, _reg));
+    public HSAILAssembler nsin( Instruction _i, StackReg_f64 _dest, StackReg_f64 _source){
+        add( new HSAILInstructionSet.nsin(currentFrame(), _i, _dest, _source));
         return(this);
     }
 
@@ -586,7 +505,7 @@ public class HSAILAssembler {
                 case ILOAD_1:
                 case ILOAD_2:
                 case ILOAD_3:
-                    mov_s32_var(i);
+                    mov(i, stackReg_s32(i), varReg_s32(i));
 
                     break;
                 case LLOAD:
@@ -594,31 +513,29 @@ public class HSAILAssembler {
                 case LLOAD_1:
                 case LLOAD_2:
                 case LLOAD_3:
-                    mov_s64_var(i);
+                    mov(i, stackReg_s64(i), varReg_s64(i));
                     break;
                 case FLOAD:
                 case FLOAD_0:
                 case FLOAD_1:
                 case FLOAD_2:
                 case FLOAD_3:
-
-                    mov_f32_var(i);
+                    mov(i, stackReg_f32(i), varReg_f32(i));
                     break;
                 case DLOAD:
                 case DLOAD_0:
                 case DLOAD_1:
                 case DLOAD_2:
                 case DLOAD_3:
-
-                    mov_f64_var(i);
+                    mov(i, stackReg_f64(i), varReg_f64(i));
                     break;
                 case ALOAD:
                 case ALOAD_0:
                 case ALOAD_1:
                 case ALOAD_2:
                 case ALOAD_3:
-                    mov_ref_var(i);
 
+                    mov(i, stackReg_ref(i), varReg_ref(i));
                     break;
                 case IALOAD:
                     cvt(i, stackReg_ref(i,1), stackReg_s32(i,1)).mad(i, PrimitiveType.s32.getHsaBytes()).array_load_s32(i);
@@ -659,15 +576,14 @@ public class HSAILAssembler {
                 case ISTORE_1:
                 case ISTORE_2:
                 case ISTORE_3:
-                    mov_var_s32(i);
-
+                    mov(i, varReg_s32(i), stackReg_s32(i));
                     break;
                 case LSTORE:
                 case LSTORE_0:
                 case LSTORE_1:
                 case LSTORE_2:
                 case LSTORE_3:
-                    mov_var_s64(i);
+                    mov(i, varReg_s64(i), stackReg_s64(i));
 
                     break;
                 case FSTORE:
@@ -675,21 +591,21 @@ public class HSAILAssembler {
                 case FSTORE_1:
                 case FSTORE_2:
                 case FSTORE_3:
-                    mov_var_f32(i);
+                    mov(i, varReg_f32(i), stackReg_f32(i));
                     break;
                 case DSTORE:
                 case DSTORE_0:
                 case DSTORE_1:
                 case DSTORE_2:
                 case DSTORE_3:
-                    mov_var_f64(i);
+                    mov(i, varReg_f64(i), stackReg_f64(i));
                     break;
                 case ASTORE:
                 case ASTORE_0:
                 case ASTORE_1:
                 case ASTORE_2:
                 case ASTORE_3:
-                    mov_var_ref(i);
+                    mov(i, varReg_ref(i), stackReg_ref(i));
                     break;
                 case IASTORE:
                     cvt(i, stackReg_ref(i,1), stackReg_s32(i,1)).mad(i, PrimitiveType.s32.getHsaBytes()).array_store_s32(i);
@@ -813,16 +729,16 @@ public class HSAILAssembler {
                     rem(i, stackReg_f64(i), stackReg_f64(i), stackReg_f64(i, 1));
                     break;
                 case INEG:
-                    neg_s32(i);
+                    neg(i, stackReg_s32(i), stackReg_s32(i));
                     break;
                 case LNEG:
-                    neg_s64(i);
+                    neg(i, stackReg_s64(i), stackReg_s64(i));
                     break;
                 case FNEG:
-                    neg_f32(i);
+                    neg(i, stackReg_f32(i), stackReg_f32(i));
                     break;
                 case DNEG:
-                    neg_f64(i);
+                    neg(i, stackReg_f64(i), stackReg_f64(i));
                     break;
                 case ISHL:
                     shl(i, stackReg_s32(i), stackReg_s32(i), stackReg_s32(i, 1));
@@ -861,7 +777,7 @@ public class HSAILAssembler {
                     xor(i, stackReg_s64(i), stackReg_s64(i), stackReg_s64(i, 1));
                     break;
                 case IINC:
-                    incvar(i);
+                    incvar(i, varReg_s32(i), varReg_s32(i), ((InstructionSet.I_IINC) i).getDelta());
                     break;
                 case I2L:
                     cvt(i, stackReg_s64(i), stackReg_s32(i));
@@ -1314,6 +1230,58 @@ public class HSAILAssembler {
     int currentStackOffset(){
         return(currentFrame().stackOffset);
     }
+    //---
+    VarReg_s32 varReg_s32(int _slot){
+        return(new VarReg_s32(_slot));
+    }
+    VarReg_s32 varReg_s32(Instruction _i, int _offset){
+        return(new VarReg_s32(_i, _offset));
+    }
+    VarReg_s32 varReg_s32(Instruction _i){
+        return(varReg_s32(_i, currentStackOffset()));
+    }
+    //---
+    VarReg_f32 varReg_f32(int _slot){
+        return(new VarReg_f32(_slot));
+    }
+    VarReg_f32 varReg_f32(Instruction _i, int _offset){
+        return(new VarReg_f32(_i, _offset));
+    }
+    VarReg_f32 varReg_f32(Instruction _i){
+        return(varReg_f32(_i, currentStackOffset()));
+    }
+
+    //---
+    VarReg_s64 varReg_s64(int _slot){
+        return(new VarReg_s64(_slot));
+    }
+    VarReg_s64 varReg_s64(Instruction _i, int _offset){
+        return(new VarReg_s64(_i, _offset));
+    }
+    VarReg_s64 varReg_s64(Instruction _i){
+        return(varReg_s64(_i, currentStackOffset()));
+    }
+    //---
+    VarReg_f64 varReg_f64(int _slot){
+        return(new VarReg_f64(_slot));
+    }
+    VarReg_f64 varReg_f64(Instruction _i, int _offset){
+        return(new VarReg_f64(_i, _offset));
+    }
+    VarReg_f64 varReg_f64(Instruction _i){
+        return(varReg_f64(_i, currentStackOffset()));
+    }
+    //---
+    VarReg_ref varReg_ref(int _slot){
+        return(new VarReg_ref(_slot));
+    }
+    VarReg_ref varReg_ref(Instruction _i, int _offset){
+        return(new VarReg_ref(_i, _offset));
+    }
+    VarReg_ref varReg_ref(Instruction _i){
+        return(varReg_ref(_i, currentStackOffset()));
+    }
+
     StackReg_u64 stackReg_u64(int _slot){
         return(new StackReg_u64(_slot));
     }
