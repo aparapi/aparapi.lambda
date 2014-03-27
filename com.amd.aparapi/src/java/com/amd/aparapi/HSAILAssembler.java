@@ -73,6 +73,11 @@ public class HSAILAssembler {
        add( new HSAILInstructionSet.cmp(currentFrame(), _i, _type , _lhs, _rhs));
        return(this);
     }
+    public <T extends StackReg> HSAILAssembler cmov( Instruction _i, T _dest, T _lhs, T _rhs){
+       add(new HSAILInstructionSet.cmov(currentFrame(), _i,  _dest,  _lhs,  _rhs));
+       return(this);
+    }
+
 
 
     public  HSAILAssembler cmp_const_0( Instruction _i, String _type, StackReg_s32 _source){
