@@ -63,10 +63,10 @@ public class HSAILAssembler {
        return(this);
     }
 
-     public HSAILAssembler branch( Instruction _i){
-       add( new HSAILInstructionSet.branch(currentFrame(), _i, stackReg_s32(_i), _i.getByteCode().getName(), _i.asBranch().getAbsolute()));
-       return(this);
-    }
+     //public HSAILAssembler branch( Instruction _i){
+      // add( new HSAILInstructionSet.branch(currentFrame(), _i, stackReg_s32(_i), _i.getByteCode().getName(), _i.asBranch().getAbsolute()));
+       //return(this);
+   // }
      public HSAILAssembler brn( Instruction _i){
        add( new HSAILInstructionSet.brn(currentFrame(), _i, _i.asBranch().getAbsolute()));
        return(this);
@@ -75,9 +75,6 @@ public class HSAILAssembler {
        add( new HSAILInstructionSet.cbr(currentFrame(), _i, _i.asBranch().getAbsolute()));
        return(this);
     }
-
-
-
 
     public HSAILAssembler lda_group_u64( Instruction _i, StackReg_ref _dest, String _uniqueName){
         add( new HSAILInstructionSet.lda_group_u64(currentFrame(), _i, _dest, _uniqueName));
@@ -96,9 +93,7 @@ public class HSAILAssembler {
        return(this);
     }
 
-
-
-    public  HSAILAssembler cmp_const_0( Instruction _i, String _type, StackReg_s32 _source){
+    public <T extends StackReg> HSAILAssembler cmp_const_0( Instruction _i, String _type, T _source){
        add( new HSAILInstructionSet.cmp_s32_const_0(currentFrame(), _i, _type, _source));
        return(this);
     }
@@ -174,10 +169,6 @@ public class HSAILAssembler {
        return(this);
     }
 
-    public HSAILAssembler mad( Instruction _i, int _size){
-       add( new HSAILInstructionSet.mad(currentFrame(), _i, stackReg_ref(_i, 1), stackReg_ref(_i, 1), stackReg_ref(_i), (long) _size));
-       return(this);
-    }
     public <Td extends VarReg, Ts extends StackReg>HSAILAssembler mov( Instruction _i, Td _dest, Ts _source){
         add( new HSAILInstructionSet.mov(currentFrame(), _i, _dest, _source));
        return(this);
@@ -191,7 +182,10 @@ public class HSAILAssembler {
         add( new HSAILInstructionSet.array_load(currentFrame(), _i, _dest, _arrayRef));
        return(this);
     }
-
+    public HSAILAssembler mov_const( Instruction _i, StackReg_ref _dest, long _value){
+        add( new HSAILInstructionSet.mov_const(currentFrame(), _i, _dest, _value));
+        return(this);
+    }
     public HSAILAssembler mov_const( Instruction _i, StackReg_s64 _dest, long _value){
         add( new HSAILInstructionSet.mov_const(currentFrame(), _i, _dest, _value));
        return(this);
@@ -366,6 +360,10 @@ public class HSAILAssembler {
 
     static boolean compressMovs = false;
     public void add( HSAILInstruction _instruction) {
+
+        if (_instruction instanceof HSAILInstructionSet.array_load){
+            System.out.println("is array_load");
+        }
         if (compressMovs){
             // before we add lets see if this is a redundant mov
             for (int srcIndex = 0; srcIndex < _instruction.sources.length; srcIndex++) {
@@ -416,7 +414,7 @@ public class HSAILAssembler {
             switch (i.getByteCode()) {
 
                 case ACONST_NULL:
-                    nyi(i);
+                    mov_const(i, stackReg_ref(i), i.asIntegerConstant().getValue());
                     break;
                 case ICONST_M1:
                 case ICONST_0:
@@ -506,47 +504,47 @@ public class HSAILAssembler {
                     break;
                 case IALOAD:
                     cvt(i, stackReg_ref(i,1), stackReg_s32(i,1));
-                    mad(i, PrimitiveType.s32.getHsaBytes());
+                    mad(i, stackReg_ref(i,1), stackReg_ref(i,1), stackReg_ref(i), PrimitiveType.s32.getHsaBytes());
                     array_load(i, stackReg_s32(i), stackReg_ref(i, 1));
                     break;
                 case LALOAD:
                     cvt(i, stackReg_ref(i,1), stackReg_s32(i,1));
-                    mad(i, PrimitiveType.s64.getHsaBytes());
+                    mad(i, stackReg_ref(i,1), stackReg_ref(i,1), stackReg_ref(i), PrimitiveType.s64.getHsaBytes());
                     array_load(i, stackReg_s64(i), stackReg_ref(i, 1));
                     break;
                 case FALOAD:
                     cvt(i, stackReg_ref(i,1), stackReg_s32(i,1));
-                    mad(i, PrimitiveType.f32.getHsaBytes());
+                    mad(i, stackReg_ref(i,1), stackReg_ref(i,1), stackReg_ref(i), PrimitiveType.f32.getHsaBytes());
                     array_load(i, stackReg_f32(i), stackReg_ref(i, 1));
 
                     break;
                 case DALOAD:
                     cvt(i, stackReg_ref(i,1), stackReg_s32(i,1));
-                    mad(i, PrimitiveType.f64.getHsaBytes());
+                    mad(i, stackReg_ref(i,1), stackReg_ref(i,1), stackReg_ref(i), PrimitiveType.f64.getHsaBytes());
                     array_load(i, stackReg_f64(i), stackReg_ref(i, 1));
 
                     break;
                 case AALOAD:
                     cvt(i, stackReg_ref(i,1), stackReg_s32(i,1));
-                    mad(i, PrimitiveType.ref.getHsaBytes());
+                    mad(i, stackReg_ref(i,1), stackReg_ref(i,1), stackReg_ref(i), PrimitiveType.ref.getHsaBytes());
                     array_load(i, stackReg_ref(i), stackReg_ref(i, 1));
 
                     break;
                 case BALOAD:
                     cvt(i, stackReg_ref(i,1), stackReg_s32(i,1));
-                    mad(i, PrimitiveType.s8.getHsaBytes());
+                    mad(i, stackReg_ref(i,1), stackReg_ref(i,1), stackReg_ref(i), PrimitiveType.s8.getHsaBytes());
                     array_load(i, stackReg_s8(i), stackReg_ref(i, 1));
 
                     break;
                 case CALOAD:
                     cvt(i, stackReg_ref(i,1), stackReg_s32(i,1));
-                    mad(i, PrimitiveType.u16.getHsaBytes());
+                    mad(i, stackReg_ref(i,1), stackReg_ref(i,1), stackReg_ref(i), PrimitiveType.u16.getHsaBytes());
                     array_load(i, stackReg_u16(i), stackReg_ref(i, 1));
 
                     break;
                 case SALOAD:
                     cvt(i, stackReg_ref(i,1), stackReg_s32(i,1));
-                    mad(i, PrimitiveType.s16.getHsaBytes());
+                    mad(i, stackReg_ref(i,1), stackReg_ref(i,1), stackReg_ref(i), PrimitiveType.s16.getHsaBytes());
                     array_load(i, stackReg_s16(i), stackReg_ref(i, 1));
                     break;
                 //case ISTORE: moved down
@@ -592,42 +590,42 @@ public class HSAILAssembler {
                     break;
                 case IASTORE:
                     cvt(i, stackReg_ref(i,1), stackReg_s32(i,1));
-                    mad(i, PrimitiveType.s32.getHsaBytes());
+                    mad(i, stackReg_ref(i,1), stackReg_ref(i,1), stackReg_ref(i), PrimitiveType.s32.getHsaBytes());
                     array_store(i, stackReg_ref(i, 1), stackReg_s32(i, 2));
                     break;
                 case LASTORE:
                     cvt(i, stackReg_ref(i,1), stackReg_s32(i,1));
-                    mad( i, PrimitiveType.s64.getHsaBytes());
+                    mad(i, stackReg_ref(i,1), stackReg_ref(i,1), stackReg_ref(i), PrimitiveType.s64.getHsaBytes());
                     array_store(i, stackReg_ref(i, 1), stackReg_s64(i, 2));
                     break;
                 case FASTORE:
                     cvt(i, stackReg_ref(i,1), stackReg_s32(i,1));
-                    mad( i, PrimitiveType.f32.getHsaBytes());
+                    mad(i, stackReg_ref(i,1), stackReg_ref(i,1), stackReg_ref(i),PrimitiveType.f32.getHsaBytes());
                     array_store(i, stackReg_ref(i, 1), stackReg_f32(i, 2));
                     break;
                 case DASTORE:
                     cvt(i, stackReg_ref(i,1), stackReg_s32(i,1));
-                    mad( i, PrimitiveType.f64.getHsaBytes());
+                    mad(i, stackReg_ref(i,1), stackReg_ref(i,1), stackReg_ref(i), PrimitiveType.f64.getHsaBytes());
                     array_store(i, stackReg_ref(i, 1), stackReg_f64(i, 2));
                     break;
                 case AASTORE:
                     cvt(i, stackReg_ref(i,1), stackReg_s32(i,1));
-                    mad( i, PrimitiveType.ref.getHsaBytes());
+                    mad(i, stackReg_ref(i,1), stackReg_ref(i,1), stackReg_ref(i), PrimitiveType.ref.getHsaBytes());
                     array_store(i, stackReg_ref(i, 1), stackReg_ref(i, 2));
                     break;
                 case BASTORE:
                     cvt(i, stackReg_ref(i,1), stackReg_s32(i,1));
-                    mad( i, PrimitiveType.s8.getHsaBytes());
+                    mad(i, stackReg_ref(i,1), stackReg_ref(i,1), stackReg_ref(i), PrimitiveType.s8.getHsaBytes());
                     array_store(i, stackReg_ref(i, 1), stackReg_s8(i, 2));
                     break;
                 case CASTORE:
                     cvt(i, stackReg_ref(i,1), stackReg_s32(i,1));
-                    mad( i, PrimitiveType.u16.getHsaBytes());
+                    mad(i, stackReg_ref(i,1), stackReg_ref(i,1), stackReg_ref(i), PrimitiveType.u16.getHsaBytes());
                     array_store(i, stackReg_ref(i, 1), stackReg_u16(i, 2));
                     break;
                 case SASTORE:
                     cvt(i, stackReg_ref(i,1), stackReg_s32(i,1));
-                    mad( i, PrimitiveType.s16.getHsaBytes());
+                    mad(i, stackReg_ref(i,1), stackReg_ref(i,1), stackReg_ref(i), PrimitiveType.s16.getHsaBytes());
                     array_store(i, stackReg_ref(i, 1), stackReg_s16(i, 2));
                     break;
                 case POP:
@@ -960,11 +958,13 @@ public class HSAILAssembler {
                     brn(i);
                     break;
                 case IFNULL:
-                    branch(i);
+                    cmp_const_0(i, "eq", stackReg_ref(i)).cbr(i);// SWAG
+                    break;
                 case IFNONNULL:
-                    branch(i);
+                    cmp_const_0(i, "ne", stackReg_ref(i)).cbr(i);// SWAG
+                    break;
                 case GOTO_W:
-                    branch(i);
+                   nyi(i);
                     break;
                 case JSR:
                     nyi(i);
