@@ -32,14 +32,20 @@ public class HSAILAssembler {
         frames.push(base);
         frameSet.add(base);
     }
-    public <T extends StackReg> HSAILAssembler field_store(Instruction _i, T _source, StackReg_ref _ref, Field _f){
-       add( new HSAILInstructionSet.field_store(currentFrame(), _i, _source, _ref, (long) UnsafeWrapper.objectFieldOffset(_f)));
+    public <T extends StackReg> HSAILAssembler st_global(Instruction _i, T _source, StackReg_ref _ref, long _offset){
+        add( new HSAILInstructionSet.st_global(currentFrame(), _i, _source, _ref, _offset));
         return(this);
     }
+    public <T extends StackReg> HSAILAssembler st_global(Instruction _i, T _source, StackReg_ref _ref, Field _f){
+        return( st_global( _i, _source, _ref, (long) UnsafeWrapper.objectFieldOffset(_f)));
+    }
 
-     public <T extends StackReg>HSAILAssembler field_load( Instruction _i, T _dest, StackReg_ref _ref, Field _f){
-        add( new HSAILInstructionSet.field_load(currentFrame(), _i, _dest, _ref, (long) UnsafeWrapper.objectFieldOffset(_f)));
-       return(this);
+    public <T extends StackReg>HSAILAssembler ld_global( Instruction _i, T _dest, StackReg_ref _ref, long _offset){
+        add( new HSAILInstructionSet.ld_global(currentFrame(), _i, _dest, _ref, _offset));
+        return(this);
+    }
+     public <T extends StackReg>HSAILAssembler ld_global( Instruction _i, T _dest, StackReg_ref _ref, Field _f){
+       return(ld_global(_i, _dest, _ref, (long) UnsafeWrapper.objectFieldOffset(_f)));
     }
 
      public <T extends StackReg> HSAILAssembler static_field_load( Instruction _i, T _dest, StackReg_ref _ref,Field _f){
@@ -163,38 +169,11 @@ public class HSAILAssembler {
         add( new HSAILInstructionSet.mad(currentFrame(), _i, _dest, _lhs, _rhs, _constant));
         return(this);
     }
-    public HSAILAssembler array_store_s16( Instruction _i){
-        add( new HSAILInstructionSet.array_store<StackReg_s16, s16>(currentFrame(), _i, stackReg_ref(_i, 1), stackReg_s16(_i, 2)));
+    public <T extends StackReg> HSAILAssembler array_store( Instruction _i, StackReg_ref _arrayRef, T _source ){
+        add( new HSAILInstructionSet.array_store(currentFrame(), _i, _arrayRef, _source));
        return(this);
     }
-    public HSAILAssembler array_store_u16( Instruction _i){
-        add( new HSAILInstructionSet.array_store<StackReg_u16, u16>(currentFrame(), _i, stackReg_ref(_i, 1), stackReg_u16(_i, 2)));
-       return(this);
-    }
-    public HSAILAssembler array_store_s32( Instruction _i){
-        add( new HSAILInstructionSet.array_store<StackReg_s32, s32>(currentFrame(), _i, stackReg_ref(_i, 1), stackReg_s32(_i, 2)));
-       return(this);
-    }
-    public HSAILAssembler array_store_f32( Instruction _i){
-        add( new HSAILInstructionSet.array_store<StackReg_f32, f32>(currentFrame(), _i, stackReg_ref(_i, 1), stackReg_f32(_i, 2)));
-       return(this);
-    }
-    public HSAILAssembler array_store_f64( Instruction _i){
-        add( new HSAILInstructionSet.array_store<StackReg_f64, f64>(currentFrame(), _i, stackReg_ref(_i, 1), stackReg_f64(_i, 2)));
-       return(this);
-    }
-    public HSAILAssembler array_store_ref( Instruction _i){
-        add( new HSAILInstructionSet.array_store<StackReg_ref, ref>(currentFrame(), _i, stackReg_ref(_i, 1), stackReg_ref(_i, 2)));
-       return(this);
-    }
-    public HSAILAssembler array_store_s8( Instruction _i){
-        add( new HSAILInstructionSet.array_store<StackReg_s8, s8>(currentFrame(), _i, stackReg_ref(_i, 1), stackReg_s8(_i, 2)));
-       return(this);
-    }
-    public HSAILAssembler array_store_s64( Instruction _i){
-        add( new HSAILInstructionSet.array_store<StackReg_s64, s64>(currentFrame(), _i, stackReg_ref(_i, 1), stackReg_s64(_i, 2)));
-       return(this);
-    }
+
     public HSAILAssembler mad( Instruction _i, int _size){
        add( new HSAILInstructionSet.mad(currentFrame(), _i, stackReg_ref(_i, 1), stackReg_ref(_i, 1), stackReg_ref(_i), (long) _size));
        return(this);
@@ -208,55 +187,26 @@ public class HSAILAssembler {
         return(this);
     }
 
-    public HSAILAssembler array_load_s32( Instruction _i){
-        add( new HSAILInstructionSet.array_load<StackReg_s32, s32>(currentFrame(), _i, stackReg_s32(_i), stackReg_ref(_i, 1)));
-       return(this);
-    }
-    public HSAILAssembler array_load_f32( Instruction _i){
-        add( new HSAILInstructionSet.array_load<StackReg_f32, f32>(currentFrame(), _i, stackReg_f32(_i), stackReg_ref(_i, 1)));
-       return(this);
-    }
-    public HSAILAssembler array_load_u16( Instruction _i){
-        add( new HSAILInstructionSet.array_load<StackReg_u16, u16>(currentFrame(), _i, stackReg_u16(_i), stackReg_ref(_i, 1)));
-       return(this);
-    }
-    public HSAILAssembler array_load_s16( Instruction _i){
-        add( new HSAILInstructionSet.array_load<StackReg_s16, s16>(currentFrame(), _i, stackReg_s16(_i), stackReg_ref(_i, 1)));
-       return(this);
-    }
-    public HSAILAssembler array_load_s64( Instruction _i){
-        add( new HSAILInstructionSet.array_load<StackReg_s64, s64>(currentFrame(), _i, stackReg_s64(_i), stackReg_ref(_i, 1)));
-       return(this);
-    }
-    public HSAILAssembler array_load_f64( Instruction _i){
-        add( new HSAILInstructionSet.array_load<StackReg_f64, f64>(currentFrame(), _i, stackReg_f64(_i), stackReg_ref(_i, 1)));
+    public <T extends StackReg> HSAILAssembler array_load( Instruction _i, T _dest, StackReg_ref _arrayRef){
+        add( new HSAILInstructionSet.array_load(currentFrame(), _i, _dest, _arrayRef));
        return(this);
     }
 
-    public HSAILAssembler array_load_s8( Instruction _i){
-        add( new HSAILInstructionSet.array_load<StackReg_s8, s8>(currentFrame(), _i, stackReg_s8(_i), stackReg_ref(_i, 1)));
+    public HSAILAssembler mov_const( Instruction _i, StackReg_s64 _dest, long _value){
+        add( new HSAILInstructionSet.mov_const(currentFrame(), _i, _dest, _value));
        return(this);
     }
-    public HSAILAssembler array_load_ref( Instruction _i){
-        add( new HSAILInstructionSet.array_load<StackReg_ref, ref>(currentFrame(), _i, stackReg_ref(_i), stackReg_ref(_i, 1)));
-       return(this);
-    }
-
-    public HSAILAssembler mov_s64_const( Instruction _i, long _value){
-        add( new HSAILInstructionSet.mov_const<StackReg_s64, s64, Long>(currentFrame(), _i, stackReg_s64(_i), _value));
-       return(this);
-    }
-    public HSAILAssembler mov_s32_const( Instruction _i, StackReg_s32 _dest, int _value){
-        add( new HSAILInstructionSet.mov_const<StackReg_s32, s32, Integer>(currentFrame(), _i, _dest, _value));
+    public HSAILAssembler mov_const( Instruction _i, StackReg_s32 _dest, int _value){
+        add( new HSAILInstructionSet.mov_const(currentFrame(), _i, _dest, _value));
        return(this);
     }
 
-    public HSAILAssembler mov_f64_const( Instruction _i, double _value){
-        add( new HSAILInstructionSet.mov_const<StackReg_f64, f64, Double>(currentFrame(), _i, stackReg_f64(_i), _value));
+    public HSAILAssembler mov_const( Instruction _i, StackReg_f64 _dest,double _value){
+        add( new HSAILInstructionSet.mov_const(currentFrame(), _i, _dest, _value));
        return(this);
     }
-    public HSAILAssembler mov_f32_const( Instruction _i, float _value){
-        add( new HSAILInstructionSet.mov_const<StackReg_f32, f32, Float>(currentFrame(), _i, stackReg_f32(_i), _value));
+    public HSAILAssembler mov_const( Instruction _i, StackReg_f32 _dest,float _value){
+        add( new HSAILInstructionSet.mov_const(currentFrame(), _i, _dest, _value));
        return(this);
     }
     public <T extends VarReg> HSAILAssembler ld_kernarg( Instruction _i, T _var){
@@ -268,8 +218,8 @@ public class HSAILAssembler {
        return(this);
     }
 
-    public HSAILAssembler workitemabsid_u32( Instruction _i, int _varOffset){
-        add( new HSAILInstructionSet.workitemabsid(currentFrame(), _i, new VarReg_s32(_varOffset)));
+    public HSAILAssembler workitemabsid_u32( Instruction _i, VarReg_s32 _dest){
+        add( new HSAILInstructionSet.workitemabsid(currentFrame(), _i, _dest));
        return(this);
     }
     public HSAILAssembler gridsize_s32( Instruction _i, StackReg_s32 _dest){
@@ -477,20 +427,20 @@ public class HSAILAssembler {
                 case ICONST_5:
                 case BIPUSH:
                 case SIPUSH:
-                    mov_s32_const(i, stackReg_s32(i), i.asIntegerConstant().getValue());
+                    mov_const(i, stackReg_s32(i), i.asIntegerConstant().getValue());
                     break;
                 case LCONST_0:
                 case LCONST_1:
-                    mov_s64_const(i, i.asLongConstant().getValue());
+                    mov_const(i, stackReg_s64(i), i.asLongConstant().getValue());
                     break;
                 case FCONST_0:
                 case FCONST_1:
                 case FCONST_2:
-                    mov_f32_const(i, i.asFloatConstant().getValue());
+                    mov_const(i, stackReg_f32(i),  i.asFloatConstant().getValue());
                     break;
                 case DCONST_0:
                 case DCONST_1:
-                    mov_f64_const(i, i.asDoubleConstant().getValue());
+                    mov_const(i, stackReg_f64(i), i.asDoubleConstant().getValue());
                     break;
                 // case BIPUSH: moved up
                 // case SIPUSH: moved up
@@ -502,13 +452,13 @@ public class HSAILAssembler {
 
                     ClassModel.ConstantPool.ConstantEntry e = (ClassModel.ConstantPool.ConstantEntry) cpe.getConstantPoolEntry();
                     if (e instanceof ClassModel.ConstantPool.DoubleEntry) {
-                        mov_f64_const(i, ((ClassModel.ConstantPool.DoubleEntry) e).getValue());
+                        mov_const(i, stackReg_f64(i),((ClassModel.ConstantPool.DoubleEntry) e).getValue());
                     } else if (e instanceof ClassModel.ConstantPool.FloatEntry) {
-                        mov_f32_const(i, ((ClassModel.ConstantPool.FloatEntry) e).getValue());
+                        mov_const(i, stackReg_f32(i),((ClassModel.ConstantPool.FloatEntry) e).getValue());
                     } else if (e instanceof ClassModel.ConstantPool.IntegerEntry) {
-                        mov_s32_const(i, stackReg_s32(i), ((ClassModel.ConstantPool.IntegerEntry) e).getValue());
+                        mov_const(i, stackReg_s32(i), ((ClassModel.ConstantPool.IntegerEntry) e).getValue());
                     } else if (e instanceof ClassModel.ConstantPool.LongEntry) {
-                        mov_s64_const(i, ((ClassModel.ConstantPool.LongEntry) e).getValue());
+                        mov_const(i, stackReg_s64(i),((ClassModel.ConstantPool.LongEntry) e).getValue());
                     }
 
                 }
@@ -555,33 +505,49 @@ public class HSAILAssembler {
                     mov(i, stackReg_ref(i), varReg_ref(i));
                     break;
                 case IALOAD:
-                    cvt(i, stackReg_ref(i,1), stackReg_s32(i,1)).mad(i, PrimitiveType.s32.getHsaBytes()).array_load_s32(i);
+                    cvt(i, stackReg_ref(i,1), stackReg_s32(i,1));
+                    mad(i, PrimitiveType.s32.getHsaBytes());
+                    array_load(i, stackReg_s32(i), stackReg_ref(i, 1));
                     break;
                 case LALOAD:
-                    cvt(i, stackReg_ref(i,1), stackReg_s32(i,1)).mad(i, PrimitiveType.s64.getHsaBytes()).array_load_s64(i);
+                    cvt(i, stackReg_ref(i,1), stackReg_s32(i,1));
+                    mad(i, PrimitiveType.s64.getHsaBytes());
+                    array_load(i, stackReg_s64(i), stackReg_ref(i, 1));
                     break;
                 case FALOAD:
-                    cvt(i, stackReg_ref(i,1), stackReg_s32(i,1)).mad(i, PrimitiveType.f32.getHsaBytes()).array_load_f32(i);
+                    cvt(i, stackReg_ref(i,1), stackReg_s32(i,1));
+                    mad(i, PrimitiveType.f32.getHsaBytes());
+                    array_load(i, stackReg_f32(i), stackReg_ref(i, 1));
 
                     break;
                 case DALOAD:
-                    cvt(i, stackReg_ref(i,1), stackReg_s32(i,1)).mad(i, PrimitiveType.f64.getHsaBytes()).array_load_f64(i);
+                    cvt(i, stackReg_ref(i,1), stackReg_s32(i,1));
+                    mad(i, PrimitiveType.f64.getHsaBytes());
+                    array_load(i, stackReg_f64(i), stackReg_ref(i, 1));
 
                     break;
                 case AALOAD:
-                    cvt(i, stackReg_ref(i,1), stackReg_s32(i,1)).mad(i, PrimitiveType.ref.getHsaBytes()).array_load_ref(i);
+                    cvt(i, stackReg_ref(i,1), stackReg_s32(i,1));
+                    mad(i, PrimitiveType.ref.getHsaBytes());
+                    array_load(i, stackReg_ref(i), stackReg_ref(i, 1));
 
                     break;
                 case BALOAD:
-                    cvt(i, stackReg_ref(i,1), stackReg_s32(i,1)).mad(i, PrimitiveType.s8.getHsaBytes()).array_load_s8(i);
+                    cvt(i, stackReg_ref(i,1), stackReg_s32(i,1));
+                    mad(i, PrimitiveType.s8.getHsaBytes());
+                    array_load(i, stackReg_s8(i), stackReg_ref(i, 1));
 
                     break;
                 case CALOAD:
-                    cvt(i, stackReg_ref(i,1), stackReg_s32(i,1)).mad(i, PrimitiveType.u16.getHsaBytes()).array_load_u16(i);
+                    cvt(i, stackReg_ref(i,1), stackReg_s32(i,1));
+                    mad(i, PrimitiveType.u16.getHsaBytes());
+                    array_load(i, stackReg_u16(i), stackReg_ref(i, 1));
 
                     break;
                 case SALOAD:
-                    cvt(i, stackReg_ref(i,1), stackReg_s32(i,1)).mad(i, PrimitiveType.s16.getHsaBytes()).array_load_s16(i);
+                    cvt(i, stackReg_ref(i,1), stackReg_s32(i,1));
+                    mad(i, PrimitiveType.s16.getHsaBytes());
+                    array_load(i, stackReg_s16(i), stackReg_ref(i, 1));
                     break;
                 //case ISTORE: moved down
                 // case LSTORE:  moved down
@@ -625,29 +591,44 @@ public class HSAILAssembler {
                     mov(i, varReg_ref(i), stackReg_ref(i));
                     break;
                 case IASTORE:
-                    cvt(i, stackReg_ref(i,1), stackReg_s32(i,1)).mad(i, PrimitiveType.s32.getHsaBytes()).array_store_s32(i);
+                    cvt(i, stackReg_ref(i,1), stackReg_s32(i,1));
+                    mad(i, PrimitiveType.s32.getHsaBytes());
+                    array_store(i, stackReg_ref(i, 1), stackReg_s32(i, 2));
                     break;
                 case LASTORE:
-                    cvt(i, stackReg_ref(i,1), stackReg_s32(i,1)).mad( i, PrimitiveType.s64.getHsaBytes()).array_store_s64(i);
+                    cvt(i, stackReg_ref(i,1), stackReg_s32(i,1));
+                    mad( i, PrimitiveType.s64.getHsaBytes());
+                    array_store(i, stackReg_ref(i, 1), stackReg_s64(i, 2));
                     break;
                 case FASTORE:
-                    cvt(i, stackReg_ref(i,1), stackReg_s32(i,1)).mad( i, PrimitiveType.f32.getHsaBytes()).array_store_f32(i);
-
+                    cvt(i, stackReg_ref(i,1), stackReg_s32(i,1));
+                    mad( i, PrimitiveType.f32.getHsaBytes());
+                    array_store(i, stackReg_ref(i, 1), stackReg_f32(i, 2));
                     break;
                 case DASTORE:
-                    cvt(i, stackReg_ref(i,1), stackReg_s32(i,1)).mad( i, PrimitiveType.f64.getHsaBytes()).array_store_f64(i);
+                    cvt(i, stackReg_ref(i,1), stackReg_s32(i,1));
+                    mad( i, PrimitiveType.f64.getHsaBytes());
+                    array_store(i, stackReg_ref(i, 1), stackReg_f64(i, 2));
                     break;
                 case AASTORE:
-                    cvt(i, stackReg_ref(i,1), stackReg_s32(i,1)).mad( i, PrimitiveType.ref.getHsaBytes()).array_store_ref(i);
+                    cvt(i, stackReg_ref(i,1), stackReg_s32(i,1));
+                    mad( i, PrimitiveType.ref.getHsaBytes());
+                    array_store(i, stackReg_ref(i, 1), stackReg_ref(i, 2));
                     break;
                 case BASTORE:
-                    cvt(i, stackReg_ref(i,1), stackReg_s32(i,1)).mad( i, PrimitiveType.s8.getHsaBytes()).array_store_s8(i);
+                    cvt(i, stackReg_ref(i,1), stackReg_s32(i,1));
+                    mad( i, PrimitiveType.s8.getHsaBytes());
+                    array_store(i, stackReg_ref(i, 1), stackReg_s8(i, 2));
                     break;
                 case CASTORE:
-                    cvt(i, stackReg_ref(i,1), stackReg_s32(i,1)).mad( i, PrimitiveType.u16.getHsaBytes()).array_store_u16(i);
+                    cvt(i, stackReg_ref(i,1), stackReg_s32(i,1));
+                    mad( i, PrimitiveType.u16.getHsaBytes());
+                    array_store(i, stackReg_ref(i, 1), stackReg_u16(i, 2));
                     break;
                 case SASTORE:
-                    cvt(i, stackReg_ref(i,1), stackReg_s32(i,1)).mad( i, PrimitiveType.s16.getHsaBytes()).array_store_s16(i);
+                    cvt(i, stackReg_ref(i,1), stackReg_s32(i,1));
+                    mad( i, PrimitiveType.s16.getHsaBytes());
+                    array_store(i, stackReg_ref(i, 1), stackReg_s16(i, 2));
                     break;
                 case POP:
                     nyi(i);
@@ -1092,21 +1073,21 @@ public class HSAILAssembler {
 
                         Field f = clazz.getDeclaredField(i.asFieldAccessor().getFieldName());
                         if (!f.getType().isPrimitive()) {
-                            field_load(i, stackReg_ref(i), stackReg_ref(i),f);
+                            ld_global(i, stackReg_ref(i), stackReg_ref(i),f);
                         } else if (f.getType().equals(int.class)) {
-                            field_load(i, stackReg_s32(i), stackReg_ref(i),f);
+                            ld_global(i, stackReg_s32(i), stackReg_ref(i),f);
                         } else if (f.getType().equals(short.class)) {
-                            field_load(i, stackReg_s16(i), stackReg_ref(i),f);
+                            ld_global(i, stackReg_s16(i), stackReg_ref(i),f);
                         } else if (f.getType().equals(char.class)) {
-                            field_load(i, stackReg_u16(i), stackReg_ref(i),f);
+                            ld_global(i, stackReg_u16(i), stackReg_ref(i),f);
                         } else if (f.getType().equals(boolean.class)) {
-                            field_load(i, stackReg_s8(i), stackReg_ref(i),f);
+                            ld_global(i, stackReg_s8(i), stackReg_ref(i),f);
                         } else if (f.getType().equals(float.class)) {
-                            field_load(i, stackReg_f32(i), stackReg_ref(i),f);
+                            ld_global(i, stackReg_f32(i), stackReg_ref(i),f);
                         } else if (f.getType().equals(double.class)) {
-                            field_load(i, stackReg_f64(i), stackReg_ref(i),f);
+                            ld_global(i, stackReg_f64(i), stackReg_ref(i),f);
                         } else if (f.getType().equals(long.class)) {
-                            field_load(i, stackReg_s64(i), stackReg_ref(i),f);
+                            ld_global(i, stackReg_s64(i), stackReg_ref(i),f);
                         } else {
                             throw new IllegalStateException("unexpected get field type");
                         }
@@ -1130,21 +1111,21 @@ public class HSAILAssembler {
 
                         Field f = clazz.getDeclaredField(i.asFieldAccessor().getFieldName());
                         if (!f.getType().isPrimitive()) {
-                            field_store(i, stackReg_ref(i, 1), stackReg_ref(i), f);
+                            st_global(i, stackReg_ref(i, 1), stackReg_ref(i), f);
                         } else if (f.getType().equals(int.class)) {
-                            field_store(i, stackReg_s32(i, 1), stackReg_ref(i), f);
+                            st_global(i, stackReg_s32(i, 1), stackReg_ref(i), f);
                         } else if (f.getType().equals(short.class)) {
-                            field_store(i, stackReg_s16(i, 1), stackReg_ref(i), f);
+                            st_global(i, stackReg_s16(i, 1), stackReg_ref(i), f);
                         } else if (f.getType().equals(char.class)) {
-                            field_store(i, stackReg_u16(i, 1), stackReg_ref(i), f);
+                            st_global(i, stackReg_u16(i, 1), stackReg_ref(i), f);
                         } else if (f.getType().equals(boolean.class)) {
-                            field_store(i, stackReg_s8(i, 1), stackReg_ref(i), f);
+                            st_global(i, stackReg_s8(i, 1), stackReg_ref(i), f);
                         } else if (f.getType().equals(float.class)) {
-                            field_store(i, stackReg_f32(i, 1), stackReg_ref(i), f);
+                            st_global(i, stackReg_f32(i, 1), stackReg_ref(i), f);
                         } else if (f.getType().equals(double.class)) {
-                            field_store(i, stackReg_f64(i, 1), stackReg_ref(i), f);
+                            st_global(i, stackReg_f64(i, 1), stackReg_ref(i), f);
                         } else if (f.getType().equals(long.class)) {
-                            field_store(i, stackReg_s64(i, 1), stackReg_ref(i), f);
+                            st_global(i, stackReg_s64(i, 1), stackReg_ref(i), f);
                         }   else {
                             throw new IllegalStateException("unexpected put field type");
                         }
