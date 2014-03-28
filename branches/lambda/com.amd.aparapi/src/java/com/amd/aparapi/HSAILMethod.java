@@ -392,7 +392,7 @@ public class HSAILMethod {
                 // assembler.ld_arg( initial, assembler.varReg_s32(arg.getArgc() + argOffset)); // if we need to support real calls.
             }
         }
-        assembler.workitemabsid_u32(initial, argc + argOffset); // we overwrite the last arg +1 with the gid
+        assembler.workitemabsid_u32(initial, assembler.varReg_s32(argc + argOffset)); // we overwrite the last arg +1 with the gid
         assembler.add(initial, assembler.stackReg_s32(argc + argOffset - 1), assembler.stackReg_s32(argc + argOffset - 1), assembler.stackReg_s32(argc + argOffset));
         assembler.addInstructions( method);
     }

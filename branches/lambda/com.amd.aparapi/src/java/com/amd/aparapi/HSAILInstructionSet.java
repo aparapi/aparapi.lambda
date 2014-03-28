@@ -664,8 +664,7 @@ public class HSAILInstructionSet {
 
             @Override
             void render(HSAILRenderer r) {
-                // r.append("st_global_").typeName(getSrc()).space().append("[").operandName(mem).append("+").array_len_offset().append("]").separator().operandName(getSrc());
-                r.append("st_global_").typeName(getSrc()).space().operandName(getSrc()).separator().append("[").operandName(mem).append("+").array_base_offset().append("]").semicolon();
+                 r.append("st_global_").typeName(getSrc()).space().operandName(getSrc()).separator().append("[").operandName(mem).append("+").array_base_offset().append("]").semicolon();
             }
 
 
@@ -692,38 +691,18 @@ public class HSAILInstructionSet {
 
         }
 
-        static  class array_len<Rs32 extends HSAILRegister<Rs32,s32>> extends HSAILInstructionWithDest<array_len<Rs32>, Rs32, s32> {
-            StackReg_ref mem;
 
-
-
-            array_len(HSAILStackFrame _hsailStackFrame,Instruction _from, Rs32 _dest, StackReg_ref _mem) {
-                super(_hsailStackFrame,_from, _dest);
-                mem = _mem;
-            }
-
-
-            @Override
-            void render(HSAILRenderer r) {
-                r.append("ld_global_").typeName(getDest()).space().operandName(getDest()).separator().append("[").operandName(mem).append("+").array_len_offset().append("]").semicolon();
-            }
-
-
-        }
-
-        static  class field_load<Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends HSAILInstructionWithDest<field_load<Rt,T>, Rt,T> {
+        static  class ld_global<Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends HSAILInstructionWithDest<ld_global<Rt,T>, Rt,T> {
 
             StackReg_ref mem;
             long offset;
 
 
-            field_load(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _dest, StackReg_ref _mem, long _offset) {
+            ld_global(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _dest, StackReg_ref _mem, long _offset) {
                 super(_hsailStackFrame,_from, _dest);
                 offset = _offset;
                 mem = _mem;
             }
-
-
 
             @Override
             void render(HSAILRenderer r) {
@@ -732,23 +711,21 @@ public class HSAILInstructionSet {
 
 
         }
-    static  class ld_global<Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends HSAILInstructionWithDest<field_load<Rt,T>, Rt,T> {
 
+    static  class array_len<Rs32 extends HSAILRegister<Rs32,s32>> extends HSAILInstructionWithDest<array_len<Rs32>, Rs32, s32> {
         StackReg_ref mem;
-        long offset;
 
 
-        ld_global(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _dest, StackReg_ref _mem, long _offset) {
+
+        array_len(HSAILStackFrame _hsailStackFrame,Instruction _from, Rs32 _dest, StackReg_ref _mem) {
             super(_hsailStackFrame,_from, _dest);
-            offset = _offset;
             mem = _mem;
         }
 
 
-
         @Override
         void render(HSAILRenderer r) {
-            r.append("ld_global_").typeName(getDest()).space().operandName(getDest()).separator().append("[").operandName(mem).append("+").append(offset).append("]").semicolon();
+            r.append("ld_global_").typeName(getDest()).space().operandName(getDest()).separator().append("[").operandName(mem).append("+").array_len_offset().append("]").semicolon();
         }
 
 
@@ -777,13 +754,13 @@ public class HSAILInstructionSet {
         }
 
 
-        static  class field_store<Rt extends HSAILRegister<Rt,T>,T extends PrimitiveType> extends HSAILInstructionWithSrc<field_store<Rt,T>,Rt,T> {
+        static  class st_global<Rt extends HSAILRegister<Rt,T>,T extends PrimitiveType> extends HSAILInstructionWithSrc<st_global<Rt,T>,Rt,T> {
 
             StackReg_ref mem;
             long offset;
 
 
-            field_store(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _src, StackReg_ref _mem, long _offset) {
+            st_global(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _src, StackReg_ref _mem, long _offset) {
                 super(_hsailStackFrame,_from, _src);
                 offset = _offset;
                 mem = _mem;
@@ -1055,12 +1032,6 @@ public class HSAILInstructionSet {
 
             }
         }
-
-
-
-
-
-
 
 }
 
