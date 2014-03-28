@@ -64,7 +64,7 @@ public class MandelJUnit {
     final int[][][] frameRgb = new int[2][FRAMES_PER_DEVICE][rgb.length];
 
 
-    final int maxIterations = 32;
+    final int maxIterations = 64;
 
     //Palette which maps iteration values to RGB values.
     final int pallette[] = new int[maxIterations + 1];
@@ -171,7 +171,7 @@ public class MandelJUnit {
         System.out.println((deviceIndex==0?"jtp":"hsa")+" fps=" + (((float) frameCount*1000) / elapsedMs));
         }
         for (int i=0; i< FRAMES_PER_DEVICE; i++){
-            if (!JunitHelper.compare(frameRgb[0][i], frameRgb[1][i],8)){ // we allow a variance of 8 this seems too wide
+            if (!JunitHelper.compare(frameRgb[0][i], frameRgb[1][i])){
                 fail("failed at index " + i);
             }
         }
