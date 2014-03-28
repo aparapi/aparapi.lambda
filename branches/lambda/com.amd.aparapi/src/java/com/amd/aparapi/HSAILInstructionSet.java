@@ -652,19 +652,20 @@ public class HSAILInstructionSet {
 
         static  class array_store<Rt extends HSAILRegister<Rt,T>, T extends PrimitiveType> extends HSAILInstructionWithSrc<array_store<Rt, T>,Rt, T> {
             StackReg_ref mem;
+            boolean isLocal;
 
 
-
-            array_store(HSAILStackFrame _hsailStackFrame,Instruction _from, StackReg_ref _mem, Rt _src) {
+            array_store(HSAILStackFrame _hsailStackFrame,Instruction _from, boolean _isLocal, StackReg_ref _mem, Rt _src) {
                 super(_hsailStackFrame,_from, _src);
                 mem = _mem;
+                isLocal= _isLocal;
             }
 
 
 
             @Override
             void render(HSAILRenderer r) {
-                 r.append("st_global_").typeName(getSrc()).space().operandName(getSrc()).separator().append("[").operandName(mem).append("+").array_base_offset().append("]").semicolon();
+                 r.append("st_").append(isLocal?"group_":"global_").typeName(getSrc()).space().operandName(getSrc()).separator().append("[").operandName(mem).append("+").array_base_offset().append("]").semicolon();
             }
 
 
@@ -673,18 +674,20 @@ public class HSAILInstructionSet {
 
         static   class array_load<Rt extends HSAILRegister<Rt,T>,T extends PrimitiveType> extends HSAILInstructionWithDest<array_load<Rt,T>,Rt,T> {
             StackReg_ref mem;
+            boolean isLocal;
 
 
 
-            array_load(HSAILStackFrame _hsailStackFrame,Instruction _from, Rt _dest, StackReg_ref _mem) {
+            array_load(HSAILStackFrame _hsailStackFrame,Instruction _from, boolean _isLocal, Rt _dest, StackReg_ref _mem) {
                 super(_hsailStackFrame,_from, _dest);
                 mem = _mem;
+                isLocal= _isLocal;
             }
 
 
             @Override
             void render(HSAILRenderer r) {
-                r.append("ld_global_").typeName(getDest()).space().operandName(getDest()).separator().append("[").operandName(mem).append("+").array_base_offset().append("]").semicolon();
+                r.append("ld_").append(isLocal?"group_":"global_").typeName(getDest()).space().operandName(getDest()).separator().append("[").operandName(mem).append("+").array_base_offset().append("]").semicolon();
 
             }
 
