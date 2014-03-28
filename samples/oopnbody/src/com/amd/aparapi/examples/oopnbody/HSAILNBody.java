@@ -44,16 +44,20 @@ public class HSAILNBody {
            float accz = 0.f;
            for(int i = 0; i < bodies.length; i++){
                Body otherBody = bodies[i];
-               if (this != otherBody){
-                   float dx = otherBody.x-thisBody.x;
-                   float dy = otherBody.y-thisBody.y;
-                   float dz = otherBody.z-thisBody.z;
-                   float dist =  (float) Math.sqrt(((dx * dx) + (dy * dy) + (dz * dz) + .1f /* +.1f in case dx,dy,dz are 0!*/));
-                   float invDist = 1f / dist;
-                   float massInvDist_3 = otherBody.mass * invDist * invDist * invDist;
-                   accx += massInvDist_3 * dx;
-                   accy += massInvDist_3 * dy;
-                   accz += massInvDist_3 * dz;
+              if (otherBody == null) {
+                  otherBody=otherBody;
+              }else{
+                   if (this != otherBody) {
+                       float dx = otherBody.x - thisBody.x;
+                       float dy = otherBody.y - thisBody.y;
+                       float dz = otherBody.z - thisBody.z;
+                       float dist = (float) Math.sqrt(((dx * dx) + (dy * dy) + (dz * dz) + .1f /* +.1f in case dx,dy,dz are 0!*/));
+                       float invDist = 1f / dist;
+                       float massInvDist_3 = otherBody.mass * invDist * invDist * invDist;
+                       accx += massInvDist_3 * dx;
+                       accy += massInvDist_3 * dy;
+                       accz += massInvDist_3 * dz;
+                   }
                }
            }
            float delT = .05f;
