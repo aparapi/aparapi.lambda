@@ -175,7 +175,9 @@ class HSAILIntrinsics {
             //   lda_group_u64 $d${0}, [%uniquename];" + "\n" +
             String unique="local_buf_"+_ass.currentFrame().getUniqueName()+"_"+_from.getThisPC();
             _ass.group_u32(_from, unique, 64);
-            _ass.lda_group_u64(_from, _ass.stackReg_ref(_from), unique);
+            StackReg_ref localRef = _ass.stackReg_ref(_from);
+            localRef.setLocal(true);
+            _ass.lda_group_u64(_from, localRef, unique);
         //    _ass.group_alloc_load_u32(_from, _ass.stackReg_ref(_from), _ass.stackReg_s32(_from));
 
         }));

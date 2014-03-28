@@ -252,6 +252,7 @@ class StackReg_s8 extends StackReg<StackReg_s8, s8>{
 
 
 class StackReg_ref extends StackReg<StackReg_ref, ref>{
+    boolean local=false;
     StackReg_ref(StackReg_ref original){
         super(original);
     }
@@ -263,6 +264,12 @@ class StackReg_ref extends StackReg<StackReg_ref, ref>{
  //  }
     StackReg_ref(int _idx){
         super(_idx, PrimitiveType.ref);
+    }
+    void setLocal(boolean _local){
+        local = _local;
+    }
+    boolean isLocal(){
+        return(local);
     }
 }
 
