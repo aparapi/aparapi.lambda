@@ -164,8 +164,8 @@ public class HSAILAssembler {
         add( new HSAILInstructionSet.mad(currentFrame(), _i, _dest, _lhs, _rhs, _constant));
         return(this);
     }
-    public <T extends StackReg> HSAILAssembler array_store( Instruction _i, StackReg_ref _arrayRef, T _source ){
-        add( new HSAILInstructionSet.array_store(currentFrame(), _i, _arrayRef, _source));
+    public <T extends StackReg> HSAILAssembler array_store( Instruction _i, boolean _isLocal, StackReg_ref _arrayRef, T _source ){
+        add( new HSAILInstructionSet.array_store(currentFrame(), _i, _isLocal, _arrayRef, _source));
        return(this);
     }
 
@@ -178,8 +178,8 @@ public class HSAILAssembler {
         return(this);
     }
 
-    public <T extends StackReg> HSAILAssembler array_load( Instruction _i, T _dest, StackReg_ref _arrayRef){
-        add( new HSAILInstructionSet.array_load(currentFrame(), _i, _dest, _arrayRef));
+    public <T extends StackReg> HSAILAssembler array_load( Instruction _i, boolean _isLocal, T _dest, StackReg_ref _arrayRef){
+        add( new HSAILInstructionSet.array_load(currentFrame(), _i, _isLocal, _dest, _arrayRef));
        return(this);
     }
     public HSAILAssembler mov_const( Instruction _i, StackReg_ref _dest, long _value){
@@ -348,6 +348,47 @@ public class HSAILAssembler {
         }
         return (null);
     }
+
+    public boolean isLocalRef(int _index) {
+        int idx = instructions.size();
+        while (--idx >= 0) {
+            HSAILInstruction i = instructions.get(idx);
+            if (i instanceof HSAILInstructionSet.mov && i.dests != null && i.dests.length==1 && i.dests[0].index == _index && i.dests[0].type == PrimitiveType.ref && i.sources != null && i.sources.length==1 ) {
+                HSAILOperand sourceOperand= i.sources[0];
+                if (sourceOperand instanceof StackReg_ref){
+                    StackReg_ref sourceStackRef= (StackReg_ref)i.sources[0];
+                    if (sourceStackRef.isLocal()){
+                        return(true);
+                    }else{
+                        _index = sourceStackRef.index; // keep looking
+                    }
+                } else if (sourceOperand instanceof VarReg_ref){
+                    VarReg_ref sourceVarRef= (VarReg_ref)i.sources[0];
+                 //   if (sourceVarRef.isLocal()){
+                 //       return(true);
+                  //  }else{
+                        _index = sourceVarRef.index; // keep looking
+                   // }
+                } else throw new IllegalStateException("how?");
+
+
+
+            }else if ( i instanceof HSAILInstructionSet.lda_group_u64 && i.dests != null && i.dests.length==1 && i.dests[0].index == _index && i.dests[0].type == PrimitiveType.ref ){
+                if (i.dests[0] instanceof StackReg_ref){
+                    if (((StackReg_ref)i.dests[0]).isLocal()){
+                        return(true);
+                    }else{
+                        return(false);
+                    }
+                }else{
+                    return(false);
+                }
+
+
+            }
+        }
+        return (false);
+    }
     
     public HSAILRegister addmov(Instruction _i, int _from, int _to) {
         HSAILRegister r = getRegOfLastWriteToIndex( stackIdx(_i) + _from);
@@ -361,9 +402,7 @@ public class HSAILAssembler {
     static boolean compressMovs = false;
     public void add( HSAILInstruction _instruction) {
 
-        if (_instruction instanceof HSAILInstructionSet.array_load){
-            System.out.println("is array_load");
-        }
+
         if (compressMovs){
             // before we add lets see if this is a redundant mov
             for (int srcIndex = 0; srcIndex < _instruction.sources.length; srcIndex++) {
@@ -503,49 +542,54 @@ public class HSAILAssembler {
                     mov(i, stackReg_ref(i), varReg_ref(i));
                     break;
                 case IALOAD:
+                {
                     cvt(i, stackReg_ref(i,1), stackReg_s32(i,1));
-                    mad(i, stackReg_ref(i,1), stackReg_ref(i,1), stackReg_ref(i), PrimitiveType.s32.getHsaBytes());
-                    array_load(i, stackReg_s32(i), stackReg_ref(i, 1));
+                    StackReg_ref arrayBase = stackReg_ref(i);
+
+                    mad(i, stackReg_ref(i,1), stackReg_ref(i,1), arrayBase, PrimitiveType.s32.getHsaBytes());
+
+                    array_load(i, isLocalRef(arrayBase.index), stackReg_s32(i), stackReg_ref(i, 1));
                     break;
+                }
                 case LALOAD:
                     cvt(i, stackReg_ref(i,1), stackReg_s32(i,1));
                     mad(i, stackReg_ref(i,1), stackReg_ref(i,1), stackReg_ref(i), PrimitiveType.s64.getHsaBytes());
-                    array_load(i, stackReg_s64(i), stackReg_ref(i, 1));
+                    array_load(i, false,  stackReg_s64(i), stackReg_ref(i, 1));
                     break;
                 case FALOAD:
                     cvt(i, stackReg_ref(i,1), stackReg_s32(i,1));
                     mad(i, stackReg_ref(i,1), stackReg_ref(i,1), stackReg_ref(i), PrimitiveType.f32.getHsaBytes());
-                    array_load(i, stackReg_f32(i), stackReg_ref(i, 1));
+                    array_load(i, false,stackReg_f32(i), stackReg_ref(i, 1));
 
                     break;
                 case DALOAD:
                     cvt(i, stackReg_ref(i,1), stackReg_s32(i,1));
                     mad(i, stackReg_ref(i,1), stackReg_ref(i,1), stackReg_ref(i), PrimitiveType.f64.getHsaBytes());
-                    array_load(i, stackReg_f64(i), stackReg_ref(i, 1));
+                    array_load(i, false,stackReg_f64(i), stackReg_ref(i, 1));
 
                     break;
                 case AALOAD:
                     cvt(i, stackReg_ref(i,1), stackReg_s32(i,1));
                     mad(i, stackReg_ref(i,1), stackReg_ref(i,1), stackReg_ref(i), PrimitiveType.ref.getHsaBytes());
-                    array_load(i, stackReg_ref(i), stackReg_ref(i, 1));
+                    array_load(i, false,stackReg_ref(i), stackReg_ref(i, 1));
 
                     break;
                 case BALOAD:
                     cvt(i, stackReg_ref(i,1), stackReg_s32(i,1));
                     mad(i, stackReg_ref(i,1), stackReg_ref(i,1), stackReg_ref(i), PrimitiveType.s8.getHsaBytes());
-                    array_load(i, stackReg_s8(i), stackReg_ref(i, 1));
+                    array_load(i, false,stackReg_s8(i), stackReg_ref(i, 1));
 
                     break;
                 case CALOAD:
                     cvt(i, stackReg_ref(i,1), stackReg_s32(i,1));
                     mad(i, stackReg_ref(i,1), stackReg_ref(i,1), stackReg_ref(i), PrimitiveType.u16.getHsaBytes());
-                    array_load(i, stackReg_u16(i), stackReg_ref(i, 1));
+                    array_load(i, false,stackReg_u16(i), stackReg_ref(i, 1));
 
                     break;
                 case SALOAD:
                     cvt(i, stackReg_ref(i,1), stackReg_s32(i,1));
                     mad(i, stackReg_ref(i,1), stackReg_ref(i,1), stackReg_ref(i), PrimitiveType.s16.getHsaBytes());
-                    array_load(i, stackReg_s16(i), stackReg_ref(i, 1));
+                    array_load(i, false,stackReg_s16(i), stackReg_ref(i, 1));
                     break;
                 //case ISTORE: moved down
                 // case LSTORE:  moved down
@@ -589,44 +633,51 @@ public class HSAILAssembler {
                     mov(i, varReg_ref(i), stackReg_ref(i));
                     break;
                 case IASTORE:
+
+                {
                     cvt(i, stackReg_ref(i,1), stackReg_s32(i,1));
-                    mad(i, stackReg_ref(i,1), stackReg_ref(i,1), stackReg_ref(i), PrimitiveType.s32.getHsaBytes());
-                    array_store(i, stackReg_ref(i, 1), stackReg_s32(i, 2));
+                    StackReg_ref arrayBase = stackReg_ref(i);
+
+                    mad(i, stackReg_ref(i,1), stackReg_ref(i,1), arrayBase, PrimitiveType.s32.getHsaBytes());
+
+
+                    array_store(i, isLocalRef(arrayBase.index), stackReg_ref(i, 1), stackReg_s32(i, 2));
                     break;
+                }
                 case LASTORE:
                     cvt(i, stackReg_ref(i,1), stackReg_s32(i,1));
                     mad(i, stackReg_ref(i,1), stackReg_ref(i,1), stackReg_ref(i), PrimitiveType.s64.getHsaBytes());
-                    array_store(i, stackReg_ref(i, 1), stackReg_s64(i, 2));
+                    array_store(i, false,  stackReg_ref(i, 1), stackReg_s64(i, 2));
                     break;
                 case FASTORE:
                     cvt(i, stackReg_ref(i,1), stackReg_s32(i,1));
                     mad(i, stackReg_ref(i,1), stackReg_ref(i,1), stackReg_ref(i),PrimitiveType.f32.getHsaBytes());
-                    array_store(i, stackReg_ref(i, 1), stackReg_f32(i, 2));
+                    array_store(i, false,stackReg_ref(i, 1), stackReg_f32(i, 2));
                     break;
                 case DASTORE:
                     cvt(i, stackReg_ref(i,1), stackReg_s32(i,1));
                     mad(i, stackReg_ref(i,1), stackReg_ref(i,1), stackReg_ref(i), PrimitiveType.f64.getHsaBytes());
-                    array_store(i, stackReg_ref(i, 1), stackReg_f64(i, 2));
+                    array_store(i, false,stackReg_ref(i, 1), stackReg_f64(i, 2));
                     break;
                 case AASTORE:
                     cvt(i, stackReg_ref(i,1), stackReg_s32(i,1));
                     mad(i, stackReg_ref(i,1), stackReg_ref(i,1), stackReg_ref(i), PrimitiveType.ref.getHsaBytes());
-                    array_store(i, stackReg_ref(i, 1), stackReg_ref(i, 2));
+                    array_store(i, false,stackReg_ref(i, 1), stackReg_ref(i, 2));
                     break;
                 case BASTORE:
                     cvt(i, stackReg_ref(i,1), stackReg_s32(i,1));
                     mad(i, stackReg_ref(i,1), stackReg_ref(i,1), stackReg_ref(i), PrimitiveType.s8.getHsaBytes());
-                    array_store(i, stackReg_ref(i, 1), stackReg_s8(i, 2));
+                    array_store(i, false,stackReg_ref(i, 1), stackReg_s8(i, 2));
                     break;
                 case CASTORE:
                     cvt(i, stackReg_ref(i,1), stackReg_s32(i,1));
                     mad(i, stackReg_ref(i,1), stackReg_ref(i,1), stackReg_ref(i), PrimitiveType.u16.getHsaBytes());
-                    array_store(i, stackReg_ref(i, 1), stackReg_u16(i, 2));
+                    array_store(i, false,stackReg_ref(i, 1), stackReg_u16(i, 2));
                     break;
                 case SASTORE:
                     cvt(i, stackReg_ref(i,1), stackReg_s32(i,1));
                     mad(i, stackReg_ref(i,1), stackReg_ref(i,1), stackReg_ref(i), PrimitiveType.s16.getHsaBytes());
-                    array_store(i, stackReg_ref(i, 1), stackReg_s16(i, 2));
+                    array_store(i, false,stackReg_ref(i, 1), stackReg_s16(i, 2));
                     break;
                 case POP:
                     nyi(i);
