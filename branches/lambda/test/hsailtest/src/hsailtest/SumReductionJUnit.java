@@ -9,44 +9,47 @@ import static org.junit.Assert.assertTrue;
 
 public class SumReductionJUnit {
 
+   int add(int lhs, int rhs){
+      return(lhs+rhs);
+   }
 
-
-   @Test public void test() {
-        final int len = 256;
-
-
-
-       int[] in = new int[len];
-       int[] out = new int[len];
-       Device.jtp().forEach(len, id->in[id]=id);
+   int sum(int[] arr){
+       int len = arr.length;
        int[] partials=new int[len/256+1];
        Device.hsa().forEach(len, id -> {
            int[] local = localInt(256);
            int lid = getWorkItemId();
-           local[lid] = in[id];
+           local[lid] = arr[id];
            barrier();
            for (int i = 2; i <= getCurrentWorkGroupSize(); i *= 2) {
                if (lid % i == 0) {
-                   local[lid] = local[lid + i / 2]+ local[lid];
+                   local[lid] =  add(local[lid + i / 2], local[lid]);
                }
                barrier();
            }
-           out[id]=local[lid];
-           barrier();
            partials[getWorkGroupId()] = local[0]; // race here is ok
 
        });
+       int sum =0;
+       for (int i:partials){
+           sum+=i;
+       }
+       return(sum);
+   }
 
-        int[] partialsOut = JunitHelper.copy(partials);
-        JunitHelper.dump("hsa",  partials);
-       // JunitHelper.dump("hsa-out",  out);
-        partials[0]=0;
-        for (int i:in){
-            partials[0]+=i;
-        }
-        JunitHelper.dump("loop", partials);
+   @Test public void test() {
+       final int len = 65536;
+       int[] in = new int[len];
+       Device.jtp().forEach(len, id->in[id]=(Math.random()>.5)?1:0);
 
-        assertTrue("HSA equals JTP results", JunitHelper.compare(partialsOut,partials) );
+       int hsaSum = sum(in);
+       int sum = 0;
+       for (int i = 0; i < len; i++) {
+          sum += in[i];
+       }
+
+
+        assertTrue("HSA equals JTP results", sum==hsaSum );
 
     }
 }
