@@ -7,7 +7,7 @@ import static com.amd.aparapi.HSA.*;
 import static org.junit.Assert.assertTrue;
 
 
-public class ScanReductionJUnit {
+public class ScanReduction2JUnit {
 
    int add(int lhs, int rhs){
       return(lhs+rhs);
@@ -179,10 +179,11 @@ public class ScanReductionJUnit {
        int[] in = new int[len];
        Device.jtp().forEach(len, id->in[id]=(Math.random()>.5)?1:0);
        int[] inCopy=JunitHelper.copy(in);
-        int hsaSum = scan(in);
+
+       int hsaSum = scan(in);
         JunitHelper.dump("orig", inCopy);
-        JunitHelper.dump(" hsa", in);
-        int[] out = new int[len];
+       JunitHelper.dump(" hsa", in);
+       int[] out = new int[len];
 
         for (int i=1; i<len; i++){
             out[i] = out[i-1] + inCopy[i-1];
