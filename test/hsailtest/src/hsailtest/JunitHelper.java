@@ -73,6 +73,13 @@ public class JunitHelper {
         }
         System.out.println();
     }
+    static void dump(String type, int[] out, String format,int max) {
+        System.out.print(type + " ->");
+        for (int i = 0; i < max; i++) {
+            System.out.printf(format+",",  out[i]);
+        }
+        System.out.println();
+    }
     static void dump(String type, int[] in, int[] out) {
         System.out.print(type + " ->");
         for (int i = 0; i < in.length; i++) {
