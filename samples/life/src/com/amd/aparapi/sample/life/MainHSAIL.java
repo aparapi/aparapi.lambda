@@ -45,7 +45,10 @@ import com.amd.aparapi.Range;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
@@ -153,14 +156,8 @@ public class MainHSAIL {
          }
       }
 
-     public void run() {
-
-
-
-      }
-
-      boolean sequential = false || Boolean.getBoolean("sequential");
-       boolean hsa = true|| Boolean.getBoolean("hsa");
+      boolean sequential = true || Boolean.getBoolean("sequential");
+       boolean hsa = false|| Boolean.getBoolean("hsa");
       public void nextGeneration() {
          // swap fromBase and toBase
          int swap = fromBase;
@@ -193,6 +190,9 @@ public class MainHSAIL {
       // and bottom to top in alternate generation passses. The LifeKernel will track which pass is which
       final BufferedImage image = new BufferedImage(width, height * 2, BufferedImage.TYPE_INT_RGB);
 
+      Graphics2D gc = (Graphics2D)image.getGraphics();
+      final boolean[] pause=new boolean[]{false};
+
       final LifeKernel lifeKernel = new LifeKernel(width, height, image);
 
       // Create a component for viewing the offsecreen image
@@ -207,6 +207,37 @@ public class MainHSAIL {
             }
          }
       };
+
+      viewer.addMouseMotionListener(new MouseMotionListener(){
+
+ public void mouseMoved(MouseEvent e) {
+    }
+
+    public void mouseDragged(MouseEvent e) {
+               gc.fillRect(e.getX(), e.getY(), 14, 14);
+               gc.fillRect( e.getX(), e.getY()+height, 14, 14);
+
+    }
+
+});
+      viewer.addMouseListener(new MouseListener(){
+    public void mousePressed(MouseEvent e) {
+       pause[0]=true;
+    }
+
+    public void mouseReleased(MouseEvent e) {
+       pause[0]=false;
+    }
+
+    public void mouseEntered(MouseEvent e) {
+    }
+
+    public void mouseExited(MouseEvent e) {
+    }
+
+    public void mouseClicked(MouseEvent e) {
+    }
+});
 
       JPanel controlPanel = new JPanel(new FlowLayout());
       frame.getContentPane().add(controlPanel, BorderLayout.SOUTH);
@@ -248,9 +279,12 @@ public class MainHSAIL {
       }
       while (true) {
 
+         if (!pause[0]){
          lifeKernel.nextGeneration(); // Work is performed here
-         viewer.repaint(); // Request a repaint of the viewer (causes paintComponent(Graphics) to be called later not synchronous
          generations++;
+}
+         viewer.repaint(); // Request a repaint of the viewer (causes paintComponent(Graphics) to be called later not synchronous
+
          long now = System.currentTimeMillis();
          if (now - start > 1000) {
             generationsPerSecond.setText(String.format("%5.2f", (generations * 1000.0) / (now - start)));
