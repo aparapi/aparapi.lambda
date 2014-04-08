@@ -23,6 +23,16 @@ public class JunitHelper {
         }
         System.out.println();
     }
+    static void dump(String type, String[] _strings) {
+        System.out.print(type + " ->");
+        for (int i = 0; i < _strings.length; i++) {
+            if (i != 0) {
+                System.out.print(", ");
+            }
+            System.out.print(_strings[i]);
+        }
+        System.out.println();
+    }
     public static void dump(String type, int[][] array){
         System.out.print(type+" ->");
         for (int x = 0; x < array.length; x++) {
