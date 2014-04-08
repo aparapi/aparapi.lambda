@@ -282,6 +282,10 @@ public class HSAILAssembler {
       add( new HSAILInstructionSet.nyi(currentFrame(), _i));
         return(this);
     }
+    public HSAILAssembler checkcast( Instruction _i){
+        add( new HSAILInstructionSet.checkcast(currentFrame(), _i));
+        return(this);
+    }
 
     public HSAILAssembler array_len(Instruction _i, StackReg_s32 _dest, StackReg_ref _source){
        add( new HSAILInstructionSet.array_len(currentFrame(),_i, _dest, _source));
@@ -1246,7 +1250,7 @@ public class HSAILAssembler {
                     nyi(i);
                     break;
                 case CHECKCAST:
-                    nyi(i);
+                    checkcast(i);
                     break;
                 case INSTANCEOF:
                     nyi(i);

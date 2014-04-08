@@ -295,22 +295,37 @@ public class HSAILInstructionSet {
             }
         }
 
-        static  class nyi extends HSAILInstruction<nyi> {
+    static  class nyi extends HSAILInstruction<nyi> {
 
 
-            nyi(HSAILStackFrame _hsailStackFrame,Instruction _from) {
-                super(_hsailStackFrame, _from, 0, 0);
-            }
-
-
-
-            @Override
-            void render(HSAILRenderer r) {
-
-                r.append("NYI ").i(from);
-
-            }
+        nyi(HSAILStackFrame _hsailStackFrame,Instruction _from) {
+            super(_hsailStackFrame, _from, 0, 0);
         }
+
+
+
+        @Override
+        void render(HSAILRenderer r) {
+
+            r.append("NYI ").i(from);
+
+        }
+    }   static  class checkcast extends HSAILInstruction<nyi> {
+
+
+        checkcast(HSAILStackFrame _hsailStackFrame,Instruction _from) {
+            super(_hsailStackFrame, _from, 0, 0);
+        }
+
+
+
+        @Override
+        void render(HSAILRenderer r) {
+
+            r.append("// checkcast is a no-op at present ").i(from);
+
+        }
+    }
 
         static  class ld_kernarg<Rt extends HSAILRegister<Rt,T>,T extends PrimitiveType> extends HSAILInstructionWithDest<ld_kernarg<Rt,T>,Rt, T> {
 
