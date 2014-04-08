@@ -23,13 +23,11 @@ public class StringFindJUnit {
        boolean[] flags = new boolean[]{false};
 
            Device.hsa().forEach(lines, line -> {
-               if (line.length()==3){
+               if (line.length()==4){
                    flags[0]=true;
                }
-
-
            });
 
-       assertTrue("HSA equals sequential results", true);
+       assertTrue("HSA equals sequential results", flags[0]);
     }
 }
