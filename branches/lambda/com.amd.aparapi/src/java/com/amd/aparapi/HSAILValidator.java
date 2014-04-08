@@ -292,7 +292,7 @@ public class HSAILValidator {
 
        HSAILRenderer renderer = new HSAILRenderer().setShowComments(true);
 
-       HSAILMethod.getHSAILMethod(method).render(renderer);
+       HSAILMethod.getHSAILMethod(method, null).render(renderer, null);
         List<String> input = new ArrayList<String>();
        for (String s:renderer.toString().split("\n")){
       

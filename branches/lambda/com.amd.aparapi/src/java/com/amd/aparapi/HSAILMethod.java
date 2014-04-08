@@ -4,6 +4,7 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.util.*;
+import java.util.function.IntConsumer;
 
 /**
  * Created with IntelliJ IDEA.
@@ -184,7 +185,7 @@ class HSAILIntrinsics {
             //   align 4 group_f32 %uniquename[$s${0}]
             //   lda_group_u64 $d${0}, [%uniquename];" + "\n" +
             String unique="local_buf_"+_ass.currentFrame().getUniqueName()+"_"+_from.getThisPC();
-            _ass.group_f32(_from, unique,256);
+            _ass.group_f32(_from, unique, 256);
             StackReg_ref localRef = _ass.stackReg_ref(_from);
             localRef.setLocal(true);
             _ass.lda_group_u64(_from, localRef, unique);
@@ -194,7 +195,7 @@ class HSAILIntrinsics {
             //   align 8 group_u64 %uniquename[$s${0}]
             //   lda_group_u64 $d${0}, [%uniquename];" + "\n" +
             String unique="local_buf_"+_ass.currentFrame().getUniqueName()+"_"+_from.getThisPC();
-            _ass.group_ref(_from, unique,256);
+            _ass.group_ref(_from, unique, 256);
             StackReg_ref localRef = _ass.stackReg_ref(_from);
             localRef.setLocal(true);
             _ass.lda_group_u64(_from, localRef, unique);
@@ -331,7 +332,7 @@ public class HSAILMethod {
    HSAILAssembler assembler;
     ClassModel.ClassModelMethod method;
 
-    public HSAILRenderer render(HSAILRenderer r) {
+    public HSAILRenderer render(HSAILRenderer r, Object lambdaType) {
         r.append("version 0:95: $full : $large").semicolon().nl();
         r.append("kernel &run").oparenth();
         boolean firstArg=true;
@@ -353,7 +354,7 @@ public class HSAILMethod {
 
         Instruction last = null; // we track the last bytecode instruction (not HSAIL) here so that we con emit branch labels and comments only once for each mapped instruction
         for (HSAILInstructionSet.HSAILInstruction i : assembler.getInstructions()) {
-            if ((i  instanceof HSAILInstructionSet.ld_kernarg) || (i instanceof HSAILInstructionSet.workitemabsid)){
+            if ((i  instanceof HSAILInstructionSet.ld_kernarg) || (i instanceof HSAILInstructionSet.workitemabsid) )  {
 
             }else if ( (last == null || last != i.from)) {
                 if (i.from.isBranchTarget()) {
@@ -380,12 +381,14 @@ public class HSAILMethod {
         return (r);
     }
 
-    static synchronized HSAILMethod getHSAILMethod(ClassModel.ClassModelMethod _method) {
-        HSAILMethod instance = new HSAILMethod(_method);
+
+
+    static synchronized HSAILMethod getHSAILMethod(ClassModel.ClassModelMethod _method, Object _lambdaType ) {
+        HSAILMethod instance = new HSAILMethod(_method, _lambdaType);
         return (instance);
     }
 
-    private HSAILMethod(ClassModel.ClassModelMethod _method) {
+    private HSAILMethod(ClassModel.ClassModelMethod _method, Object _lambdaType) {
         method = _method;
 
         assembler = new HSAILAssembler(method);
@@ -423,8 +426,30 @@ public class HSAILMethod {
                 // assembler.ld_arg( initial, assembler.varReg_s32(arg.getArgc() + argOffset)); // if we need to support real calls.
             }
         }
-        assembler.workitemabsid_u32(initial, assembler.varReg_s32(argc + argOffset)); // we overwrite the last arg +1 with the gid
-        assembler.add(initial, assembler.stackReg_s32(argc + argOffset - 1), assembler.stackReg_s32(argc + argOffset - 1), assembler.stackReg_s32(argc + argOffset));
+
+        if (_lambdaType instanceof IntConsumer){
+               assembler.workitemabsid_u32(initial, assembler.varReg_s32(argc + argOffset)); // we overwrite the last arg +1 with the gid
+               assembler.add(initial, assembler.stackReg_s32(argc + argOffset - 1), assembler.stackReg_s32(argc + argOffset - 1), assembler.stackReg_s32(argc + argOffset));
+        }else if (_lambdaType instanceof Aparapi.ObjectConsumer){
+                assembler.workitemabsid_u32(initial, assembler.varReg_s32(argc + argOffset)); // we overwrite the last arg +1 with the gid
+            assembler.cvt(initial, assembler.stackReg_u64(argc+argOffset), assembler.stackReg_s32(argc+argOffset));
+            assembler.mad(initial, assembler.stackReg_ref(argc+argOffset-1), assembler.stackReg_ref(argc+argOffset-1), assembler.stackReg_ref(argc+argOffset), 8);
+            // ld_global_u64 $d${2}, [$d${0}+16];   // this string reference into $d${2}"
+            assembler.ld_global(initial, assembler.stackReg_ref(argc+argOffset-1), assembler.stackReg_ref(argc+argOffset-1), 24); // 16 is known hardcoded offset of char[] in String
+
+            // mov_b32 $s${3}, $s${1};              // copy index",
+           // _ass.mov(_from, _ass.stackReg_s32(_from, +3), _ass.stackReg_s32(_from, 1));
+
+            // cvt_u64_s32 $d${3}, $s${3};          // convert array index to 64 bits",
+         //   _ass.cvt(_from, _ass.stackReg_u64(_from, 3), _ass.stackReg_s32(_from, 3));
+
+            // mad_u64 $d${3}, $d${3}, 2, $d${2};   // get the char address",
+          //  _ass.mad(_from, _ass.stackReg_ref(_from,3), _ass.stackReg_ref(_from,3), _ass.stackReg_ref(_from,2), 2);
+          //      assembler.add(initial, assembler.stackReg_s32(argc + argOffset - 1), assembler.stackReg_s32(argc + argOffset - 1), assembler.stackReg_s32(argc + argOffset));
+
+            }else{
+                System.out.println("unknown method type");
+        }
         assembler.addInstructions( method);
     }
 }

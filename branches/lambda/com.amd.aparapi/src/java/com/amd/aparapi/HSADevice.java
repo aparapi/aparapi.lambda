@@ -32,10 +32,10 @@ public class  HSADevice extends Device<HSADevice> {
 
         HSAILRenderer renderer = new HSAILRenderer().setShowComments(true);
 
-        HSAILMethod hsailMethod = HSAILMethod.getHSAILMethod(method);
+        HSAILMethod hsailMethod = HSAILMethod.getHSAILMethod(method, ic);
 
 
-        hsailMethod.render(renderer);
+        hsailMethod.render(renderer, ic);
         System.out.println(renderer.toString());
         }catch(ClassNotFoundException cnfe){
             cnfe.printStackTrace();
@@ -61,8 +61,8 @@ public class  HSADevice extends Device<HSADevice> {
                 ClassModel classModel = ClassModel.getClassModel(lkc.getLambdaKernelClass());
                 ClassModel.ClassModelMethod method = classModel.getMethod(lkc.getLambdaMethodName(), lkc.getLambdaMethodSignature());
                 HSAILRenderer renderer = new HSAILRenderer().setShowComments(true);
-                HSAILMethod hsailMethod = HSAILMethod.getHSAILMethod(method);
-                hsailMethod.render(renderer);
+                HSAILMethod hsailMethod = HSAILMethod.getHSAILMethod(method, lambda);
+                hsailMethod.render(renderer, lambda);
                 cachedRunner.hsail = renderer.toString();
 
             if (Config.enableShowGeneratedHSAIL || Config.enableShowGeneratedHSAILAndExit){
@@ -130,11 +130,11 @@ public class  HSADevice extends Device<HSADevice> {
     }
 
     public <T> void forEach(T[] _array,  Aparapi.ObjectConsumer<T> ic) {
-        CachedRunner cachedRunner = getCachedRunner(ic, 2);
+        CachedRunner cachedRunner = getCachedRunner(ic, 1);
         cachedRunner.args[cachedRunner.arg++]=_array;
-        cachedRunner.args[cachedRunner.arg++]=0;
+      //  cachedRunner.args[cachedRunner.arg++]=0;
         System.out.println("out = "+cachedRunner.hsail);
-        System.exit(1);
+     //   System.exit(1);
         cachedRunner.runner.run(0,_array.length, cachedRunner.args);
 
     }
