@@ -114,6 +114,14 @@ public class JunitHelper {
         System.out.println();
     }
 
+    static void dump(String type, float[] in) {
+        System.out.print(type + " ->");
+        for (int i = 0; i < in.length; i++) {
+            System.out.print(in[i] + ",");
+        }
+        System.out.println();
+    }
+
     static int getPreferredArraySize(){
         return(Runtime.getRuntime().availableProcessors()*8);
     }
