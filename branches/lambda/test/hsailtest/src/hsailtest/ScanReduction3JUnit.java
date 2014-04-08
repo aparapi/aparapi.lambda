@@ -15,7 +15,7 @@ public class ScanReduction3JUnit {
 
    void scan(int[] arr, int interval){
        Device.hsa().forEach(arr.length/interval, id -> {
-           int[] local = localInt(256);
+           int[] local = localIntX1();
            int lid = getWorkItemId();
            int lsize = getCurrentWorkGroupSize();
            local[lid] = arr[((id+1)*interval)-1];
@@ -41,7 +41,7 @@ public class ScanReduction3JUnit {
    }
     void fixup(int[] arr){
         Device.hsa().forEach(arr.length, id -> {
-            int[] local = localInt(256);
+            int[] local = localIntX1();
             int lid = getWorkItemId();
             int lsize = getCurrentWorkGroupSize();
             local[lid]=arr[id];

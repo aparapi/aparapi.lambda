@@ -84,6 +84,14 @@ public class HSAILAssembler {
         add( new HSAILInstructionSet.group_u32(currentFrame(), _i, _uniqueName , _size));
         return(this);
     }
+    public HSAILAssembler group_f32( Instruction _i, String _uniqueName, int _size){
+        add( new HSAILInstructionSet.group_f32(currentFrame(), _i, _uniqueName , _size));
+        return(this);
+    }
+    public HSAILAssembler group_ref( Instruction _i, String _uniqueName, int _size){
+        add( new HSAILInstructionSet.group_ref(currentFrame(), _i, _uniqueName , _size));
+        return(this);
+    }
      public <T extends StackReg> HSAILAssembler cmp( Instruction _i, String _type, T _lhs, T _rhs){
        add( new HSAILInstructionSet.cmp(currentFrame(), _i, _type , _lhs, _rhs));
        return(this);

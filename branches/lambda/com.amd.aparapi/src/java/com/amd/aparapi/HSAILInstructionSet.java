@@ -385,6 +385,38 @@ public class HSAILInstructionSet {
             r.append("align 4 group_u32").space().append("%").append(uniqueName).osbrace().append(size).csbrace().semicolon();
         }
     }
+    static  class group_f32 extends HSAILInstruction<group_f32> {
+        String uniqueName;
+        int size;
+
+        group_f32(HSAILStackFrame _hsailStackFrame,Instruction _from, String _uniqueName, int _size) {
+            super(_hsailStackFrame, _from, 0, 0);
+            uniqueName = _uniqueName;
+            size = _size;
+        }
+
+
+        @Override
+        void render(HSAILRenderer r) {
+            r.append("align 4 group_f32").space().append("%").append(uniqueName).osbrace().append(size).csbrace().semicolon();
+        }
+    }
+    static  class group_ref extends HSAILInstruction<group_ref> {
+        String uniqueName;
+        int size;
+
+        group_ref(HSAILStackFrame _hsailStackFrame,Instruction _from, String _uniqueName, int _size) {
+            super(_hsailStackFrame, _from, 0, 0);
+            uniqueName = _uniqueName;
+            size = _size;
+        }
+
+
+        @Override
+        void render(HSAILRenderer r) {
+            r.append("align 8 group_u64").space().append("%").append(uniqueName).osbrace().append(size).csbrace().semicolon();
+        }
+    }
 
 
     static  class countuplane<Rt extends HSAILRegister<Rt,T>,T extends PrimitiveType> extends HSAILInstructionWithDest<countuplane<Rt,T>,Rt, T> {

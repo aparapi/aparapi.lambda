@@ -51,7 +51,7 @@ public class NullCheckJUnit {
 
            int[] partials = new int[lines.length / 256 + 1];
            Device.hsa().forEach(lines.length, id -> {
-               int[] local = localInt(256);
+               int[] local = localIntX1();
                int lid = getWorkItemId();
                int nulls=0;
                String line = lines[id];
