@@ -12,7 +12,7 @@
 //JavaVM       *jvm;
 
 static void JNICALL vmInit(jvmtiEnv *_jvmtiEnv, JNIEnv* _jniEnv, jthread thread) {
-   fprintf(stdout, "from agent vmInit()\n");
+   //fprintf(stdout, "from agent vmInit()\n");
    /*
       if (_jniEnv->ExceptionOccurred()) {
       fprintf(stdout, "Exception raised\n");
@@ -174,7 +174,7 @@ JNIEXPORT jint JNICALL Agent_OnLoad(JavaVM *vm, char *options, void *reserved) {
    jvmtiError          err;
    jvmtiCapabilities   capabilities;
    jvmtiEventCallbacks callbacks;
-   fprintf(stdout, "Agent_Onload()\n");
+   //fprintf(stdout, "Agent_Onload()\n");
 
    // Get a handle on the JVM.
    jvmtiEnv     *jvmti;
@@ -213,6 +213,6 @@ JNIEXPORT jint JNICALL Agent_OnLoad(JavaVM *vm, char *options, void *reserved) {
 
 /* Agent_OnUnload() is called last */
 JNIEXPORT void JNICALL Agent_OnUnload(JavaVM *vm) {
-   fprintf(stdout, "Agent_OnUnload()\n");
+   //fprintf(stdout, "Agent_OnUnload()\n");
 }
 
