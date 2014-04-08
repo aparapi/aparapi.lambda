@@ -170,7 +170,7 @@ class HSAILIntrinsics {
             _ass.barrier_fgroup(_from);
 
         }));
-        add(new InlineIntrinsicCall("com.amd.aparapi.HSA.localInt(I)[I", true, (_ass, _from) -> {
+        add(new InlineIntrinsicCall("com.amd.aparapi.HSA.localIntX1()[I", true, (_ass, _from) -> {
             //   align 4 group_u32 %uniquename[$s${0}]
             //   lda_group_u64 $d${0}, [%uniquename];" + "\n" +
             String unique="local_buf_"+_ass.currentFrame().getUniqueName()+"_"+_from.getThisPC();
@@ -178,7 +178,36 @@ class HSAILIntrinsics {
             StackReg_ref localRef = _ass.stackReg_ref(_from);
             localRef.setLocal(true);
             _ass.lda_group_u64(_from, localRef, unique);
-        //    _ass.group_alloc_load_u32(_from, _ass.stackReg_ref(_from), _ass.stackReg_s32(_from));
+
+        }));
+        add(new InlineIntrinsicCall("com.amd.aparapi.HSA.localFloatX1()[F", true, (_ass, _from) -> {
+            //   align 4 group_f32 %uniquename[$s${0}]
+            //   lda_group_u64 $d${0}, [%uniquename];" + "\n" +
+            String unique="local_buf_"+_ass.currentFrame().getUniqueName()+"_"+_from.getThisPC();
+            _ass.group_f32(_from, unique,256);
+            StackReg_ref localRef = _ass.stackReg_ref(_from);
+            localRef.setLocal(true);
+            _ass.lda_group_u64(_from, localRef, unique);
+
+        }));
+        add(new InlineIntrinsicCall("com.amd.aparapi.HSA.localObjectX1()[Ljava/lang/Object;", true, (_ass, _from) -> {
+            //   align 8 group_u64 %uniquename[$s${0}]
+            //   lda_group_u64 $d${0}, [%uniquename];" + "\n" +
+            String unique="local_buf_"+_ass.currentFrame().getUniqueName()+"_"+_from.getThisPC();
+            _ass.group_ref(_from, unique,256);
+            StackReg_ref localRef = _ass.stackReg_ref(_from);
+            localRef.setLocal(true);
+            _ass.lda_group_u64(_from, localRef, unique);
+
+        }));
+        add(new InlineIntrinsicCall("com.amd.aparapi.HSA.localIntX2()[I", true, (_ass, _from) -> {
+            //   align 4 group_u32 %uniquename[$s${0}]
+            //   lda_group_u64 $d${0}, [%uniquename];" + "\n" +
+            String unique="local_buf_"+_ass.currentFrame().getUniqueName()+"_"+_from.getThisPC();
+            _ass.group_u32(_from, unique,512);
+            StackReg_ref localRef = _ass.stackReg_ref(_from);
+            localRef.setLocal(true);
+            _ass.lda_group_u64(_from, localRef, unique);
 
         }));
         add(new InlineIntrinsicCall("com.amd.aparapi.HSA.getCountUpLane()I", true, (_ass, _from) -> {

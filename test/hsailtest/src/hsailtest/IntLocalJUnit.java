@@ -19,7 +19,7 @@ public class IntLocalJUnit {
        Device.jtp().forEach(len, id->in[id]=id);
         int out[] = new int[len];
         IntConsumer ic = gid -> {
-            int[] local = HSA.localInt(64);
+            int[] local = HSA.localIntX1();
             int lid = HSA.getWorkItemId();
             local[lid]=in[gid];
             HSA.barrier();

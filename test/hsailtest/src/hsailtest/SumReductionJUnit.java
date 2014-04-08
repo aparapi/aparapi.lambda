@@ -17,7 +17,7 @@ public class SumReductionJUnit {
        int len = arr.length;
        int[] partials=new int[len/256+1];
        Device.hsa().forEach(len, id -> {
-           int[] local = localInt(256);
+           int[] local = localIntX1();
            int lid = getWorkItemId();
            local[lid] = arr[id];
            barrier();

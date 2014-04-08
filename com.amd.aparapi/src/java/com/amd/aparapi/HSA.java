@@ -60,7 +60,16 @@ public class HSA {
         throw new IllegalStateException("you don't want to call this from Java");
     }
 
-    public static int[] localInt(int size){ // 	align 4 group_u32 %run_cllocal_scratch[256];" + "\n" +
+    public static int[] localIntX1(){ // 	align 4 group_u32 %run_cllocal_scratch[256];" + "\n" +
+        throw new IllegalStateException("you don't want to call this from Java");
+    }
+    public static Object[] localObjectX1(){ // 	align 4 group_u32 %run_cllocal_scratch[256];" + "\n" +
+        throw new IllegalStateException("you don't want to call this from Java");
+    }
+    public static float[] localFloatX1(){ // 	align 4 group_u32 %run_cllocal_scratch[256];" + "\n" +
+        throw new IllegalStateException("you don't want to call this from Java");
+    }
+    public static int[] localIntX2(){ // 	align 4 group_u32 %run_cllocal_scratch[512];" + "\n" +
         throw new IllegalStateException("you don't want to call this from Java");
     }
 }
