@@ -16,9 +16,10 @@ public class  HSADevice extends Device<HSADevice> {
         boolean isStatic;
         Field[] capturedFields;
         Object[] args;
+        int arg;
     }
 
-    static Map<Class<? extends IntConsumer>, CachedRunner> map = new HashMap<Class<? extends IntConsumer>, CachedRunner>();
+    static Map<Class<?>, CachedRunner> map = new HashMap<Class<?>, CachedRunner>();
 
     public void dump(IntConsumer ic) {
         try{
@@ -44,156 +45,107 @@ public class  HSADevice extends Device<HSADevice> {
             e.printStackTrace();
         }
     }
-    public Device forEach(int to, String _hsailText, IntConsumer ic) {
-       return(forEach(0, to, _hsailText, ic));
-    }
     
 
-    public Device forEach(int from, int to, String _hsailText, IntConsumer ic) {
-        try {
-            CachedRunner cachedRunner = null;
-            if (map.containsKey(ic.getClass())) {
-                cachedRunner = map.get(ic.getClass());
-            } else {
-                cachedRunner = new CachedRunner();
-                LambdaKernelCall lkc = new LambdaKernelCall(ic);
-               // System.out.println("class="+lkc.getLambdaKernelClass());
+
+
+     CachedRunner getCachedRunner(Object lambda, int _extraArgs){
+         try {
+        CachedRunner cachedRunner = null;
+        if (map.containsKey(lambda.getClass())) {
+            cachedRunner = map.get(lambda.getClass());
+        } else {
+            cachedRunner = new CachedRunner();
+            LambdaKernelCall lkc = new LambdaKernelCall(lambda);
+
                 ClassModel classModel = ClassModel.getClassModel(lkc.getLambdaKernelClass());
-               // System.out.println("methodname="+lkc.getLambdaMethodName());
-               // System.out.println("methodsig="+lkc.getLambdaMethodSignature());
-               // ClassModel.ClassModelMethod method = classModel.getMethod(lkc.getLambdaMethodName(), lkc.getLambdaMethodSignature());
-
-
+                ClassModel.ClassModelMethod method = classModel.getMethod(lkc.getLambdaMethodName(), lkc.getLambdaMethodSignature());
                 HSAILRenderer renderer = new HSAILRenderer().setShowComments(true);
+                HSAILMethod hsailMethod = HSAILMethod.getHSAILMethod(method);
+                hsailMethod.render(renderer);
+                cachedRunner.hsail = renderer.toString();
 
-             //   HSAILMethod hsailMethod = HSAILMethod.getHSAILMethod(method);
-
-
-              //  hsailMethod.render(renderer);
-                cachedRunner.hsail = _hsailText;
-                if (Config.enableShowGeneratedHSAIL || Config.enableShowGeneratedHSAILAndExit){
-                    System.out.println(cachedRunner.hsail);
-                    if (Config.enableShowGeneratedHSAILAndExit){
-                        System.exit(1);
-                    }
+            if (Config.enableShowGeneratedHSAIL || Config.enableShowGeneratedHSAILAndExit){
+                System.out.println(cachedRunner.hsail);
+                if (Config.enableShowGeneratedHSAILAndExit){
+                    System.exit(1);
                 }
-                cachedRunner.runner = new OkraRunner(cachedRunner.hsail);
-                cachedRunner.isStatic = lkc.isStatic();
-                if (!cachedRunner.isStatic) {
-                    cachedRunner.instance = lkc.getLambdaKernelThis();
-                }
-                cachedRunner.capturedFields= lkc.getLambdaCapturedFields();
-                cachedRunner.args = new Object[cachedRunner.capturedFields.length+(cachedRunner.isStatic?0:1)+1];
-
-
-                map.put(ic.getClass(), cachedRunner);
             }
-            int arg=0;
+            cachedRunner.runner = new OkraRunner(cachedRunner.hsail);
+            cachedRunner.isStatic = lkc.isStatic();
+            if (!cachedRunner.isStatic) {
+                cachedRunner.instance = lkc.getLambdaKernelThis();
+
+            }
+            cachedRunner.capturedFields= lkc.getLambdaCapturedFields();
+            cachedRunner.args = new Object[cachedRunner.capturedFields.length+(cachedRunner.isStatic?0:1)+_extraArgs];
+
+
+            map.put(lambda.getClass(), cachedRunner);
+        }
+            cachedRunner.arg=0;
             if (!cachedRunner.isStatic){
-                cachedRunner.args[arg++]=cachedRunner.instance;
+                cachedRunner.args[cachedRunner.arg++]=cachedRunner.instance;
             }
             try {
                 for (Field f : cachedRunner.capturedFields) {
                     f.setAccessible(true);
-                    //  String name = f.getName();
                     Type type = f.getType();
                     if (type.equals(float.class)) {
-                        cachedRunner.args[arg++]= f.getFloat(ic);
+                        cachedRunner.args[cachedRunner.arg++]= f.getFloat(lambda);
                     } else if (type.equals(int.class)) {
-                        cachedRunner.args[arg++]=f.getInt(ic);
-                    } else {
-                        cachedRunner.args[arg++]=f.get(ic);
+                        cachedRunner.args[cachedRunner.arg++]=f.getInt(lambda);
+                    }else if (type.equals(long.class)) {
+                        cachedRunner.args[cachedRunner.arg++]= f.getLong(lambda);
+                    } else if (type.equals(double.class)) {
+                        cachedRunner.args[cachedRunner.arg++]=f.getDouble(lambda);
+                    } else if (type.equals(char.class)){
+                        cachedRunner.args[cachedRunner.arg++]=f.getChar(lambda);
+                    } else if (type.equals(boolean.class)){
+                        cachedRunner.args[cachedRunner.arg++]=f.getBoolean(lambda);
+                    } else if (type.equals(short.class)){
+                        cachedRunner.args[cachedRunner.arg++]=f.getShort(lambda);
+                    }else {
+                        cachedRunner.args[cachedRunner.arg++]=f.get(lambda);
                     }
                 }
             } catch (IllegalAccessException e) {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
-            cachedRunner.args[arg++]=0;
+            return(cachedRunner);
+
+         } catch (AparapiException e) {
+             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+         } catch (ClassNotFoundException e) {
+             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+         }
+         return(null);
+    }
+
+
+    public void forEach(int from, int to,  IntConsumer ic) {
+            CachedRunner cachedRunner = getCachedRunner(ic, 1);
+            cachedRunner.args[cachedRunner.arg++]=0;
             cachedRunner.runner.run(from, to, cachedRunner.args);
+    }
 
-
-        } catch (AparapiException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
-        return(this);
+    public <T> void forEach(T[] _array,  Aparapi.ObjectConsumer<T> ic) {
+        CachedRunner cachedRunner = getCachedRunner(ic, 2);
+        cachedRunner.args[cachedRunner.arg++]=_array;
+        cachedRunner.args[cachedRunner.arg++]=0;
+        System.out.println("out = "+cachedRunner.hsail);
+        System.exit(1);
+        cachedRunner.runner.run(0,_array.length, cachedRunner.args);
 
     }
+
+
 
     public void forEach(int to, IntConsumer ic) {
         forEach(0, to, ic);
     }
 
-    public void forEach(int from, int to, IntConsumer ic) {
-        try {
-            CachedRunner cachedRunner = null;
-            if (map.containsKey(ic.getClass())) {
-                cachedRunner = map.get(ic.getClass());
-            } else {
-                cachedRunner = new CachedRunner();
-                LambdaKernelCall lkc = new LambdaKernelCall(ic);
-                //System.out.println("class="+lkc.getLambdaKernelClass());
-                ClassModel classModel = ClassModel.getClassModel(lkc.getLambdaKernelClass());
-                //System.out.println("methodname="+lkc.getLambdaMethodName());
-               // System.out.println("methodsig="+lkc.getLambdaMethodSignature());
-                ClassModel.ClassModelMethod method = classModel.getMethod(lkc.getLambdaMethodName(), lkc.getLambdaMethodSignature());
-
-
-                HSAILRenderer renderer = new HSAILRenderer().setShowComments(true);
-
-                HSAILMethod hsailMethod = HSAILMethod.getHSAILMethod(method);
-
-
-                hsailMethod.render(renderer);
-                cachedRunner.hsail = renderer.toString();
-                if (Config.enableShowGeneratedHSAIL || Config.enableShowGeneratedHSAILAndExit){
-                   System.out.println(cachedRunner.hsail);
-                   if (Config.enableShowGeneratedHSAILAndExit){
-                      System.exit(1);
-                   }
-                }
-                cachedRunner.runner = new OkraRunner(cachedRunner.hsail);
-                cachedRunner.isStatic = lkc.isStatic();
-                if (!cachedRunner.isStatic) {
-                    cachedRunner.instance = lkc.getLambdaKernelThis();
-                }
-                cachedRunner.capturedFields= lkc.getLambdaCapturedFields();
-                cachedRunner.args = new Object[cachedRunner.capturedFields.length+(cachedRunner.isStatic?0:1)+1];
-
-
-                map.put(ic.getClass(), cachedRunner);
-            }
-            int arg=0;
-            if (!cachedRunner.isStatic){
-                cachedRunner.args[arg++]=cachedRunner.instance;
-            }
-            try {
-                for (Field f : cachedRunner.capturedFields) {
-                    f.setAccessible(true);
-                  //  String name = f.getName();
-                    Type type = f.getType();
-                    if (type.equals(float.class)) {
-                        cachedRunner.args[arg++]= f.getFloat(ic);
-                    } else if (type.equals(int.class)) {
-                        cachedRunner.args[arg++]=f.getInt(ic);
-                    } else {
-                        cachedRunner.args[arg++]=f.get(ic);
-                    }
-                }
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            }
-            cachedRunner.args[arg++]=0;
-            cachedRunner.runner.run(from, to, cachedRunner.args);
-
-
-        } catch (AparapiException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
-
+    public void forEach(int _from, int _to, Aparapi.IntMapper intMapper, Aparapi.IntReducer intReducer){
 
     }
 }
