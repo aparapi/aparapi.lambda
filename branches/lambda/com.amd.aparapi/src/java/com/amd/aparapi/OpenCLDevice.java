@@ -439,7 +439,9 @@ public class OpenCLDevice extends Device{
    final ConcurrentHashMap<Class, LambdaRunner> lambdaRunnerCache = new ConcurrentHashMap<Class, LambdaRunner>();
    final ConcurrentHashMap<Class, Boolean> lambdaRunnerCacheEntryValid = new ConcurrentHashMap<Class, Boolean>();
    private static Logger logger = Logger.getLogger(Config.getLoggerName());
-
+    @Override public void forEach(int from, int to, IntConsumer intFunctionSAM){
+        throw new IllegalStateException("not implemented");
+    }
    @Override public void forEach(int jobSize, IntConsumer intFunctionSAM){
 
       // Note it is a new Block object each time

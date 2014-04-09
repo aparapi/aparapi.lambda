@@ -167,6 +167,7 @@ public abstract class Device<T extends Device>{
    }
 
     public abstract  void forEach(int range, IntConsumer ic);
+    public abstract  void forEach(int from, int to, IntConsumer ic);
 
    static HSADevice hsaDevice;
    public synchronized static  void hsaForEach(int range, IntConsumer ic){

@@ -17,6 +17,9 @@ public class JavaThreadPoolDevice extends Device {
     public void forEach(int _range, final IntConsumer _intConsumer) {
         forEach(0, _range, threads, _intConsumer);
     }
+    public void forEach(int _from, int _to, final IntConsumer _intConsumer) {
+        forEach(_from, _to, threads, _intConsumer);
+    }
 
     public void forEach(int _from, int _to, int _threads, final IntConsumer _intConsumer) {
         int range = _to-_from;

@@ -16,7 +16,9 @@ public class HybridDevice extends Device {
     public void forEach(int range,  IntConsumer ic) {
        forEach(range, .8f, ic);
     }
-
+    public void forEach(int from, int to, IntConsumer ic) {
+        throw new IllegalStateException("unimplemented");
+    }
     public Device forEach(int range, float gpuShare, IntConsumer ic) {
         //  System.out.println("range = "+range);
         // assume range %64 ==null
