@@ -1,12 +1,12 @@
 package hsailtest;
 
+import com.amd.aparapi.Aparapi;
 import com.amd.aparapi.AparapiException;
 import com.amd.aparapi.Device;
 import org.junit.Test;
 
 import java.io.*;
 import java.util.Arrays;
-import java.util.function.IntConsumer;
 
 import static com.amd.aparapi.Device.*;
 import static junit.framework.Assert.assertNotNull;
@@ -58,7 +58,7 @@ public class CharArrayStateMachineJUnit {
         char[] text =  JunitHelper.getLowercaseTextChars(new File(dataDir, "dickens/OliverTwist.txt"));
         assertNotNull("names dictionary", text);
         int[] counts = new int[len];
-        IntConsumer ic = gid -> {
+        Aparapi.IntTerminal ic = gid -> {
 
             char[] chars = strings[gid];
             char firstChar=chars[0];

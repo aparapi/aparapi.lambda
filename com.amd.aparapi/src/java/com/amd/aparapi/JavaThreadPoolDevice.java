@@ -2,7 +2,6 @@ package com.amd.aparapi;
 
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
-import java.util.function.IntConsumer;
 
 public class JavaThreadPoolDevice extends Device {
     static final int threads = Runtime.getRuntime().availableProcessors();
@@ -14,14 +13,14 @@ public class JavaThreadPoolDevice extends Device {
         }
     }
 
-    public void forEach(int _range, final IntConsumer _intConsumer) {
+    public void forEach(int _range, final Aparapi.IntTerminal _intConsumer) {
         forEach(0, _range, threads, _intConsumer);
     }
-    public void forEach(int _from, int _to, final IntConsumer _intConsumer) {
+    public void forEach(int _from, int _to, final Aparapi.IntTerminal _intConsumer) {
         forEach(_from, _to, threads, _intConsumer);
     }
 
-    public void forEach(int _from, int _to, int _threads, final IntConsumer _intConsumer) {
+    public void forEach(int _from, int _to, int _threads, final Aparapi.IntTerminal _intConsumer) {
         int range = _to-_from;
         if (range < _threads) {
             for (int t = 0; t < range; t++) {

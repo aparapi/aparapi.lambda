@@ -1,10 +1,11 @@
 package hsailtest;
 
+import com.amd.aparapi.Aparapi;
 import com.amd.aparapi.Device;
 import com.amd.aparapi.HSA;
 import org.junit.Test;
 
-import java.util.function.IntConsumer;
+
 
 import static org.junit.Assert.assertTrue;
 
@@ -18,7 +19,7 @@ public class IntLocalJUnit {
         int in[] = new int[len];
        Device.jtp().forEach(len, id->in[id]=id);
         int out[] = new int[len];
-        IntConsumer ic = gid -> {
+       Aparapi.IntTerminal ic = gid -> {
             int[] local = HSA.localIntX1();
             int lid = HSA.getWorkItemId();
             local[lid]=in[gid];

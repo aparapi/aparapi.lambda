@@ -2,7 +2,6 @@ package com.amd.aparapi;
 
 import com.amd.okra.OkraContext;
 import com.amd.okra.OkraKernel;
-import java.util.function.IntConsumer;
 
 /**
  * Created with IntelliJ IDEA.

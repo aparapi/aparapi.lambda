@@ -5,7 +5,6 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.IntConsumer;
 
 public class  HSADevice extends Device<HSADevice> {
 
@@ -22,7 +21,7 @@ public class  HSADevice extends Device<HSADevice> {
 
     static Map<Class<?>, CachedRunner> map = new HashMap<Class<?>, CachedRunner>();
 
-    public void dump(IntConsumer ic) {
+    public void dump(Aparapi.IntTerminal ic) {
         try{
         LambdaKernelCall lkc = new LambdaKernelCall(ic);
 
@@ -124,7 +123,7 @@ public class  HSADevice extends Device<HSADevice> {
     }
 
 
-    public void forEach(int from, int to,  IntConsumer ic) {
+    public void forEach(int from, int to,  Aparapi.IntTerminal ic) {
             CachedRunner cachedRunner = getCachedRunner(ic, 1);
 
         // The args will be the captured args followed by the fake 'id' arg which is passed to the kernel
@@ -147,7 +146,7 @@ public class  HSADevice extends Device<HSADevice> {
         //   ...
         // }
         //
-        // Note that until we implement range offsets (forEach(from, to, IntConsumer)) Id will always be
+        // Note that until we implement range offsets (forEach(from, to, IntTerminal)) Id will always be
         // last and we will send '0', this '0' will be clobbered in the HSAIL.
         // This saves us having to append args or create var slots.  We already have a var slot which
         // remains in scope until the end of the lambda method.
@@ -167,14 +166,14 @@ public class  HSADevice extends Device<HSADevice> {
         //
         // This also allows us to batch from Aparapi
         //
-        // forEach(0, 1024, IntConsumer) can be mapped to forEach(0, 512, IntConsumer)+forEach(0, 512, IntConsumer)
+        // forEach(0, 1024, IntTerminal) can be mapped to forEach(0, 512, IntTerminal)+forEach(0, 512, IntTerminal)
         //
 
             cachedRunner.args[cachedRunner.arg++]=from;
             cachedRunner.runner.run(from, to, cachedRunner.args);
     }
 
-    public <T> void forEach(T[] _array,  Aparapi.ObjectConsumer<T> ic) {
+    public <T> void forEach(T[] _array,  Aparapi.ObjectTerminal<T> ic) {
         CachedRunner cachedRunner = getCachedRunner(ic, 1);
         cachedRunner.args[cachedRunner.arg++]=_array;
         // We pass the array as the last arg.  The generated HSAIL *knows* to replace this with _array[workitemabsid]
@@ -186,7 +185,7 @@ public class  HSADevice extends Device<HSADevice> {
 
 
 
-    public <T> void forEach(ArrayList<T> _arrayList,  Aparapi.ObjectConsumer<T> ic) {
+    public <T> void forEach(ArrayList<T> _arrayList,  Aparapi.ObjectTerminal<T> ic) {
         CachedRunner cachedRunner = getCachedRunner(ic, 1);
         try{
         Field f = ArrayList.class.getDeclaredField("elementData");
@@ -204,7 +203,7 @@ public class  HSADevice extends Device<HSADevice> {
 
 
 
-    public void forEach(int to, IntConsumer ic) {
+    public void forEach(int to, Aparapi.IntTerminal ic) {
         forEach(0, to, ic);
     }
 

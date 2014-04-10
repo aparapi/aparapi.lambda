@@ -3,7 +3,6 @@ package com.amd.aparapi;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.util.Set;
-import java.util.function.IntConsumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -93,8 +92,8 @@ public class LambdaKernelCall{
       ClassModel blockModel = ClassModel.getClassModel(bc);
 
       String acceptSignature;
-      if(block instanceof IntConsumer){
-         // We know we are calling an IntConsumer lambda with signature "(I)V"
+      if(block instanceof Aparapi.IntTerminal){
+         // We know we are calling an IntTerminal lambda with signature "(I)V"
          acceptSignature = "(I)V";
       }else{
          // Calling an object Consumer lambda like: public void accept(java.lang.Object)

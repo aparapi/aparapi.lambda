@@ -5,7 +5,7 @@ import com.amd.aparapi.Device;
 import org.junit.Test;
 
 import java.util.Arrays;
-import java.util.function.IntConsumer;
+
 
 import static junit.framework.Assert.fail;
 

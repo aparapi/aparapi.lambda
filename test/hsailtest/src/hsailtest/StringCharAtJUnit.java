@@ -1,11 +1,12 @@
 package hsailtest;
 
+import com.amd.aparapi.Aparapi;
 import com.amd.aparapi.AparapiException;
 import com.amd.aparapi.Device;
 import org.junit.Test;
 
 import java.util.Arrays;
-import java.util.function.IntConsumer;
+
 
 import static org.junit.Assert.assertTrue;
 
@@ -17,7 +18,7 @@ public class StringCharAtJUnit {
         int len = string.length();
         char[] out = new char[len];
 
-        IntConsumer ic = gid -> {
+        Aparapi.IntTerminal ic = gid -> {
             out[gid]  = string.charAt(gid);
         };
         Arrays.fill(out, '?');

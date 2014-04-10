@@ -13,7 +13,7 @@ public class ScanReduction2JUnit {
       return(lhs+rhs);
    }
 
-   int scan(int[] arr){
+   void scan(int[] arr){
        int len = arr.length;
        int[] partials=new int[len/256+1];
        Device.hsa().forEach(len, id -> {
@@ -45,11 +45,6 @@ public class ScanReduction2JUnit {
            barrier();
 
        });
-       int sum =0;
-       for (int i:partials){
-           sum+=i;
-       }
-       return(sum);
    }
 
 
@@ -120,7 +115,7 @@ public class ScanReduction2JUnit {
        Device.jtp().forEach(len, id->in[id]=(Math.random()>.5)?1:0);
        int[] inCopy=JunitHelper.copy(in);
 
-       int hsaSum = scan(in);
+        scan(in);
         JunitHelper.dump("orig", inCopy);
        JunitHelper.dump(" hsa", in);
        int[] out = new int[len];
@@ -128,12 +123,11 @@ public class ScanReduction2JUnit {
         for (int i=1; i<len; i++){
             out[i] = out[i-1] + inCopy[i];
         }
-        int sum=out[len-1]+inCopy[len-1];
 
         JunitHelper.dump(" seq", out);
 
 
-        assertTrue("HSA equals JTP results", sum==hsaSum );
+        assertTrue("HSA equals JTP results", JunitHelper.compare(in,out) );
 
     }
 }

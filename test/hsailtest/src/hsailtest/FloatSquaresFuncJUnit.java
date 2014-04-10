@@ -1,12 +1,13 @@
 package hsailtest;
 
+import com.amd.aparapi.Aparapi;
 import com.amd.aparapi.AparapiException;
 import com.amd.aparapi.Device;
 import com.amd.aparapi.HSADevice;
 import org.junit.Test;
 
 import java.util.Arrays;
-import java.util.function.IntConsumer;
+
 
 import static org.junit.Assert.assertTrue;
 
@@ -37,7 +38,7 @@ public class FloatSquaresFuncJUnit {
             out[i]=0;
             in[i]=i;
         }
-        IntConsumer ic = gid -> {
+       Aparapi.IntTerminal ic = gid -> {
             out[gid] = square(in[gid]);
         };
         Device.hsa().forEach(len, ic);

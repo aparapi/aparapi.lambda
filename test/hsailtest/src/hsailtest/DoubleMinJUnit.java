@@ -1,9 +1,9 @@
 package hsailtest;
 
+import com.amd.aparapi.Aparapi;
 import com.amd.aparapi.Device;
 import org.junit.Test;
 
-import java.util.function.IntConsumer;
 
 import static org.junit.Assert.assertTrue;
 
@@ -16,7 +16,7 @@ public class DoubleMinJUnit {
         final int len = JunitHelper.getPreferredArraySize();
         double in[] = new double[len];
         double out[] = new double[len];
-        IntConsumer ic = gid -> {
+       Aparapi.IntTerminal ic = gid -> {
             in[gid] = gid;
             out[gid] = Math.min(4.0, in[gid]);
         };

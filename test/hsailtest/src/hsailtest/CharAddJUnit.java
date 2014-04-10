@@ -1,10 +1,8 @@
 package hsailtest;
 
-import com.amd.aparapi.AparapiException;
+import com.amd.aparapi.Aparapi;
 import com.amd.aparapi.Device;
 import org.junit.Test;
-
-import java.util.function.IntConsumer;
 
 
 public class CharAddJUnit {
@@ -15,7 +13,7 @@ public class CharAddJUnit {
         final int len = JunitHelper.getPreferredArraySize();
         char out[] = new char[len];
 
-        IntConsumer ic = gid -> {
+        Aparapi.IntTerminal ic = gid -> {
                 out[gid] = (char)('A'+gid);
         };
 

@@ -1,12 +1,14 @@
 package hsailtest;
 
 import static org.junit.Assert.*;
+
+import com.amd.aparapi.Aparapi;
 import org.junit.Test;
 import com.amd.aparapi.Device;
 import com.amd.aparapi.HSADevice;
 
 import java.util.Arrays;
-import java.util.function.IntConsumer;
+
 
 /**
  * Created by user1 on 1/29/14.
@@ -32,7 +34,7 @@ public class IntSquaresFuncJUnit {
             out[i]=0;
             in[i]=i;
         }
-        IntConsumer ic = gid -> {
+        Aparapi.IntTerminal ic = gid -> {
             out[gid] = square(in[gid]);
         };
         Device.hsa().forEach(len, ic);

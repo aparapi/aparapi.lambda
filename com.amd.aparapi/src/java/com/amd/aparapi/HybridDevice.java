@@ -1,6 +1,6 @@
 package com.amd.aparapi;
 
-import java.util.function.IntConsumer;
+
 
 /**
  * Created with IntelliJ IDEA.
@@ -13,13 +13,13 @@ public class HybridDevice extends Device {
     HSADevice hsaDevice = (HSADevice)Device.hsa();
     JavaThreadPoolDevice jtpDevice = (JavaThreadPoolDevice)Device.jtp();
     @Override
-    public void forEach(int range,  IntConsumer ic) {
+    public void forEach(int range,  Aparapi.IntTerminal ic) {
        forEach(range, .8f, ic);
     }
-    public void forEach(int from, int to, IntConsumer ic) {
+    public void forEach(int from, int to, Aparapi.IntTerminal ic) {
         throw new IllegalStateException("unimplemented");
     }
-    public Device forEach(int range, float gpuShare, IntConsumer ic) {
+    public Device forEach(int range, float gpuShare, Aparapi.IntTerminal ic) {
         //  System.out.println("range = "+range);
         // assume range %64 ==null
         if (range %64 != 0){

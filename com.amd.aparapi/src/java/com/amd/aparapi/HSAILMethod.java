@@ -1,10 +1,6 @@
 package com.amd.aparapi;
 
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
 import java.util.*;
-import java.util.function.IntConsumer;
 
 /**
  * Created with IntelliJ IDEA.
@@ -427,15 +423,15 @@ public class HSAILMethod {
             }
         }
 
-        if (_lambdaType instanceof IntConsumer){
+        if (_lambdaType instanceof Aparapi.IntTerminal){
                assembler.workitemabsid_u32(initial, assembler.varReg_s32(argc + argOffset)); // we overwrite the last arg +1 with the gid
                assembler.add(initial, assembler.stackReg_s32(argc + argOffset - 1), assembler.stackReg_s32(argc + argOffset - 1), assembler.stackReg_s32(argc + argOffset));
-        }else if (_lambdaType instanceof Aparapi.ObjectConsumer){
+        }else if (_lambdaType instanceof Aparapi.ObjectTerminal){
                 assembler.workitemabsid_u32(initial, assembler.varReg_s32(argc + argOffset)); // we overwrite the last arg +1 with the gid
             assembler.cvt(initial, assembler.stackReg_u64(argc+argOffset), assembler.stackReg_s32(argc+argOffset));
             assembler.mad(initial, assembler.stackReg_ref(argc+argOffset), assembler.stackReg_ref(argc+argOffset), assembler.stackReg_ref(argc+argOffset-1), 8);
             // ld_global_u64 $d${2}, [$d${0}+16];   // this string reference into $d${2}"
-            assembler.ld_global(initial, assembler.stackReg_ref(argc+argOffset-1), assembler.stackReg_ref(argc+argOffset), 24); // 16 is known hardcoded offset of char[] in String
+            assembler.ld_global(initial, assembler.stackReg_ref(argc + argOffset - 1), assembler.stackReg_ref(argc + argOffset), 24); // 16 is known hardcoded offset of char[] in String
 
             // mov_b32 $s${3}, $s${1};              // copy index",
            // _ass.mov(_from, _ass.stackReg_s32(_from, +3), _ass.stackReg_s32(_from, 1));
