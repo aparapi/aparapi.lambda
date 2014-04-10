@@ -49,7 +49,7 @@ public class  HSADevice extends Device<HSADevice> {
 
 
 
-     CachedRunner getCachedRunner(Object lambda, int _extraArgs){
+     CachedRunner getCachedRunner(Aparapi.Lambda lambda, int _extraArgs){
          try {
         CachedRunner cachedRunner = null;
         if (map.containsKey(lambda.getClass())) {
