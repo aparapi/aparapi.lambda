@@ -7,25 +7,33 @@ import java.util.ArrayList;
  * Created by gfrost on 3/14/14.
  */
 public class Aparapi {
+    static public interface Lambda{
+    }
 
-    static public interface Int2IntMapper{
+    static public interface Mapper extends Lambda{
+    }
+    static public interface Terminal extends Lambda{
+    }
+    static public interface Reducer extends Lambda {
+    }
+    static public interface Int2IntMapper extends Mapper{
         int map(int _in);
     }
 
-    static public interface IntTerminal{
+    static public interface IntTerminal extends Terminal{
         void accept(int t);
     }
-    static public interface ObjectTerminal<T>{
+    static public interface ObjectTerminal<T> extends Terminal{
         void accept(T t);
     }
 
-    static public interface Object2IntMapper<T>{
+    static public interface Object2IntMapper<T> extends Mapper{
         int map(T t);
     }
-    static public interface IntReducer{
+    static public interface IntReducer extends Reducer{
         int reduce(int lhs, int rhs);
     }
-    static public interface BooleanReducer{
+    static public interface BooleanReducer extends Reducer{
         boolean reduce(int lhs, int rhs);
     }
 

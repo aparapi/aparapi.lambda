@@ -3,8 +3,6 @@ package com.amd.aparapi;
 import com.amd.aparapi.OpenCLDevice.DeviceComparitor;
 import com.amd.aparapi.OpenCLDevice.DeviceSelector;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
 
 public abstract class Device<T extends Device>{
 
@@ -168,46 +166,5 @@ public abstract class Device<T extends Device>{
     public abstract  void forEach(int range, Aparapi.IntTerminal ic);
     public abstract  void forEach(int from, int to, Aparapi.IntTerminal ic);
 
-   static HSADevice hsaDevice;
-   public synchronized static  void hsaForEach(int range, Aparapi.IntTerminal ic){
-      if (hsaDevice == null ){
-          hsaDevice = (HSADevice)hsa();
 
-      }
-      hsaDevice.forEach(range, ic);
-   }
-
-    static HybridDevice hybDevice;
-    public synchronized static  void hybForEach(int range, Aparapi.IntTerminal ic){
-        if (hybDevice == null ){
-            hybDevice = (HybridDevice)hyb();
-
-        }
-        hybDevice.forEach(range, ic);
-    }
-    public synchronized static  void hybForEach(int range, float gpuShare, Aparapi.IntTerminal ic){
-        if (hybDevice == null ){
-            hybDevice = (HybridDevice)hyb();
-
-        }
-        hybDevice.forEach(range, gpuShare, ic);
-    }
-
-    static JavaSequentialDevice javaSequentialDevice;
-    public synchronized static  void seqForEach(int range, Aparapi.IntTerminal ic){
-        if (javaSequentialDevice == null ){
-            javaSequentialDevice = (JavaSequentialDevice)seq();
-
-        }
-        javaSequentialDevice.forEach(range, ic);
-    }
-
-    static JavaThreadPoolDevice javaThreadPoolDevice;
-    public synchronized static  void jtpForEach(int range, Aparapi.IntTerminal ic){
-        if (javaThreadPoolDevice == null ){
-            javaThreadPoolDevice = (JavaThreadPoolDevice)jtp();
-
-        }
-        javaThreadPoolDevice.forEach(range, ic);
-    }
 }

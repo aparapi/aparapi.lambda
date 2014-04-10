@@ -379,12 +379,12 @@ public class HSAILMethod {
 
 
 
-    static synchronized HSAILMethod getHSAILMethod(ClassModel.ClassModelMethod _method, Object _lambdaType ) {
-        HSAILMethod instance = new HSAILMethod(_method, _lambdaType);
+    static synchronized HSAILMethod getHSAILMethod(ClassModel.ClassModelMethod _method, Aparapi.Lambda _lambda ) {
+        HSAILMethod instance = new HSAILMethod(_method, _lambda);
         return (instance);
     }
 
-    private HSAILMethod(ClassModel.ClassModelMethod _method, Object _lambdaType) {
+    private HSAILMethod(ClassModel.ClassModelMethod _method, Aparapi.Lambda _lambda) {
         method = _method;
 
         assembler = new HSAILAssembler(method);
@@ -423,10 +423,10 @@ public class HSAILMethod {
             }
         }
 
-        if (_lambdaType instanceof Aparapi.IntTerminal){
+        if (_lambda instanceof Aparapi.IntTerminal){
                assembler.workitemabsid_u32(initial, assembler.varReg_s32(argc + argOffset)); // we overwrite the last arg +1 with the gid
                assembler.add(initial, assembler.stackReg_s32(argc + argOffset - 1), assembler.stackReg_s32(argc + argOffset - 1), assembler.stackReg_s32(argc + argOffset));
-        }else if (_lambdaType instanceof Aparapi.ObjectTerminal){
+        }else if (_lambda instanceof Aparapi.ObjectTerminal){
                 assembler.workitemabsid_u32(initial, assembler.varReg_s32(argc + argOffset)); // we overwrite the last arg +1 with the gid
             assembler.cvt(initial, assembler.stackReg_u64(argc+argOffset), assembler.stackReg_s32(argc+argOffset));
             assembler.mad(initial, assembler.stackReg_ref(argc+argOffset), assembler.stackReg_ref(argc+argOffset), assembler.stackReg_ref(argc+argOffset-1), 8);
@@ -444,7 +444,7 @@ public class HSAILMethod {
           //      assembler.add(initial, assembler.stackReg_s32(argc + argOffset - 1), assembler.stackReg_s32(argc + argOffset - 1), assembler.stackReg_s32(argc + argOffset));
 
             }else{
-                System.out.println("unknown method type");
+                System.out.println("lambda type");
         }
         assembler.addInstructions( method);
     }
