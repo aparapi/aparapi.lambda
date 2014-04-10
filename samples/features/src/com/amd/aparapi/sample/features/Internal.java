@@ -45,9 +45,6 @@ import static com.amd.aparapi.HSA.*;
 
 public class Internal {
 
-   public static int reduce(int lhs, int rhs){
-       return(lhs>rhs?rhs:lhs); // min example
-   }
 
    static class Dims{
        int gridSize =0;
