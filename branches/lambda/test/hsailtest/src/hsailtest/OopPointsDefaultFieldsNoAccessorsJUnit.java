@@ -1,9 +1,10 @@
 package hsailtest;
 
+import com.amd.aparapi.Aparapi;
 import com.amd.aparapi.Device;
 import org.junit.Test;
 
-import java.util.function.IntConsumer;
+
 
 import static junit.framework.Assert.assertTrue;
 
@@ -46,7 +47,7 @@ public class OopPointsDefaultFieldsNoAccessorsJUnit {
             points[i] = new P();
         }
 
-        IntConsumer ic = gid -> {
+        Aparapi.IntTerminal ic = gid -> {
             P p = points[gid];
 
             p.x=gid;

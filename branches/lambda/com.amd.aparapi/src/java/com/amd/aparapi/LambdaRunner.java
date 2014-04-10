@@ -37,10 +37,7 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 */
 package com.amd.aparapi;
 
-import com.amd.aparapi.ClassModel.ConstantPool.MethodEntry;
-import com.amd.aparapi.InstructionSet.MethodCall;
 import com.amd.aparapi.InstructionSet.TypeSpec;
-import com.amd.aparapi.InstructionSet.VirtualMethodCall;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
@@ -49,7 +46,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.function.IntConsumer;
 import java.util.logging.Level;
 import java.util.stream.Stream;
 
@@ -85,7 +81,7 @@ class LambdaRunner extends OpenCLRunner{
     * @param _intConsumer
     */
 
-   LambdaRunner(IntConsumer _intConsumer) throws AparapiException{
+   LambdaRunner(Aparapi.IntTerminal _intConsumer) throws AparapiException{
       try{
          lambdaKernelCall = new LambdaKernelCall(_intConsumer);
          if(logger.isLoggable(Level.INFO)){
@@ -455,7 +451,7 @@ class LambdaRunner extends OpenCLRunner{
    //   private void updateCallerBlockParams(Object callerBlock) {
    //      currentCallerBlock = callerBlock;
    //      for(int i=0; i<argc; i++) {
-   //         if (args[i].fieldHolder instanceof IntConsumer) {
+   //         if (args[i].fieldHolder instanceof IntTerminal) {
    //            if (logger.isLoggable(Level.FINE)) {
    //               logger.fine("Updated Block for " + args[i].name + " old: " + args[i].fieldHolder + " new: " + callerBlock);
    //            }

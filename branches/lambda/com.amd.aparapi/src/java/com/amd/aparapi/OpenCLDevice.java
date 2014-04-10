@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.IntConsumer;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -439,10 +439,10 @@ public class OpenCLDevice extends Device{
    final ConcurrentHashMap<Class, LambdaRunner> lambdaRunnerCache = new ConcurrentHashMap<Class, LambdaRunner>();
    final ConcurrentHashMap<Class, Boolean> lambdaRunnerCacheEntryValid = new ConcurrentHashMap<Class, Boolean>();
    private static Logger logger = Logger.getLogger(Config.getLoggerName());
-    @Override public void forEach(int from, int to, IntConsumer intFunctionSAM){
+    @Override public void forEach(int from, int to, Aparapi.IntTerminal intFunctionSAM){
         throw new IllegalStateException("not implemented");
     }
-   @Override public void forEach(int jobSize, IntConsumer intFunctionSAM){
+   @Override public void forEach(int jobSize, Aparapi.IntTerminal intFunctionSAM){
 
       // Note it is a new Block object each time
 

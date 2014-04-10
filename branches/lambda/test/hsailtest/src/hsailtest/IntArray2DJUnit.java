@@ -1,10 +1,11 @@
 package hsailtest;
 
+import com.amd.aparapi.Aparapi;
 import com.amd.aparapi.AparapiException;
 import com.amd.aparapi.Device;
 import org.junit.Test;
 
-import java.util.function.IntConsumer;
+
 
 import static org.junit.Assert.assertTrue;
 
@@ -20,7 +21,7 @@ public class IntArray2DJUnit {
         final int len = JunitHelper.getPreferredArraySize();
         int[][] matrix = new int[len][len];
 
-        IntConsumer ic = gid -> {
+        Aparapi.IntTerminal ic = gid -> {
             for (int i = 0; i < matrix[0].length; i++) {
                 matrix[gid][i] = i;
             }

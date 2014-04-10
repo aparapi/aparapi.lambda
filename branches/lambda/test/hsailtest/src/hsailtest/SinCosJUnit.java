@@ -1,10 +1,11 @@
 package hsailtest;
 
+import com.amd.aparapi.Aparapi;
 import com.amd.aparapi.Device;
 import org.junit.Test;
 
 import java.util.Arrays;
-import java.util.function.IntConsumer;
+
 
 import static org.junit.Assert.assertTrue;
 
@@ -18,7 +19,7 @@ public class SinCosJUnit {
         final int len = JunitHelper.getPreferredArraySize();
         double sin[] = new double[len];
         double cos[] = new double[len];
-        IntConsumer ic = gid -> {
+        Aparapi.IntTerminal ic = gid -> {
             sin[gid] = Math.sin(gid);
             cos[gid] = Math.cos(gid);
         };

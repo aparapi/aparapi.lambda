@@ -1,11 +1,12 @@
 package hsailtest;
 
+import com.amd.aparapi.Aparapi;
 import com.amd.aparapi.Device;
 import com.amd.aparapi.UnsafeWrapper;
 import org.junit.Test;
 
 import java.lang.reflect.Field;
-import java.util.function.IntConsumer;
+
 
 import static org.junit.Assert.assertTrue;
 
@@ -18,7 +19,7 @@ public class StaticFieldAccessJUnit {
    public void test() {
         int len = JunitHelper.getPreferredArraySize();
         int[] out = new int[len];
-        IntConsumer ic = gid -> {
+       Aparapi.IntTerminal ic = gid -> {
             out[gid]=gid+value;
         };
         Device.hsa().forEach(len, ic);

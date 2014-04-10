@@ -2,7 +2,6 @@ package com.amd.aparapi;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.function.IntConsumer;
 
 /**
  * Created by gfrost on 3/14/14.
@@ -28,7 +27,7 @@ public class Aparapi {
             from =_from;
             to =_to;
         }
-        public void forEach(IntConsumer _ic){
+        public void forEach(IntTerminal _ic){
 
             Device.seq().forEach(from, to, _ic);
         }
@@ -46,18 +45,20 @@ public class Aparapi {
             return(new MapBuilder(this, _im));
         }
     }
-
+    static public interface IntTerminal{
+        void accept(int t);
+    }
     static public class ParallelIntRange {
         IntRange intRange;
         ParallelIntRange(IntRange _intRange){
             intRange = _intRange;
         }
-        public void forEach(IntConsumer _ic){
-            Device.hsa().forEach(intRange.from, intRange.to, _ic);
+        public void forEach(IntTerminal _it){
+            Device.hsa().forEach(intRange.from, intRange.to, _it);
         }
     }
 
-    static public interface ObjectConsumer<T>{
+    static public interface ObjectTerminal<T>{
         void accept(T t);
     }
 
@@ -66,7 +67,7 @@ public class Aparapi {
         ParallelArrayRange(ArrayRange _arrayRange){
             arrayRange = _arrayRange;
         }
-        public void forEach(ObjectConsumer<T> _oc){
+        public void forEach(ObjectTerminal<T> _oc){
             for (T i:arrayRange.arr){
                 _oc.accept(i);
             }
@@ -136,7 +137,7 @@ public class Aparapi {
         public ParallelArrayRange<T> parallel(){
             return(new ParallelArrayRange(this));
         }
-        public void forEach(ObjectConsumer<T> _oc){
+        public void forEach(ObjectTerminal<T> _oc){
             for (int i=0; i<usableLength; i++){
                 _oc.accept(arr[i]);
             }
