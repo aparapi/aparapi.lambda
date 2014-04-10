@@ -30,6 +30,9 @@ public class Aparapi {
     static public interface Object2IntMapper<T> extends Mapper{
         int map(T t);
     }
+    static public interface Object2BooleanMapper<T> extends Mapper{
+        boolean map(T t);
+    }
     static public interface IntReducer extends Reducer{
         int reduce(int lhs, int rhs);
     }
@@ -72,8 +75,8 @@ public class Aparapi {
         public void forEach(IntTerminal _it){
             Device.hsa().forEach(intRange.from, intRange.to, _it);
         }
-        public ParallelMapBuilder<?> map(Int2IntMapper _im){
-            return(new ParallelMapBuilder(this, _im));
+        public ParallelIntMapBuilder map(Int2IntMapper _im){
+            return(new ParallelIntMapBuilder(this, _im));
         }
     }
 
@@ -88,6 +91,19 @@ public class Aparapi {
             for (T i:arrayRange.arr){
                 _oc.accept(i);
             }
+        }
+        public ParallelObjectMapBuilder<T> map(Object2IntMapper<T> _im){
+            return(new ParallelObjectMapBuilder<T>(this, _im));
+        }
+
+        public T[] filter(Object2BooleanMapper<T> _im){
+            ArrayList<T> list = new ArrayList<T>();
+            for (T i:arrayRange.arr){
+                if(_im.map(i)){
+                    list.add(i);
+                }
+            }
+            return(list.toArray((T[])new Object[0]));
         }
     }
 
@@ -139,51 +155,71 @@ public class Aparapi {
 
     }
 
-    static public class ParallelMapBuilder<T>{
-        ArrayRange<T> arrayRange;
-        ParallelIntRange intRange;
+    static public class ParallelObjectMapBuilder<T>{
+        ParallelArrayRange<T> arrayRange;
+
         Object2IntMapper<T> mapper;
-        Int2IntMapper intMapper;
-        ParallelMapBuilder(ArrayRange<T> _range, Object2IntMapper<T> _mapper){
+        ParallelObjectMapBuilder(ParallelArrayRange<T> _range, Object2IntMapper<T> _mapper){
             arrayRange = _range;
             mapper = _mapper;
 
         }
-        ParallelMapBuilder(ParallelIntRange _range, Int2IntMapper _mapper){
-            intRange = _range;
-            intMapper = _mapper;
 
-        }
         public int reduce(IntReducer _ir){
+
             int result=0;
-            if (arrayRange!=null){
-                for (int i=0; i<arrayRange.usableLength; i++){
-                    result=_ir.reduce(mapper.map(arrayRange.arr[i]), result);
+
+                for (int i=0; i<arrayRange.arrayRange.usableLength; i++){
+                    result=_ir.reduce(mapper.map(arrayRange.arrayRange.arr[i]), result);
                 }
-            }else if (intRange != null){
-                for (int i=intRange.intRange.from; i<intRange.intRange.to; i++){
-                    result=_ir.reduce(intMapper.map(i), result);
-                }
-            }
+
             return(result);
         }
 
         public T select(BooleanReducer _ir){
             T result=null;
             int best=0;
-            if (arrayRange!=null){
-                for (int i=0; i<arrayRange.usableLength; i++){
-                    if (_ir.reduce(mapper.map(arrayRange.arr[i]), best)){
-                        result = arrayRange.arr[i];
-                        best = mapper.map(arrayRange.arr[i]);
+
+                for (int i=0; i<arrayRange.arrayRange.usableLength; i++){
+                    if (_ir.reduce(mapper.map(arrayRange.arrayRange.arr[i]), best)){
+                        result = arrayRange.arrayRange.arr[i];
+                        best = mapper.map(arrayRange.arrayRange.arr[i]);
                     }
 
                 }
-            }
+
             return(result);
         }
 
     }
+
+
+
+    static public class ParallelIntMapBuilder{
+        ParallelIntRange intRange;
+        Int2IntMapper intMapper;
+
+        ParallelIntMapBuilder(ParallelIntRange _range, Int2IntMapper _mapper){
+            intRange = _range;
+            intMapper = _mapper;
+
+        }
+        public int reduce(IntReducer _ir){
+
+            int result=0;
+
+             //   Device.hsa().forEach(0, arrayRange.usableLength, mapper.map, _ir);
+                for (int i=intRange.intRange.from; i<intRange.intRange.to; i++){
+                    result=_ir.reduce(intMapper.map(i), result);
+                }
+
+            return(result);
+        }
+
+
+
+    }
+
 
     static public class ArrayRange<T>{
         T[] arr;
@@ -218,7 +254,15 @@ public class Aparapi {
         public MapBuilder<T> map(Object2IntMapper<T> _im){
             return(new MapBuilder<T>(this, _im));
         }
-
+        public T[] filter(Object2BooleanMapper<T> _im){
+            ArrayList<T> list = new ArrayList<T>();
+            for (T i:arr){
+                if(_im.map(i)){
+                    list.add(i);
+                }
+            }
+            return(list.toArray((T[])new Object[0]));
+        }
     }
 
 
