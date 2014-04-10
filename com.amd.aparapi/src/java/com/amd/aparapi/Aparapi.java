@@ -8,9 +8,28 @@ import java.util.ArrayList;
  */
 public class Aparapi {
 
-    public interface IntMapper{ int map(int _in);}
+    static public interface Int2IntMapper{
+        int map(int _in);
+    }
 
-    static int sum(int from, int to, IntMapper im){
+    static public interface IntTerminal{
+        void accept(int t);
+    }
+    static public interface ObjectTerminal<T>{
+        void accept(T t);
+    }
+
+    static public interface Object2IntMapper<T>{
+        int map(T t);
+    }
+    static public interface IntReducer{
+        int reduce(int lhs, int rhs);
+    }
+    static public interface BooleanReducer{
+        boolean reduce(int lhs, int rhs);
+    }
+
+    static int sum(int from, int to, Int2IntMapper im){
         int sum = 0;
         for (int i=from; i<to; i++){
             sum+=im.map(i);
@@ -31,22 +50,19 @@ public class Aparapi {
 
             Device.seq().forEach(from, to, _ic);
         }
-        public int sum(IntMapper _im){
+        public int sum(Int2IntMapper _im){
             return(Aparapi.sum(from, to, _im));
         }
-        public int mapReduce(IntMapper _im, IntReducer _ir){
+        public int mapReduce(Int2IntMapper _im, IntReducer _ir){
             int result=0;
             for (int i=from; i<to;  i++){
                 result=_ir.reduce(_im.map(i), result);
             }
             return(result);
         }
-        public MapBuilder<?> map(IntMapper _im){
+        public MapBuilder<?> map(Int2IntMapper _im){
             return(new MapBuilder(this, _im));
         }
-    }
-    static public interface IntTerminal{
-        void accept(int t);
     }
     static public class ParallelIntRange {
         IntRange intRange;
@@ -58,9 +74,7 @@ public class Aparapi {
         }
     }
 
-    static public interface ObjectTerminal<T>{
-        void accept(T t);
-    }
+
 
     static public class ParallelArrayRange<T> {
         ArrayRange<T> arrayRange;
@@ -74,21 +88,19 @@ public class Aparapi {
         }
     }
 
-    public interface Mapper<T>{ int map(T t);}
-    public interface IntReducer{ int reduce(int lhs, int rhs);}
-    public interface BooleanReducer{ boolean reduce(int lhs, int rhs);}
+
 
     static public class MapBuilder<T>{
         ArrayRange<T> arrayRange;
         IntRange intRange;
-        Mapper<T> mapper;
-        IntMapper intMapper;
-        MapBuilder(ArrayRange<T> _range, Mapper<T> _mapper){
+        Object2IntMapper<T> mapper;
+        Int2IntMapper intMapper;
+        MapBuilder(ArrayRange<T> _range, Object2IntMapper<T> _mapper){
             arrayRange = _range;
             mapper = _mapper;
 
         }
-        MapBuilder(IntRange _range, IntMapper _mapper){
+        MapBuilder(IntRange _range, Int2IntMapper _mapper){
             intRange = _range;
             intMapper = _mapper;
 
@@ -142,22 +154,22 @@ public class Aparapi {
                 _oc.accept(arr[i]);
             }
         }
-        public int sum(Mapper<T> _im){
+        public int sum(Object2IntMapper<T> _im){
             int sum = 0;
             for (int i=0; i<usableLength; i++){
                 sum+=_im.map(arr[i]);
             }
             return(sum);
         }
-        public int mapReduce(Mapper<T> _im, IntReducer _ir){
+        public int mapReduce(Object2IntMapper<T> _im, IntReducer _ir){
             int result=0;
             for (int i=0; i<usableLength; i++){
                 result=_ir.reduce(_im.map(arr[i]), result);
             }
             return(result);
         }
-        public MapBuilder<T> map(Mapper<T> _im){
-            return(new MapBuilder(this, _im));
+        public MapBuilder<T> map(Object2IntMapper<T> _im){
+            return(new MapBuilder<T>(this, _im));
         }
 
     }
@@ -181,10 +193,7 @@ public class Aparapi {
     }
 
     static public <T> ArrayRange<T> range(T[] _arr)  {
-
-
         return((ArrayRange<T>)new ArrayRange(_arr));
-
     }
 
     static public IntRange range(int _from, int _to){
