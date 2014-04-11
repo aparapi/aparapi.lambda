@@ -9,7 +9,7 @@ import static org.junit.Assert.assertTrue;
 public class AparapiParallelMapReduceLongestStringJUnit {
     @Test
     public void test()  {
-        assertTrue("hsa version implemented", false);
+
         String[] strings = new String[]{"zero", "one", "two", "three", "four", "five", "six", "seven","eight", "nine", "ten", "eleven"};
         String str = Aparapi.range(strings).parallel().map(s->{return(s.length());}).select((k,l) -> {return( k>l);});
         String[] substrings = Aparapi.range(strings).parallel().filter(s->{return(s.length()==1);});

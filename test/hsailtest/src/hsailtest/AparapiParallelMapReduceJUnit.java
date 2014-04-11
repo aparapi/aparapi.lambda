@@ -11,7 +11,7 @@ public class AparapiParallelMapReduceJUnit {
 
     @Test
     public void testMin()  {
-        assertTrue("hsa version implemented", false);
+
         int min = Aparapi.range(0,12).parallel().map(i->i).reduce((l,r)-> l<r?l:r);
 
 
@@ -21,7 +21,7 @@ public class AparapiParallelMapReduceJUnit {
     }
     @Test
     public void testMax()  {
-        assertTrue("hsa version implemented", false);
+
         int max = Aparapi.range(0,12).parallel().map(i->i*2).reduce((l,r)-> l>r?l:r);
 
 
@@ -32,7 +32,7 @@ public class AparapiParallelMapReduceJUnit {
     }
     @Test
     public void testSum()  {
-        assertTrue("hsa version implemented", false);
+
         int sum = Aparapi.range(0,12).parallel().map(i->i).reduce((l,r)-> l+r);
 
 
