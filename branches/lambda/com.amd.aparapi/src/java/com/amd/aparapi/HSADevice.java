@@ -173,13 +173,19 @@ public class  HSADevice extends Device<HSADevice> {
             cachedRunner.runner.run(from, to, cachedRunner.args);
     }
 
-    public <T> void forEach(T[] _array,  Aparapi.ObjectTerminal<T> ic) {
+
+    public <T> void forEach(T[] _array,   Aparapi.ObjectTerminal<T> ic) {
+        forEach(_array, _array.length, ic);
+
+
+    }
+    public <T> void forEach(T[] _array, int _len,  Aparapi.ObjectTerminal<T> ic) {
         CachedRunner cachedRunner = getCachedRunner(ic, 1);
         cachedRunner.args[cachedRunner.arg++]=_array;
         // We pass the array as the last arg.  The generated HSAIL *knows* to replace this with _array[workitemabsid]
 
 
-        cachedRunner.runner.run(0,_array.length, cachedRunner.args);
+        cachedRunner.runner.run(0,_len, cachedRunner.args);
 
     }
 
