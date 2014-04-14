@@ -37,7 +37,8 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 */
 package com.amd.aparapi;
 
-@SuppressWarnings("serial") class DeprecatedException extends AparapiException{
+@SuppressWarnings("serial")
+class DeprecatedException extends AparapiException{
 
    DeprecatedException(String msg){
       super(msg);

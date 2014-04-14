@@ -39,21 +39,16 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 
 package com.amd.aparapi.sample.convolution;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Graphics2D;
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.io.File;
 import java.io.IOException;
 
-import javax.imageio.ImageIO;
-import javax.swing.ImageIcon;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.WindowConstants;
-
-@SuppressWarnings("serial") public abstract class ConvolutionViewer extends JFrame{
+@SuppressWarnings("serial")
+public abstract class ConvolutionViewer extends JFrame{
 
    private int height;
 
@@ -71,12 +66,12 @@ import javax.swing.WindowConstants;
 
    private float[] convMatrix3x3;
 
-   public ConvolutionViewer(File _file, float[] _convMatrix3x3) {
+   public ConvolutionViewer(File _file, float[] _convMatrix3x3){
 
       JFrame frame = new JFrame("Convolution Viewer");
 
       convMatrix3x3 = _convMatrix3x3;
-      try {
+      try{
          inputImage = ImageIO.read(_file);
 
          // System.out.println(inputImage);
@@ -89,14 +84,15 @@ import javax.swing.WindowConstants;
 
          gc = outputImage.createGraphics();
 
-         inBytes = ((DataBufferByte) inputImage.getRaster().getDataBuffer()).getData();
-         outBytes = ((DataBufferByte) outputImage.getRaster().getDataBuffer()).getData();
+         inBytes = ((DataBufferByte)inputImage.getRaster().getDataBuffer()).getData();
+         outBytes = ((DataBufferByte)outputImage.getRaster().getDataBuffer()).getData();
 
          final JLabel imageLabel = new JLabel();
          imageLabel.setIcon(new ImageIcon(outputImage));
 
          ConvMatrix3x3Editor editor = new ConvMatrix3x3Editor(_convMatrix3x3){
-            @Override protected void updated(float[] _convMatrix3x3) {
+            @Override
+            protected void updated(float[] _convMatrix3x3){
                convMatrix3x3 = _convMatrix3x3;
                long start = System.currentTimeMillis();
 
@@ -105,7 +101,7 @@ import javax.swing.WindowConstants;
                gc.setColor(Color.BLACK);
                gc.fillRect(0, 0, 50, 40);
                gc.setColor(Color.YELLOW);
-               gc.drawString("" + (end - start) + "ms", 10, 20);
+               gc.drawString(""+(end-start)+"ms", 10, 20);
 
                imageLabel.repaint();
             }
@@ -120,7 +116,7 @@ import javax.swing.WindowConstants;
          applyConvolution(convMatrix3x3, inBytes, outBytes, width, height);
 
          imageLabel.repaint();
-      } catch (IOException e1) {
+      }catch (IOException e1){
          // TODO Auto-generated catch block
          e1.printStackTrace();
       }

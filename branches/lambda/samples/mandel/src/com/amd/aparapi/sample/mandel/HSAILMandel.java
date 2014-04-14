@@ -51,7 +51,7 @@ import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 
-public class HSAILMandel {
+public class HSAILMandel{
 
    /**
     * Width of Mandelbrot view.
@@ -70,8 +70,7 @@ public class HSAILMandel {
    static final BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 
    // Extract the underlying RGB buffer from the image.
-   final int[] rgb = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
-
+   final int[] rgb = ((DataBufferInt)image.getRaster().getDataBuffer()).getData();
 
    float defaultScale = 3f;
    /**
@@ -82,7 +81,7 @@ public class HSAILMandel {
    /**
     * Palette which maps iteration values to RGB values.
     */
-   final int pallette[] = new int[maxIterations + 1];
+   final int pallette[] = new int[maxIterations+1];
 
    /**
     * User selected zoom-in point on the Mandelbrot view.
@@ -105,48 +104,50 @@ public class HSAILMandel {
       }
    };
 
-    final FPSCounter fpsCounter = new FPSCounter(20);
+   final FPSCounter fpsCounter = new FPSCounter(20);
+
    enum ZoomDirection{
       ZOOM_IN(-1), ZOOM_OUT(1);
       private int sign;
+
       private ZoomDirection(int c){
          sign = c;
       }
+
       public int getSign(){
-          return sign;
+         return sign;
       }
    }
 
-   static int getMandelCount(float x, float y, int maxIterations ){
-       float zx = x;
-       float zy = y;
-       float new_zx;
-       int count =0;
-       while(count < maxIterations && zx * zx + zy * zy < 8){
-           new_zx = zx * zx - zy * zy + x;
-           zy = 2 * zx * zy + y;
-           zx = new_zx;
-           count++;
-       }
-       return(count);
+   static int getMandelCount(float x, float y, int maxIterations){
+      float zx = x;
+      float zy = y;
+      float new_zx;
+      int count = 0;
+      while (count<maxIterations && zx*zx+zy*zy<8){
+         new_zx = zx*zx-zy*zy+x;
+         zy = 2*zx*zy+y;
+         zx = new_zx;
+         count++;
+      }
+      return (count);
 
    }
 
-
    void getNextImage(Device device, final float x_offset, final float y_offset, final float scale){
-      device.forEach(width * height, gid -> {
-          float lx = ((((gid % width) * scale) - ((scale / 2) * width)) / width) + x_offset;
-          float ly = (((gid / width * scale) - ((scale / 2) * height)) / height) + y_offset;
-          int count = getMandelCount(lx, ly, maxIterations);
-          rgb[gid] = pallette[count];
+      device.forEach(width*height, gid -> {
+         float lx = ((((gid%width)*scale)-((scale/2)*width))/width)+x_offset;
+         float ly = (((gid/width*scale)-((scale/2)*height))/height)+y_offset;
+         int count = getMandelCount(lx, ly, maxIterations);
+         rgb[gid] = pallette[count];
       });
    }
 
    void doZoom(Device device, int sign, float tox, float toy){
-      for(int i = 0; i < frames - 4; i++){
-         scale = scale + sign * defaultScale / frames;
-         x = x - sign * (tox / frames);
-         y = y - sign * (toy / frames);
+      for (int i = 0; i<frames-4; i++){
+         scale = scale+sign*defaultScale/frames;
+         x = x-sign*(tox/frames);
+         y = y-sign*(toy/frames);
          getNextImage(device, x, y, scale);
          viewer.repaint();
          fpsCounter.nextFrame();
@@ -154,11 +155,11 @@ public class HSAILMandel {
    }
 
    void zoomInAndOut(Device device, Point to){
-      float tox = (float) (to.x - width / 2) / width * defaultScale;
-      float toy = (float) (to.y - height / 2) / height * defaultScale;
-      for(ZoomDirection e : ZoomDirection.values()){
+      float tox = (float)(to.x-width/2)/width*defaultScale;
+      float toy = (float)(to.y-height/2)/height*defaultScale;
+      for (ZoomDirection e : ZoomDirection.values()){
          doZoom(device, e.getSign(), tox, toy);
-         System.out.println("inner displaying, sign=" + e.getSign());
+         System.out.println("inner displaying, sign="+e.getSign());
       }
    }
 
@@ -175,33 +176,32 @@ public class HSAILMandel {
             }
          }
       });
-       final AparapiModeToggleButton modeToggleButton = new AparapiModeToggleButton(100, AparapiModeToggleButton.Mode.SingleCore);
-       final JPanel controlPanel = new JPanel(new FlowLayout());
-       Font font = new JLabel().getFont();
-       Font biggerFont = new Font(font.getName(), font.getStyle(), font.getSize() + 14);
-       JLabel modeLabel = new JLabel("Execute using :");
-       modeLabel.setFont(biggerFont);
-       controlPanel.add(modeLabel);
+      final AparapiModeToggleButton modeToggleButton = new AparapiModeToggleButton(100, AparapiModeToggleButton.Mode.SingleCore);
+      final JPanel controlPanel = new JPanel(new FlowLayout());
+      Font font = new JLabel().getFont();
+      Font biggerFont = new Font(font.getName(), font.getStyle(), font.getSize()+14);
+      JLabel modeLabel = new JLabel("Execute using :");
+      modeLabel.setFont(biggerFont);
+      controlPanel.add(modeLabel);
 
+      controlPanel.add(modeToggleButton);
 
-       controlPanel.add(modeToggleButton);
+      JLabel fpsLabel = new JLabel("  FPS :");
+      fpsLabel.setFont(biggerFont);
+      controlPanel.add(fpsLabel);
 
-       JLabel fpsLabel = new JLabel("  FPS :");
-       fpsLabel.setFont(biggerFont);
-       controlPanel.add(fpsLabel);
+      controlPanel.add(fpsCounter.getContainer());
+      frame.getContentPane().add(controlPanel, BorderLayout.NORTH);
+      frame.getContentPane().add(viewer, BorderLayout.CENTER);
 
-       controlPanel.add(fpsCounter.getContainer());
-       frame.getContentPane().add(controlPanel, BorderLayout.NORTH);
-       frame.getContentPane().add(viewer, BorderLayout.CENTER);
-
-     // frame.getContentPane().add(viewer);
+      // frame.getContentPane().add(viewer);
       frame.pack();
       frame.setLocationRelativeTo(null);
       frame.setVisible(true);
 
-      for(int i = 0; i < maxIterations; i++){
-         float h = i / (float) maxIterations;
-         float b = 1.0f - h * h;
+      for (int i = 0; i<maxIterations; i++){
+         float h = i/(float)maxIterations;
+         float b = 1.0f-h*h;
          pallette[i] = Color.HSBtoRGB(h, 1f, b);
       }
 
@@ -217,23 +217,23 @@ public class HSAILMandel {
          }
       });
       boolean allowZoom = true;
-      if(allowZoom){
+      if (allowZoom){
          // Wait until the user selects a zoom-in point on the Mandelbrot view.
-         while(true){
+         while (true){
             // Wait for the user to click somewhere
-            while(to == null){
+            while (to == null){
                synchronized(doorBell){
                   try{
                      doorBell.wait();
-                  }catch(InterruptedException ie){
+                  }catch (InterruptedException ie){
                      ie.getStackTrace();
                   }
                }
             }
             fpsCounter.start();
-             device = modeToggleButton.getDevice();
+            device = modeToggleButton.getDevice();
             zoomInAndOut(device, to);
-           to = null;
+            to = null;
          }
       }
    }

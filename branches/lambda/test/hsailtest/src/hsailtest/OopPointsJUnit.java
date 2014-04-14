@@ -1,101 +1,99 @@
 package hsailtest;
 
 import com.amd.aparapi.Aparapi;
-import com.amd.aparapi.AparapiException;
 import com.amd.aparapi.Device;
 import org.junit.Test;
 
-
-
 import static junit.framework.Assert.assertTrue;
 
-
-public class OopPointsJUnit {
-    public static class P {
+public class OopPointsJUnit{
+   public static class P{
       public int x;
-       public int y;
-        public int v;
+      public int y;
+      public int v;
 
-        int getX(){
-            return(x);
-        }
-        int getY(){
-            return(y);
-        }
-       int getXY(){
-          return(getX()+getY());
-       }
+      int getX(){
+         return (x);
+      }
 
+      int getY(){
+         return (y);
+      }
 
-       void setX(int _x){
-          x = _x;
-       }
-       void setY(int _y){
-          y = _y;
-       }
-        void setV(int _v){
-            v = _v;
-        }
-       void clear(){
-           x=y=0;
-       }
+      int getXY(){
+         return (getX()+getY());
+      }
 
+      void setX(int _x){
+         x = _x;
+      }
 
-       @Override
-        public String toString() {
-            return ("(" + x + ", " + y + ", "+ v+")");
-        }
-    }
+      void setY(int _y){
+         y = _y;
+      }
 
-    static void dump(String type, P[] points) {
-        System.out.print(type + " ->");
-        for (int i = 0; i < points.length; i++) {
-            if (i != 0) {
-                System.out.print(", ");
-            }
-            System.out.print(points[i]);
-        }
-        System.out.println();
-    }
+      void setV(int _v){
+         v = _v;
+      }
 
+      void clear(){
+         x = y = 0;
+      }
 
-    @Test
-    public void test() {
+      @Override
+      public String toString(){
+         return ("("+x+", "+y+", "+v+")");
+      }
+   }
 
-        int len = 12;
-        P[] points = new P[len];
+   static void dump(String type, P[] points){
+      System.out.print(type+" ->");
+      for (int i = 0; i<points.length; i++){
+         if (i != 0){
+            System.out.print(", ");
+         }
+         System.out.print(points[i]);
+      }
+      System.out.println();
+   }
 
-        for (int i = 0; i < len; i++) {
-            points[i] = new P();
-        }
+   @Test
+   public void test(){
 
-        Aparapi.IntTerminal ic = gid -> {
-            P p = points[gid];
+      int len = 12;
+      P[] points = new P[len];
 
-            p.setX(gid);
-            p.setY(gid*2);
-            p.setV(p.getXY());
+      for (int i = 0; i<len; i++){
+         points[i] = new P();
+      }
 
-        };
+      Aparapi.IntTerminal ic = gid -> {
+         P p = points[gid];
 
-        Device.hsa().forEach(len, ic);
-        dump("hsa", points);
-        P[] hsaPoints = new P[points.length];
-        for (int i=0; i<points.length; i++){
-            hsaPoints[i]=points[i];
-            points[i]=new P();
-        }
-        Device.jtp().forEach(len, i-> points[i].clear());
-        Device.jtp().forEach(len, ic);
-        dump("jtp", points);
+         p.setX(gid);
+         p.setY(gid*2);
+         p.setV(p.getXY());
 
-        for (int i=0; i<points.length; i++){
-            assertTrue("hsaPoint["+i+"]==points["+i+"]",
-                    hsaPoints[i].x==points[i].x &&
-                    hsaPoints[i].y==points[i].y &&
-                    hsaPoints[i].getXY()==points[i].getXY());
+      };
 
-        }
+      Device.hsa().forEach(len, ic);
+      dump("hsa", points);
+      P[] hsaPoints = new P[points.length];
+      for (int i = 0; i<points.length; i++){
+         hsaPoints[i] = points[i];
+         points[i] = new P();
+      }
+      Device.jtp().forEach(len, i -> points[i].clear());
+      Device.jtp().forEach(len, ic);
+      dump("jtp", points);
 
-    }
+      for (int i = 0; i<points.length; i++){
+         assertTrue("hsaPoint["+i+"]==points["+i+"]",
+               hsaPoints[i].x == points[i].x &&
+                     hsaPoints[i].y == points[i].y &&
+                     hsaPoints[i].getXY() == points[i].getXY());
+
+      }
+
+   }
 }

@@ -40,7 +40,7 @@ package com.amd.aparapi;
 /**
  * We use <code>AparapiException</code> class and subclasses to wrap other
  * <code>Exception</code> classes, mainly to allow differentiation between Aparapi specific issues at runtime.
- * <p/>
+ * <p>
  * The class parser for example will throw a specific <code>ClassParseException</code> if any Aparapi unfriendly
  * constructs are found.  This allows us to <strong>fail fast</strong> during classfile parsing.
  *

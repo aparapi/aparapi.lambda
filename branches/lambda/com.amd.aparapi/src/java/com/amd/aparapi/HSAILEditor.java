@@ -9,15 +9,24 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.CubicCurve2D;
 import java.awt.image.BufferedImage;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class HSAILEditor implements Config.InstructionListener{
 
@@ -62,10 +71,10 @@ public class HSAILEditor implements Config.InstructionListener{
       void setBoolean(Field _field, boolean _value){
          try{
             _field.setBoolean(template, _value);
-         }catch(IllegalArgumentException e){
+         }catch (IllegalArgumentException e){
             // TODO Auto-generated catch block
             e.printStackTrace();
-         }catch(IllegalAccessException e){
+         }catch (IllegalAccessException e){
             // TODO Auto-generated catch block
             e.printStackTrace();
          }
@@ -74,10 +83,10 @@ public class HSAILEditor implements Config.InstructionListener{
       boolean getBoolean(Field _field){
          try{
             return (_field.getBoolean(template));
-         }catch(IllegalArgumentException e){
+         }catch (IllegalArgumentException e){
             // TODO Auto-generated catch block
             e.printStackTrace();
-         }catch(IllegalAccessException e){
+         }catch (IllegalAccessException e){
             // TODO Auto-generated catch block
             e.printStackTrace();
          }
@@ -87,10 +96,10 @@ public class HSAILEditor implements Config.InstructionListener{
       Object get(Field _field){
          try{
             return (_field.get(template));
-         }catch(IllegalArgumentException e){
+         }catch (IllegalArgumentException e){
             // TODO Auto-generated catch block
             e.printStackTrace();
-         }catch(IllegalAccessException e){
+         }catch (IllegalAccessException e){
             // TODO Auto-generated catch block
             e.printStackTrace();
          }
@@ -106,51 +115,51 @@ public class HSAILEditor implements Config.InstructionListener{
          int fieldWithWidestLabelWidth = 0;
 
          // we need to know the widest Label so create the labels in one pass
-         for(Field field : template.getClass().getFields()){
+         for (Field field : template.getClass().getFields()){
             String labelString = null;
 
             Check checkAnnotation = field.getAnnotation(Check.class);
-            if(checkAnnotation != null){
+            if (checkAnnotation != null){
                labelString = checkAnnotation.label();
             }else{
                Toggle toggleAnnotation = field.getAnnotation(Toggle.class);
-               if(toggleAnnotation != null){
+               if (toggleAnnotation != null){
                   labelString = toggleAnnotation.label();
                }
             }
-            if(labelString != null){
+            if (labelString != null){
                JLabel label = new JLabel(labelString);
                panel.add(label);
 
                fieldToLabelMap.put(field, label);
-               if(labelString.length() > fieldWithWidestLabelWidth){
+               if (labelString.length()>fieldWithWidestLabelWidth){
                   fieldWithWidestLabel = field;
                   fieldWithWidestLabelWidth = labelString.length();
                }
             }
          }
 
-         for(Field field : fieldToLabelMap.keySet()){
-            layout.putConstraint(SpringLayout.NORTH, fieldToLabelMap.get(field), INSET, (last == panel) ? SpringLayout.NORTH
-                  : SpringLayout.SOUTH, last);
+         for (Field field : fieldToLabelMap.keySet()){
+            layout.putConstraint(SpringLayout.NORTH, fieldToLabelMap.get(field), INSET, (last == panel)?SpringLayout.NORTH
+                  :SpringLayout.SOUTH, last);
             layout.putConstraint(SpringLayout.WEST, fieldToLabelMap.get(field), INSET, SpringLayout.WEST, panel);
             JComponent newComponent = null;
 
-            if(field.getType().isAssignableFrom(Boolean.TYPE)){
+            if (field.getType().isAssignableFrom(Boolean.TYPE)){
                final Field booleanField = field;
 
                Toggle toggleAnnotation = field.getAnnotation(Toggle.class);
-               if(toggleAnnotation != null){
+               if (toggleAnnotation != null){
                   final String toggleButtonOnLabel = toggleAnnotation.on();
                   final String toggleButtonOffLabel = toggleAnnotation.off();
-                  String toggleButtonLabel = getBoolean(field) ? toggleButtonOnLabel : toggleButtonOffLabel;
+                  String toggleButtonLabel = getBoolean(field)?toggleButtonOnLabel:toggleButtonOffLabel;
                   JToggleButton toggleButton = new JToggleButton(toggleButtonLabel, getBoolean(field));
                   toggleButton.addActionListener(new ActionListener(){
                      @Override
                      public void actionPerformed(ActionEvent _actionEvent){
-                        JToggleButton toggleButton = ((JToggleButton) _actionEvent.getSource());
+                        JToggleButton toggleButton = ((JToggleButton)_actionEvent.getSource());
                         //  System.out.println("toggle toggle "+toggleButton);
-                        if(toggleButton.getText().equals(toggleButtonOnLabel)){
+                        if (toggleButton.getText().equals(toggleButtonOnLabel)){
                            toggleButton.setText(toggleButtonOffLabel);
                            setBoolean(booleanField, false);
 
@@ -166,7 +175,7 @@ public class HSAILEditor implements Config.InstructionListener{
                   newComponent = toggleButton;
                }
                Check checkAnnotation = field.getAnnotation(Check.class);
-               if(checkAnnotation != null){
+               if (checkAnnotation != null){
                   JCheckBox checkBox = new JCheckBox();
                   checkBox.setSelected(getBoolean(field));
 
@@ -175,7 +184,7 @@ public class HSAILEditor implements Config.InstructionListener{
                      @Override
                      public void stateChanged(ChangeEvent _changeEvent){
 
-                        JCheckBox checkBox = ((JCheckBox) _changeEvent.getSource());
+                        JCheckBox checkBox = ((JCheckBox)_changeEvent.getSource());
                         //  System.out.println("check toggle "+checkBox);
                         setBoolean(booleanField, checkBox.isSelected());
                         sync();
@@ -185,10 +194,10 @@ public class HSAILEditor implements Config.InstructionListener{
                   newComponent = checkBox;
                }
             }
-            if(newComponent != null){
+            if (newComponent != null){
                panel.add(newComponent);
-               layout.putConstraint(SpringLayout.NORTH, newComponent, INSET, (last == panel) ? SpringLayout.NORTH
-                     : SpringLayout.SOUTH, last);
+               layout.putConstraint(SpringLayout.NORTH, newComponent, INSET, (last == panel)?SpringLayout.NORTH
+                     :SpringLayout.SOUTH, last);
                layout.putConstraint(SpringLayout.WEST, newComponent, INSET, SpringLayout.EAST,
                      fieldToLabelMap.get(fieldWithWidestLabel));
                layout.putConstraint(SpringLayout.EAST, newComponent, INSET, SpringLayout.EAST, panel);
@@ -266,20 +275,20 @@ public class HSAILEditor implements Config.InstructionListener{
       private double y;
 
       public double translatex(int _screenx){
-         return ((_screenx - offGraphicsTransform.getTranslateX()) / offGraphicsTransform.getScaleX());
+         return ((_screenx-offGraphicsTransform.getTranslateX())/offGraphicsTransform.getScaleX());
 
       }
 
       public double screenx(){
-         return (offGraphicsTransform.getScaleX() * x + offGraphicsTransform.getTranslateX());
+         return (offGraphicsTransform.getScaleX()*x+offGraphicsTransform.getTranslateX());
       }
 
       public double translatey(int _screeny){
-         return ((_screeny - offGraphicsTransform.getTranslateY()) / offGraphicsTransform.getScaleY());
+         return ((_screeny-offGraphicsTransform.getTranslateY())/offGraphicsTransform.getScaleY());
       }
 
       public double screeny(){
-         return (offGraphicsTransform.getScaleY() * y + offGraphicsTransform.getTranslateY());
+         return (offGraphicsTransform.getScaleY()*y+offGraphicsTransform.getTranslateY());
       }
    }
 
@@ -306,12 +315,12 @@ public class HSAILEditor implements Config.InstructionListener{
    public synchronized void draw(Graphics _g){
 
       Dimension containerSize = container.getSize();
-      if(dirty || (offscreen == null) || (containerSize.width != offscreensize.width)
+      if (dirty || (offscreen == null) || (containerSize.width != offscreensize.width)
             || (containerSize.height != offscreensize.height)){
          offscreensize = new Dimension(containerSize.width, containerSize.height);
-         offscreen = (BufferedImage) container.createImage(offscreensize.width, offscreensize.height);
+         offscreen = (BufferedImage)container.createImage(offscreensize.width, offscreensize.height);
 
-         if(offgraphics != null){
+         if (offgraphics != null){
             offgraphics.dispose();
          }
          offgraphics = offscreen.createGraphics();
@@ -347,7 +356,7 @@ public class HSAILEditor implements Config.InstructionListener{
 
    public void text(Graphics2D _g, String _text, double _x, double _y){
       FontMetrics fm = _g.getFontMetrics();
-      _g.drawString(_text, (int) _x, (int) (_y - fm.getAscent() + fm.getHeight()));
+      _g.drawString(_text, (int)_x, (int)(_y-fm.getAscent()+fm.getHeight()));
 
    }
 
@@ -390,7 +399,7 @@ public class HSAILEditor implements Config.InstructionListener{
    }
 
    public void line(Graphics2D _g, double _x1, double _y1, double _x2, double _y2){
-      _g.drawLine((int) _x1, (int) _y1, (int) _x2, (int) _y2);
+      _g.drawLine((int)_x1, (int)_y1, (int)_x2, (int)_y2);
    }
 
    public void draw(Graphics2D _g, Shape _rectangle){
@@ -407,11 +416,11 @@ public class HSAILEditor implements Config.InstructionListener{
 
    final private Color selectedColor = Color.gray.brighter();
 
-   private Stroke thickStroke = new BasicStroke((float) 2.0);
+   private Stroke thickStroke = new BasicStroke((float)2.0);
 
-   private Stroke thinStroke = new BasicStroke((float) 1.0);
+   private Stroke thinStroke = new BasicStroke((float)1.0);
 
-   private Stroke outlineStroke = new BasicStroke((float) 0.5);
+   private Stroke outlineStroke = new BasicStroke((float)0.5);
 
    public Polygon arrowHeadOut = new Polygon();
 
@@ -456,7 +465,7 @@ public class HSAILEditor implements Config.InstructionListener{
    InstructionView getInstructionView(Instruction _instruction){
 
       InstructionView instructionView = locationToInstructionViewMap.get(_instruction);
-      if(instructionView == null){
+      if (instructionView == null){
          locationToInstructionViewMap.put(_instruction, instructionView = new InstructionView(_instruction));
 
       }
@@ -470,39 +479,39 @@ public class HSAILEditor implements Config.InstructionListener{
       _instructionView.label = InstructionHelper.getLabel(_instructionView.instruction, config.showPc,
             config.verboseBytecodeLabels);
 
-      int w = fm.stringWidth(_instructionView.label) + HMARGIN;
-      int h = fm.getHeight() + VMARGIN;
+      int w = fm.stringWidth(_instructionView.label)+HMARGIN;
+      int h = fm.getHeight()+VMARGIN;
 
       double y = _y;
-      double x = _x + w + (_instructionView.instruction.getRootExpr() == _instructionView.instruction ? HGAP : HGAP);
+      double x = _x+w+(_instructionView.instruction.getRootExpr() == _instructionView.instruction?HGAP:HGAP);
 
-      if(!config.collapseAll && !config.showExpressions){
+      if (!config.collapseAll && !config.showExpressions){
 
-         for(Instruction e = _instructionView.instruction.getFirstChild(); e != null; e = e.getNextExpr()){
+         for (Instruction e = _instructionView.instruction.getFirstChild(); e != null; e = e.getNextExpr()){
 
             y = foldPlace(_g, getInstructionView(e), x, y, _dim);
-            if(e != _instructionView.instruction.getLastChild()){
+            if (e != _instructionView.instruction.getLastChild()){
                y += VGAP;
             }
          }
 
       }
-      double top = (y + _y) / 2 - (h / 2);
-      _instructionView.shape = new Rectangle((int) _x, (int) top, w, h);
+      double top = (y+_y)/2-(h/2);
+      _instructionView.shape = new Rectangle((int)_x, (int)top, w, h);
       return (Math.max(_y, y));
 
    }
 
    void foldRender(Graphics2D _g, InstructionView _instructionView){
       Instruction instruction = _instructionView.instruction;
-      if(!config.collapseAll && !config.showExpressions){
-         for(Instruction e = instruction.getFirstChild(); e != null; e = e.getNextExpr()){
+      if (!config.collapseAll && !config.showExpressions){
+         for (Instruction e = instruction.getFirstChild(); e != null; e = e.getNextExpr()){
 
             foldRender(_g, getInstructionView(e));
 
          }
       }
-      if(_instructionView.dim){
+      if (_instructionView.dim){
          _g.setColor(unselectedColor);
       }else{
          _g.setColor(selectedColor);
@@ -512,25 +521,25 @@ public class HSAILEditor implements Config.InstructionListener{
       _g.setStroke(outlineStroke);
       _g.draw(_instructionView.shape);
       text(_g, _instructionView.label, _instructionView.shape.getBounds().getCenterX()
-            - _instructionView.shape.getBounds().getWidth() / 2, _instructionView.shape.getBounds().getCenterY());
+            -_instructionView.shape.getBounds().getWidth()/2, _instructionView.shape.getBounds().getCenterY());
 
-      if(!config.collapseAll && !config.showExpressions){
+      if (!config.collapseAll && !config.showExpressions){
 
-         if(config.edgeFan){
+         if (config.edgeFan){
 
-            for(Instruction e = instruction.getFirstChild(); e != null; e = e.getNextExpr()){
+            for (Instruction e = instruction.getFirstChild(); e != null; e = e.getNextExpr()){
                InstructionView iv = getInstructionView(e);
-               double x1 = _instructionView.shape.getBounds().getMaxX() + ARROWGAP;
+               double x1 = _instructionView.shape.getBounds().getMaxX()+ARROWGAP;
 
                double y1 = _instructionView.shape.getBounds().getCenterY();
-               double x2 = iv.shape.getBounds().getMinX() - 5;
+               double x2 = iv.shape.getBounds().getMinX()-5;
                double y2 = iv.shape.getBounds().getCenterY();
 
-               if(config.edgeCurve){
-                  _g.draw(new CubicCurve2D.Double(x1, y1, x1 + CURVEBOW, y1, x2 - CURVEBOW, y2, x2, y2));
+               if (config.edgeCurve){
+                  _g.draw(new CubicCurve2D.Double(x1, y1, x1+CURVEBOW, y1, x2-CURVEBOW, y2, x2, y2));
                }else{
-                  double dx = (x1 - x2);
-                  double dy = (y1 - y2);
+                  double dx = (x1-x2);
+                  double dy = (y1-y2);
 
                   AffineTransform transform = _g.getTransform();
                   double hypot = Math.hypot(dy, dx);
@@ -546,24 +555,24 @@ public class HSAILEditor implements Config.InstructionListener{
          }else{
 
             _g.setStroke(thickStroke);
-            if(instruction.getFirstChild() != null && instruction.getFirstChild() != instruction.getLastChild()){ // >1 children
+            if (instruction.getFirstChild() != null && instruction.getFirstChild() != instruction.getLastChild()){ // >1 children
                InstructionView iv0 = getInstructionView(instruction.getFirstChild());
                InstructionView ivn = getInstructionView(instruction.getLastChild());
 
-               double midx = (_instructionView.shape.getBounds().getMaxX() + iv0.shape.getBounds().getMinX()) / 2;
+               double midx = (_instructionView.shape.getBounds().getMaxX()+iv0.shape.getBounds().getMinX())/2;
                line(_g, midx, iv0.shape.getBounds().getCenterY(), midx, ivn.shape.getBounds().getCenterY());
-               line(_g, _instructionView.shape.getBounds().getMaxX() + ARROWGAP, _instructionView.shape.getBounds().getCenterY(),
+               line(_g, _instructionView.shape.getBounds().getMaxX()+ARROWGAP, _instructionView.shape.getBounds().getCenterY(),
                      midx, _instructionView.shape.getBounds().getCenterY());
 
-               for(Instruction e = instruction.getFirstChild(); e != null; e = e.getNextExpr()){
+               for (Instruction e = instruction.getFirstChild(); e != null; e = e.getNextExpr()){
                   InstructionView iv = getInstructionView(e);
-                  line(_g, midx, iv.shape.getBounds().getCenterY(), iv.shape.getBounds().getMinX() - ARROWGAP, iv.shape.getBounds()
+                  line(_g, midx, iv.shape.getBounds().getCenterY(), iv.shape.getBounds().getMinX()-ARROWGAP, iv.shape.getBounds()
                         .getCenterY());
                }
-            }else if(instruction.getFirstChild() != null){ // 1 child
+            }else if (instruction.getFirstChild() != null){ // 1 child
                InstructionView iv = getInstructionView(instruction.getFirstChild());
-               line(_g, _instructionView.shape.getBounds().getMaxX() + ARROWGAP, _instructionView.shape.getBounds().getCenterY(),
-                     iv.shape.getBounds().getMinX() - ARROWGAP, iv.shape.getBounds().getCenterY());
+               line(_g, _instructionView.shape.getBounds().getMaxX()+ARROWGAP, _instructionView.shape.getBounds().getCenterY(),
+                     iv.shape.getBounds().getMinX()-ARROWGAP, iv.shape.getBounds().getCenterY());
             }
          }
       }
@@ -576,10 +585,10 @@ public class HSAILEditor implements Config.InstructionListener{
       _instructionView.label = InstructionHelper.getLabel(instruction, config.showPc,
             config.verboseBytecodeLabels);
 
-      int h = fm.getHeight() + 2;
-      double top = _y / 2 - (h / 2);
-      _instructionView.shape = new Rectangle((int) _x, (int) top, fm.stringWidth(_instructionView.label) + 2, h);
-      return (_y + h);
+      int h = fm.getHeight()+2;
+      double top = _y/2-(h/2);
+      _instructionView.shape = new Rectangle((int)_x, (int)top, fm.stringWidth(_instructionView.label)+2, h);
+      return (_y+h);
    }
 
    void flatRender(Graphics2D _g, InstructionView _instructionView){
@@ -588,7 +597,7 @@ public class HSAILEditor implements Config.InstructionListener{
       _g.setColor(Color.black);
       stroke(_g, outlineStroke, _instructionView.shape);
       text(_g, _instructionView.label, _instructionView.shape.getBounds().getCenterX()
-            - _instructionView.shape.getBounds().getWidth() / 2, _instructionView.shape.getBounds().getCenterY());
+            -_instructionView.shape.getBounds().getWidth()/2, _instructionView.shape.getBounds().getCenterY());
    }
 
    ClassModel classModel = null;
@@ -598,10 +607,10 @@ public class HSAILEditor implements Config.InstructionListener{
       try{
          Class clazz = Class.forName(_name);
          classModel = ClassModel.getClassModel(clazz);
-      }catch(ClassParseException e){
+      }catch (ClassParseException e){
          // TODO Auto-generated catch block
          e.printStackTrace();
-      }catch(ClassNotFoundException e){
+      }catch (ClassNotFoundException e){
          // TODO Auto-generated catch block
          e.printStackTrace();
       }
@@ -627,9 +636,9 @@ public class HSAILEditor implements Config.InstructionListener{
          @Override
          public void mouseDragged(MouseEvent e){
             // System.out.println("dragged");
-            if(dragStart != null){
-               view.x = view.translatex(e.getX()) - dragStart.x;
-               view.y = view.translatey(e.getY()) - dragStart.y;
+            if (dragStart != null){
+               view.x = view.translatex(e.getX())-dragStart.x;
+               view.y = view.translatey(e.getY())-dragStart.y;
                dirty();
             }
 
@@ -638,13 +647,13 @@ public class HSAILEditor implements Config.InstructionListener{
          @Override
          public void mousePressed(MouseEvent e){
 
-            if(e.getButton() == 1){
+            if (e.getButton() == 1){
                dragStart = new XY(view.translatex(e.getX()), view.translatey(e.getY()));
                dirty();
 
-            }else if(e.getButton() == 3){
+            }else if (e.getButton() == 3){
 
-               if(select(view.translatex(e.getX()), view.translatey(e.getY()))){
+               if (select(view.translatex(e.getX()), view.translatey(e.getY()))){
                   dirty();
                }
             }
@@ -659,7 +668,7 @@ public class HSAILEditor implements Config.InstructionListener{
 
          @Override
          public void mouseWheelMoved(MouseWheelEvent e){
-            view.scale += e.getWheelRotation() / 10.0;
+            view.scale += e.getWheelRotation()/10.0;
             dirty();
          }
 
@@ -668,8 +677,8 @@ public class HSAILEditor implements Config.InstructionListener{
       KeyAdapter keyAdaptor = new KeyAdapter(){
          @Override
          public void keyTyped(KeyEvent arg0){
-            if(arg0.getKeyChar() == '-' || arg0.getKeyChar() == '+'){
-               if(arg0.getKeyChar() == '-'){
+            if (arg0.getKeyChar() == '-' || arg0.getKeyChar() == '+'){
+               if (arg0.getKeyChar() == '-'){
                   view.scale -= .1;
                }else{
                   view.scale += .1;
@@ -755,9 +764,9 @@ public class HSAILEditor implements Config.InstructionListener{
          @Override
          public void mouseDragged(MouseEvent e){
             // System.out.println("dragged");
-            if(dragStart != null){
-               view.x = view.translatex(e.getX()) - dragStart.x;
-               view.y = view.translatey(e.getY()) - dragStart.y;
+            if (dragStart != null){
+               view.x = view.translatex(e.getX())-dragStart.x;
+               view.y = view.translatey(e.getY())-dragStart.y;
                dirty();
             }
 
@@ -766,13 +775,13 @@ public class HSAILEditor implements Config.InstructionListener{
          @Override
          public void mousePressed(MouseEvent e){
 
-            if(e.getButton() == 1){
+            if (e.getButton() == 1){
                dragStart = new XY(view.translatex(e.getX()), view.translatey(e.getY()));
                dirty();
 
-            }else if(e.getButton() == 3){
+            }else if (e.getButton() == 3){
 
-               if(select(view.translatex(e.getX()), view.translatey(e.getY()))){
+               if (select(view.translatex(e.getX()), view.translatey(e.getY()))){
                   dirty();
                }
             }
@@ -787,7 +796,7 @@ public class HSAILEditor implements Config.InstructionListener{
 
          @Override
          public void mouseWheelMoved(MouseWheelEvent e){
-            view.scale += e.getWheelRotation() / 10.0;
+            view.scale += e.getWheelRotation()/10.0;
             dirty();
          }
 
@@ -796,8 +805,8 @@ public class HSAILEditor implements Config.InstructionListener{
       KeyAdapter keyAdaptor = new KeyAdapter(){
          @Override
          public void keyTyped(KeyEvent arg0){
-            if(arg0.getKeyChar() == '-' || arg0.getKeyChar() == '+'){
-               if(arg0.getKeyChar() == '-'){
+            if (arg0.getKeyChar() == '-' || arg0.getKeyChar() == '+'){
+               if (arg0.getKeyChar() == '-'){
                   view.scale -= .1;
                }else{
                   view.scale += .1;
@@ -818,13 +827,13 @@ public class HSAILEditor implements Config.InstructionListener{
 
       JPanel controls = new JPanel(new BorderLayout());
 
-     // Form<Options> form = new Form<Options>(config){
+      // Form<Options> form = new Form<Options>(config){
       //   @Override
       //   public void sync(){
       //      dirty();
       //   }
       //};
-     // controls.add(form.getPanel());
+      // controls.add(form.getPanel());
 
       controls.setPreferredSize(new Dimension(200, 500));
       panel.add(BorderLayout.EAST, controls);
@@ -837,9 +846,9 @@ public class HSAILEditor implements Config.InstructionListener{
    }
 
    public boolean select(double _x, double _y){
-      for(Instruction l = first; l != null; l = l.getNextPC()){
+      for (Instruction l = first; l != null; l = l.getNextPC()){
          InstructionView iv = getInstructionView(l);
-         if(iv.shape != null && iv.shape.contains(_x, _y)){
+         if (iv.shape != null && iv.shape.contains(_x, _y)){
 
             return (true);
          }
@@ -848,38 +857,38 @@ public class HSAILEditor implements Config.InstructionListener{
    }
 
    public void render(Graphics2D _g){
-      if(first != null){
+      if (first != null){
 
-         if(config.fold){
+         if (config.fold){
             double y = 100;
             Instruction firstRoot = first.getRootExpr();
             List<InstructionView> instructionViews = new ArrayList<InstructionView>();
 
             Instruction lastInstruction = null;
-            for(Instruction instruction = firstRoot; instruction != null; instruction = instruction.getNextExpr()){
+            for (Instruction instruction = firstRoot; instruction != null; instruction = instruction.getNextExpr()){
                InstructionView iv = getInstructionView(instruction);
                iv.dim = false;
-               y = foldPlace(_g, iv, 100, y, false) + VGAP;
+               y = foldPlace(_g, iv, 100, y, false)+VGAP;
                instructionViews.add(iv);
                lastInstruction = instruction;
             }
             lastInstruction.getRootExpr();
-            while(lastInstruction instanceof CompositeInstruction){
+            while (lastInstruction instanceof CompositeInstruction){
                lastInstruction = lastInstruction.getLastChild();
             }
-            for(Instruction instruction = lastInstruction.getNextPC(); instruction != null; instruction = instruction.getNextPC()){
+            for (Instruction instruction = lastInstruction.getNextPC(); instruction != null; instruction = instruction.getNextPC()){
 
                InstructionView iv = getInstructionView(instruction);
                iv.dim = true;
-               y = foldPlace(_g, iv, 100, y, true) + VGAP;
+               y = foldPlace(_g, iv, 100, y, true)+VGAP;
                instructionViews.add(iv);
 
             }
 
             _g.setColor(Color.black);
 
-            for(InstructionView instructionView : instructionViews){
-               if(instructionView.instruction.isBranch()){
+            for (InstructionView instructionView : instructionViews){
+               if (instructionView.instruction.isBranch()){
                   Instruction rootFromInstruction = instructionView.instruction;
                   Instruction rootToInstruction = instructionView.instruction.asBranch().getTarget();
                   InstructionView fromIv = getInstructionView(rootFromInstruction);
@@ -890,10 +899,10 @@ public class HSAILEditor implements Config.InstructionListener{
 
             InstructionView last = null;
 
-            for(InstructionView instructionView : instructionViews){
+            for (InstructionView instructionView : instructionViews){
 
                foldRender(_g, instructionView);
-               if(last != null){
+               if (last != null){
                   line(_g, thickStroke, 120, last.shape.getBounds().getMaxY(), 120, instructionView.shape.getBounds().getMinY());
                }
                foldRender(_g, instructionView);
@@ -902,15 +911,15 @@ public class HSAILEditor implements Config.InstructionListener{
 
          }else{
             double y = 100;
-            for(Instruction l = first; l != null; l = l.getNextPC()){
+            for (Instruction l = first; l != null; l = l.getNextPC()){
 
-               y = flatPlace(_g, getInstructionView(l), 100, y) + VGAP;
+               y = flatPlace(_g, getInstructionView(l), 100, y)+VGAP;
 
             }
 
             _g.setColor(Color.black);
-            for(Instruction l = first; l != null; l = l.getNextPC()){
-               if(l.isBranch()){
+            for (Instruction l = first; l != null; l = l.getNextPC()){
+               if (l.isBranch()){
                   Instruction rootFromInstruction = l;
                   Instruction rootToInstruction = l.asBranch().getTarget();
                   InstructionView fromIv = getInstructionView(rootFromInstruction);
@@ -922,10 +931,10 @@ public class HSAILEditor implements Config.InstructionListener{
             }
 
             InstructionView last = null;
-            for(Instruction l = first; l != null; l = l.getNextPC()){
+            for (Instruction l = first; l != null; l = l.getNextPC()){
                InstructionView iv = getInstructionView(l);
 
-               if(last != null){
+               if (last != null){
                   line(_g, thickStroke, 120, last.shape.getBounds().getMaxY(), 120, iv.shape.getBounds().getMinY());
                }
                flatRender(_g, iv);
@@ -939,35 +948,35 @@ public class HSAILEditor implements Config.InstructionListener{
    public void edge(Graphics2D _g, Color _color, InstructionView _branch, InstructionView _target, String _endLabel,
                     String _startLabel){
 
-      int delta = _target.instruction.getThisPC() - _branch.instruction.getThisPC();
-      int adjust = 7 + Math.abs(delta);
-      double y1 = (int) _branch.shape.getBounds().getMaxY();
-      if(_target.shape != null){
+      int delta = _target.instruction.getThisPC()-_branch.instruction.getThisPC();
+      int adjust = 7+Math.abs(delta);
+      double y1 = (int)_branch.shape.getBounds().getMaxY();
+      if (_target.shape != null){
          _g.setStroke(thinStroke);
          Color old = _g.getColor();
          _g.setColor(_color);
-         double y2 = (int) _target.shape.getBounds().getMinY();
-         if(delta > 0){
+         double y2 = (int)_target.shape.getBounds().getMinY();
+         if (delta>0){
 
-            double x1 = (int) _branch.shape.getBounds().getMinX() - EDGEGAP;
-            double x2 = (int) _target.shape.getBounds().getMinX() - EDGEGAP;
+            double x1 = (int)_branch.shape.getBounds().getMinX()-EDGEGAP;
+            double x2 = (int)_target.shape.getBounds().getMinX()-EDGEGAP;
 
-            _g.draw(new CubicCurve2D.Double(x1, y1, x1 - adjust, y1, x1 - adjust, y2, x2, y2));
+            _g.draw(new CubicCurve2D.Double(x1, y1, x1-adjust, y1, x1-adjust, y2, x2, y2));
 
             AffineTransform transform = _g.getTransform();
-            _g.translate(x2 - 5, y2);
+            _g.translate(x2-5, y2);
             _g.fillPolygon(arrowHeadIn);
             _g.setTransform(transform);
 
          }else{
 
-            double x1 = (int) _branch.shape.getBounds().getMaxX() + EDGEGAP;
-            double x2 = (int) _target.shape.getBounds().getMaxX() + EDGEGAP;
+            double x1 = (int)_branch.shape.getBounds().getMaxX()+EDGEGAP;
+            double x2 = (int)_target.shape.getBounds().getMaxX()+EDGEGAP;
 
-            _g.draw(new CubicCurve2D.Double(x1, y1, Math.max(x1, x2) + adjust, y1, Math.max(x1, x2) + adjust, y2, x2, y2));
+            _g.draw(new CubicCurve2D.Double(x1, y1, Math.max(x1, x2)+adjust, y1, Math.max(x1, x2)+adjust, y2, x2, y2));
             AffineTransform transform = _g.getTransform();
 
-            _g.translate(x2 - 5, y2);
+            _g.translate(x2-5, y2);
             _g.fillPolygon(arrowHeadOut);
             _g.setTransform(transform);
 
@@ -983,7 +992,7 @@ public class HSAILEditor implements Config.InstructionListener{
    @Override
    public void showAndTell(String message, Instruction head, Instruction _instruction){
 
-      if(first == null){
+      if (first == null){
          first = head;
       }
       current = _instruction;
@@ -996,10 +1005,10 @@ public class HSAILEditor implements Config.InstructionListener{
       volatile boolean notified = false;
 
       public synchronized void snooze(){
-         while(!notified){
+         while (!notified){
             try{
                this.wait();
-            }catch(InterruptedException e){
+            }catch (InterruptedException e){
                // TODO Auto-generated catch block
                e.printStackTrace();
             }
@@ -1029,7 +1038,7 @@ public class HSAILEditor implements Config.InstructionListener{
 
       JMenu fileMenu = new JMenu("File");
       fileMenu.setMnemonic(KeyEvent.VK_F);
-      ActionListener closeActionListener = unusedArg ->  System.exit(1);
+      ActionListener closeActionListener = unusedArg -> System.exit(1);
       ActionListener nextActionListener = unusedArg -> doorbell.ring();
       JMenuItem closeMenuItem = new JMenuItem("Close");
       closeMenuItem.setMnemonic(KeyEvent.VK_C);

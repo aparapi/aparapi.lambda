@@ -48,11 +48,11 @@ import java.util.logging.Logger;
 
 /**
  * The class is responsible for executing <code>Kernel</code> implementations. <br/>
- * <p/>
+ * <p>
  * The <code>KernelRunner</code> is the real workhorse for Aparapi.  Each <code>Kernel</code> instance creates a single
  * <code>KernelRunner</code> to encapsulate state and to help coordinate interactions between the <code>Kernel</code>
  * and it's execution logic.<br/>
- * <p/>
+ * <p>
  * The <code>KernelRunner</code> is created <i>lazily</i> as a result of calling <code>Kernel.execute()</code>. OREF this
  * time the <code>ExecutionMode</code> is consulted to determine the default requested mode.  This will dictate how
  * the <code>KernelRunner</code> will attempt to execute the <code>Kernel</code>
@@ -61,7 +61,6 @@ import java.util.logging.Logger;
  * @see Kernel#execute(int _globalSize)
  */
 class OpenCLRunner{
-
 
    protected static Logger logger = Logger.getLogger(Config.getLoggerName());
 
@@ -73,7 +72,7 @@ class OpenCLRunner{
     * @see com.amd.aparapi.OpenCLRunner.KernelArg
     */
    @UsedByJNICode
-   public static final int ARG_BOOLEAN = 1 << 0;
+   public static final int ARG_BOOLEAN = 1<<0;
 
    /**
     * This 'bit' indicates that a particular <code>KernelArg</code> represents a <code>byte</code> prefix (array or primitive).
@@ -83,7 +82,7 @@ class OpenCLRunner{
     * @see com.amd.aparapi.OpenCLRunner.KernelArg
     */
    @UsedByJNICode
-   public static final int ARG_BYTE = 1 << 1;
+   public static final int ARG_BYTE = 1<<1;
 
    /**
     * This 'bit' indicates that a particular <code>KernelArg</code> represents a <code>float</code> prefix (array or primitive).
@@ -93,7 +92,7 @@ class OpenCLRunner{
     * @see com.amd.aparapi.OpenCLRunner.KernelArg
     */
    @UsedByJNICode
-   public static final int ARG_FLOAT = 1 << 2;
+   public static final int ARG_FLOAT = 1<<2;
 
    /**
     * This 'bit' indicates that a particular <code>KernelArg</code> represents a <code>int</code> prefix (array or primitive).
@@ -103,7 +102,7 @@ class OpenCLRunner{
     * @see com.amd.aparapi.OpenCLRunner.KernelArg
     */
    @UsedByJNICode
-   public static final int ARG_INT = 1 << 3;
+   public static final int ARG_INT = 1<<3;
 
    /**
     * This 'bit' indicates that a particular <code>KernelArg</code> represents a <code>double</code> prefix (array or primitive).
@@ -113,7 +112,7 @@ class OpenCLRunner{
     * @see com.amd.aparapi.OpenCLRunner.KernelArg
     */
    @UsedByJNICode
-   public static final int ARG_DOUBLE = 1 << 4;
+   public static final int ARG_DOUBLE = 1<<4;
 
    /**
     * This 'bit' indicates that a particular <code>KernelArg</code> represents a <code>long</code> prefix (array or primitive).
@@ -123,7 +122,7 @@ class OpenCLRunner{
     * @see com.amd.aparapi.OpenCLRunner.KernelArg
     */
    @UsedByJNICode
-   public static final int ARG_LONG = 1 << 5;
+   public static final int ARG_LONG = 1<<5;
 
    /**
     * TODO:
@@ -133,7 +132,7 @@ class OpenCLRunner{
     * @see com.amd.aparapi.OpenCLRunner.KernelArg
     */
    @UsedByJNICode
-   public static final int ARG_SHORT = 1 << 6;
+   public static final int ARG_SHORT = 1<<6;
 
    /**
     * This 'bit' indicates that a particular <code>KernelArg</code> represents an array.<br/>
@@ -144,7 +143,7 @@ class OpenCLRunner{
     * @see com.amd.aparapi.OpenCLRunner.KernelArg
     */
    @UsedByJNICode
-   public static final int ARG_ARRAY = 1 << 7;
+   public static final int ARG_ARRAY = 1<<7;
 
    /**
     * This 'bit' indicates that a particular <code>KernelArg</code> represents a primitive (non array).<br/>
@@ -155,7 +154,7 @@ class OpenCLRunner{
     * @see com.amd.aparapi.OpenCLRunner.KernelArg
     */
    @UsedByJNICode
-   public static final int ARG_PRIMITIVE = 1 << 8;
+   public static final int ARG_PRIMITIVE = 1<<8;
 
    /**
     * This 'bit' indicates that a particular <code>KernelArg</code> is read by the Kernel (note from the Kernel's point of view).<br/>
@@ -166,7 +165,7 @@ class OpenCLRunner{
     * @see com.amd.aparapi.OpenCLRunner.KernelArg
     */
    @UsedByJNICode
-   public static final int ARG_READ = 1 << 9;
+   public static final int ARG_READ = 1<<9;
 
    /**
     * This 'bit' indicates that a particular <code>KernelArg</code> is mutated by the Kernel (note from the Kernel's point of view).<br/>
@@ -177,7 +176,7 @@ class OpenCLRunner{
     * @see com.amd.aparapi.OpenCLRunner.KernelArg
     */
    @UsedByJNICode
-   public static final int ARG_WRITE = 1 << 10;
+   public static final int ARG_WRITE = 1<<10;
 
    /**
     * This 'bit' indicates that a particular <code>KernelArg</code> resides in local memory in the generated OpenCL code.<br/>
@@ -189,7 +188,7 @@ class OpenCLRunner{
     */
    @Annotations.Experimental
    @UsedByJNICode
-   public static final int ARG_LOCAL = 1 << 11;
+   public static final int ARG_LOCAL = 1<<11;
 
    /**
     * This 'bit' indicates that a particular <code>KernelArg</code> resides in global memory in the generated OpenCL code.<br/>
@@ -201,7 +200,7 @@ class OpenCLRunner{
     */
    @Annotations.Experimental
    @UsedByJNICode
-   public static final int ARG_GLOBAL = 1 << 12;
+   public static final int ARG_GLOBAL = 1<<12;
 
    /**
     * This 'bit' indicates that a particular <code>KernelArg</code> resides in constant memory in the generated OpenCL code.<br/>
@@ -213,7 +212,7 @@ class OpenCLRunner{
     */
    @Annotations.Experimental
    @UsedByJNICode
-   public static final int ARG_CONSTANT = 1 << 13;
+   public static final int ARG_CONSTANT = 1<<13;
 
    /**
     * This 'bit' indicates that a particular <code>KernelArg</code> has it's length reference, in which case a synthetic arg is passed (name mangled) to the OpenCL kernel.<br/>
@@ -223,7 +222,7 @@ class OpenCLRunner{
     * @see com.amd.aparapi.OpenCLRunner.KernelArg
     */
    @UsedByJNICode
-   public static final int ARG_ARRAYLENGTH = 1 << 14;
+   public static final int ARG_ARRAYLENGTH = 1<<14;
 
    /**
     * TODO:
@@ -233,7 +232,7 @@ class OpenCLRunner{
     * @see com.amd.aparapi.OpenCLRunner.KernelArg
     */
    @UsedByJNICode
-   public static final int ARG_APARAPI_BUF = 1 << 15;
+   public static final int ARG_APARAPI_BUF = 1<<15;
 
    /**
     * This 'bit' indicates that the arg has been explicitly marked for reading
@@ -243,7 +242,7 @@ class OpenCLRunner{
     * @see com.amd.aparapi.OpenCLRunner.KernelArg
     */
    @UsedByJNICode
-   public static final int ARG_EXPLICIT = 1 << 16;
+   public static final int ARG_EXPLICIT = 1<<16;
 
    /**
     * This 'bit' indicates that the arg has been explicitly marked for writing
@@ -253,7 +252,7 @@ class OpenCLRunner{
     * @see com.amd.aparapi.OpenCLRunner.KernelArg
     */
    @UsedByJNICode
-   public static final int ARG_EXPLICIT_WRITE = 1 << 17;
+   public static final int ARG_EXPLICIT_WRITE = 1<<17;
 
    /**
     * TODO:
@@ -263,7 +262,7 @@ class OpenCLRunner{
     * @see com.amd.aparapi.OpenCLRunner.KernelArg
     */
    @UsedByJNICode
-   public static final int ARG_OBJ_ARRAY_STRUCT = 1 << 18;
+   public static final int ARG_OBJ_ARRAY_STRUCT = 1<<18;
 
    /**
     * TODO:
@@ -293,7 +292,7 @@ class OpenCLRunner{
     * @see com.amd.aparapi.OpenCLRunner.KernelArg
     */
    @UsedByJNICode
-   public static final int ARG_CHAR = 1 << 21;
+   public static final int ARG_CHAR = 1<<21;
 
    /**
     * This 'bit' indicates that a particular <code>KernelArg</code> represents a <code>static</code> field (array or primitive).
@@ -303,7 +302,7 @@ class OpenCLRunner{
     * @see com.amd.aparapi.OpenCLRunner.KernelArg
     */
    @UsedByJNICode
-   public static final int ARG_STATIC = 1 << 22;
+   public static final int ARG_STATIC = 1<<22;
 
    static final String CL_KHR_FP64 = "cl_khr_fp64";
 
@@ -351,40 +350,39 @@ class OpenCLRunner{
 
    /**
     * This 'bit' indicates that we want to execute on the GPU.
-    * <p/>
-    * <p/>
+    * <p>
+    * <p>
     * Be careful changing final constants starting with JNI.<br/>
     *
     * @author gfrost
     * @see com.amd.aparapi.Annotations.UsedByJNICode
     */
    @UsedByJNICode
-   public static final int JNI_FLAG_USE_GPU = 1 << 2;
-
+   public static final int JNI_FLAG_USE_GPU = 1<<2;
 
    /**
     * This 'bit' indicates that this kernel represents a Java 8 lambda.
-    * <p/>
-    * <p/>
+    * <p>
+    * <p>
     * Be careful changing final constants starting with JNI.<br/>
     *
     * @author gfrost
     * @see com.amd.aparapi.Annotations.UsedByJNICode
     */
    @UsedByJNICode
-   public static final int JNI_FLAG_LAMBDA_KERNEL = 1 << 3;
+   public static final int JNI_FLAG_LAMBDA_KERNEL = 1<<3;
 
    /**
     * This 'bit' indicates that this kernel represents a 'classic' kernel rather than a java 8 lambda.
-    * <p/>
-    * <p/>
+    * <p>
+    * <p>
     * Be careful changing final constants starting with JNI.<br/>
     *
     * @author gfrost
     * @see com.amd.aparapi.Annotations.UsedByJNICode
     */
    @UsedByJNICode
-   public static final int JNI_FLAG_CLASSIC_KERNEL = 1 << 4;
+   public static final int JNI_FLAG_CLASSIC_KERNEL = 1<<4;
 
    /**
     * This 'bit' indicates that we wish to enable verbose JNI layer messages to stderr.<br/>
@@ -501,7 +499,6 @@ class OpenCLRunner{
 
    protected long jniContextHandle = 0;
 
-
    /**
     * Create a OpenCLRunner
     */
@@ -519,7 +516,7 @@ class OpenCLRunner{
 
    /**
     * TODO:
-    * <p/>
+    * <p>
     * synchronized to avoid race in clGetPlatformIDs() in OpenCL lib problem should fixed in some future OpenCL version
     *
     * @param _kernel
@@ -550,84 +547,84 @@ class OpenCLRunner{
    protected long executionTime = 0;
 
    final boolean hasFP64Support(){
-      if(capabilitiesSet == null){
+      if (capabilitiesSet == null){
          throw new IllegalStateException("Capabilities queried before they were initialized");
       }
       return (capabilitiesSet.contains(CL_KHR_FP64));
    }
 
    final boolean hasSelectFPRoundingModeSupport(){
-      if(capabilitiesSet == null){
+      if (capabilitiesSet == null){
          throw new IllegalStateException("Capabilities queried before they were initialized");
       }
       return capabilitiesSet.contains(CL_KHR_SELECT_FPROUNDING_MODE);
    }
 
    final boolean hasGlobalInt32BaseAtomicsSupport(){
-      if(capabilitiesSet == null){
+      if (capabilitiesSet == null){
          throw new IllegalStateException("Capabilities queried before they were initialized");
       }
       return capabilitiesSet.contains(CL_KHR_GLOBAL_INT32_BASE_ATOMICS);
    }
 
    final boolean hasGlobalInt32ExtendedAtomicsSupport(){
-      if(capabilitiesSet == null){
+      if (capabilitiesSet == null){
          throw new IllegalStateException("Capabilities queried before they were initialized");
       }
       return capabilitiesSet.contains(CL_KHR_GLOBAL_INT32_EXTENDED_ATOMICS);
    }
 
    final boolean hasLocalInt32BaseAtomicsSupport(){
-      if(capabilitiesSet == null){
+      if (capabilitiesSet == null){
          throw new IllegalStateException("Capabilities queried before they were initialized");
       }
       return capabilitiesSet.contains(CL_KHR_LOCAL_INT32_BASE_ATOMICS);
    }
 
    final boolean hasLocalInt32ExtendedAtomicsSupport(){
-      if(capabilitiesSet == null){
+      if (capabilitiesSet == null){
          throw new IllegalStateException("Capabilities queried before they were initialized");
       }
       return capabilitiesSet.contains(CL_KHR_LOCAL_INT32_EXTENDED_ATOMICS);
    }
 
    final boolean hasInt64BaseAtomicsSupport(){
-      if(capabilitiesSet == null){
+      if (capabilitiesSet == null){
          throw new IllegalStateException("Capabilities queried before they were initialized");
       }
       return capabilitiesSet.contains(CL_KHR_INT64_BASE_ATOMICS);
    }
 
    final boolean hasInt64ExtendedAtomicsSupport(){
-      if(capabilitiesSet == null){
+      if (capabilitiesSet == null){
          throw new IllegalStateException("Capabilities queried before they were initialized");
       }
       return capabilitiesSet.contains(CL_KHR_INT64_EXTENDED_ATOMICS);
    }
 
    final boolean has3DImageWritesSupport(){
-      if(capabilitiesSet == null){
+      if (capabilitiesSet == null){
          throw new IllegalStateException("Capabilities queried before they were initialized");
       }
       return capabilitiesSet.contains(CL_KHR_3D_IMAGE_WRITES);
    }
 
    final boolean hasByteAddressableStoreSupport(){
-      if(capabilitiesSet == null){
+      if (capabilitiesSet == null){
          throw new IllegalStateException("Capabilities queried before they were initialized");
       }
       return capabilitiesSet.contains(CL_KHR_BYTE_ADDRESSABLE_SUPPORT);
    }
 
    final boolean hasFP16Support(){
-      if(capabilitiesSet == null){
+      if (capabilitiesSet == null){
          throw new IllegalStateException("Capabilities queried before they were initialized");
       }
       return capabilitiesSet.contains(CL_KHR_FP16);
    }
 
    final boolean hasGLSharingSupport(){
-      if(capabilitiesSet == null){
+      if (capabilitiesSet == null){
          throw new IllegalStateException("Capabilities queried before they were initialized");
       }
       return capabilitiesSet.contains(CL_KHR_GL_SHARING);
@@ -692,8 +689,8 @@ class OpenCLRunner{
 
    static boolean isMappedMethod(ClassModel.ConstantPool.MethodReferenceEntry methodReferenceEntry){
       boolean isMapped = false;
-      for(MappedMethod mappedMethod : MappedMethod.values()){
-         if(methodReferenceEntry.getNameAndTypeEntry().getNameUTF8Entry().getUTF8().equals(mappedMethod.getTargetName())){
+      for (MappedMethod mappedMethod : MappedMethod.values()){
+         if (methodReferenceEntry.getNameAndTypeEntry().getNameUTF8Entry().getUTF8().equals(mappedMethod.getTargetName())){
             // well they have the same name ;)
             isMapped = true;
          }
@@ -703,28 +700,27 @@ class OpenCLRunner{
 
    private static String descriptorToReturnTypeLetter(String desc){
       // find the letter after the closed parenthesis
-      return desc.substring(desc.lastIndexOf(')') + 1);
+      return desc.substring(desc.lastIndexOf(')')+1);
    }
 
    static String getMappedMethodName(ClassModel.ConstantPool.MethodReferenceEntry _methodReferenceEntry){
       String mappedName = null;
       String name = _methodReferenceEntry.getNameAndTypeEntry().getNameUTF8Entry().getUTF8();
-      for(MappedMethod mappedMethod : MappedMethod.values()){
-         if(_methodReferenceEntry.getNameAndTypeEntry().getNameUTF8Entry().getUTF8().equals(mappedMethod.getTargetName())
+      for (MappedMethod mappedMethod : MappedMethod.values()){
+         if (_methodReferenceEntry.getNameAndTypeEntry().getNameUTF8Entry().getUTF8().equals(mappedMethod.getTargetName())
                && descriptorToReturnTypeLetter(_methodReferenceEntry.getNameAndTypeEntry().getDescriptorUTF8Entry().getUTF8())
                .equals(mappedMethod.getReturnType())){
             String mapTo = mappedMethod.getMappedName();
-            if(!mapTo.equals("")){
+            if (!mapTo.equals("")){
                mappedName = mapTo;
             }
          }
       }
-      if((mappedName != null) && (logger.isLoggable(Level.FINE))){
-         logger.fine("Selected mapped method " + mappedName);
+      if ((mappedName != null) && (logger.isLoggable(Level.FINE))){
+         logger.fine("Selected mapped method "+mappedName);
       }
       return (mappedName);
    }
-
 
    /**
     * Determine the time taken to convert bytecode to OpenCL for first Kernel.execute(range) call.

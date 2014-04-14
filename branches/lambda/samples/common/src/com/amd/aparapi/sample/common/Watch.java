@@ -12,66 +12,62 @@ package com.amd.aparapi.sample.common;
 import javax.swing.*;
 import java.awt.*;
 
-public class Watch extends LEDWidget {
+public class Watch extends LEDWidget{
 
-    private long startTime = 0L;
-    private long stopTime = 0L;
-    private volatile boolean running=false;
+   private long startTime = 0L;
+   private long stopTime = 0L;
+   private volatile boolean running = false;
 
-    private Timer timer = new Timer(33, (e) -> {
-        stopTime = System.currentTimeMillis();
-        setMilliValue((int) (stopTime - startTime));
-    });
+   private Timer timer = new Timer(33, (e) -> {
+      stopTime = System.currentTimeMillis();
+      setMilliValue((int)(stopTime-startTime));
+   });
 
-    public void start() {
-        startTime = System.currentTimeMillis();
-        setColor(Color.RED);
-        timer.start();
-        running = true;
-    }
+   public void start(){
+      startTime = System.currentTimeMillis();
+      setColor(Color.RED);
+      timer.start();
+      running = true;
+   }
 
-    public void stop() {
-        running = false;
-        timer.stop();
-        stopTime = System.currentTimeMillis();
-        setMilliValue((int) (stopTime - startTime));
-        setColor(Color.GREEN);
+   public void stop(){
+      running = false;
+      timer.stop();
+      stopTime = System.currentTimeMillis();
+      setMilliValue((int)(stopTime-startTime));
+      setColor(Color.GREEN);
 
-    }
+   }
 
-    public boolean isRunning(){
-        return(running);
-    }
+   public boolean isRunning(){
+      return (running);
+   }
 
+   public Watch(){
+      super();
+      setColor(Color.GREEN);
+   }
 
+   public static void main(String[] args){
+      SwingUtilities.invokeLater(() -> {
+         JFrame f = new JFrame("Stopwatch");
+         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+         Watch w = new Watch();
 
-    public Watch() {
-        super();
-        setColor(Color.GREEN);
-    }
+         f.getContentPane().add(w.getContainer(), BorderLayout.CENTER);
+         JButton start = new JButton("start");
+         start.addActionListener(ev -> w.start());
+         JButton stop = new JButton("stop");
+         stop.addActionListener(ev -> w.stop());
+         JPanel panel = new JPanel();
+         panel.add(start);
+         panel.add(stop);
+         f.getContentPane().add(panel, BorderLayout.NORTH);
+         f.pack();
+         f.setLocationRelativeTo(null);
+         f.setVisible(true);
+      });
 
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            JFrame f = new JFrame("Stopwatch");
-            f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            Watch w = new Watch();
-
-            f.getContentPane().add(w.getContainer(), BorderLayout.CENTER);
-            JButton start = new JButton("start");
-            start.addActionListener(ev -> w.start());
-            JButton stop = new JButton("stop");
-            stop.addActionListener(ev -> w.stop());
-            JPanel panel = new JPanel();
-            panel.add(start);
-            panel.add(stop);
-            f.getContentPane().add(panel, BorderLayout.NORTH);
-            f.pack();
-            f.setLocationRelativeTo(null);
-            f.setVisible(true);
-        });
-
-
-    }
+   }
 }
 

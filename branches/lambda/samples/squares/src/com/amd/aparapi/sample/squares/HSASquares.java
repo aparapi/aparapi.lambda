@@ -39,21 +39,18 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 package com.amd.aparapi.sample.squares;
 
 import com.amd.aparapi.Aparapi;
-import com.amd.aparapi.Device;
-import com.amd.aparapi.HSADevice;
 
 /**
  * An example Aparapi application which computes and displays squares of a set of 512 input values.
- * While executing on GPU using Aparpi framework, each square value is computed in a separate kernel invocation and 
- * can thus maximize performance by optimally utilizing all GPU computing units 
- *  
- * @author gfrost
+ * While executing on GPU using Aparpi framework, each square value is computed in a separate kernel invocation and
+ * can thus maximize performance by optimally utilizing all GPU computing units
  *
+ * @author gfrost
  */
 
 public class HSASquares{
 
-   public static void main(String[] _args) {
+   public static void main(String[] _args){
 
       final int size = 64;
 
@@ -61,17 +58,17 @@ public class HSASquares{
       final float[] values = new float[size];
 
       /** Initialize input array. */
-      Aparapi.range(size).forEach(gid->  values[gid] = gid);
+      Aparapi.range(size).forEach(gid -> values[gid] = gid);
 
       /** Output array which will be populated with square values of corresponding input array elements. */
       final float[] squares = new float[size];
 
       /** computes squares of input array elements and populates them in corresponding elements of output array. **/
       //Device.hsa().forEach(24, 40, gid-> squares[gid] = values[gid] * values[gid]);
-      Aparapi.range(size).parallel().forEach(gid-> squares[gid] = values[gid] * values[gid]);
+      Aparapi.range(size).parallel().forEach(gid -> squares[gid] = values[gid]*values[gid]);
 
       // Display computed square values.
-      Aparapi.range(size).forEach(id->System.out.printf("%6.0f %8.0f\n", values[id], squares[id]));
+      Aparapi.range(size).forEach(id -> System.out.printf("%6.0f %8.0f\n", values[id], squares[id]));
    }
 
 }

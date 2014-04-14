@@ -37,19 +37,17 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 */
 package com.amd.aparapi;
 
+import com.amd.aparapi.ClassModel.AttributePool.LocalVariableTableEntry;
+import com.amd.aparapi.ClassModel.AttributePool.LocalVariableTableEntry.LocalVariableInfo;
 import com.amd.aparapi.ClassModel.ConstantPool;
 import com.amd.aparapi.ClassModel.ConstantPool.Entry;
 import com.amd.aparapi.ClassModel.ConstantPool.FieldEntry;
 import com.amd.aparapi.ClassModel.ConstantPool.MethodEntry;
 
-import com.amd.aparapi.ClassModel.AttributePool.LocalVariableTableEntry;
-import com.amd.aparapi.ClassModel.AttributePool.LocalVariableTableEntry.LocalVariableInfo;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
 class InstructionSet{
-
 
    static enum TypeSpec{
       NONE(), //
@@ -72,7 +70,6 @@ class InstructionSet{
       DIMS(); // dims for multiarraynew
 
       private PrimitiveType primitiveType;
-
 
       TypeSpec(PrimitiveType _primitiveType){
          primitiveType = _primitiveType;
@@ -124,23 +121,22 @@ class InstructionSet{
       }
 
       static StoreSpec valueOf(PrimitiveType _type){
-         if(_type == TypeSpec.B.getPrimitiveType() || _type == TypeSpec.C.getPrimitiveType() ||
+         if (_type == TypeSpec.B.getPrimitiveType() || _type == TypeSpec.C.getPrimitiveType() ||
                _type == TypeSpec.S.getPrimitiveType() || _type == TypeSpec.Z.getPrimitiveType() ||
                _type == TypeSpec.I.getPrimitiveType()){
             return (I);
-         }else if(_type == TypeSpec.F.getPrimitiveType()){
+         }else if (_type == TypeSpec.F.getPrimitiveType()){
             return (F);
-         }else if(_type == TypeSpec.D.getPrimitiveType()){
+         }else if (_type == TypeSpec.D.getPrimitiveType()){
             return (I);
-         }else if(_type == TypeSpec.L.getPrimitiveType()){
+         }else if (_type == TypeSpec.L.getPrimitiveType()){
             return (L);
-         }else if(_type == TypeSpec.OREF.getPrimitiveType()){
+         }else if (_type == TypeSpec.OREF.getPrimitiveType()){
             return (OREF);
          }
          return (NONE);
       }
    }
-
 
    /**
     * Represents an Operator
@@ -195,7 +191,6 @@ class InstructionSet{
       D2LCast(PrimitiveType.f64, PrimitiveType.s64), //
       D2FCast(PrimitiveType.f64, PrimitiveType.f32); //
 
-
       private String text;
 
       private boolean binary;
@@ -204,11 +199,10 @@ class InstructionSet{
       private PrimitiveType castFrom;
       private PrimitiveType castTo;
 
-
       Operator(PrimitiveType _castFrom, PrimitiveType _castTo){
          castTo = _castTo;
          castFrom = _castFrom;
-         text = "(" + castTo.getOpenCLTypeName() + ")";
+         text = "("+castTo.getOpenCLTypeName()+")";
          binary = false;
       }
 
@@ -237,7 +231,7 @@ class InstructionSet{
       }
 
       String getText(boolean _invert){
-         return (_invert ? compliment.getText() : getText());
+         return (_invert?compliment.getText():getText());
       }
 
       boolean isBinary(){
@@ -758,7 +752,7 @@ class InstructionSet{
       boolean usesDouble(){
          PushSpec push = getPush();
          PopSpec pop = getPop();
-         if((push == PushSpec.D) || (pop == PopSpec.D) || (pop == PopSpec.DD) || (pop == PopSpec.AID)){
+         if ((push == PushSpec.D) || (pop == PopSpec.D) || (pop == PopSpec.DD) || (pop == PopSpec.AID)){
             return true;
          }
          return false;
@@ -766,29 +760,29 @@ class InstructionSet{
 
       Instruction newInstruction(ClassModel.ClassModelMethod _classModelMethod, ByteReader byteReader, boolean _isWide){
          Instruction newInstruction = null;
-         if(clazz != null){
+         if (clazz != null){
 
             try{
 
                Constructor<?> constructor = clazz.getDeclaredConstructor(ClassModel.ClassModelMethod.class, ByteReader.class, boolean.class);
-               newInstruction = (Instruction) constructor.newInstance(_classModelMethod, byteReader, _isWide);
-               newInstruction.setLength(byteReader.getOffset() - newInstruction.getThisPC());
-            }catch(SecurityException e){
+               newInstruction = (Instruction)constructor.newInstance(_classModelMethod, byteReader, _isWide);
+               newInstruction.setLength(byteReader.getOffset()-newInstruction.getThisPC());
+            }catch (SecurityException e){
                // TODO Auto-generated catch block
                e.printStackTrace();
-            }catch(NoSuchMethodException e){
+            }catch (NoSuchMethodException e){
                // TODO Auto-generated catch block
                e.printStackTrace();
-            }catch(IllegalArgumentException e){
+            }catch (IllegalArgumentException e){
                // TODO Auto-generated catch block
                e.printStackTrace();
-            }catch(InstantiationException e){
+            }catch (InstantiationException e){
                // TODO Auto-generated catch block
                e.printStackTrace();
-            }catch(IllegalAccessException e){
+            }catch (IllegalAccessException e){
                // TODO Auto-generated catch block
                e.printStackTrace();
-            }catch(InvocationTargetException e){
+            }catch (InvocationTargetException e){
                // TODO Auto-generated catch block
                e.printStackTrace();
             }
@@ -800,7 +794,7 @@ class InstructionSet{
       static Instruction create(ClassModel.ClassModelMethod _classModelMethod, ByteReader _byteReader){
          ByteCode byteCode = get(_byteReader.u1());
          boolean isWide = false;
-         if(byteCode.equals(ByteCode.WIDE)){
+         if (byteCode.equals(ByteCode.WIDE)){
             // handle wide 
             //System.out.println("WIDE");
             isWide = true;
@@ -836,22 +830,25 @@ class InstructionSet{
          setChildren(_firstChild, _lastChild);
       }
 
-      @Override String getDescription(){
-         return ("COMPOSITE! " + getByteCode());
+      @Override
+      String getDescription(){
+         return ("COMPOSITE! "+getByteCode());
       }
 
-      @Override int getThisPC(){
+      @Override
+      int getThisPC(){
          return (getLastChild().getThisPC());
       }
 
-      @Override int getStartPC(){
+      @Override
+      int getStartPC(){
          return (getFirstChild().getStartPC());
       }
 
       static CompositeInstruction create(ByteCode _byteCode, ClassModel.ClassModelMethod _methodModel, Instruction _firstChild,
                                          Instruction _lastChild, BranchSet _branchSet){
          CompositeInstruction compositeInstruction = null;
-         switch(_byteCode){
+         switch (_byteCode){
             case COMPOSITE_IF:
                compositeInstruction = new CompositeIfInstruction(_methodModel, _firstChild, _lastChild, _branchSet);
                break;
@@ -1015,7 +1012,7 @@ class InstructionSet{
       protected Instruction target;
 
       int getAbsolute(){
-         return (getThisPC() + getOffset());
+         return (getThisPC()+getOffset());
       }
 
       private int getOffset(){
@@ -1039,7 +1036,7 @@ class InstructionSet{
 
       void setTarget(Instruction _target){
          target = _target;
-         offset = target.getThisPC() - getThisPC();
+         offset = target.getThisPC()-getThisPC();
          target.addBranchTarget(this);
       }
 
@@ -1068,11 +1065,11 @@ class InstructionSet{
       }
 
       boolean isReverse(){
-         return (offset < 0);
+         return (offset<0);
       }
 
       boolean isForward(){
-         return (offset >= 0);
+         return (offset>=0);
       }
 
       void unhook(){
@@ -1112,7 +1109,7 @@ class InstructionSet{
       }
 
       BranchSet getOrCreateBranchSet(){
-         if(branchSet == null){
+         if (branchSet == null){
             branchSet = new BranchSet(this);
          }
          return branchSet;
@@ -1131,23 +1128,23 @@ class InstructionSet{
          Instruction theTarget = null;
          ConditionalBranch lastToTarget = null;
 
-         if(getTarget().isAfter(_extent)){
+         if (getTarget().isAfter(_extent)){
             // if this conditional is already pointing beyond extent then we know the target
             theTarget = getTarget();
             lastToTarget = this;
          }
-         while(i.getNextExpr().isBranch() && i.getNextExpr().asBranch().isForwardConditional()){
+         while (i.getNextExpr().isBranch() && i.getNextExpr().asBranch().isForwardConditional()){
             Branch nextBranch = i.getNextExpr().asBranch();
-            if(theTarget == null && nextBranch.getTarget().isAfter(_extent)){
+            if (theTarget == null && nextBranch.getTarget().isAfter(_extent)){
                theTarget = nextBranch.getTarget();
                lastToTarget = this;
-            }else if(nextBranch.getTarget() == theTarget){
+            }else if (nextBranch.getTarget() == theTarget){
                lastToTarget = this;
             }
-            i = (ConditionalBranch) i.getNextExpr();
+            i = (ConditionalBranch)i.getNextExpr();
 
          }
-         if(theTarget == null){
+         if (theTarget == null){
             throw new IllegalStateException("unable to find end of while extent");
          }
          return (lastToTarget);
@@ -1261,7 +1258,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("push reference from arrayref and index");
       }
 
@@ -1286,7 +1284,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("pop reference into arrayref[index]");
       }
 
@@ -1298,7 +1297,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("push null");
       }
 
@@ -1340,7 +1340,7 @@ class InstructionSet{
 
       @Override
       final String getDescription(){
-         return ("push reference from local var index " + index);
+         return ("push reference from local var index "+index);
       }
 
    }
@@ -1352,17 +1352,16 @@ class InstructionSet{
 
       @Override
       public boolean isDeclaration(){
-         return (getLocalVariableInfo().getStart() == getThisPC() + getLength());
+         return (getLocalVariableInfo().getStart() == getThisPC()+getLength());
       }
 
       @Override
       final String getDescription(){
-         return ("pop reference into local var index " + index);
+         return ("pop reference into local var index "+index);
       }
    }
 
    static abstract class LocalVariableIndex08Accessor extends Index08 implements AccessLocalVariable{
-
 
       LocalVariableIndex08Accessor(ClassModel.ClassModelMethod _method, ByteCode byteCode, ByteReader byteReader, boolean _wide){
          super(_method, byteCode, byteReader, _wide);
@@ -1393,7 +1392,7 @@ class InstructionSet{
 
       @Override
       final String getDescription(){
-         return ("push reference from local var index " + index);
+         return ("push reference from local var index "+index);
       }
 
    }
@@ -1405,12 +1404,12 @@ class InstructionSet{
 
       @Override
       public boolean isDeclaration(){
-         return (getLocalVariableInfo().getStart() == getThisPC() + getLength());
+         return (getLocalVariableInfo().getStart() == getThisPC()+getLength());
       }
 
       @Override
       final String getDescription(){
-         return ("pop reference into local var index " + index);
+         return ("pop reference into local var index "+index);
       }
 
    }
@@ -1456,7 +1455,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("new array of reference");
       }
 
@@ -1468,7 +1468,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("return popped reference");
       }
 
@@ -1480,7 +1481,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("pop array push length");
       }
    }
@@ -1531,7 +1533,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("pop reference and throw");
       }
 
@@ -1543,7 +1546,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("push byte/boolean from arrayref and index");
       }
 
@@ -1555,7 +1559,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("pop boolean/byte into arrayref[index]");
       }
 
@@ -1569,15 +1574,16 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("push (byte)");
       }
 
       @Override
       public Integer getValue(){
          int byteValue = super.getValue();
-         if(byteValue > 127){
-            byteValue = -(256 - byteValue);
+         if (byteValue>127){
+            byteValue = -(256-byteValue);
          }
          return (byteValue);
       }
@@ -1589,7 +1595,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("push char from arrayref and index");
       }
 
@@ -1601,7 +1608,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("pop char into arrayref[index]");
       }
    }
@@ -1612,7 +1620,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("peek reference check against the constant accessed 16 bit");
       }
 
@@ -1624,7 +1633,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("pop double push float");
       }
 
@@ -1636,7 +1646,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("pop double push int");
       }
 
@@ -1648,7 +1659,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("pop double push long");
       }
 
@@ -1660,7 +1672,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("add top two doubles");
       }
 
@@ -1672,7 +1685,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("push double from arrayref and index");
       }
 
@@ -1684,7 +1698,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("pop double into arrayref[index]");
       }
 
@@ -1696,7 +1711,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("push result of double comparison");
       }
 
@@ -1708,7 +1724,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("push result of double comparison");
       }
 
@@ -1751,7 +1768,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("push (double) 0.0");
       }
 
@@ -1763,7 +1781,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("push (double) 1.0");
       }
 
@@ -1775,7 +1794,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("div top two doubles");
       }
 
@@ -1827,7 +1847,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("mul top two doubles");
       }
 
@@ -1839,7 +1860,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("neg top double");
       }
 
@@ -1851,7 +1873,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("rem top two doubles");
       }
 
@@ -1863,7 +1886,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("return popped double");
       }
 
@@ -1915,7 +1939,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("sub top two doubles");
       }
 
@@ -1934,7 +1959,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("dup top item");
       }
 
@@ -1946,7 +1972,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("dup top item 2 items down");
       }
 
@@ -1958,7 +1985,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("dup top item 3 items down");
       }
 
@@ -1970,7 +1998,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("dup top 2 items");
       }
 
@@ -1982,7 +2011,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("dup top 2 items 2 items down");
       }
 
@@ -1994,7 +2024,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("dup top 2 items 3 items down");
       }
 
@@ -2006,7 +2037,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("pop float push double");
       }
 
@@ -2018,7 +2050,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("pop float push int");
       }
 
@@ -2030,7 +2063,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("pop float push long");
       }
 
@@ -2042,7 +2076,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("add top two floats");
       }
 
@@ -2054,7 +2089,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("push float from arrayref and index");
       }
 
@@ -2066,7 +2102,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("pop float into arrayref[index]");
       }
 
@@ -2078,7 +2115,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("push result of float comparison");
       }
 
@@ -2090,7 +2128,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("push result of float comparison");
       }
 
@@ -2102,7 +2141,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("push (float) 0.0");
       }
 
@@ -2114,7 +2154,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("push (float) 1.0");
       }
 
@@ -2126,7 +2167,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("push (float) 2.0");
       }
 
@@ -2138,7 +2180,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("div top two floats");
       }
 
@@ -2190,7 +2233,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("mul top two floats");
       }
 
@@ -2202,7 +2246,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("neg top float");
       }
 
@@ -2214,7 +2259,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("rem top two floats");
       }
 
@@ -2226,7 +2272,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("return popped float");
       }
 
@@ -2278,7 +2325,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("sub top two floats");
       }
 
@@ -2290,7 +2338,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("push value from field referenced by 16 bit constant index");
       }
 
@@ -2309,15 +2358,18 @@ class InstructionSet{
          return (getFirstChild());
       }
 
-      @Override int getStackConsumeCount(){
+      @Override
+      int getStackConsumeCount(){
          return (1);
       }
 
-      @Override int getStackProduceCount(){
+      @Override
+      int getStackProduceCount(){
          return (1);
       }
 
-      @Override public String getFieldName(){
+      @Override
+      public String getFieldName(){
          return (getConstantPoolFieldEntry().getNameAndTypeEntry().getNameUTF8Entry().getUTF8());
       }
 
@@ -2329,7 +2381,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("push  static field value at 16 bit constant index");
       }
 
@@ -2343,15 +2396,18 @@ class InstructionSet{
          return (method.getConstantPool().getFieldEntry(getConstantPoolFieldIndex()));
       }
 
-      @Override int getStackConsumeCount(){
+      @Override
+      int getStackConsumeCount(){
          return (0);
       }
 
-      @Override int getStackProduceCount(){
+      @Override
+      int getStackProduceCount(){
          return (1);
       }
 
-      @Override public String getFieldName(){
+      @Override
+      public String getFieldName(){
          return (getConstantPoolFieldEntry().getNameAndTypeEntry().getNameUTF8Entry().getUTF8());
       }
    }
@@ -2362,7 +2418,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("branch ");
       }
 
@@ -2374,7 +2431,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("goto wide branch");
       }
 
@@ -2386,7 +2444,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("pop int push byte");
       }
 
@@ -2398,7 +2457,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("pop int push char");
       }
 
@@ -2410,7 +2470,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("pop int push double");
       }
 
@@ -2422,7 +2483,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("pop int push float");
       }
 
@@ -2434,7 +2496,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("pop int push long");
       }
 
@@ -2446,7 +2509,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("pop int push short");
       }
 
@@ -2458,7 +2522,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("add top two ints");
       }
 
@@ -2470,7 +2535,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("push int from arrayref and index");
       }
 
@@ -2482,7 +2548,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("and top two ints");
       }
 
@@ -2494,7 +2561,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("pop int into arrayref[index]");
       }
 
@@ -2506,7 +2574,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("push (int) 0");
       }
 
@@ -2530,7 +2599,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("push (int) 2");
       }
 
@@ -2542,7 +2612,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("push (int) 3");
       }
 
@@ -2554,7 +2625,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("push (int) 4");
       }
 
@@ -2566,7 +2638,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("push (int) 5");
       }
 
@@ -2578,7 +2651,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("push (int)-1");
       }
 
@@ -2590,7 +2664,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("div top two ints");
       }
 
@@ -2602,7 +2677,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("branch if stack top references ==");
       }
 
@@ -2614,7 +2690,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("branch if stack top references !=");
       }
 
@@ -2626,7 +2703,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("branch if stack top ints ==");
       }
 
@@ -2638,7 +2716,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("branch if stack top ints >=");
       }
 
@@ -2650,7 +2729,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("branch if stack top ints > ");
       }
 
@@ -2662,7 +2742,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("branch if stack top ints <=");
       }
 
@@ -2674,7 +2755,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("branch if stack top ints < ");
       }
 
@@ -2686,7 +2768,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("branch if stack top ints !=");
       }
 
@@ -2698,7 +2781,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("branch if stack top int == 0");
       }
 
@@ -2710,7 +2794,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("branch if stack top int >= 0");
       }
 
@@ -2722,7 +2807,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("branch if stack top int > 0");
       }
 
@@ -2734,7 +2820,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("branch if stack top int <= 0");
       }
 
@@ -2746,7 +2833,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("branch if stack top int < 0");
       }
 
@@ -2758,7 +2846,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("branch if stack top int != 0");
       }
 
@@ -2770,7 +2859,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("branch if non null");
       }
 
@@ -2782,7 +2872,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("branch if null");
       }
 
@@ -2796,7 +2887,7 @@ class InstructionSet{
       I_IINC(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
          super(_method, ByteCode.IINC, _byteReader, _wide);
          wide = _wide;
-         if(wide){
+         if (wide){
             delta = _byteReader.u2();
          }else{
             delta = _byteReader.u1();
@@ -2804,7 +2895,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("inc var index 08 bit by byte");
       }
 
@@ -2830,18 +2922,18 @@ class InstructionSet{
       }
 
       boolean isInc(){
-         return getAdjust() > 0;
+         return getAdjust()>0;
       }
 
       int getAdjust(){
          int adjust = delta;
-         if(wide){
-            if(adjust > 0x7fff){
-               adjust = -0x10000 + adjust;
+         if (wide){
+            if (adjust>0x7fff){
+               adjust = -0x10000+adjust;
             }
          }else{
-            if(adjust > 0x7f){
-               adjust = -0x100 + adjust;
+            if (adjust>0x7f){
+               adjust = -0x100+adjust;
             }
          }
          return (adjust);
@@ -2894,7 +2986,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("mul top two ints");
       }
 
@@ -2906,7 +2999,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("neg top int");
       }
 
@@ -2918,13 +3012,14 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("pop reference check against the constant accessed 16 bit push 1 if same");
       }
 
    }
 
-   static class I_INVOKEINTERFACE extends Index16 implements InterfaceMethodCall {
+   static class I_INVOKEINTERFACE extends Index16 implements InterfaceMethodCall{
       private int args;
 
       I_INVOKEINTERFACE(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
@@ -2939,7 +3034,8 @@ class InstructionSet{
          return (args);
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("pop args and call the interface method referenced by 16 bit constant index");
       }
 
@@ -2957,7 +3053,7 @@ class InstructionSet{
       public Instruction getArg(int _arg){
          Instruction child = getFirstChild();
          _arg++;
-         while(_arg-- != 0){
+         while (_arg-- != 0){
             child = child.getNextExpr();
          }
          return (child);
@@ -2968,17 +3064,19 @@ class InstructionSet{
          return (getFirstChild());
       }
 
-      @Override int getStackConsumeCount(){
-         return (getConstantPoolInterfaceMethodEntry().getStackConsumeCount() + 1); // + 1 to account for instance 'this'
+      @Override
+      int getStackConsumeCount(){
+         return (getConstantPoolInterfaceMethodEntry().getStackConsumeCount()+1); // + 1 to account for instance 'this'
 
       }
 
-      @Override int getStackProduceCount(){
+      @Override
+      int getStackProduceCount(){
          return (getConstantPoolInterfaceMethodEntry().getStackProduceCount()); // + 1 to account for instance 'this'
       }
    }
 
-   static class I_INVOKEDYNAMIC extends Index16 implements InterfaceMethodCall {
+   static class I_INVOKEDYNAMIC extends Index16 implements InterfaceMethodCall{
       private int args;
 
       I_INVOKEDYNAMIC(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
@@ -2993,7 +3091,8 @@ class InstructionSet{
          return (args);
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("pop args and call the invoke dynamic method referenced by 16 bit constant index");
       }
 
@@ -3011,7 +3110,7 @@ class InstructionSet{
       public Instruction getArg(int _arg){
          Instruction child = getFirstChild();
          _arg++;
-         while(_arg-- != 0){
+         while (_arg-- != 0){
             child = child.getNextExpr();
          }
          return (child);
@@ -3022,12 +3121,14 @@ class InstructionSet{
          return (getFirstChild());
       }
 
-      @Override int getStackConsumeCount(){
-         return (getConstantPoolInterfaceMethodEntry().getStackConsumeCount() + 1); // + 1 to account for instance 'this'
+      @Override
+      int getStackConsumeCount(){
+         return (getConstantPoolInterfaceMethodEntry().getStackConsumeCount()+1); // + 1 to account for instance 'this'
 
       }
 
-      @Override int getStackProduceCount(){
+      @Override
+      int getStackProduceCount(){
          return (getConstantPoolInterfaceMethodEntry().getStackProduceCount()); // + 1 to account for instance 'this'
       }
    }
@@ -3039,7 +3140,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("pop object reference and args and call the special method referenced by 16 bit constant index");
       }
 
@@ -3057,7 +3159,7 @@ class InstructionSet{
       public Instruction getArg(int _arg){
          Instruction child = getFirstChild();
          _arg++;
-         while(_arg-- != 0){
+         while (_arg-- != 0){
             child = child.getNextExpr();
          }
          return (child);
@@ -3070,11 +3172,12 @@ class InstructionSet{
 
       @Override
       public int getStackConsumeCount(){
-         return (getConstantPoolMethodEntry().getStackConsumeCount() + 1); // + 1 to account for instance 'this'
+         return (getConstantPoolMethodEntry().getStackConsumeCount()+1); // + 1 to account for instance 'this'
 
       }
 
-      @Override int getStackProduceCount(){
+      @Override
+      int getStackProduceCount(){
          return (getConstantPoolMethodEntry().getStackProduceCount());
       }
    }
@@ -3085,7 +3188,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("pop args and call the  static method referenced by 16 bit constant index");
       }
 
@@ -3103,18 +3207,20 @@ class InstructionSet{
       public Instruction getArg(int _arg){
          Instruction child = getFirstChild();
 
-         while(_arg-- != 0){
+         while (_arg-- != 0){
             child = child.getNextExpr();
          }
          return (child);
       }
 
-      @Override int getStackConsumeCount(){
+      @Override
+      int getStackConsumeCount(){
          return (getConstantPoolMethodEntry().getStackConsumeCount());
 
       }
 
-      @Override int getStackProduceCount(){
+      @Override
+      int getStackProduceCount(){
          return (getConstantPoolMethodEntry().getStackProduceCount());
       }
    }
@@ -3125,7 +3231,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("pop object reference and args and call the method referenced by 16 bit constant index");
       }
 
@@ -3143,7 +3250,7 @@ class InstructionSet{
       public Instruction getArg(int _arg){
          Instruction child = getFirstChild();
          _arg++;
-         while(_arg-- != 0){
+         while (_arg-- != 0){
             child = child.getNextExpr();
          }
          return (child);
@@ -3154,11 +3261,13 @@ class InstructionSet{
          return (getFirstChild());
       }
 
-      @Override int getStackConsumeCount(){
-         return (getConstantPoolMethodEntry().getStackConsumeCount() + 1); // + 1 to account for instance 'this'
+      @Override
+      int getStackConsumeCount(){
+         return (getConstantPoolMethodEntry().getStackConsumeCount()+1); // + 1 to account for instance 'this'
       }
 
-      @Override int getStackProduceCount(){
+      @Override
+      int getStackProduceCount(){
          return (getConstantPoolMethodEntry().getStackProduceCount());
       }
    }
@@ -3169,7 +3278,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("or top two ints");
       }
 
@@ -3181,7 +3291,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("rem top two ints");
       }
 
@@ -3193,7 +3304,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("return popped int");
       }
 
@@ -3205,7 +3317,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("shift left top int");
       }
 
@@ -3217,7 +3330,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("shift right top int");
       }
 
@@ -3269,7 +3383,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("sub top two ints");
       }
 
@@ -3281,7 +3396,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("shift right top int unsigned");
       }
 
@@ -3293,7 +3409,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("xor top two ints");
       }
 
@@ -3305,7 +3422,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("jump to subroutine ");
       }
 
@@ -3317,7 +3435,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("subroutine");
       }
 
@@ -3329,7 +3448,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("pop long push double");
       }
 
@@ -3341,7 +3461,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("pop long push float");
       }
 
@@ -3353,7 +3474,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("pop long push int");
       }
 
@@ -3365,7 +3487,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("add top two longs");
       }
 
@@ -3377,7 +3500,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("push long from arrayref and index");
       }
 
@@ -3389,7 +3513,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("and top two longs");
       }
 
@@ -3401,7 +3526,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("pop long into arrayref[index]");
       }
 
@@ -3413,7 +3539,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("push result of long comparison");
       }
 
@@ -3425,7 +3552,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("push (long) 0");
       }
 
@@ -3437,7 +3565,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("push (long) 1");
       }
 
@@ -3449,7 +3578,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("push constant at 08 bit index");
       }
 
@@ -3477,7 +3607,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("push constant at 16 bit index");
       }
 
@@ -3505,7 +3636,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("push long/double constant at 16 bit index");
       }
 
@@ -3532,7 +3664,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("div top two longs");
       }
 
@@ -3584,7 +3717,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("mul top two longs");
       }
 
@@ -3596,7 +3730,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("neg top long");
       }
 
@@ -3610,20 +3745,21 @@ class InstructionSet{
       I_LOOKUPSWITCH(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
          super(_method, ByteCode.LOOKUPSWITCH, _byteReader, _wide);
          int operandStart = _byteReader.getOffset();
-         int padLength = ((operandStart % 4) == 0) ? 0 : 4 - (operandStart % 4);
+         int padLength = ((operandStart%4) == 0)?0:4-(operandStart%4);
          _byteReader.bytes(padLength);
          offset = _byteReader.u4();
          npairs = _byteReader.u4();
          offsets = new int[npairs];
          matches = new int[npairs];
-         for(int i = 0; i < npairs; i++){
+         for (int i = 0; i<npairs; i++){
             matches[i] = _byteReader.u4();
             offsets[i] = _byteReader.u4();
          }
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("help!");
       }
 
@@ -3643,7 +3779,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("or top two longs");
       }
 
@@ -3655,7 +3792,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("rem top two longs");
       }
 
@@ -3667,7 +3805,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("return popped long");
       }
 
@@ -3679,7 +3818,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("shift left top long");
       }
 
@@ -3691,7 +3831,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("shift right top long");
       }
 
@@ -3743,7 +3884,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("sub top two longs");
       }
 
@@ -3755,7 +3897,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("shift right top long unsigned");
       }
 
@@ -3767,7 +3910,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("xor top two longs");
       }
 
@@ -3779,7 +3923,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("pop reference and inc monitor");
       }
 
@@ -3791,7 +3936,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("pop reference and dec monitor");
       }
 
@@ -3806,7 +3952,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("create a multi dimension array of refernce types ");
       }
 
@@ -3822,7 +3969,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("new");
       }
 
@@ -3837,7 +3985,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("new array simple prefix");
       }
 
@@ -3853,7 +4002,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("no op");
       }
 
@@ -3865,7 +4015,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("pop one item");
       }
 
@@ -3877,7 +4028,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("pop 2 items");
       }
 
@@ -3889,7 +4041,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("pop stack value into field referenced by 16 bit constant index");
       }
 
@@ -3903,11 +4056,13 @@ class InstructionSet{
          return (method.getConstantPool().getFieldEntry(getConstantPoolFieldIndex()));
       }
 
-      @Override int getStackConsumeCount(){
+      @Override
+      int getStackConsumeCount(){
          return (2);
       }
 
-      @Override int getStackProduceCount(){
+      @Override
+      int getStackProduceCount(){
          return (0);
       }
 
@@ -3921,7 +4076,8 @@ class InstructionSet{
          return (getLastChild());
       }
 
-      @Override public String getFieldName(){
+      @Override
+      public String getFieldName(){
          return (getConstantPoolFieldEntry().getNameAndTypeEntry().getNameUTF8Entry().getUTF8());
       }
    }
@@ -3932,7 +4088,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("pop stack value into 16 bit constant index as field");
       }
 
@@ -3946,11 +4103,13 @@ class InstructionSet{
          return (method.getConstantPool().getFieldEntry(getConstantPoolFieldIndex()));
       }
 
-      @Override int getStackConsumeCount(){
+      @Override
+      int getStackConsumeCount(){
          return (1);
       }
 
-      @Override int getStackProduceCount(){
+      @Override
+      int getStackProduceCount(){
          return (0);
       }
 
@@ -3959,7 +4118,8 @@ class InstructionSet{
          return (getLastChild());
       }
 
-      @Override public String getFieldName(){
+      @Override
+      public String getFieldName(){
          return (getConstantPoolFieldEntry().getNameAndTypeEntry().getNameUTF8Entry().getUTF8());
       }
    }
@@ -3970,13 +4130,14 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("return to pc in local var index 08 bit");
       }
 
       @Override
       public boolean isDeclaration(){
-         return (localVariableInfo.getStart() == getThisPC() + getLength());
+         return (localVariableInfo.getStart() == getThisPC()+getLength());
       }
 
       @Override
@@ -4003,7 +4164,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("return void");
       }
 
@@ -4015,7 +4177,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("push short from arrayref and index");
       }
 
@@ -4027,7 +4190,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("pop short into arrayref[index]");
       }
 
@@ -4040,7 +4204,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("push (short)");
       }
    }
@@ -4051,7 +4216,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("swap top 2 items");
       }
 
@@ -4065,19 +4231,20 @@ class InstructionSet{
       I_TABLESWITCH(ClassModel.ClassModelMethod _method, ByteReader _byteReader, boolean _wide){
          super(_method, ByteCode.TABLESWITCH, _byteReader, _wide);
          int operandStart = _byteReader.getOffset();
-         int padLength = ((operandStart % 4) == 0) ? 0 : 4 - (operandStart % 4);
+         int padLength = ((operandStart%4) == 0)?0:4-(operandStart%4);
          _byteReader.bytes(padLength);
          offset = _byteReader.u4();
          low = _byteReader.u4();
          high = _byteReader.u4();
-         offsets = new int[high - low + 1];
-         for(int i = low; i <= high; i++){
-            offsets[i - low] = _byteReader.u4();
+         offsets = new int[high-low+1];
+         for (int i = low; i<=high; i++){
+            offsets[i-low] = _byteReader.u4();
          }
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("help!");
       }
 
@@ -4105,7 +4272,7 @@ class InstructionSet{
          wideopcode = _byteReader.u1();
          index = _byteReader.u2();
 
-         if(((wideopcode >= 0x15 && wideopcode <= 0x19) || (wideopcode >= 0x36 && wideopcode <= 0x3a) || (wideopcode == 0xa9))){
+         if (((wideopcode>=0x15 && wideopcode<=0x19) || (wideopcode>=0x36 && wideopcode<=0x3a) || (wideopcode == 0xa9))){
             iinc = false;
          }else{
             increment = _byteReader.u2();
@@ -4114,7 +4281,8 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("help");
       }
 
@@ -4142,7 +4310,8 @@ class InstructionSet{
          super(_method, ByteCode.NONE, _pc);
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
          return ("END");
       }
    }
@@ -4170,7 +4339,7 @@ class InstructionSet{
    static abstract class Index08 extends Index{
       Index08(ClassModel.ClassModelMethod _method, ByteCode _byteCode, ByteReader _byteReader, boolean _wide){
          super(_method, _byteCode, _byteReader, _wide);
-         if(_wide){
+         if (_wide){
             index = _byteReader.u2();
          }else{
             index = _byteReader.u1();
@@ -4216,7 +4385,7 @@ class InstructionSet{
       }
 
       int getAbsolute(int _index){
-         return (getThisPC() + offsets[_index]);
+         return (getThisPC()+offsets[_index]);
       }
 
       int getOffset(int _index){
@@ -4233,7 +4402,7 @@ class InstructionSet{
 
    }
 
-   interface MethodCall {
+   interface MethodCall{
       int getConstantPoolMethodIndex();
 
       MethodEntry getConstantPoolMethodEntry();
@@ -4242,13 +4411,12 @@ class InstructionSet{
 
    }
 
-
    interface VirtualMethodCall extends MethodCall{
 
       Instruction getInstanceReference();
    }
 
-   interface InterfaceMethodCall {
+   interface InterfaceMethodCall{
       int getConstantPoolInterfaceMethodIndex();
 
       ConstantPool.InterfaceMethodEntry getConstantPoolInterfaceMethodEntry();
@@ -4308,7 +4476,8 @@ class InstructionSet{
       T getValue();
    }
 
-   @SuppressWarnings("unchecked") interface ConstantPoolEntryConstant extends Constant{
+   @SuppressWarnings("unchecked")
+   interface ConstantPoolEntryConstant extends Constant{
       int getConstantPoolIndex();
 
       ConstantPool.Entry getConstantPoolEntry();
@@ -4338,19 +4507,23 @@ class InstructionSet{
          cloning = _cloning;
       }
 
-      @Override String getDescription(){
-         return ("CLONE! " + getByteCode());
+      @Override
+      String getDescription(){
+         return ("CLONE! "+getByteCode());
       }
 
-      @Override int getStackConsumeCount(){
+      @Override
+      int getStackConsumeCount(){
          return (cloning.getStackConsumeCount());
       }
 
-      @Override int getStackProduceCount(){
+      @Override
+      int getStackProduceCount(){
          return (cloning.getStackProduceCount());
       }
 
-      @Override Instruction getReal(){
+      @Override
+      Instruction getReal(){
          return (cloning);
       }
    }
@@ -4378,15 +4551,17 @@ class InstructionSet{
          isInc = _isInc;
       }
 
-      @Override String getDescription(){
-         return ("INCREMENT Local Variable! " + getByteCode());
+      @Override
+      String getDescription(){
+         return ("INCREMENT Local Variable! "+getByteCode());
       }
 
       boolean isInc(){
          return (isInc);
       }
 
-      @Override Instruction getStartInstruction(){
+      @Override
+      Instruction getStartInstruction(){
          return (fieldOrVariable.getStartInstruction());
       }
    }
@@ -4403,8 +4578,9 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
-         return ("INLINE ASSIGN! " + getByteCode());
+      @Override
+      String getDescription(){
+         return ("INLINE ASSIGN! "+getByteCode());
       }
 
       AssignToLocalVariable getAssignToLocalVariable(){
@@ -4428,8 +4604,9 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
-         return ("FIELD ARRAY_DIM ELEMENT INCREMENT! " + getByteCode());
+      @Override
+      String getDescription(){
+         return ("FIELD ARRAY_DIM ELEMENT INCREMENT! "+getByteCode());
       }
 
       AssignToArrayElement getAssignToArrayElement(){
@@ -4457,8 +4634,9 @@ class InstructionSet{
 
       }
 
-      @Override String getDescription(){
-         return ("FIELD ARRAY_DIM ELEMENT INCREMENT! " + getByteCode());
+      @Override
+      String getDescription(){
+         return ("FIELD ARRAY_DIM ELEMENT INCREMENT! "+getByteCode());
       }
 
       AssignToArrayElement getAssignToArrayElement(){
@@ -4484,8 +4662,9 @@ class InstructionSet{
          to = _to;
       }
 
-      @Override String getDescription(){
-         return ("MULTIASSIGN! " + getByteCode());
+      @Override
+      String getDescription(){
+         return ("MULTIASSIGN! "+getByteCode());
       }
 
       Instruction getTo(){
@@ -4507,7 +4686,8 @@ class InstructionSet{
          super(_method, ByteCode.FAKEGOTO, _target);
       }
 
-      @Override String getDescription(){
+      @Override
+      String getDescription(){
 
          return "FAKE goto";
       }

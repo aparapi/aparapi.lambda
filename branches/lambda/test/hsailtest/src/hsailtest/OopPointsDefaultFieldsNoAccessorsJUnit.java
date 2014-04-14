@@ -4,74 +4,69 @@ import com.amd.aparapi.Aparapi;
 import com.amd.aparapi.Device;
 import org.junit.Test;
 
-
-
 import static junit.framework.Assert.assertTrue;
 
+public class OopPointsDefaultFieldsNoAccessorsJUnit{
+   public static class P{
+      int x;
+      int y;
 
-public class OopPointsDefaultFieldsNoAccessorsJUnit {
-    public static class P {
-       int x;
-        int y;
+      void clear(){
+         x = y = 0;
+      }
 
-       void clear(){
-           x=y=0;
-       }
+      @Override
+      public String toString(){
+         return ("("+x+", "+y+")");
+      }
+   }
 
+   static void dump(String type, P[] points){
+      System.out.print(type+" ->");
+      for (int i = 0; i<points.length; i++){
+         if (i != 0){
+            System.out.print(", ");
+         }
+         System.out.print(points[i]);
+      }
+      System.out.println();
+   }
 
-       @Override
-        public String toString() {
-            return ("(" + x + ", " + y + ")");
-        }
-    }
+   @Test
+   public void test(){
 
-    static void dump(String type, P[] points) {
-        System.out.print(type + " ->");
-        for (int i = 0; i < points.length; i++) {
-            if (i != 0) {
-                System.out.print(", ");
-            }
-            System.out.print(points[i]);
-        }
-        System.out.println();
-    }
+      int len = 12;
+      P[] points = new P[len];
 
+      for (int i = 0; i<len; i++){
+         points[i] = new P();
+      }
 
-    @Test
-    public void test() {
+      Aparapi.IntTerminal ic = gid -> {
+         P p = points[gid];
 
-        int len = 12;
-        P[] points = new P[len];
+         p.x = gid;
+         p.y = gid*2;
 
-        for (int i = 0; i < len; i++) {
-            points[i] = new P();
-        }
+      };
 
-        Aparapi.IntTerminal ic = gid -> {
-            P p = points[gid];
+      Device.hsa().forEach(len, ic);
+      dump("hsa", points);
+      P[] hsaPoints = new P[points.length];
+      for (int i = 0; i<points.length; i++){
+         hsaPoints[i] = points[i];
+         points[i] = new P();
+      }
+      Device.jtp().forEach(len, i -> points[i].clear());
+      Device.jtp().forEach(len, ic);
+      dump("jtp", points);
 
-            p.x=gid;
-            p.y = gid*2;
+      for (int i = 0; i<points.length; i++){
+         assertTrue("hsaPoint["+i+"]==points["+i+"]",
+               hsaPoints[i].x == points[i].x &&
+                     hsaPoints[i].y == points[i].y);
 
-        };
+      }
 
-        Device.hsa().forEach(len, ic);
-        dump("hsa", points);
-        P[] hsaPoints = new P[points.length];
-        for (int i=0; i<points.length; i++){
-            hsaPoints[i]=points[i];
-            points[i]=new P();
-        }
-        Device.jtp().forEach(len, i-> points[i].clear());
-        Device.jtp().forEach(len, ic);
-        dump("jtp", points);
-
-        for (int i=0; i<points.length; i++){
-            assertTrue("hsaPoint["+i+"]==points["+i+"]",
-                    hsaPoints[i].x==points[i].x &&
-                    hsaPoints[i].y==points[i].y );
-
-        }
-
-    }
+   }
 }

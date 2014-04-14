@@ -60,7 +60,7 @@ public class ProfileInfo{
 
    public ProfileInfo(String _label, int _type, long _start, long _end, long _submit, long _queued){
       type = TYPE.values()[_type];
-      label = _label == null ? "exec()" : _label;
+      label = _label == null?"exec()":_label;
       start = _start;
       end = _end;
       submit = _submit;
@@ -84,8 +84,8 @@ public class ProfileInfo{
    }
 
    public String toString(){
-      return "ProfileInfo[" + type + " '" + label + "' start=" + start + ", end=" + end + ", submit=" + submit + ", queued="
-            + queued + ", duration=" + (end - start) + "]";
+      return "ProfileInfo["+type+" '"+label+"' start="+start+", end="+end+", submit="+submit+", queued="
+            +queued+", duration="+(end-start)+"]";
    }
 
    public String getLabel(){

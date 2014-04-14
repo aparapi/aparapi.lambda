@@ -39,7 +39,7 @@ package com.amd.aparapi;
 
 /**
  * A collection of annotations used at dev time to tag intent.
- * <p/>
+ * <p>
  * We should be able to remove all of these before OpenSource release.
  *
  * @author gfrost
@@ -64,7 +64,7 @@ class Annotations{
 
    /**
     * Used to tag experimental features (methods/fields).
-    * <p/>
+    * <p>
     * Do not rely on anything tagged as experimental, it will probably be retracted/refactored.
     *
     * @author gfrost
@@ -74,7 +74,7 @@ class Annotations{
 
    /**
     * Used to tag unused features (methods/fields).
-    * <p/>
+    * <p>
     * Do not rely on anything tagged as unused, it will probably be retracted/refactored.
     *
     * @author gfrost

@@ -43,16 +43,15 @@ import com.amd.aparapi.Range;
 
 /**
  * An example Aparapi application which computes and displays squares of a set of 512 input values.
- * While executing on GPU using Aparpi framework, each square value is computed in a separate kernel invocation and 
- * can thus maximize performance by optimally utilizing all GPU computing units 
- *  
- * @author gfrost
+ * While executing on GPU using Aparpi framework, each square value is computed in a separate kernel invocation and
+ * can thus maximize performance by optimally utilizing all GPU computing units
  *
+ * @author gfrost
  */
 
 public class Main{
 
-   public static void main(String[] _args) {
+   public static void main(String[] _args){
 
       final int size = 512;
 
@@ -60,7 +59,7 @@ public class Main{
       final float[] values = new float[size];
 
       /** Initialize input array. */
-      for (int i = 0; i < size; i++) {
+      for (int i = 0; i<size; i++){
          values[i] = i;
       }
 
@@ -71,9 +70,10 @@ public class Main{
        * output array. 
        **/
       Kernel kernel = new Kernel(){
-         @Override public void run() {
+         @Override
+         public void run(){
             int gid = getGlobalId();
-            squares[gid] = values[gid] * values[gid];
+            squares[gid] = values[gid]*values[gid];
          }
       };
 
@@ -82,10 +82,10 @@ public class Main{
       kernel.execute(Range.create(512));
 
       // Report target execution mode: GPU or JTP (Java Thread Pool).
-      System.out.println("Execution mode=" + kernel.getExecutionMode());
+      System.out.println("Execution mode="+kernel.getExecutionMode());
 
       // Display computed square values.
-      for (int i = 0; i < size; i++) {
+      for (int i = 0; i<size; i++){
          System.out.printf("%6.0f %8.0f\n", values[i], squares[i]);
       }
 

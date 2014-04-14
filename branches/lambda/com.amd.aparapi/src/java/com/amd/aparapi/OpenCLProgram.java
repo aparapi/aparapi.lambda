@@ -40,9 +40,9 @@ public class OpenCLProgram{
 
    public synchronized OpenCLMem getMem(Object _instance, long _address){
       OpenCLMem mem = instanceToMem.get(_instance);
-      if(mem == null){
+      if (mem == null){
          mem = addressToMem.get(_instance);
-         if(mem != null){
+         if (mem != null){
             System.out.println("object has been moved, we need to remap the buffer");
             OpenCLJNI.getJNI().remap(this, mem, _address);
          }

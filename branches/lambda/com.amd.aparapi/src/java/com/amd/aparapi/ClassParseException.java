@@ -106,13 +106,13 @@ public class ClassParseException extends AparapiException{
    }
 
    ClassParseException(final Instruction _instruction, final TYPE _type){
-      super("@" + _instruction.getThisPC() + " " + _instruction.getByteCode() + " " + _type.getDescription());
+      super("@"+_instruction.getThisPC()+" "+_instruction.getByteCode()+" "+_type.getDescription());
       type = _type;
       instruction = _instruction;
    }
 
    ClassParseException(final TYPE _type, final String _methodName){
-      super("@" + _methodName + " " + _type.getDescription());
+      super("@"+_methodName+" "+_type.getDescription());
       type = _type;
       instruction = null;
    }

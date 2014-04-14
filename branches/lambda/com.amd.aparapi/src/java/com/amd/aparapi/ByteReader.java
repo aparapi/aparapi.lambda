@@ -158,7 +158,7 @@ class ByteReader{
    }
 
    boolean hasMore(){
-      return (getOffset() < byteBuffer.size());
+      return (getOffset()<byteBuffer.size());
    }
 
 }

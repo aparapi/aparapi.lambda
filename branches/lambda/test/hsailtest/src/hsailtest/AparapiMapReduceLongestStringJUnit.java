@@ -5,20 +5,21 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
 
+public class AparapiMapReduceLongestStringJUnit{
 
-public class AparapiMapReduceLongestStringJUnit {
+   @Test
+   public void test(){
 
+      String str = Aparapi.range(new String[]{"zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven"}).map(s -> {
+         return (s.length());
+      }).select((k, l) -> {
+         return (k>l);
+      });
 
-    @Test
-    public void test()  {
+      System.out.println("longest ="+str);
 
-        String str = Aparapi.range(new String[]{"zero", "one", "two", "three", "four", "five", "six", "seven","eight", "nine", "ten", "eleven"}).map(s->{return(s.length());}).select((k,l) -> {return( k>l);});
+      assertTrue("str==\"eleven\"", str.equals("eleven"));
 
-        System.out.println("longest =" +str);
-
-
-        assertTrue("str==\"eleven\"", str.equals("eleven"));
-
-    }
+   }
 
 }

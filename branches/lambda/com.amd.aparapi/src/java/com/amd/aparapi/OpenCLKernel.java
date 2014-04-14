@@ -16,7 +16,7 @@ public class OpenCLKernel{
       program = _program;
       name = _name;
       args = _args.toArray(new OpenCLArgDescriptor[0]);
-      for(OpenCLArgDescriptor arg : args){
+      for (OpenCLArgDescriptor arg : args){
          arg.kernel = this;
       }
    }

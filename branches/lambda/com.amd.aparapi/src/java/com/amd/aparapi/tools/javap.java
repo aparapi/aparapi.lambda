@@ -2,9 +2,8 @@ package com.amd.aparapi.tools;
 
 import com.amd.aparapi.AparapiException;
 import com.amd.aparapi.ClassModel;
-import com.amd.aparapi.MethodModel;
 import com.amd.aparapi.InstructionHelper;
-import com.amd.aparapi.ClassParseException;
+import com.amd.aparapi.MethodModel;
 
 public class javap{
    static public void main(String[] _args) throws ClassNotFoundException, AparapiException{

@@ -48,8 +48,8 @@ class Table{
 
       String pad(String _s, int _width){
          int length = _s.length();
-         int padWidth = _width - length;
-         String padded = _s + spaces.substring(0, padWidth);
+         int padWidth = _width-length;
+         String padded = _s+spaces.substring(0, padWidth);
          return (padded);
 
       }
@@ -66,14 +66,14 @@ class Table{
    }
 
    Table(String... _formats){
-      for(String format : _formats){
+      for (String format : _formats){
          cols.add(new Col(format));
       }
    }
 
    void data(Object... args){
       cols.get(col++).format(args);
-      if(col == cols.size()){
+      if (col == cols.size()){
          col = 0;
          size++;
       }
@@ -83,8 +83,8 @@ class Table{
    public String toString(){
       StringBuilder sb = new StringBuilder();
 
-      for(int i = 0; i < size; i++){
-         for(Table.Col col : cols){
+      for (int i = 0; i<size; i++){
+         for (Table.Col col : cols){
             sb.append(col.get(i));
          }
          sb.append("\n");
@@ -93,7 +93,7 @@ class Table{
    }
 
    void header(String... _headers){
-      for(int i = 0; i < _headers.length; i++){
+      for (int i = 0; i<_headers.length; i++){
          cols.get(i).header(_headers[i]);
       }
       size++;

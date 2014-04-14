@@ -3,56 +3,59 @@ package hsailtest;
 import com.amd.aparapi.Device;
 import org.junit.Test;
 
-import static com.amd.aparapi.HSA.*;
+import static com.amd.aparapi.HSA.barrier;
+import static com.amd.aparapi.HSA.getCurrentWorkGroupSize;
+import static com.amd.aparapi.HSA.getWorkGroupId;
+import static com.amd.aparapi.HSA.getWorkItemId;
+import static com.amd.aparapi.HSA.localIntX1;
 import static org.junit.Assert.assertTrue;
 
-
-public class ScanReductionJUnit {
+public class ScanReductionJUnit{
 
    int add(int lhs, int rhs){
-      return(lhs+rhs);
+      return (lhs+rhs);
    }
 
    int scan(int[] arr){
-       int len = arr.length;
-       int[] partials=new int[len/256+1];
-       Device.hsa().forEach(len, id -> {
-           int[] local = localIntX1();
-           int lid = getWorkItemId();
-           int lsize = getCurrentWorkGroupSize();
-           local[lid] = arr[id];
-           barrier();
-           for (int step = 2; step <= lsize; step *= 2) {
-               if ((lid+1)%step == 0) {
-                   int halfStep = step/2;
-                   local[lid] +=  local[lid-halfStep];
-               }
-               barrier();
-           }
-           if((lid+1)==getCurrentWorkGroupSize()) {// last in group
+      int len = arr.length;
+      int[] partials = new int[len/256+1];
+      Device.hsa().forEach(len, id -> {
+         int[] local = localIntX1();
+         int lid = getWorkItemId();
+         int lsize = getCurrentWorkGroupSize();
+         local[lid] = arr[id];
+         barrier();
+         for (int step = 2; step<=lsize; step *= 2){
+            if ((lid+1)%step == 0){
+               int halfStep = step/2;
+               local[lid] += local[lid-halfStep];
+            }
+            barrier();
+         }
+         if ((lid+1) == getCurrentWorkGroupSize()){// last in group
 
-               partials[getWorkGroupId()] = local[lid]; // race here is ok
-               local[lid]=0;
-           }
-           barrier();
-           for (int step=lsize; step >1 ; step/=2){
-               if (((lid+1)%step) == 0){
-                   int halfStep = step/2;
-                   int prev = local[lid-halfStep];
-                   local[lid-halfStep]=local[lid];
-                   local[lid]+= prev;
-               }
-               barrier();
-           }
-           arr[id] = local[lid];
-           barrier();
+            partials[getWorkGroupId()] = local[lid]; // race here is ok
+            local[lid] = 0;
+         }
+         barrier();
+         for (int step = lsize; step>1; step /= 2){
+            if (((lid+1)%step) == 0){
+               int halfStep = step/2;
+               int prev = local[lid-halfStep];
+               local[lid-halfStep] = local[lid];
+               local[lid] += prev;
+            }
+            barrier();
+         }
+         arr[id] = local[lid];
+         barrier();
 
-       });
-       int sum =0;
-       for (int i:partials){
-           sum+=i;
-       }
-       return(sum);
+      });
+      int sum = 0;
+      for (int i : partials){
+         sum += i;
+      }
+      return (sum);
    }
     /*
 
@@ -170,29 +173,25 @@ public class ScanReductionJUnit {
 //   V    +   V    +     V   +    V    +
 //  0     4   6    9    11  17    18   20
 
+   @Test
+   public void test(){
+      final int len = 256;
+      int[] in = new int[len];
+      Device.jtp().forEach(len, id -> in[id] = (Math.random()>.5)?1:0);
+      int[] inCopy = JunitHelper.copy(in);
+      int hsaSum = scan(in);
+      JunitHelper.dump("orig", inCopy);
+      JunitHelper.dump(" hsa", in);
+      int[] out = new int[len];
 
+      for (int i = 1; i<len; i++){
+         out[i] = out[i-1]+inCopy[i-1];
+      }
+      int sum = out[len-1]+inCopy[len-1];
 
+      JunitHelper.dump(" seq", out);
 
+      assertTrue("HSA equals JTP results", sum == hsaSum);
 
-    @Test public void test() {
-       final int len = 256;
-       int[] in = new int[len];
-       Device.jtp().forEach(len, id->in[id]=(Math.random()>.5)?1:0);
-       int[] inCopy=JunitHelper.copy(in);
-        int hsaSum = scan(in);
-        JunitHelper.dump("orig", inCopy);
-        JunitHelper.dump(" hsa", in);
-        int[] out = new int[len];
-
-        for (int i=1; i<len; i++){
-            out[i] = out[i-1] + inCopy[i-1];
-        }
-        int sum=out[len-1]+inCopy[len-1];
-
-        JunitHelper.dump(" seq", out);
-
-
-        assertTrue("HSA equals JTP results", sum==hsaSum );
-
-    }
+   }
 }

@@ -39,32 +39,33 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 
 package com.amd.aparapi.sample.convolution;
 
-import java.io.File;
-
 import com.amd.aparapi.Device;
 import com.amd.aparapi.OpenCL;
 import com.amd.aparapi.OpenCLDevice;
 import com.amd.aparapi.Range;
 
+import java.io.File;
+
 public class ConvolutionOpenCL{
 
-   @OpenCL.Resource("com/amd/aparapi/sample/convolution/convolution.cl") interface Convolution extends OpenCL<Convolution>{
+   @OpenCL.Resource("com/amd/aparapi/sample/convolution/convolution.cl")
+   interface Convolution extends OpenCL<Convolution>{
       Convolution applyConvolution(//
-            Range range, //
-            @GlobalReadOnly("_convMatrix3x3") float[] _convMatrix3x3,//// only read from kernel 
-            @GlobalReadOnly("_imagIn") byte[] _imageIn,// only read from kernel (actually char[])
-            @GlobalWriteOnly("_imagOut") byte[] _imageOut, // only written to (never read) from kernel (actually char[])
-            @Arg("_width") int _width,// 
-            @Arg("_height") int _height);
+                                   Range range, //
+                                   @GlobalReadOnly("_convMatrix3x3") float[] _convMatrix3x3,//// only read from kernel
+                                   @GlobalReadOnly("_imagIn") byte[] _imageIn,// only read from kernel (actually char[])
+                                   @GlobalWriteOnly("_imagOut") byte[] _imageOut, // only written to (never read) from kernel (actually char[])
+                                   @Arg("_width") int _width,//
+                                   @Arg("_height") int _height);
    }
 
-   public static void main(final String[] _args) {
-      File file = new File(_args.length == 1 ? _args[0] : "testcard.jpg");
+   public static void main(final String[] _args){
+      File file = new File(_args.length == 1?_args[0]:"testcard.jpg");
 
-      final OpenCLDevice openclDevice = (OpenCLDevice) Device.best();
+      final OpenCLDevice openclDevice = (OpenCLDevice)Device.best();
 
       final Convolution convolution = openclDevice.bind(Convolution.class);
-      float convMatrix3x3[] = new float[] {
+      float convMatrix3x3[] = new float[]{
             0f,
             -10f,
             0f,
@@ -79,10 +80,11 @@ public class ConvolutionOpenCL{
       new ConvolutionViewer(file, convMatrix3x3){
          Range range = null;
 
-         @Override protected void applyConvolution(float[] _convMatrix3x3, byte[] _inBytes, byte[] _outBytes, int _width,
-               int _height) {
-            if (range == null) {
-               range = openclDevice.createRange(_width * _height * 3);
+         @Override
+         protected void applyConvolution(float[] _convMatrix3x3, byte[] _inBytes, byte[] _outBytes, int _width,
+                                         int _height){
+            if (range == null){
+               range = openclDevice.createRange(_width*_height*3);
             }
             convolution.applyConvolution(range, _convMatrix3x3, _inBytes, _outBytes, _width, _height);
          }

@@ -38,47 +38,53 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 
 package com.amd.aparapi.sample.mandel;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Point;
+import com.amd.aparapi.Device;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
-import java.util.Arrays;
-
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-
-import com.amd.aparapi.Device;
 
 public class LambdaMain{
 
-   /** Width of Mandelbrot view. */
+   /**
+    * Width of Mandelbrot view.
+    */
    static final int width = 768;
 
-   /** Height of Mandelbrot view. */
+   /**
+    * Height of Mandelbrot view.
+    */
    static final int height = 768;
 
-   /** Image for Mandelbrot view. */
+   /**
+    * Image for Mandelbrot view.
+    */
    static final BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
    static final BufferedImage offscreen = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 
    // Extract the underlying RGB buffer from the image.
-   final int[] rgb = ((DataBufferInt) offscreen.getRaster().getDataBuffer()).getData();
-   final int[] imageRgb = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
+   final int[] rgb = ((DataBufferInt)offscreen.getRaster().getDataBuffer()).getData();
+   final int[] imageRgb = ((DataBufferInt)image.getRaster().getDataBuffer()).getData();
 
    float defaultScale = 3f;
-   /** Maximum iterations for Mandelbrot. */
+   /**
+    * Maximum iterations for Mandelbrot.
+    */
    final private int maxIterations = 64;
 
-   /** Palette which maps iteration values to RGB values. */
-   final int pallette[] = new int[maxIterations + 1];
+   /**
+    * Palette which maps iteration values to RGB values.
+    */
+   final int pallette[] = new int[maxIterations+1];
 
-   /** User selected zoom-in point on the Mandelbrot view. */
+   /**
+    * User selected zoom-in point on the Mandelbrot view.
+    */
    public static volatile Point to = null;
 
    // This is how many frames we will display as we zoom in and out.
@@ -91,71 +97,72 @@ public class LambdaMain{
 
    // Draw Mandelbrot image
    static JComponent viewer = new JComponent(){
-      @Override public void paintComponent(Graphics g) {
+      @Override
+      public void paintComponent(Graphics g){
          g.drawImage(image, 0, 0, width, height, this);
       }
    };
 
-
-   enum ZoomDirection {
+   enum ZoomDirection{
       ZOOM_IN(-1), ZOOM_OUT(1);
 
       private int sign;
 
-      private ZoomDirection(int c) { sign = c; }
-      public int getSign()         {  return sign; }
+      private ZoomDirection(int c){
+         sign = c;
+      }
+
+      public int getSign(){
+         return sign;
+      }
    }
 
+   void getNextImage(Device device, float x, float y, float scale){
 
-   void getNextImage(Device device, float x, float y, float scale) {
-      
       device.forEach(width*height, gid -> {
          /** Translate the gid into an x an y value. */
-         float lx = (((gid % width * scale) - ((scale / 2) * width)) / width) + x;
-         float ly = (((gid / width * scale) - ((scale / 2) * height)) / height) + y;
+         float lx = (((gid%width*scale)-((scale/2)*width))/width)+x;
+         float ly = (((gid/width*scale)-((scale/2)*height))/height)+y;
 
          int count = 0;
-            float zx = lx;
-            float zy = ly;
-            float new_zx = 0f;
+         float zx = lx;
+         float zy = ly;
+         float new_zx = 0f;
 
-            // Iterate until the algorithm converges or until maxIterations are reached.
-            while (count < maxIterations && zx * zx + zy * zy < 8) {
-               new_zx = zx * zx - zy * zy + lx;
-               zy = 2 * zx * zy + ly;
-               zx = new_zx;
-               count++;
-            }
+         // Iterate until the algorithm converges or until maxIterations are reached.
+         while (count<maxIterations && zx*zx+zy*zy<8){
+            new_zx = zx*zx-zy*zy+lx;
+            zy = 2*zx*zy+ly;
+            zx = new_zx;
+            count++;
+         }
          // Pull the value out of the palette for this iteration count.
          rgb[gid] = pallette[count];
       });
    }
 
-
-   void doZoom(Device device, int sign, float tox, float toy) {
+   void doZoom(Device device, int sign, float tox, float toy){
       // Zoom in or out per iteration 
-      for (int i = 0; i < frames - 4; i++) {
-         scale = scale + sign * defaultScale / frames;
-         x = x - sign * (tox / frames);
-         y = y - sign * (toy / frames);
+      for (int i = 0; i<frames-4; i++){
+         scale = scale+sign*defaultScale/frames;
+         x = x-sign*(tox/frames);
+         y = y-sign*(toy/frames);
          getNextImage(device, x, y, scale);
          System.arraycopy(rgb, 0, imageRgb, 0, rgb.length);
          viewer.repaint();
       }
    }
 
+   void zoomInAndOut(Device device, Point to, int[] rgb, int[] imageRgb){
+      float tox = (float)(to.x-width/2)/width*defaultScale;
+      float toy = (float)(to.y-height/2)/height*defaultScale;
 
-   void zoomInAndOut(Device device, Point to, int[] rgb, int[] imageRgb) {
-      float tox = (float) (to.x - width / 2) / width * defaultScale;
-      float toy = (float) (to.y - height / 2) / height * defaultScale;
-      
       // This cannot be parallel lambda or you will get a headache!!
       // It will zoom in on the clicked point, then zoom out back to the start position
 
-
-	  // NOTE: in the future we will use a (non-parallel) lambda here when stream API gets into JDK8.
-	  // Arrays.stream(ZoomDirection.values()).forEach( e -> {
-      for (ZoomDirection e: ZoomDirection.values()) {
+      // NOTE: in the future we will use a (non-parallel) lambda here when stream API gets into JDK8.
+      // Arrays.stream(ZoomDirection.values()).forEach( e -> {
+      for (ZoomDirection e : ZoomDirection.values()){
 
 //     Here is the stack at this point of running the lambda
 //         
@@ -171,7 +178,7 @@ public class LambdaMain{
 
 //     Note there are SequentialImplPipelineHelper here and ParallelImplPipelineHelper
 //     in the parallel case above.
-         
+
 //         at java.util.streams.ops.ForEachOp.evaluateSequential(ForEachOp.java:69)
 //         at java.util.streams.ops.ForEachOp.evaluateSequential(ForEachOp.java:37)
 //         at java.util.streams.AbstractPipeline.evaluateSequential(AbstractPipeline.java:206)
@@ -180,22 +187,23 @@ public class LambdaMain{
 //         at java.util.streams.ValuePipeline.forEach(ValuePipeline.java:89)
 //         at com.amd.aparapi.sample.mandel.Main.zoomInAndOut(Main.java:290)
 //         at com.amd.aparapi.sample.mandel.Main.main(Main.java:361)
-         
-         doZoom(device, e.getSign(), tox, toy); 
-         System.out.println("inner done, sign=" + e.getSign() );          
-      }  
+
+         doZoom(device, e.getSign(), tox, toy);
+         System.out.println("inner done, sign="+e.getSign());
+      }
    }
 
-   void doIt() {
+   void doIt(){
       JFrame frame = new JFrame("MandelBrot");
       // Set the size of JComponent which displays Mandelbrot image
       viewer.setPreferredSize(new Dimension(width, height));
       final Object doorBell = new Object();
       // Mouse listener which reads the user clicked zoom-in point on the Mandelbrot view 
       viewer.addMouseListener(new MouseAdapter(){
-         @Override public void mouseClicked(MouseEvent e) {
+         @Override
+         public void mouseClicked(MouseEvent e){
             to = e.getPoint();
-            synchronized (doorBell) {
+            synchronized(doorBell){
                doorBell.notify();
             }
          }
@@ -208,9 +216,9 @@ public class LambdaMain{
       frame.setVisible(true);
 
       //Initialize palette values
-      for (int i = 0; i < maxIterations; i++) {
-         float h = i / (float) maxIterations;
-         float b = 1.0f - h * h;
+      for (int i = 0; i<maxIterations; i++){
+         float h = i/(float)maxIterations;
+         float b = 1.0f-h*h;
          pallette[i] = Color.HSBtoRGB(h, 1f, b);
       }
 
@@ -224,19 +232,19 @@ public class LambdaMain{
 
       // Window listener to dispose Kernel resources on user exit.
       frame.addWindowListener(new WindowAdapter(){
-         public void windowClosing(WindowEvent _windowEvent) {
+         public void windowClosing(WindowEvent _windowEvent){
             System.exit(0);
          }
       });
 
       // Wait until the user selects a zoom-in point on the Mandelbrot view.
-      while (true) {
+      while (true){
          // Wait for the user to click somewhere
-         while (to == null) {
-            synchronized (doorBell) {
-               try {
+         while (to == null){
+            synchronized(doorBell){
+               try{
                   doorBell.wait();
-               } catch (InterruptedException ie) {
+               }catch (InterruptedException ie){
                   ie.getStackTrace();
                }
             }
@@ -244,14 +252,14 @@ public class LambdaMain{
 
          long startMillis = System.currentTimeMillis();
          zoomInAndOut(device, to, rgb, imageRgb);
-         long elapsedMillis = System.currentTimeMillis() - startMillis;
-         System.out.println("FPS = " + frames * 1000 / elapsedMillis);
+         long elapsedMillis = System.currentTimeMillis()-startMillis;
+         System.out.println("FPS = "+frames*1000/elapsedMillis);
          to = null;
       }
-      
+
    }
 
-   public static void main(String[] _args) {
+   public static void main(String[] _args){
       (new LambdaMain()).doIt();
    }
 }
