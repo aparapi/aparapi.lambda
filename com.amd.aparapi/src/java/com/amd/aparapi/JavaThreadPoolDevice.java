@@ -3,42 +3,44 @@ package com.amd.aparapi;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 
-public class JavaThreadPoolDevice extends Device {
-    static final int threads = Runtime.getRuntime().availableProcessors();
-    void wait(CyclicBarrier barrier) {
-        try {
-            barrier.await();
-        } catch (InterruptedException ex) {
-        } catch (BrokenBarrierException ex) {
-        }
-    }
+public class JavaThreadPoolDevice extends Device{
+   static final int threads = Runtime.getRuntime().availableProcessors();
 
-    public void forEach(int _range, final Aparapi.IntTerminal _intConsumer) {
-        forEach(0, _range, threads, _intConsumer);
-    }
-    public void forEach(int _from, int _to, final Aparapi.IntTerminal _intConsumer) {
-        forEach(_from, _to, threads, _intConsumer);
-    }
+   void wait(CyclicBarrier barrier){
+      try{
+         barrier.await();
+      }catch (InterruptedException ex){
+      }catch (BrokenBarrierException ex){
+      }
+   }
 
-    public void forEach(int _from, int _to, int _threads, final Aparapi.IntTerminal _intConsumer) {
-        int range = _to-_from;
-        if (range < _threads) {
-            for (int t = 0; t < range; t++) {
-                _intConsumer.accept(t+_from);
-            }
-        } else {
-            final CyclicBarrier barrier = new CyclicBarrier(_threads + 1);
-            for (int t = 0; t < _threads; t++) {
-                int finalt = t;
-                new Thread(() -> {
-                    for (int x = finalt * (range / _threads); x < (finalt + 1) * (range / _threads); x++) {
-                        _intConsumer.accept(x+_from);
-                    }
-                    wait(barrier);
-                }).start();
-            }
-            wait(barrier);
-        }
-    }
+   public void forEach(int _range, final Aparapi.IntTerminal _intConsumer){
+      forEach(0, _range, threads, _intConsumer);
+   }
+
+   public void forEach(int _from, int _to, final Aparapi.IntTerminal _intConsumer){
+      forEach(_from, _to, threads, _intConsumer);
+   }
+
+   public void forEach(int _from, int _to, int _threads, final Aparapi.IntTerminal _intConsumer){
+      int range = _to-_from;
+      if (range<_threads){
+         for (int t = 0; t<range; t++){
+            _intConsumer.accept(t+_from);
+         }
+      }else{
+         final CyclicBarrier barrier = new CyclicBarrier(_threads+1);
+         for (int t = 0; t<_threads; t++){
+            int finalt = t;
+            new Thread(() -> {
+               for (int x = finalt*(range/_threads); x<(finalt+1)*(range/_threads); x++){
+                  _intConsumer.accept(x+_from);
+               }
+               wait(barrier);
+            }).start();
+         }
+         wait(barrier);
+      }
+   }
 
 }

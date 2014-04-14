@@ -1,8 +1,11 @@
 package com.amd.aparapi;
 
 import java.lang.reflect.Method;
-import java.util.*;
-
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
 
 public class TypeHelper{
 
@@ -34,7 +37,6 @@ public class TypeHelper{
 
    static final char DOUBLE = 'D';
 
-
    private static final char ARRAY_DIM = '[';
 
    private static final char CLASS_START = 'L';
@@ -51,7 +53,6 @@ public class TypeHelper{
 
    private static final char UNDERSCORE = '_';
 
-
    static Map<Character, String> charMap = new HashMap<Character, String>();
 
    {
@@ -66,7 +67,6 @@ public class TypeHelper{
       charMap.put(BOOLEAN, "boolean");
    }
 
-
    static String convert(String _string){
       Stack<String> stringStack = new Stack<String>();
       Stack<String> methodStack = null;
@@ -77,13 +77,13 @@ public class TypeHelper{
       boolean inMethod = false;
       boolean inArgs = false;
       int args = 0;
-      while(i < length){
-         switch(chars[i]){
+      while (i<length){
+         switch (chars[i]){
             case CLASS_START:{
                StringBuilder classNameBuffer = new StringBuilder();
                i++;
-               while((i < length) && chars[i] != CLASS_END){
-                  if(chars[i] == SLASH){
+               while ((i<length) && chars[i] != CLASS_END){
+                  if (chars[i] == SLASH){
                      classNameBuffer.append(DOT);
                   }else{
                      classNameBuffer.append(chars[i]);
@@ -92,17 +92,17 @@ public class TypeHelper{
                }
                i++; // step over CLASS_END
                String className = classNameBuffer.toString();
-               if(inArray){
+               if (inArray){
                   // swap the stack items
                   String popped = stringStack.pop();
-                  if(inArgs && args > 0){
+                  if (inArgs && args>0){
                      stringStack.push(", ");
                   }
                   stringStack.push(className);
                   stringStack.push(popped);
                   inArray = false;
                }else{
-                  if(inArgs && args > 0){
+                  if (inArgs && args>0){
                      stringStack.push(", ");
                   }
                   stringStack.push(className);
@@ -112,7 +112,7 @@ public class TypeHelper{
             break;
             case ARRAY_DIM:{
                StringBuilder arrayDims = new StringBuilder();
-               while((i < length) && chars[i] == ARRAY_DIM){
+               while ((i<length) && chars[i] == ARRAY_DIM){
                   arrayDims.append("[]");
                   i++;
                }
@@ -129,17 +129,17 @@ public class TypeHelper{
             case BYTE:
             case LONG:
             case BOOLEAN:{
-               if(inArray){
+               if (inArray){
                   // swap the stack items
                   String popped = stringStack.pop();
-                  if(inArgs && args > 0){
+                  if (inArgs && args>0){
                      stringStack.push(", ");
                   }
                   stringStack.push(charMap.get(chars[i]));
                   stringStack.push(popped);
                   inArray = false;
                }else{
-                  if(inArgs && args > 0){
+                  if (inArgs && args>0){
                      stringStack.push(", ");
                   }
                   stringStack.push(charMap.get(chars[i]));
@@ -169,13 +169,13 @@ public class TypeHelper{
       }
 
       StringBuilder returnValue = new StringBuilder();
-      for(String s : stringStack){
+      for (String s : stringStack){
          returnValue.append(s);
          returnValue.append(" ");
 
       }
-      if(inMethod){
-         for(String s : methodStack){
+      if (inMethod){
+         for (String s : methodStack){
             returnValue.append(s);
             returnValue.append(" ");
          }
@@ -185,7 +185,7 @@ public class TypeHelper{
 
    /**
     * Convert a signature form "Lpackage/Name;" or array form to dot class form.
-    * <p/>
+    * <p>
     * signatureToDotClassName("Lpackage/Outer$Name;", 0) -> "package.Outer.Name"
     * signatureToDotClassName("[Lpackage/Outer$Name;", 1) -> "package.Outer.Name"
     *
@@ -194,12 +194,12 @@ public class TypeHelper{
     * @return
     */
    public static String signatureToDotClassName(String _signature, int _dims){
-      String dotClassName = slashClassNameToDotClassName(_signature.substring(1 + _dims, _signature.length() - 1));
+      String dotClassName = slashClassNameToDotClassName(_signature.substring(1+_dims, _signature.length()-1));
       return (dotClassName);
    }
 
    public static String signatureToMangledClassName(String _signature, int _dims){
-      String mangledClassName = slashClassNameToMangledClassName(_signature.substring(1 + _dims, _signature.length() - 1));
+      String mangledClassName = slashClassNameToMangledClassName(_signature.substring(1+_dims, _signature.length()-1));
       return (mangledClassName);
    }
 
@@ -210,7 +210,7 @@ public class TypeHelper{
     */
    public static String dotClassNameToSignature(String _dotClassName, int _dims){
       StringBuilder sb = new StringBuilder();
-      for(int i = 0; i < _dims; i++){
+      for (int i = 0; i<_dims; i++){
          sb.append(ARRAY_DIM);
       }
       sb.append(CLASS_START).append(dotClassNameToSlashClassName(_dotClassName)).append(CLASS_END);
@@ -262,28 +262,27 @@ public class TypeHelper{
          typeMap.put(PrimitiveType.ref.getJavaSig(), new JavaType(PrimitiveType.ref));// double
       }
 
-
       static String createSignature(Class _clazz){
          String arrayPrefix = "";
 
          String baseType = _clazz.getName();
          String signature = null;
-         if(baseType.startsWith("[")){
-            int arrayDimensions = baseType.lastIndexOf('[') + 1;
+         if (baseType.startsWith("[")){
+            int arrayDimensions = baseType.lastIndexOf('[')+1;
             arrayPrefix = baseType.substring(0, arrayDimensions);
             baseType = baseType.substring(arrayDimensions);
          }
-         for(PrimitiveType p : PrimitiveType.javaPrimitiveTypes){
-            if(p.getJavaSig() == null){
+         for (PrimitiveType p : PrimitiveType.javaPrimitiveTypes){
+            if (p.getJavaSig() == null){
                throw new IllegalStateException("no!");
             }
-            if(p.getJavaSig().equals(baseType)){
-               signature = arrayPrefix + p.getJavaSig();
+            if (p.getJavaSig().equals(baseType)){
+               signature = arrayPrefix+p.getJavaSig();
                break;
             }
          }
-         if(signature == null){
-            signature = arrayPrefix + CLASS_START + dotClassNameToSlashClassName(_clazz.getName()) + CLASS_END;
+         if (signature == null){
+            signature = arrayPrefix+CLASS_START+dotClassNameToSlashClassName(_clazz.getName())+CLASS_END;
          }
          return (signature);
       }
@@ -292,10 +291,9 @@ public class TypeHelper{
          return (_primitiveType.getJavaSig());
       }
 
-
       static synchronized JavaType getJavaType(String _signature){
          JavaType type = typeMap.get(_signature);
-         if(type == null){
+         if (type == null){
             type = new JavaType(_signature);
             typeMap.put(_signature, type);
          }
@@ -307,7 +305,6 @@ public class TypeHelper{
          String signature = createSignature(_clazz);
          return (getJavaType(signature));
       }
-
 
       private int arrayDimensions = 0;
       private String signature;
@@ -327,11 +324,11 @@ public class TypeHelper{
       }
 
       String getHSAName(){
-          if (isPrimitive()){
-              return(type.getHSAName());
-          }else{
-              return(ref.ref.getHSAName());
-          }
+         if (isPrimitive()){
+            return (type.getHSAName());
+         }else{
+            return (ref.ref.getHSAName());
+         }
       }
 
       PrimitiveType getArrayElementType(){
@@ -339,7 +336,7 @@ public class TypeHelper{
       }
 
       private JavaType(String _signature){
-         arrayDimensions = _signature.startsWith("[") ? _signature.lastIndexOf('[') + 1 : 0;
+         arrayDimensions = _signature.startsWith("[")?_signature.lastIndexOf('[')+1:0;
          signature = _signature;
          type = PrimitiveType.ref;
          arrayElementType = PrimitiveType.getJavaPrimitiveTypeFor(_signature.substring(arrayDimensions));
@@ -397,9 +394,8 @@ public class TypeHelper{
          return (TypeHelper.signatureToMangledClassName(signature, arrayDimensions));
       }
 
-
       final boolean isArray(){
-         return (arrayDimensions > 0);
+         return (arrayDimensions>0);
       }
 
       final int getArrayDimensions(){
@@ -413,7 +409,6 @@ public class TypeHelper{
       final boolean isPrimitive(){
          return (isInt() || isFloat() || isDouble() || isChar() || isLong() || isShort() || isByte() || isVoid());
       }
-
 
       @Override
       public String toString(){
@@ -431,7 +426,7 @@ public class TypeHelper{
       JavaType type;
 
       JavaMethodArg(String _signature, int _start, int _pos, int _argc){
-         type = TypeHelper.JavaType.getJavaType(_signature.substring(_start, _pos + 1));
+         type = TypeHelper.JavaType.getJavaType(_signature.substring(_start, _pos+1));
          argc = _argc;
       }
 
@@ -450,7 +445,6 @@ public class TypeHelper{
          return (type);
       }
    }
-
 
    public static class JavaMethodArgsAndReturnType{
       private static enum SignatureParseState{
@@ -478,16 +472,14 @@ public class TypeHelper{
          return (returnType);
       }
 
-
       public static synchronized JavaMethodArgsAndReturnType getArgsAndReturnType(String _signature){
          JavaMethodArgsAndReturnType returnVal = map.get(_signature);
-         if(returnVal == null){
+         if (returnVal == null){
             returnVal = new JavaMethodArgsAndReturnType(_signature);
             map.put(_signature, returnVal);
          }
          return (returnVal);
       }
-
 
       private JavaMethodArgsAndReturnType(String _signature){
          signature = _signature;
@@ -495,18 +487,18 @@ public class TypeHelper{
          SignatureParseState state = SignatureParseState.skipping;
          List<JavaMethodArg> argList = new ArrayList<JavaMethodArg>();
          int start = 0;
-         for(int pos = 0; state != SignatureParseState.done; pos++){
+         for (int pos = 0; state != SignatureParseState.done; pos++){
             char ch = _signature.charAt(pos);
-            switch(ch){
+            switch (ch){
                case ARG_START:
                   state = SignatureParseState.inArgs;
                   break;
                case ARG_END:
                   state = SignatureParseState.done;
-                  returnType = TypeHelper.JavaType.getJavaType(_signature.substring(pos + 1));
+                  returnType = TypeHelper.JavaType.getJavaType(_signature.substring(pos+1));
                   break;
                case ARRAY_DIM:
-                  switch(state){
+                  switch (state){
                      case inArgs:
                         state = SignatureParseState.inArray;
                         start = pos;
@@ -515,7 +507,7 @@ public class TypeHelper{
                   }
                   break;
                case CLASS_START:
-                  switch(state){
+                  switch (state){
                      case inArgs:
                         start = pos;
                         state = SignatureParseState.inClass;
@@ -530,7 +522,7 @@ public class TypeHelper{
                   state = SignatureParseState.inArgs;
                   break;
                default:
-                  switch(state){
+                  switch (state){
                      case inArgs:
                         start = pos;
                         argList.add(new JavaMethodArg(_signature, start, pos, argList.size()));
@@ -552,7 +544,7 @@ public class TypeHelper{
       public JavaMethodArgsAndReturnType(Method _method){
          args = new JavaMethodArg[_method.getParameterCount()];
          Class<?> argsAsClasses[] = _method.getParameterTypes();
-         for(int i = 0; i < argsAsClasses.length; i++){
+         for (int i = 0; i<argsAsClasses.length; i++){
             args[i] = new JavaMethodArg(argsAsClasses[i], i);
          }
          returnType = TypeHelper.JavaType.getJavaType(_method.getReturnType());

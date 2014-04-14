@@ -39,8 +39,6 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 package hsailtest;
 
 import com.amd.aparapi.Device;
-import com.amd.aparapi.sample.common.AparapiModeToggleButton;
-import com.amd.aparapi.sample.common.FPSCounter;
 import org.junit.Test;
 
 import javax.swing.*;
@@ -52,130 +50,127 @@ import java.awt.image.DataBufferInt;
 
 import static org.junit.Assert.fail;
 
-public class MandelJUnit {
-    final static int FRAMES_PER_ZOOM = 128;
-    final static int MAX_ZOOMS = 1;
-    final static int FRAMES_PER_DEVICE=MAX_ZOOMS*FRAMES_PER_ZOOM*2;
-    final int width = 768;
-    final int height = 768;
+public class MandelJUnit{
+   final static int FRAMES_PER_ZOOM = 128;
+   final static int MAX_ZOOMS = 1;
+   final static int FRAMES_PER_DEVICE = MAX_ZOOMS*FRAMES_PER_ZOOM*2;
+   final int width = 768;
+   final int height = 768;
 
-    final BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-    final int[] rgb = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
-    final int[][][] frameRgb = new int[2][FRAMES_PER_DEVICE][rgb.length];
+   final BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+   final int[] rgb = ((DataBufferInt)image.getRaster().getDataBuffer()).getData();
+   final int[][][] frameRgb = new int[2][FRAMES_PER_DEVICE][rgb.length];
 
+   final int maxIterations = 64;
 
-    final int maxIterations = 64;
+   //Palette which maps iteration values to RGB values.
+   final int pallette[] = new int[maxIterations+1];
 
-    //Palette which maps iteration values to RGB values.
-    final int pallette[] = new int[maxIterations + 1];
+   // These are members so zoom out continues from where zoom in stopped
 
-    // These are members so zoom out continues from where zoom in stopped
+   int getMandelCount(float x, float y, int maxIterations){
+      float zx = x;
+      float zy = y;
+      float new_zx;
+      int count = 0;
+      while (count<maxIterations && zx*zx+zy*zy<8){
+         new_zx = zx*zx-zy*zy+x;
+         zy = 2*zx*zy+y;
+         zx = new_zx;
+         count++;
+      }
+      return (count);
 
-    int getMandelCount(float x, float y, int maxIterations) {
-        float zx = x;
-        float zy = y;
-        float new_zx;
-        int count = 0;
-        while (count < maxIterations && zx * zx + zy * zy < 8) {
-            new_zx = zx * zx - zy * zy + x;
-            zy = 2 * zx * zy + y;
-            zx = new_zx;
-            count++;
-        }
-        return (count);
+   }
 
-    }
+   void getNextImage(Device device, int[] frameRgb, final float x_offset, final float y_offset, final float scale){
+      int[] data = new int[rgb.length];
+      device.forEach(width*height, gid -> {
+         float lx = ((((gid%width)*scale)-((scale/2)*width))/width)+x_offset;
+         float ly = (((gid/width*scale)-((scale/2)*height))/height)+y_offset;
+         int count = getMandelCount(lx, ly, maxIterations);
+         rgb[gid] = pallette[count];
+         data[gid] = count;
+      });
+      if (frameRgb != null){
+         System.arraycopy(data, 0, frameRgb, 0, data.length);
+      }
+   }
 
+   final static boolean showUI = Boolean.getBoolean("showUI");
 
-    void getNextImage(Device device, int[] frameRgb, final float x_offset, final float y_offset, final float scale) {
-        int[] data = new int[rgb.length];
-        device.forEach(width * height, gid -> {
-            float lx = ((((gid % width) * scale) - ((scale / 2) * width)) / width) + x_offset;
-            float ly = (((gid / width * scale) - ((scale / 2) * height)) / height) + y_offset;
-            int count = getMandelCount(lx, ly, maxIterations);
-            rgb[gid] = pallette[count];
-            data[gid]=count;
-        });
-        if (frameRgb != null){
-           System.arraycopy(data, 0, frameRgb, 0, data.length);
-        }
-    }
-
-    final static boolean showUI=Boolean.getBoolean("showUI");
-    @Test
-    public void test(){
-        JComponent viewer = null;
-        if (showUI){
-        JFrame frame = new JFrame("MandelBrot");
-        viewer = new JComponent() {
+   @Test
+   public void test(){
+      JComponent viewer = null;
+      if (showUI){
+         JFrame frame = new JFrame("MandelBrot");
+         viewer = new JComponent(){
             @Override
-            public void paintComponent(Graphics g) {
-                g.drawImage(image, 0, 0, width, height, this);
+            public void paintComponent(Graphics g){
+               g.drawImage(image, 0, 0, width, height, this);
             }
-        };
-        viewer.setPreferredSize(new Dimension(width, height));
-        frame.getContentPane().add(viewer, BorderLayout.CENTER);
-        frame.pack();
-        frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
-        frame.addWindowListener(new WindowAdapter() {
-            public void windowClosing(WindowEvent _windowEvent) {
-                System.exit(0);
+         };
+         viewer.setPreferredSize(new Dimension(width, height));
+         frame.getContentPane().add(viewer, BorderLayout.CENTER);
+         frame.pack();
+         frame.setLocationRelativeTo(null);
+         frame.setVisible(true);
+         frame.addWindowListener(new WindowAdapter(){
+            public void windowClosing(WindowEvent _windowEvent){
+               System.exit(0);
             }
-        });
-        }
+         });
+      }
 
-        for (int i = 0; i < maxIterations; i++) {
-            float h = i / (float) maxIterations;
-            float b = 1.0f - h * h;
-            pallette[i] = Color.HSBtoRGB(h, 1f, b);
-        }
+      for (int i = 0; i<maxIterations; i++){
+         float h = i/(float)maxIterations;
+         float b = 1.0f-h*h;
+         pallette[i] = Color.HSBtoRGB(h, 1f, b);
+      }
 
-        Device device = Device.hsa();
+      Device device = Device.hsa();
 
+      getNextImage(device, null, -1f, 0f, 3f);
+      if (showUI){
+         viewer.repaint();
+      }
 
-        getNextImage(device, null, -1f, 0f, 3f);
-        if (showUI){
-            viewer.repaint();
-        }
+      Device[] devices = new Device[]{Device.jtp(), Device.hsa()};
 
-        Device[] devices = new Device[]{Device.jtp(),Device.hsa()};
+      for (int deviceIndex = 0; deviceIndex<devices.length; deviceIndex++){
+         int frameCount = 0;
+         //  int framesToShowPerZoom = FRAMES_PER_ZOOM;
+         long startMs = System.currentTimeMillis();
 
-        for (int deviceIndex = 0; deviceIndex<devices.length; deviceIndex++){
-        int frameCount = 0;
-      //  int framesToShowPerZoom = FRAMES_PER_ZOOM;
-        long startMs = System.currentTimeMillis();
-
-        for (int zooms = 0; zooms < MAX_ZOOMS; zooms++) {
+         for (int zooms = 0; zooms<MAX_ZOOMS; zooms++){
             float scale = 3f;
             float x = -1f;
             float y = 0f;
-            for (int sign : new int[]{-1, 1}) {
-                float tox = 1;
-                float toy = 1;
-                for (int i = 0; i < FRAMES_PER_ZOOM - 4; i++) {
-                    scale = scale + sign * 3f / FRAMES_PER_ZOOM;
-                    x = x - sign * (tox / FRAMES_PER_ZOOM);
-                    y = y - sign * (toy / FRAMES_PER_ZOOM);
-                    getNextImage(devices[deviceIndex], frameRgb[deviceIndex][frameCount], x, y, scale);
-                    if (showUI){
-                        viewer.repaint();
-                    }
-                    frameCount++;
-                }
+            for (int sign : new int[]{-1, 1}){
+               float tox = 1;
+               float toy = 1;
+               for (int i = 0; i<FRAMES_PER_ZOOM-4; i++){
+                  scale = scale+sign*3f/FRAMES_PER_ZOOM;
+                  x = x-sign*(tox/FRAMES_PER_ZOOM);
+                  y = y-sign*(toy/FRAMES_PER_ZOOM);
+                  getNextImage(devices[deviceIndex], frameRgb[deviceIndex][frameCount], x, y, scale);
+                  if (showUI){
+                     viewer.repaint();
+                  }
+                  frameCount++;
+               }
             }
-        }
+         }
 
-        long endMs = System.currentTimeMillis();
-        long elapsedMs = (endMs - startMs);
-        System.out.println((deviceIndex==0?"jtp":"hsa")+" fps=" + (((float) frameCount*1000) / elapsedMs));
-        }
-        for (int i=0; i< FRAMES_PER_DEVICE; i++){
-            if (!JunitHelper.compare(frameRgb[0][i], frameRgb[1][i])){
-                fail("failed at index " + i);
-            }
-        }
-    }
-
+         long endMs = System.currentTimeMillis();
+         long elapsedMs = (endMs-startMs);
+         System.out.println((deviceIndex == 0?"jtp":"hsa")+" fps="+(((float)frameCount*1000)/elapsedMs));
+      }
+      for (int i = 0; i<FRAMES_PER_DEVICE; i++){
+         if (!JunitHelper.compare(frameRgb[0][i], frameRgb[1][i])){
+            fail("failed at index "+i);
+         }
+      }
+   }
 
 }

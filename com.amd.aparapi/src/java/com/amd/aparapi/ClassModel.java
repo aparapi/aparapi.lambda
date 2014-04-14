@@ -46,15 +46,25 @@ import com.amd.aparapi.TypeHelper.JavaType;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * Class represents a ClassFile (MyClass.class).
- * <p/>
+ * <p>
  * OREF ClassModel is constructed from an instance of a <code>java.lang.Class</code>.
- * <p/>
+ * <p>
  * If the java class mode changes we may need to modify this to accommodate.
  *
  * @author gfrost
@@ -62,7 +72,6 @@ import java.util.logging.Logger;
  * @see <a href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html"> Java 7 Class File Format</a>
  */
 public class ClassModel{
-
 
    private static Logger logger = Logger.getLogger(Config.getLoggerName());
 
@@ -79,19 +88,18 @@ public class ClassModel{
    public static synchronized ClassModel getClassModel(Class<?> _clazz) throws ClassParseException{
       String className = _clazz.getName();
       ClassModel classModel = map.get(_clazz.getName());
-      if(classModel == null){
+      if (classModel == null){
          classModel = new ClassModel(_clazz);
          map.put(_clazz.getName(), classModel);
       }
       return (classModel);
    }
 
-
    private ClassModel(Class<?> _clazz) throws ClassParseException{
       String name = _clazz.getName();
       int index = name.indexOf('/');
-      if (index >0){
-          name = name.substring(0,index);
+      if (index>0){
+         name = name.substring(0, index);
       }
       byte[] _bytes = OpenCLJNI.getJNI().getBytes(name);
       clazz = _clazz;
@@ -105,9 +113,9 @@ public class ClassModel{
     * @return true if 'this' a superclass of another named class
     */
    boolean isSuperClass(String otherClassName){
-      if(getDotClassName().equals(otherClassName)){
+      if (getDotClassName().equals(otherClassName)){
          return true;
-      }else if(superClazzModel != null){
+      }else if (superClazzModel != null){
          return superClazzModel.isSuperClass(otherClassName);
       }else{
          return false;
@@ -122,8 +130,8 @@ public class ClassModel{
     */
    boolean isSuperClass(ClassModel _otherClassModel){
       ClassModel s = _otherClassModel.getSuperClazzModel();
-      while(s != null){
-         if(getDotClassName().equals(s.getDotClassName())){
+      while (s != null){
+         if (getDotClassName().equals(s.getDotClassName())){
             return true;
          }
          s = s.getSuperClazzModel();
@@ -137,13 +145,13 @@ public class ClassModel{
     * @return the superClazz ClassModel
     */
    ClassModel getSuperClazzModel(){
-      if(superClazzModel == null){
-         if(getSuperClassConstantPoolIndex() != 0){
+      if (superClazzModel == null){
+         if (getSuperClassConstantPoolIndex() != 0){
             try{
                superClazzModel = getClassModel(Class.forName(getSuperDotClassName()));
-            }catch(ClassNotFoundException cnf){
+            }catch (ClassNotFoundException cnf){
 
-            }catch(ClassParseException cpe){
+            }catch (ClassParseException cpe){
 
             }
          }
@@ -156,17 +164,17 @@ public class ClassModel{
     *
     * @param c
     */
-   @Annotations.DocMe void replaceSuperClazz(ClassModel c){
-      if(this.superClazzModel != null){
+   @Annotations.DocMe
+   void replaceSuperClazz(ClassModel c){
+      if (this.superClazzModel != null){
          //  assert c.isSuperClass(this.getClassWeAreModelling()) == true : "not my super";
-         if(this.superClazzModel.getDotClassName().equals(c.getDotClassName())){
+         if (this.superClazzModel.getDotClassName().equals(c.getDotClassName())){
             this.superClazzModel = c;
          }else{
             this.superClazzModel.replaceSuperClazz(c);
          }
       }
    }
-
 
    private int magic;
 
@@ -253,20 +261,19 @@ public class ClassModel{
       }
 
       boolean bitIsSet(int _accessFlags){
-         return ((bits & _accessFlags) == bits);
+         return ((bits&_accessFlags) == bits);
       }
 
       String convert(int _accessFlags){
          StringBuffer stringBuffer = new StringBuffer();
-         for(Access access : Access.values()){
-            if(access.bitIsSet(_accessFlags)){
-               stringBuffer.append(" " + access.name);
+         for (Access access : Access.values()){
+            if (access.bitIsSet(_accessFlags)){
+               stringBuffer.append(" "+access.name);
             }
          }
          return (stringBuffer.toString());
       }
    }
-
 
    class ConstantPool implements Iterable<ConstantPool.Entry>{
 
@@ -295,7 +302,7 @@ public class ClassModel{
          }
 
          public EmptyEntry asEmptyEntry(){
-            return ((EmptyEntry) this);
+            return ((EmptyEntry)this);
          }
 
          public boolean isDoubleEntry(){
@@ -303,7 +310,7 @@ public class ClassModel{
          }
 
          public DoubleEntry asDoubleEntry(){
-            return ((DoubleEntry) this);
+            return ((DoubleEntry)this);
          }
 
          public boolean isLongEntry(){
@@ -311,7 +318,7 @@ public class ClassModel{
          }
 
          public LongEntry asLongEntry(){
-            return ((LongEntry) this);
+            return ((LongEntry)this);
          }
 
          public boolean isClassEntry(){
@@ -319,7 +326,7 @@ public class ClassModel{
          }
 
          public ClassEntry asClassEntry(){
-            return ((ClassEntry) this);
+            return ((ClassEntry)this);
          }
 
          public boolean isFloatEntry(){
@@ -327,7 +334,7 @@ public class ClassModel{
          }
 
          public FloatEntry asFloatEntry(){
-            return ((FloatEntry) this);
+            return ((FloatEntry)this);
          }
 
          public boolean isIntegerEntry(){
@@ -335,7 +342,7 @@ public class ClassModel{
          }
 
          public IntegerEntry asIntegerEntry(){
-            return ((IntegerEntry) this);
+            return ((IntegerEntry)this);
          }
 
          public boolean isStringEntry(){
@@ -343,7 +350,7 @@ public class ClassModel{
          }
 
          public StringEntry asStringEntry(){
-            return ((StringEntry) this);
+            return ((StringEntry)this);
          }
 
          public boolean isUTF8Entry(){
@@ -351,7 +358,7 @@ public class ClassModel{
          }
 
          public UTF8Entry asUTF8Entry(){
-            return ((UTF8Entry) this);
+            return ((UTF8Entry)this);
          }
 
          public boolean isNameAndTypeEntry(){
@@ -359,7 +366,7 @@ public class ClassModel{
          }
 
          public NameAndTypeEntry asNameAndTypeEntry(){
-            return ((NameAndTypeEntry) this);
+            return ((NameAndTypeEntry)this);
          }
 
          public boolean isMethodEntry(){
@@ -367,7 +374,7 @@ public class ClassModel{
          }
 
          public MethodEntry asMethodEntry(){
-            return ((MethodEntry) this);
+            return ((MethodEntry)this);
          }
 
          public boolean isInterfaceMethodEntry(){
@@ -375,7 +382,7 @@ public class ClassModel{
          }
 
          public InterfaceMethodEntry asInterfaceMethodEntry(){
-            return ((InterfaceMethodEntry) this);
+            return ((InterfaceMethodEntry)this);
          }
 
          public boolean isFieldEntry(){
@@ -383,7 +390,7 @@ public class ClassModel{
          }
 
          public FieldEntry asFieldEntry(){
-            return ((FieldEntry) this);
+            return ((FieldEntry)this);
          }
 
       }
@@ -419,18 +426,16 @@ public class ClassModel{
 
          JavaType getType(){
             String sig = getNameUTF8Entry().getUTF8();
-            return (JavaType.getJavaType("L" + sig + ";"));
+            return (JavaType.getJavaType("L"+sig+";"));
          }
       }
 
       class DoubleEntry extends ConstantEntry<Double>{
 
-
          DoubleEntry(ByteReader _byteReader, int _slot){
             super(_byteReader, _slot, ConstantPoolType.DOUBLE);
             value = _byteReader.d8();
          }
-
 
       }
 
@@ -451,7 +456,6 @@ public class ClassModel{
             return (JavaType.getJavaType(getNameAndTypeEntry().getDescriptorUTF8Entry().getUTF8()));
          }
 
-
       }
 
       abstract class ConstantEntry<T> extends Entry{
@@ -469,12 +473,10 @@ public class ClassModel{
 
       class FloatEntry extends ConstantEntry<Float>{
 
-
          FloatEntry(ByteReader _byteReader, int _slot){
             super(_byteReader, _slot, ConstantPoolType.FLOAT);
             value = _byteReader.f4();
          }
-
 
       }
 
@@ -484,7 +486,6 @@ public class ClassModel{
             super(_byteReader, _slot, ConstantPoolType.INTEGER);
             value = _byteReader.u4();
          }
-
 
       }
 
@@ -496,12 +497,10 @@ public class ClassModel{
 
       class LongEntry extends ConstantEntry<Long>{
 
-
          LongEntry(ByteReader _byteReader, int _slot){
             super(_byteReader, _slot, ConstantPoolType.LONG);
             value = _byteReader.u8();
          }
-
 
       }
 
@@ -575,7 +574,6 @@ public class ClassModel{
             return (ConstantPool.this.getUTF8Entry(descriptorIndex));
          }
 
-
       }
 
       class MethodHandleEntry extends Entry{
@@ -626,20 +624,19 @@ public class ClassModel{
 
       abstract class MethodReferenceEntry extends ReferenceEntry{
 
-
          @Override
          public int hashCode(){
             NameAndTypeEntry nameAndTypeEntry = getNameAndTypeEntry();
 
-            return ((nameAndTypeEntry.getNameIndex() * 31 + nameAndTypeEntry.getDescriptorIndex()) * 31 + getClassIndex());
+            return ((nameAndTypeEntry.getNameIndex()*31+nameAndTypeEntry.getDescriptorIndex())*31+getClassIndex());
          }
 
          @Override
          public boolean equals(Object _other){
-            if(_other == null || !(_other instanceof MethodReferenceEntry)){
+            if (_other == null || !(_other instanceof MethodReferenceEntry)){
                return (false);
             }else{
-               MethodReferenceEntry otherMethodReferenceEntry = (MethodReferenceEntry) _other;
+               MethodReferenceEntry otherMethodReferenceEntry = (MethodReferenceEntry)_other;
                return (otherMethodReferenceEntry.getNameAndTypeEntry().getNameIndex() == getNameAndTypeEntry().getNameIndex()
                      && otherMethodReferenceEntry.getNameAndTypeEntry().getDescriptorIndex() == getNameAndTypeEntry()
                      .getDescriptorIndex() && otherMethodReferenceEntry.getClassIndex() == getClassIndex());
@@ -649,11 +646,10 @@ public class ClassModel{
          MethodReferenceEntry(ByteReader byteReader, int slot, ConstantPoolType constantPoolType){
             super(byteReader, slot, constantPoolType);
 
-
          }
 
          int getStackProduceCount(){
-            return (getArgsAndReturnType().getReturnType().isVoid() ? 0 : 1);
+            return (getArgsAndReturnType().getReturnType().isVoid()?0:1);
          }
 
          // TypeHelper.JavaMethodArgsAndReturnType argsAndReturnType;
@@ -666,7 +662,6 @@ public class ClassModel{
             return (TypeHelper.JavaMethodArgsAndReturnType.getArgsAndReturnType(signature));
 
          }
-
 
          int getStackConsumeCount(){
             return (getArgsAndReturnType().getArgs().length);
@@ -690,7 +685,6 @@ public class ClassModel{
             return (ConstantPool.this.getClassEntry(referenceClassIndex));
          }
 
-
          String getName(){
             return (getNameAndTypeEntry().getName());
          }
@@ -703,19 +697,17 @@ public class ClassModel{
             return (ConstantPool.this.getNameAndTypeEntry(nameAndTypeIndex));
          }
 
-
          int getNameAndTypeIndex(){
             return (nameAndTypeIndex);
          }
 
          boolean same(Entry _entry){
-            if(_entry instanceof ReferenceEntry){
-               ReferenceEntry entry = (ReferenceEntry) _entry;
+            if (_entry instanceof ReferenceEntry){
+               ReferenceEntry entry = (ReferenceEntry)_entry;
                return ((referenceClassIndex == entry.referenceClassIndex) && (nameAndTypeIndex == entry.nameAndTypeIndex));
             }
             return (false);
          }
-
 
       }
 
@@ -736,12 +728,11 @@ public class ClassModel{
          }
 
          String getValue(){
-            if(value == null){
+            if (value == null){
                value = getStringUTF8Entry().getUTF8();
             }
             return (super.getValue());
          }
-
 
       }
 
@@ -763,10 +754,10 @@ public class ClassModel{
          int size = _byteReader.u2();
          add(new EmptyEntry(_byteReader, 0)); // slot 0
 
-         for(int i = 1; i < size; i++){
+         for (int i = 1; i<size; i++){
             ConstantPoolType constantPoolType = ConstantPoolType.values()[_byteReader.u1()];
 
-            switch(constantPoolType){
+            switch (constantPoolType){
                case UTF8:
                   add(new UTF8Entry(_byteReader, i));
                   break;
@@ -823,88 +814,88 @@ public class ClassModel{
 
       ClassEntry getClassEntry(int _index){
          try{
-            return ((ClassEntry) entries.get(_index));
-         }catch(ClassCastException e){
+            return ((ClassEntry)entries.get(_index));
+         }catch (ClassCastException e){
             return (null);
          }
       }
 
       DoubleEntry getDoubleEntry(int _index){
          try{
-            return ((DoubleEntry) entries.get(_index));
-         }catch(ClassCastException e){
+            return ((DoubleEntry)entries.get(_index));
+         }catch (ClassCastException e){
             return (null);
          }
       }
 
       FieldEntry getFieldEntry(int _index){
          try{
-            return ((FieldEntry) entries.get(_index));
-         }catch(ClassCastException e){
+            return ((FieldEntry)entries.get(_index));
+         }catch (ClassCastException e){
             return (null);
          }
       }
 
       FloatEntry getFloatEntry(int _index){
          try{
-            return ((FloatEntry) entries.get(_index));
-         }catch(ClassCastException e){
+            return ((FloatEntry)entries.get(_index));
+         }catch (ClassCastException e){
             return (null);
          }
       }
 
       IntegerEntry getIntegerEntry(int _index){
          try{
-            return ((IntegerEntry) entries.get(_index));
-         }catch(ClassCastException e){
+            return ((IntegerEntry)entries.get(_index));
+         }catch (ClassCastException e){
             return (null);
          }
       }
 
       InterfaceMethodEntry getInterfaceMethodEntry(int _index){
          try{
-            return ((InterfaceMethodEntry) entries.get(_index));
-         }catch(ClassCastException e){
+            return ((InterfaceMethodEntry)entries.get(_index));
+         }catch (ClassCastException e){
             return (null);
          }
       }
 
       LongEntry getLongEntry(int _index){
          try{
-            return ((LongEntry) entries.get(_index));
-         }catch(ClassCastException e){
+            return ((LongEntry)entries.get(_index));
+         }catch (ClassCastException e){
             return (null);
          }
       }
 
       MethodEntry getMethodEntry(int _index){
          try{
-            return ((MethodEntry) entries.get(_index));
-         }catch(ClassCastException e){
+            return ((MethodEntry)entries.get(_index));
+         }catch (ClassCastException e){
             return (null);
          }
       }
 
       NameAndTypeEntry getNameAndTypeEntry(int _index){
          try{
-            return ((NameAndTypeEntry) entries.get(_index));
-         }catch(ClassCastException e){
+            return ((NameAndTypeEntry)entries.get(_index));
+         }catch (ClassCastException e){
             return (null);
          }
       }
 
       StringEntry getStringEntry(int _index){
          try{
-            return ((StringEntry) entries.get(_index));
-         }catch(ClassCastException e){
+            return ((StringEntry)entries.get(_index));
+         }catch (ClassCastException e){
             return (null);
          }
       }
 
       UTF8Entry getUTF8Entry(int _index){
          try{
-            return ((UTF8Entry) entries.get(_index));
-         }catch(ClassCastException e){
+            return ((UTF8Entry)entries.get(_index));
+         }catch (ClassCastException e){
             return (null);
          }
       }
@@ -925,56 +916,55 @@ public class ClassModel{
 
       String getDescription(ConstantPool.Entry _entry){
          StringBuilder sb = new StringBuilder();
-         if(_entry.isEmptyEntry()){
+         if (_entry.isEmptyEntry()){
             sb.append("<empty>");
-         }else if(_entry.isDoubleEntry()){
+         }else if (_entry.isDoubleEntry()){
             sb.append(_entry.asDoubleEntry().getValue());
-         }else if(_entry.isFloatEntry()){
+         }else if (_entry.isFloatEntry()){
             sb.append(_entry.asFloatEntry().getValue());
-         }else if(_entry.isIntegerEntry()){
+         }else if (_entry.isIntegerEntry()){
             sb.append(_entry.asIntegerEntry().getValue());
-         }else if(_entry.isLongEntry()){
+         }else if (_entry.isLongEntry()){
             sb.append(_entry.asLongEntry().getValue());
-         }else if(_entry.isUTF8Entry()){
+         }else if (_entry.isUTF8Entry()){
             sb.append(_entry.asUTF8Entry().getUTF8());
-         }else if(_entry.isStringEntry()){
+         }else if (_entry.isStringEntry()){
             sb.append(_entry.asStringEntry().getValue());
-         }else if(_entry.isClassEntry()){
+         }else if (_entry.isClassEntry()){
             sb.append(_entry.asClassEntry().getClassName());
-         }else if(_entry.isNameAndTypeEntry()){
-            sb.append(_entry.asNameAndTypeEntry().getName() + "." + _entry.asNameAndTypeEntry().getDescriptor());
-         }else if(_entry.isMethodEntry()){
+         }else if (_entry.isNameAndTypeEntry()){
+            sb.append(_entry.asNameAndTypeEntry().getName()+"."+_entry.asNameAndTypeEntry().getDescriptor());
+         }else if (_entry.isMethodEntry()){
             sb.append(TypeHelper.convert(_entry.asMethodEntry().getNameAndTypeEntry().getDescriptor()));
-            sb.append(_entry.asMethodEntry().getClassEntry().getClassName() + "." + _entry.asMethodEntry().getName());
-         }else if(_entry.isInterfaceMethodEntry()){
+            sb.append(_entry.asMethodEntry().getClassEntry().getClassName()+"."+_entry.asMethodEntry().getName());
+         }else if (_entry.isInterfaceMethodEntry()){
             sb.append(TypeHelper.convert(_entry.asInterfaceMethodEntry().getNameAndTypeEntry().getDescriptor()));
-            sb.append(_entry.asInterfaceMethodEntry().getClassEntry().getClassName() + "." + _entry.asInterfaceMethodEntry().getName());
-         }else if(_entry.isFieldEntry()){
+            sb.append(_entry.asInterfaceMethodEntry().getClassEntry().getClassName()+"."+_entry.asInterfaceMethodEntry().getName());
+         }else if (_entry.isFieldEntry()){
             sb.append(TypeHelper.convert(_entry.asFieldEntry().getNameAndTypeEntry().getDescriptor()));
-            sb.append(_entry.asFieldEntry().getClassEntry().getClassName() + "." + _entry.asFieldEntry().getNameAndTypeEntry().getName());
+            sb.append(_entry.asFieldEntry().getClassEntry().getClassName()+"."+_entry.asFieldEntry().getNameAndTypeEntry().getName());
          }
          return (sb.toString());
       }
 
-
       <T> T getConstantEntry(int _constantPoolIndex){
          Entry entry = get(_constantPoolIndex);
          T object = null;
-         switch(entry.getConstantPoolType()){
+         switch (entry.getConstantPoolType()){
             case FLOAT:
-               object = (T) entry.asFloatEntry().getValue();
+               object = (T)entry.asFloatEntry().getValue();
                break;
             case DOUBLE:
-               object = (T) entry.asDoubleEntry().getValue();
+               object = (T)entry.asDoubleEntry().getValue();
                break;
             case INTEGER:
-               object = (T) entry.asIntegerEntry().getValue();
+               object = (T)entry.asIntegerEntry().getValue();
                break;
             case LONG:
-               object = (T) entry.asLongEntry().getValue();
+               object = (T)entry.asLongEntry().getValue();
                break;
             case STRING:
-               object = (T) entry.asLongEntry().getValue();
+               object = (T)entry.asLongEntry().getValue();
                break;
          }
          return (object);
@@ -1041,13 +1031,14 @@ public class ClassModel{
             int codeLength = _byteReader.u4();
             code = _byteReader.bytes(codeLength);
             int exceptionTableLength = _byteReader.u2();
-            for(int i = 0; i < exceptionTableLength; i++){
+            for (int i = 0; i<exceptionTableLength; i++){
                exceptionPoolEntries.add(new ExceptionPoolEntry(_byteReader));
             }
             codeEntryAttributePool = new AttributePool(_byteReader);
          }
 
-         @Override AttributePool getAttributePool(){
+         @Override
+         AttributePool getAttributePool(){
             return (codeEntryAttributePool);
          }
 
@@ -1144,7 +1135,7 @@ public class ClassModel{
          ExceptionEntry(ByteReader _byteReader, int _nameIndex, int _length){
             super(_byteReader, _nameIndex, _length);
             int exceptionTableLength = _byteReader.u2();
-            for(int i = 0; i < exceptionTableLength; i++){
+            for (int i = 0; i<exceptionTableLength; i++){
                getPool().add(_byteReader.u2());
             }
          }
@@ -1189,7 +1180,7 @@ public class ClassModel{
          InnerClassesEntry(ByteReader _byteReader, int _nameIndex, int _length){
             super(_byteReader, _nameIndex, _length);
             int innerClassesTableLength = _byteReader.u2();
-            for(int i = 0; i < innerClassesTableLength; i++){
+            for (int i = 0; i<innerClassesTableLength; i++){
                getPool().add(new InnerClassInfo(_byteReader));
             }
          }
@@ -1221,31 +1212,31 @@ public class ClassModel{
          LineNumberTableEntry(ByteReader _byteReader, int _nameIndex, int _length){
             super(_byteReader, _nameIndex, _length);
             int lineNumberTableLength = _byteReader.u2();
-            for(int i = 0; i < lineNumberTableLength; i++){
+            for (int i = 0; i<lineNumberTableLength; i++){
                getPool().add(new StartLineNumberPair(_byteReader));
             }
          }
 
          int getSourceLineNumber(int _start, boolean _exact){
             Iterator<StartLineNumberPair> i = getPool().iterator();
-            if(i.hasNext()){
+            if (i.hasNext()){
                StartLineNumberPair from = i.next();
-               while(i.hasNext()){
+               while (i.hasNext()){
                   StartLineNumberPair to = i.next();
-                  if(_exact){
-                     if(_start == from.getStart()){
+                  if (_exact){
+                     if (_start == from.getStart()){
                         return (from.getLineNumber());
                      }
-                  }else if(_start >= from.getStart() && _start < to.getStart()){
+                  }else if (_start>=from.getStart() && _start<to.getStart()){
                      return (from.getLineNumber());
                   }
                   from = to;
                }
-               if(_exact){
-                  if(_start == from.getStart()){
+               if (_exact){
+                  if (_start == from.getStart()){
                      return (from.getLineNumber());
                   }
-               }else if(_start >= from.getStart()){
+               }else if (_start>=from.getStart()){
                   return (from.getLineNumber());
                }
             }
@@ -1310,7 +1301,7 @@ public class ClassModel{
             LocalVariableInfo(InstructionSet.StoreSpec _storeSpec, int _slot, int _startPc){
                slot = _slot;
                startPc = _startPc;
-               name = _storeSpec.toString().toLowerCase() + "_" + _slot;
+               name = _storeSpec.toString().toLowerCase()+"_"+_slot;
                descriptor = _storeSpec.toString();
                typeSpec = _storeSpec.getTypeSpec();
             }
@@ -1326,24 +1317,23 @@ public class ClassModel{
             }
 
             public boolean equals(Object object){
-               return (object instanceof LocalVariableInfo && ((object == this) || ((LocalVariableInfo) object).name.equals(name)));
+               return (object instanceof LocalVariableInfo && ((object == this) || ((LocalVariableInfo)object).name.equals(name)));
             }
 
             public String toString(){
-               return (name + "[" + startPc + "-" + endPc + "]");
+               return (name+"["+startPc+"-"+endPc+"]");
             }
 
             public int getStart(){
                return startPc;
             }
 
-
             public int getEnd(){
                return endPc;
             }
 
             public int getLength(){
-               return endPc - startPc;
+               return endPc-startPc;
             }
 
             public String getVariableName(){
@@ -1359,7 +1349,7 @@ public class ClassModel{
             }
 
             public ArgLocalVariableInfo asArgLocalVariableInfo(){
-               return ((ArgLocalVariableInfo) this);
+               return ((ArgLocalVariableInfo)this);
             }
 
             public TypeSpec getTypeSpec(){
@@ -1396,11 +1386,11 @@ public class ClassModel{
             TypeHelper.JavaMethodArgsAndReturnType argsAndReturnType = _method.getArgsAndReturnType();
             TypeHelper.JavaMethodArg[] args = argsAndReturnType.getArgs();
 
-            int thisOffset = _method.isStatic() ? 0 : 1;
+            int thisOffset = _method.isStatic()?0:1;
 
-            LocalVariableInfo[] vars = new LocalVariableInfo[numberOfSlots + thisOffset];
+            LocalVariableInfo[] vars = new LocalVariableInfo[numberOfSlots+thisOffset];
             //   InstructionSet.StoreSpec[] argsAsStoreSpecs = new InstructionSet.StoreSpec[args.length + thisOffset];
-            if(_method.isVirtual()){
+            if (_method.isVirtual()){
                //argsAsStoreSpecs[0] = InstructionSet.StoreSpec.OREF;
                ArgLocalVariableInfo arg = new ArgLocalVariableInfo(InstructionSet.StoreSpec.OREF, 0, 0, ClassModel.this.getClassType());
                vars[0] = arg;
@@ -1410,35 +1400,35 @@ public class ClassModel{
             }
 
             int currSlotIndex = thisOffset;
-            for(int i = 0; i < args.length; i++){
+            for (int i = 0; i<args.length; i++){
                InstructionSet.StoreSpec storeSpec = InstructionSet.StoreSpec.valueOf(args[i].getJavaType().getPrimitiveType());
 
                ArgLocalVariableInfo arg = new ArgLocalVariableInfo(storeSpec, currSlotIndex, 0, args[i].getJavaType());
-               vars[i + thisOffset] = arg;
+               vars[i+thisOffset] = arg;
                currSlotIndex += storeSpec.getTypeSpec().getPrimitiveType().getJavaSlots(); // 1 for most 2 for Long/Double
                list.add(arg);
                argsList.add(arg);
             }
-            for(int i = args.length + thisOffset; i < numberOfSlots + thisOffset; i++){
+            for (int i = args.length+thisOffset; i<numberOfSlots+thisOffset; i++){
                vars[i] = new LocalVariableInfo();
             }
 
             int pc = 0;
             Instruction instruction = null;
-            for(Instruction i : _pcMap.values()){
+            for (Instruction i : _pcMap.values()){
                instruction = i;
                pc = i.getThisPC();
                InstructionSet.StoreSpec storeSpec = i.getByteCode().getStore();
-               if(storeSpec != InstructionSet.StoreSpec.NONE){
-                  int slotIndex = ((InstructionSet.LocalVariableTableIndexAccessor) i).getLocalVariableTableIndex();
+               if (storeSpec != InstructionSet.StoreSpec.NONE){
+                  int slotIndex = ((InstructionSet.LocalVariableTableIndexAccessor)i).getLocalVariableTableIndex();
                   LocalVariableInfo prevVar = vars[slotIndex];
-                  LocalVariableInfo var = new LocalVariableInfo(storeSpec, slotIndex, pc + i.getLength()); // will get collected pretty soon if this is not the same as the previous in this slot
-                  if(!prevVar.equals(var)){
+                  LocalVariableInfo var = new LocalVariableInfo(storeSpec, slotIndex, pc+i.getLength()); // will get collected pretty soon if this is not the same as the previous in this slot
+                  if (!prevVar.equals(var)){
                      prevVar.endPc = pc;
                      vars[slotIndex] = var;
                      list.add(vars[slotIndex]);
                   }
-               }else if(i.isForwardBranchTarget()){  // Is there an earlier branch branching here   ?
+               }else if (i.isForwardBranchTarget()){  // Is there an earlier branch branching here   ?
                   // If so we need to descope all vars declared between the brancher and here
                   // this stops
                   // if (){
@@ -1451,9 +1441,9 @@ public class ClassModel{
                   // }
                   // var=0; // <- there is no var in scope for this
 
-                  for(Branch b : instruction.getForwardBranches()){
-                     for(int slot = 0; slot < numberOfSlots + thisOffset; slot++){
-                        if(vars[slot].endPc == 0 && b.getThisPC() < vars[slot].startPc){
+                  for (Branch b : instruction.getForwardBranches()){
+                     for (int slot = 0; slot<numberOfSlots+thisOffset; slot++){
+                        if (vars[slot].endPc == 0 && b.getThisPC()<vars[slot].startPc){
                            vars[slot].endPc = pc;
                            // System.out.println("var "+vars[slot].getVariableName()+" is descoped!");
                            vars[slot] = new LocalVariableInfo();
@@ -1462,28 +1452,27 @@ public class ClassModel{
                   }
                }
             }
-            for(int i = 0; i < numberOfSlots + thisOffset; i++){
-               vars[i].endPc = pc + instruction.getLength();
+            for (int i = 0; i<numberOfSlots+thisOffset; i++){
+               vars[i].endPc = pc+instruction.getLength();
             }
             Collections.sort(list, new Comparator<LocalVariableInfo>(){
                @Override
                public int compare(LocalVariableInfo o1, LocalVariableInfo o2){
-                  return o1.getStart() - o2.getStart();
+                  return o1.getStart()-o2.getStart();
                }
             });
-
 
          }
 
          public LocalVariableInfo getVariable(int _pc, int _slot){
             LocalVariableInfo returnValue = null;
             //  System.out.println("pc = " + _pc + " index = " + _index);
-            for(LocalVariableInfo localVariableInfo : list){
+            for (LocalVariableInfo localVariableInfo : list){
                // System.out.println("   start=" + localVariableInfo.getStart() + " length=" + localVariableInfo.getLength()
                // + " varidx=" + localVariableInfo.getVariableIndex());
-               if(_pc >= localVariableInfo.getStart() - 1 && _pc <= (localVariableInfo.getStart() + localVariableInfo.getLength())
+               if (_pc>=localVariableInfo.getStart()-1 && _pc<=(localVariableInfo.getStart()+localVariableInfo.getLength())
                      && _slot == localVariableInfo.getSlot()){
-                  returnValue = (LocalVariableInfo) localVariableInfo;
+                  returnValue = (LocalVariableInfo)localVariableInfo;
                   break;
                }
             }
@@ -1492,9 +1481,9 @@ public class ClassModel{
 
          String getVariableName(int _pc, int _index){
             String returnValue = "unknown";
-            LocalVariableInfo localVariableInfo = (LocalVariableInfo) getVariable(_pc, _index);
-            if(localVariableInfo != null){
-               returnValue = ((LocalVariableInfo) localVariableInfo).name;
+            LocalVariableInfo localVariableInfo = (LocalVariableInfo)getVariable(_pc, _index);
+            if (localVariableInfo != null){
+               returnValue = ((LocalVariableInfo)localVariableInfo).name;
             }
             // System.out.println("returning " + returnValue);
             return (returnValue);
@@ -1663,7 +1652,7 @@ public class ClassModel{
                bootstrapMethodRef = _byteReader.u2();
                numBootstrapArguments = _byteReader.u2();
                bootstrapArguments = new BootstrapArgument[numBootstrapArguments];
-               for(int i = 0; i < numBootstrapArguments; i++){
+               for (int i = 0; i<numBootstrapArguments; i++){
                   bootstrapArguments[i] = new BootstrapArgument(_byteReader);
                }
             }
@@ -1679,7 +1668,7 @@ public class ClassModel{
             super(_byteReader, _nameIndex, _length);
             numBootstrapMethods = _byteReader.u2();
             bootstrapMethods = new BootstrapMethod[numBootstrapMethods];
-            for(int i = 0; i < numBootstrapMethods; i++){
+            for (int i = 0; i<numBootstrapMethods; i++){
                bootstrapMethods[i] = new BootstrapMethod(_byteReader);
             }
          }
@@ -1849,7 +1838,7 @@ public class ClassModel{
                   elementNameIndex = _byteReader.u2();
                   int tag = _byteReader.u1();
 
-                  switch(tag){
+                  switch (tag){
                      case TypeHelper.BYTE:
                      case TypeHelper.CHAR:
                      case TypeHelper.INT:
@@ -1885,7 +1874,7 @@ public class ClassModel{
                typeIndex = _byteReader.u2();
                elementValuePairCount = _byteReader.u2();
                elementValuePairs = new ElementValuePair[elementValuePairCount];
-               for(int i = 0; i < elementValuePairCount; i++){
+               for (int i = 0; i<elementValuePairCount; i++){
                   elementValuePairs[i] = new ElementValuePair(_byteReader);
                }
             }
@@ -1902,7 +1891,7 @@ public class ClassModel{
          RuntimeAnnotationsEntry(ByteReader _byteReader, int _nameIndex, int _length){
             super(_byteReader, _nameIndex, _length);
             int localVariableTableLength = _byteReader.u2();
-            for(int i = 0; i < localVariableTableLength; i++){
+            for (int i = 0; i<localVariableTableLength; i++){
                getPool().add(new AnnotationInfo(_byteReader));
             }
          }
@@ -1969,66 +1958,66 @@ public class ClassModel{
 
          int attributeCount = _byteReader.u2();
          AttributePoolEntry entry = null;
-         for(int i = 0; i < attributeCount; i++){
+         for (int i = 0; i<attributeCount; i++){
             int attributeNameIndex = _byteReader.u2();
             int length = _byteReader.u4();
             ConstantPool.UTF8Entry utf8Entry = constantPool.getUTF8Entry(attributeNameIndex);
-            if(utf8Entry == null){
-               logger.warning("Found unexpected Attribute (name = NULL) attributeNameIndex = " + attributeNameIndex);
+            if (utf8Entry == null){
+               logger.warning("Found unexpected Attribute (name = NULL) attributeNameIndex = "+attributeNameIndex);
                entry = new OtherEntry(_byteReader, attributeNameIndex, length);
                attributePoolEntries.add(entry);
             }else{
                String attributeName = utf8Entry.getUTF8();
                // System.out.println("Got " + attributeName);
-               if(attributeName.equals(LOCALVARIABLETABLE_TAG)){
+               if (attributeName.equals(LOCALVARIABLETABLE_TAG)){
                   entry = new OtherEntry(_byteReader, attributeNameIndex, length);
                   // realLocalVariableTableEntry = new RealLocalVariableTableEntry(_byteReader, attributeNameIndex, length);
                   // entry = (RealLocalVariableTableEntry) realLocalVariableTableEntry;
-               }else if(attributeName.equals(CONSTANTVALUE_TAG)){
+               }else if (attributeName.equals(CONSTANTVALUE_TAG)){
                   entry = new ConstantValueEntry(_byteReader, attributeNameIndex, length);
-               }else if(attributeName.equals(LINENUMBERTABLE_TAG)){
+               }else if (attributeName.equals(LINENUMBERTABLE_TAG)){
                   lineNumberTableEntry = new LineNumberTableEntry(_byteReader, attributeNameIndex, length);
                   entry = lineNumberTableEntry;
-               }else if(attributeName.equals(SOURCEFILE_TAG)){
+               }else if (attributeName.equals(SOURCEFILE_TAG)){
                   sourceFileEntry = new SourceFileEntry(_byteReader, attributeNameIndex, length);
                   entry = sourceFileEntry;
-               }else if(attributeName.equals(SYNTHETIC_TAG)){
+               }else if (attributeName.equals(SYNTHETIC_TAG)){
                   syntheticEntry = new SyntheticEntry(_byteReader, attributeNameIndex, length);
                   entry = syntheticEntry;
-               }else if(attributeName.equals(EXCEPTIONS_TAG)){
+               }else if (attributeName.equals(EXCEPTIONS_TAG)){
                   exceptionEntry = new ExceptionEntry(_byteReader, attributeNameIndex, length);
                   entry = exceptionEntry;
-               }else if(attributeName.equals(INNERCLASSES_TAG)){
+               }else if (attributeName.equals(INNERCLASSES_TAG)){
                   entry = new InnerClassesEntry(_byteReader, attributeNameIndex, length);
-               }else if(attributeName.equals(DEPRECATED_TAG)){
+               }else if (attributeName.equals(DEPRECATED_TAG)){
                   deprecatedEntry = new DeprecatedEntry(_byteReader, attributeNameIndex, length);
                   entry = deprecatedEntry;
-               }else if(attributeName.equals(CODE_TAG)){
+               }else if (attributeName.equals(CODE_TAG)){
                   codeEntry = new CodeEntry(_byteReader, attributeNameIndex, length);
                   entry = codeEntry;
-               }else if(attributeName.equals(ENCLOSINGMETHOD_TAG)){
+               }else if (attributeName.equals(ENCLOSINGMETHOD_TAG)){
                   enclosingMethodEntry = new EnclosingMethodEntry(_byteReader, attributeNameIndex, length);
                   entry = enclosingMethodEntry;
-               }else if(attributeName.equals(SIGNATURE_TAG)){
+               }else if (attributeName.equals(SIGNATURE_TAG)){
                   entry = new SignatureEntry(_byteReader, attributeNameIndex, length);
-               }else if(attributeName.equals(RUNTIMEINVISIBLEANNOTATIONS_TAG)){
+               }else if (attributeName.equals(RUNTIMEINVISIBLEANNOTATIONS_TAG)){
                   runtimeInvisibleAnnotationsEntry = new RuntimeAnnotationsEntry(_byteReader, attributeNameIndex, length);
                   entry = runtimeInvisibleAnnotationsEntry;
-               }else if(attributeName.equals(RUNTIMEVISIBLEANNOTATIONS_TAG)){
+               }else if (attributeName.equals(RUNTIMEVISIBLEANNOTATIONS_TAG)){
                   runtimeVisibleAnnotationsEntry = new RuntimeAnnotationsEntry(_byteReader, attributeNameIndex, length);
                   entry = runtimeVisibleAnnotationsEntry;
-               }else if(attributeName.equals(BOOTSTRAPMETHODS_TAG)){
+               }else if (attributeName.equals(BOOTSTRAPMETHODS_TAG)){
                   bootstrapMethodsEntry = new BootstrapMethodsEntry(_byteReader, attributeNameIndex, length);
                   entry = bootstrapMethodsEntry;
                   // http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.21
-               }else if(attributeName.equals(STACKMAPTABLE_TAG)){
+               }else if (attributeName.equals(STACKMAPTABLE_TAG)){
                   // http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.4
                   entry = new StackMapTableEntry(_byteReader, attributeNameIndex, length);
-               }else if(attributeName.equals(LOCALVARIABLETYPETABLE_TAG)){
+               }else if (attributeName.equals(LOCALVARIABLETYPETABLE_TAG)){
                   // http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.14
                   entry = new LocalVariableTypeTableEntry(_byteReader, attributeNameIndex, length);
                }else{
-                  logger.warning("Found unexpected Attribute (name = " + attributeName + ")");
+                  logger.warning("Found unexpected Attribute (name = "+attributeName+")");
                   entry = new OtherEntry(_byteReader, attributeNameIndex, length);
                   attributePoolEntries.add(entry);
                }
@@ -2143,12 +2132,11 @@ public class ClassModel{
       TypeHelper.JavaType type;
 
       JavaType getType(){
-         if(type == null){
+         if (type == null){
             type = TypeHelper.JavaType.getJavaType(getDescriptor());
          }
          return (type);
       }
-
 
    }
 
@@ -2183,9 +2171,9 @@ public class ClassModel{
          return (Access.STATIC.bitIsSet(methodAccessFlags));
       }
 
-       public boolean isNonStatic(){
-           return (!isStatic());
-       }
+      public boolean isNonStatic(){
+         return (!isStatic());
+      }
 
       public boolean isVirtual(){
          return (!Access.STATIC.bitIsSet(methodAccessFlags));
@@ -2214,7 +2202,7 @@ public class ClassModel{
       TypeHelper.JavaMethodArgsAndReturnType argsAndReturnType;
 
       TypeHelper.JavaMethodArgsAndReturnType getArgsAndReturnType(){
-         if(argsAndReturnType == null){
+         if (argsAndReturnType == null){
             argsAndReturnType = TypeHelper.JavaMethodArgsAndReturnType.getArgsAndReturnType(getDescriptor());
          }
          return (argsAndReturnType);
@@ -2276,7 +2264,7 @@ public class ClassModel{
       }
 
       public String toString(){
-         return getClassModel().getDotClassName() + "." + getName() + " " + getDescriptor();
+         return getClassModel().getDotClassName()+"."+getName()+" "+getDescriptor();
       }
 
       Map<Integer, Instruction> pcMap;
@@ -2325,12 +2313,11 @@ public class ClassModel{
          ConsumedInstructionTypeStack(int _length){
             instructionTypes = new Instruction.InstructionType[_length];
 
-
          }
 
          Instruction.InstructionType pop(){
             Instruction.InstructionType retValue = null;
-            if(index > 0){
+            if (index>0){
                retValue = instructionTypes[--index];
                instructionTypes[index] = null;
             }
@@ -2339,22 +2326,22 @@ public class ClassModel{
 
          Instruction.InstructionType peek(){
             Instruction.InstructionType retValue = null;
-            if(index > 0){
-               retValue = instructionTypes[index - 1];
+            if (index>0){
+               retValue = instructionTypes[index-1];
             }
             return (retValue);
 
          }
 
          void push(Instruction _i, PrimitiveType _primitiveType){
-            if((index + 1) < instructionTypes.length){
+            if ((index+1)<instructionTypes.length){
                instructionTypes[index++] = new Instruction.InstructionType(_i, _primitiveType);
             }
          }
 
          Instruction.InstructionType get(int _index){
             Instruction.InstructionType retValue = null;
-            if(_index < instructionTypes.length){
+            if (_index<instructionTypes.length){
                retValue = instructionTypes[_index];
             }
             return (retValue);
@@ -2369,26 +2356,23 @@ public class ClassModel{
             return (index);
          }
 
-
       }
-
 
       /**
        * Create a linked list of instructions (from pcHead to pcTail).
-       * <p/>
+       * <p>
        * Returns a map of int (pc) to Instruction which to allow us to quickly get from a bytecode offset to the appropriate instruction.
-       * <p/>
+       * <p>
        * Note that not all int values from 0 to code.length values will map to a valid instruction, if pcMap.get(n) == null then this implies
        * that 'n' is not the start of an instruction
-       * <p/>
+       * <p>
        * So either pcMap.get(i)== null or pcMap.get(i).getThisPC()==i
        *
        * @return Map<Integer, Instruction> the returned pc to Instruction map
        */
       Map<Integer, Instruction> getInstructionMap(){
          // We build this lazily
-         if(pcMap == null){
-
+         if (pcMap == null){
 
             Instruction pcHead = null;
             Instruction pcTail = null;
@@ -2402,36 +2386,35 @@ public class ClassModel{
 
             // We create a byteReader for reading the bytes from the code array
             ByteReader codeReader = new ByteReader(code);
-            while(codeReader.hasMore()){
+            while (codeReader.hasMore()){
                // Create an instruction from code reader's current position
                int pc = codeReader.getOffset();
                Instruction instruction = InstructionSet.ByteCode.create(this, codeReader);
 
-
-               if(instruction instanceof InstructionSet.Branch){
+               if (instruction instanceof InstructionSet.Branch){
                   branches.add(instruction.asBranch());
                }
-               if(instruction.isMethodCall()){
+               if (instruction.isMethodCall()){
                   methodCalls.add(instruction.asMethodCall());
                }
-               if(instruction.isFieldAccessor()){
+               if (instruction.isFieldAccessor()){
                   accessedFields.add(instruction.asFieldAccessor());
                }
 
-               if(instruction.isLocalVariableAccessor()){
+               if (instruction.isLocalVariableAccessor()){
                   accessedLocalVariables.add(instruction.asLocalVariableAccessor());
                }
                pcMap.put(pc, instruction);
 
                // list maintenance, make this the pcHead if pcHead is null
-               if(pcHead == null){
+               if (pcHead == null){
                   pcHead = instruction;
                }
 
                // extend the list of instructions here we make the new instruction point to previous tail
                instruction.setPrevPC(pcTail);
                // if tail exists (not the first instruction in the list) link it to the new instruction
-               if(pcTail != null){
+               if (pcTail != null){
                   pcTail.setNextPC(instruction);
                }
                // now move the tail along
@@ -2451,7 +2434,7 @@ public class ClassModel{
             //
             // @see InstructionSet.Branch#getTarget()
 
-            for(InstructionSet.Branch branch : branches){
+            for (InstructionSet.Branch branch : branches){
                Instruction targetInstruction = pcMap.get(branch.getAbsolute());
                branchTargets.add(targetInstruction);
                branch.setTarget(targetInstruction);
@@ -2460,13 +2443,12 @@ public class ClassModel{
             // We need to remove some javac optimizations
             // Javac optimizes some branches to avoid goto->goto, branch->goto etc.
 
-
-            for(InstructionSet.Branch branch : branches){
-               if(branch.isReverse()){
+            for (InstructionSet.Branch branch : branches){
+               if (branch.isReverse()){
                   Instruction target = branch.getTarget();
                   LinkedList<InstructionSet.Branch> list = target.getReverseUnconditionalBranches();
-                  if((list != null) && (list.size() > 0) && (list.get(list.size() - 1) != branch)){
-                     InstructionSet.Branch unconditional = list.get(list.size() - 1).asBranch();
+                  if ((list != null) && (list.size()>0) && (list.get(list.size()-1) != branch)){
+                     InstructionSet.Branch unconditional = list.get(list.size()-1).asBranch();
                      branch.retarget(unconditional);
 
                   }
@@ -2475,46 +2457,43 @@ public class ClassModel{
 
             int block = 0;
             int depth = 0;
-            for(Instruction i : pcMap.values()){
-               if(i.isBranch() || i.isBranchTarget()){
+            for (Instruction i : pcMap.values()){
+               if (i.isBranch() || i.isBranchTarget()){
                   block++;
                }
-               if(i.isForwardBranch()){
+               if (i.isForwardBranch()){
                   depth++;
                }
-               if(i.isReverseBranch()){
+               if (i.isReverseBranch()){
                   depth--;
                }
                depth -= i.getForwardBranches().size();
                depth += i.getReverseBranches().size();
 
-
                i.setBlock(block);
                i.setDepth(depth);
 
-
             }
 
-             // need to treat ternary else goto's special.
+            // need to treat ternary else goto's special.
 
+            ConsumedInstructionTypeStack consumedInstructionTypeStack = new ConsumedInstructionTypeStack(codeEntry.getMaxStack()+1);
 
-            ConsumedInstructionTypeStack consumedInstructionTypeStack = new ConsumedInstructionTypeStack(codeEntry.getMaxStack() + 1);
-
-            for(Instruction i : pcMap.values()){
+            for (Instruction i : pcMap.values()){
                i.setPostStackBase(consumedInstructionTypeStack.getIndex());
                Instruction.InstructionType[] consumedInstructionTypes = new Instruction.InstructionType[i.getStackConsumeCount()];
-               for(int ci = 0; ci < consumedInstructionTypes.length; ci++){
+               for (int ci = 0; ci<consumedInstructionTypes.length; ci++){
                   consumedInstructionTypes[ci] = consumedInstructionTypeStack.pop();
                }
                i.setConsumedInstructionTypes(consumedInstructionTypes);
                InstructionSet.PushSpec push = i.getByteCode().getPush();
 
-               if(i.isMethodCall()){
+               if (i.isMethodCall()){
                   TypeHelper.JavaMethodArgsAndReturnType calledArgsAndReturnType = i.asMethodCall().getConstantPoolMethodEntry().getArgsAndReturnType();
-                  if ( !calledArgsAndReturnType.getReturnType().isVoid()) {
+                  if (!calledArgsAndReturnType.getReturnType().isVoid()){
                      consumedInstructionTypeStack.push(i, calledArgsAndReturnType.getReturnType().getPrimitiveType());
                   }
-               }else if(i.isFieldAccessor() && i instanceof InstructionSet.AccessField){   // don't do this for assigns to fields!
+               }else if (i.isFieldAccessor() && i instanceof InstructionSet.AccessField){   // don't do this for assigns to fields!
                   JavaType assignedFieldType = i.asFieldAccessor().getConstantPoolFieldEntry().getType();
                   consumedInstructionTypeStack.push(i, assignedFieldType.getPrimitiveType());
 
@@ -2522,13 +2501,13 @@ public class ClassModel{
                   TypeSpec[] typeSpecs = push.getTypes();
                   int prodCount = i.getStackProduceCount();
 
-                  for(int pi = 0; pi < prodCount; pi++){
+                  for (int pi = 0; pi<prodCount; pi++){
                      TypeSpec typeSpec = typeSpecs[pi];
                      consumedInstructionTypeStack.push(i, typeSpec.getPrimitiveType());
 
                   }
                }
-                boolean oldDealWithTernary = false;
+               boolean oldDealWithTernary = false;
                if (oldDealWithTernary){ /*
                // So Ternary operators have to be dealt with.
                // If this is a forward conditional target whose stackbase is now greater than or equal to the branch
@@ -2577,33 +2556,34 @@ public class ClassModel{
                      throw new IllegalStateException("never!");
                   }
                }
-               */}
+               */
+               }
 
                if (!oldDealWithTernary){
-                   // is this the first instruction in a ternary else block
-                   if (i.isBranch() && i.asBranch().isUnconditional() && i.asBranch().isForward()) {
-                       // We now no it is the first in an else block. If this is a normal else the 'then' block will not have left an unbalanced stack.
-                       // So check if the stack base of the first instruction of then is equal to this!
+                  // is this the first instruction in a ternary else block
+                  if (i.isBranch() && i.asBranch().isUnconditional() && i.asBranch().isForward()){
+                     // We now no it is the first in an else block. If this is a normal else the 'then' block will not have left an unbalanced stack.
+                     // So check if the stack base of the first instruction of then is equal to this!
 
-                       Instruction elseGoto = i;
-                       Instruction firstInElseBlock = i.getNextPC();
-                      // Instruction last = elseGoto.getPrevPC();
+                     Instruction elseGoto = i;
+                     Instruction firstInElseBlock = i.getNextPC();
+                     // Instruction last = elseGoto.getPrevPC();
 
-                           LinkedList<Branch> listOfBranches = firstInElseBlock.getForwardBranches();
-                           Branch lastBranchElseBlock = listOfBranches.getLast();
-                           Instruction firstInThenBlock = lastBranchElseBlock.getNextPC();
-                          // System.out.println("firstInThenBlock "+ firstInThenBlock.getPreStackBase()+", "+firstInThenBlock.getPostStackBase()) ;
-                         //  System.out.println("last "+ last.getPreStackBase()+", "+last.getPostStackBase()) ;
-                           System.out.println("elseGoto "+ elseGoto.getPreStackBase()+", "+elseGoto.getPostStackBase()) ;
-                           if (elseGoto.getPostStackBase()>firstInThenBlock.getPostStackBase()){
-                              // System.out.println("@"+i.getStartPC()+" ternary!");
+                     LinkedList<Branch> listOfBranches = firstInElseBlock.getForwardBranches();
+                     Branch lastBranchElseBlock = listOfBranches.getLast();
+                     Instruction firstInThenBlock = lastBranchElseBlock.getNextPC();
+                     // System.out.println("firstInThenBlock "+ firstInThenBlock.getPreStackBase()+", "+firstInThenBlock.getPostStackBase()) ;
+                     //  System.out.println("last "+ last.getPreStackBase()+", "+last.getPostStackBase()) ;
+                     System.out.println("elseGoto "+elseGoto.getPreStackBase()+", "+elseGoto.getPostStackBase());
+                     if (elseGoto.getPostStackBase()>firstInThenBlock.getPostStackBase()){
+                        // System.out.println("@"+i.getStartPC()+" ternary!");
 
-                               consumedInstructionTypeStack.pop(); // We throw one away!
-                           }else{
-                              // System.out.println("@"+i.getStartPC()+" not ternary!");
-                           }
+                        consumedInstructionTypeStack.pop(); // We throw one away!
+                     }else{
+                        // System.out.println("@"+i.getStartPC()+" not ternary!");
+                     }
 
-                   }
+                  }
 
                }
 
@@ -2628,14 +2608,13 @@ public class ClassModel{
              }
              */
 
-
             AttributePool.LocalVariableTableEntry localVariableTableEntry = attributePool.new LocalVariableTableEntry(pcMap, this);
 
             setLocalVariableTableEntry(localVariableTableEntry);
-            if(Config.enableShowLocalVariableTable){
+            if (Config.enableShowLocalVariableTable){
                Table table = new Table("|  %3d", "|  %3d", "|   %3d", "|  %2d", "|%4s", "| %8s|");
                table.header("|Start", "|  End", "|Length", "|Slot", "|Name", "|Signature|");
-               for(AttributePool.LocalVariableTableEntry.LocalVariableInfo var : localVariableTableEntry){
+               for (AttributePool.LocalVariableTableEntry.LocalVariableInfo var : localVariableTableEntry){
                   table.data(var.getStart());
                   table.data(var.getEnd());
                   table.data(var.getLength());
@@ -2644,28 +2623,25 @@ public class ClassModel{
                   table.data(var.getVariableDescriptor());
                }
 
-               System.out.println("\n" + table);
+               System.out.println("\n"+table);
             }
-
 
             //  LocalVariableTableEntry localVariableTableEntry = getPreferredLocalVariableTableEntry();
 
-            for(InstructionSet.LocalVariableTableIndexAccessor instruction : accessedLocalVariables){
-               int pc = ((Instruction) instruction).getThisPC();
-               int len = ((Instruction) instruction).getLength();
+            for (InstructionSet.LocalVariableTableIndexAccessor instruction : accessedLocalVariables){
+               int pc = ((Instruction)instruction).getThisPC();
+               int len = ((Instruction)instruction).getLength();
                int varIndex = instruction.getLocalVariableTableIndex();
-               AttributePool.LocalVariableTableEntry.LocalVariableInfo var = localVariableTableEntry.getVariable(pc + len, varIndex);
-               if(var == null){
+               AttributePool.LocalVariableTableEntry.LocalVariableInfo var = localVariableTableEntry.getVariable(pc+len, varIndex);
+               if (var == null){
                   System.out.println("Screwed!");
                }
                instruction.setLocalVariableInfo(var);
             }
 
-
          }
          return (pcMap);
       }
-
 
       public Collection<Instruction> getInstructions(){
          return (getInstructionMap().values());
@@ -2674,7 +2650,6 @@ public class ClassModel{
       public int getInstructionCount(){
          return getInstructionMap().size();
       }
-
 
    }
 
@@ -2697,7 +2672,6 @@ public class ClassModel{
 
    //private Class<?> clazz;
 
-
    void parse(InputStream _inputStream) throws ClassParseException{
 
       ByteReader byteReader = new ByteReader(_inputStream);
@@ -2711,21 +2685,21 @@ public class ClassModel{
       superClassConstantPoolIndex = byteReader.u2();
 
       int interfaceCount = byteReader.u2();
-      for(int i = 0; i < interfaceCount; i++){
+      for (int i = 0; i<interfaceCount; i++){
          ClassModelInterface iface = new ClassModelInterface(byteReader);
          interfaces.add(iface);
 
       }
 
       int fieldCount = byteReader.u2();
-      for(int i = 0; i < fieldCount; i++){
+      for (int i = 0; i<fieldCount; i++){
          ClassModelField field = new ClassModelField(byteReader, i);
          fields.add(field);
 
       }
 
       int methodPoolLength = byteReader.u2();
-      for(int i = 0; i < methodPoolLength; i++){
+      for (int i = 0; i<methodPoolLength; i++){
          ClassModelMethod method = new ClassModelMethod(byteReader, i);
          methods.add(method);
 
@@ -2768,8 +2742,8 @@ public class ClassModel{
    }
 
    ClassModelField getField(String _name, String _descriptor){
-      for(ClassModelField entry : fields){
-         if(entry.getName().equals(_name) && entry.getDescriptor().equals(_descriptor)){
+      for (ClassModelField entry : fields){
+         if (entry.getName().equals(_name) && entry.getDescriptor().equals(_descriptor)){
             return (entry);
          }
       }
@@ -2777,8 +2751,8 @@ public class ClassModel{
    }
 
    ClassModelField getField(String _name){
-      for(ClassModelField entry : fields){
-         if(entry.getName().equals(_name)){
+      for (ClassModelField entry : fields){
+         if (entry.getName().equals(_name)){
             return (entry);
          }
       }
@@ -2786,16 +2760,16 @@ public class ClassModel{
    }
 
    public ClassModelMethod getMethod(String _name, String _descriptor){
-      for(ClassModelMethod entry : methods){
-         if(entry.getName().equals(_name) && entry.getDescriptor().equals(_descriptor)){
+      for (ClassModelMethod entry : methods){
+         if (entry.getName().equals(_name) && entry.getDescriptor().equals(_descriptor)){
             return (entry);
          }
       }
-      return superClazzModel != null ? superClazzModel.getMethod(_name, _descriptor) : (null);
+      return superClazzModel != null?superClazzModel.getMethod(_name, _descriptor):(null);
    }
 
    public List<ClassModelMethod> getMethods(){
-     return(methods);
+      return (methods);
    }
 
    List<ClassModelField> getFieldPoolEntries(){
@@ -2813,27 +2787,27 @@ public class ClassModel{
       String entryClassNameInDotForm = _methodEntry.getClassEntry().getDotClassName();
 
       // Shortcut direct calls to supers to allow "foo() { super.foo() }" prefix stuff to work
-      if(_isSpecial && (superClazzModel != null) && superClazzModel.isSuperClass(entryClassNameInDotForm)){
-         if(logger.isLoggable(Level.FINE)){
-            logger.fine("going to look in super:" + superClazzModel.getDotClassName() + " on behalf of "
-                  + entryClassNameInDotForm);
+      if (_isSpecial && (superClazzModel != null) && superClazzModel.isSuperClass(entryClassNameInDotForm)){
+         if (logger.isLoggable(Level.FINE)){
+            logger.fine("going to look in super:"+superClazzModel.getDotClassName()+" on behalf of "
+                  +entryClassNameInDotForm);
          }
          return superClazzModel.getMethod(_methodEntry, false);
       }
 
-      for(ClassModelMethod entry : methods){
-         if(entry.getName().equals(_methodEntry.getNameAndTypeEntry().getName())
+      for (ClassModelMethod entry : methods){
+         if (entry.getName().equals(_methodEntry.getNameAndTypeEntry().getName())
                && entry.getDescriptor().equals(_methodEntry.getNameAndTypeEntry().getDescriptor())){
-            if(logger.isLoggable(Level.FINE)){
-               logger.fine("Found " + getDotClassName()
-                     + "." + entry.getName() + " " + entry.getDescriptor() + " for "
-                     + entryClassNameInDotForm);
+            if (logger.isLoggable(Level.FINE)){
+               logger.fine("Found "+getDotClassName()
+                     +"."+entry.getName()+" "+entry.getDescriptor()+" for "
+                     +entryClassNameInDotForm);
             }
             return (entry);
          }
       }
 
-      return superClazzModel != null ? superClazzModel.getMethod(_methodEntry, false) : (null);
+      return superClazzModel != null?superClazzModel.getMethod(_methodEntry, false):(null);
    }
 
    /**
@@ -2938,7 +2912,7 @@ public class ClassModel{
    public String getSuperDotClassName(){
       int superClassConstantPoolIndex = getSuperClassConstantPoolIndex();
       ConstantPool.ClassEntry superClassEntry = constantPool.getClassEntry(superClassConstantPoolIndex);
-      if(superClassEntry == null){
+      if (superClassEntry == null){
          superClassEntry = superClassEntry;
       }
       return (superClassEntry.getDotClassName());

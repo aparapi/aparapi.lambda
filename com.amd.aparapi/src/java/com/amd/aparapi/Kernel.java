@@ -54,16 +54,16 @@ import java.util.logging.Logger;
 /**
  * OREF <i>kernel</i> encapsulates a data parallel algorithm that will execute either on a GPU
  * (through conversion to OpenCL) or on a CPU via a Java Thread Pool.
- * <p/>
+ * <p>
  * To write a new kernel, a developer extends the <code>Kernel</code> class and overrides the <code>Kernel.run()</code> method.
  * To execute this kernel, the developer creates a new instance of it and calls <code>Kernel.execute(int globalSize)</code> with a suitable 'global size'. At runtime
  * Aparapi will attempt to convert the <code>Kernel.run()</code> method (and any method called directly or indirectly
  * by <code>Kernel.run()</code>) into OpenCL for execution on GPU devices made available via the OpenCL platform.
- * <p/>
+ * <p>
  * Note that <code>Kernel.run()</code> is not called directly. Instead,
  * the <code>Kernel.execute(int globalSize)</code> method will cause the overridden <code>Kernel.run()</code>
  * method to be invoked once for each value in the range <code>0...globalSize</code>.
- * <p/>
+ * <p>
  * On the first call to <code>Kernel.execute(int _globalSize)</code>, Aparapi will determine the EXECUTION_MODE of the kernel.
  * This decision is made dynamically based on two factors:
  * <ol>
@@ -71,9 +71,9 @@ import java.util.logging.Logger;
  * <li>Whether the bytecode of the <code>run()</code> method (and every method that can be called directly or indirectly from the <code>run()</code> method)
  * can be converted into OpenCL.</li>
  * </ol>
- * <p/>
+ * <p>
  * Below is an example Kernel that calculates the square of a set of input values.
- * <p/>
+ * <p>
  * <blockquote><pre>
  *     class SquareKernel extends Kernel{
  *         private int values[];
@@ -91,9 +91,9 @@ import java.util.logging.Logger;
  *         }
  *     }
  * </pre></blockquote>
- * <p/>
+ * <p>
  * To execute this kernel, first create a new instance of it and then call <code>execute(Range _range)</code>.
- * <p/>
+ * <p>
  * <blockquote><pre>
  *     int[] values = new int[1024];
  *     // fill values array
@@ -101,25 +101,25 @@ import java.util.logging.Logger;
  *     SquareKernel kernel = new SquareKernel(values);
  *     kernel.execute(range);
  * </pre></blockquote>
- * <p/>
+ * <p>
  * When <code>execute(Range)</code> returns, all the executions of <code>Kernel.run()</code> have completed and the results are available in the <code>squares</code> array.
- * <p/>
+ * <p>
  * <blockquote><pre>
  *     int[] squares = kernel.getSquares();
  *     for (int i=0; i< values.length; i++){
  *        System.out.printf("%4d %4d %8d\n", i, values[i], squares[i]);
  *     }
  * </pre></blockquote>
- * <p/>
+ * <p>
  * OREF different approach to creating lambdaRunnerCache that avoids extending Kernel is to write an anonymous inner class:
- * <p/>
+ * <p>
  * <blockquote><pre>
- * <p/>
+ * <p>
  *     final int[] values = new int[1024];
  *     // fill the values array
  *     final int[] squares = new int[values.length];
  *     final Range range = Range.create(values.length);
- * <p/>
+ * <p>
  *     Kernel kernel = new Kernel(){
  *         public void run() {
  *             int gid = getGlobalID();
@@ -130,9 +130,9 @@ import java.util.logging.Logger;
  *     for (int i=0; i< values.length; i++){
  *        System.out.printf("%4d %4d %8d\n", i, values[i], squares[i]);
  *     }
- * <p/>
+ * <p>
  * </pre></blockquote>
- * <p/>
+ * <p>
  *
  * @author gfrost AMD Javalabs
  * @version Alpha, 21/09/2010
@@ -140,7 +140,8 @@ import java.util.logging.Logger;
 
 public abstract class Kernel implements Cloneable{
    public
-   @Retention(RetentionPolicy.RUNTIME) @interface OpenCLMapping{
+   @Retention(RetentionPolicy.RUNTIME)
+   @interface OpenCLMapping{
       String mapTo() default "";
 
       boolean atomic32() default false;
@@ -148,13 +149,14 @@ public abstract class Kernel implements Cloneable{
       boolean atomic64() default false;
    }
 
-   @Retention(RetentionPolicy.RUNTIME) @interface OpenCLDelegate{
+   @Retention(RetentionPolicy.RUNTIME)
+   @interface OpenCLDelegate{
 
    }
 
    /**
     * We can use this Annotation to 'tag' intended local buffers.
-    * <p/>
+    * <p>
     * So we can either annotate the buffer
     * <pre><code>
     *  &#64Local int[] buffer = new int[1024];
@@ -167,13 +169,14 @@ public abstract class Kernel implements Cloneable{
     * @see #LOCAL_SUFFIX
     */
    public
-   @Retention(RetentionPolicy.RUNTIME) @interface Local{
+   @Retention(RetentionPolicy.RUNTIME)
+   @interface Local{
 
    }
 
    /**
     * We can use this Annotation to 'tag' intended constant buffers.
-    * <p/>
+    * <p>
     * So we can either annotate the buffer
     * <pre><code>
     *  &#64Constant int[] buffer = new int[1024];
@@ -186,14 +189,15 @@ public abstract class Kernel implements Cloneable{
     * @see #LOCAL_SUFFIX
     */
    public
-   @Retention(RetentionPolicy.RUNTIME) @interface Constant{
+   @Retention(RetentionPolicy.RUNTIME)
+   @interface Constant{
 
    }
 
    /**
     * We can use this suffix to 'tag' intended local buffers.
-    * <p/>
-    * <p/>
+    * <p>
+    * <p>
     * So either name the buffer
     * <pre><code>
     *  int[] buffer_$local$ = new int[1024];
@@ -208,8 +212,8 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * We can use this suffix to 'tag' intended constant buffers.
-    * <p/>
-    * <p/>
+    * <p>
+    * <p>
     * So either name the buffer
     * <pre><code>
     *  int[] buffer_$constant$ = new int[1024];
@@ -236,8 +240,8 @@ public abstract class Kernel implements Cloneable{
     * The <i>execution mode</i> ENUM enumerates the possible modes of executing a kernel.
     * One can request a mode of execution using the values below, and query a kernel after it first executes to
     * determine how it executed.
-    * <p/>
-    * <p/>
+    * <p>
+    * <p>
     * Aparapi supports 4 execution modes.
     * <ul>
     * <table>
@@ -249,10 +253,10 @@ public abstract class Kernel implements Cloneable{
     * performant than the other modes</td></tr>
     * </table>
     * </ul>
-    * <p/>
+    * <p>
     * To request that a kernel is executed in a specific mode, call <code>Kernel.setExecutionMode(EXECUTION_MODE)</code> before the
     * kernel first executes.
-    * <p/>
+    * <p>
     * <blockquote><pre>
     *     int[] values = new int[1024];
     *     // fill values array
@@ -260,7 +264,7 @@ public abstract class Kernel implements Cloneable{
     *     kernel.setExecutionMode(Kernel.EXECUTION_MODE.JTP);
     *     kernel.execute(values.length);
     * </pre></blockquote>
-    * <p/>
+    * <p>
     * Alternatively, the property <code>com.amd.aparapi.executionMode</code> can be set to one of <code>JTP,GPU,CPU,SEQ</code>
     * when an application is launched.
     * <p><blockquote><pre>
@@ -284,13 +288,13 @@ public abstract class Kernel implements Cloneable{
       GPU,
       /**
        * The value representing execution on a CPU device via OpenCL.
-       * <p/>
+       * <p>
        * <b>Note</b> not all OpenCL implementations support OpenCL compute on the CPU.
        */
       CPU,
       /**
        * The value representing execution on a Java Thread Pool.
-       * <p/>
+       * <p>
        * By default one Java thread is started for each available core and each core will execute <code>globalSize/cores</code> work items.
        * This creates a total of <code>globalSize%cores</code> threads to complete the work.
        * Choose suitable values for <code>globalSize</code> to minimize the number of threads that are spawned.
@@ -298,7 +302,7 @@ public abstract class Kernel implements Cloneable{
       JTP,
       /**
        * The value representing execution sequentially in a single loop.
-       * <p/>
+       * <p>
        * This is meant to be used for debugging a kernel.
        */
       SEQ;
@@ -338,57 +342,57 @@ public abstract class Kernel implements Cloneable{
       */
 
       static EXECUTION_MODE getDefaultExecutionMode(){
-         EXECUTION_MODE defaultExecutionMode = OpenCLJNI.getJNI().isOpenCLAvailable() ? GPU : JTP;
+         EXECUTION_MODE defaultExecutionMode = OpenCLJNI.getJNI().isOpenCLAvailable()?GPU:JTP;
          String executionMode = Config.executionMode;
-         if(executionMode != null){
+         if (executionMode != null){
             try{
                EXECUTION_MODE requestedExecutionMode;
                requestedExecutionMode = getExecutionModeFromString(executionMode).iterator().next();
                logger.fine("requested execution mode =");
-               if((OpenCLJNI.getJNI().isOpenCLAvailable() && requestedExecutionMode.isOpenCL())
+               if ((OpenCLJNI.getJNI().isOpenCLAvailable() && requestedExecutionMode.isOpenCL())
                      || !requestedExecutionMode.isOpenCL()){
                   defaultExecutionMode = requestedExecutionMode;
                }
-            }catch(Throwable t){
+            }catch (Throwable t){
                // we will take the default
             }
          }
 
-         logger.fine("default execution modes = " + defaultExecutionMode);
+         logger.fine("default execution modes = "+defaultExecutionMode);
 
          return (defaultExecutionMode);
       }
 
       static LinkedHashSet<EXECUTION_MODE> getDefaultExecutionModes(){
          LinkedHashSet<EXECUTION_MODE> defaultExecutionModes = new LinkedHashSet<EXECUTION_MODE>();
-         if(OpenCLJNI.getJNI().isOpenCLAvailable()){
+         if (OpenCLJNI.getJNI().isOpenCLAvailable()){
             defaultExecutionModes.add(GPU);
             defaultExecutionModes.add(JTP);
          }else{
             defaultExecutionModes.add(JTP);
          }
          String executionMode = Config.executionMode;
-         if(executionMode != null){
+         if (executionMode != null){
             try{
                LinkedHashSet<EXECUTION_MODE> requestedExecutionModes;
                requestedExecutionModes = EXECUTION_MODE.getExecutionModeFromString(executionMode);
                logger.fine("requested execution mode =");
-               for(EXECUTION_MODE mode : requestedExecutionModes){
-                  logger.fine(" " + mode);
+               for (EXECUTION_MODE mode : requestedExecutionModes){
+                  logger.fine(" "+mode);
                }
-               if((OpenCLJNI.getJNI().isOpenCLAvailable() && EXECUTION_MODE.anyOpenCL(requestedExecutionModes))
+               if ((OpenCLJNI.getJNI().isOpenCLAvailable() && EXECUTION_MODE.anyOpenCL(requestedExecutionModes))
                      || !EXECUTION_MODE.anyOpenCL(requestedExecutionModes)){
                   defaultExecutionModes = requestedExecutionModes;
                }
-            }catch(Throwable t){
+            }catch (Throwable t){
                // we will take the default
             }
          }
 
-         logger.info("default execution modes = " + defaultExecutionModes);
+         logger.info("default execution modes = "+defaultExecutionModes);
 
-         for(EXECUTION_MODE e : defaultExecutionModes){
-            logger.info("SETTING DEFAULT MODE: " + e.toString());
+         for (EXECUTION_MODE e : defaultExecutionModes){
+            logger.info("SETTING DEFAULT MODE: "+e.toString());
          }
 
          return (defaultExecutionModes);
@@ -396,7 +400,7 @@ public abstract class Kernel implements Cloneable{
 
       static LinkedHashSet<EXECUTION_MODE> getExecutionModeFromString(String executionMode){
          LinkedHashSet<EXECUTION_MODE> executionModes = new LinkedHashSet<EXECUTION_MODE>();
-         for(String mode : executionMode.split(",")){
+         for (String mode : executionMode.split(",")){
             executionModes.add(valueOf(mode.toUpperCase()));
          }
          return executionModes;
@@ -404,13 +408,13 @@ public abstract class Kernel implements Cloneable{
 
       static EXECUTION_MODE getFallbackExecutionMode(){
          EXECUTION_MODE defaultFallbackExecutionMode = JTP;
-         logger.info("fallback execution mode = " + defaultFallbackExecutionMode);
+         logger.info("fallback execution mode = "+defaultFallbackExecutionMode);
          return (defaultFallbackExecutionMode);
       }
 
       static boolean anyOpenCL(LinkedHashSet<EXECUTION_MODE> _executionModes){
-         for(EXECUTION_MODE mode : _executionModes){
-            if(mode == GPU || mode == CPU){
+         for (EXECUTION_MODE mode : _executionModes){
+            if (mode == GPU || mode == CPU){
                return true;
             }
          }
@@ -451,11 +455,11 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * Determine the globalId of an executing kernel.
-    * <p/>
+    * <p>
     * The kernel implementation uses the globalId to determine which of the executing lambdaRunnerCache (in the global domain space) this invocation is expected to deal with.
-    * <p/>
+    * <p>
     * For example in a <code>SquareKernel</code> implementation:
-    * <p/>
+    * <p>
     * <blockquote><pre>
     *     class SquareKernel extends Kernel{
     *         private int values[];
@@ -473,9 +477,9 @@ public abstract class Kernel implements Cloneable{
     *         }
     *     }
     * </pre></blockquote>
-    * <p/>
+    * <p>
     * Each invocation of <code>SquareKernel.run()</code> retrieves it's globalId by calling <code>getGlobalId()</code>, and then computes the value of <code>square[gid]</code> for a given value of <code>value[gid]</code>.
-    * <p/>
+    * <p>
     *
     * @return The globalId for the Kernel being executed
     * @see #getLocalId()
@@ -511,12 +515,12 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * Determine the groupId of an executing kernel.
-    * <p/>
+    * <p>
     * When a <code>Kernel.execute(int globalSize)</code> is invoked for a particular kernel, the runtime will break the work into various 'groups'.
-    * <p/>
+    * <p>
     * OREF kernel can use <code>getGroupId()</code> to determine which group a kernel is currently
     * dispatched to
-    * <p/>
+    * <p>
     * The following code would capture the groupId for each kernel and map it against globalId.
     * <blockquote><pre>
     *     final int[] groupIds = new int[1024];
@@ -565,9 +569,9 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * Determine the passId of an executing kernel.
-    * <p/>
+    * <p>
     * When a <code>Kernel.execute(int globalSize, int passes)</code> is invoked for a particular kernel, the runtime will break the work into various 'groups'.
-    * <p/>
+    * <p>
     * OREF kernel can use <code>getPassId()</code> to determine which pass we are in.  This is ideal for 'reduce' prefix phases
     *
     * @return The groupId for this Kernel being executed
@@ -584,11 +588,11 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * Determine the local id of an executing kernel.
-    * <p/>
+    * <p>
     * When a <code>Kernel.execute(int globalSize)</code> is invoked for a particular kernel, the runtime will break the work into
     * various 'groups'.
     * <code>getLocalId()</code> can be used to determine the relative id of the current kernel within a specific group.
-    * <p/>
+    * <p>
     * The following code would capture the groupId for each kernel and map it against globalId.
     * <blockquote><pre>
     *     final int[] localIds = new int[1024];
@@ -637,10 +641,10 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * Determine the size of the group that an executing kernel is a member of.
-    * <p/>
+    * <p>
     * When a <code>Kernel.execute(int globalSize)</code> is invoked for a particular kernel, the runtime will break the work into
     * various 'groups'. <code>getLocalSize()</code> allows a kernel to determine the size of the current group.
-    * <p/>
+    * <p>
     * Note groups may not all be the same size. In particular, if <code>(global size)%(# of compute devices)!=0</code>, the runtime can choose to dispatch lambdaRunnerCache to
     * groups with differing sizes.
     *
@@ -710,7 +714,7 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * Determine the number of groups that will be used to execute a kernel
-    * <p/>
+    * <p>
     * When <code>Kernel.execute(int globalSize)</code> is invoked, the runtime will split the work into
     * multiple 'groups'. <code>getNumGroups()</code> returns the total number of groups that will be used.
     *
@@ -747,22 +751,22 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * The entry point of a kernel.
-    * <p/>
-    * <p/>
+    * <p>
+    * <p>
     * Every kernel must override this method.
     */
    public abstract void run();
 
    /**
     * When using a Java Thread Pool Aparapi uses clone to copy the initial instance to each thread.
-    * <p/>
-    * <p/>
+    * <p>
+    * <p>
     * If you choose to override <code>clone()</code> you are responsible for delegating to <code>super.clone();</code>
     */
    @Override
    protected Object clone(){
       try{
-         Kernel worker = (Kernel) super.clone();
+         Kernel worker = (Kernel)super.clone();
          worker.groupId = new int[]{
                0,
                0,
@@ -779,7 +783,7 @@ public abstract class Kernel implements Cloneable{
                0
          };
          return worker;
-      }catch(CloneNotSupportedException e){
+      }catch (CloneNotSupportedException e){
          // TODO Auto-generated catch block
          e.printStackTrace();
          return (null);
@@ -788,7 +792,7 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * Delegates to either {@link java.lang.Math#acos(double)} (Java) or <code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/acos.html">acos(float)</a></code> (OpenCL).
-    * <p/>
+    * <p>
     * User should note the differences in precision between Java and OpenCL's implementation of arithmetic functions to determine whether the difference in precision is acceptable.
     *
     * @param a value to delegate to {@link java.lang.Math#acos(double)}/<code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/acos.html">acos(float)</a></code>
@@ -798,12 +802,12 @@ public abstract class Kernel implements Cloneable{
     */
    @OpenCLMapping(mapTo = "acos")
    protected float acos(float a){
-      return (float) Math.acos(a);
+      return (float)Math.acos(a);
    }
 
    /**
     * Delegates to either {@link java.lang.Math#acos(double)} (Java) or <code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/acos.html">acos(double)</a></code> (OpenCL).
-    * <p/>
+    * <p>
     * User should note the differences in precision between Java and OpenCL's implementation of arithmetic functions to determine whether the difference in precision is acceptable.
     *
     * @param a value to delegate to {@link java.lang.Math#acos(double)}/<code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/acos.html">acos(double)</a></code>
@@ -818,7 +822,7 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * Delegates to either {@link java.lang.Math#asin(double)} (Java) or <code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/asin.html">asin(float)</a></code> (OpenCL).
-    * <p/>
+    * <p>
     * User should note the differences in precision between Java and OpenCL's implementation of arithmetic functions to determine whether the difference in precision is acceptable.
     *
     * @param _f value to delegate to {@link java.lang.Math#asin(double)}/<code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/asin.html">asin(float)</a></code>
@@ -828,12 +832,12 @@ public abstract class Kernel implements Cloneable{
     */
    @OpenCLMapping(mapTo = "asin")
    protected float asin(float _f){
-      return (float) Math.asin(_f);
+      return (float)Math.asin(_f);
    }
 
    /**
     * Delegates to either {@link java.lang.Math#asin(double)} (Java) or <code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/asin.html">asin(double)</a></code> (OpenCL).
-    * <p/>
+    * <p>
     * User should note the differences in precision between Java and OpenCL's implementation of arithmetic functions to determine whether the difference in precision is acceptable.
     *
     * @param _d value to delegate to {@link java.lang.Math#asin(double)}/<code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/asin.html">asin(double)</a></code>
@@ -848,7 +852,7 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * Delegates to either {@link java.lang.Math#atan(double)} (Java) or <code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/atan.html">atan(float)</a></code> (OpenCL).
-    * <p/>
+    * <p>
     * User should note the differences in precision between Java and OpenCL's implementation of arithmetic functions to determine whether the difference in precision is acceptable.
     *
     * @param _f value to delegate to {@link java.lang.Math#atan(double)}/<code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/atan.html">atan(float)</a></code>
@@ -858,12 +862,12 @@ public abstract class Kernel implements Cloneable{
     */
    @OpenCLMapping(mapTo = "atan")
    protected float atan(float _f){
-      return (float) Math.atan(_f);
+      return (float)Math.atan(_f);
    }
 
    /**
     * Delegates to either {@link java.lang.Math#atan(double)} (Java) or <code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/atan.html">atan(double)</a></code> (OpenCL).
-    * <p/>
+    * <p>
     * User should note the differences in precision between Java and OpenCL's implementation of arithmetic functions to determine whether the difference in precision is acceptable.
     *
     * @param _d value to delegate to {@link java.lang.Math#atan(double)}/<code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/atan.html">atan(double)</a></code>
@@ -878,7 +882,7 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * Delegates to either {@link java.lang.Math#atan2(double, double)} (Java) or <code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/atan.html">atan2(float, float)</a></code> (OpenCL).
-    * <p/>
+    * <p>
     * User should note the differences in precision between Java and OpenCL's implementation of arithmetic functions to determine whether the difference in precision is acceptable.
     *
     * @param _f1 value to delegate to first argument of {@link java.lang.Math#atan2(double, double)}/<code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/atan.html">atan2(float, float)</a></code>
@@ -889,12 +893,12 @@ public abstract class Kernel implements Cloneable{
     */
    @OpenCLMapping(mapTo = "atan2")
    protected float atan2(float _f1, float _f2){
-      return (float) Math.atan2(_f1, _f2);
+      return (float)Math.atan2(_f1, _f2);
    }
 
    /**
     * Delegates to either {@link java.lang.Math#atan2(double, double)} (Java) or <code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/atan.html">atan2(double, double)</a></code> (OpenCL).
-    * <p/>
+    * <p>
     * User should note the differences in precision between Java and OpenCL's implementation of arithmetic functions to determine whether the difference in precision is acceptable.
     *
     * @param _d1 value to delegate to first argument of {@link java.lang.Math#atan2(double, double)}/<code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/atan.html">atan2(double, double)</a></code>
@@ -910,7 +914,7 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * Delegates to either {@link java.lang.Math#ceil(double)} (Java) or <code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/ceil.html">ceil(float)</a></code> (OpenCL).
-    * <p/>
+    * <p>
     * User should note the differences in precision between Java and OpenCL's implementation of arithmetic functions to determine whether the difference in precision is acceptable.
     *
     * @param _f value to delegate to {@link java.lang.Math#ceil(double)}/<code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/ceil.html">ceil(float)</a></code>
@@ -920,12 +924,12 @@ public abstract class Kernel implements Cloneable{
     */
    @OpenCLMapping(mapTo = "ceil")
    protected float ceil(float _f){
-      return (float) Math.ceil(_f);
+      return (float)Math.ceil(_f);
    }
 
    /**
     * Delegates to either {@link java.lang.Math#ceil(double)} (Java) or <code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/ceil.html">ceil(double)</a></code> (OpenCL).
-    * <p/>
+    * <p>
     * User should note the differences in precision between Java and OpenCL's implementation of arithmetic functions to determine whether the difference in precision is acceptable.
     *
     * @param _d value to delegate to {@link java.lang.Math#ceil(double)}/<code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/ceil.html">ceil(double)</a></code>
@@ -940,7 +944,7 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * Delegates to either {@link java.lang.Math#cos(double)} (Java) or <code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/cos.html">cos(float)</a></code> (OpenCL).
-    * <p/>
+    * <p>
     * User should note the differences in precision between Java and OpenCL's implementation of arithmetic functions to determine whether the difference in precision is acceptable.
     *
     * @param _f value to delegate to {@link java.lang.Math#cos(double)}/<code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/cos.html">cos(float)</a></code>
@@ -950,12 +954,12 @@ public abstract class Kernel implements Cloneable{
     */
    @OpenCLMapping(mapTo = "cos")
    protected float cos(float _f){
-      return (float) Math.cos(_f);
+      return (float)Math.cos(_f);
    }
 
    /**
     * Delegates to either {@link java.lang.Math#cos(double)} (Java) or <code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/cos.html">cos(double)</a></code> (OpenCL).
-    * <p/>
+    * <p>
     * User should note the differences in precision between Java and OpenCL's implementation of arithmetic functions to determine whether the difference in precision is acceptable.
     *
     * @param _d value to delegate to {@link java.lang.Math#cos(double)}/<code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/cos.html">cos(double)</a></code>
@@ -970,7 +974,7 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * Delegates to either {@link java.lang.Math#exp(double)} (Java) or <code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/exp.html">exp(float)</a></code> (OpenCL).
-    * <p/>
+    * <p>
     * User should note the differences in precision between Java and OpenCL's implementation of arithmetic functions to determine whether the difference in precision is acceptable.
     *
     * @param _f value to delegate to {@link java.lang.Math#exp(double)}/<code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/exp.html">exp(float)</a></code>
@@ -980,12 +984,12 @@ public abstract class Kernel implements Cloneable{
     */
    @OpenCLMapping(mapTo = "exp")
    protected float exp(float _f){
-      return (float) Math.exp(_f);
+      return (float)Math.exp(_f);
    }
 
    /**
     * Delegates to either {@link java.lang.Math#exp(double)} (Java) or <code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/exp.html">exp(double)</a></code> (OpenCL).
-    * <p/>
+    * <p>
     * User should note the differences in precision between Java and OpenCL's implementation of arithmetic functions to determine whether the difference in precision is acceptable.
     *
     * @param _d value to delegate to {@link java.lang.Math#exp(double)}/<code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/exp.html">exp(double)</a></code>
@@ -1000,7 +1004,7 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * Delegates to either {@link java.lang.Math#abs(float)} (Java) or <code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/fabs.html">fabs(float)</a></code> (OpenCL).
-    * <p/>
+    * <p>
     * User should note the differences in precision between Java and OpenCL's implementation of arithmetic functions to determine whether the difference in precision is acceptable.
     *
     * @param _f value to delegate to {@link java.lang.Math#abs(float)}/<code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/fabs.html">fabs(float)</a></code>
@@ -1015,7 +1019,7 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * Delegates to either {@link java.lang.Math#abs(double)} (Java) or <code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/fabs.html">fabs(double)</a></code> (OpenCL).
-    * <p/>
+    * <p>
     * User should note the differences in precision between Java and OpenCL's implementation of arithmetic functions to determine whether the difference in precision is acceptable.
     *
     * @param _d value to delegate to {@link java.lang.Math#abs(double)}/<code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/fabs.html">fabs(double)</a></code>
@@ -1030,7 +1034,7 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * Delegates to either {@link java.lang.Math#abs(int)} (Java) or <code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/abs.html">abs(int)</a></code> (OpenCL).
-    * <p/>
+    * <p>
     * User should note the differences in precision between Java and OpenCL's implementation of arithmetic functions to determine whether the difference in precision is acceptable.
     *
     * @param n value to delegate to {@link java.lang.Math#abs(int)}/<code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/abs.html">abs(int)</a></code>
@@ -1045,7 +1049,7 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * Delegates to either {@link java.lang.Math#abs(long)} (Java) or <code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/abs.html">abs(long)</a></code> (OpenCL).
-    * <p/>
+    * <p>
     * User should note the differences in precision between Java and OpenCL's implementation of arithmetic functions to determine whether the difference in precision is acceptable.
     *
     * @param n value to delegate to {@link java.lang.Math#abs(long)}/<code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/abs.html">abs(long)</a></code>
@@ -1060,7 +1064,7 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * Delegates to either {@link java.lang.Math#floor(double)} (Java) or <code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/abs.html">floor(float)</a></code> (OpenCL).
-    * <p/>
+    * <p>
     * User should note the differences in precision between Java and OpenCL's implementation of arithmetic functions to determine whether the difference in precision is acceptable.
     *
     * @param _f value to delegate to {@link java.lang.Math#floor(double)}/<code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/floor.html">floor(float)</a></code>
@@ -1070,12 +1074,12 @@ public abstract class Kernel implements Cloneable{
     */
    @OpenCLMapping(mapTo = "floor")
    protected float floor(float _f){
-      return (float) Math.floor(_f);
+      return (float)Math.floor(_f);
    }
 
    /**
     * Delegates to either {@link java.lang.Math#floor(double)} (Java) or <code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/abs.html">floor(double)</a></code> (OpenCL).
-    * <p/>
+    * <p>
     * User should note the differences in precision between Java and OpenCL's implementation of arithmetic functions to determine whether the difference in precision is acceptable.
     *
     * @param _d value to delegate to {@link java.lang.Math#floor(double)}/<code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/floor.html">floor(double)</a></code>
@@ -1090,7 +1094,7 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * Delegates to either {@link java.lang.Math#max(float, float)} (Java) or <code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/fmax.html">fmax(float, float)</a></code> (OpenCL).
-    * <p/>
+    * <p>
     * User should note the differences in precision between Java and OpenCL's implementation of arithmetic functions to determine whether the difference in precision is acceptable.
     *
     * @param _f1 value to delegate to first argument of {@link java.lang.Math#max(float, float)}/<code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/fmax.html">fmax(float, float)</a></code>
@@ -1106,7 +1110,7 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * Delegates to either {@link java.lang.Math#max(double, double)} (Java) or <code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/fmax.html">fmax(double, double)</a></code> (OpenCL).
-    * <p/>
+    * <p>
     * User should note the differences in precision between Java and OpenCL's implementation of arithmetic functions to determine whether the difference in precision is acceptable.
     *
     * @param _d1 value to delegate to first argument of {@link java.lang.Math#max(double, double)}/<code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/fmax.html">fmax(double, double)</a></code>
@@ -1122,7 +1126,7 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * Delegates to either {@link java.lang.Math#max(int, int)} (Java) or <code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/integerMax.html">max(int, int)</a></code> (OpenCL).
-    * <p/>
+    * <p>
     * User should note the differences in precision between Java and OpenCL's implementation of arithmetic functions to determine whether the difference in precision is acceptable.
     *
     * @param n1 value to delegate to {@link java.lang.Math#max(int, int)}/<code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/integerMax.html">max(int, int)</a></code>
@@ -1138,7 +1142,7 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * Delegates to either {@link java.lang.Math#max(long, long)} (Java) or <code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/integerMax.html">max(long, long)</a></code> (OpenCL).
-    * <p/>
+    * <p>
     * User should note the differences in precision between Java and OpenCL's implementation of arithmetic functions to determine whether the difference in precision is acceptable.
     *
     * @param n1 value to delegate to first argument of {@link java.lang.Math#max(long, long)}/<code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/integerMax.html">max(long, long)</a></code>
@@ -1154,7 +1158,7 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * Delegates to either {@link java.lang.Math#min(float, float)} (Java) or <code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/fmin.html">fmin(float, float)</a></code> (OpenCL).
-    * <p/>
+    * <p>
     * User should note the differences in precision between Java and OpenCL's implementation of arithmetic functions to determine whether the difference in precision is acceptable.
     *
     * @param _f1 value to delegate to first argument of {@link java.lang.Math#min(float, float)}/<code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/fmin.html">fmin(float, float)</a></code>
@@ -1170,7 +1174,7 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * Delegates to either {@link java.lang.Math#min(double, double)} (Java) or <code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/fmin.html">fmin(double, double)</a></code> (OpenCL).
-    * <p/>
+    * <p>
     * User should note the differences in precision between Java and OpenCL's implementation of arithmetic functions to determine whether the difference in precision is acceptable.
     *
     * @param _d1 value to delegate to first argument of {@link java.lang.Math#min(double, double)}/<code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/fmin.html">fmin(double, double)</a></code>
@@ -1186,7 +1190,7 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * Delegates to either {@link java.lang.Math#min(int, int)} (Java) or <code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/integerMax.html">min(int, int)</a></code> (OpenCL).
-    * <p/>
+    * <p>
     * User should note the differences in precision between Java and OpenCL's implementation of arithmetic functions to determine whether the difference in precision is acceptable.
     *
     * @param n1 value to delegate to first argument of {@link java.lang.Math#min(int, int)}/<code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/integerMax.html">min(int, int)</a></code>
@@ -1202,7 +1206,7 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * Delegates to either {@link java.lang.Math#min(long, long)} (Java) or <code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/integerMax.html">min(long, long)</a></code> (OpenCL).
-    * <p/>
+    * <p>
     * User should note the differences in precision between Java and OpenCL's implementation of arithmetic functions to determine whether the difference in precision is acceptable.
     *
     * @param n1 value to delegate to first argument of {@link java.lang.Math#min(long, long)}/<code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/integerMax.html">min(long, long)</a></code>
@@ -1218,7 +1222,7 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * Delegates to either {@link java.lang.Math#log(double)} (Java) or <code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/log.html">log(float)</a></code> (OpenCL).
-    * <p/>
+    * <p>
     * User should note the differences in precision between Java and OpenCL's implementation of arithmetic functions to determine whether the difference in precision is acceptable.
     *
     * @param _f value to delegate to {@link java.lang.Math#log(double)}/<code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/log.html">log(float)</a></code>
@@ -1228,12 +1232,12 @@ public abstract class Kernel implements Cloneable{
     */
    @OpenCLMapping(mapTo = "log")
    protected float log(float _f){
-      return (float) Math.log(_f);
+      return (float)Math.log(_f);
    }
 
    /**
     * Delegates to either {@link java.lang.Math#log(double)} (Java) or <code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/log.html">log(double)</a></code> (OpenCL).
-    * <p/>
+    * <p>
     * User should note the differences in precision between Java and OpenCL's implementation of arithmetic functions to determine whether the difference in precision is acceptable.
     *
     * @param _d value to delegate to {@link java.lang.Math#log(double)}/<code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/log.html">log(double)</a></code>
@@ -1248,7 +1252,7 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * Delegates to either {@link java.lang.Math#pow(double, double)} (Java) or <code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/pow.html">pow(float, float)</a></code> (OpenCL).
-    * <p/>
+    * <p>
     * User should note the differences in precision between Java and OpenCL's implementation of arithmetic functions to determine whether the difference in precision is acceptable.
     *
     * @param _f1 value to delegate to first argument of {@link java.lang.Math#pow(double, double)}/<code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/pow.html">pow(float, float)</a></code>
@@ -1259,12 +1263,12 @@ public abstract class Kernel implements Cloneable{
     */
    @OpenCLMapping(mapTo = "pow")
    protected float pow(float _f1, float _f2){
-      return (float) Math.pow(_f1, _f2);
+      return (float)Math.pow(_f1, _f2);
    }
 
    /**
     * Delegates to either {@link java.lang.Math#pow(double, double)} (Java) or <code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/pow.html">pow(double, double)</a></code> (OpenCL).
-    * <p/>
+    * <p>
     * User should note the differences in precision between Java and OpenCL's implementation of arithmetic functions to determine whether the difference in precision is acceptable.
     *
     * @param _d1 value to delegate to first argument of {@link java.lang.Math#pow(double, double)}/<code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/pow.html">pow(double, double)</a></code>
@@ -1280,7 +1284,7 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * Delegates to either {@link java.lang.Math#IEEEremainder(double, double)} (Java) or <code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/remainder.html">remainder(float, float)</a></code> (OpenCL).
-    * <p/>
+    * <p>
     * User should note the differences in precision between Java and OpenCL's implementation of arithmetic functions to determine whether the difference in precision is acceptable.
     *
     * @param _f1 value to delegate to first argument of {@link java.lang.Math#IEEEremainder(double, double)}/<code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/remainder.html">remainder(float, float)</a></code>
@@ -1291,12 +1295,12 @@ public abstract class Kernel implements Cloneable{
     */
    @OpenCLMapping(mapTo = "remainder")
    protected float IEEEremainder(float _f1, float _f2){
-      return (float) Math.IEEEremainder(_f1, _f2);
+      return (float)Math.IEEEremainder(_f1, _f2);
    }
 
    /**
     * Delegates to either {@link java.lang.Math#IEEEremainder(double, double)} (Java) or <code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/remainder.html">remainder(double, double)</a></code> (OpenCL).
-    * <p/>
+    * <p>
     * User should note the differences in precision between Java and OpenCL's implementation of arithmetic functions to determine whether the difference in precision is acceptable.
     *
     * @param _d1 value to delegate to first argument of {@link java.lang.Math#IEEEremainder(double, double)}/<code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/remainder.html">remainder(double, double)</a></code>
@@ -1312,7 +1316,7 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * Delegates to either {@link java.lang.Math#toRadians(double)} (Java) or <code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/radians.html">radians(float)</a></code> (OpenCL).
-    * <p/>
+    * <p>
     * User should note the differences in precision between Java and OpenCL's implementation of arithmetic functions to determine whether the difference in precision is acceptable.
     *
     * @param _f value to delegate to {@link java.lang.Math#toRadians(double)}/<code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/radians.html">radians(float)</a></code>
@@ -1322,12 +1326,12 @@ public abstract class Kernel implements Cloneable{
     */
    @OpenCLMapping(mapTo = "radians")
    protected float toRadians(float _f){
-      return (float) Math.toRadians(_f);
+      return (float)Math.toRadians(_f);
    }
 
    /**
     * Delegates to either {@link java.lang.Math#toRadians(double)} (Java) or <code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/radians.html">radians(double)</a></code> (OpenCL).
-    * <p/>
+    * <p>
     * User should note the differences in precision between Java and OpenCL's implementation of arithmetic functions to determine whether the difference in precision is acceptable.
     *
     * @param _d value to delegate to {@link java.lang.Math#toRadians(double)}/<code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/radians.html">radians(double)</a></code>
@@ -1342,7 +1346,7 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * Delegates to either {@link java.lang.Math#toDegrees(double)} (Java) or <code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/degrees.html">degrees(float)</a></code> (OpenCL).
-    * <p/>
+    * <p>
     * User should note the differences in precision between Java and OpenCL's implementation of arithmetic functions to determine whether the difference in precision is acceptable.
     *
     * @param _f value to delegate to {@link java.lang.Math#toDegrees(double)}/<code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/degrees.html">degrees(float)</a></code>
@@ -1352,12 +1356,12 @@ public abstract class Kernel implements Cloneable{
     */
    @OpenCLMapping(mapTo = "degrees")
    protected float toDegrees(float _f){
-      return (float) Math.toDegrees(_f);
+      return (float)Math.toDegrees(_f);
    }
 
    /**
     * Delegates to either {@link java.lang.Math#toDegrees(double)} (Java) or <code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/degrees.html">degrees(double)</a></code> (OpenCL).
-    * <p/>
+    * <p>
     * User should note the differences in precision between Java and OpenCL's implementation of arithmetic functions to determine whether the difference in precision is acceptable.
     *
     * @param _d value to delegate to {@link java.lang.Math#toDegrees(double)}/<code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/degrees.html">degrees(double)</a></code>
@@ -1372,7 +1376,7 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * Delegates to either {@link java.lang.Math#rint(double)} (Java) or <code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/rint.html">rint(float)</a></code> (OpenCL).
-    * <p/>
+    * <p>
     * User should note the differences in precision between Java and OpenCL's implementation of arithmetic functions to determine whether the difference in precision is acceptable.
     *
     * @param _f value to delegate to {@link java.lang.Math#rint(double)}/<code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/rint.html">rint(float)</a></code>
@@ -1382,12 +1386,12 @@ public abstract class Kernel implements Cloneable{
     */
    @OpenCLMapping(mapTo = "rint")
    protected float rint(float _f){
-      return (float) Math.rint(_f);
+      return (float)Math.rint(_f);
    }
 
    /**
     * Delegates to either {@link java.lang.Math#rint(double)} (Java) or <code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/rint.html">rint(double)</a></code> (OpenCL).
-    * <p/>
+    * <p>
     * User should note the differences in precision between Java and OpenCL's implementation of arithmetic functions to determine whether the difference in precision is acceptable.
     *
     * @param _d value to delegate to {@link java.lang.Math#rint(double)}/<code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/rint.html">rint(double)</a></code>
@@ -1402,7 +1406,7 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * Delegates to either {@link java.lang.Math#round(float)} (Java) or <code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/round.html">round(float)</a></code> (OpenCL).
-    * <p/>
+    * <p>
     * User should note the differences in precision between Java and OpenCL's implementation of arithmetic functions to determine whether the difference in precision is acceptable.
     *
     * @param _f value to delegate to {@link java.lang.Math#round(float)}/<code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/round.html">round(float)</a></code>
@@ -1417,7 +1421,7 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * Delegates to either {@link java.lang.Math#round(double)} (Java) or <code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/round.html">round(double)</a></code> (OpenCL).
-    * <p/>
+    * <p>
     * User should note the differences in precision between Java and OpenCL's implementation of arithmetic functions to determine whether the difference in precision is acceptable.
     *
     * @param _d value to delegate to {@link java.lang.Math#round(double)}/<code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/round.html">round(double)</a></code>
@@ -1432,7 +1436,7 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * Delegates to either {@link java.lang.Math#sin(double)} (Java) or <code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/sin.html">sin(float)</a></code> (OpenCL).
-    * <p/>
+    * <p>
     * User should note the differences in precision between Java and OpenCL's implementation of arithmetic functions to determine whether the difference in precision is acceptable.
     *
     * @param _f value to delegate to {@link java.lang.Math#sin(double)}/<code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/sin.html">sin(float)</a></code>
@@ -1442,12 +1446,12 @@ public abstract class Kernel implements Cloneable{
     */
    @OpenCLMapping(mapTo = "sin")
    protected float sin(float _f){
-      return (float) Math.sin(_f);
+      return (float)Math.sin(_f);
    }
 
    /**
     * Delegates to either {@link java.lang.Math#sin(double)} (Java) or <code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/sin.html">sin(double)</a></code> (OpenCL).
-    * <p/>
+    * <p>
     * User should note the differences in precision between Java and OpenCL's implementation of arithmetic functions to determine whether the difference in precision is acceptable.
     *
     * @param _d value to delegate to {@link java.lang.Math#sin(double)}/<code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/sin.html">sin(double)</a></code>
@@ -1462,7 +1466,7 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * Delegates to either {@link java.lang.Math#sqrt(double)} (Java) or <code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/sqrt.html">sqrt(float)</a></code> (OpenCL).
-    * <p/>
+    * <p>
     * User should note the differences in precision between Java and OpenCL's implementation of arithmetic functions to determine whether the difference in precision is acceptable.
     *
     * @param _f value to delegate to {@link java.lang.Math#sqrt(double)}/<code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/sqrt.html">sqrt(float)</a></code>
@@ -1472,12 +1476,12 @@ public abstract class Kernel implements Cloneable{
     */
    @OpenCLMapping(mapTo = "sqrt")
    protected float sqrt(float _f){
-      return (float) Math.sqrt(_f);
+      return (float)Math.sqrt(_f);
    }
 
    /**
     * Delegates to either {@link java.lang.Math#sqrt(double)} (Java) or <code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/sqrt.html">sqrt(double)</a></code> (OpenCL).
-    * <p/>
+    * <p>
     * User should note the differences in precision between Java and OpenCL's implementation of arithmetic functions to determine whether the difference in precision is acceptable.
     *
     * @param _d value to delegate to {@link java.lang.Math#sqrt(double)}/<code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/sqrt.html">sqrt(double)</a></code>
@@ -1492,7 +1496,7 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * Delegates to either {@link java.lang.Math#tan(double)} (Java) or <code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/tan.html">tan(float)</a></code> (OpenCL).
-    * <p/>
+    * <p>
     * User should note the differences in precision between Java and OpenCL's implementation of arithmetic functions to determine whether the difference in precision is acceptable.
     *
     * @param _f value to delegate to {@link java.lang.Math#tan(double)}/<code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/tan.html">tan(float)</a></code>
@@ -1502,12 +1506,12 @@ public abstract class Kernel implements Cloneable{
     */
    @OpenCLMapping(mapTo = "tan")
    protected float tan(float _f){
-      return (float) Math.tan(_f);
+      return (float)Math.tan(_f);
    }
 
    /**
     * Delegates to either {@link java.lang.Math#tan(double)} (Java) or <code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/tan.html">tan(double)</a></code> (OpenCL).
-    * <p/>
+    * <p>
     * User should note the differences in precision between Java and OpenCL's implementation of arithmetic functions to determine whether the difference in precision is acceptable.
     *
     * @param _d value to delegate to {@link java.lang.Math#tan(double)}/<code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/tan.html">tan(double)</a></code>
@@ -1525,7 +1529,7 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * Computes  inverse square root using {@link java.lang.Math#sqrt(double)} (Java) or delegates to <code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/sqrt.html">rsqrt(double)</a></code> (OpenCL).
-    * <p/>
+    * <p>
     * User should note the differences in precision between Java and OpenCL's implementation of arithmetic functions to determine whether the difference in precision is acceptable.
     *
     * @param _f value to delegate to {@link java.lang.Math#sqrt(double)}/<code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/sqrt.html">rsqrt(double)</a></code>
@@ -1535,12 +1539,12 @@ public abstract class Kernel implements Cloneable{
     */
    @OpenCLMapping(mapTo = "rsqrt")
    protected float rsqrt(float _f){
-      return (1.0f / (float) Math.sqrt(_f));
+      return (1.0f/(float)Math.sqrt(_f));
    }
 
    /**
     * Computes  inverse square root using {@link java.lang.Math#sqrt(double)} (Java) or delegates to <code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/sqrt.html">rsqrt(double)</a></code> (OpenCL).
-    * <p/>
+    * <p>
     * User should note the differences in precision between Java and OpenCL's implementation of arithmetic functions to determine whether the difference in precision is acceptable.
     *
     * @param _d value to delegate to {@link java.lang.Math#sqrt(double)}/<code><a href="http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/sqrt.html">rsqrt(double)</a></code>
@@ -1550,14 +1554,14 @@ public abstract class Kernel implements Cloneable{
     */
    @OpenCLMapping(mapTo = "rsqrt")
    protected double rsqrt(double _d){
-      return (1.0 / Math.sqrt(_d));
+      return (1.0/Math.sqrt(_d));
    }
 
    @SuppressWarnings("unused")
    @OpenCLMapping(mapTo = "native_sqrt")
    private float native_sqrt(float _f){
       int j = Float.floatToIntBits(_f);
-      j = (1 << 29) + (j >> 1) - (1 << 22) - 0x4c00;
+      j = (1<<29)+(j>>1)-(1<<22)-0x4c00;
       return (Float.intBitsToFloat(j));
       // could add more precision using one iteration of newton's method, use the following
    }
@@ -1566,7 +1570,7 @@ public abstract class Kernel implements Cloneable{
    @OpenCLMapping(mapTo = "native_rsqrt")
    private float native_rsqrt(float _f){
       int j = Float.floatToIntBits(_f);
-      j = 0x5f3759df - (j >> 1);
+      j = 0x5f3759df-(j>>1);
       float x = (Float.intBitsToFloat(j));
       return x;
       // if want more precision via one iteration of newton's method, use the following
@@ -1588,7 +1592,7 @@ public abstract class Kernel implements Cloneable{
    @OpenCLMapping(atomic32 = true)
    protected int atomicAdd(int[] _arr, int _index, int _delta){
 
-      if(!Config.disableUnsafe){
+      if (!Config.disableUnsafe){
          return UnsafeWrapper.atomicAdd(_arr, _index, _delta);
       }else{
          synchronized(_arr){
@@ -1610,10 +1614,10 @@ public abstract class Kernel implements Cloneable{
    protected final void localBarrier(){
       try{
          localBarrier.await();
-      }catch(InterruptedException e){
+      }catch (InterruptedException e){
          // TODO Auto-generated catch block
          e.printStackTrace();
-      }catch(BrokenBarrierException e){
+      }catch (BrokenBarrierException e){
          // TODO Auto-generated catch block
          e.printStackTrace();
       }
@@ -1621,8 +1625,8 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * Wait for all lambdaRunnerCache in the current group to rendezvous at this call before continuing execution.
-    * <p/>
-    * <p/>
+    * <p>
+    * <p>
     * Java version is identical to localBarrier()
     *
     * @annotion Experimental
@@ -1646,7 +1650,7 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * Determine the execution time of the previous Kernel.execute(range) call.
-    * <p/>
+    * <p>
     * Note that for the first call this will include the conversion time.
     *
     * @return The time spent executing the kernel (ms)
@@ -1659,7 +1663,7 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * Determine the total execution time of all previous Kernel.execute(range) calls.
-    * <p/>
+    * <p>
     * Note that this will include the initial conversion time.
     *
     * @return The total time spent executing the kernel (ms)
@@ -1683,10 +1687,10 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * Start execution of <code>_range</code> lambdaRunnerCache.
-    * <p/>
+    * <p>
     * When <code>kernel.execute(globalSize)</code> is invoked, Aparapi will schedule the execution of <code>globalSize</code> lambdaRunnerCache. If the execution mode is GPU then
     * the lambdaRunnerCache will execute as OpenCL code on the GPU device. Otherwise, if the mode is JTP, the lambdaRunnerCache will execute as a pool of Java threads on the CPU.
-    * <p/>
+    * <p>
     *
     * @param _range The number of Kernels that we would like to initiate.
     * @returnThe Kernel instance (this) so we can chain calls to put(arr).execute(range).get(arr)
@@ -1697,10 +1701,10 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * Start execution of <code>_range</code> lambdaRunnerCache.
-    * <p/>
+    * <p>
     * When <code>kernel.execute(_range)</code> is invoked, Aparapi will schedule the execution of <code>_range</code> lambdaRunnerCache. If the execution mode is GPU then
     * the lambdaRunnerCache will execute as OpenCL code on the GPU device. Otherwise, if the mode is JTP, the lambdaRunnerCache will execute as a pool of Java threads on the CPU.
-    * <p/>
+    * <p>
     * Since adding the new <code>Range class</code> this method offers backward compatibility and merely defers to <code> return (execute(Range.create(_range), 1));</code>.
     *
     * @param _range The number of Kernels that we would like to initiate.
@@ -1712,10 +1716,10 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * Start execution of <code>_passes</code> iterations of <code>_range</code> lambdaRunnerCache.
-    * <p/>
+    * <p>
     * When <code>kernel.execute(_range, _passes)</code> is invoked, Aparapi will schedule the execution of <code>_reange</code> lambdaRunnerCache. If the execution mode is GPU then
     * the lambdaRunnerCache will execute as OpenCL code on the GPU device. Otherwise, if the mode is JTP, the lambdaRunnerCache will execute as a pool of Java threads on the CPU.
-    * <p/>
+    * <p>
     *
     * @param _range  The number of Kernels that we would like to initiate.
     * @param _passes The number of passes to make
@@ -1727,10 +1731,10 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * Start execution of <code>_passes</code> iterations over the <code>_range</code> of lambdaRunnerCache.
-    * <p/>
+    * <p>
     * When <code>kernel.execute(_range)</code> is invoked, Aparapi will schedule the execution of <code>_range</code> lambdaRunnerCache. If the execution mode is GPU then
     * the lambdaRunnerCache will execute as OpenCL code on the GPU device. Otherwise, if the mode is JTP, the lambdaRunnerCache will execute as a pool of Java threads on the CPU.
-    * <p/>
+    * <p>
     * Since adding the new <code>Range class</code> this method offers backward compatibility and merely defers to <code> return (execute(Range.create(_range), 1));</code>.
     *
     * @param _range The number of Kernels that we would like to initiate.
@@ -1742,17 +1746,17 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * Start execution of <code>globalSize</code> lambdaRunnerCache for the given entrypoint.
-    * <p/>
+    * <p>
     * When <code>kernel.execute("entrypoint", globalSize)</code> is invoked, Aparapi will schedule the execution of <code>globalSize</code> lambdaRunnerCache. If the execution mode is GPU then
     * the lambdaRunnerCache will execute as OpenCL code on the GPU device. Otherwise, if the mode is JTP, the lambdaRunnerCache will execute as a pool of Java threads on the CPU.
-    * <p/>
+    * <p>
     *
     * @param _entry is the name of the method we wish to use as the entrypoint to the kernel
     * @param _range The number of Kernels that we would like to initiate.
     * @return The Kernel instance (this) so we can chain calls to put(arr).execute(range).get(arr)
     */
    public synchronized Kernel execute(Entry _entry, Range _range){
-      if(kernelRunner == null){
+      if (kernelRunner == null){
          kernelRunner = new KernelRunner(this);
 
       }
@@ -1761,10 +1765,10 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * Start execution of <code>globalSize</code> lambdaRunnerCache for the given entrypoint.
-    * <p/>
+    * <p>
     * When <code>kernel.execute("entrypoint", globalSize)</code> is invoked, Aparapi will schedule the execution of <code>globalSize</code> lambdaRunnerCache. If the execution mode is GPU then
     * the lambdaRunnerCache will execute as OpenCL code on the GPU device. Otherwise, if the mode is JTP, the lambdaRunnerCache will execute as a pool of Java threads on the CPU.
-    * <p/>
+    * <p>
     *
     * @param _entrypoint is the name of the method we wish to use as the entrypoint to the kernel
     * @param _range      The number of Kernels that we would like to initiate.
@@ -1777,10 +1781,10 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * Start execution of <code>globalSize</code> lambdaRunnerCache for the given entrypoint.
-    * <p/>
+    * <p>
     * When <code>kernel.execute("entrypoint", globalSize)</code> is invoked, Aparapi will schedule the execution of <code>globalSize</code> lambdaRunnerCache. If the execution mode is GPU then
     * the lambdaRunnerCache will execute as OpenCL code on the GPU device. Otherwise, if the mode is JTP, the lambdaRunnerCache will execute as a pool of Java threads on the CPU.
-    * <p/>
+    * <p>
     *
     * @param _entrypoint is the name of the method we wish to use as the entrypoint to the kernel
     * @param _range      The number of Kernels that we would like to initiate.
@@ -1788,7 +1792,7 @@ public abstract class Kernel implements Cloneable{
     * @return The Kernel instance (this) so we can chain calls to put(arr).execute(range).get(arr)
     */
    public synchronized Kernel execute(String _entrypoint, Range _range, int _passes){
-      if(kernelRunner == null){
+      if (kernelRunner == null){
          kernelRunner = new KernelRunner(this);
 
       }
@@ -1798,14 +1802,14 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * Release any resources associated with this Kernel.
-    * <p/>
+    * <p>
     * When the execution mode is <code>CPU</code> or <code>GPU</code>, Aparapi stores some OpenCL resources in a data structure associated with the kernel instance.  The
     * <code>dispose()</code> method must be called to release these resources.
-    * <p/>
+    * <p>
     * If <code>execute(int _globalSize)</code> is called after <code>dispose()</code> is called the results are undefined.
     */
    public synchronized void dispose(){
-      if(kernelRunner != null){
+      if (kernelRunner != null){
          kernelRunner.dispose();
          kernelRunner = null;
       }
@@ -1814,13 +1818,13 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * Return the current execution mode.
-    * <p/>
+    * <p>
     * Before a Kernel executes, this return value will be the execution mode as determined by the setting of
     * the EXECUTION_MODE enumeration. By default, this setting is either <b>GPU</b>
     * if OpenCL is available on the target system, or <b>JTP</b> otherwise. This default setting can be
     * changed by calling setExecutionMode().
-    * <p/>
-    * <p/>
+    * <p>
+    * <p>
     * After a Kernel executes, the return value will be the mode in which the Kernel actually executed.
     *
     * @return The current execution mode.
@@ -1832,7 +1836,7 @@ public abstract class Kernel implements Cloneable{
 
    /**
     * Set the execution mode.
-    * <p/>
+    * <p>
     * This should be regarded as a request. The real mode will be determined at runtime based on the availability of OpenCL and the characteristics of the workload.
     *
     * @param _executionMode the requested execution mode.
@@ -1847,7 +1851,6 @@ public abstract class Kernel implements Cloneable{
 
    }
 
-
    static String getMappedMethodName(MethodReferenceEntry _methodReferenceEntry){
       String mappedName = null;
       String methodName = _methodReferenceEntry.getNameAndTypeEntry().getNameUTF8Entry().getUTF8();
@@ -1856,17 +1859,16 @@ public abstract class Kernel implements Cloneable{
       TypeHelper.JavaMethodArgsAndReturnType methodArgsAndReturnType = _methodReferenceEntry.getArgsAndReturnType();
       JavaType methodReturnType = methodArgsAndReturnType.getReturnType();
 
-      for(Method kernelMethod : Kernel.class.getDeclaredMethods()){
-         if(kernelMethod.isAnnotationPresent(OpenCLMapping.class)){
+      for (Method kernelMethod : Kernel.class.getDeclaredMethods()){
+         if (kernelMethod.isAnnotationPresent(OpenCLMapping.class)){
             String kernelMethodName = kernelMethod.getName();
 
-
-            if(methodName.equals(kernelMethodName) && methodArgsAndReturnType.matches(kernelMethod)){
+            if (methodName.equals(kernelMethodName) && methodArgsAndReturnType.matches(kernelMethod)){
                OpenCLMapping annotation = kernelMethod.getAnnotation(OpenCLMapping.class);
                String mapTo = annotation.mapTo();
-               if(!mapTo.equals("")){
+               if (!mapTo.equals("")){
                   mappedName = mapTo;
-                  System.out.println("mapTo = " + mapTo + " class=" + methodClass);
+                  System.out.println("mapTo = "+mapTo+" class="+methodClass);
                }
             }
 
@@ -1879,9 +1881,9 @@ public abstract class Kernel implements Cloneable{
 
    static boolean isMappedMethod(MethodReferenceEntry methodReferenceEntry){
       boolean isMapped = false;
-      for(Method kernelMethod : Kernel.class.getDeclaredMethods()){
-         if(kernelMethod.isAnnotationPresent(OpenCLMapping.class)){
-            if(methodReferenceEntry.getNameAndTypeEntry().getNameUTF8Entry().getUTF8().equals(kernelMethod.getName())){
+      for (Method kernelMethod : Kernel.class.getDeclaredMethods()){
+         if (kernelMethod.isAnnotationPresent(OpenCLMapping.class)){
+            if (methodReferenceEntry.getNameAndTypeEntry().getNameUTF8Entry().getUTF8().equals(kernelMethod.getName())){
 
                // well they have the same name ;)
                isMapped = true;
@@ -1893,9 +1895,9 @@ public abstract class Kernel implements Cloneable{
 
    static boolean isOpenCLDelegateMethod(MethodReferenceEntry methodReferenceEntry){
       boolean isMapped = false;
-      for(Method kernelMethod : Kernel.class.getDeclaredMethods()){
-         if(kernelMethod.isAnnotationPresent(OpenCLDelegate.class)){
-            if(methodReferenceEntry.getNameAndTypeEntry().getNameUTF8Entry().getUTF8().equals(kernelMethod.getName())){
+      for (Method kernelMethod : Kernel.class.getDeclaredMethods()){
+         if (kernelMethod.isAnnotationPresent(OpenCLDelegate.class)){
+            if (methodReferenceEntry.getNameAndTypeEntry().getNameUTF8Entry().getUTF8().equals(kernelMethod.getName())){
 
                // well they have the same name ;)
                isMapped = true;
@@ -1906,9 +1908,9 @@ public abstract class Kernel implements Cloneable{
    }
 
    static boolean usesAtomic32(MethodReferenceEntry methodReferenceEntry){
-      for(Method kernelMethod : Kernel.class.getDeclaredMethods()){
-         if(kernelMethod.isAnnotationPresent(OpenCLMapping.class)){
-            if(methodReferenceEntry.getNameAndTypeEntry().getNameUTF8Entry().getUTF8().equals(kernelMethod.getName())){
+      for (Method kernelMethod : Kernel.class.getDeclaredMethods()){
+         if (kernelMethod.isAnnotationPresent(OpenCLMapping.class)){
+            if (methodReferenceEntry.getNameAndTypeEntry().getNameUTF8Entry().getUTF8().equals(kernelMethod.getName())){
                OpenCLMapping annotation = kernelMethod.getAnnotation(OpenCLMapping.class);
                return annotation.atomic32();
             }
@@ -1944,7 +1946,7 @@ public abstract class Kernel implements Cloneable{
     * @param _explicit (true if we want explicit memory management)
     */
    public void setExplicit(boolean _explicit){
-      if(kernelRunner == null){
+      if (kernelRunner == null){
          kernelRunner = new KernelRunner(this);
 
       }
@@ -1957,7 +1959,7 @@ public abstract class Kernel implements Cloneable{
     * @return (true if we kernel is using explicit memory management)
     */
    public boolean isExplicit(){
-      if(kernelRunner == null){
+      if (kernelRunner == null){
          kernelRunner = new KernelRunner(this);
 
       }
@@ -1971,7 +1973,7 @@ public abstract class Kernel implements Cloneable{
     * @return This kernel so that we can use the 'fluent' style API
     */
    public Kernel put(long[] array){
-      if(kernelRunner == null){
+      if (kernelRunner == null){
          kernelRunner = new KernelRunner(this);
 
       }
@@ -1986,7 +1988,7 @@ public abstract class Kernel implements Cloneable{
     * @return This kernel so that we can use the 'fluent' style API
     */
    public Kernel put(double[] array){
-      if(kernelRunner == null){
+      if (kernelRunner == null){
          kernelRunner = new KernelRunner(this);
 
       }
@@ -2001,7 +2003,7 @@ public abstract class Kernel implements Cloneable{
     * @return This kernel so that we can use the 'fluent' style API
     */
    public Kernel put(float[] array){
-      if(kernelRunner == null){
+      if (kernelRunner == null){
          kernelRunner = new KernelRunner(this);
 
       }
@@ -2016,7 +2018,7 @@ public abstract class Kernel implements Cloneable{
     * @return This kernel so that we can use the 'fluent' style API
     */
    public Kernel put(short[] array){
-      if(kernelRunner == null){
+      if (kernelRunner == null){
          kernelRunner = new KernelRunner(this);
 
       }
@@ -2031,7 +2033,7 @@ public abstract class Kernel implements Cloneable{
     * @return This kernel so that we can use the 'fluent' style API
     */
    public Kernel put(int[] array){
-      if(kernelRunner == null){
+      if (kernelRunner == null){
          kernelRunner = new KernelRunner(this);
 
       }
@@ -2046,7 +2048,7 @@ public abstract class Kernel implements Cloneable{
     * @return This kernel so that we can use the 'fluent' style API
     */
    public Kernel put(byte[] array){
-      if(kernelRunner == null){
+      if (kernelRunner == null){
          kernelRunner = new KernelRunner(this);
 
       }
@@ -2061,7 +2063,7 @@ public abstract class Kernel implements Cloneable{
     * @return This kernel so that we can use the 'fluent' style API
     */
    public Kernel put(char[] array){
-      if(kernelRunner == null){
+      if (kernelRunner == null){
          kernelRunner = new KernelRunner(this);
       }
       kernelRunner.put(array);
@@ -2075,7 +2077,7 @@ public abstract class Kernel implements Cloneable{
     * @return This kernel so that we can use the 'fluent' style API
     */
    public Kernel put(boolean[] array){
-      if(kernelRunner == null){
+      if (kernelRunner == null){
          kernelRunner = new KernelRunner(this);
       }
       kernelRunner.put(array);
@@ -2089,7 +2091,7 @@ public abstract class Kernel implements Cloneable{
     * @return This kernel so that we can use the 'fluent' style API
     */
    public Kernel get(long[] array){
-      if(kernelRunner == null){
+      if (kernelRunner == null){
          kernelRunner = new KernelRunner(this);
 
       }
@@ -2104,7 +2106,7 @@ public abstract class Kernel implements Cloneable{
     * @return This kernel so that we can use the 'fluent' style API
     */
    public Kernel get(double[] array){
-      if(kernelRunner == null){
+      if (kernelRunner == null){
          kernelRunner = new KernelRunner(this);
 
       }
@@ -2119,7 +2121,7 @@ public abstract class Kernel implements Cloneable{
     * @return This kernel so that we can use the 'fluent' style API
     */
    public Kernel get(float[] array){
-      if(kernelRunner == null){
+      if (kernelRunner == null){
          kernelRunner = new KernelRunner(this);
 
       }
@@ -2134,7 +2136,7 @@ public abstract class Kernel implements Cloneable{
     * @return This kernel so that we can use the 'fluent' style API
     */
    public Kernel get(int[] array){
-      if(kernelRunner == null){
+      if (kernelRunner == null){
          kernelRunner = new KernelRunner(this);
 
       }
@@ -2149,14 +2151,13 @@ public abstract class Kernel implements Cloneable{
     * @return This kernel so that we can use the 'fluent' style API
     */
    public Kernel get(short[] array){
-      if(kernelRunner == null){
+      if (kernelRunner == null){
          kernelRunner = new KernelRunner(this);
 
       }
       kernelRunner.get(array);
       return (this);
    }
-
 
    /**
     * Enqueue a request to return this buffer from the GPU. This method blocks until the array is available.
@@ -2165,7 +2166,7 @@ public abstract class Kernel implements Cloneable{
     * @return This kernel so that we can use the 'fluent' style API
     */
    public Kernel get(byte[] array){
-      if(kernelRunner == null){
+      if (kernelRunner == null){
          kernelRunner = new KernelRunner(this);
 
       }
@@ -2180,7 +2181,7 @@ public abstract class Kernel implements Cloneable{
     * @return This kernel so that we can use the 'fluent' style API
     */
    public Kernel get(char[] array){
-      if(kernelRunner == null){
+      if (kernelRunner == null){
          kernelRunner = new KernelRunner(this);
 
       }
@@ -2195,7 +2196,7 @@ public abstract class Kernel implements Cloneable{
     * @return This kernel so that we can use the 'fluent' style API
     */
    public Kernel get(boolean[] array){
-      if(kernelRunner == null){
+      if (kernelRunner == null){
          kernelRunner = new KernelRunner(this);
 
       }
@@ -2209,7 +2210,7 @@ public abstract class Kernel implements Cloneable{
     * @return OREF list of ProfileInfo records
     */
    public List<ProfileInfo> getProfileInfo(){
-      if(kernelRunner == null){
+      if (kernelRunner == null){
          kernelRunner = new KernelRunner(this);
       }
       return (kernelRunner.getProfileInfo());
@@ -2243,7 +2244,7 @@ public abstract class Kernel implements Cloneable{
     * try the next execution path in the list if there aren't any more than give up
     */
    public void tryNextExecutionMode(){
-      if(currentMode.hasNext()){
+      if (currentMode.hasNext()){
          executionMode = currentMode.next();
       }
    }

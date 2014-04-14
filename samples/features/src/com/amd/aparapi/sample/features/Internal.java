@@ -38,70 +38,75 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 
 package com.amd.aparapi.sample.features;
 
-import com.amd.aparapi.Aparapi;
 import com.amd.aparapi.Device;
 
-import static com.amd.aparapi.HSA.*;
+import static com.amd.aparapi.HSA.getClock;
+import static com.amd.aparapi.HSA.getComputeUnitId;
+import static com.amd.aparapi.HSA.getCountUpLane;
+import static com.amd.aparapi.HSA.getCurrentWorkGroupSize;
+import static com.amd.aparapi.HSA.getGridSize;
+import static com.amd.aparapi.HSA.getLaneId;
+import static com.amd.aparapi.HSA.getMaskLane;
+import static com.amd.aparapi.HSA.getWorkGroupId;
+import static com.amd.aparapi.HSA.getWorkGroupSize;
+import static com.amd.aparapi.HSA.getWorkItemId;
 
-public class Internal {
-
+public class Internal{
 
    static class Dims{
-       int gridSize =0;
-       int id =0;
-       int workItemId=0;
-       int workGroupSize=0;
-       int currentWorkGroupSize=0;
-       int workGroupId=0;
-       int laneId=0;
-       int countUpLane =0;
-       long clock=0L;
-       int computeUnitId=0;
-       int maskLane=0;
+      int gridSize = 0;
+      int id = 0;
+      int workItemId = 0;
+      int workGroupSize = 0;
+      int currentWorkGroupSize = 0;
+      int workGroupId = 0;
+      int laneId = 0;
+      int countUpLane = 0;
+      long clock = 0L;
+      int computeUnitId = 0;
+      int maskLane = 0;
    }
-   public static void main(String[] _args) {
-;
-       int len = 2048;
-       Dims[] dims = new Dims[len];
-       for (int i=0; i< len; i++){
-           dims[i] = new Dims();
-       }
 
-       Device.hsa().forEach(len, id -> {
-           dims[id].id=id;
-           dims[id].gridSize=getGridSize();
-           dims[id].workGroupId=getWorkGroupId();
+   public static void main(String[] _args){
+      ;
+      int len = 2048;
+      Dims[] dims = new Dims[len];
+      for (int i = 0; i<len; i++){
+         dims[i] = new Dims();
+      }
 
-           dims[id].workGroupSize=getWorkGroupSize();
-           dims[id].currentWorkGroupSize=getCurrentWorkGroupSize();
-           dims[id].laneId=getLaneId();
-           dims[id].workItemId=getWorkItemId();
-           if (id%4==0){
-               dims[id].countUpLane = getCountUpLane();
-               dims[id].maskLane = getMaskLane();
-           }
-           dims[id].computeUnitId = getComputeUnitId();
-           dims[id].clock = getClock();
+      Device.hsa().forEach(len, id -> {
+         dims[id].id = id;
+         dims[id].gridSize = getGridSize();
+         dims[id].workGroupId = getWorkGroupId();
 
+         dims[id].workGroupSize = getWorkGroupSize();
+         dims[id].currentWorkGroupSize = getCurrentWorkGroupSize();
+         dims[id].laneId = getLaneId();
+         dims[id].workItemId = getWorkItemId();
+         if (id%4 == 0){
+            dims[id].countUpLane = getCountUpLane();
+            dims[id].maskLane = getMaskLane();
+         }
+         dims[id].computeUnitId = getComputeUnitId();
+         dims[id].clock = getClock();
 
-
-       });
-       for (int i=0; i<len; i++){
-          System.out.println(i
-                  +" id="+dims[i].id
-                  +" gridsize="+dims[i].gridSize
-                  +" workitemid="+dims[i].workItemId
-                  +" workGroupId="+dims[i].workGroupId
-                  +" laneId="+dims[i].laneId
-                  +" computeUnitId="+dims[i].computeUnitId
-                  +" workGroupSize="+dims[i].workGroupSize
-                  +" currentWorkGroupSize="+dims[i].currentWorkGroupSize
-                  +" countUpLane="+dims[i].countUpLane
-                  +" maskLane="+dims[i].maskLane
-                  +" clock="+dims[i].clock
-          );
-       }
-
+      });
+      for (int i = 0; i<len; i++){
+         System.out.println(i
+               +" id="+dims[i].id
+               +" gridsize="+dims[i].gridSize
+               +" workitemid="+dims[i].workItemId
+               +" workGroupId="+dims[i].workGroupId
+               +" laneId="+dims[i].laneId
+               +" computeUnitId="+dims[i].computeUnitId
+               +" workGroupSize="+dims[i].workGroupSize
+               +" currentWorkGroupSize="+dims[i].currentWorkGroupSize
+               +" countUpLane="+dims[i].countUpLane
+               +" maskLane="+dims[i].maskLane
+               +" clock="+dims[i].clock
+         );
+      }
 
    }
 

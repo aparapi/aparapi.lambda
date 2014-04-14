@@ -55,11 +55,11 @@ import java.util.logging.Level;
 
 /**
  * The class is responsible for executing <code>Kernel</code> implementations. <br/>
- * <p/>
+ * <p>
  * The <code>KernelRunner</code> is the real workhorse for Aparapi.  Each <code>Kernel</code> instance creates a single
  * <code>KernelRunner</code> to encapsulate state and to help coordinate interactions between the <code>Kernel</code>
  * and it's execution logic.<br/>
- * <p/>
+ * <p>
  * The <code>KernelRunner</code> is created <i>lazily</i> as a result of calling <code>Kernel.execute()</code>. OREF this
  * time the <code>ExecutionMode</code> is consulted to determine the default requested mode.  This will dictate how
  * the <code>KernelRunner</code> will attempt to execute the <code>Kernel</code>
@@ -68,7 +68,6 @@ import java.util.logging.Level;
  * @see com.amd.aparapi.Kernel#execute(int _globalSize)
  */
 class KernelRunner extends OpenCLRunner{
-
 
    private Kernel kernel;
 
@@ -87,7 +86,6 @@ class KernelRunner extends OpenCLRunner{
 
    }
 
-
    /**
     * Execute using a Java thread pool. Either because we were explicitly asked to do so, or because we 'fall back' after discovering an OpenCL issue.
     *
@@ -96,11 +94,11 @@ class KernelRunner extends OpenCLRunner{
     * @return
     */
    private long executeJava(final Range _range, final int _passes){
-      if(logger.isLoggable(Level.FINE)){
-         logger.fine("executeJava: range = " + _range);
+      if (logger.isLoggable(Level.FINE)){
+         logger.fine("executeJava: range = "+_range);
       }
 
-      if(kernel.getExecutionMode().equals(EXECUTION_MODE.SEQ)){
+      if (kernel.getExecutionMode().equals(EXECUTION_MODE.SEQ)){
 
          /**
           * SEQ mode is useful for testing trivial logic, but lambdaRunnerCache which use SEQ mode cannot be used if the
@@ -110,11 +108,11 @@ class KernelRunner extends OpenCLRunner{
           *
           * So we need to check if the range is valid here. If not we have no choice but to punt.
           */
-         if(_range.getLocalSize(0) * _range.getLocalSize(1) * _range.getLocalSize(2) > 1){
+         if (_range.getLocalSize(0)*_range.getLocalSize(1)*_range.getLocalSize(2)>1){
             throw new IllegalStateException("Can't run range with group size >1 sequentially. Barriers would deadlock!");
          }
 
-         Kernel kernelClone = (Kernel) kernel.clone();
+         Kernel kernelClone = (Kernel)kernel.clone();
          kernelClone.range = _range;
          kernelClone.groupId[0] = 0;
          kernelClone.groupId[1] = 0;
@@ -123,27 +121,27 @@ class KernelRunner extends OpenCLRunner{
          kernelClone.localId[1] = 0;
          kernelClone.localId[2] = 0;
          kernelClone.localBarrier = new CyclicBarrier(1);
-         for(kernelClone.passId = 0; kernelClone.passId < _passes; kernelClone.passId++){
+         for (kernelClone.passId = 0; kernelClone.passId<_passes; kernelClone.passId++){
 
-            if(_range.getDims() == 1){
-               for(int id = 0; id < _range.getGlobalSize(0); id++){
+            if (_range.getDims() == 1){
+               for (int id = 0; id<_range.getGlobalSize(0); id++){
                   kernelClone.globalId[0] = id;
                   kernelClone.run();
                }
-            }else if(_range.getDims() == 2){
-               for(int x = 0; x < _range.getGlobalSize(0); x++){
+            }else if (_range.getDims() == 2){
+               for (int x = 0; x<_range.getGlobalSize(0); x++){
                   kernelClone.globalId[0] = x;
-                  for(int y = 0; y < _range.getGlobalSize(1); y++){
+                  for (int y = 0; y<_range.getGlobalSize(1); y++){
                      kernelClone.globalId[1] = y;
                      kernelClone.run();
                   }
                }
-            }else if(_range.getDims() == 3){
-               for(int x = 0; x < _range.getGlobalSize(0); x++){
+            }else if (_range.getDims() == 3){
+               for (int x = 0; x<_range.getGlobalSize(0); x++){
                   kernelClone.globalId[0] = x;
-                  for(int y = 0; y < _range.getGlobalSize(1); y++){
+                  for (int y = 0; y<_range.getGlobalSize(1); y++){
                      kernelClone.globalId[1] = y;
-                     for(int z = 0; z < _range.getGlobalSize(2); z++){
+                     for (int z = 0; z<_range.getGlobalSize(2); z++){
                         kernelClone.globalId[2] = z;
                         kernelClone.run();
                      }
@@ -155,14 +153,14 @@ class KernelRunner extends OpenCLRunner{
 
       }else{
 
-         final int threads = _range.getLocalSize(0) * _range.getLocalSize(1) * _range.getLocalSize(2);
-         final int globalGroups = _range.getNumGroups(0) * _range.getNumGroups(1) * _range.getNumGroups(2);
+         final int threads = _range.getLocalSize(0)*_range.getLocalSize(1)*_range.getLocalSize(2);
+         final int globalGroups = _range.getNumGroups(0)*_range.getNumGroups(1)*_range.getNumGroups(2);
          final Thread threadArray[] = new Thread[threads];
          /**
           * This joinBarrier is the barrier that we provide for the kernel threads to rendezvous with the current dispatch thread.
           * So this barrier is threadCount+1 wide (the +1 is for the dispatch thread)
           */
-         final CyclicBarrier joinBarrier = new CyclicBarrier(threads + 1);
+         final CyclicBarrier joinBarrier = new CyclicBarrier(threads+1);
 
          /**
           * This localBarrier is only ever used by the lambdaRunnerCache.  If the kernel does not use the barrier the threads
@@ -176,7 +174,7 @@ class KernelRunner extends OpenCLRunner{
           * This barrier is threadCount wide.  We never hit the barrier from the dispatch thread.
           */
          final CyclicBarrier localBarrier = new CyclicBarrier(threads);
-         for(int passId = 0; passId < _passes; passId++){
+         for (int passId = 0; passId<_passes; passId++){
 
             /**
              * Note that we emulate OpenCL by creating one thread per localId (across the group).
@@ -208,7 +206,7 @@ class KernelRunner extends OpenCLRunner{
              *
              **/
 
-            for(int id = 0; id < threads; id++){
+            for (int id = 0; id<threads; id++){
                final int threadId = id;
 
                /**
@@ -218,7 +216,7 @@ class KernelRunner extends OpenCLRunner{
                 *  We need clones so that each thread can assign 'state' (localId/globalId/groupId) without worrying
                 *  about other threads.
                 */
-               final Kernel kernelClone = (Kernel) kernel.clone();
+               final Kernel kernelClone = (Kernel)kernel.clone();
                kernelClone.range = _range;
                kernelClone.localBarrier = localBarrier;
                kernelClone.passId = passId;
@@ -226,13 +224,13 @@ class KernelRunner extends OpenCLRunner{
                threadArray[threadId] = new Thread(new Runnable(){
                   @Override
                   public void run(){
-                     for(int globalGroupId = 0; globalGroupId < globalGroups; globalGroupId++){
+                     for (int globalGroupId = 0; globalGroupId<globalGroups; globalGroupId++){
 
-                        if(_range.getDims() == 1){
-                           kernelClone.localId[0] = threadId % _range.getLocalSize(0);
-                           kernelClone.globalId[0] = threadId + globalGroupId * threads;
+                        if (_range.getDims() == 1){
+                           kernelClone.localId[0] = threadId%_range.getLocalSize(0);
+                           kernelClone.globalId[0] = threadId+globalGroupId*threads;
                            kernelClone.groupId[0] = globalGroupId;
-                        }else if(_range.getDims() == 2){
+                        }else if (_range.getDims() == 2){
 
                            /**
                             * Consider a 12x4 grid of 4*2 local groups
@@ -302,39 +300,39 @@ class KernelRunner extends OpenCLRunner{
                             *
                             */
 
-                           kernelClone.localId[0] = threadId % _range.getLocalSize(0); // threadId % localWidth =  (for 33 = 1 % 4 = 1)
-                           kernelClone.localId[1] = threadId / _range.getLocalSize(0); // threadId / localWidth = (for 33 = 1 / 4 == 0)
+                           kernelClone.localId[0] = threadId%_range.getLocalSize(0); // threadId % localWidth =  (for 33 = 1 % 4 = 1)
+                           kernelClone.localId[1] = threadId/_range.getLocalSize(0); // threadId / localWidth = (for 33 = 1 / 4 == 0)
 
-                           int groupInset = globalGroupId % _range.getNumGroups(0); // 4%3 = 1
-                           kernelClone.globalId[0] = groupInset * _range.getLocalSize(0) + kernelClone.localId[0]; // 1*4+1=5
+                           int groupInset = globalGroupId%_range.getNumGroups(0); // 4%3 = 1
+                           kernelClone.globalId[0] = groupInset*_range.getLocalSize(0)+kernelClone.localId[0]; // 1*4+1=5
 
-                           int completeLines = (globalGroupId / _range.getNumGroups(0)) * _range.getLocalSize(1);// (4/3) * 2
-                           kernelClone.globalId[1] = completeLines + kernelClone.localId[1]; // 2+0 = 2
-                           kernelClone.groupId[0] = globalGroupId % _range.getNumGroups(0);
-                           kernelClone.groupId[1] = globalGroupId / _range.getNumGroups(0);
-                        }else if(_range.getDims() == 3){
+                           int completeLines = (globalGroupId/_range.getNumGroups(0))*_range.getLocalSize(1);// (4/3) * 2
+                           kernelClone.globalId[1] = completeLines+kernelClone.localId[1]; // 2+0 = 2
+                           kernelClone.groupId[0] = globalGroupId%_range.getNumGroups(0);
+                           kernelClone.groupId[1] = globalGroupId/_range.getNumGroups(0);
+                        }else if (_range.getDims() == 3){
 
                            //Same as 2D actually turns out that localId[0] is identical for all three dims so could be hoisted out of conditional code
 
-                           kernelClone.localId[0] = threadId % _range.getLocalSize(0);
+                           kernelClone.localId[0] = threadId%_range.getLocalSize(0);
 
-                           kernelClone.localId[1] = (threadId / _range.getLocalSize(0)) % _range.getLocalSize(1);
+                           kernelClone.localId[1] = (threadId/_range.getLocalSize(0))%_range.getLocalSize(1);
 
                            // the thread id's span WxHxD so threadId/(WxH) should yield the local depth
-                           kernelClone.localId[2] = threadId / (_range.getLocalSize(0) * _range.getLocalSize(1));
+                           kernelClone.localId[2] = threadId/(_range.getLocalSize(0)*_range.getLocalSize(1));
 
-                           kernelClone.globalId[0] = (globalGroupId % _range.getNumGroups(0)) * _range.getLocalSize(0)
-                                 + kernelClone.localId[0];
+                           kernelClone.globalId[0] = (globalGroupId%_range.getNumGroups(0))*_range.getLocalSize(0)
+                                 +kernelClone.localId[0];
 
-                           kernelClone.globalId[1] = ((globalGroupId / _range.getNumGroups(0)) * _range.getLocalSize(1))
-                                 % _range.getGlobalSize(1) + kernelClone.localId[1];
+                           kernelClone.globalId[1] = ((globalGroupId/_range.getNumGroups(0))*_range.getLocalSize(1))
+                                 %_range.getGlobalSize(1)+kernelClone.localId[1];
 
-                           kernelClone.globalId[2] = (globalGroupId / (_range.getNumGroups(0) * _range.getNumGroups(1)))
-                                 * _range.getLocalSize(2) + kernelClone.localId[2];
+                           kernelClone.globalId[2] = (globalGroupId/(_range.getNumGroups(0)*_range.getNumGroups(1)))
+                                 *_range.getLocalSize(2)+kernelClone.localId[2];
 
-                           kernelClone.groupId[0] = globalGroupId % _range.getNumGroups(0);
-                           kernelClone.groupId[1] = (globalGroupId / _range.getNumGroups(0)) % _range.getNumGroups(1);
-                           kernelClone.groupId[2] = globalGroupId / (_range.getNumGroups(0) * _range.getNumGroups(1));
+                           kernelClone.groupId[0] = globalGroupId%_range.getNumGroups(0);
+                           kernelClone.groupId[1] = (globalGroupId/_range.getNumGroups(0))%_range.getNumGroups(1);
+                           kernelClone.groupId[2] = globalGroupId/(_range.getNumGroups(0)*_range.getNumGroups(1));
                         }
                         kernelClone.run();
 
@@ -342,7 +340,7 @@ class KernelRunner extends OpenCLRunner{
                      await(joinBarrier); // This thread will rendezvous with dispatch thread here. This is effectively a join.
                   }
                });
-               threadArray[threadId].setName("aparapi-" + threadId + "/" + threads);
+               threadArray[threadId].setName("aparapi-"+threadId+"/"+threads);
                threadArray[threadId].start();
 
             }
@@ -355,10 +353,10 @@ class KernelRunner extends OpenCLRunner{
    private static void await(CyclicBarrier _barrier){
       try{
          _barrier.await();
-      }catch(InterruptedException e){
+      }catch (InterruptedException e){
          // TODO Auto-generated catch block
          e.printStackTrace();
-      }catch(BrokenBarrierException e){
+      }catch (BrokenBarrierException e){
          // TODO Auto-generated catch block
          e.printStackTrace();
       }
@@ -379,11 +377,11 @@ class KernelRunner extends OpenCLRunner{
       ClassModel c = null;
       boolean didReallocate = false;
 
-      if(arg.objArrayElementModel == null){
+      if (arg.objArrayElementModel == null){
          String arrayClassInDotForm = TypeHelper.signatureToDotClassName(arrayClass.getName(), 1);
 
-         if(logger.isLoggable(Level.FINE)){
-            logger.fine("looking for prefix = " + arrayClassInDotForm);
+         if (logger.isLoggable(Level.FINE)){
+            logger.fine("looking for prefix = "+arrayClassInDotForm);
          }
 
          // get ClassModel of obj array from entrypt.objectArrayFieldsClasses
@@ -392,14 +390,14 @@ class KernelRunner extends OpenCLRunner{
       }else{
          c = arg.objArrayElementModel;
       }
-      assert c != null : "should find class for elements " + arrayClass.getName();
+      assert c != null:"should find class for elements "+arrayClass.getName();
 
       int arrayBaseOffset = UnsafeWrapper.arrayBaseOffset(arrayClass);
       int arrayScale = UnsafeWrapper.arrayIndexScale(arrayClass);
 
-      if(logger.isLoggable(Level.FINEST)){
-         logger.finest("Syncing obj array prefix = " + arrayClass + " cvtd= " + c.getClassWeAreModelling().getName()
-               + "arrayBaseOffset=" + arrayBaseOffset + " arrayScale=" + arrayScale);
+      if (logger.isLoggable(Level.FINEST)){
+         logger.finest("Syncing obj array prefix = "+arrayClass+" cvtd= "+c.getClassWeAreModelling().getName()
+               +"arrayBaseOffset="+arrayBaseOffset+" arrayScale="+arrayScale);
       }
 
       int objArraySize = 0;
@@ -407,24 +405,24 @@ class KernelRunner extends OpenCLRunner{
       try{
          newRef = arg.field.get(kernel);
          objArraySize = Array.getLength(newRef);
-      }catch(IllegalAccessException e){
+      }catch (IllegalAccessException e){
          throw new AparapiException(e);
       }
 
-      assert (newRef != null) && (objArraySize != 0) : "no data";
+      assert (newRef != null) && (objArraySize != 0):"no data";
 
       int totalStructSize = c.getTotalStructSize();
-      int totalBufferSize = objArraySize * totalStructSize;
+      int totalBufferSize = objArraySize*totalStructSize;
 
       // allocate ByteBuffer if first time or array changed
-      if((arg.objArrayBuffer == null) || (newRef != arg.array)){
+      if ((arg.objArrayBuffer == null) || (newRef != arg.array)){
          ByteBuffer structBuffer = ByteBuffer.allocate(totalBufferSize);
          arg.objArrayByteBuffer = structBuffer.order(ByteOrder.LITTLE_ENDIAN);
          arg.objArrayBuffer = arg.objArrayByteBuffer.array();
          didReallocate = true;
-         if(logger.isLoggable(Level.FINEST)){
-            logger.finest("objArraySize = " + objArraySize + " totalStructSize= " + totalStructSize + " totalBufferSize="
-                  + totalBufferSize);
+         if (logger.isLoggable(Level.FINEST)){
+            logger.finest("objArraySize = "+objArraySize+" totalStructSize= "+totalStructSize+" totalBufferSize="
+                  +totalBufferSize);
          }
       }else{
          arg.objArrayByteBuffer.clear();
@@ -435,20 +433,20 @@ class KernelRunner extends OpenCLRunner{
       arg.numElements = objArraySize;
       arg.sizeInBytes = totalBufferSize;
 
-      for(int j = 0; j < objArraySize; j++){
+      for (int j = 0; j<objArraySize; j++){
          int sizeWritten = 0;
 
-         Object object = UnsafeWrapper.getObject(newRef, arrayBaseOffset + arrayScale * j);
-         for(int i = 0; i < c.getStructMemberTypes().size(); i++){
+         Object object = UnsafeWrapper.getObject(newRef, arrayBaseOffset+arrayScale*j);
+         for (int i = 0; i<c.getStructMemberTypes().size(); i++){
             TypeSpec t = c.getStructMemberTypes().get(i);
             long offset = c.getStructMemberOffsets().get(i);
 
-            if(logger.isLoggable(Level.FINEST)){
-               logger.finest("name = " + c.getStructMembers().get(i).getNameAndTypeEntry().getNameUTF8Entry().getUTF8() + " t= "
-                     + t);
+            if (logger.isLoggable(Level.FINEST)){
+               logger.finest("name = "+c.getStructMembers().get(i).getNameAndTypeEntry().getNameUTF8Entry().getUTF8()+" t= "
+                     +t);
             }
 
-            switch(t){
+            switch (t){
                case I:{
                   int x = UnsafeWrapper.getInt(object, offset);
                   arg.objArrayByteBuffer.putInt(x);
@@ -469,7 +467,7 @@ class KernelRunner extends OpenCLRunner{
                }
                case Z:{
                   boolean x = UnsafeWrapper.getBoolean(object, offset);
-                  arg.objArrayByteBuffer.put(x == true ? (byte) 1 : (byte) 0);
+                  arg.objArrayByteBuffer.put(x == true?(byte)1:(byte)0);
                   // Booleans converted to 1 byte C chars for opencl
                   sizeWritten += t.getPrimitiveType().getJavaBytes();
                   break;
@@ -484,28 +482,28 @@ class KernelRunner extends OpenCLRunner{
                   throw new AparapiException("Double not implemented yet");
                }
                default:
-                  assert true == false : "typespec did not match anything";
+                  assert true == false:"typespec did not match anything";
                   throw new AparapiException("Unhandled prefix in buffer conversion");
             }
          }
 
          // add padding here if needed
-         if(logger.isLoggable(Level.FINEST)){
-            logger.finest("sizeWritten = " + sizeWritten + " totalStructSize= " + totalStructSize);
+         if (logger.isLoggable(Level.FINEST)){
+            logger.finest("sizeWritten = "+sizeWritten+" totalStructSize= "+totalStructSize);
          }
 
-         assert sizeWritten <= totalStructSize : "wrote too much into buffer";
+         assert sizeWritten<=totalStructSize:"wrote too much into buffer";
 
-         while(sizeWritten < totalStructSize){
-            if(logger.isLoggable(Level.FINEST)){
-               logger.finest(arg.name + " struct pad byte = " + sizeWritten + " totalStructSize= " + totalStructSize);
+         while (sizeWritten<totalStructSize){
+            if (logger.isLoggable(Level.FINEST)){
+               logger.finest(arg.name+" struct pad byte = "+sizeWritten+" totalStructSize= "+totalStructSize);
             }
-            arg.objArrayByteBuffer.put((byte) -1);
+            arg.objArrayByteBuffer.put((byte)-1);
             sizeWritten++;
          }
       }
 
-      assert arg.objArrayByteBuffer.arrayOffset() == 0 : "should be zero";
+      assert arg.objArrayByteBuffer.arrayOffset() == 0:"should be zero";
 
       return didReallocate;
    }
@@ -513,23 +511,23 @@ class KernelRunner extends OpenCLRunner{
    private void extractOopConversionBuffer(KernelArg arg) throws AparapiException{
       Class<?> arrayClass = arg.field.getType();
       ClassModel c = arg.objArrayElementModel;
-      assert c != null : "should find class for elements: " + arrayClass.getName();
-      assert arg.array != null : "array is null";
+      assert c != null:"should find class for elements: "+arrayClass.getName();
+      assert arg.array != null:"array is null";
 
       int arrayBaseOffset = UnsafeWrapper.arrayBaseOffset(arrayClass);
       int arrayScale = UnsafeWrapper.arrayIndexScale(arrayClass);
-      if(logger.isLoggable(Level.FINEST)){
-         logger.finest("Syncing field:" + arg.name + ", bb=" + arg.objArrayByteBuffer + ", prefix = " + arrayClass);
+      if (logger.isLoggable(Level.FINEST)){
+         logger.finest("Syncing field:"+arg.name+", bb="+arg.objArrayByteBuffer+", prefix = "+arrayClass);
       }
 
       int objArraySize = 0;
       try{
          objArraySize = Array.getLength(arg.field.get(kernel));
-      }catch(IllegalAccessException e){
+      }catch (IllegalAccessException e){
          throw new AparapiException(e);
       }
 
-      assert objArraySize > 0 : "should be > 0";
+      assert objArraySize>0:"should be > 0";
 
       int totalStructSize = c.getTotalStructSize();
       // int totalBufferSize = objArraySize * totalStructSize;
@@ -537,18 +535,18 @@ class KernelRunner extends OpenCLRunner{
 
       arg.objArrayByteBuffer.rewind();
 
-      for(int j = 0; j < objArraySize; j++){
+      for (int j = 0; j<objArraySize; j++){
          int sizeWritten = 0;
-         Object object = UnsafeWrapper.getObject(arg.array, arrayBaseOffset + arrayScale * j);
-         for(int i = 0; i < c.getStructMemberTypes().size(); i++){
+         Object object = UnsafeWrapper.getObject(arg.array, arrayBaseOffset+arrayScale*j);
+         for (int i = 0; i<c.getStructMemberTypes().size(); i++){
             TypeSpec t = c.getStructMemberTypes().get(i);
             long offset = c.getStructMemberOffsets().get(i);
-            switch(t){
+            switch (t){
                case I:{
                   // read int value from buffer and array_store into obj in the array
                   int x = arg.objArrayByteBuffer.getInt();
-                  if(logger.isLoggable(Level.FINEST)){
-                     logger.finest("fType = " + t.getPrimitiveType().getJavaTypeName() + " x= " + x);
+                  if (logger.isLoggable(Level.FINEST)){
+                     logger.finest("fType = "+t.getPrimitiveType().getJavaTypeName()+" x= "+x);
                   }
                   UnsafeWrapper.putInt(object, offset, x);
                   sizeWritten += t.getPrimitiveType().getJavaBytes();
@@ -556,8 +554,8 @@ class KernelRunner extends OpenCLRunner{
                }
                case F:{
                   float x = arg.objArrayByteBuffer.getFloat();
-                  if(logger.isLoggable(Level.FINEST)){
-                     logger.finest("fType = " + t.getPrimitiveType().getJavaTypeName() + " x= " + x);
+                  if (logger.isLoggable(Level.FINEST)){
+                     logger.finest("fType = "+t.getPrimitiveType().getJavaTypeName()+" x= "+x);
                   }
                   UnsafeWrapper.putFloat(object, offset, x);
                   sizeWritten += t.getPrimitiveType().getJavaBytes();
@@ -565,8 +563,8 @@ class KernelRunner extends OpenCLRunner{
                }
                case L:{
                   long x = arg.objArrayByteBuffer.getLong();
-                  if(logger.isLoggable(Level.FINEST)){
-                     logger.finest("fType = " + t.getPrimitiveType().getJavaTypeName() + " x= " + x);
+                  if (logger.isLoggable(Level.FINEST)){
+                     logger.finest("fType = "+t.getPrimitiveType().getJavaTypeName()+" x= "+x);
                   }
                   UnsafeWrapper.putLong(object, offset, x);
                   sizeWritten += t.getPrimitiveType().getJavaBytes();
@@ -574,18 +572,18 @@ class KernelRunner extends OpenCLRunner{
                }
                case Z:{
                   byte x = arg.objArrayByteBuffer.get();
-                  if(logger.isLoggable(Level.FINEST)){
-                     logger.finest("fType = " + t.getPrimitiveType().getJavaTypeName() + " x= " + x);
+                  if (logger.isLoggable(Level.FINEST)){
+                     logger.finest("fType = "+t.getPrimitiveType().getJavaTypeName()+" x= "+x);
                   }
-                  UnsafeWrapper.putBoolean(object, offset, (x == 1 ? true : false));
+                  UnsafeWrapper.putBoolean(object, offset, (x == 1?true:false));
                   // Booleans converted to 1 byte C chars for open cl
                   sizeWritten += t.getPrimitiveType().getJavaBytes();
                   break;
                }
                case B:{
                   byte x = arg.objArrayByteBuffer.get();
-                  if(logger.isLoggable(Level.FINEST)){
-                     logger.finest("fType = " + t.getPrimitiveType().getJavaTypeName() + " x= " + x);
+                  if (logger.isLoggable(Level.FINEST)){
+                     logger.finest("fType = "+t.getPrimitiveType().getJavaTypeName()+" x= "+x);
                   }
                   UnsafeWrapper.putByte(object, offset, x);
                   sizeWritten += t.getPrimitiveType().getJavaBytes();
@@ -595,19 +593,19 @@ class KernelRunner extends OpenCLRunner{
                   throw new AparapiException("Double not implemented yet");
                }
                default:
-                  assert true == false : "typespec did not match anything";
+                  assert true == false:"typespec did not match anything";
                   throw new AparapiException("Unhandled prefix in buffer conversion");
             }
          }
 
          // add padding here if needed
-         if(logger.isLoggable(Level.FINEST)){
-            logger.finest("sizeWritten = " + sizeWritten + " totalStructSize= " + totalStructSize);
+         if (logger.isLoggable(Level.FINEST)){
+            logger.finest("sizeWritten = "+sizeWritten+" totalStructSize= "+totalStructSize);
          }
 
-         assert sizeWritten <= totalStructSize : "wrote too much into buffer";
+         assert sizeWritten<=totalStructSize:"wrote too much into buffer";
 
-         while(sizeWritten < totalStructSize){
+         while (sizeWritten<totalStructSize){
             // skip over pad bytes
             arg.objArrayByteBuffer.get();
             sizeWritten++;
@@ -616,9 +614,9 @@ class KernelRunner extends OpenCLRunner{
    }
 
    private void restoreObjects() throws AparapiException{
-      for(int i = 0; i < argc; i++){
+      for (int i = 0; i<argc; i++){
          KernelArg arg = args[i];
-         if((arg.type & ARG_OBJ_ARRAY_STRUCT) != 0){
+         if ((arg.type&ARG_OBJ_ARRAY_STRUCT) != 0){
             extractOopConversionBuffer(arg);
          }
       }
@@ -627,44 +625,44 @@ class KernelRunner extends OpenCLRunner{
    private boolean updateKernelArrayRefs() throws AparapiException{
       boolean needsSync = false;
 
-      for(int i = 0; i < argc; i++){
+      for (int i = 0; i<argc; i++){
          KernelArg arg = args[i];
          try{
-            if((arg.type & ARG_ARRAY) != 0){
+            if ((arg.type&ARG_ARRAY) != 0){
                Object newArrayRef;
                newArrayRef = arg.field.get(kernel);
 
-               if(newArrayRef == null){
+               if (newArrayRef == null){
                   throw new IllegalStateException("Cannot send null refs to kernel, reverting to java");
                }
 
-               if((arg.type & ARG_OBJ_ARRAY_STRUCT) != 0){
+               if ((arg.type&ARG_OBJ_ARRAY_STRUCT) != 0){
                   prepareOopConversionBuffer(arg);
                }else{
                   // set up JNI fields for normal arrays
                   arg.javaArray = newArrayRef;
                   arg.numElements = Array.getLength(newArrayRef);
-                  arg.sizeInBytes = arg.numElements * arg.primitiveSize;
+                  arg.sizeInBytes = arg.numElements*arg.primitiveSize;
 
-                  if(((args[i].type & ARG_EXPLICIT) != 0) && puts.contains(newArrayRef)){
+                  if (((args[i].type&ARG_EXPLICIT) != 0) && puts.contains(newArrayRef)){
                      args[i].type |= ARG_EXPLICIT_WRITE;
                      // System.out.println("detected an explicit write " + args[i].name);
                      puts.remove(newArrayRef);
                   }
                }
-               if(newArrayRef != arg.array){
+               if (newArrayRef != arg.array){
                   needsSync = true;
-                  if(logger.isLoggable(Level.FINE)){
-                     logger.fine("saw newArrayRef for " + arg.name + " = " + newArrayRef + ", newArrayLen = "
-                           + Array.getLength(newArrayRef));
+                  if (logger.isLoggable(Level.FINE)){
+                     logger.fine("saw newArrayRef for "+arg.name+" = "+newArrayRef+", newArrayLen = "
+                           +Array.getLength(newArrayRef));
                   }
                }
                arg.array = newArrayRef;
-               assert arg.array != null : "null array ref";
+               assert arg.array != null:"null array ref";
             }
-         }catch(IllegalArgumentException e){
+         }catch (IllegalArgumentException e){
             e.printStackTrace();
-         }catch(IllegalAccessException e){
+         }catch (IllegalAccessException e){
             e.printStackTrace();
          }
       }
@@ -717,24 +715,24 @@ class KernelRunner extends OpenCLRunner{
       */
       // Read the array refs after kernel may have changed them
       // We need to do this as input to computing the localSize
-      assert args != null : "args should not be null";
+      assert args != null:"args should not be null";
       boolean needSync = updateKernelArrayRefs();
-      if(needSync && logger.isLoggable(Level.FINE)){
-         logger.fine("Need to resync arrays on " + kernel.getClass().getName());
+      if (needSync && logger.isLoggable(Level.FINE)){
+         logger.fine("Need to resync arrays on "+kernel.getClass().getName());
       }
       // native side will reallocate array buffers if necessary
-      if(runJNI(jniContextHandle, _range, needSync, _passes) != 0){
+      if (runJNI(jniContextHandle, _range, needSync, _passes) != 0){
          logger.warning("### CL exec seems to have failed. Trying to revert to Java ###");
          kernel.setFallbackExecutionMode();
          return execute(_entrypointName, _range, _passes);
       }
 
-      if(usesOopConversion == true){
+      if (usesOopConversion == true){
          restoreObjects();
       }
 
-      if(logger.isLoggable(Level.FINE)){
-         logger.fine("executeOpenCL completed. " + _range);
+      if (logger.isLoggable(Level.FINE)){
+         logger.fine("executeOpenCL completed. "+_range);
       }
       return kernel;
    }
@@ -745,7 +743,7 @@ class KernelRunner extends OpenCLRunner{
    }
 
    synchronized private Kernel fallBackAndExecute(String _entrypointName, final Range _range, final int _passes){
-      if(kernel.hasNextExecutionMode()){
+      if (kernel.hasNextExecutionMode()){
          kernel.tryNextExecutionMode();
       }else{
          kernel.setFallbackExecutionMode();
@@ -756,15 +754,15 @@ class KernelRunner extends OpenCLRunner{
 
    synchronized private Kernel warnFallBackAndExecute(String _entrypointName, final Range _range, final int _passes,
                                                       Exception _exception){
-      if(logger.isLoggable(Level.WARNING)){
-         logger.warning("Reverting to Java Thread Pool (JTP) for " + kernel.getClass() + ": " + _exception.getMessage());
+      if (logger.isLoggable(Level.WARNING)){
+         logger.warning("Reverting to Java Thread Pool (JTP) for "+kernel.getClass()+": "+_exception.getMessage());
          _exception.printStackTrace();
       }
       return fallBackAndExecute(_entrypointName, _range, _passes);
    }
 
    synchronized private Kernel warnFallBackAndExecute(String _entrypointName, final Range _range, final int _passes, String _excuse){
-      logger.warning("Reverting to Java Thread Pool (JTP) for " + kernel.getClass() + ": " + _excuse);
+      logger.warning("Reverting to Java Thread Pool (JTP) for "+kernel.getClass()+": "+_excuse);
       return fallBackAndExecute(_entrypointName, _range, _passes);
    }
 
@@ -772,44 +770,44 @@ class KernelRunner extends OpenCLRunner{
 
       long executeStartTime = System.currentTimeMillis();
 
-      if(_range == null){
+      if (_range == null){
          throw new IllegalStateException("range can't be null");
       }
 
       /* for backward compatibility reasons we still honor execution mode */
-      if(kernel.getExecutionMode().isOpenCL()){
+      if (kernel.getExecutionMode().isOpenCL()){
          // System.out.println("OpenCL");
 
          // See if user supplied a Device
          Device device = _range.getDevice();
 
-         if((device == null) || (device instanceof OpenCLDevice)){
-            if(entryPoint == null){
+         if ((device == null) || (device instanceof OpenCLDevice)){
+            if (entryPoint == null){
                try{
                   ClassModel classModel = null;
 
                   classModel = ClassModel.getClassModel(kernel.getClass());
 
                   entryPoint = classModel.getKernelEntrypoint(_entrypointName, kernel);
-               }catch(Exception exception){
+               }catch (Exception exception){
                   return warnFallBackAndExecute(_entrypointName, _range, _passes, exception);
                }
 
-               if((entryPoint != null) && !entryPoint.shouldFallback()){
+               if ((entryPoint != null) && !entryPoint.shouldFallback()){
                   synchronized(Kernel.class){ // This seems to be needed because of a race condition uncovered with issue #68 http://code.google.com/p/aparapi/issues/detail?id=68
-                     if(device != null && !(device instanceof OpenCLDevice)){
+                     if (device != null && !(device instanceof OpenCLDevice)){
                         throw new IllegalStateException("range's device is not suitable for OpenCL ");
                      }
 
-                     OpenCLDevice openCLDevice = (OpenCLDevice) device; // still might be null!
+                     OpenCLDevice openCLDevice = (OpenCLDevice)device; // still might be null!
 
                      int jniFlags = JNI_FLAG_CLASSIC_KERNEL;
-                     if(openCLDevice == null){
-                        if(kernel.getExecutionMode().equals(EXECUTION_MODE.GPU)){
+                     if (openCLDevice == null){
+                        if (kernel.getExecutionMode().equals(EXECUTION_MODE.GPU)){
                            // We used to treat as before by getting first GPU device
                            // now we get the best GPU
-                           openCLDevice = (OpenCLDevice) OpenCLDevice.best();
-                           if(openCLDevice == null){
+                           openCLDevice = (OpenCLDevice)OpenCLDevice.best();
+                           if (openCLDevice == null){
                               return warnFallBackAndExecute(_entrypointName, _range, _passes,
                                     "GPU request can't be honored OpenCLDevice.best() returned null");
                            }
@@ -817,14 +815,14 @@ class KernelRunner extends OpenCLRunner{
                            jniFlags |= JNI_FLAG_USE_GPU; // this flag might be redundant now.
                         }else{
                            // We fetch the first CPU device
-                           openCLDevice = (OpenCLDevice) OpenCLDevice.firstCPU();
-                           if(openCLDevice == null){
+                           openCLDevice = (OpenCLDevice)OpenCLDevice.firstCPU();
+                           if (openCLDevice == null){
                               return warnFallBackAndExecute(_entrypointName, _range, _passes,
                                     "CPU request can't be honored not CPU device");
                            }
                         }
                      }else{
-                        if(openCLDevice.getType() == Device.TYPE.GPU){
+                        if (openCLDevice.getType() == Device.TYPE.GPU){
                            jniFlags |= JNI_FLAG_USE_GPU; // this flag might be redundant now.
                         }
                      }
@@ -841,7 +839,7 @@ class KernelRunner extends OpenCLRunner{
                      jniContextHandle = initJNI(kernel, openCLDevice, jniFlags); // openCLDevice will not be null here
                   } // end of synchronized! issue 68
 
-                  if(jniContextHandle == 0){
+                  if (jniContextHandle == 0){
                      return warnFallBackAndExecute(_entrypointName, _range, _passes, "initJNI failed to return a valid handle");
                   }
 
@@ -849,19 +847,19 @@ class KernelRunner extends OpenCLRunner{
                   capabilitiesSet = new HashSet<String>();
 
                   StringTokenizer strTok = new StringTokenizer(extensions);
-                  while(strTok.hasMoreTokens()){
+                  while (strTok.hasMoreTokens()){
                      capabilitiesSet.add(strTok.nextToken());
                   }
 
-                  if(logger.isLoggable(Level.FINE)){
-                     logger.fine("Capabilities initialized to :" + capabilitiesSet.toString());
+                  if (logger.isLoggable(Level.FINE)){
+                     logger.fine("Capabilities initialized to :"+capabilitiesSet.toString());
                   }
 
-                  if(entryPoint.requiresDoublePragma() && !hasFP64Support()){
+                  if (entryPoint.requiresDoublePragma() && !hasFP64Support()){
                      return warnFallBackAndExecute(_entrypointName, _range, _passes, "FP64 required but not supported");
                   }
 
-                  if(entryPoint.requiresByteAddressableStorePragma() && !hasByteAddressableStoreSupport()){
+                  if (entryPoint.requiresByteAddressableStorePragma() && !hasByteAddressableStoreSupport()){
                      return warnFallBackAndExecute(_entrypointName, _range, _passes,
                            "Byte addressable stores required but not supported");
                   }
@@ -869,7 +867,7 @@ class KernelRunner extends OpenCLRunner{
                   boolean all32AtomicsAvailable = hasGlobalInt32BaseAtomicsSupport() && hasGlobalInt32ExtendedAtomicsSupport()
                         && hasLocalInt32BaseAtomicsSupport() && hasLocalInt32ExtendedAtomicsSupport();
 
-                  if(entryPoint.requiresAtomic32Pragma() && !all32AtomicsAvailable){
+                  if (entryPoint.requiresAtomic32Pragma() && !all32AtomicsAvailable){
 
                      return warnFallBackAndExecute(_entrypointName, _range, _passes, "32 bit Atomics required but not supported");
                   }
@@ -877,42 +875,42 @@ class KernelRunner extends OpenCLRunner{
                   String openCL = null;
                   try{
                      openCL = OpenCLKernelWriter.writeToString(entryPoint);
-                  }catch(CodeGenException codeGenException){
+                  }catch (CodeGenException codeGenException){
                      return warnFallBackAndExecute(_entrypointName, _range, _passes, codeGenException);
                   }
 
-                  if(Config.enableShowGeneratedOpenCL){
+                  if (Config.enableShowGeneratedOpenCL){
                      System.out.println(openCL);
                   }
 
-                  if(logger.isLoggable(Level.INFO)){
+                  if (logger.isLoggable(Level.INFO)){
                      logger.info(openCL);
                   }
 
                   // Send the string to OpenCL to compile it
-                  if(buildProgramJNI(jniContextHandle, openCL) == 0){
+                  if (buildProgramJNI(jniContextHandle, openCL) == 0){
                      return warnFallBackAndExecute(_entrypointName, _range, _passes, "OpenCL compile failed");
                   }
 
                   args = new KernelArg[entryPoint.getReferencedFields().size()];
                   int i = 0;
 
-                  for(Field field : entryPoint.getReferencedFields()){
+                  for (Field field : entryPoint.getReferencedFields()){
                      try{
                         field.setAccessible(true);
                         args[i] = new KernelArg();
                         args[i].name = field.getName();
                         args[i].field = field;
-                        if((field.getModifiers() & Modifier.STATIC) == Modifier.STATIC){
+                        if ((field.getModifiers()&Modifier.STATIC) == Modifier.STATIC){
                            args[i].type |= ARG_STATIC;
                         }
 
                         Class<?> type = field.getType();
-                        if(type.isArray()){
-                           if(field.getAnnotation(com.amd.aparapi.Kernel.Local.class) != null
+                        if (type.isArray()){
+                           if (field.getAnnotation(com.amd.aparapi.Kernel.Local.class) != null
                                  || args[i].name.endsWith(Kernel.LOCAL_SUFFIX)){
                               args[i].type |= ARG_LOCAL;
-                           }else if(field.getAnnotation(com.amd.aparapi.Kernel.Constant.class) != null
+                           }else if (field.getAnnotation(com.amd.aparapi.Kernel.Constant.class) != null
                                  || args[i].name.endsWith(Kernel.CONSTANT_SUFFIX)){
                               args[i].type |= ARG_CONSTANT;
                            }else{
@@ -922,82 +920,82 @@ class KernelRunner extends OpenCLRunner{
                            args[i].array = null; // will get updated in updateKernelArrayRefs
                            args[i].type |= ARG_ARRAY;
 
-                           if(isExplicit()){
+                           if (isExplicit()){
                               args[i].type |= ARG_EXPLICIT;
                            }
 
                            // for now, treat all write arrays as read-write, see bugzilla issue 4859
                            // we might come up with a better solution later
-                           args[i].type |= entryPoint.getArrayFieldAssignments().contains(field.getName()) ? (ARG_WRITE | ARG_READ)
-                                 : 0;
-                           args[i].type |= entryPoint.getArrayFieldAccesses().contains(field.getName()) ? ARG_READ : 0;
+                           args[i].type |= entryPoint.getArrayFieldAssignments().contains(field.getName())?(ARG_WRITE|ARG_READ)
+                                 :0;
+                           args[i].type |= entryPoint.getArrayFieldAccesses().contains(field.getName())?ARG_READ:0;
                            // args[i].prefix |= ARG_GLOBAL;
-                           args[i].type |= type.isAssignableFrom(float[].class) ? ARG_FLOAT : 0;
+                           args[i].type |= type.isAssignableFrom(float[].class)?ARG_FLOAT:0;
 
-                           args[i].type |= type.isAssignableFrom(int[].class) ? ARG_INT : 0;
+                           args[i].type |= type.isAssignableFrom(int[].class)?ARG_INT:0;
 
-                           args[i].type |= type.isAssignableFrom(boolean[].class) ? ARG_BOOLEAN : 0;
+                           args[i].type |= type.isAssignableFrom(boolean[].class)?ARG_BOOLEAN:0;
 
-                           args[i].type |= type.isAssignableFrom(byte[].class) ? ARG_BYTE : 0;
+                           args[i].type |= type.isAssignableFrom(byte[].class)?ARG_BYTE:0;
 
-                           args[i].type |= type.isAssignableFrom(char[].class) ? ARG_CHAR : 0;
+                           args[i].type |= type.isAssignableFrom(char[].class)?ARG_CHAR:0;
 
-                           args[i].type |= type.isAssignableFrom(double[].class) ? ARG_DOUBLE : 0;
+                           args[i].type |= type.isAssignableFrom(double[].class)?ARG_DOUBLE:0;
 
-                           args[i].type |= type.isAssignableFrom(long[].class) ? ARG_LONG : 0;
+                           args[i].type |= type.isAssignableFrom(long[].class)?ARG_LONG:0;
 
-                           args[i].type |= type.isAssignableFrom(short[].class) ? ARG_SHORT : 0;
+                           args[i].type |= type.isAssignableFrom(short[].class)?ARG_SHORT:0;
 
                            // arrays whose length is used will have an int arg holding
                            // the length as a kernel param
-                           if(entryPoint.getArrayFieldArrayLengthUsed().contains(args[i].name)){
+                           if (entryPoint.getArrayFieldArrayLengthUsed().contains(args[i].name)){
                               args[i].type |= ARG_ARRAYLENGTH;
                            }
 
-                           if(type.getName().startsWith("[L")){
-                              args[i].type |= (ARG_OBJ_ARRAY_STRUCT | ARG_WRITE | ARG_READ);
-                              if(logger.isLoggable(Level.FINE)){
-                                 logger.fine("tagging " + args[i].name + " as (ARG_OBJ_ARRAY_STRUCT | ARG_WRITE | ARG_READ)");
+                           if (type.getName().startsWith("[L")){
+                              args[i].type |= (ARG_OBJ_ARRAY_STRUCT|ARG_WRITE|ARG_READ);
+                              if (logger.isLoggable(Level.FINE)){
+                                 logger.fine("tagging "+args[i].name+" as (ARG_OBJ_ARRAY_STRUCT | ARG_WRITE | ARG_READ)");
                               }
                            }
-                        }else if(type.isAssignableFrom(float.class)){
+                        }else if (type.isAssignableFrom(float.class)){
                            args[i].type |= ARG_PRIMITIVE;
                            args[i].type |= ARG_FLOAT;
-                        }else if(type.isAssignableFrom(int.class)){
+                        }else if (type.isAssignableFrom(int.class)){
                            args[i].type |= ARG_PRIMITIVE;
                            args[i].type |= ARG_INT;
-                        }else if(type.isAssignableFrom(double.class)){
+                        }else if (type.isAssignableFrom(double.class)){
                            args[i].type |= ARG_PRIMITIVE;
                            args[i].type |= ARG_DOUBLE;
-                        }else if(type.isAssignableFrom(long.class)){
+                        }else if (type.isAssignableFrom(long.class)){
                            args[i].type |= ARG_PRIMITIVE;
                            args[i].type |= ARG_LONG;
-                        }else if(type.isAssignableFrom(boolean.class)){
+                        }else if (type.isAssignableFrom(boolean.class)){
                            args[i].type |= ARG_PRIMITIVE;
                            args[i].type |= ARG_BOOLEAN;
-                        }else if(type.isAssignableFrom(byte.class)){
+                        }else if (type.isAssignableFrom(byte.class)){
                            args[i].type |= ARG_PRIMITIVE;
                            args[i].type |= ARG_BYTE;
-                        }else if(type.isAssignableFrom(char.class)){
+                        }else if (type.isAssignableFrom(char.class)){
                            args[i].type |= ARG_PRIMITIVE;
                            args[i].type |= ARG_CHAR;
-                        }else if(type.isAssignableFrom(short.class)){
+                        }else if (type.isAssignableFrom(short.class)){
                            args[i].type |= ARG_PRIMITIVE;
                            args[i].type |= ARG_SHORT;
                         }
                         // System.out.printf("in execute, arg %d %s %08x\n", i,args[i].name,args[i].prefix );
-                     }catch(IllegalArgumentException e){
+                     }catch (IllegalArgumentException e){
                         e.printStackTrace();
                      }
 
-                     args[i].primitiveSize = ((args[i].type & ARG_FLOAT) != 0 ? 4 : (args[i].type & ARG_INT) != 0 ? 4
-                           : (args[i].type & ARG_BYTE) != 0 ? 1 : (args[i].type & ARG_CHAR) != 0 ? 2
-                           : (args[i].type & ARG_BOOLEAN) != 0 ? 1 : (args[i].type & ARG_SHORT) != 0 ? 2
-                           : (args[i].type & ARG_LONG) != 0 ? 8 : (args[i].type & ARG_DOUBLE) != 0 ? 8 : 0);
+                     args[i].primitiveSize = ((args[i].type&ARG_FLOAT) != 0?4:(args[i].type&ARG_INT) != 0?4
+                           :(args[i].type&ARG_BYTE) != 0?1:(args[i].type&ARG_CHAR) != 0?2
+                           :(args[i].type&ARG_BOOLEAN) != 0?1:(args[i].type&ARG_SHORT) != 0?2
+                           :(args[i].type&ARG_LONG) != 0?8:(args[i].type&ARG_DOUBLE) != 0?8:0);
 
-                     if(logger.isLoggable(Level.FINE)){
-                        logger.fine("arg " + i + ", " + args[i].name + ", prefix=" + Integer.toHexString(args[i].type)
-                              + ", primitiveSize=" + args[i].primitiveSize);
+                     if (logger.isLoggable(Level.FINE)){
+                        logger.fine("arg "+i+", "+args[i].name+", prefix="+Integer.toHexString(args[i].type)
+                              +", primitiveSize="+args[i].primitiveSize);
                      }
 
                      i++;
@@ -1010,11 +1008,11 @@ class KernelRunner extends OpenCLRunner{
 
                   setArgsJNI(jniContextHandle, args, argc);
 
-                  conversionTime = System.currentTimeMillis() - executeStartTime;
+                  conversionTime = System.currentTimeMillis()-executeStartTime;
 
                   try{
                      executeOpenCL(_entrypointName, _range, _passes);
-                  }catch(final AparapiException e){
+                  }catch (final AparapiException e){
                      warnFallBackAndExecute(_entrypointName, _range, _passes, e);
                   }
                }else{
@@ -1023,7 +1021,7 @@ class KernelRunner extends OpenCLRunner{
             }else{
                try{
                   executeOpenCL(_entrypointName, _range, _passes);
-               }catch(final AparapiException e){
+               }catch (final AparapiException e){
                   warnFallBackAndExecute(_entrypointName, _range, _passes, e);
                }
             }
@@ -1035,11 +1033,11 @@ class KernelRunner extends OpenCLRunner{
          executeJava(_range, _passes);
       }
 
-      if(Config.enableExecutionModeReporting){
-         System.out.println(kernel.getClass().getCanonicalName() + ":" + kernel.getExecutionMode());
+      if (Config.enableExecutionModeReporting){
+         System.out.println(kernel.getClass().getCanonicalName()+":"+kernel.getExecutionMode());
       }
 
-      executionTime = System.currentTimeMillis() - executeStartTime;
+      executionTime = System.currentTimeMillis()-executeStartTime;
       accumulatedExecutionTime += executionTime;
 
       return (kernel);
@@ -1066,7 +1064,7 @@ class KernelRunner extends OpenCLRunner{
     * @see Kernel#get(boolean[] arr)
     */
    protected void get(Object array){
-      if(explicit
+      if (explicit
             && ((kernel.getExecutionMode() == Kernel.EXECUTION_MODE.GPU) || (kernel.getExecutionMode() == Kernel.EXECUTION_MODE.CPU))){
          // Only makes sense when we are using OpenCL
          getJNI(jniContextHandle, array);
@@ -1074,7 +1072,7 @@ class KernelRunner extends OpenCLRunner{
    }
 
    protected List<ProfileInfo> getProfileInfo(){
-      if(((kernel.getExecutionMode() == Kernel.EXECUTION_MODE.GPU) || (kernel.getExecutionMode() == Kernel.EXECUTION_MODE.CPU))){
+      if (((kernel.getExecutionMode() == Kernel.EXECUTION_MODE.GPU) || (kernel.getExecutionMode() == Kernel.EXECUTION_MODE.CPU))){
          // Only makes sense when we are using OpenCL
          return (getProfileInfoJNI(jniContextHandle));
       }else{
@@ -1098,7 +1096,7 @@ class KernelRunner extends OpenCLRunner{
     */
 
    protected void put(Object array){
-      if(explicit
+      if (explicit
             && ((kernel.getExecutionMode() == Kernel.EXECUTION_MODE.GPU) || (kernel.getExecutionMode() == Kernel.EXECUTION_MODE.CPU))){
          // Only makes sense when we are using OpenCL
          puts.add(array);

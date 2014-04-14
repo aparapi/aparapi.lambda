@@ -6,7 +6,7 @@ import java.util.Arrays;
 
 /**
  * OREF representation of 1, 2 or 3 dimensional range of execution.
- * <p/>
+ * <p>
  * This class uses factory methods to allow one, two or three dimensional ranges to be created.
  * <br/>
  * For a Kernel operating over the linear range 0..1024 without a specified groups size we would create a one dimensional <code>Range</code> using
@@ -84,7 +84,7 @@ public class Range{
     * @return The size of the group give the requested dimension
     */
    public int getLocalSize(int _dim){
-      return (_dim == 0 ? localSize_0 : (_dim == 1 ? localSize_1 : localSize_2));
+      return (_dim == 0?localSize_0:(_dim == 1?localSize_1:localSize_2));
    }
 
    /**
@@ -94,14 +94,14 @@ public class Range{
     * @return The size of the group give the requested dimension
     */
    public int getGlobalSize(int _dim){
-      return (_dim == 0 ? globalSize_0 : (_dim == 1 ? globalSize_1 : globalSize_2));
+      return (_dim == 0?globalSize_0:(_dim == 1?globalSize_1:globalSize_2));
    }
 
    private static final int THREADS_PER_CORE = 16;
 
    private static final int MAX_OPENCL_GROUP_SIZE = 256;
 
-   private static final int MAX_GROUP_SIZE = Math.max(Runtime.getRuntime().availableProcessors() * THREADS_PER_CORE,
+   private static final int MAX_GROUP_SIZE = Math.max(Runtime.getRuntime().availableProcessors()*THREADS_PER_CORE,
          MAX_OPENCL_GROUP_SIZE);
 
    private int[] maxWorkItemSize = new int[]{
@@ -113,7 +113,7 @@ public class Range{
    public Range(Device _device, int _dims){
       device = _device;
       dims = _dims;
-      if(device != null){
+      if (device != null){
          maxWorkItemSize = device.getMaxWorkItemSize();
          maxWorkGroupSize = device.getMaxWorkGroupSize();
       }else{
@@ -136,8 +136,8 @@ public class Range{
       range.globalSize_0 = _globalWidth;
       range.localSize_0 = _localWidth;
 
-      range.valid = range.localSize_0 > 0 && range.localSize_0 <= range.maxWorkItemSize[0]
-            && range.localSize_0 <= range.maxWorkGroupSize && range.globalSize_0 % range.localSize_0 == 0;
+      range.valid = range.localSize_0>0 && range.localSize_0<=range.maxWorkItemSize[0]
+            && range.localSize_0<=range.maxWorkGroupSize && range.globalSize_0%range.localSize_0 == 0;
 
       return (range);
    }
@@ -153,8 +153,8 @@ public class Range{
    private static int[] getFactors(int _value, int _max){
       int factors[] = new int[MAX_GROUP_SIZE];
       int factorIdx = 0;
-      for(int possibleFactor = 1; possibleFactor <= _max; possibleFactor++){
-         if(_value % possibleFactor == 0){
+      for (int possibleFactor = 1; possibleFactor<=_max; possibleFactor++){
+         if (_value%possibleFactor == 0){
             factors[factorIdx++] = possibleFactor;
          }
       }
@@ -167,7 +167,7 @@ public class Range{
     * Note that for this range to be valid :- </br> <strong><code>_globalWidth > 0 </code></strong>
     * <br/>
     * The groupsize will be chosen such that _localWidth > 0 && _localWidth < MAX_GROUP_SIZE && _globalWidth % _localWidth==0 is true
-    * <p/>
+    * <p>
     * We extract the factors of _globalWidth and choose the highest value.
     *
     * @param _globalWidth the overall range we wish to process
@@ -175,15 +175,15 @@ public class Range{
     */
    public static Range create(Device _device, int _globalWidth){
       Range withoutLocal = create(_device, _globalWidth, 1);
-      if(withoutLocal.valid){
+      if (withoutLocal.valid){
          withoutLocal.localIsDerived = true;
          int[] factors = getFactors(withoutLocal.globalSize_0, withoutLocal.maxWorkItemSize[0]);
 
-         withoutLocal.localSize_0 = factors[factors.length - 1];
+         withoutLocal.localSize_0 = factors[factors.length-1];
 
-         withoutLocal.valid = withoutLocal.localSize_0 > 0 && withoutLocal.localSize_0 <= withoutLocal.maxWorkItemSize[0]
-               && withoutLocal.localSize_0 <= withoutLocal.maxWorkGroupSize
-               && withoutLocal.globalSize_0 % withoutLocal.localSize_0 == 0;
+         withoutLocal.valid = withoutLocal.localSize_0>0 && withoutLocal.localSize_0<=withoutLocal.maxWorkItemSize[0]
+               && withoutLocal.localSize_0<=withoutLocal.maxWorkGroupSize
+               && withoutLocal.globalSize_0%withoutLocal.localSize_0 == 0;
       }
       return (withoutLocal);
    }
@@ -215,23 +215,23 @@ public class Range{
       range.globalSize_1 = _globalHeight;
       range.localSize_1 = _localHeight;
 
-      range.valid = range.localSize_0 > 0 && range.localSize_1 > 0 && range.localSize_0 <= range.maxWorkItemSize[0]
-            && range.localSize_1 <= range.maxWorkItemSize[1] && range.localSize_0 * range.localSize_1 <= range.maxWorkGroupSize
-            && range.globalSize_0 % range.localSize_0 == 0 && range.globalSize_1 % range.localSize_1 == 0;
+      range.valid = range.localSize_0>0 && range.localSize_1>0 && range.localSize_0<=range.maxWorkItemSize[0]
+            && range.localSize_1<=range.maxWorkItemSize[1] && range.localSize_0*range.localSize_1<=range.maxWorkGroupSize
+            && range.globalSize_0%range.localSize_0 == 0 && range.globalSize_1%range.localSize_1 == 0;
 
       return (range);
    }
 
    /**
     * Create a two dimensional range <code>0.._globalWidth * 0.._globalHeight</code> choosing suitable values for <code>localWidth</code> and <code>localHeight</code>.
-    * <p/>
+    * <p>
     * Note that for this range to be valid  <code>_globalWidth > 0 &&  _globalHeight >0 && _localWidth>0 && _localHeight>0 && _localWidth*_localHeight < MAX_GROUP_SIZE && _globalWidth%_localWidth==0 && _globalHeight%_localHeight==0</code>.
-    * <p/>
-    * <p/>
+    * <p>
+    * <p>
     * To determine suitable values for <code>_localWidth</code> and <code>_localHeight</code> we extract the factors for <code>_globalWidth</code> and <code>_globalHeight</code> and then
     * find the largest product ( <code><= MAX_GROUP_SIZE</code>) with the lowest perimeter.
-    * <p/>
-    * <p/>
+    * <p>
+    * <p>
     * For example for <code>MAX_GROUP_SIZE</code> of 16 we favor 4x4 over 1x16.
     *
     * @param _globalWidth the overall range we wish to process
@@ -239,7 +239,7 @@ public class Range{
     */
    public static Range create2D(Device _device, int _globalWidth, int _globalHeight){
       Range withoutLocal = create2D(_device, _globalWidth, _globalHeight, 1, 1);
-      if(withoutLocal.valid){
+      if (withoutLocal.valid){
          withoutLocal.localIsDerived = true;
          int[] widthFactors = getFactors(_globalWidth, withoutLocal.maxWorkItemSize[0]);
          int[] heightFactors = getFactors(_globalHeight, withoutLocal.maxWorkItemSize[1]);
@@ -249,21 +249,21 @@ public class Range{
          int max = 1;
          int perimeter = 0;
 
-         for(int w : widthFactors){
-            for(int h : heightFactors){
-               int size = w * h;
-               if(size > withoutLocal.maxWorkGroupSize){
+         for (int w : widthFactors){
+            for (int h : heightFactors){
+               int size = w*h;
+               if (size>withoutLocal.maxWorkGroupSize){
                   break;
                }
 
-               if(size > max){
+               if (size>max){
                   max = size;
-                  perimeter = w + h;
+                  perimeter = w+h;
                   withoutLocal.localSize_0 = w;
                   withoutLocal.localSize_1 = h;
-               }else if(size == max){
-                  int localPerimeter = w + h;
-                  if(localPerimeter < perimeter){// is this the shortest perimeter so far
+               }else if (size == max){
+                  int localPerimeter = w+h;
+                  if (localPerimeter<perimeter){// is this the shortest perimeter so far
                      perimeter = localPerimeter;
                      withoutLocal.localSize_0 = w;
                      withoutLocal.localSize_1 = h;
@@ -272,12 +272,12 @@ public class Range{
             }
          }
 
-         withoutLocal.valid = withoutLocal.localSize_0 > 0 && withoutLocal.localSize_1 > 0
-               && withoutLocal.localSize_0 <= withoutLocal.maxWorkItemSize[0]
-               && withoutLocal.localSize_1 <= withoutLocal.maxWorkItemSize[1]
-               && withoutLocal.localSize_0 * withoutLocal.localSize_1 <= withoutLocal.maxWorkGroupSize
-               && withoutLocal.globalSize_0 % withoutLocal.localSize_0 == 0
-               && withoutLocal.globalSize_1 % withoutLocal.localSize_1 == 0;
+         withoutLocal.valid = withoutLocal.localSize_0>0 && withoutLocal.localSize_1>0
+               && withoutLocal.localSize_0<=withoutLocal.maxWorkItemSize[0]
+               && withoutLocal.localSize_1<=withoutLocal.maxWorkItemSize[1]
+               && withoutLocal.localSize_0*withoutLocal.localSize_1<=withoutLocal.maxWorkGroupSize
+               && withoutLocal.globalSize_0%withoutLocal.localSize_0 == 0
+               && withoutLocal.globalSize_1%withoutLocal.localSize_1 == 0;
       }
       return (withoutLocal);
    }
@@ -297,7 +297,7 @@ public class Range{
    /**
     * Create a two dimensional range <code>0.._globalWidth * 0.._globalHeight *0../_globalDepth</code>
     * in groups defined by  <code>localWidth</code> * <code>localHeight</code> * <code>localDepth</code>.
-    * <p/>
+    * <p>
     * Note that for this range to be valid  <code>_globalWidth > 0 &&  _globalHeight >0 _globalDepth >0 && _localWidth>0 && _localHeight>0 && _localDepth>0 && _localWidth*_localHeight*_localDepth < MAX_GROUP_SIZE && _globalWidth%_localWidth==0 && _globalHeight%_localHeight==0 && _globalDepth%_localDepth==0</code>.
     *
     * @param _globalWidth  the width of the 3D grid we wish to process
@@ -317,11 +317,11 @@ public class Range{
       range.localSize_1 = _localHeight;
       range.globalSize_2 = _globalDepth;
       range.localSize_2 = _localDepth;
-      range.valid = range.localSize_0 > 0 && range.localSize_1 > 0 && range.localSize_2 > 0
-            && range.localSize_0 * range.localSize_1 * range.localSize_2 <= range.maxWorkGroupSize
-            && range.localSize_0 <= range.maxWorkItemSize[0] && range.localSize_1 <= range.maxWorkItemSize[1]
-            && range.localSize_2 <= range.maxWorkItemSize[2] && range.globalSize_0 % range.localSize_0 == 0
-            && range.globalSize_1 % range.localSize_1 == 0 && range.globalSize_2 % range.localSize_2 == 0;
+      range.valid = range.localSize_0>0 && range.localSize_1>0 && range.localSize_2>0
+            && range.localSize_0*range.localSize_1*range.localSize_2<=range.maxWorkGroupSize
+            && range.localSize_0<=range.maxWorkItemSize[0] && range.localSize_1<=range.maxWorkItemSize[1]
+            && range.localSize_2<=range.maxWorkItemSize[2] && range.globalSize_0%range.localSize_0 == 0
+            && range.globalSize_1%range.localSize_1 == 0 && range.globalSize_2%range.localSize_2 == 0;
 
       return (range);
    }
@@ -329,14 +329,14 @@ public class Range{
    /**
     * Create a three dimensional range <code>0.._globalWidth * 0.._globalHeight *0../_globalDepth</code>
     * choosing suitable values for <code>localWidth</code>, <code>localHeight</code> and <code>localDepth</code>.
-    * <p/>
+    * <p>
     * Note that for this range to be valid  <code>_globalWidth > 0 &&  _globalHeight >0 _globalDepth >0 && _localWidth>0 && _localHeight>0 && _localDepth>0 && _localWidth*_localHeight*_localDepth < MAX_GROUP_SIZE && _globalWidth%_localWidth==0 && _globalHeight%_localHeight==0 && _globalDepth%_localDepth==0</code>.
-    * <p/>
-    * <p/>
+    * <p>
+    * <p>
     * To determine suitable values for <code>_localWidth</code>,<code>_localHeight</code> and <code>_lodalDepth</code> we extract the factors for <code>_globalWidth</code>,<code>_globalHeight</code> and <code>_globalDepth</code> and then
     * find the largest product ( <code><= MAX_GROUP_SIZE</code>) with the lowest perimeter.
-    * <p/>
-    * <p/>
+    * <p>
+    * <p>
     * For example for <code>MAX_GROUP_SIZE</code> of 64 we favor 4x4x4 over 1x16x16.
     *
     * @param _globalWidth  the width of the 3D grid we wish to process
@@ -346,7 +346,7 @@ public class Range{
     */
    public static Range create3D(Device _device, int _globalWidth, int _globalHeight, int _globalDepth){
       Range withoutLocal = create3D(_device, _globalWidth, _globalHeight, _globalDepth, 1, 1, 1);
-      if(withoutLocal.valid){
+      if (withoutLocal.valid){
          withoutLocal.localIsDerived = true;
          int[] widthFactors = getFactors(_globalWidth, withoutLocal.maxWorkItemSize[0]);
          int[] heightFactors = getFactors(_globalHeight, withoutLocal.maxWorkItemSize[1]);
@@ -357,22 +357,22 @@ public class Range{
          withoutLocal.localSize_2 = 1;
          int max = 1;
          int perimeter = 0;
-         for(int w : widthFactors){
-            for(int h : heightFactors){
-               for(int d : depthFactors){
-                  int size = w * h * d;
-                  if(size > withoutLocal.maxWorkGroupSize){
+         for (int w : widthFactors){
+            for (int h : heightFactors){
+               for (int d : depthFactors){
+                  int size = w*h*d;
+                  if (size>withoutLocal.maxWorkGroupSize){
                      break;
                   }
-                  if(size > max){
+                  if (size>max){
                      max = size;
-                     perimeter = w + h + d;
+                     perimeter = w+h+d;
                      withoutLocal.localSize_0 = w;
                      withoutLocal.localSize_1 = h;
                      withoutLocal.localSize_2 = d;
-                  }else if(size == max){
-                     int localPerimeter = w + h + d;
-                     if(localPerimeter < perimeter){ // is this the shortest perimeter so far
+                  }else if (size == max){
+                     int localPerimeter = w+h+d;
+                     if (localPerimeter<perimeter){ // is this the shortest perimeter so far
                         perimeter = localPerimeter;
                         withoutLocal.localSize_0 = w;
                         withoutLocal.localSize_1 = h;
@@ -383,14 +383,14 @@ public class Range{
             }
          }
 
-         withoutLocal.valid = withoutLocal.localSize_0 > 0 && withoutLocal.localSize_1 > 0 && withoutLocal.localSize_2 > 0
-               && withoutLocal.localSize_0 * withoutLocal.localSize_1 * withoutLocal.localSize_2 <= withoutLocal.maxWorkGroupSize
-               && withoutLocal.localSize_0 <= withoutLocal.maxWorkItemSize[0]
-               && withoutLocal.localSize_1 <= withoutLocal.maxWorkItemSize[1]
-               && withoutLocal.localSize_2 <= withoutLocal.maxWorkItemSize[2]
-               && withoutLocal.globalSize_0 % withoutLocal.localSize_0 == 0
-               && withoutLocal.globalSize_1 % withoutLocal.localSize_1 == 0
-               && withoutLocal.globalSize_2 % withoutLocal.localSize_2 == 0;
+         withoutLocal.valid = withoutLocal.localSize_0>0 && withoutLocal.localSize_1>0 && withoutLocal.localSize_2>0
+               && withoutLocal.localSize_0*withoutLocal.localSize_1*withoutLocal.localSize_2<=withoutLocal.maxWorkGroupSize
+               && withoutLocal.localSize_0<=withoutLocal.maxWorkItemSize[0]
+               && withoutLocal.localSize_1<=withoutLocal.maxWorkItemSize[1]
+               && withoutLocal.localSize_2<=withoutLocal.maxWorkItemSize[2]
+               && withoutLocal.globalSize_0%withoutLocal.localSize_0 == 0
+               && withoutLocal.globalSize_1%withoutLocal.localSize_1 == 0
+               && withoutLocal.globalSize_2%withoutLocal.localSize_2 == 0;
       }
       return (withoutLocal);
 
@@ -423,19 +423,19 @@ public class Range{
    public String toString(){
       StringBuilder sb = new StringBuilder();
 
-      switch(dims){
+      switch (dims){
          case 1:
 
-            sb.append("global:" + globalSize_0 + " local:" + (localIsDerived ? "(derived)" : "") + localSize_0);
+            sb.append("global:"+globalSize_0+" local:"+(localIsDerived?"(derived)":"")+localSize_0);
 
             break;
          case 2:
-            sb.append("2D(global:" + globalSize_0 + "x" + globalSize_1 + " local:" + (localIsDerived ? "(derived)" : "")
-                  + localSize_0 + "x" + localSize_1 + ")");
+            sb.append("2D(global:"+globalSize_0+"x"+globalSize_1+" local:"+(localIsDerived?"(derived)":"")
+                  +localSize_0+"x"+localSize_1+")");
             break;
          case 3:
-            sb.append("3D(global:" + globalSize_0 + "x" + globalSize_1 + "x" + globalSize_2 + " local:"
-                  + (localIsDerived ? "(derived)" : "") + localSize_0 + "x" + localSize_1 + "x" + localSize_0 + ")");
+            sb.append("3D(global:"+globalSize_0+"x"+globalSize_1+"x"+globalSize_2+" local:"
+                  +(localIsDerived?"(derived)":"")+localSize_0+"x"+localSize_1+"x"+localSize_0+")");
             break;
 
       }
@@ -444,8 +444,8 @@ public class Range{
 
    /**
     * Get the number of groups for the given dimension.
-    * <p/>
-    * <p/>
+    * <p>
+    * <p>
     * This will essentially return globalXXXX/localXXXX for the given dimension (width, height, depth)
     *
     * @param _dim The dim we are interested in 0, 1 or 2
@@ -453,14 +453,14 @@ public class Range{
     */
 
    public int getNumGroups(int _dim){
-      return (_dim == 0 ? (globalSize_0 / localSize_0) : (_dim == 1 ? (globalSize_1 / localSize_1) : (globalSize_2 / localSize_2)));
+      return (_dim == 0?(globalSize_0/localSize_0):(_dim == 1?(globalSize_1/localSize_1):(globalSize_2/localSize_2)));
    }
 
    /**
     * @return The product of all valid localSize dimensions
     */
    public int getWorkGroupSize(){
-      return localSize_0 * localSize_1 * localSize_2;
+      return localSize_0*localSize_1*localSize_2;
    }
 
    /**

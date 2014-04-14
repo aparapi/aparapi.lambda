@@ -2,7 +2,6 @@ package com.amd.aparapi.sample.common;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.File;
 import java.net.URL;
 
 /**
@@ -12,38 +11,36 @@ import java.net.URL;
  * Time: 12:54 PM
  * To change this template use File | Settings | File Templates.
  */
-public class IconManager {
- //   static File iconDir = new File("c:/users/user1/apu2013/data/icons");
+public class IconManager{
+   //   static File iconDir = new File("c:/users/user1/apu2013/data/icons");
 
+   public static final ImageIcon chipIcon = createImageIcon("/com/amd/aparapi/sample/common/icons/chip.png", "chip");
+   public static final ImageIcon startIcon = createImageIcon("/com/amd/aparapi/sample/common/icons/start.png", "start");
 
-    public static final ImageIcon chipIcon = createImageIcon("/com/amd/aparapi/sample/common/icons/chip.png", "chip");
-    public static final ImageIcon startIcon = createImageIcon("/com/amd/aparapi/sample/common/icons/start.png", "start");
+   /**
+    * Returns an ImageIcon, or null if the path was invalid.
+    */
+   static ImageIcon createImageIcon(String path, String description){
+      URL imgURL = IconManager.class.getResource(path);
+      if (imgURL != null){
+         ImageIcon icon = new ImageIcon(imgURL, description);
 
-
-    /**
-     * Returns an ImageIcon, or null if the path was invalid.
-     */
-    static ImageIcon createImageIcon(String path, String description) {
-        URL imgURL = IconManager.class.getResource(path);
-        if (imgURL != null) {
-            ImageIcon icon = new ImageIcon(imgURL, description);
-
-            int status = icon.getImageLoadStatus();
+         int status = icon.getImageLoadStatus();
+         return (icon);
+      }else{
+         // maybe it is just a file name
+         ImageIcon icon = new ImageIcon(path, description);
+         if (icon != null){
             return (icon);
-        } else {
-            // maybe it is just a file name
-            ImageIcon icon = new ImageIcon(path, description);
-            if (icon != null){
-                return (icon);
-            }
-            System.err.println("Couldn't find file: " + path);
-            return null;
-        }
-    }
+         }
+         System.err.println("Couldn't find file: "+path);
+         return null;
+      }
+   }
 
-    static ImageIcon resize(ImageIcon image, int width, int height){
-        Image img = image.getImage();
-        Image newimg = img.getScaledInstance(width, height,  Image.SCALE_SMOOTH);
-        return(new ImageIcon(newimg));
-    }
+   static ImageIcon resize(ImageIcon image, int width, int height){
+      Image img = image.getImage();
+      Image newimg = img.getScaledInstance(width, height, Image.SCALE_SMOOTH);
+      return (new ImageIcon(newimg));
+   }
 }

@@ -3,26 +3,23 @@ package com.amd.aparapi;
 import com.amd.aparapi.OpenCLDevice.DeviceComparitor;
 import com.amd.aparapi.OpenCLDevice.DeviceSelector;
 
-
 public abstract class Device<T extends Device>{
 
-
-
-    public static Device getByName(String _deviceName) {
-        TYPE type = TYPE.valueOf(_deviceName.toUpperCase());
-        return(_deviceName.equals("hsa")?Device.hsa():
-                (_deviceName.equals("jtp")?Device.jtp():
-                        (_deviceName.equals("seq")?Device.seq():
-                                (_deviceName.equals("hyb")?Device.hyb():
-                                        (_deviceName.equals("best")?Device.best():
-                                                 null)
-                                )
+   public static Device getByName(String _deviceName){
+      TYPE type = TYPE.valueOf(_deviceName.toUpperCase());
+      return (_deviceName.equals("hsa")?Device.hsa():
+            (_deviceName.equals("jtp")?Device.jtp():
+                  (_deviceName.equals("seq")?Device.seq():
+                        (_deviceName.equals("hyb")?Device.hyb():
+                              (_deviceName.equals("best")?Device.best():
+                                    null)
                         )
-                )
-        );
-    }
+                  )
+            )
+      );
+   }
 
-    static public enum TYPE{
+   static public enum TYPE{
       UNKNOWN,
       GPU,
       CPU,
@@ -38,14 +35,14 @@ public abstract class Device<T extends Device>{
       return (OpenCLDevice.select(new DeviceComparitor(){
          @Override
          public OpenCLDevice select(OpenCLDevice _deviceLhs, OpenCLDevice _deviceRhs){
-            if(_deviceLhs.getType() != _deviceRhs.getType()){
-               if(_deviceLhs.getType() == TYPE.GPU){
+            if (_deviceLhs.getType() != _deviceRhs.getType()){
+               if (_deviceLhs.getType() == TYPE.GPU){
                   return (_deviceLhs);
                }else{
                   return (_deviceRhs);
                }
             }
-            if(_deviceLhs.getMaxComputeUnits() > _deviceRhs.getMaxComputeUnits()){
+            if (_deviceLhs.getMaxComputeUnits()>_deviceRhs.getMaxComputeUnits()){
                return (_deviceLhs);
             }else{
                return (_deviceRhs);
@@ -59,7 +56,7 @@ public abstract class Device<T extends Device>{
       return (OpenCLDevice.select(new DeviceSelector(){
          @Override
          public OpenCLDevice select(OpenCLDevice _device){
-            return (_device.getType() == _type ? _device : null);
+            return (_device.getType() == _type?_device:null);
          }
       }));
    }
@@ -79,15 +76,14 @@ public abstract class Device<T extends Device>{
    }
 
    public static JavaSequentialDevice seq(){
-        return (new JavaSequentialDevice());
+      return (new JavaSequentialDevice());
 
-    }
+   }
 
-    public static HybridDevice hyb(){
-        return (new HybridDevice());
+   public static HybridDevice hyb(){
+      return (new HybridDevice());
 
-    }
-
+   }
 
    public static HSADevice hsa(){
       return (new HSADevice());
@@ -163,8 +159,8 @@ public abstract class Device<T extends Device>{
       return (Range.create3D(this, _globalWidth, _globalHeight, _globalDepth, _localWidth, _localHeight, _localDepth));
    }
 
-    public abstract  void forEach(int range, Aparapi.IntTerminal ic);
-    public abstract  void forEach(int from, int to, Aparapi.IntTerminal ic);
+   public abstract void forEach(int range, Aparapi.IntTerminal ic);
 
+   public abstract void forEach(int from, int to, Aparapi.IntTerminal ic);
 
 }

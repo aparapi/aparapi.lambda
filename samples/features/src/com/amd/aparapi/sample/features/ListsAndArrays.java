@@ -43,14 +43,14 @@ import com.amd.aparapi.Aparapi;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class ListsAndArrays {
+public class ListsAndArrays{
 
-   public static void main(String[] _args) {
+   public static void main(String[] _args){
       String[] strings = new String[]{"one", "two", "three", "four"};
       ArrayList<String> stringList = new ArrayList<String>();
       stringList.addAll(Arrays.asList(strings));
-      Aparapi.range(strings).forEach(s->System.out.println(s));
-      Aparapi.range(stringList).forEach(s->System.out.println(s));
+      Aparapi.range(strings).forEach(s -> System.out.println(s));
+      Aparapi.range(stringList).forEach(s -> System.out.println(s));
    }
 
 }

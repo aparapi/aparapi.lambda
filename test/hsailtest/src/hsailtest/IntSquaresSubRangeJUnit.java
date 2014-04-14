@@ -4,35 +4,31 @@ import com.amd.aparapi.Aparapi;
 import com.amd.aparapi.Device;
 import org.junit.Test;
 
-
-
 import static org.junit.Assert.assertTrue;
 
 /**
  * Created by user1 on 1/29/14.
  */
-public class IntSquaresSubRangeJUnit {
+public class IntSquaresSubRangeJUnit{
 
-
-
-
-    @Test public void testMain() throws Exception {
-        final int len = JunitHelper.getPreferredArraySize();
-        int in[] = new int[len];
-        int out[] = new int[len];
-        for (int i=0; i<len; i++){
-            out[i]=0;
-            in[i]=i;
-        }
-        Aparapi.IntTerminal ic = gid -> {
-            out[gid] = in[gid]*in[gid];
-        };
-        Device.hsa().forEach(len/2, len, ic);
-        JunitHelper.dump("hsa", in, out);
-        int[] hsaOut= JunitHelper.copy(out);
-        Device.jtp().forEach(len/2, len, ic);
-        JunitHelper.dump("jtp", in, out);
-        assertTrue("HSA equals JTP results", JunitHelper.compare(hsaOut,out) );
-    }
+   @Test
+   public void testMain() throws Exception{
+      final int len = JunitHelper.getPreferredArraySize();
+      int in[] = new int[len];
+      int out[] = new int[len];
+      for (int i = 0; i<len; i++){
+         out[i] = 0;
+         in[i] = i;
+      }
+      Aparapi.IntTerminal ic = gid -> {
+         out[gid] = in[gid]*in[gid];
+      };
+      Device.hsa().forEach(len/2, len, ic);
+      JunitHelper.dump("hsa", in, out);
+      int[] hsaOut = JunitHelper.copy(out);
+      Device.jtp().forEach(len/2, len, ic);
+      JunitHelper.dump("jtp", in, out);
+      assertTrue("HSA equals JTP results", JunitHelper.compare(hsaOut, out));
+   }
 
 }

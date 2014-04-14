@@ -38,33 +38,31 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 package com.amd.aparapi;
 
 import com.amd.aparapi.InstructionSet.Branch;
-import com.amd.aparapi.InstructionSet.LocalVariableTableIndexAccessor;
-import com.amd.aparapi.InstructionSet.InterfaceMethodCall;
-import com.amd.aparapi.InstructionSet.MethodCall;
-import com.amd.aparapi.InstructionSet.Constant;
-import com.amd.aparapi.InstructionSet.FieldReference;
 import com.amd.aparapi.InstructionSet.ByteCode;
 import com.amd.aparapi.InstructionSet.CompositeInstruction;
 import com.amd.aparapi.InstructionSet.ConditionalBranch;
+import com.amd.aparapi.InstructionSet.Constant;
+import com.amd.aparapi.InstructionSet.FieldReference;
+import com.amd.aparapi.InstructionSet.InterfaceMethodCall;
+import com.amd.aparapi.InstructionSet.LocalVariableTableIndexAccessor;
+import com.amd.aparapi.InstructionSet.MethodCall;
 
 import java.util.LinkedList;
 
 /**
  * Initially represents a single Java bytecode instruction.
- * <p/>
+ * <p>
  * Instructions for each bytecode are created when the bytecode is first scanned.
- * <p/>
+ * <p>
  * Each Instruction will contain a pc (program counter) offset from the beginning of the sequence of bytecode and the length will be determined by the information gleaned from InstructionSet.BYTECODE.
  *
  * @author gfrost
  */
 abstract class Instruction{
 
-
    static class InstructionType{
       Instruction instruction = null;
       PrimitiveType primitiveType = null;
-
 
       public InstructionType(Instruction _instruction, PrimitiveType _primitiveType){
          primitiveType = _primitiveType;
@@ -92,16 +90,15 @@ abstract class Instruction{
 
    protected InstructionType[] consumedInstructionTypes;
 
-  // protected boolean ternaryElse = false;
+   // protected boolean ternaryElse = false;
 
- // boolean isTernaryElse(){
-  //    return (ternaryElse);
-  // }
+   // boolean isTernaryElse(){
+   //    return (ternaryElse);
+   // }
 
-  //void setTernaryElse(boolean _ternaryElse){
+   //void setTernaryElse(boolean _ternaryElse){
    //  ternaryElse = _ternaryElse;
-  //}
-
+   //}
 
    abstract String getDescription();
 
@@ -135,14 +132,14 @@ abstract class Instruction{
 
    protected void setChildren(Instruction _firstChild, Instruction _lastChild){
 
-      if(_firstChild == null || _lastChild == null){
+      if (_firstChild == null || _lastChild == null){
          throw new IllegalStateException("null children added");
       }
       firstChild = _firstChild;
       lastChild = _lastChild;
 
-      for(Instruction i = firstChild; i != lastChild; i = i.getNextExpr()){
-         if(i == null){
+      for (Instruction i = firstChild; i != lastChild; i = i.getNextExpr()){
+         if (i == null){
             throw new IllegalStateException("child list broken ");
          }
          i.setParentExpr(this);
@@ -196,7 +193,7 @@ abstract class Instruction{
    }
 
    int getStartPC(){
-      return (getFirstChild() == null ? pc : getFirstChild().getStartPC());
+      return (getFirstChild() == null?pc:getFirstChild().getStartPC());
    }
 
    int getPostStackBase(){
@@ -204,12 +201,11 @@ abstract class Instruction{
    }
 
    int getPreStackBase(){
-    //  if (getConsumedInstructionTypes()==null){
-   ///       System.out.println("ouch");
-   //   }
-      return (postStackBase - getConsumedInstructionTypeCount());
+      //  if (getConsumedInstructionTypes()==null){
+      ///       System.out.println("ouch");
+      //   }
+      return (postStackBase-getConsumedInstructionTypeCount());
    }
-
 
    void setPostStackBase(int _postStackBase){
       postStackBase = _postStackBase;
@@ -223,9 +219,10 @@ abstract class Instruction{
    InstructionType[] getConsumedInstructionTypes(){
       return (consumedInstructionTypes);
    }
-    int getConsumedInstructionTypeCount(){
-        return (consumedInstructionTypes==null?0:consumedInstructionTypes.length);
-    }
+
+   int getConsumedInstructionTypeCount(){
+      return (consumedInstructionTypes == null?0:consumedInstructionTypes.length);
+   }
 
    protected Instruction(ClassModel.ClassModelMethod _method, ByteCode _byteCode, int _pc){
       method = _method;
@@ -234,7 +231,7 @@ abstract class Instruction{
    }
 
    protected Instruction(ClassModel.ClassModelMethod _method, ByteCode _byteCode, ByteReader _byteReader, boolean _wide){
-      this(_method, _byteCode, _wide ? _byteReader.getOffset() - 2 : _byteReader.getOffset() - 1);
+      this(_method, _byteCode, _wide?_byteReader.getOffset()-2:_byteReader.getOffset()-1);
    }
 
    // This works for most cases (except calls whose operand count depends upon the signature) so all call instructions therefore override this method
@@ -247,7 +244,7 @@ abstract class Instruction{
    }
 
    int getStackDelta(){
-      return (getStackProduceCount() - getStackConsumeCount());
+      return (getStackProduceCount()-getStackConsumeCount());
    }
 
    @Override
@@ -264,57 +261,59 @@ abstract class Instruction{
    }
 
    Constant asConstant(){
-      return ((Constant) this);
+      return ((Constant)this);
    }
 
    Constant<Double> asDoubleConstant(){
-      return ((Constant<Double>) this);
+      return ((Constant<Double>)this);
    }
 
    Constant<Float> asFloatConstant(){
-      return ((Constant<Float>) this);
+      return ((Constant<Float>)this);
    }
 
    Constant<Integer> asIntegerConstant(){
-      return ((Constant<Integer>) this);
+      return ((Constant<Integer>)this);
    }
 
    Constant<Long> asLongConstant(){
-      return ((Constant<Long>) this);
+      return ((Constant<Long>)this);
    }
 
    MethodCall asMethodCall(){
-      return ((MethodCall) this);
+      return ((MethodCall)this);
    }
-    boolean isInterfaceMethodCall(){
-        return (this instanceof InterfaceMethodCall);
-    }
-    InterfaceMethodCall asInterfaceMethodCall(){
-        return ((InterfaceMethodCall) this);
-    }
+
+   boolean isInterfaceMethodCall(){
+      return (this instanceof InterfaceMethodCall);
+   }
+
+   InterfaceMethodCall asInterfaceMethodCall(){
+      return ((InterfaceMethodCall)this);
+   }
 
    boolean isBranch(){
       return (this instanceof Branch);
    }
 
    int compareTo(Instruction _other){
-      return (pc - _other.pc);
+      return (pc-_other.pc);
    }
 
    boolean isAfter(Instruction _other){
-      return (compareTo(_other) > 0);
+      return (compareTo(_other)>0);
    }
 
    boolean isAfterOrEqual(Instruction _other){
-      return (compareTo(_other) >= 0);
+      return (compareTo(_other)>=0);
    }
 
    boolean isBefore(Instruction _other){
-      return (compareTo(_other) < 0);
+      return (compareTo(_other)<0);
    }
 
    boolean isBeforeOrEqual(Instruction _other){
-      return (compareTo(_other) <= 0);
+      return (compareTo(_other)<=0);
    }
 
    Instruction getFirstChild(){
@@ -326,7 +325,7 @@ abstract class Instruction{
    }
 
    Instruction getStartInstruction(){
-      return (getFirstChild() == null ? this : getFirstChild().getStartInstruction());
+      return (getFirstChild() == null?this:getFirstChild().getStartInstruction());
 
    }
 
@@ -339,8 +338,8 @@ abstract class Instruction{
    }
 
    boolean isLastInstruction(){
-        return (nextPC==null);
-    }
+      return (nextPC == null);
+   }
 
    Instruction getPrevPC(){
       return (prevPC);
@@ -355,27 +354,27 @@ abstract class Instruction{
    }
 
    Instruction getRootExpr(){
-      return (parentExpr == null ? this : parentExpr.getRootExpr());
+      return (parentExpr == null?this:parentExpr.getRootExpr());
    }
 
    boolean isReverseConditionalBranchTarget(){
-      return (reverseConditionalBranchTargets.size() > 0);
+      return (reverseConditionalBranchTargets.size()>0);
    }
 
    boolean isForwardConditionalBranchTarget(){
-      return (forwardConditionalBranchTargets.size() > 0);
+      return (forwardConditionalBranchTargets.size()>0);
    }
 
    boolean isReverseUnconditionalBranchTarget(){
-      return (reverseUnconditionalBranchTargets.size() > 0);
+      return (reverseUnconditionalBranchTargets.size()>0);
    }
 
    boolean isForwardUnconditionalBranchTarget(){
-      return (forwardUnconditionalBranchTargets.size() > 0);
+      return (forwardUnconditionalBranchTargets.size()>0);
    }
 
    boolean isReverseBranchTarget(){
-      return (reverseBranchTargets.size() > 0);
+      return (reverseBranchTargets.size()>0);
    }
 
    boolean isConditionalBranchTarget(){
@@ -387,7 +386,7 @@ abstract class Instruction{
    }
 
    boolean isForwardBranchTarget(){
-      return (forwardBranchTargets.size() > 0);
+      return (forwardBranchTargets.size()>0);
    }
 
    boolean isBranchTarget(){
@@ -395,7 +394,7 @@ abstract class Instruction{
    }
 
    boolean producesStack(){
-      return (this instanceof CompositeInstruction || (getStackProduceCount() > 0));
+      return (this instanceof CompositeInstruction || (getStackProduceCount()>0));
    }
 
    Instruction getReal(){
@@ -403,7 +402,7 @@ abstract class Instruction{
    }
 
    Branch asBranch(){
-      return ((Branch) this);
+      return ((Branch)this);
    }
 
    boolean isLocalVariableAccessor(){
@@ -411,7 +410,7 @@ abstract class Instruction{
    }
 
    FieldReference asFieldAccessor(){
-      return ((FieldReference) this);
+      return ((FieldReference)this);
    }
 
    boolean isFieldAccessor(){
@@ -419,26 +418,26 @@ abstract class Instruction{
    }
 
    LocalVariableTableIndexAccessor asLocalVariableAccessor(){
-      return ((LocalVariableTableIndexAccessor) this);
+      return ((LocalVariableTableIndexAccessor)this);
    }
 
    boolean consumesStack(){
-      return (getStackConsumeCount() > 0);
+      return (getStackConsumeCount()>0);
    }
 
    void addBranchTarget(Branch _branch){
 
-      if(_branch.isReverse()){
+      if (_branch.isReverse()){
          reverseBranchTargets.add(_branch);
-         if(_branch.isConditional()){
-            reverseConditionalBranchTargets.add((ConditionalBranch) _branch);
+         if (_branch.isConditional()){
+            reverseConditionalBranchTargets.add((ConditionalBranch)_branch);
          }else{
             reverseUnconditionalBranchTargets.add(_branch);
          }
       }else{
          forwardBranchTargets.add(_branch);
-         if(_branch.isConditional()){
-            forwardConditionalBranchTargets.add((ConditionalBranch) _branch);
+         if (_branch.isConditional()){
+            forwardConditionalBranchTargets.add((ConditionalBranch)_branch);
          }else{
             forwardUnconditionalBranchTargets.add(_branch);
          }
@@ -447,16 +446,16 @@ abstract class Instruction{
    }
 
    void removeBranchTarget(Branch _branch){
-      if(_branch.isReverse()){
+      if (_branch.isReverse()){
          reverseBranchTargets.add(_branch);
-         if(_branch.isConditional()){
+         if (_branch.isConditional()){
             reverseConditionalBranchTargets.remove(_branch);
          }else{
             reverseUnconditionalBranchTargets.remove(_branch);
          }
       }else{
          forwardBranchTargets.add(_branch);
-         if(_branch.isConditional()){
+         if (_branch.isConditional()){
             forwardConditionalBranchTargets.remove(_branch);
          }else{
             forwardUnconditionalBranchTargets.remove(_branch);

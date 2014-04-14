@@ -1,8 +1,5 @@
 package com.amd.aparapi;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * Created with IntelliJ IDEA.
  * User: gfrost
@@ -28,7 +25,6 @@ public abstract class PrimitiveType{
    static final u64 u64 = new u64();
    static final ref ref = new ref();
 
-
    static final PrimitiveType javaPrimitiveTypes[] = new PrimitiveType[]{
          v, u1, s8, u16, s16, s32, f32, s64, f64, ref
    };
@@ -48,11 +44,9 @@ public abstract class PrimitiveType{
    // protected Class clazz;
    protected int javaSlots;
 
-
    int getJavaSlots(){
       return (javaSlots);
    }
-
 
    int hsaBits;
    int javaBits;
@@ -77,13 +71,12 @@ public abstract class PrimitiveType{
    }
 
    public String getHSAName(){
-      return (hsaPrefix + hsaBits);
+      return (hsaPrefix+hsaBits);
    }
 
    public int getHsaBytes(){
-      return (hsaBits / 8);
+      return (hsaBits/8);
    }
-
 
    public String getJavaSig(){
       return (javaSig);
@@ -102,13 +95,12 @@ public abstract class PrimitiveType{
    }
 
    public int getJavaBytes(){
-      return (javaBits / 8);
+      return (javaBits/8);
    }
 
-
    public static PrimitiveType getJavaPrimitiveTypeFor(String _sig){
-      for(PrimitiveType t : javaPrimitiveTypes){
-         if(t.getJavaSig().equals(_sig)){
+      for (PrimitiveType t : javaPrimitiveTypes){
+         if (t.getJavaSig().equals(_sig)){
             return (t);
          }
       }
@@ -186,7 +178,6 @@ class ref extends PrimitiveType{
       super(64, 32, "REF", "REF", "REF", "u", 1);
    }
 }
-
 
 class s64 extends PrimitiveType{
    s64(){

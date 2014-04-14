@@ -23,7 +23,7 @@ public class OpenCLPlatform{
    }
 
    public String toString(){
-      return ("PlatformId " + platformId + "\nName:" + vendor + "\nVersion:" + version);
+      return ("PlatformId "+platformId+"\nName:"+vendor+"\nVersion:"+version);
    }
 
    public void add(OpenCLDevice device){
@@ -35,7 +35,7 @@ public class OpenCLPlatform{
    }
 
    public static List<OpenCLPlatform> getPlatforms(){
-      if(OpenCLJNI.getJNI().isOpenCLAvailable()){
+      if (OpenCLJNI.getJNI().isOpenCLAvailable()){
          return (OpenCLJNI.getJNI().getPlatforms());
       }else{
          return (new ArrayList<OpenCLPlatform>());

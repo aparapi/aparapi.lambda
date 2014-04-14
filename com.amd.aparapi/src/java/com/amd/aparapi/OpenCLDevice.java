@@ -13,7 +13,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -73,8 +72,8 @@ public class OpenCLDevice extends Device{
    public String toString(){
       StringBuilder s = new StringBuilder("{");
       boolean first = true;
-      for(int workItemSize : maxWorkItemSize){
-         if(first){
+      for (int workItemSize : maxWorkItemSize){
+         if (first){
             first = false;
          }else{
             s.append(", ");
@@ -82,9 +81,9 @@ public class OpenCLDevice extends Device{
          s.append(workItemSize);
       }
       s.append("}");
-      return ("Device " + deviceId + "\n  prefix:" + type + "\n  maxComputeUnits=" + maxComputeUnits + "\n  maxWorkItemDimensions="
-            + maxWorkItemDimensions + "\n  maxWorkItemSizes=" + s + "\n  maxWorkWorkGroupSize=" + maxWorkGroupSize
-            + "\n  globalMemSize=" + globalMemSize + "\n  localMemSize=" + localMemSize);
+      return ("Device "+deviceId+"\n  prefix:"+type+"\n  maxComputeUnits="+maxComputeUnits+"\n  maxWorkItemDimensions="
+            +maxWorkItemDimensions+"\n  maxWorkItemSizes="+s+"\n  maxWorkWorkGroupSize="+maxWorkGroupSize
+            +"\n  globalMemSize="+globalMemSize+"\n  localMemSize="+localMemSize);
    }
 
    void setMaxWorkItemSize(int _dim, int _value){
@@ -111,13 +110,13 @@ public class OpenCLDevice extends Device{
 
       @Override
       public Object invoke(Object proxy, Method method, Object[] args) throws Throwable{
-         if(!isReservedInterfaceMethod(method)){
+         if (!isReservedInterfaceMethod(method)){
             OpenCLKernel kernel = map.get(method.getName());
-            if(kernel != null){
+            if (kernel != null){
                kernel.invoke(args);
             }
          }else{
-            if(method.getName().equals("put")){
+            if (method.getName().equals("put")){
 
                /*
                for (Object arg : args) {
@@ -140,7 +139,7 @@ public class OpenCLDevice extends Device{
                   }
                }
                */
-            }else if(method.getName().equals("get")){
+            }else if (method.getName().equals("get")){
                /*
                for (Object arg : args) {
                   Class<?> argClass = arg.getClass();
@@ -162,8 +161,8 @@ public class OpenCLDevice extends Device{
                   }
                }
                */
-            }else if(method.getName().equals("begin")){
-            }else if(method.getName().equals("end")){
+            }else if (method.getName().equals("begin")){
+            }else if (method.getName().equals("end")){
             }
          }
          return proxy;
@@ -175,67 +174,67 @@ public class OpenCLDevice extends Device{
       Annotation[][] parameterAnnotations = m.getParameterAnnotations();
       Class<?>[] parameterTypes = m.getParameterTypes();
 
-      for(int arg = 0; arg < parameterTypes.length; arg++){
-         if(parameterTypes[arg].isAssignableFrom(Range.class)){
+      for (int arg = 0; arg<parameterTypes.length; arg++){
+         if (parameterTypes[arg].isAssignableFrom(Range.class)){
 
          }else{
 
             long bits = 0L;
             String name = null;
-            for(Annotation pa : parameterAnnotations[arg]){
-               if(pa instanceof OpenCL.GlobalReadOnly){
-                  name = ((OpenCL.GlobalReadOnly) pa).value();
-                  bits |= OpenCLArgDescriptor.ARG_GLOBAL_BIT | OpenCLArgDescriptor.ARG_READONLY_BIT;
-               }else if(pa instanceof OpenCL.GlobalWriteOnly){
-                  name = ((OpenCL.GlobalWriteOnly) pa).value();
-                  bits |= OpenCLArgDescriptor.ARG_GLOBAL_BIT | OpenCLArgDescriptor.ARG_WRITEONLY_BIT;
-               }else if(pa instanceof OpenCL.GlobalReadWrite){
-                  name = ((OpenCL.GlobalReadWrite) pa).value();
-                  bits |= OpenCLArgDescriptor.ARG_GLOBAL_BIT | OpenCLArgDescriptor.ARG_READWRITE_BIT;
-               }else if(pa instanceof OpenCL.Local){
-                  name = ((OpenCL.Local) pa).value();
+            for (Annotation pa : parameterAnnotations[arg]){
+               if (pa instanceof OpenCL.GlobalReadOnly){
+                  name = ((OpenCL.GlobalReadOnly)pa).value();
+                  bits |= OpenCLArgDescriptor.ARG_GLOBAL_BIT|OpenCLArgDescriptor.ARG_READONLY_BIT;
+               }else if (pa instanceof OpenCL.GlobalWriteOnly){
+                  name = ((OpenCL.GlobalWriteOnly)pa).value();
+                  bits |= OpenCLArgDescriptor.ARG_GLOBAL_BIT|OpenCLArgDescriptor.ARG_WRITEONLY_BIT;
+               }else if (pa instanceof OpenCL.GlobalReadWrite){
+                  name = ((OpenCL.GlobalReadWrite)pa).value();
+                  bits |= OpenCLArgDescriptor.ARG_GLOBAL_BIT|OpenCLArgDescriptor.ARG_READWRITE_BIT;
+               }else if (pa instanceof OpenCL.Local){
+                  name = ((OpenCL.Local)pa).value();
                   bits |= OpenCLArgDescriptor.ARG_LOCAL_BIT;
-               }else if(pa instanceof OpenCL.Constant){
-                  name = ((OpenCL.Constant) pa).value();
-                  bits |= OpenCLArgDescriptor.ARG_CONST_BIT | OpenCLArgDescriptor.ARG_READONLY_BIT;
-               }else if(pa instanceof OpenCL.Arg){
-                  name = ((OpenCL.Arg) pa).value();
+               }else if (pa instanceof OpenCL.Constant){
+                  name = ((OpenCL.Constant)pa).value();
+                  bits |= OpenCLArgDescriptor.ARG_CONST_BIT|OpenCLArgDescriptor.ARG_READONLY_BIT;
+               }else if (pa instanceof OpenCL.Arg){
+                  name = ((OpenCL.Arg)pa).value();
                   bits |= OpenCLArgDescriptor.ARG_ISARG_BIT;
                }
 
             }
-            if(parameterTypes[arg].isArray()){
-               if(parameterTypes[arg].isAssignableFrom(float[].class)){
-                  bits |= OpenCLArgDescriptor.ARG_FLOAT_BIT | OpenCLArgDescriptor.ARG_ARRAY_BIT;
-               }else if(parameterTypes[arg].isAssignableFrom(int[].class)){
-                  bits |= OpenCLArgDescriptor.ARG_INT_BIT | OpenCLArgDescriptor.ARG_ARRAY_BIT;
-               }else if(parameterTypes[arg].isAssignableFrom(double[].class)){
-                  bits |= OpenCLArgDescriptor.ARG_DOUBLE_BIT | OpenCLArgDescriptor.ARG_ARRAY_BIT;
-               }else if(parameterTypes[arg].isAssignableFrom(byte[].class)){
-                  bits |= OpenCLArgDescriptor.ARG_BYTE_BIT | OpenCLArgDescriptor.ARG_ARRAY_BIT;
-               }else if(parameterTypes[arg].isAssignableFrom(short[].class)){
-                  bits |= OpenCLArgDescriptor.ARG_SHORT_BIT | OpenCLArgDescriptor.ARG_ARRAY_BIT;
-               }else if(parameterTypes[arg].isAssignableFrom(long[].class)){
-                  bits |= OpenCLArgDescriptor.ARG_LONG_BIT | OpenCLArgDescriptor.ARG_ARRAY_BIT;
+            if (parameterTypes[arg].isArray()){
+               if (parameterTypes[arg].isAssignableFrom(float[].class)){
+                  bits |= OpenCLArgDescriptor.ARG_FLOAT_BIT|OpenCLArgDescriptor.ARG_ARRAY_BIT;
+               }else if (parameterTypes[arg].isAssignableFrom(int[].class)){
+                  bits |= OpenCLArgDescriptor.ARG_INT_BIT|OpenCLArgDescriptor.ARG_ARRAY_BIT;
+               }else if (parameterTypes[arg].isAssignableFrom(double[].class)){
+                  bits |= OpenCLArgDescriptor.ARG_DOUBLE_BIT|OpenCLArgDescriptor.ARG_ARRAY_BIT;
+               }else if (parameterTypes[arg].isAssignableFrom(byte[].class)){
+                  bits |= OpenCLArgDescriptor.ARG_BYTE_BIT|OpenCLArgDescriptor.ARG_ARRAY_BIT;
+               }else if (parameterTypes[arg].isAssignableFrom(short[].class)){
+                  bits |= OpenCLArgDescriptor.ARG_SHORT_BIT|OpenCLArgDescriptor.ARG_ARRAY_BIT;
+               }else if (parameterTypes[arg].isAssignableFrom(long[].class)){
+                  bits |= OpenCLArgDescriptor.ARG_LONG_BIT|OpenCLArgDescriptor.ARG_ARRAY_BIT;
                }
-            }else if(parameterTypes[arg].isPrimitive()){
-               if(parameterTypes[arg].isAssignableFrom(float.class)){
-                  bits |= OpenCLArgDescriptor.ARG_FLOAT_BIT | OpenCLArgDescriptor.ARG_PRIMITIVE_BIT;
-               }else if(parameterTypes[arg].isAssignableFrom(int.class)){
-                  bits |= OpenCLArgDescriptor.ARG_INT_BIT | OpenCLArgDescriptor.ARG_PRIMITIVE_BIT;
-               }else if(parameterTypes[arg].isAssignableFrom(double.class)){
-                  bits |= OpenCLArgDescriptor.ARG_DOUBLE_BIT | OpenCLArgDescriptor.ARG_PRIMITIVE_BIT;
-               }else if(parameterTypes[arg].isAssignableFrom(byte.class)){
-                  bits |= OpenCLArgDescriptor.ARG_BYTE_BIT | OpenCLArgDescriptor.ARG_PRIMITIVE_BIT;
-               }else if(parameterTypes[arg].isAssignableFrom(short.class)){
-                  bits |= OpenCLArgDescriptor.ARG_SHORT_BIT | OpenCLArgDescriptor.ARG_PRIMITIVE_BIT;
-               }else if(parameterTypes[arg].isAssignableFrom(long.class)){
-                  bits |= OpenCLArgDescriptor.ARG_LONG_BIT | OpenCLArgDescriptor.ARG_PRIMITIVE_BIT;
+            }else if (parameterTypes[arg].isPrimitive()){
+               if (parameterTypes[arg].isAssignableFrom(float.class)){
+                  bits |= OpenCLArgDescriptor.ARG_FLOAT_BIT|OpenCLArgDescriptor.ARG_PRIMITIVE_BIT;
+               }else if (parameterTypes[arg].isAssignableFrom(int.class)){
+                  bits |= OpenCLArgDescriptor.ARG_INT_BIT|OpenCLArgDescriptor.ARG_PRIMITIVE_BIT;
+               }else if (parameterTypes[arg].isAssignableFrom(double.class)){
+                  bits |= OpenCLArgDescriptor.ARG_DOUBLE_BIT|OpenCLArgDescriptor.ARG_PRIMITIVE_BIT;
+               }else if (parameterTypes[arg].isAssignableFrom(byte.class)){
+                  bits |= OpenCLArgDescriptor.ARG_BYTE_BIT|OpenCLArgDescriptor.ARG_PRIMITIVE_BIT;
+               }else if (parameterTypes[arg].isAssignableFrom(short.class)){
+                  bits |= OpenCLArgDescriptor.ARG_SHORT_BIT|OpenCLArgDescriptor.ARG_PRIMITIVE_BIT;
+               }else if (parameterTypes[arg].isAssignableFrom(long.class)){
+                  bits |= OpenCLArgDescriptor.ARG_LONG_BIT|OpenCLArgDescriptor.ARG_PRIMITIVE_BIT;
                }
             }else{
                System.out.println("OUch!");
             }
-            if(name == null){
+            if (name == null){
                throw new IllegalStateException("no name!");
             }
             OpenCLArgDescriptor kernelArg = new OpenCLArgDescriptor(name, bits);
@@ -255,15 +254,15 @@ public class OpenCLDevice extends Device{
    private String streamToString(InputStream _inputStream){
       StringBuilder sourceBuilder = new StringBuilder();
 
-      if(_inputStream != null){
+      if (_inputStream != null){
 
          BufferedReader reader = new BufferedReader(new InputStreamReader(_inputStream));
 
          try{
-            for(String line = reader.readLine(); line != null; line = reader.readLine()){
+            for (String line = reader.readLine(); line != null; line = reader.readLine()){
                sourceBuilder.append(line).append("\n");
             }
-         }catch(IOException e){
+         }catch (IOException e){
             // TODO Auto-generated catch block
             e.printStackTrace();
          }
@@ -271,7 +270,7 @@ public class OpenCLDevice extends Device{
       }
       try{
          _inputStream.close();
-      }catch(IOException e){
+      }catch (IOException e){
          // TODO Auto-generated catch block
          e.printStackTrace();
       }
@@ -283,59 +282,59 @@ public class OpenCLDevice extends Device{
    }
 
    public <T extends OpenCL<T>> T bind(Class<T> _interface){
-      return (bind(_interface, (String) null));
+      return (bind(_interface, (String)null));
    }
 
    public <T extends OpenCL<T>> T bind(Class<T> _interface, String _source){
 
       Map<String, List<OpenCLArgDescriptor>> kernelNameToArgsMap = new HashMap<String, List<OpenCLArgDescriptor>>();
-      if(_source == null){
+      if (_source == null){
          StringBuilder sourceBuilder = new StringBuilder();
          boolean interfaceIsAnnotated = false;
-         for(Annotation a : _interface.getAnnotations()){
-            if(a instanceof OpenCL.Source){
-               OpenCL.Source source = (OpenCL.Source) a;
+         for (Annotation a : _interface.getAnnotations()){
+            if (a instanceof OpenCL.Source){
+               OpenCL.Source source = (OpenCL.Source)a;
                sourceBuilder.append(source.value()).append("\n");
                interfaceIsAnnotated = true;
-            }else if(a instanceof OpenCL.Resource){
-               OpenCL.Resource sourceResource = (OpenCL.Resource) a;
+            }else if (a instanceof OpenCL.Resource){
+               OpenCL.Resource sourceResource = (OpenCL.Resource)a;
                InputStream stream = _interface.getClassLoader().getResourceAsStream(sourceResource.value());
                sourceBuilder.append(streamToString(stream));
                interfaceIsAnnotated = true;
             }
          }
 
-         if(interfaceIsAnnotated){
+         if (interfaceIsAnnotated){
             // just crawl the methods (non put or get) and create lambdaRunnerCache
-            for(Method m : _interface.getDeclaredMethods()){
-               if(!isReservedInterfaceMethod(m)){
+            for (Method m : _interface.getDeclaredMethods()){
+               if (!isReservedInterfaceMethod(m)){
                   List<OpenCLArgDescriptor> args = getArgs(m);
                   kernelNameToArgsMap.put(m.getName(), args);
                }
             }
          }else{
 
-            for(Method m : _interface.getDeclaredMethods()){
-               if(!isReservedInterfaceMethod(m)){
-                  for(Annotation a : m.getAnnotations()){
+            for (Method m : _interface.getDeclaredMethods()){
+               if (!isReservedInterfaceMethod(m)){
+                  for (Annotation a : m.getAnnotations()){
                      //  System.out.println("   annotation "+a);
                      // System.out.println("   annotation prefix " + a.annotationType());
-                     if(a instanceof OpenCL.Kernel){
-                        sourceBuilder.append("__kernel void " + m.getName() + "(");
+                     if (a instanceof OpenCL.Kernel){
+                        sourceBuilder.append("__kernel void "+m.getName()+"(");
                         List<OpenCLArgDescriptor> args = getArgs(m);
 
                         boolean first = true;
-                        for(OpenCLArgDescriptor arg : args){
-                           if(first){
+                        for (OpenCLArgDescriptor arg : args){
+                           if (first){
                               first = false;
                            }else{
                               sourceBuilder.append(",");
                            }
-                           sourceBuilder.append("\n   " + arg);
+                           sourceBuilder.append("\n   "+arg);
                         }
 
                         sourceBuilder.append(")");
-                        OpenCL.Kernel kernel = (OpenCL.Kernel) a;
+                        OpenCL.Kernel kernel = (OpenCL.Kernel)a;
                         sourceBuilder.append(kernel.value());
                         kernelNameToArgsMap.put(m.getName(), args);
 
@@ -347,8 +346,8 @@ public class OpenCLDevice extends Device{
          }
          _source = sourceBuilder.toString();
       }else{
-         for(Method m : _interface.getDeclaredMethods()){
-            if(!isReservedInterfaceMethod(m)){
+         for (Method m : _interface.getDeclaredMethods()){
+            if (!isReservedInterfaceMethod(m)){
                List<OpenCLArgDescriptor> args = getArgs(m);
                kernelNameToArgsMap.put(m.getName(), args);
             }
@@ -360,16 +359,16 @@ public class OpenCLDevice extends Device{
       OpenCLProgram program = createProgram(_source);
 
       Map<String, OpenCLKernel> map = new HashMap<String, OpenCLKernel>();
-      for(String name : kernelNameToArgsMap.keySet()){
+      for (String name : kernelNameToArgsMap.keySet()){
          OpenCLKernel kernel = program.createKernel(name, kernelNameToArgsMap.get(name));
-         if(kernel == null){
+         if (kernel == null){
             throw new IllegalStateException("kernel is null");
          }
          map.put(name, kernel);
       }
 
       OpenCLInvocationHandler<T> invocationHandler = new OpenCLInvocationHandler<T>(program, map);
-      T instance = (T) Proxy.newProxyInstance(OpenCLDevice.class.getClassLoader(), new Class[]{
+      T instance = (T)Proxy.newProxyInstance(OpenCLDevice.class.getClassLoader(), new Class[]{
             _interface,
             OpenCL.class
       }, invocationHandler);
@@ -391,14 +390,14 @@ public class OpenCLDevice extends Device{
 
    public static OpenCLDevice select(DeviceSelector _deviceSelector){
       OpenCLDevice device = null;
-      for(OpenCLPlatform p : OpenCLPlatform.getPlatforms()){
-         for(OpenCLDevice d : p.getDevices()){
+      for (OpenCLPlatform p : OpenCLPlatform.getPlatforms()){
+         for (OpenCLDevice d : p.getDevices()){
             device = _deviceSelector.select(d);
-            if(device != null){
+            if (device != null){
                break;
             }
          }
-         if(device != null){
+         if (device != null){
             break;
          }
       }
@@ -407,9 +406,9 @@ public class OpenCLDevice extends Device{
 
    public static OpenCLDevice select(DeviceComparitor _deviceComparitor){
       OpenCLDevice device = null;
-      for(OpenCLPlatform p : OpenCLPlatform.getPlatforms()){
-         for(OpenCLDevice d : p.getDevices()){
-            if(device == null){
+      for (OpenCLPlatform p : OpenCLPlatform.getPlatforms()){
+         for (OpenCLDevice d : p.getDevices()){
+            if (device == null){
                device = d;
             }else{
                device = _deviceComparitor.select(device, d);
@@ -419,11 +418,10 @@ public class OpenCLDevice extends Device{
       return (device);
    }
 
-
    public static OpenCLDevice get(PlatformDeviceVisitor _platformDeviceVisitor){
-      for(OpenCLPlatform p : OpenCLPlatform.getPlatforms()){
-         for(OpenCLDevice d : p.getDevices()){
-            if(_platformDeviceVisitor.select(p, d)){
+      for (OpenCLPlatform p : OpenCLPlatform.getPlatforms()){
+         for (OpenCLDevice d : p.getDevices()){
+            if (_platformDeviceVisitor.select(p, d)){
 
                return (d);
             }
@@ -439,10 +437,14 @@ public class OpenCLDevice extends Device{
    final ConcurrentHashMap<Class, LambdaRunner> lambdaRunnerCache = new ConcurrentHashMap<Class, LambdaRunner>();
    final ConcurrentHashMap<Class, Boolean> lambdaRunnerCacheEntryValid = new ConcurrentHashMap<Class, Boolean>();
    private static Logger logger = Logger.getLogger(Config.getLoggerName());
-    @Override public void forEach(int from, int to, Aparapi.IntTerminal intFunctionSAM){
-        throw new IllegalStateException("not implemented");
-    }
-   @Override public void forEach(int jobSize, Aparapi.IntTerminal intFunctionSAM){
+
+   @Override
+   public void forEach(int from, int to, Aparapi.IntTerminal intFunctionSAM){
+      throw new IllegalStateException("not implemented");
+   }
+
+   @Override
+   public void forEach(int jobSize, Aparapi.IntTerminal intFunctionSAM){
 
       // Note it is a new Block object each time
 
@@ -451,13 +453,13 @@ public class OpenCLDevice extends Device{
 
       try{
 
-         if((lambdaRunner == null) && (haveKernel == null)){
+         if ((lambdaRunner == null) && (haveKernel == null)){
             lambdaRunner = new LambdaRunner(intFunctionSAM);
          }
 
-         if((lambdaRunner != null) && (lambdaRunner.getRunnable() == true)){
+         if ((lambdaRunner != null) && (lambdaRunner.getRunnable() == true)){
             boolean success = lambdaRunner.execute(intFunctionSAM, Range.create(jobSize), 1);
-            if(success == true){
+            if (success == true){
                lambdaRunnerCache.put(intFunctionSAM.getClass(), lambdaRunner);
                lambdaRunnerCacheEntryValid.put(intFunctionSAM.getClass(), true);
             }
@@ -467,26 +469,25 @@ public class OpenCLDevice extends Device{
             new JavaThreadPoolDevice().forEach(jobSize, intFunctionSAM);
          }
 
-      }catch(AparapiException e){
+      }catch (AparapiException e){
          System.err.println(e);
          e.printStackTrace();
 
-         if(logger.isLoggable(Level.FINE)){
+         if (logger.isLoggable(Level.FINE)){
             logger.fine("Kernel failed, try to revert to java.");
          }
 
          lambdaRunnerCacheEntryValid.put(intFunctionSAM.getClass(), false);
 
-         if(lambdaRunner != null){
+         if (lambdaRunner != null){
             lambdaRunner.setRunnable(false);
          }
-         if(logger.isLoggable(Level.FINE)){
+         if (logger.isLoggable(Level.FINE)){
             logger.fine("Running java.");
          }
 
          new JavaThreadPoolDevice().forEach(jobSize, intFunctionSAM);
       }
-
 
    }
 
