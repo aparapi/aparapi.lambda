@@ -199,6 +199,12 @@ public class HSADevice extends Device<HSADevice>{
       forEach(0, to, ic);
    }
 
+   public void count(int from, int to, Aparapi.Int2BooleanMapper im){
+      boolean[] array= new boolean[to];
+      forEach(from, to, id -> array[id]=im.map(id));
+
+   }
+
    public void forEach(int _from, int _to, Aparapi.Int2IntMapper intMapper, Aparapi.IntReducer intReducer){
 
    }
