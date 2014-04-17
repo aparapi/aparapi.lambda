@@ -44,6 +44,9 @@ public class HSADevice extends Device<HSADevice>{
       }
    }
 
+
+
+
    CachedRunner getCachedRunner(Aparapi.Lambda lambda, int _extraArgs){
       try{
          CachedRunner cachedRunner = null;
@@ -199,10 +202,24 @@ public class HSADevice extends Device<HSADevice>{
       forEach(0, to, ic);
    }
 
-   public void count(int from, int to, Aparapi.Int2BooleanMapper im){
+   public void count(int from, int to, Aparapi.Int2BooleanMapper i2bm){
       boolean[] array= new boolean[to];
-      forEach(from, to, id -> array[id]=im.map(id));
+   try{
 
+      LambdaKernelCall lkc = new LambdaKernelCall(i2bm);
+
+      ClassModel classModel = ClassModel.getClassModel(lkc.getLambdaKernelClass());
+      ClassModel.ClassModelMethod method = classModel.getMethod(lkc.getLambdaMethodName(), lkc.getLambdaMethodSignature());
+      HSAILRenderer renderer = new HSAILRenderer().setShowComments(true);
+      HSAILMethod hsailMethod = HSAILMethod.getHSAILMethod(method, i2bm);
+      hsailMethod.render(renderer, i2bm);
+      String s= renderer.toString();
+
+
+      forEach(from, to, id -> array[id]=i2bm.map(id));
+   }catch(Exception e){
+
+   }
    }
 
    public void forEach(int _from, int _to, Aparapi.Int2IntMapper intMapper, Aparapi.IntReducer intReducer){

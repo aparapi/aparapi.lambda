@@ -96,7 +96,7 @@ class LambdaRunner extends OpenCLRunner{
       }
    }
 
-   LambdaRunner(Consumer block, Stream source) throws AparapiException{
+   LambdaRunner(Aparapi.ObjectTerminal block, Stream source) throws AparapiException{
       try{
          lambdaKernelCall = new LambdaKernelCall(block);
          objectLambdaSourceArray = (Object[])lambdaKernelCall.setupStreamSource(source);
