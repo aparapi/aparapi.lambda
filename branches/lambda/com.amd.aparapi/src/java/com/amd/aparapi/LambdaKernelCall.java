@@ -80,7 +80,7 @@ public class LambdaKernelCall{
 
    }
 
-   public LambdaKernelCall(Object _block) throws AparapiException, ClassNotFoundException{
+   public LambdaKernelCall(Aparapi.Lambda _block) throws AparapiException, ClassNotFoundException{
       block = _block;
 
       Class bc = block.getClass();
@@ -92,14 +92,20 @@ public class LambdaKernelCall{
       ClassModel blockModel = ClassModel.getClassModel(bc);
 
       String acceptSignature;
+      MethodModel acceptModel;
       if (block instanceof Aparapi.IntTerminal){
          // We know we are calling an IntTerminal lambda with signature "(I)V"
          acceptSignature = "(I)V";
+         acceptModel = blockModel.getMethodModel("accept", acceptSignature);
+      }else if (block instanceof Aparapi.Int2BooleanMapper){
+         acceptSignature = "(I)Z";
+         acceptModel = blockModel.getMethodModel("map", acceptSignature);
       }else{
          // Calling an object Consumer lambda like: public void accept(java.lang.Object)
          acceptSignature = "(Ljava/lang/Object;)V";
+         acceptModel = blockModel.getMethodModel("accept", acceptSignature);
       }
-      MethodModel acceptModel = blockModel.getMethodModel("accept", acceptSignature);
+
       assert acceptModel != null:"acceptModel should not be null";
 
       Set<InstructionSet.MethodCall> acceptCallSites = acceptModel.getMethod().getMethodCalls();
@@ -150,6 +156,13 @@ public class LambdaKernelCall{
          if (logger.isLoggable(Level.FINE)){
             logger.fine("# Found int lambda");
          }
+
+      }else if (lambdaMethodSignature.endsWith("I)Z")){
+            // It is an int lambda
+            isObjectLambda = false;
+            if (logger.isLoggable(Level.FINE)){
+               logger.fine("# Found boolean lambda");
+            }
       }else if (lambdaMethodSignature.contains("L") && lambdaMethodSignature.endsWith(";)V")){
          // It is an object lambda
          isObjectLambda = true;
