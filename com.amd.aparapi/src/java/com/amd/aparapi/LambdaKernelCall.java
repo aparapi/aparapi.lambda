@@ -153,11 +153,11 @@ public class LambdaKernelCall{
          }
 
       }else if (lambdaMethodSignature.endsWith("I)Z")){
-            // It is an int lambda
-            isObjectLambda = false;
-            if (logger.isLoggable(Level.FINE)){
-               logger.fine("# Found boolean lambda");
-            }
+         // It is an int lambda
+         isObjectLambda = false;
+         if (logger.isLoggable(Level.FINE)){
+            logger.fine("# Found boolean lambda");
+         }
       }else if (lambdaMethodSignature.contains("L") && lambdaMethodSignature.endsWith(";)V")){
          // It is an object lambda
          isObjectLambda = true;
@@ -178,7 +178,6 @@ public class LambdaKernelCall{
       }
       lambdaCapturedFields = capturedFieldsWithoutThis;
 
-
       lambdaKernelClassModel = ClassModel.getClassModel(lambdaKernelClass);
       lambdaKernelClassModelMethod = lambdaKernelClassModel.getMethod(lambdaMethodName, lambdaMethodSignature);
 
@@ -189,8 +188,9 @@ public class LambdaKernelCall{
    ClassModel.ClassModelMethod lambdaKernelClassModelMethod;
 
    ClassModel.ClassModelMethod getLambdaKernelClassModelMethod(){
-      return(lambdaKernelClassModelMethod);
+      return (lambdaKernelClassModelMethod);
    }
+
    Object unsafeGetFieldRefFromObject(Object sourceObj, String fieldName){
       // Get ref to java.util.stream.AbstractPipeline.source
       Object fieldRef = null;

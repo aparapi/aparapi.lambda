@@ -337,8 +337,6 @@ class HSAILIntrinsics{
 
       }));
 
-
-
    }
 
 }
@@ -396,12 +394,12 @@ public class HSAILMethod{
       return (r);
    }
 
-   static synchronized HSAILMethod getHSAILMethod(ClassModel.ClassModelMethod _method, Aparapi.Lambda _lambda, Aparapi.Lambda ...inline){
+   static synchronized HSAILMethod getHSAILMethod(ClassModel.ClassModelMethod _method, Aparapi.Lambda _lambda, Aparapi.Lambda... inline){
       HSAILMethod instance = new HSAILMethod(_method, _lambda, inline);
       return (instance);
    }
 
-   private HSAILMethod(ClassModel.ClassModelMethod _method, Aparapi.Lambda _lambda, Aparapi.Lambda ...inline){
+   private HSAILMethod(ClassModel.ClassModelMethod _method, Aparapi.Lambda _lambda, Aparapi.Lambda... inline){
       method = _method;
 
       assembler = new HSAILAssembler(method);
@@ -461,6 +459,6 @@ public class HSAILMethod{
       }else{
          System.out.println("some unusual lambda type (HSAILMethodAssembling!)");
       }
-      assembler.addInstructions(method,inline);
+      assembler.addInstructions(method, inline);
    }
 }

@@ -10,12 +10,11 @@ public class AparapiCountJUnit{
    @Test
    public void test(){
 
-      int evenCount = Aparapi.range(0, 12).count(i -> i%2==0);
+      int evenCount = Aparapi.range(0, 12).count(i -> i%2 == 0);
 
       System.out.println("evenCount="+evenCount);
       assertTrue("evenCount==6", evenCount == 6);
 
    }
-
 
 }

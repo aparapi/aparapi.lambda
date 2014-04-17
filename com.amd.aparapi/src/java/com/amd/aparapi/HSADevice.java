@@ -44,10 +44,7 @@ public class HSADevice extends Device<HSADevice>{
       }
    }
 
-
-
-
-   CachedRunner getCachedRunner(Aparapi.Lambda lambda, int _extraArgs, Aparapi.Lambda ...inline){
+   CachedRunner getCachedRunner(Aparapi.Lambda lambda, int _extraArgs, Aparapi.Lambda... inline){
       try{
          CachedRunner cachedRunner = null;
          if (map.containsKey(lambda.getClass())){
@@ -56,8 +53,8 @@ public class HSADevice extends Device<HSADevice>{
             cachedRunner = new CachedRunner();
             LambdaKernelCall lkc = new LambdaKernelCall(lambda);
 
-           // ClassModel classModel = ClassModel.getClassModel(lkc.getLambdaKernelClass());
-            ClassModel.ClassModelMethod method =lkc.getLambdaKernelClassModelMethod();
+            // ClassModel classModel = ClassModel.getClassModel(lkc.getLambdaKernelClass());
+            ClassModel.ClassModelMethod method = lkc.getLambdaKernelClassModelMethod();
             HSAILRenderer renderer = new HSAILRenderer().setShowComments(true);
             HSAILMethod hsailMethod = HSAILMethod.getHSAILMethod(method, lambda, inline);
             hsailMethod.render(renderer, lambda);
@@ -169,7 +166,6 @@ public class HSADevice extends Device<HSADevice>{
       cachedRunner.runner.run(from, to, cachedRunner.args);
    }
 
-
    public void forEach(int from, int to, Aparapi.Lambda inlineMe, Aparapi.IntTerminal ic){
       CachedRunner cachedRunner = getCachedRunner(ic, 1, inlineMe);
 
@@ -254,21 +250,20 @@ public class HSADevice extends Device<HSADevice>{
    }
 
    public int count(int from, int to, Aparapi.Int2BooleanMapper i2bm){
-      boolean[] array= new boolean[to];
-   try{
+      boolean[] array = new boolean[to];
+      try{
 
-
-      forEach(from, to, i2bm, id -> array[id]=i2bm.map(id));
-   }catch(Exception e){
-      e.printStackTrace();
-   }
+         forEach(from, to, i2bm, id -> array[id] = i2bm.map(id));
+      }catch (Exception e){
+         e.printStackTrace();
+      }
       int count = 0;
-      for (boolean b:array){
+      for (boolean b : array){
          if (b){
             count++;
          }
       }
-      return(count);
+      return (count);
    }
 
    public void forEach(int _from, int _to, Aparapi.Int2IntMapper intMapper, Aparapi.IntReducer intReducer){
