@@ -493,7 +493,7 @@ public class HSAILAssembler{
 
    ;
 
-   public void addInstructions(ClassModel.ClassModelMethod method){
+   public void addInstructions(ClassModel.ClassModelMethod method, Aparapi.Lambda ... inline){
 
       ParseState parseState = ParseState.NONE;
 
@@ -1263,6 +1263,32 @@ public class HSAILAssembler{
                if (call != null){
                   call.add(this, i);
                }else{
+                  if (i.getByteCode() == InstructionSet.ByteCode.INVOKEINTERFACE){
+                     System.out.println("an interface!");
+                     try{
+                     Class implementation = Class.forName(callInfo.dotClassName);
+                     for (Aparapi.Lambda inlineable:inline){
+                        Class interfaceClass = inlineable.getClass();
+                        if (implementation.isAssignableFrom(interfaceClass)){
+
+                           System.out.println("we can bind to this!");
+
+                           ClassModel classModel = ClassModel.getClassModel(interfaceClass);
+                           ClassModel.ClassModelMethod calledMethod = classModel.getMethod(callInfo.name, callInfo.sig);
+                           HSAILStackFrame newFrame = new HSAILStackFrame(currentFrame(), calledMethod, i.getThisPC(), i.getPreStackBase()+i.getMethod().getCodeEntry().getMaxLocals()+currentStackOffset());
+                           frames.push(newFrame);
+                           frameSet.add(newFrame);
+                           addInstructions(calledMethod);
+                           frames.pop();
+
+
+                        }
+                     }
+                     }catch(Exception e){
+                        e.printStackTrace();;
+                     }
+
+                  }else{
                   try{
                      Class theClass = Class.forName(callInfo.dotClassName);
                      ClassModel classModel = ClassModel.getClassModel(theClass);
@@ -1276,6 +1302,7 @@ public class HSAILAssembler{
 
                   }catch (ClassNotFoundException cnf){
 
+                  }
                   }
 
                }

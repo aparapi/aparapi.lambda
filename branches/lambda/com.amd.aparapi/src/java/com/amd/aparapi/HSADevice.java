@@ -47,7 +47,7 @@ public class HSADevice extends Device<HSADevice>{
 
 
 
-   CachedRunner getCachedRunner(Aparapi.Lambda lambda, int _extraArgs){
+   CachedRunner getCachedRunner(Aparapi.Lambda lambda, int _extraArgs, Aparapi.Lambda ...inline){
       try{
          CachedRunner cachedRunner = null;
          if (map.containsKey(lambda.getClass())){
@@ -56,14 +56,14 @@ public class HSADevice extends Device<HSADevice>{
             cachedRunner = new CachedRunner();
             LambdaKernelCall lkc = new LambdaKernelCall(lambda);
 
-            ClassModel classModel = ClassModel.getClassModel(lkc.getLambdaKernelClass());
-            ClassModel.ClassModelMethod method = classModel.getMethod(lkc.getLambdaMethodName(), lkc.getLambdaMethodSignature());
+           // ClassModel classModel = ClassModel.getClassModel(lkc.getLambdaKernelClass());
+            ClassModel.ClassModelMethod method =lkc.getLambdaKernelClassModelMethod();
             HSAILRenderer renderer = new HSAILRenderer().setShowComments(true);
-            HSAILMethod hsailMethod = HSAILMethod.getHSAILMethod(method, lambda);
+            HSAILMethod hsailMethod = HSAILMethod.getHSAILMethod(method, lambda, inline);
             hsailMethod.render(renderer, lambda);
             cachedRunner.hsail = renderer.toString();
 
-            if (Config.enableShowGeneratedHSAIL || Config.enableShowGeneratedHSAILAndExit){
+            if (true || Config.enableShowGeneratedHSAIL || Config.enableShowGeneratedHSAILAndExit){
                System.out.println(cachedRunner.hsail);
                if (Config.enableShowGeneratedHSAILAndExit){
                   System.exit(1);
@@ -169,6 +169,57 @@ public class HSADevice extends Device<HSADevice>{
       cachedRunner.runner.run(from, to, cachedRunner.args);
    }
 
+
+   public void forEach(int from, int to, Aparapi.Lambda inlineMe, Aparapi.IntTerminal ic){
+      CachedRunner cachedRunner = getCachedRunner(ic, 1, inlineMe);
+
+      // The args will be the captured args followed by the fake 'id' arg which is passed to the kernel
+      // but subsequently clobbered by generated HSAIL
+      //
+      // int arr[]; ///
+      // so for Device.hsa().forEach(size, id -> arr[id]=id);
+      //
+      // Args will be arr + id
+      //
+      // The HSAIL will be
+      //
+      // kernel &run(
+      //    kernarg_u64 %_arg0,  // arr
+      //    kernarg_s32 %_arg2   // id
+      // ){
+      //   ld_kernarg_u64 $d0, [%_arg0]; // arr
+      //   ld_kernarg_s32 $s2, [%_arg2]; // id  is 0 here
+      //   workitemabsid_s32 $s2, 0;     // <- sets id to workitem from the device
+      //   ...
+      // }
+      //
+      // Note that until we implement range offsets (forEach(from, to, IntTerminal)) Id will always be
+      // last and we will send '0', this '0' will be clobbered in the HSAIL.
+      // This saves us having to append args or create var slots.  We already have a var slot which
+      // remains in scope until the end of the lambda method.
+      //
+      // To support offsets I suggest we pass the offset via id and then add workitemabsid
+      //
+      // kernel &run(
+      //    kernarg_u64 %_arg0,  // arr
+      //    kernarg_s32 %_arg2   // id
+      // ){
+      //   ld_kernarg_u64 $d0, [%_arg0]; // arr
+      //   ld_kernarg_s32 $s2, [%_arg2]; // id  is 0 here
+      //   workitemabsid_s32 $s3, 0;     // <- sets id to workitem from the device
+      //   add_b32 $s3,$s2,$s3;          // add passed id to workitem to start offset
+      //   ...
+      // }
+      //
+      // This also allows us to batch from Aparapi
+      //
+      // forEach(0, 1024, IntTerminal) can be mapped to forEach(0, 512, IntTerminal)+forEach(0, 512, IntTerminal)
+      //
+
+      cachedRunner.args[cachedRunner.arg++] = from;
+      cachedRunner.runner.run(from, to, cachedRunner.args);
+   }
+
    public <T> void forEach(T[] _array, Aparapi.ObjectTerminal<T> ic){
       forEach(_array, _array.length, ic);
 
@@ -202,24 +253,22 @@ public class HSADevice extends Device<HSADevice>{
       forEach(0, to, ic);
    }
 
-   public void count(int from, int to, Aparapi.Int2BooleanMapper i2bm){
+   public int count(int from, int to, Aparapi.Int2BooleanMapper i2bm){
       boolean[] array= new boolean[to];
    try{
 
-      LambdaKernelCall lkc = new LambdaKernelCall(i2bm);
 
-      ClassModel classModel = ClassModel.getClassModel(lkc.getLambdaKernelClass());
-      ClassModel.ClassModelMethod method = classModel.getMethod(lkc.getLambdaMethodName(), lkc.getLambdaMethodSignature());
-      HSAILRenderer renderer = new HSAILRenderer().setShowComments(true);
-      HSAILMethod hsailMethod = HSAILMethod.getHSAILMethod(method, i2bm);
-      hsailMethod.render(renderer, i2bm);
-      String s= renderer.toString();
-
-
-      forEach(from, to, id -> array[id]=i2bm.map(id));
+      forEach(from, to, i2bm, id -> array[id]=i2bm.map(id));
    }catch(Exception e){
-
+      e.printStackTrace();
    }
+      int count = 0;
+      for (boolean b:array){
+         if (b){
+            count++;
+         }
+      }
+      return(count);
    }
 
    public void forEach(int _from, int _to, Aparapi.Int2IntMapper intMapper, Aparapi.IntReducer intReducer){

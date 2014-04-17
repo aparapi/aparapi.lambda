@@ -251,6 +251,14 @@ class HSAILIntrinsics{
          _ass.clock_s64(_from, _ass.stackReg_s64(_from));
 
       }));
+
+      add(new InlineIntrinsicCall("com.amd.aparapi.HSA.inlineBoolean(Lcom/amd/aparapi/Aparapi$Lambda;)Z", true, (_ass, _from) -> {
+         // cmp_ge_b1_s32 $c1, $d0, $d1;
+         // cmov_b32 $d0, $c1, $d1, $d0;
+         _ass.cmp(_from, "ge", _ass.stackReg_f64(_from), _ass.stackReg_f64(_from, 1));
+         _ass.cmov(_from, _ass.stackReg_f64(_from), _ass.stackReg_f64(_from, 1), _ass.stackReg_f64(_from));
+
+      }));
       add(new InlineIntrinsicCall("java.lang.Math.sqrt(D)D", true, (_ass, _from) -> {
          //   nsqrt_f64  $d${0}, $d${0};
          _ass.nsqrt(_from, _ass.stackReg_f64(_from), _ass.stackReg_f64(_from));
@@ -329,6 +337,8 @@ class HSAILIntrinsics{
 
       }));
 
+
+
    }
 
 }
@@ -386,12 +396,12 @@ public class HSAILMethod{
       return (r);
    }
 
-   static synchronized HSAILMethod getHSAILMethod(ClassModel.ClassModelMethod _method, Aparapi.Lambda _lambda){
-      HSAILMethod instance = new HSAILMethod(_method, _lambda);
+   static synchronized HSAILMethod getHSAILMethod(ClassModel.ClassModelMethod _method, Aparapi.Lambda _lambda, Aparapi.Lambda ...inline){
+      HSAILMethod instance = new HSAILMethod(_method, _lambda, inline);
       return (instance);
    }
 
-   private HSAILMethod(ClassModel.ClassModelMethod _method, Aparapi.Lambda _lambda){
+   private HSAILMethod(ClassModel.ClassModelMethod _method, Aparapi.Lambda _lambda, Aparapi.Lambda ...inline){
       method = _method;
 
       assembler = new HSAILAssembler(method);
@@ -449,8 +459,8 @@ public class HSAILMethod{
          //      assembler.add(initial, assembler.stackReg_s32(argc + argOffset - 1), assembler.stackReg_s32(argc + argOffset - 1), assembler.stackReg_s32(argc + argOffset));
 
       }else{
-         System.out.println("lambda type");
+         System.out.println("some unusual lambda type (HSAILMethodAssembling!)");
       }
-      assembler.addInstructions(method);
+      assembler.addInstructions(method,inline);
    }
 }
