@@ -72,4 +72,6 @@ public class HSA{
    public static int[] localIntX2(){ // 	align 4 group_u32 %run_cllocal_scratch[512];" + "\n" +
       throw new IllegalStateException("you don't want to call this from Java");
    }
+
+
 }

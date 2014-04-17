@@ -126,9 +126,9 @@ public class Aparapi{
       public int count(Int2BooleanMapper _im){
          switch(state){
             case PARALLEL:
-               ((HSADevice)Device.hsa()).count(from, to, _im);
-               throw new IllegalStateException("parallel hsa count reduction not implemented yet");
-             //  break;
+               return(((HSADevice)Device.hsa()).count(from, to, _im));
+              // throw new IllegalStateException("parallel hsa count reduction not implemented yet");
+              // break;
             case SEQUENTIAL: {
                int count = 0;
                for (int i=from; i<to; i++){

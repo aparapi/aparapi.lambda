@@ -91,19 +91,14 @@ public class LambdaKernelCall{
       // The class name is created with the "/" style delimiters
       ClassModel blockModel = ClassModel.getClassModel(bc);
 
-      String acceptSignature;
       MethodModel acceptModel;
       if (block instanceof Aparapi.IntTerminal){
-         // We know we are calling an IntTerminal lambda with signature "(I)V"
-         acceptSignature = "(I)V";
-         acceptModel = blockModel.getMethodModel("accept", acceptSignature);
+         acceptModel = blockModel.getMethodModel("accept", "(I)V");
       }else if (block instanceof Aparapi.Int2BooleanMapper){
-         acceptSignature = "(I)Z";
-         acceptModel = blockModel.getMethodModel("map", acceptSignature);
+         acceptModel = blockModel.getMethodModel("map", "(I)Z");
       }else{
          // Calling an object Consumer lambda like: public void accept(java.lang.Object)
-         acceptSignature = "(Ljava/lang/Object;)V";
-         acceptModel = blockModel.getMethodModel("accept", acceptSignature);
+         acceptModel = blockModel.getMethodModel("accept", "(Ljava/lang/Object;)V");
       }
 
       assert acceptModel != null:"acceptModel should not be null";
@@ -183,8 +178,19 @@ public class LambdaKernelCall{
       }
       lambdaCapturedFields = capturedFieldsWithoutThis;
 
+
+      lambdaKernelClassModel = ClassModel.getClassModel(lambdaKernelClass);
+      lambdaKernelClassModelMethod = lambdaKernelClassModel.getMethod(lambdaMethodName, lambdaMethodSignature);
+
    }
 
+   ClassModel lambdaKernelClassModel;
+
+   ClassModel.ClassModelMethod lambdaKernelClassModelMethod;
+
+   ClassModel.ClassModelMethod getLambdaKernelClassModelMethod(){
+      return(lambdaKernelClassModelMethod);
+   }
    Object unsafeGetFieldRefFromObject(Object sourceObj, String fieldName){
       // Get ref to java.util.stream.AbstractPipeline.source
       Object fieldRef = null;
