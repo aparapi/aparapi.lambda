@@ -73,5 +73,4 @@ public class HSA{
       throw new IllegalStateException("you don't want to call this from Java");
    }
 
-
 }

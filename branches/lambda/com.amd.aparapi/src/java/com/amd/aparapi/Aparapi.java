@@ -3,7 +3,6 @@ package com.amd.aparapi;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.IntConsumer;
 
 /**
  * Created by gfrost on 3/14/14.
@@ -24,6 +23,7 @@ public class Aparapi{
    static public interface Int2IntMapper extends Mapper{
       int map(int _in);
    }
+
    static public interface Int2BooleanMapper extends Mapper{
       boolean map(int _in);
    }
@@ -123,22 +123,23 @@ public class Aparapi{
          nonTerminals.add(_im);
          return (this);
       }
+
       public int count(Int2BooleanMapper _im){
-         switch(state){
+         switch (state){
             case PARALLEL:
-               return(((HSADevice)Device.hsa()).count(from, to, _im));
-              // throw new IllegalStateException("parallel hsa count reduction not implemented yet");
-              // break;
-            case SEQUENTIAL: {
+               return (((HSADevice)Device.hsa()).count(from, to, _im));
+            // throw new IllegalStateException("parallel hsa count reduction not implemented yet");
+            // break;
+            case SEQUENTIAL:{
                int count = 0;
-               for (int i=from; i<to; i++){
+               for (int i = from; i<to; i++){
                   if (_im.map(i)){
                      count++;
                   }
                }
-               return(count);
+               return (count);
             }
-           // break;
+            // break;
             default:
                throw new IllegalStateException("count reduction not implemented for state "+state);
 
