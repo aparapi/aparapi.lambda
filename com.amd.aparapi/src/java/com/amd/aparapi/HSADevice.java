@@ -8,7 +8,6 @@ import java.util.Map;
 
 import static com.amd.aparapi.HSA.barrier;
 import static com.amd.aparapi.HSA.getCurrentWorkGroupSize;
-import static com.amd.aparapi.HSA.getWorkGroupId;
 import static com.amd.aparapi.HSA.getWorkItemId;
 import static com.amd.aparapi.HSA.localIntX1;
 
@@ -258,7 +257,6 @@ public class HSADevice extends Device<HSADevice>{
    public int count(int from, int to, Aparapi.Int2BooleanMapper i2bm){
       int[] count = new int[]{0};
 
-
       forEach(from, to, i2bm, id -> {
          int[] local = localIntX1();
          int lid = getWorkItemId();
@@ -274,7 +272,6 @@ public class HSADevice extends Device<HSADevice>{
          count[0] = local[0]; // race here is ok
 
       });
-
 
       return (count[0]);
    }

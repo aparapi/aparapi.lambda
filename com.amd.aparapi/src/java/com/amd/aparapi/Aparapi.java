@@ -2,7 +2,6 @@ package com.amd.aparapi;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by gfrost on 3/14/14.
@@ -52,150 +51,81 @@ public class Aparapi{
       boolean reduce(int lhs, int rhs);
    }
 
-   static public class BaseRange<T extends BaseRange<T>>{
-      enum STATE{
-         NONE(false, false), SEQUENTIAL(false, false){
-            STATE mappedVersion(){
-               return (SEQUENTIAL_MAPPED);
-            }
-         }, SEQUENTIAL_MAPPED(false, true), PARALLEL(true, false){
-            STATE mappedVersion(){
-               return (PARALLEL_MAPPED);
-            }
-         }, PARALLEL_MAPPED(true, true);
-         boolean isParallel = false;
-         boolean isMapped = false;
-
-         STATE(boolean _isParallel, boolean _isMapped){
-            isParallel = _isParallel;
-            isMapped = _isMapped;
-         }
-
-         STATE mappedVersion(){
-            return (this);
-         }
-
-      }
-
-      STATE state = STATE.NONE;
-      protected List<Lambda> nonTerminals = new ArrayList<Lambda>();
-
-      BaseRange(STATE _initialState){
-         state = _initialState;
-      }
-
-      public T parallel(){
-         if (state.equals(STATE.SEQUENTIAL)){
-            state = STATE.PARALLEL;
-         }else{
-            throw new IllegalStateException("cant move from "+state+" to "+STATE.PARALLEL);
-         }
-         return ((T)this);
-      }
-   }
-
-   static public class IntRange extends BaseRange<IntRange>{
+   static public class IntRange{
       int from;
       int to;
 
       IntRange(int _from, int _to){
-         super(STATE.SEQUENTIAL);
          from = _from;
          to = _to;
       }
 
-      public void forEach(IntTerminal _it){
-         switch (state){
-            case PARALLEL:
-               Device.hsa().forEach(from, to, _it);
-               break;
-            case SEQUENTIAL:
-               Device.seq().forEach(from, to, _it);
-               break;
-            default:
-               throw new IllegalStateException("applying forEach applied to a stream in state "+state+" Not implemented yet");
-         }
+      public ParallelIntRange parallel(){
+         return (new ParallelIntRange(this));
       }
 
-      public IntRange map(Int2IntMapper _im){
-         state = state.mappedVersion();
+      public void forEach(IntTerminal _it){
 
-         nonTerminals.add(_im);
-         return (this);
+         Device.seq().forEach(from, to, _it);
+
+      }
+
+      public MappedIntRange map(Int2IntMapper _im){
+         return (new MappedIntRange(this, _im));
       }
 
       public int count(Int2BooleanMapper _im){
-         switch (state){
-            case PARALLEL:
-               return (((HSADevice)Device.hsa()).count(from, to, _im));
-            // throw new IllegalStateException("parallel hsa count reduction not implemented yet");
-            // break;
-            case SEQUENTIAL:{
-               int count = 0;
-               for (int i = from; i<to; i++){
-                  if (_im.map(i)){
-                     count++;
-                  }
-               }
-               return (count);
+
+         int count = 0;
+         for (int i = from; i<to; i++){
+            if (_im.map(i)){
+               count++;
             }
-            // break;
-            default:
-               throw new IllegalStateException("count reduction not implemented for state "+state);
-
          }
+         return (count);
 
-      }
-
-      public int reduce(IntReducer _ir){
-         int result = 0;
-         switch (state){
-            case PARALLEL_MAPPED:
-               throw new IllegalStateException("parallel hsa int reduction not implemented yet");
-               // break;
-            case SEQUENTIAL_MAPPED:{
-               Int2IntMapper mapper = (Int2IntMapper)nonTerminals.get(nonTerminals.size()-1);
-
-               //   Device.hsa().forEach(0, arrayRange.usableLength, mapper.map, _ir);
-               for (int i = from; i<to; i++){
-                  result = _ir.reduce(mapper.map(i), result);
-               }
-
-            }
-            break;
-            default:
-               throw new IllegalStateException("reduction applied to a stream without a map.  Not implemented yet");
-
-         }
-
-         return (result);
       }
 
    }
 
-   static public class ArrayRange<T> extends BaseRange<ArrayRange<T>>{
+   static public class MappedIntRange{
+      IntRange intRange;
+      Int2IntMapper i2im;
+
+      MappedIntRange(IntRange _intRange, Int2IntMapper _i2im){
+         intRange = _intRange;
+         i2im = _i2im;
+      }
+
+      public int reduce(IntReducer _ir){
+         int result = 0;
+
+         for (int i = intRange.from; i<intRange.to; i++){
+            result = _ir.reduce(i2im.map(i), result);
+         }
+
+         return (result);
+      }
+   }
+
+   static public class ArrayRange<T>{
       T[] arr;
       int usableLength;
 
       ArrayRange(T[] _arr, int _usableLength){
-         super(STATE.SEQUENTIAL);
+
          arr = _arr;
          usableLength = _usableLength;
       }
 
+      public ParallelArrayRange<T> parallel(){
+         return (new ParallelArrayRange(this));
+      }
+
       public void forEach(ObjectTerminal<T> _oc){
 
-         switch (state){
-            case PARALLEL:
-               Device.hsa().forEach(arr, usableLength, _oc);
-               break;
-            case SEQUENTIAL:
-               for (int i = 0; i<usableLength; i++){
-                  _oc.accept(arr[i]);
-               }
-               break;
-            default:
-               throw new IllegalStateException("applying forEach applied to a stream in state "+state+" Not implemented yet");
+         for (int i = 0; i<usableLength; i++){
+            _oc.accept(arr[i]);
          }
 
       }
@@ -203,88 +133,142 @@ public class Aparapi{
       public int sum(Object2IntMapper<T> _im){
          int sum = 0;
 
-         switch (state){
-
-            case SEQUENTIAL:
-               for (int i = 0; i<usableLength; i++){
-                  sum += _im.map(arr[i]);
-               }
-               break;
-            default:
-               throw new IllegalStateException("parallel hsa int reduction not implemented yet");
-               //break;
+         for (int i = 0; i<usableLength; i++){
+            sum += _im.map(arr[i]);
          }
+
          return (sum);
       }
 
-      public ArrayRange<T> map(Object2IntMapper<T> _im){
-         nonTerminals.add(_im);
-         return (this);
+      public MappedArrayRange<T> map(Object2IntMapper<T> _im){
+
+         return (new MappedArrayRange(this, _im));
       }
 
       public T[] filter(Object2BooleanMapper<T> _im){
-         switch (state){
-
-            case SEQUENTIAL:
-               ArrayList<T> list = new ArrayList<T>();
-               for (T i : arr){
-                  if (_im.map(i)){
-                     list.add(i);
-                  }
-               }
-               return (list.toArray((T[])new Object[0]));
-            //break;
-            default:
-
-               throw new IllegalStateException("parallel hsa filter not implemented yet");
-               //  break;
+         ArrayList<T> list = new ArrayList<T>();
+         for (T i : arr){
+            if (_im.map(i)){
+               list.add(i);
+            }
          }
+         return (list.toArray((T[])new Object[0]));
+      }
 
+   }
+
+   static public class MappedArrayRange<T>{
+      ArrayRange<T> arrayRange;
+      Object2IntMapper<T> o2im;
+
+      MappedArrayRange(ArrayRange<T> _arrayRange, Object2IntMapper<T> _o2im){
+         arrayRange = _arrayRange;
+         o2im = _o2im;
       }
 
       public int reduce(IntReducer _ir){
-         switch (state){
-            case SEQUENTIAL_MAPPED:
-               Object2IntMapper<T> mapper = null;
 
-               mapper = (Object2IntMapper<T>)nonTerminals.get(nonTerminals.size()-1);
-
-               int result = 0;
-
-               for (int i = 0; i<usableLength; i++){
-                  result = _ir.reduce(mapper.map(arr[i]), result);
-               }
-
-               return (result);
-            // break;
-            default:
-               throw new IllegalStateException("parallel hsa int reduction not implemented yet");
-               // break;
-         }
-
-      }
-
-      public T select(BooleanReducer _ir){
-         T result = null;
-         switch (state){
-            case SEQUENTIAL_MAPPED:{
-               int best = 0;
-               Object2IntMapper<T> mapper = (Object2IntMapper<T>)nonTerminals.get(nonTerminals.size()-1);
-               for (int i = 0; result == null && i<usableLength; i++){
-                  if (_ir.reduce(mapper.map(arr[i]), best)){
-                     result = arr[i];
-                     best = mapper.map(arr[i]);
-                  }
-
-               }
-            }
-            break;
-            default:
-               throw new IllegalStateException("reduction applied to a stream without a map.  Not implemented yet");
+         int result = 0;
+         for (int i = 0; i<arrayRange.usableLength; i++){
+            result = _ir.reduce(o2im.map(arrayRange.arr[i]), result);
          }
          return (result);
       }
 
+      public T select(BooleanReducer _ir){
+         T result = null;
+         int best = 0;
+
+         for (int i = 0; result == null && i<arrayRange.usableLength; i++){
+            if (_ir.reduce(o2im.map(arrayRange.arr[i]), best)){
+               result = arrayRange.arr[i];
+               best = o2im.map(arrayRange.arr[i]);
+            }
+
+         }
+         return (result);
+      }
+   }
+
+   static public class ParallelIntRange{
+      IntRange range;
+
+      ParallelIntRange(IntRange _range){
+         range = _range;
+      }
+
+      public void forEach(IntTerminal _it){
+         Device.hsa().forEach(range.from, range.to, _it);
+      }
+
+      public int count(Int2BooleanMapper _im){
+         return ((Device.hsa()).count(range.from, range.to, _im));
+      }
+
+      public MappedParallelIntRange map(Int2IntMapper _im){
+         return (new MappedParallelIntRange(this, _im));
+      }
+
+   }
+
+   static public class MappedParallelIntRange{
+      ParallelIntRange parallelIntRange;
+      Int2IntMapper i2im;
+
+      MappedParallelIntRange(ParallelIntRange _parallelIntRange, Int2IntMapper _i2im){
+         parallelIntRange = _parallelIntRange;
+         i2im = _i2im;
+      }
+
+      public int reduce(IntReducer _ir){
+         throw new IllegalStateException("MappedParallelIntRange.reduce not implemented");
+      }
+   }
+
+   static public class ParallelArrayRange<T>{
+      ArrayRange<T> range;
+
+      ParallelArrayRange(ArrayRange<T> _range){
+         range = _range;
+      }
+
+      public void forEach(ObjectTerminal<T> _ot){
+         Device.hsa().forEach(range.arr, range.usableLength, _ot);
+      }
+
+      public ParallelMappedArrayRange<T> map(Object2IntMapper<T> _im){
+
+         return (new ParallelMappedArrayRange(this, _im));
+      }
+
+      public T[] filter(Object2BooleanMapper<T> _im){
+         throw new IllegalStateException("ParallelArrayRange.filter not implemented");
+
+      }
+
+      public T select(BooleanReducer _ir){
+         throw new IllegalStateException("ParallelArrayRange.select not implemented");
+
+      }
+
+   }
+
+   static public class ParallelMappedArrayRange<T>{
+      ParallelArrayRange<T> parallelArrayRange;
+      Object2IntMapper<T> o2im;
+
+      ParallelMappedArrayRange(ParallelArrayRange<T> _parallelArrayRange, Object2IntMapper<T> _o2im){
+         parallelArrayRange = _parallelArrayRange;
+         o2im = _o2im;
+      }
+
+      public int reduce(IntReducer _ir){
+         throw new IllegalStateException("ParallelMappedArrayRange.reduce not implemented");
+      }
+
+      public T select(BooleanReducer _ir){
+         throw new IllegalStateException("ParallelMappedArrayRange.select not implemented");
+      }
    }
 
    static public <T> ArrayRange<T> range(ArrayList<T> _list){
