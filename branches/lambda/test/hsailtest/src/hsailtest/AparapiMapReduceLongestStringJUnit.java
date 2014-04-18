@@ -9,12 +9,8 @@ public class AparapiMapReduceLongestStringJUnit{
 
    @Test
    public void test(){
-
-      String str = Aparapi.range(new String[]{"zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven"}).map(s -> {
-         return (s.length());
-      }).select((k, l) -> {
-         return (k>l);
-      });
+      String[] strings = new String[]{"zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven"};
+      String str = Aparapi.range(strings).map(s -> s.length()).select((k, l) -> k>l);
 
       System.out.println("longest ="+str);
 

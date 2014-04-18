@@ -179,10 +179,11 @@ public class Aparapi{
          T result = null;
          int best = 0;
 
-         for (int i = 0; result == null && i<arrayRange.usableLength; i++){
-            if (_ir.reduce(o2im.map(arrayRange.arr[i]), best)){
+         for (int i = 0; i<arrayRange.usableLength; i++){
+            int thisInt = o2im.map(arrayRange.arr[i]);
+            if (_ir.reduce(thisInt, best)){
                result = arrayRange.arr[i];
-               best = o2im.map(arrayRange.arr[i]);
+               best = thisInt;
             }
 
          }
