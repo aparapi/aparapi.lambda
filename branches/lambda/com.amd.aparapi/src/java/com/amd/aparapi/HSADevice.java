@@ -6,6 +6,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.amd.aparapi.HSA.barrier;
+import static com.amd.aparapi.HSA.getCurrentWorkGroupSize;
+import static com.amd.aparapi.HSA.getWorkGroupId;
+import static com.amd.aparapi.HSA.getWorkItemId;
+import static com.amd.aparapi.HSA.localIntX1;
+
 public class HSADevice extends Device<HSADevice>{
 
    static class CachedRunner{
@@ -250,20 +256,27 @@ public class HSADevice extends Device<HSADevice>{
    }
 
    public int count(int from, int to, Aparapi.Int2BooleanMapper i2bm){
-      boolean[] array = new boolean[to];
-      try{
+      int[] count = new int[]{0};
 
-         forEach(from, to, i2bm, id -> array[id] = i2bm.map(id));
-      }catch (Exception e){
-         e.printStackTrace();
-      }
-      int count = 0;
-      for (boolean b : array){
-         if (b){
-            count++;
+
+      forEach(from, to, i2bm, id -> {
+         int[] local = localIntX1();
+         int lid = getWorkItemId();
+
+         local[lid] = i2bm.map(id)?1:0;
+         barrier();
+         for (int i = 2; i<=getCurrentWorkGroupSize(); i *= 2){
+            if (lid%i == 0){
+               local[lid] = local[lid]+local[lid+i/2];
+            }
+            barrier();
          }
-      }
-      return (count);
+         count[0] = local[0]; // race here is ok
+
+      });
+
+
+      return (count[0]);
    }
 
    public void forEach(int _from, int _to, Aparapi.Int2IntMapper intMapper, Aparapi.IntReducer intReducer){
