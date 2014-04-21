@@ -74,6 +74,14 @@ public class Aparapi{
          return (new MappedIntRange(this, _im));
       }
 
+      public int reduce(IntReducer _ir){
+         int result = 0;
+         for (int i = from; i<to; i++){
+            result = _ir.reduce(i, result);
+         }
+         return (result);
+      }
+
       public int count(Int2BooleanMapper _im){
 
          int count = 0;
@@ -208,6 +216,9 @@ public class Aparapi{
 
       public MappedParallelIntRange map(Int2IntMapper _im){
          return (new MappedParallelIntRange(this, _im));
+      }
+      public int reduce(IntReducer _ir){
+         throw new IllegalStateException("ParallelIntRange.reduce not implemented");
       }
 
    }
