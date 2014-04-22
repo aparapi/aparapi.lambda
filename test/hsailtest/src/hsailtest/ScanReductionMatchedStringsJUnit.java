@@ -123,7 +123,8 @@ public class ScanReductionMatchedStringsJUnit{
    void filter(String[] strings, int[] arr){
       Device.hsa().forEach(arr.length, id -> {
          String s = strings[id];
-         if (s.length()>2 && s.charAt(2)=='3'){
+         int len = s.length();
+         if (len > 2 && s.charAt(0)==s.charAt(len-1) && s.charAt(1)==s.charAt(len-2)){
             arr[id]=1;
          }else{
             arr[id]=0;
@@ -143,23 +144,22 @@ public class ScanReductionMatchedStringsJUnit{
 
    @Test
    public void test(){
-      final int len = 65536; // must be a multiple of 256
-      String[] instrings = new String[len];
-
+      final int len = 65536; // don't change this !
+      String[] inStrings = new String[len];
       int[] in = new int[len];
+      Device.jtp().forEach(len, id -> inStrings[id] = ""+id);
 
-      Device.jtp().forEach(len, id -> instrings[id] = ""+id);
+      filter(inStrings, in);
 
-
-      filter(instrings, in);
       int[] inCopy = JunitHelper.copy(in);
+
       scan(in, 1);
       scan(in, 256);
       fixup(in);
       int outCount = in[len-1];
       System.out.println("number of strings="+outCount);
       String[] outStrings = new String[outCount];
-      map(instrings, in, outStrings);
+      map(inStrings, in, outStrings);
 
       for (String s:outStrings){
          System.out.println(s);
