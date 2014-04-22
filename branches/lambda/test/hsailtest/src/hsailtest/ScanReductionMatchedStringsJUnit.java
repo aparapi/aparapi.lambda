@@ -21,8 +21,11 @@ public class ScanReductionMatchedStringsJUnit{
          int[] local = localIntX1(); // we need a local int buffer the same width as the group
          int lid = getWorkItemId();
          int lsize = getCurrentWorkGroupSize();
+         // Step 1 - copy global memory to local
          local[lid] = arr[((id+1)*interval)-1];
          barrier();
+
+         // Step 2 - create intermediate sum by stepping in powers of 2 (1,2,4,8)
          for (int step = 2; step<=lsize; step *= 2){
             if ((lid+1)%step == 0){
                int stride = step/2;
@@ -30,7 +33,48 @@ public class ScanReductionMatchedStringsJUnit{
             }
             barrier();
          }
+         //  4    2    3    2    6    1    2    3
+         //   \   |     \   |     \   |     \   |
+         //    \  |      \  |      \  |      \  |
+         //     \ |       \ |       \ |       \ |
+         //      \|        \|        \|        \|
+         //       +         +         +         +
+         //  4    6    3    5    6    7    2    5
+         //        \        |          \        |
+         //         \       |           \       |
+         //          \      |            \      |
+         //           \     |             \     |
+         //            \    |              \    |
+         //             \   |               \   |
+         //              \  |                \  |
+         //               \ |                 \ |
+         //                \|                  \|
+         //                 +                   +
+         //  4    6    3   11    6    7    2   12
+         //                  \                  |
+         //                   \                 |
+         //                    \                |
+         //                     \               |
+         //                      \              |
+         //                       \             |
+         //                        \            |
+         //                         \           |
+         //                          \          |
+         //                           \         |
+         //                            \        |
+         //                             \       |
+         //                              \      |
+         //                               \     |
+         //                                \    |
+         //                                 \   |
+         //                                  \  |
+         //                                   \ |
+         //                                    \|
+         //                                     +
+         //  4    6    3   11    6    7    2   23
 
+
+         // step 3 - add intermediate values by stepping down in powers of 2 (8,4,2,1)
          for (int step = lsize/2; step>1; step /= 2){
             if (((lid+1)<lsize) && (((lid+1)%step) == 0)){
                int stride = step/2;
@@ -38,69 +82,31 @@ public class ScanReductionMatchedStringsJUnit{
             }
             barrier();
          }
+         //  4    6    3   11    6    7    2   23
+         //                  \        |
+         //                   \       |
+         //                    \      |
+         //                     \     |
+         //                      \    |
+         //                       \   |
+         //                        \  |
+         //                         \ |
+         //                          \|
+         //                           +
+         //  4    6    3   11    6   18    2   23
+         //        \   |     \   |     \   |
+         //         \  |      \  |      \  |
+         //          \ |       \ |       \ |
+         //           \|        \|        \|
+         //            +         +         +
+         //  4    6   10   11   17   18   20   23
+
+         // step 4 - copy local memory back to global memory
          arr[((id+1)*interval)-1] = local[lid];
          barrier();
       });
    }
 
-
-
-//  4    2    3    2    6    1    2    3
-//   \   |     \   |     \   |     \   |
-//    \  |      \  |      \  |      \  |
-//     \ |       \ |       \ |       \ |
-//      \|        \|        \|        \|
-//       +         +         +         +
-//  4    6    3    5    6    7    2    5
-//        \        |          \        |
-//         \       |           \       |
-//          \      |            \      |
-//           \     |             \     |
-//            \    |              \    |
-//             \   |               \   |
-//              \  |                \  |
-//               \ |                 \ |
-//                \|                  \|
-//                 +                   +
-//  4    6    3   11    6    7    2   12
-//                  \                  |
-//                   \                 |
-//                    \                |
-//                     \               |
-//                      \              |
-//                       \             |
-//                        \            |
-//                         \           |
-//                          \          |
-//                           \         |
-//                            \        |
-//                             \       |
-//                              \      |
-//                               \     |
-//                                \    |
-//                                 \   |
-//                                  \  |
-//                                   \ |
-//                                    \|
-//                                     +
-//  4    6    3   11    6    7    2   23
-//                  \        |
-//                   \       |
-//                    \      |
-//                     \     |
-//                      \    |
-//                       \   |
-//                        \  |
-//                         \ |
-//                          \|
-//                           +
-//  4    6    3   11    6   18    2   23
-//        \   |     \   |     \   |
-//         \  |      \  |      \  |
-//          \ |       \ |       \ |
-//           \|        \|        \|
-//            +         +         +
-//  4    6   10   11   17   18   20   23
 
    void fixup(int[] arr){
       Device.hsa().forEach(arr.length, id -> {
