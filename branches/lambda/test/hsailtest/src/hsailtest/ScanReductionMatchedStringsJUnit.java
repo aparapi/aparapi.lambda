@@ -10,7 +10,7 @@ import static com.amd.aparapi.HSA.getWorkItemId;
 import static com.amd.aparapi.HSA.localIntX1;
 import static org.junit.Assert.assertTrue;
 
-public class ScanReduction3JUnit{
+public class ScanReductionMatchedStringsJUnit{
 
    int add(int lhs, int rhs){
       return (lhs+rhs);
@@ -120,17 +120,50 @@ public class ScanReduction3JUnit{
       });
    }
 
+   void filter(String[] strings, int[] arr){
+      Device.hsa().forEach(arr.length, id -> {
+         String s = strings[id];
+         if (s.length()>2 && s.charAt(2)=='3'){
+            arr[id]=1;
+         }else{
+            arr[id]=0;
+         }
+
+      });
+   }
+
+   void map(String[] instrings, int[] arr, String[] outStrings){
+      Device.hsa().forEach(arr.length, id -> {
+         if (arr[id]>arr[id-1]){
+            outStrings[arr[id]]=instrings[id];
+         }
+
+      });
+   }
+
    @Test
    public void test(){
       final int len = 65536; // must be a multiple of 256
+      String[] instrings = new String[len];
+
       int[] in = new int[len];
 
-      Device.jtp().forEach(len, id -> in[id] = (Math.random()>.75)?1:0);
-      int[] inCopy = JunitHelper.copy(in);
+      Device.jtp().forEach(len, id -> instrings[id] = ""+id);
 
+
+      filter(instrings, in);
+      int[] inCopy = JunitHelper.copy(in);
       scan(in, 1);
       scan(in, 256);
       fixup(in);
+      int outCount = in[len-1];
+      System.out.println("number of strings="+outCount);
+      String[] outStrings = new String[outCount];
+      map(instrings, in, outStrings);
+
+      for (String s:outStrings){
+         System.out.println(s);
+      }
 
       int hsaSum = in[len-1];
       System.out.println("hsaSum "+hsaSum);

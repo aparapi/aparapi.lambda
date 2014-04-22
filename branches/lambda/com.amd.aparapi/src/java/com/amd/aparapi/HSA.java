@@ -1,7 +1,10 @@
 package com.amd.aparapi;
 
 /**
- * Created by gfrost on 3/25/14.
+ * Methods in this class never get called. Instead they mark an intention
+ * in a lambda to use HSA features which are unmappable to Java equivalents.
+ * If you change the name of any method you will have to also change the
+ * intrinsic mapping calls in the  HSA assembler.
  */
 public class HSA{
 
