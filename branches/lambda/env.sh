@@ -5,6 +5,7 @@ export TOP=/home/${LOGNAME}
 #       +---okra            (for HSA rt)
 #       +---ocl             (for opencl headers and libs)
 #       +---jdk1.8.0        Java 8 JDK
+#       +---gradle-1.12     gradle
 
 # set APARAPI_HOME to the directory containing this file
 export APARAPI_HOME=${TOP}/aparapi-lambda
@@ -45,6 +46,12 @@ if test ! -d ${OKRA_HOME}/dist ; then
    exit 1
 fi
 
+export GRADLE_HOME=${TOP}/gradle-1.12
+if test ! -d ${GRADLE_HOME}/bin ; then 
+   echo "GRADLE_HOME is not set correctly (currently set to ${GRADLE_HOME})"
+   exit 1
+fi
+
 echo "APARAPI_HOME:${APARAPI_HOME}"
 echo "ANT_HOME:${ANT_HOME}"
 echo "APARAPI_JNI_HOME:${APARAPI_JNI_HOME}"
@@ -53,13 +60,14 @@ echo "JAVA_HOME:${JAVA_HOME}"
 echo "OCL_LIB:${OCL_LIB}"
 echo "OCL_INCLUDE:${OCL_INCLUDE}"
 echo "OKRA_HOME:${OKRA_HOME}"
+echo "GRADLE_HOME:${GRADLE_HOME}"
 
 # This looks odd :) When we create dist zip the dist has aparapi.jar and {lib}aparapi_x86_64.{dll|dylib|so} at the root
 # The following allows this env script to work for either configuration.
 test -d ${APARAPI_HOME}/com.amd.aparapi.jni/dist && export APARAPI_JNI_HOME=${APARAPI_HOME}/com.amd.aparapi.jni/dist  || export APARAPI_JNI_HOME=${APARAPI_HOME}
 test -d ${APARAPI_HOME}/com.amd.aparapi/dist && export APARAPI_JAR_HOME=${APARAPI_HOME}/com.amd.aparapi/dist  || export APARAPI_JAR_HOME=${APARAPI_HOME}
 
-export PATH=${JAVA_HOME}/bin:${ANT_HOME}/bin:${OKRA_HOME}/dist/bin:${OKRA_HOME}/hsa/bin/x86_64:${PATH}
+export PATH=${JAVA_HOME}/bin:${ANT_HOME}/bin:${OKRA_HOME}/dist/bin:${OKRA_HOME}/hsa/bin/x86_64:${GRADLE_HOME}/bin:${PATH}
 echo "PATH:$PATH"
 
 export LD_LIBRARY_PATH=${OKRA_HOME}/dist/bin:${OKRA_HOME}/hsa/bin/x86_64:${OCL_LIB}:${LD_LIBRARY_PATH}
