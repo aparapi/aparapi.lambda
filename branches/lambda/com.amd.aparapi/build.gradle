@@ -1,0 +1,14 @@
+apply plugin: 'java'
+sourceSets {
+    main {
+        java {
+            srcDir 'src/java'
+        }
+        resources {
+            srcDir 'src/resources'
+        }
+    }
+}
+dependencies {
+    compile files('/home/gfrost/okra/dist/okra.jar')
+}
