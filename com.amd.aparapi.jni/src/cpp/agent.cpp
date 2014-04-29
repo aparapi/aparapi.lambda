@@ -6,7 +6,7 @@
 
 #include "jniHelper.h"
 #include "classtools.h"
-#include "com_amd_aparapi_OpenCLJNI.h"
+//#include "com_amd_aparapi_OpenCLJNI.h"
 
 //jvmtiEnv     *jvmti;
 //JavaVM       *jvm;

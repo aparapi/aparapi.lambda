@@ -79,7 +79,7 @@ case $(uname -s) in
 esac
 echo "LIB_SUFFIX:${LIB_SUFFIX}"
 echo "LIB_PREFIX:${LIB_PREFIX}"
-export APARAPI_AGENT_NAME=${LIB_PREFIX}aparapi_${LIB_ARCH}.${LIB_SUFFIX}
+export APARAPI_AGENT_NAME=${LIB_PREFIX}aparapi_agent_${LIB_ARCH}.${LIB_SUFFIX}
 echo APARAPI_AGENT_NAME=${APARAPI_AGENT_NAME}
 
 
@@ -90,7 +90,7 @@ export JVM_OPTS=
 export JVM_OPTS="${JVM_OPTS} -Xmx2G"
 export JVM_OPTS="${JVM_OPTS} -XX:-UseCompressedOops"
 export JVM_OPTS="${JVM_OPTS} -agentpath:${APARAPI_JNI_HOME}/${APARAPI_AGENT_NAME}"
-export JVM_OPTS="${JVM_OPTS} -Djava.library.path=${OKRA_HOME}/dist/bin:${OKRA_HOME}/hsa/bin/x86_64"
+export JVM_OPTS="${JVM_OPTS} -Djava.library.path=${APARAPI_JNI_HOME}:${OKRA_HOME}/dist/bin:${OKRA_HOME}/hsa/bin/x86_64"
 echo "JVM_OPTS:$JVM_OPTS"
 
 export JARS=
