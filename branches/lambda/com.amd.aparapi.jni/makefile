@@ -1,17 +1,18 @@
 targets: clean mkdirs javah agent lib
 
 OPENCL_OBJS=\
-  src/cpp/aparapi.o\
-  src/cpp/config.o\
-  src/cpp/profileInfo.o\
-  src/cpp/arrayBuffer.o\
-  src/cpp/opencljni.o\
-  src/cpp/jniHelper.o\
-  src/cpp/clHelper.o
+  src/cpp/opencl/aparapi.o\
+  src/cpp/opencl/config.o\
+  src/cpp/opencl/profileInfo.o\
+  src/cpp/opencl/arrayBuffer.o\
+  src/cpp/opencl/opencljni.o\
+  src/cpp/opencl/jniHelper.o\
+  src/cpp/opencl/clHelper.o
 
 AGENT_OBJS=\
-  src/cpp/classtools.o\
-  src/cpp/agent.o
+  src/cpp/agent/instruction.o\
+  src/cpp/agent/classtools.o\
+  src/cpp/agent/agent.o
 
 OBJS=\
   ${OPENCL_OBJS}\
@@ -51,8 +52,8 @@ agent: ${AGENT_OBJS}
 lib: ${OPENCL_OBJS}
 	g++ -shared -o dist/libaparapi_opencl_x86_64.so ${OPENCL_OBJS} 
 
-cltest: src/cpp/cltest.o
-	g++ -o dist/cltest src/cpp/cltest.o -L${OCL_LIB} -lOpenCL
+cltest: src/cpp/opencl/cltest.o
+	g++ -o dist/cltest $<  -L${OCL_LIB} -lOpenCL
 
 .cpp.o:
 	g++ -c -O3 -fPIC -DCL_USE_DEPRECATED_OPENCL_1_1_APIS  ${OCL_INCLUDES} $< -o $@
