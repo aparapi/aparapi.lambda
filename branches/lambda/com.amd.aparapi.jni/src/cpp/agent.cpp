@@ -4,29 +4,10 @@
 #include <jni.h>
 #include <jvmti.h>
 
-#include "jniHelper.h"
 #include "classtools.h"
-//#include "com_amd_aparapi_OpenCLJNI.h"
-
-//jvmtiEnv     *jvmti;
-//JavaVM       *jvm;
 
 static void JNICALL vmInit(jvmtiEnv *_jvmtiEnv, JNIEnv* _jniEnv, jthread thread) {
    //fprintf(stdout, "from agent vmInit()\n");
-   /*
-      if (_jniEnv->ExceptionOccurred()) {
-      fprintf(stdout, "Exception raised\n");
-      _jniEnv->ExceptionDescribe();
-      _jniEnv->ExceptionClear();
-      }
-      jclass classId = _jniEnv->FindClass("C");
-      classId = _jniEnv->FindClass("java/lang/String");
-      if (_jniEnv->ExceptionOccurred()) {
-      fprintf(stdout, "Exception raised\n");
-      _jniEnv->ExceptionDescribe();
-      _jniEnv->ExceptionClear();
-      }
-      */
 }
 
 class NameToBytes{
@@ -63,8 +44,10 @@ class NameToBytes{
 };
 
 NameToBytes *head = NULL;
-JNI_JAVA(jbyteArray, OpenCLJNI, getBytes)
-   (JNIEnv *jenv, jobject instance, jstring className){
+
+extern "C"
+ JNIEXPORT
+  jbyteArray JNICALL Java_com_amd_aparapi_OpenCLJNI_getBytes(JNIEnv *jenv, jobject instance, jstring className){
       jbyteArray bytes = NULL;
       const char *nameChars = jenv->GetStringUTFChars(className, NULL);
       //fprintf(stdout, "inside getBytes(\"%s\")\n", nameChars);

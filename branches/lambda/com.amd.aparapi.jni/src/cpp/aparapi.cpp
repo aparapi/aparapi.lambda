@@ -664,9 +664,8 @@ cl_int KernelArg::setPrimitiveArg(JNIEnv *jenv, int argIdx, int argPos){
    config->out("KernelArg::setPrimitiveArg()");
    return status;
 }
-
-JNI_JAVA(jint, OpenCLRunner, disposeJNI)
-   (JNIEnv *jenv, jobject jobj, jlong jniContextHandle) {
+extern "C" JNIEXPORT jint JNICALL Java_com_amd_aparapi_OpenCLRunner_disposeJNI(
+   JNIEnv *jenv, jobject jobj, jlong jniContextHandle) {
       if (config== NULL){
          config = new Config(jenv);
       }
@@ -850,10 +849,8 @@ jint updateNonPrimitiveReferences(JNIEnv *jenv, jobject jobj, JNIContext* jniCon
 }
 
 
-
-JNI_JAVA(jint, LambdaRunner, updateLambdaBlockJNI)
-   (JNIEnv *jenv, jobject jobj, jlong jniContextHandle, jobject newHolder, jint argc) {
-
+extern "C" JNIEXPORT jint JNICALL Java_com_amd_aparapi_LambdaRunner_updateLambdaBlockJNI(
+  JNIEnv *jenv, jobject jobj, jlong jniContextHandle, jobject newHolder, jint argc) {
       config->in("LambdaRunner::updateLambdaBlockJNI()"); 
       JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);
 
@@ -868,8 +865,8 @@ JNI_JAVA(jint, LambdaRunner, updateLambdaBlockJNI)
       return 0;
    }
 
-JNI_JAVA(jint, OpenCLRunner, runJNI)
-   (JNIEnv *jenv, jobject jobj, jlong jniContextHandle, jobject _range, jboolean needSync, jint passes) {
+extern "C" JNIEXPORT jint JNICALL Java_com_amd_aparapi_OpenCLRunner_runJNI(
+   JNIEnv *jenv, jobject jobj, jlong jniContextHandle, jobject _range, jboolean needSync, jint passes) {
       if (config== NULL){
          config = new Config(jenv);
       }
@@ -1366,8 +1363,8 @@ JNI_JAVA(jint, OpenCLRunner, runJNI)
 
 
 // we return the JNIContext from here 
-JNI_JAVA(jlong, OpenCLRunner, initJNI)
-   (JNIEnv *jenv, jclass clazz, jobject kernelOrLambdaObject, jobject openCLDeviceObject, jint flags) {
+extern "C" JNIEXPORT jlong JNICALL Java_com_amd_aparapi_OpenCLRunner_initJNI(
+  JNIEnv *jenv, jclass clazz, jobject kernelOrLambdaObject, jobject openCLDeviceObject, jint flags) {
       jlong jniContextHandle = 0L;
       if (config== NULL){
          config = new Config(jenv);
@@ -1382,9 +1379,8 @@ JNI_JAVA(jlong, OpenCLRunner, initJNI)
       return(jniContextHandle);
    }
 
-
-JNI_JAVA(jlong, OpenCLRunner, buildProgramJNI)
-   (JNIEnv *jenv, jobject jobj, jlong jniContextHandle, jstring source) {
+extern "C" JNIEXPORT jlong JNICALL Java_com_amd_aparapi_OpenCLRunner_buildProgramJNI(
+   JNIEnv *jenv, jobject jobj, jlong jniContextHandle, jstring source) {
       config->in("OpenCLRunner::buildProgramJNI()");
       JNIContext* jniContext = JNIContext::getJNIContext(jniContextHandle);
       if (jniContext == NULL){
@@ -1463,8 +1459,8 @@ JNI_JAVA(jlong, OpenCLRunner, buildProgramJNI)
    }
 
 // this is called once when the arg list is first determined for this kernel
-JNI_JAVA(jint, OpenCLRunner, setArgsJNI)
-   (JNIEnv *jenv, jobject jobj, jlong jniContextHandle, jobjectArray argArray, jint argc) {
+extern "C" JNIEXPORT jint JNICALL Java_com_amd_aparapi_OpenCLRunner_setArgsJNI(
+   JNIEnv *jenv, jobject jobj, jlong jniContextHandle, jobjectArray argArray, jint argc) {
       if (config== NULL){
          config = new Config(jenv);
       }
@@ -1520,9 +1516,8 @@ JNI_JAVA(jint, OpenCLRunner, setArgsJNI)
       return(status);
    }
 
-
-JNI_JAVA(jstring, OpenCLRunner, getExtensionsJNI)
-   (JNIEnv *jenv, jobject jobj, jlong jniContextHandle) {
+extern "C" JNIEXPORT jstring JNICALL Java_com_amd_aparapi_OpenCLRunner_getExtensionsJNI(
+   JNIEnv *jenv, jobject jobj, jlong jniContextHandle) {
       if (config== NULL){
          config = new Config(jenv);
       }
@@ -1564,8 +1559,8 @@ KernelArg* getArgForBuffer(JNIEnv* jenv, JNIContext* jniContext, jobject buffer)
 }
 
 // Called as a result of Kernel.get(someArray)
-JNI_JAVA(jint, KernelRunner, getJNI)
-   (JNIEnv *jenv, jobject jobj, jlong jniContextHandle, jobject buffer) {
+extern "C" JNIEXPORT jint JNICALL Java_com_amd_aparapi_KernelRunner_getJNI(
+   JNIEnv *jenv, jobject jobj, jlong jniContextHandle, jobject buffer) {
       if (config== NULL){
          config = new Config(jenv);
       }
@@ -1613,9 +1608,8 @@ JNI_JAVA(jint, KernelRunner, getJNI)
       config->out("getJNI()");
       return 0;
    }
-
-JNI_JAVA(jobject, OpenCLRunner, getProfileInfoJNI)
-   (JNIEnv *jenv, jobject jobj, jlong jniContextHandle) {
+extern "C" JNIEXPORT jobject JNICALL Java_com_amd_aparapi_OpenCLRunner_getProfileInfoJNI(
+   JNIEnv *jenv, jobject jobj, jlong jniContextHandle) {
       if (config== NULL){
          config = new Config(jenv);
       }
