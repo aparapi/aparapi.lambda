@@ -112,13 +112,13 @@ First consider editing the properties in build.properties
          <arg value="-shared" />
          <arg value="-o" />
          <arg value="${basedir}/dist/libaparapi_opencl_${x86_or_x86_64}.so" />
-         <arg value="src/cpp/aparapi.cpp" />
-         <arg value="src/cpp/config.cpp" />
-         <arg value="src/cpp/profileInfo.cpp" />
-         <arg value="src/cpp/arrayBuffer.cpp" />
-         <arg value="src/cpp/opencljni.cpp" />
-         <arg value="src/cpp/jniHelper.cpp" />
-         <arg value="src/cpp/clHelper.cpp" />
+         <arg value="src/cpp/opencl/aparapi.cpp" />
+         <arg value="src/cpp/opencl/config.cpp" />
+         <arg value="src/cpp/opencl/profileInfo.cpp" />
+         <arg value="src/cpp/opencl/arrayBuffer.cpp" />
+         <arg value="src/cpp/opencl/opencljni.cpp" />
+         <arg value="src/cpp/opencl/jniHelper.cpp" />
+         <arg value="src/cpp/opencl/clHelper.cpp" />
          <arg value="-L${env.OCL_LIB}" />
          <arg value="-lOpenCL" />
       </exec>
@@ -138,9 +138,9 @@ First consider editing the properties in build.properties
          <arg value="-shared" />
          <arg value="-o" />
          <arg value="${basedir}/dist/libaparapi_agent_${x86_or_x86_64}.so" />
-         <arg value="src/cpp/classtools.cpp" />
-         <arg value="src/cpp/instruction.cpp" />
-         <arg value="src/cpp/agent.cpp" />
+         <arg value="src/cpp/agent/classtools.cpp" />
+         <arg value="src/cpp/agent/instruction.cpp" />
+         <arg value="src/cpp/agent/agent.cpp" />
       </exec>
    </target>
 
@@ -160,15 +160,13 @@ First consider editing the properties in build.properties
          <arg value="-shared" />
          <arg value="-o" />
          <arg value="${basedir}/dist/libaparapi_${x86_or_x86_64}.dylib" />
-         <arg value="src/cpp/aparapi.cpp" />
-         <arg value="src/cpp/config.cpp" />
-         <arg value="src/cpp/profileInfo.cpp" />
-         <arg value="src/cpp/arrayBuffer.cpp" />
-         <arg value="src/cpp/opencljni.cpp" />
-         <arg value="src/cpp/jniHelper.cpp" />
-         <arg value="src/cpp/clHelper.cpp" />
-         <arg value="src/cpp/classtools.cpp" />
-         <arg value="src/cpp/agent.cpp" />
+         <arg value="src/cpp/opencl/aparapi.cpp" />
+         <arg value="src/cpp/opencl/config.cpp" />
+         <arg value="src/cpp/opencl/profileInfo.cpp" />
+         <arg value="src/cpp/opencl/arrayBuffer.cpp" />
+         <arg value="src/cpp/opencl/opencljni.cpp" />
+         <arg value="src/cpp/opencl/jniHelper.cpp" />
+         <arg value="src/cpp/opencl/clHelper.cpp" />
          <arg value="-framework" />
          <arg value="OpenCL" />
          <arg value="-Wno-write-strings" />
@@ -193,15 +191,13 @@ First consider editing the properties in build.properties
          <arg value="/IC:\Program Files (x86)\Windows Kits\8.0\Include\um" />
 
          <arg value="/I${env.OCL_INCLUDE}" />
-         <arg value="src/cpp/aparapi.cpp" />
-         <arg value="src/cpp/config.cpp" />
-         <arg value="src/cpp/profileInfo.cpp" />
-         <arg value="src/cpp/arrayBuffer.cpp" />
-         <arg value="src/cpp/opencljni.cpp" />
-         <arg value="src/cpp/jniHelper.cpp" />
-         <arg value="src/cpp/clHelper.cpp" />
-         <arg value="src/cpp/classtools.cpp" />
-         <arg value="src/cpp/agent.cpp" />
+         <arg value="src/cpp/opencl/aparapi.cpp" />
+         <arg value="src/cpp/opencl/config.cpp" />
+         <arg value="src/cpp/opencl/profileInfo.cpp" />
+         <arg value="src/cpp/opencl/arrayBuffer.cpp" />
+         <arg value="src/cpp/opencl/opencljni.cpp" />
+         <arg value="src/cpp/opencl/jniHelper.cpp" />
+         <arg value="src/cpp/opencl/clHelper.cpp" />
          <arg value="/LD" />
          <arg value="/link" />
          <arg value="/libpath:${msvc.dir}\vc\lib\${optional.amd64.subdir}" />
@@ -225,7 +221,7 @@ First consider editing the properties in build.properties
          <arg value="-DCL_USE_DEPRECATED_OPENCL_1_1_APIS"/>
          <arg value="-I/System/Library/Frameworks/JavaVM.framework/Headers" />
          <arg value="-Iinclude" />
-         <arg value="src/cpp/cltest.cpp" />
+         <arg value="src/cpp/opencl/cltest.cpp" />
          <arg value="-framework" />
          <arg value="OpenCL" />
          <arg value="-o" />
@@ -244,7 +240,7 @@ First consider editing the properties in build.properties
          <arg value="-I${java.home}/../include" />
          <arg value="-I${java.home}/../include/linux" />
          <arg value="-I${env.OCL_INCLUDE}" />
-         <arg value="src/cpp/cltest.cpp" />
+         <arg value="src/cpp/opencl/cltest.cpp" />
          <arg value="-L${env.OCL_LIB}" />
          <arg value="-lOpenCL" />
          <arg value="-o" />
@@ -259,9 +255,9 @@ First consider editing the properties in build.properties
          <arg value="-O3" />
          <arg value="-g" />
          <arg value="-fPIC" />
-         <arg value="src/cpp/classtools.cpp" />
-         <arg value="src/cpp/instruction.cpp" />
-         <arg value="src/cpp/classtoolstest.cpp" />
+         <arg value="src/cpp/agent/classtools.cpp" />
+         <arg value="src/cpp/agent/instruction.cpp" />
+         <arg value="src/cpp/agent/classtoolstest.cpp" />
          <arg value="-o" />
          <arg value="${basedir}/clt" />
       </exec>
@@ -274,9 +270,9 @@ First consider editing the properties in build.properties
          <arg value="-O3" />
          <arg value="-g" />
          <arg value="-fPIC" />
-         <arg value="src/cpp/classtools.cpp" />
-         <arg value="src/cpp/instruction.cpp" />
-         <arg value="src/cpp/classtoolstest.cpp" />
+         <arg value="src/cpp/agent/classtools.cpp" />
+         <arg value="src/cpp/agent/instruction.cpp" />
+         <arg value="src/cpp/agent/classtoolstest.cpp" />
          <arg value="-o" />
          <arg value="${basedir}/clt" />
       </exec>
