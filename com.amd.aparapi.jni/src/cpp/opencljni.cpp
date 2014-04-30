@@ -334,8 +334,8 @@ void OpenCLRange::fill(JNIEnv *jenv, jobject rangeInstance, jint dims, size_t* o
    }
 }
 
-JNI_JAVA(jobject, OpenCLJNI, createProgram)
-   (JNIEnv *jenv, jobject jobj, jobject deviceInstance, jstring source) {
+extern "C" JNIEXPORT jobject JNICALL Java_com_amd_aparapi_OpenCLJNI_createProgram(
+   JNIEnv *jenv, jobject jobj, jobject deviceInstance, jstring source) {
 
       jobject platformInstance = OpenCLDevice::getPlatformInstance(jenv, deviceInstance);
       cl_platform_id platformId = OpenCLPlatform::getPlatformId(jenv, platformInstance);
@@ -366,8 +366,8 @@ JNI_JAVA(jobject, OpenCLJNI, createProgram)
       return(programInstance);
    }
 
-JNI_JAVA(jobject, OpenCLJNI, createKernel)
-   (JNIEnv *jenv, jobject jobj, jobject programInstance, jstring name, jobject args) {
+extern "C" JNIEXPORT jobject JNICALL Java_com_amd_aparapi_OpenCLJNI_createKernel(
+   JNIEnv *jenv, jobject jobj, jobject programInstance, jstring name, jobject args) {
       cl_context context = OpenCLProgram::getContext(jenv, programInstance);
       cl_program program = OpenCLProgram::getProgram(jenv, programInstance); 
       cl_int status = CL_SUCCESS;
@@ -544,8 +544,8 @@ void getArg(JNIEnv *jenv, cl_context context, cl_command_queue commandQueue, cl_
    }
 }
 
-JNI_JAVA(void, OpenCLJNI, invoke)
-   (JNIEnv *jenv, jobject jobj, jobject kernelInstance, jobjectArray argArray) {
+extern "C" JNIEXPORT void JNICALL Java_com_amd_aparapi_OpenCLJNI_invoke(
+   JNIEnv *jenv, jobject jobj, jobject kernelInstance, jobjectArray argArray) {
       cl_kernel kernel = OpenCLKernel::getKernel(jenv, kernelInstance);
       jobject programInstance = OpenCLKernel::getProgramInstance(jenv, kernelInstance);
       jobjectArray argDefsArray = OpenCLKernel::getArgsArray(jenv, kernelInstance);
@@ -626,8 +626,8 @@ JNI_JAVA(void, OpenCLJNI, invoke)
       }
    }
 
-JNI_JAVA(jobject, OpenCLJNI, getPlatforms)
-   (JNIEnv *jenv, jobject jobj) {
+extern "C" JNIEXPORT jobject JNICALL Java_com_amd_aparapi_OpenCLJNI_getPlatforms(
+   JNIEnv *jenv, jobject jobj) {
       jobject platformListInstance = JNIHelper::createInstance(jenv, (char*)ArrayListClass, (char*)VoidReturn);
       cl_int status = CL_SUCCESS;
       cl_uint platformc;
