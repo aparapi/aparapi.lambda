@@ -145,7 +145,7 @@ First consider editing the properties in build.properties
    </target>
 
 
-   <target name="gcc_mac" if="use.gcc_mac">
+   <target name="gcc_mac_opencl" if="use.gcc_mac">
       <mkdir dir="${basedir}/dist"/>
       <echo message="gcc ${os.arch}" />
       <exec executable="g++">
@@ -153,13 +153,12 @@ First consider editing the properties in build.properties
          <arg value="-g" />
          <arg value="-fPIC" />
          <arg value="-DCL_USE_DEPRECATED_OPENCL_1_1_APIS"/>
-         <!--<arg value="-I/System/Library/Frameworks/JavaVM.framework/Headers" />-->
          <arg value="-I/Library/Java/JavaVirtualMachines/jdk1.8.0.jdk/Contents/Home/include" />
          <arg value="-I/Library/Java/JavaVirtualMachines/jdk1.8.0.jdk/Contents/Home/include/darwin" />
          <arg value="-Iinclude" />
          <arg value="-shared" />
          <arg value="-o" />
-         <arg value="${basedir}/dist/libaparapi_${x86_or_x86_64}.dylib" />
+         <arg value="${basedir}/dist/libaparapi_opencl_${x86_or_x86_64}.dylib" />
          <arg value="src/cpp/opencl/aparapi.cpp" />
          <arg value="src/cpp/opencl/config.cpp" />
          <arg value="src/cpp/opencl/profileInfo.cpp" />
@@ -169,6 +168,24 @@ First consider editing the properties in build.properties
          <arg value="src/cpp/opencl/clHelper.cpp" />
          <arg value="-framework" />
          <arg value="OpenCL" />
+         <arg value="-Wno-write-strings" />
+       </exec>
+     </target>
+   <target name="gcc_mac_agent" if="use.gcc_mac">
+      <mkdir dir="${basedir}/dist"/>
+      <echo message="gcc ${os.arch}" />
+      <exec executable="g++">
+         <arg value="-O3" />
+         <arg value="-g" />
+         <arg value="-fPIC" />
+         <arg value="-I/Library/Java/JavaVirtualMachines/jdk1.8.0.jdk/Contents/Home/include" />
+         <arg value="-I/Library/Java/JavaVirtualMachines/jdk1.8.0.jdk/Contents/Home/include/darwin" />
+         <arg value="-Iinclude" />
+         <arg value="-shared" />
+         <arg value="-o" />
+         <arg value="${basedir}/dist/libaparapi_agent_${x86_or_x86_64}.dylib" />
+         <arg value="src/cpp/agent/classtools.cpp" />
+         <arg value="src/cpp/agent/agent.cpp" />
          <arg value="-Wno-write-strings" />
       </exec>
    </target>
@@ -209,7 +226,7 @@ First consider editing the properties in build.properties
       </exec>
    </target>
 
-   <target name="build" depends="clean, javah, gcc_agent, gcc_opencl, gcc_mac" />
+   <target name="build" depends="clean, javah, gcc_agent, gcc_opencl, gcc_mac_agent, gcc_mac_opencl" />
 
    <target name="mac_cltest" if="use.gcc_mac">
       <mkdir dir="${basedir}/dist"/>
