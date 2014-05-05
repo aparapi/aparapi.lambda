@@ -116,7 +116,7 @@
       <echo>OKRA=${env.OKRA_HOME}</echo>
 
       <junit printsummary="false" fork="true" haltonfailure="false" failureproperty="tests.failed" showoutput="true">
-         <jvmarg value="-agentpath:../../com.amd.aparapi.jni/dist/${lib.prefix}aparapi_x86_64${lib.suffix}"/>
+         <jvmarg value="-agentpath:../../com.amd.aparapi.jni/dist/${lib.prefix}aparapi_agent_x86_64${lib.suffix}"/>
          <jvmarg value="-Xmx2G"/>
          <jvmarg value="-Ddispatch=true"/>
          <jvmarg value="-XX:-UseCompressedOops"/>
