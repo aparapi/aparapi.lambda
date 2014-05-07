@@ -16,7 +16,7 @@ import java.util.stream.Stream;
  */
 public class LambdaKernelCall{
    protected static Logger logger = Logger.getLogger(Config.getLoggerName());
-   private Object block;
+   private Aparapi.Lambda lambdaCallSite;
    private String lambdaMethodName;
    private Field[] lambdaCapturedFields;
    private Object lambdaThisObject;
@@ -51,7 +51,7 @@ public class LambdaKernelCall{
 
    public String toString(){
       return getLambdaKernelClass()+" "+getLambdaMethodName()+" "+
-            getLambdaMethodSignature()+" from block: "+block;
+            getLambdaMethodSignature()+" from lambdaCallSite: "+ lambdaCallSite;
    }
 
    public Field[] getLambdaCapturedFields(){
@@ -64,7 +64,7 @@ public class LambdaKernelCall{
          Class currFieldType = bcf.getType();
          long offset = UnsafeWrapper.objectFieldOffset(bcf);
          if (currFieldType.isPrimitive() == false){
-            lambdaThisObject = UnsafeWrapper.getObject(block, offset);
+            lambdaThisObject = UnsafeWrapper.getObject(lambdaCallSite, offset);
          }else{
             if (logger.isLoggable(Level.WARNING)){
                logger.warning("# Problem getting Lambda this: "+currFieldType+"  "+bcf.getName());
@@ -80,29 +80,30 @@ public class LambdaKernelCall{
 
    }
 
-   public LambdaKernelCall(Aparapi.Lambda _block) throws AparapiException, ClassNotFoundException{
-      block = _block;
+   public LambdaKernelCall(Aparapi.Lambda _lambdaCallSite) throws AparapiException, ClassNotFoundException{
+      lambdaCallSite = _lambdaCallSite;
 
-      Class bc = block.getClass();
+      Class lambdaCallSiteClass = lambdaCallSite.getClass();
       if (logger.isLoggable(Level.FINE)){
-         logger.fine("Block class calling lambda = "+bc);
+         logger.fine("CallSite class calling lambda = "+lambdaCallSiteClass);
       }
 
       // The class name is created with the "/" style delimiters
-      ClassModel blockModel = ClassModel.getClassModel(bc);
+      ClassModel lambdaCallSiteClassModel = ClassModel.getClassModel(lambdaCallSiteClass);
 
       MethodModel acceptModel;
-      if (block instanceof Aparapi.IntTerminal){
-         acceptModel = blockModel.getMethodModel("accept", "(I)V");
-      }else if (block instanceof Aparapi.Int2BooleanMapper){
-         acceptModel = blockModel.getMethodModel("map", "(I)Z");
+      // TODO: use a more maintainable method for determining entry method
+      if (lambdaCallSite instanceof Aparapi.IntTerminal){
+         acceptModel = lambdaCallSiteClassModel.getMethodModel("accept", "(I)V");
+      }else if (lambdaCallSite instanceof Aparapi.Int2BooleanMapper){
+         acceptModel = lambdaCallSiteClassModel.getMethodModel("map", "(I)Z");
       }else{
          // Calling an object Consumer lambda like: public void accept(java.lang.Object)
-         acceptModel = blockModel.getMethodModel("accept", "(Ljava/lang/Object;)V");
+         acceptModel = lambdaCallSiteClassModel.getMethodModel("accept", "(Ljava/lang/Object;)V");
       }
 
       assert acceptModel != null:"acceptModel should not be null";
-
+      // this is the set of methods that the clalsite calls.  Should only be one.
       Set<InstructionSet.MethodCall> acceptCallSites = acceptModel.getMethod().getMethodCalls();
       assert acceptCallSites.size() == 1:"Should only have one call site in this method";
 
@@ -111,7 +112,7 @@ public class LambdaKernelCall{
 
       String lambdaDotClassName = lambdaCallTarget.getClassEntry().getDotClassName();
 
-      lambdaKernelClass = Class.forName(lambdaDotClassName, false, bc.getClassLoader());
+      lambdaKernelClass = Class.forName(lambdaDotClassName, false, lambdaCallSiteClass.getClassLoader());
       lambdaMethodName = lambdaCallTarget.getNameAndTypeEntry().getNameUTF8Entry().getUTF8();
       lambdaMethodSignature = lambdaCallTarget.getNameAndTypeEntry().getDescriptorUTF8Entry().getUTF8();
 
@@ -119,7 +120,7 @@ public class LambdaKernelCall{
       // is not static, the later fields are captured values which will
       // become lambda call parameters
 
-      Field[] allBlockClassFields = bc.getDeclaredFields();
+      Field[] allBlockClassFields = lambdaCallSiteClass.getDeclaredFields();
 
       if (logger.isLoggable(Level.FINE)){
          logger.fine("# allBlockClassFields.length: "+allBlockClassFields.length);

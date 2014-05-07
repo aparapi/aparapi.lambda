@@ -60,12 +60,13 @@ public class HSADevice extends Device<HSADevice>{
 
             // ClassModel classModel = ClassModel.getClassModel(lkc.getLambdaKernelClass());
             ClassModel.ClassModelMethod method = lkc.getLambdaKernelClassModelMethod();
-            HSAILRenderer renderer = new HSAILRenderer().setShowComments(true);
             HSAILMethod hsailMethod = HSAILMethod.getHSAILMethod(method, lambda, inline);
+
+            HSAILRenderer renderer = new HSAILRenderer().setShowComments(true);
             hsailMethod.render(renderer, lambda);
             cachedRunner.hsail = renderer.toString();
 
-            if (true || Config.enableShowGeneratedHSAIL || Config.enableShowGeneratedHSAILAndExit){
+            if (Config.enableShowGeneratedHSAIL || Config.enableShowGeneratedHSAILAndExit){
                System.out.println(cachedRunner.hsail);
                if (Config.enableShowGeneratedHSAILAndExit){
                   System.exit(1);
