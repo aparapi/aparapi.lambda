@@ -15,9 +15,6 @@ public class AparapiParallelMapReduceLongestStringJUnit{
       }).select((k, l) -> {
          return (k>l);
       });
-      String[] substrings = Aparapi.range(strings).parallel().filter(s -> {
-         return (s.length() == 1);
-      });
 
       System.out.println("longest ="+str);
 

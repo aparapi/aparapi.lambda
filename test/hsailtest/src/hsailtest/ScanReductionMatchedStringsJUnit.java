@@ -103,7 +103,6 @@ public class ScanReductionMatchedStringsJUnit{
       });
    }
 
-
    // Imagine we had 16 numbers          1 0 1 0     1 1 0 0     0 0 0 1     1 0 0 1
    // the result scan is                 1 1 2 2     3 4 4 4     4 4 4 5     6 6 6 7
    //
@@ -156,7 +155,6 @@ public class ScanReductionMatchedStringsJUnit{
    // prev group to all items in
    // subsequent
 
-
    void fixup(int[] arr){
       Device.hsa().forEach(arr.length, id -> {
          int[] local = localIntX1();
@@ -178,10 +176,10 @@ public class ScanReductionMatchedStringsJUnit{
       Device.hsa().forEach(arr.length, id -> {
          String s = strings[id];
          int len = s.length();
-         if (len > 2 && s.charAt(0)==s.charAt(len-1) && s.charAt(1)==s.charAt(len-2)){
-            arr[id]=1;
+         if (len>2 && s.charAt(0) == s.charAt(len-1) && s.charAt(1) == s.charAt(len-2)){
+            arr[id] = 1;
          }else{
-            arr[id]=0;
+            arr[id] = 0;
          }
       });
    }
@@ -189,7 +187,7 @@ public class ScanReductionMatchedStringsJUnit{
    void map(String[] instrings, int[] arr, String[] outStrings){
       Device.hsa().forEach(arr.length, id -> {
          if (arr[id]>arr[id-1]){
-            outStrings[arr[id]]=instrings[id];
+            outStrings[arr[id]] = instrings[id];
          }
       });
    }
@@ -209,7 +207,7 @@ public class ScanReductionMatchedStringsJUnit{
       System.out.println("number of strings="+outCount);
       String[] outStrings = new String[outCount];
       map(inStrings, in, outStrings);
-      for (String s:outStrings){
+      for (String s : outStrings){
          System.out.println(s);
       }
       int hsaSum = in[len-1];

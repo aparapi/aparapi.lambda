@@ -51,7 +51,7 @@ public class LambdaKernelCall{
 
    public String toString(){
       return getLambdaKernelClass()+" "+getLambdaMethodName()+" "+
-            getLambdaMethodSignature()+" from lambdaCallSite: "+ lambdaCallSite;
+            getLambdaMethodSignature()+" from lambdaCallSite: "+lambdaCallSite;
    }
 
    public Field[] getLambdaCapturedFields(){

@@ -19,7 +19,7 @@ public class ScanReductionBigJUnit{
       Device.hsa().forEach(arr.length/interval, id -> {
          int[] local = localIntX1(); // we need a local int buffer the same width as the group
          int lid = getWorkItemId();
-        // int lsize = getCurrentWorkGroupSize();
+         // int lsize = getCurrentWorkGroupSize();
          // Step 1 - copy global memory to local
          local[lid] = arr[((id+1)*interval)-1];
          barrier();
@@ -102,7 +102,6 @@ public class ScanReductionBigJUnit{
       });
    }
 
-
    // Imagine we had 16 numbers          1 0 1 0     1 1 0 0     0 0 0 1     1 0 0 1
    // the result scan is                 1 1 2 2     3 4 4 4     4 4 4 5     6 6 6 7
    //
@@ -155,8 +154,7 @@ public class ScanReductionBigJUnit{
    // prev group to all items in
    // subsequent
 
-
-   void fixup(int[] arr, int interval,int size){
+   void fixup(int[] arr, int interval, int size){
       Device.hsa().forEach(arr.length, id -> {
          int[] local = localIntX1();
          int lid = getWorkItemId();
@@ -171,8 +169,6 @@ public class ScanReductionBigJUnit{
          barrier();
       });
    }
-
-
 
    @Test
    public void test(){

@@ -10,15 +10,15 @@ public class AparapiParallelCount2JUnit{
    @Test
    public void test(){
       char[][] stringChars = new char[256][];
-      for (int i=0; i<256;i++){
-         stringChars[i]=(""+i).toCharArray();
+      for (int i = 0; i<256; i++){
+         stringChars[i] = (""+i).toCharArray();
       }
 
-      int count1 = Aparapi.range(0, 256).parallel().count(i -> stringChars[i][0]=='4');
-      int count2 = Aparapi.range(0, 256).count(i -> stringChars[i][0]=='4');
+      int count1 = Aparapi.range(0, 256).parallel().count(i -> stringChars[i][0] == '4');
+      int count2 = Aparapi.range(0, 256).count(i -> stringChars[i][0] == '4');
       System.out.println("count1="+count1);
       System.out.println("count2="+count2);
-      assertTrue("count1==count2", count1==count2);
+      assertTrue("count1==count2", count1 == count2);
 
    }
 
