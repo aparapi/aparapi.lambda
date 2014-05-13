@@ -4,7 +4,6 @@ import com.amd.aparapi.Device;
 import org.junit.Test;
 
 import static com.amd.aparapi.HSA.barrier;
-import static com.amd.aparapi.HSA.getCurrentWorkGroupSize;
 import static com.amd.aparapi.HSA.getWorkGroupId;
 import static com.amd.aparapi.HSA.getWorkItemId;
 import static com.amd.aparapi.HSA.localIntX1;
@@ -20,7 +19,7 @@ public class ScanReductionMatchedStringsX2JUnit{
       Device.hsa().forEach(arr.length/interval, id -> {
          int[] local = localIntX1(); // we need a local int buffer the same width as the group
          int lid = getWorkItemId();
-        // int lsize = getCurrentWorkGroupSize();
+         // int lsize = getCurrentWorkGroupSize();
          // Step 1 - copy global memory to local
          local[lid] = arr[((id+1)*interval)-1];
          barrier();
@@ -103,7 +102,6 @@ public class ScanReductionMatchedStringsX2JUnit{
       });
    }
 
-
    // Imagine we had 16 numbers          1 0 1 0     1 1 0 0     0 0 0 1     1 0 0 1
    // the result scan is                 1 1 2 2     3 4 4 4     4 4 4 5     6 6 6 7
    //
@@ -156,8 +154,7 @@ public class ScanReductionMatchedStringsX2JUnit{
    // prev group to all items in
    // subsequent
 
-
-   void fixup(int[] arr, int interval,int size){
+   void fixup(int[] arr, int interval, int size){
       Device.hsa().forEach(arr.length, id -> {
          int[] local = localIntX1();
          int lid = getWorkItemId();
@@ -177,10 +174,10 @@ public class ScanReductionMatchedStringsX2JUnit{
       Device.hsa().forEach(arr.length, id -> {
          String s = strings[id];
          int len = s.length();
-         if (len > 2 && s.charAt(0)==s.charAt(len-1) && s.charAt(1)==s.charAt(len-2)){
-            arr[id]=1;
+         if (len>2 && s.charAt(0) == s.charAt(len-1) && s.charAt(1) == s.charAt(len-2)){
+            arr[id] = 1;
          }else{
-            arr[id]=0;
+            arr[id] = 0;
          }
       });
    }
@@ -188,7 +185,7 @@ public class ScanReductionMatchedStringsX2JUnit{
    void map(String[] instrings, int[] arr, String[] outStrings){
       Device.hsa().forEach(arr.length, id -> {
          if (arr[id]>arr[id-1]){
-            outStrings[arr[id]]=instrings[id];
+            outStrings[arr[id]] = instrings[id];
          }
       });
    }
@@ -210,7 +207,7 @@ public class ScanReductionMatchedStringsX2JUnit{
       System.out.println("number of strings="+outCount);
       String[] outStrings = new String[outCount];
       map(inStrings, in, outStrings);
-      for (String s:outStrings){
+      for (String s : outStrings){
          System.out.println(s);
       }
       int hsaSum = in[len-1];

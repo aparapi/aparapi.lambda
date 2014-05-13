@@ -155,12 +155,19 @@ public class Aparapi{
 
       public T[] filter(Object2BooleanMapper<T> _im){
          ArrayList<T> list = new ArrayList<T>();
-         for (T i : arr){
-            if (_im.map(i)){
-               list.add(i);
+         if (arr.length>0){
+            arr[0].getClass();
+
+            for (T i : arr){
+               if (_im.map(i)){
+                  list.add(i);
+               }
             }
+            return (list.toArray((T[])java.lang.reflect.Array.newInstance((Class<T>)arr.getClass().getComponentType(), 0)));
+         }else{
+            throw new IllegalStateException("array is empty!");
          }
-         return (list.toArray((T[])new Object[0]));
+
       }
 
    }
@@ -217,6 +224,7 @@ public class Aparapi{
       public MappedParallelIntRange map(Int2IntMapper _im){
          return (new MappedParallelIntRange(this, _im));
       }
+
       public int reduce(IntReducer _ir){
          throw new IllegalStateException("ParallelIntRange.reduce not implemented");
       }
