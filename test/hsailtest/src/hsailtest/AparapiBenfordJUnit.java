@@ -65,7 +65,7 @@ public class AparapiBenfordJUnit{
       assertTrue("sample size > 0 ", twitterData.size()>0);
       int[] histogram=new int[10];
       Aparapi.range(twitterData).forEach(td-> {
-         int digit=td.friendCount;
+         int digit=td.id;
 
          while (digit>9){
             digit/=10;
@@ -74,10 +74,25 @@ public class AparapiBenfordJUnit{
          histogram[digit]++;
       });
 
+      int total = 0;
+
       for (int i:histogram){
          System.out.print(i+ " ");
+         total+=i;
       }
-
+      System.out.println();
+      int c=0;
+      float sum=0f;
+      for (int i:histogram){
+         float normalized = (i*100f)/total;
+         sum+=normalized;
+         System.out.printf("%d %5.2f :", c++, normalized);
+         for (int s=0; s<normalized; s++){
+            System.out.print("*");
+         }
+         System.out.println();
+      }
+      System.out.printf("%5.2f\n", sum);
 
    }
 
