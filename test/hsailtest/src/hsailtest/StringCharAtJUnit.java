@@ -19,16 +19,16 @@ public class StringCharAtJUnit{
          out[gid] = string.charAt(gid);
       };
       Arrays.fill(out, '?');
-      System.out.println(out);
+      JunitHelper.nl(""+out);
       Device.hsa().forEach(len, ic);
       char[] hsaOut = JunitHelper.copy(out);
-      System.out.println(out);
+      JunitHelper.nl(""+out);
       JunitHelper.dump("hsa", out);
 
       Arrays.fill(out, '?');
-      System.out.println(out);
+      JunitHelper.nl(""+out);
       Device.seq().forEach(len, ic);
-      System.out.println(out);
+      JunitHelper.nl(""+out);
       JunitHelper.dump("seq", out);
       assertTrue("HSA equals JTP results", JunitHelper.compare(hsaOut, out));
    }

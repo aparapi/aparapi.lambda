@@ -28,19 +28,19 @@ public class OopArray2DJUnit{
    }
 
    static void dump(String type, P[][] points){
-      System.out.print(type+" ->");
+      JunitHelper.out(type+" ->");
       for (int x = 0; x<points.length; x++){
-         System.out.print("[");
+         JunitHelper.out("[");
 
          for (int y = 0; y<points[0].length; y++){
             if (y != 0){
-               System.out.print(", ");
+               JunitHelper.out(", ");
             }
-            System.out.print(points[x][y]);
+            JunitHelper.out(""+points[x][y]);
          }
-         System.out.print("]");
+         JunitHelper.out("]");
       }
-      System.out.println();
+      JunitHelper.nl();
    }
 
    @Test

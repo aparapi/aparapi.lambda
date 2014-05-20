@@ -21,15 +21,15 @@ public class StringLenJUnit{
 
       };
       Arrays.fill(out, 0);
-      System.out.println(out);
+      JunitHelper.nl(""+out);
       Device.hsa().forEach(len, ic);
       int[] hsaOut = JunitHelper.copy(out);
 
-      System.out.println(out);
+      JunitHelper.nl(""+out);
       JunitHelper.dump("hsa", strings, out);
       Arrays.fill(out, 0);
       Device.seq().forEach(len, ic);
-      System.out.println(out);
+      JunitHelper.nl(""+out);
       JunitHelper.dump("seq", strings, out);
       assertTrue("HSA equals JTP results", JunitHelper.compare(hsaOut, out));
 

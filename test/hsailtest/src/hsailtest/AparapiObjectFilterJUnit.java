@@ -13,7 +13,7 @@ public class AparapiObjectFilterJUnit{
 
       String[] substrings = Aparapi.range(strings).filter(s -> s.length() == 3);
 
-      System.out.println(substrings.length);
+      JunitHelper.nl(substrings.length);
 
       assertTrue("substrings.length==4", substrings.length == 4);
 

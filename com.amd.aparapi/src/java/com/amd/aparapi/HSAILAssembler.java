@@ -1264,14 +1264,14 @@ public class HSAILAssembler{
                   call.add(this, i);
                }else{
                   if (i.getByteCode() == InstructionSet.ByteCode.INVOKEINTERFACE){
-                     System.out.println("an interface!");
+                     //System.out.println("an interface!");
                      try{
                         Class implementation = Class.forName(callInfo.dotClassName);
                         for (Aparapi.Lambda inlineable : inline){
                            Class interfaceClass = inlineable.getClass();
                            if (implementation.isAssignableFrom(interfaceClass)){
 
-                              System.out.println("we can bind to this!");
+                              //System.out.println("we can bind to this!");
 
                               ClassModel classModel = ClassModel.getClassModel(interfaceClass);
                               ClassModel.ClassModelMethod calledMethod = classModel.getMethod(callInfo.name, callInfo.sig);

@@ -11,11 +11,12 @@ import static org.junit.Assert.assertTrue;
 public class FloatSquaresFuncJUnit{
 
    static void dump(String type, float[] in, float[] out){
-      System.out.print(type+" ->");
+
+      JunitHelper.out(type+" ->");
       for (int i = 0; i<in.length; i++){
-         System.out.print("("+in[i]+","+out[i]+"),");
+         JunitHelper.out("("+in[i]+","+out[i]+"),");
       }
-      System.out.println();
+      JunitHelper.nl();
    }
 
    static float mul(float lhs, float rhs){

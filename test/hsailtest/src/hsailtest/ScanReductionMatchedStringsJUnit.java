@@ -204,23 +204,23 @@ public class ScanReductionMatchedStringsJUnit{
       scan(in, 256);
       fixup(in);
       int outCount = in[len-1];
-      System.out.println("number of strings="+outCount);
+      JunitHelper.nl("number of strings="+outCount);
       String[] outStrings = new String[outCount];
       map(inStrings, in, outStrings);
       for (String s : outStrings){
-         System.out.println(s);
+         JunitHelper.nl(s);
       }
       int hsaSum = in[len-1];
-      System.out.println("hsaSum "+hsaSum);
-      System.out.print("rule");
+      JunitHelper.nl("hsaSum "+hsaSum);
+      JunitHelper.out("rule");
       for (int i = 0; i<1024; i++){
          if ((i%256) == 0){
-            System.out.print(" V  ");
+            JunitHelper.out(" V  ");
          }else{
-            System.out.print(" .  ");
+            JunitHelper.out(" .  ");
          }
       }
-      System.out.println();
+      JunitHelper.nl();
       JunitHelper.dump("orig", inCopy, "%3d", 1024);
       JunitHelper.dump(" hsa", in, "%3d", 1024);
       int[] out = new int[len];
@@ -229,7 +229,7 @@ public class ScanReductionMatchedStringsJUnit{
          out[i] = out[i-1]+inCopy[i];
       }
       int sum = out[len-1]+inCopy[len-1];
-      System.out.println("sum "+sum);
+      JunitHelper.out("sum "+sum);
       JunitHelper.dump(" seq", out, "%3d", 1024);
       assertTrue("HSA equals JTP results", JunitHelper.compare(out, in));
    }

@@ -41,7 +41,7 @@ public class WordReductionJUnit{
    @Test
    public void test() throws Exception{
       String[] lines = getLines();
-      System.out.println("lines "+lines.length);
+      JunitHelper.nl("lines "+lines.length);
       assertTrue("file is read", lines.length>0);
       long start;
       int hsaAverage = 0;
@@ -76,7 +76,7 @@ public class WordReductionJUnit{
             sum += i;
          }
          hsaAverage = sum/lines.length;
-         System.out.println("hsa "+loop+" duration "+(System.currentTimeMillis()-start));
+         JunitHelper.nl("hsa "+loop+" duration "+(System.currentTimeMillis()-start));
 
       }
       int sequentialAverage = 0;
@@ -94,7 +94,7 @@ public class WordReductionJUnit{
 
          }
          sequentialAverage = sum/lines.length;
-         System.out.println("seq "+loop+" duration "+(System.currentTimeMillis()-start));
+         JunitHelper.nl("seq "+loop+" duration "+(System.currentTimeMillis()-start));
       }
       assertTrue("HSA equals sequential results", hsaAverage == sequentialAverage);
    }

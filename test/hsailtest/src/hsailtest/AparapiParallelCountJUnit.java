@@ -12,7 +12,7 @@ public class AparapiParallelCountJUnit{
 
       int evenCount = Aparapi.range(0, 256).parallel().count(i -> i%2 == 0);
 
-      System.out.println("evenCount="+evenCount);
+      JunitHelper.nl("evenCount="+evenCount);
       assertTrue("evenCount==128", evenCount == 128);
 
    }
