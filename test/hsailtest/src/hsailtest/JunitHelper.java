@@ -24,142 +24,142 @@ import static junit.framework.Assert.fail;
 public class JunitHelper{
    static void dump(String type, String[] _strings, int[] results){
       if (verbose){
-      s.print(type+" ->");
-      for (int i = 0; i<_strings.length; i++){
-         if (i != 0){
-            s.print(", ");
+         s.print(type+" ->");
+         for (int i = 0; i<_strings.length; i++){
+            if (i != 0){
+               s.print(", ");
+            }
+            s.print(_strings[i]+"="+results[i]);
          }
-         s.print(_strings[i]+"="+results[i]);
-      }
-      s.println();
+         s.println();
       }
    }
 
    static void dump(String type, String[] _strings){
       if (verbose){
-      s.print(type+" ->");
-      for (int i = 0; i<_strings.length; i++){
-         if (i != 0){
-            s.print(", ");
+         s.print(type+" ->");
+         for (int i = 0; i<_strings.length; i++){
+            if (i != 0){
+               s.print(", ");
+            }
+            s.print(_strings[i]);
          }
-         s.print(_strings[i]);
-      }
-      s.println();
+         s.println();
       }
    }
 
    public static void dump(String type, int[][] array){
       if (verbose){
 
-      s.print(type+" ->");
-      for (int x = 0; x<array.length; x++){
-         s.print("[");
-         for (int y = 0; y<array[0].length; y++){
-            if (y != 0){
-               s.print(", ");
+         s.print(type+" ->");
+         for (int x = 0; x<array.length; x++){
+            s.print("[");
+            for (int y = 0; y<array[0].length; y++){
+               if (y != 0){
+                  s.print(", ");
+               }
+               s.print(array[x][y]);
             }
-            s.print(array[x][y]);
+            s.print("]");
          }
-         s.print("]");
-      }
-      s.println();
+         s.println();
       }
    }
 
    static void dump(String type, char[] results){
       if (verbose){
-      s.print(type+" ->");
-      for (int i = 0; i<results.length; i++){
-         if (i != 0){
-            s.print(", ");
+         s.print(type+" ->");
+         for (int i = 0; i<results.length; i++){
+            if (i != 0){
+               s.print(", ");
+            }
+            s.print(results[i]);
          }
-         s.print(results[i]);
-      }
-      s.println();
+         s.println();
       }
    }
 
    static void dump(String type, String[] _strings, boolean[] results){
       if (verbose){
-      s.print(type+" ->");
-      for (int i = 0; i<_strings.length; i++){
-         if (i != 0){
-            s.print(", ");
+         s.print(type+" ->");
+         for (int i = 0; i<_strings.length; i++){
+            if (i != 0){
+               s.print(", ");
+            }
+            s.print(_strings[i]+(results[i]?"*":"?"));
          }
-         s.print(_strings[i]+(results[i]?"*":"?"));
-      }
-      s.println();
+         s.println();
       }
    }
 
    static void dump(String type, boolean[] in){
       if (verbose){
-      s.print(type+" ->");
-      for (int i = 0; i<in.length; i++){
-         s.print("("+in[i]+"),");
-      }
-      s.println();
+         s.print(type+" ->");
+         for (int i = 0; i<in.length; i++){
+            s.print("("+in[i]+"),");
+         }
+         s.println();
       }
    }
 
    static void dump(String type, int[] out){
       if (verbose){
-      s.print(type+" ->");
-      for (int i = 0; i<out.length; i++){
-         s.print(out[i]+",");
-      }
-      s.println();
+         s.print(type+" ->");
+         for (int i = 0; i<out.length; i++){
+            s.print(out[i]+",");
+         }
+         s.println();
       }
    }
 
    static void dump(String type, int[] out, String format, int max){
       if (verbose){
-      s.print(type+" ->");
-      for (int i = 0; i<max; i++){
-         s.printf(format+",", out[i]);
-      }
-      s.println();
+         s.print(type+" ->");
+         for (int i = 0; i<max; i++){
+            s.printf(format+",", out[i]);
+         }
+         s.println();
       }
    }
 
    static void dump(String type, int[] in, int[] out){
       if (verbose){
-      s.print(type+" ->");
-      for (int i = 0; i<in.length; i++){
-         s.print("("+in[i]+","+out[i]+"),");
-      }
-      s.println();
+         s.print(type+" ->");
+         for (int i = 0; i<in.length; i++){
+            s.print("("+in[i]+","+out[i]+"),");
+         }
+         s.println();
       }
    }
 
    static void dump(String type, double[] in, double[] out){
       if (verbose){
-      s.print(type+" ->");
-      for (int i = 0; i<in.length; i++){
-         s.print("("+in[i]+","+out[i]+"),");
-      }
-      s.println();
+         s.print(type+" ->");
+         for (int i = 0; i<in.length; i++){
+            s.print("("+in[i]+","+out[i]+"),");
+         }
+         s.println();
       }
    }
 
    static void dump(String type, float[] in, float[] out){
       if (verbose){
-      s.print(type+" ->");
-      for (int i = 0; i<in.length; i++){
-         s.print("("+in[i]+","+out[i]+"),");
-      }
-      s.println();
+         s.print(type+" ->");
+         for (int i = 0; i<in.length; i++){
+            s.print("("+in[i]+","+out[i]+"),");
+         }
+         s.println();
       }
    }
 
    static void dump(String type, float[] in){
       if (verbose){
-      s.print(type+" ->");
-      for (int i = 0; i<in.length; i++){
-         s.print(in[i]+",");
+         s.print(type+" ->");
+         for (int i = 0; i<in.length; i++){
+            s.print(in[i]+",");
+         }
+         s.println();
       }
-      s.println();
-   }
    }
 
    static int getPreferredArraySize(){
@@ -482,7 +482,7 @@ public class JunitHelper{
       return (chars);
    }
 
-   static boolean verbose=Boolean.getBoolean("verbose");
+   static boolean verbose = Boolean.getBoolean("verbose");
    static PrintStream s = System.out;
 
    static void nl(String _txt){
@@ -491,10 +491,12 @@ public class JunitHelper{
          s.println(_txt);
       }
    }
+
    static void nl(){
 
-     nl("");
+      nl("");
    }
+
    static void nl(int _i){
 
       nl(""+_i);
@@ -507,7 +509,7 @@ public class JunitHelper{
       }
    }
 
-   static void outf(String _format, Object ... args){
+   static void outf(String _format, Object... args){
 
       if (verbose){
          s.printf(_format, args);
