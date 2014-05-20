@@ -22,7 +22,7 @@ public class ListRankingJUnit{
       for (int i = 0; i<_size; i++){
          links[i] = -1;
          if (_verbose){
-            System.out.println(i+" "+links[i]);
+            JunitHelper.nl(i+" "+links[i]);
          }
       }
 
@@ -35,12 +35,12 @@ public class ListRankingJUnit{
          while (index>1 && links[index] == -1){
             int next = randint(0, index); // between 1 and index
             if (_verbose){
-               System.out.println(" linking "+index+" to "+next+" ");
+               JunitHelper.nl(" linking "+index+" to "+next+" ");
             }
             index = links[index] = next;
             if (index<2 || (Math.random()*1000)<5){
                if (_verbose){
-                  System.out.println(" out! ");
+                  JunitHelper.nl(" out! ");
                }
                break;
             }
@@ -48,7 +48,7 @@ public class ListRankingJUnit{
       }
       if (_verbose){
          for (int i = 0; i<_size; i++){
-            System.out.println(i+" "+links[i]);
+            JunitHelper.nl(i+" "+links[i]);
          }
       }
       return (links);
@@ -59,19 +59,19 @@ public class ListRankingJUnit{
       int[] ranks = new int[_size];
       for (int i = 0; i<_size; i++){
          if (_verbose){
-            System.out.println(i+" ");
+            JunitHelper.nl(i+" ");
          }
          ranks[i] = 0;
          int index = i;
          while (_links[index] != -1){
             if (_verbose){
-               System.out.println(" "+_links[index]);
+               JunitHelper.nl(" "+_links[index]);
             }
             ranks[i]++;
             index = _links[index];
          }
          if (_verbose){
-            System.out.println(" #"+ranks[i]);
+            JunitHelper.nl(" #"+ranks[i]);
          }
       }
       return (ranks);
@@ -115,34 +115,34 @@ public class ListRankingJUnit{
          });
 
          for (int i = 0; i<20; i++){
-            System.out.printf(" %3d", i);
+            JunitHelper.outf(" %3d\n", i);
          }
-         System.out.println(" // #");
+         JunitHelper.nl(" // #");
          for (int i = 0; i<20; i++){
-            System.out.printf(" %3d", links[i]);
+            JunitHelper.outf(" %3d\n", links[i]);
          }
-         System.out.println(" // links orig");
+         JunitHelper.nl(" // links orig");
          for (int i = 0; i<20; i++){
-            System.out.printf(" %3d", linksX2[i*2+fromTo[0]]);
+            JunitHelper.outf(" %3d\n", linksX2[i*2+fromTo[0]]);
          }
-         System.out.println(" // links[from]");
+         JunitHelper.nl(" // links[from]");
          for (int i = 0; i<20; i++){
-            System.out.printf(" %3d", linksX2[i*2+fromTo[1]]);
+            JunitHelper.outf(" %3d\n", linksX2[i*2+fromTo[1]]);
          }
-         System.out.println(" // links[to]");
+         JunitHelper.nl(" // links[to]");
          for (int i = 0; i<20; i++){
-            System.out.printf(" %3d", ranksX2[i*2+fromTo[0]]);
+            JunitHelper.outf(" %3d\n", ranksX2[i*2+fromTo[0]]);
          }
-         System.out.println(" // ranks[from]");
+         JunitHelper.nl(" // ranks[from]");
          for (int i = 0; i<20; i++){
-            System.out.printf(" %3d", ranksX2[i*2+fromTo[1]]);
+            JunitHelper.outf(" %3d\n", ranksX2[i*2+fromTo[1]]);
          }
-         System.out.println(" // ranks[to]");
+         JunitHelper.nl(" // ranks[to]");
          for (int i = 0; i<20; i++){
-            System.out.printf(" %3d", referenceRanks[i]);
+            JunitHelper.outf(" %3d\n", referenceRanks[i]);
          }
-         System.out.println(" // referenceRanks");
-         System.out.println("---------------");
+         JunitHelper.nl(" // referenceRanks");
+         JunitHelper.nl("---------------");
 
       }
       int[] outRanks = new int[size];

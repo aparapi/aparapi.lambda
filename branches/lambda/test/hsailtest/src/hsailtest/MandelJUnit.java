@@ -164,7 +164,7 @@ public class MandelJUnit{
 
          long endMs = System.currentTimeMillis();
          long elapsedMs = (endMs-startMs);
-         System.out.println((deviceIndex == 0?"jtp":"hsa")+" fps="+(((float)frameCount*1000)/elapsedMs));
+         JunitHelper.nl((deviceIndex == 0?"jtp":"hsa")+" fps="+(((float)frameCount*1000)/elapsedMs));
       }
       for (int i = 0; i<FRAMES_PER_DEVICE; i++){
          if (!JunitHelper.compare(frameRgb[0][i], frameRgb[1][i])){

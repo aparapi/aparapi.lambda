@@ -13,24 +13,24 @@ import static junit.framework.Assert.assertTrue;
 public class CharArrayStateMachineJUnit{
 
    static void dump(String type, char[][] _strings, int[] results){
-      System.out.print(type+" ->");
+      JunitHelper.out(type+" ->");
       boolean first = true;
       for (int i = 0; i<_strings.length; i++){
          if (results[i]>0){
             if (!first){
-               System.out.print(", ");
+               JunitHelper.out(", ");
             }else{
                first = false;
             }
 
             for (char c : _strings[i]){
-               System.out.print(c);
+               JunitHelper.out(""+c);
             }
-            System.out.print("="+results[i]);
+            JunitHelper.out("="+results[i]);
          }
 
       }
-      System.out.println();
+      JunitHelper.nl();
    }
 
    static final int NON_ALPHA = 0;
@@ -100,7 +100,7 @@ public class CharArrayStateMachineJUnit{
          Arrays.fill(counts, 0);
          start = System.currentTimeMillis();
          Device.hsa().forEach(len, ic);
-         System.out.println();
+         JunitHelper.nl();
          dump("hsa"+i+"= "+(System.currentTimeMillis()-start), strings, counts);
       }
       int[] hsaCounts = JunitHelper.copy(counts);
@@ -108,7 +108,7 @@ public class CharArrayStateMachineJUnit{
       Arrays.fill(counts, 0);
       start = System.currentTimeMillis();
       Device.jtp().forEach(len, ic);
-      System.out.println();
+      JunitHelper.nl();
       dump("jtp = "+(System.currentTimeMillis()-start), strings, counts);
       JunitHelper.compare(hsaCounts, counts);
 

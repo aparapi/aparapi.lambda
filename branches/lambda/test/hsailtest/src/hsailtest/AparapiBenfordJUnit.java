@@ -61,7 +61,8 @@ public class AparapiBenfordJUnit{
    public void test(){
       ArrayList<TwitterUser> twitterData = getTwitterData();
      // int min = Aparapi.range(0, 12).reduce((l, r) -> l<r?l:r);
-      System.out.println("samples "+twitterData.size());
+      JunitHelper.nl("samples "+twitterData.size());
+
       assertTrue("sample size > 0 ", twitterData.size()>0);
       int[] histogram=new int[10];
       Aparapi.range(twitterData).forEach(td-> {
@@ -77,22 +78,23 @@ public class AparapiBenfordJUnit{
       int total = 0;
 
       for (int i:histogram){
-         System.out.print(i+ " ");
+         JunitHelper.out(i+ " ");
          total+=i;
       }
-      System.out.println();
+      JunitHelper.nl();
       int c=0;
       float sum=0f;
       for (int i:histogram){
          float normalized = (i*100f)/total;
          sum+=normalized;
-         System.out.printf("%d %5.2f :", c++, normalized);
+         JunitHelper.outf("%d %5.2f :", c++, normalized);
          for (int s=0; s<normalized; s++){
-            System.out.print("*");
+            JunitHelper.out("*");
+
          }
-         System.out.println();
+         JunitHelper.nl();
       }
-      System.out.printf("%5.2f\n", sum);
+      JunitHelper.outf("%5.2f\n", sum);
 
    }
 

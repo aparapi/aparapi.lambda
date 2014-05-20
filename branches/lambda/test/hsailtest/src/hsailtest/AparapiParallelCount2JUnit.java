@@ -16,8 +16,8 @@ public class AparapiParallelCount2JUnit{
 
       int count1 = Aparapi.range(0, 256).parallel().count(i -> stringChars[i][0] == '4');
       int count2 = Aparapi.range(0, 256).count(i -> stringChars[i][0] == '4');
-      System.out.println("count1="+count1);
-      System.out.println("count2="+count2);
+      JunitHelper.nl("count1="+count1);
+      JunitHelper.nl("count2="+count2);
       assertTrue("count1==count2", count1 == count2);
 
    }

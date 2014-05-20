@@ -131,18 +131,18 @@ public class ScanReduction3JUnit{
       fixup(in);
 
       int hsaSum = in[len-1];
-      System.out.println("hsaSum "+hsaSum);
+      JunitHelper.nl("hsaSum "+hsaSum);
 
-      System.out.print("rule");
+      JunitHelper.out("rule");
       for (int i = 0; i<1024; i++){
          if ((i%256) == 0){
-            System.out.print(" V  ");
+            JunitHelper.out(" V  ");
          }else{
-            System.out.print(" .  ");
+            JunitHelper.out(" .  ");
          }
       }
 
-      System.out.println();
+      JunitHelper.nl();
       JunitHelper.dump("orig", inCopy, "%3d", 1024);
       JunitHelper.dump(" hsa", in, "%3d", 1024);
 
@@ -152,7 +152,7 @@ public class ScanReduction3JUnit{
          out[i] = out[i-1]+inCopy[i];
       }
       int sum = out[len-1]+inCopy[len-1];
-      System.out.println("sum "+sum);
+      JunitHelper.out("sum "+sum);
 
       JunitHelper.dump(" seq", out, "%3d", 1024);
 

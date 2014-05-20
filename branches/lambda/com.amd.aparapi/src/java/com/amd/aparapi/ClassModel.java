@@ -2574,7 +2574,7 @@ public class ClassModel{
                      Instruction firstInThenBlock = lastBranchElseBlock.getNextPC();
                      // System.out.println("firstInThenBlock "+ firstInThenBlock.getPreStackBase()+", "+firstInThenBlock.getPostStackBase()) ;
                      //  System.out.println("last "+ last.getPreStackBase()+", "+last.getPostStackBase()) ;
-                     System.out.println("elseGoto "+elseGoto.getPreStackBase()+", "+elseGoto.getPostStackBase());
+                     //System.out.println("elseGoto "+elseGoto.getPreStackBase()+", "+elseGoto.getPostStackBase());
                      if (elseGoto.getPostStackBase()>firstInThenBlock.getPostStackBase()){
                         // System.out.println("@"+i.getStartPC()+" ternary!");
 

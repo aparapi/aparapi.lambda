@@ -192,16 +192,16 @@ public class ScanReductionBigJUnit{
       int outCount = in[len-1];
 
       int hsaSum = in[outCount];
-      System.out.println("hsaSum "+hsaSum);
-      System.out.print("rule");
+      JunitHelper.nl("hsaSum "+hsaSum);
+      JunitHelper.out("rule");
       for (int i = 0; i<Math.min(len, 1024); i++){
          if ((i%256) == 0){
-            System.out.print(" V  ");
+            JunitHelper.out(" V  ");
          }else{
-            System.out.print(" .  ");
+            JunitHelper.out(" .  ");
          }
       }
-      System.out.println();
+      JunitHelper.nl();
       JunitHelper.dump("orig", inCopy, "%3d", Math.min(len, 1024));
       JunitHelper.dump(" hsa", in, "%3d", Math.min(len, 1024));
       int[] out = new int[len];
@@ -210,7 +210,7 @@ public class ScanReductionBigJUnit{
          out[i] = out[i-1]+inCopy[i];
       }
       int sum = out[len-1]+inCopy[len-1];
-      System.out.println("sum "+sum);
+      JunitHelper.nl("sum "+sum);
       JunitHelper.dump(" seq", out, "%3d", Math.min(len, 1024));
       assertTrue("HSA equals JTP results", JunitHelper.compare(out, in));
    }
