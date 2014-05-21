@@ -1185,10 +1185,18 @@ public class HSAILAssembler{
             case GETFIELD:{
                // TypeHelper.JavaType type = i.asFieldAccessor().getConstantPoolFieldEntry().getType();
 
-               try{
-                  Class clazz = Class.forName(i.asFieldAccessor().getConstantPoolFieldEntry().getClassEntry().getDotClassName());
 
-                  Field f = clazz.getDeclaredField(i.asFieldAccessor().getFieldName());
+                  InstructionSet.FieldReference fieldAccessor = i.asFieldAccessor();
+                  String fieldName = i.asFieldAccessor().getFieldName();
+                  ClassModel.ConstantPool.FieldEntry cpe = fieldAccessor.getConstantPoolFieldEntry();
+                  String dotClassName = cpe.getClassEntry().getDotClassName();
+               try{
+                  //ClassModel cm = ClassModel.getClassModel(dotClassName);
+                  Class clazz  = ClassModel.getRealClassName(dotClassName);
+
+                //  Class clazz = Class.forName(realClassName);
+
+                  Field f = clazz.getDeclaredField(fieldName);
                   if (!f.getType().isPrimitive()){
                      ld_global(i, stackReg_ref(i), stackReg_ref(i), f);
                   }else if (f.getType().equals(int.class)){
@@ -1208,10 +1216,12 @@ public class HSAILAssembler{
                   }else{
                      throw new IllegalStateException("unexpected get field type");
                   }
-               }catch (ClassNotFoundException e){
+              // }catch (ClassNotFoundException e){
+                //  e.printStackTrace();
+
+              }catch (NoSuchFieldException e){
                   e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-               }catch (NoSuchFieldException e){
-                  e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                  throw new IllegalStateException("could not find field "+fieldName+" perhaps "+dotClassName+" is an interface");
                }
 
             }

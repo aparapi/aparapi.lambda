@@ -6,7 +6,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertTrue;
 
 public class AparapiParallelCount2JUnit{
-
+  // char[][] stringChars = new char[256][];
    @Test
    public void test(){
       char[][] stringChars = new char[256][];
