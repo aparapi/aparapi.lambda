@@ -96,20 +96,18 @@ public class ClassModel{
    }
 
    public static Class<?> getRealClassName(String _dotClassName){
-      for (String mappedName:map.keySet()){
+      for (String mappedName : map.keySet()){
          if (mappedName.equals(_dotClassName)){
-            return(map.get(mappedName).clazz);
+            return (map.get(mappedName).clazz);
          }
       }
-      for (String mappedName:map.keySet()){
+      for (String mappedName : map.keySet()){
          if (mappedName.startsWith(_dotClassName)){
-            return(map.get(mappedName).clazz);
+            return (map.get(mappedName).clazz);
          }
       }
-      return(null);
+      return (null);
    }
-
-
 
    private ClassModel(Class<?> _clazz) throws ClassParseException{
       String name = _clazz.getName();

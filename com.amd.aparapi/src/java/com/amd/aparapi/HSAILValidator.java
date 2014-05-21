@@ -247,7 +247,7 @@ public class HSAILValidator{
    static LineMatcher bodyStartMatcher = new LineMatcher(Pattern.compile("^ *\\)\\{ *"));
    static LineMatcher bodyEndMatcher = new LineMatcher(Pattern.compile("^ *\\}; *"));
 
-   public static void main(String[] _args) throws IOException, ClassNotFoundException, ClassParseException{
+   public static void main(String[] _args) throws IOException, ClassNotFoundException, ClassParseException, HSAILConversionException{
 
       String className = _args.length>0?_args[0]:"hsailtest.StringContainsJUnit";
 

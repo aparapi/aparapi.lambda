@@ -52,7 +52,6 @@ public class StringReductionJUnit{
    @Test
    public void test() throws Exception{
       String[] lines = getLines();
-      System.out.println("lines "+lines.length);
       assertTrue("file is read", lines.length>0);
       long start;
       int hsaAverage = 0;

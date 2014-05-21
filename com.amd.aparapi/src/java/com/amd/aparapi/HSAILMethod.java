@@ -128,7 +128,8 @@ class CallInfo{
 
          /** sig to specialize CharSequence to String  - big hack!**/
          if (dotClassName.equals("java.lang.CharSequence")){
-            System.out.println("Specializing java.lang.CharSequence to java.lang.String!!!!! ");
+
+            System.out.println("WARNING: HSAILMethod:CallInfo() -> Specializing java.lang.CharSequence to java.lang.String!!!!! ");
             dotClassName = "java.lang.String";
          }
 
@@ -394,12 +395,12 @@ public class HSAILMethod{
       return (r);
    }
 
-   static synchronized HSAILMethod getHSAILMethod(ClassModel.ClassModelMethod _method, Aparapi.Lambda _lambda, Aparapi.Lambda... inline){
+   static synchronized HSAILMethod getHSAILMethod(ClassModel.ClassModelMethod _method, Aparapi.Lambda _lambda, Aparapi.Lambda... inline) throws HSAILConversionException{
       HSAILMethod instance = new HSAILMethod(_method, _lambda, inline);
       return (instance);
    }
 
-   private HSAILMethod(ClassModel.ClassModelMethod _method, Aparapi.Lambda _lambda, Aparapi.Lambda... inline){
+   private HSAILMethod(ClassModel.ClassModelMethod _method, Aparapi.Lambda _lambda, Aparapi.Lambda... inline) throws HSAILConversionException{
       method = _method;
 
       assembler = new HSAILAssembler(method);

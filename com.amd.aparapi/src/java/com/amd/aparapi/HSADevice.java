@@ -50,17 +50,22 @@ public class HSADevice extends Device<HSADevice>{
    }
 
    CachedRunner getCachedRunner(Aparapi.Lambda lambda, int _extraArgs, Aparapi.Lambda... inline){
-      try{
+
          CachedRunner cachedRunner = null;
          if (map.containsKey(lambda.getClass())){
             cachedRunner = map.get(lambda.getClass());
          }else{
-            cachedRunner = new CachedRunner();
+            try{
             LambdaKernelCall lkc = new LambdaKernelCall(lambda);
 
             // ClassModel classModel = ClassModel.getClassModel(lkc.getLambdaKernelClass());
             ClassModel.ClassModelMethod method = lkc.getLambdaKernelClassModelMethod();
+            try{
             HSAILMethod hsailMethod = HSAILMethod.getHSAILMethod(method, lambda, inline);
+            if (hsailMethod != null){
+               cachedRunner = new CachedRunner();
+
+
 
             HSAILRenderer renderer = new HSAILRenderer().setShowComments(true);
             hsailMethod.render(renderer, lambda);
@@ -82,7 +87,17 @@ public class HSADevice extends Device<HSADevice>{
             cachedRunner.args = new Object[cachedRunner.capturedFields.length+(cachedRunner.isStatic?0:1)+_extraArgs];
 
             map.put(lambda.getClass(), cachedRunner);
+            }
+         }catch(HSAILConversionException hsce){
+               hsce.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            }
+            }catch (AparapiException e){
+               e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            }catch (ClassNotFoundException e){
+               e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            }
          }
+         if (cachedRunner != null){
          cachedRunner.arg = 0;
          if (!cachedRunner.isStatic){
             cachedRunner.args[cachedRunner.arg++] = cachedRunner.instance;
@@ -112,18 +127,14 @@ public class HSADevice extends Device<HSADevice>{
          }catch (IllegalAccessException e){
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
          }
+         }
          return (cachedRunner);
 
-      }catch (AparapiException e){
-         e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-      }catch (ClassNotFoundException e){
-         e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-      }
-      return (null);
    }
 
    public void forEach(int from, int to, Aparapi.IntTerminal ic){
       CachedRunner cachedRunner = getCachedRunner(ic, 1);
+      if (cachedRunner!=null){
 
       // The args will be the captured args followed by the fake 'id' arg which is passed to the kernel
       // but subsequently clobbered by generated HSAIL
@@ -170,11 +181,14 @@ public class HSADevice extends Device<HSADevice>{
 
       cachedRunner.args[cachedRunner.arg++] = from;
       cachedRunner.runner.run(from, to, cachedRunner.args);
+      }else{
+         throw new IllegalStateException("failed to create/dispatch HSAIL");
+      }
    }
 
    public void forEach(int from, int to, Aparapi.Lambda inlineMe, Aparapi.IntTerminal ic){
       CachedRunner cachedRunner = getCachedRunner(ic, 1, inlineMe);
-
+      if (cachedRunner!=null){
       // The args will be the captured args followed by the fake 'id' arg which is passed to the kernel
       // but subsequently clobbered by generated HSAIL
       //
@@ -220,6 +234,9 @@ public class HSADevice extends Device<HSADevice>{
 
       cachedRunner.args[cachedRunner.arg++] = from;
       cachedRunner.runner.run(from, to, cachedRunner.args);
+      }else{
+         throw new IllegalStateException("failed to create/dispatch HSAIL");
+      }
    }
 
    public <T> void forEach(T[] _array, Aparapi.ObjectTerminal<T> ic){

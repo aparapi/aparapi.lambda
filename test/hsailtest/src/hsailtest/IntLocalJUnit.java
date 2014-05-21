@@ -24,7 +24,7 @@ public class IntLocalJUnit{
          HSA.barrier();
          out[gid] = local[lid];
       };
-      Device.hsa().dump(ic);
+     // Device.hsa().dump(ic);
       Device.hsa().forEach(len, ic);
       int[] hsaOut = JunitHelper.copy(out);
       JunitHelper.dump("hsa", in, out);
