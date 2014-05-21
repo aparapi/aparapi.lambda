@@ -51,6 +51,10 @@ public class Aparapi{
       boolean reduce(int lhs, int rhs);
    }
 
+   static public interface ObjectReducer<T> extends Reducer{
+      T reduce(T lhs, T rhs);
+   }
+
    static public class IntRange{
       int from;
       int to;
@@ -169,6 +173,31 @@ public class Aparapi{
          }
 
       }
+      public int count(Object2BooleanMapper<T> _im){
+         int counter = 0;
+         for (T t:arr){
+            if (_im.map(t)){
+               counter++;
+            }
+         }
+         return(counter);
+      }
+
+      public T select(ObjectReducer<T> _or){
+
+         T best = null;
+
+         for (T o: arr){
+            if (best == null){
+               best = o;
+            }else{
+               best = _or.reduce(best,o);
+
+            }
+
+         }
+         return (best);
+      }
 
    }
 
@@ -204,6 +233,9 @@ public class Aparapi{
          }
          return (result);
       }
+
+
+
    }
 
    static public class ParallelIntRange{
@@ -257,7 +289,6 @@ public class Aparapi{
       }
 
       public ParallelMappedArrayRange<T> map(Object2IntMapper<T> _im){
-
          return (new ParallelMappedArrayRange(this, _im));
       }
 
@@ -266,9 +297,14 @@ public class Aparapi{
 
       }
 
-      public T select(BooleanReducer _ir){
+
+      public T select(ObjectReducer<T> _or){
          throw new IllegalStateException("ParallelArrayRange.select not implemented");
 
+      }
+
+      public int count(Object2BooleanMapper<T> _im){
+         throw new IllegalStateException("ParallelArrayRange.count not implemented");
       }
 
    }
