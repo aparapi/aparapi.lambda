@@ -41,7 +41,6 @@ public class WordReductionJUnit{
    @Test
    public void test() throws Exception{
       String[] lines = getLines();
-      JunitHelper.nl("lines "+lines.length);
       assertTrue("file is read", lines.length>0);
       long start;
       int hsaAverage = 0;

@@ -493,7 +493,7 @@ public class HSAILAssembler{
 
    ;
 
-   public void addInstructions(ClassModel.ClassModelMethod method, Aparapi.Lambda... inline){
+   public void addInstructions(ClassModel.ClassModelMethod method, Aparapi.Lambda... inline) throws HSAILConversionException{
 
       ParseState parseState = ParseState.NONE;
 
@@ -1185,17 +1185,17 @@ public class HSAILAssembler{
             case GETFIELD:{
                // TypeHelper.JavaType type = i.asFieldAccessor().getConstantPoolFieldEntry().getType();
 
+               InstructionSet.FieldReference fieldAccessor = i.asFieldAccessor();
+               String fieldName = i.asFieldAccessor().getFieldName();
+               ClassModel.ConstantPool.FieldEntry cpe = fieldAccessor.getConstantPoolFieldEntry();
+               String dotClassName = cpe.getClassEntry().getDotClassName();
 
-                  InstructionSet.FieldReference fieldAccessor = i.asFieldAccessor();
-                  String fieldName = i.asFieldAccessor().getFieldName();
-                  ClassModel.ConstantPool.FieldEntry cpe = fieldAccessor.getConstantPoolFieldEntry();
-                  String dotClassName = cpe.getClassEntry().getDotClassName();
-               try{
                   //ClassModel cm = ClassModel.getClassModel(dotClassName);
-                  Class clazz  = ClassModel.getRealClassName(dotClassName);
+                  Class clazz = ClassModel.getRealClassName(dotClassName);
+                  if (!clazz.isInterface()){
 
-                //  Class clazz = Class.forName(realClassName);
-
+                  //  Class clazz = Class.forName(realClassName);
+                     try{
                   Field f = clazz.getDeclaredField(fieldName);
                   if (!f.getType().isPrimitive()){
                      ld_global(i, stackReg_ref(i), stackReg_ref(i), f);
@@ -1214,15 +1214,19 @@ public class HSAILAssembler{
                   }else if (f.getType().equals(long.class)){
                      ld_global(i, stackReg_s64(i), stackReg_ref(i), f);
                   }else{
-                     throw new IllegalStateException("unexpected get field type");
+                     throw new HSAILConversionException("unexpected get field type");
                   }
-              // }catch (ClassNotFoundException e){
-                //  e.printStackTrace();
+                     }catch (NoSuchFieldException e){
+                        throw new HSAILConversionException("could not find field "+fieldName+" perhaps "+dotClassName+" is a base class type and field is in derived?");
 
-              }catch (NoSuchFieldException e){
-                  e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                  throw new IllegalStateException("could not find field "+fieldName+" perhaps "+dotClassName+" is an interface");
-               }
+                     }
+                  }else{
+                     throw new HSAILConversionException("could not find field "+fieldName+" perhaps "+dotClassName+" is an interface?");
+                  }
+                  // }catch (ClassNotFoundException e){
+                  //  e.printStackTrace();
+
+
 
             }
             break;
