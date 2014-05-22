@@ -241,7 +241,7 @@ Here are how I set my vars.
 
 It is recommended (thanks notzed ;) ) that you test your {{{env.sh}}} using *{{{sh env.sh}}}* until it stops reporting errors. 
   
-Once you have finished I recommend sourcing it into your current shell *{{{env.sh}}}* and building.
+Once you have finished I recommend sourcing it into your current shell before building with ant.
 
 {{{
 $ cd ~aparapi-lambda
@@ -249,7 +249,7 @@ $ . env.sh
 $ ant
 }}}
 
-If you get any problems check the env vars first.
+If you get any problems check the {{{env.sh}}} vars first.
 
 If all is well you should be able to run some samples. 
 
