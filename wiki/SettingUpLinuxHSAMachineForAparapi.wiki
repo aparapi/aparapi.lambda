@@ -239,7 +239,7 @@ Here are how I set my vars.
 || APARAPI_HOME || /home/${LOGNAME}/aparapi-lambda ||
 || OKRA_HOME || /home/${LOGNAME}/Okra-Interface-to-HSA-Device/okra/ ||
 
-It is recommended (thanks notzed ;) ) that you test your {{{env.sh}}} using {{{sh env.sh}}} until it stops reporting errors. 
+It is recommended (thanks notzed ;) ) that you test your {{{env.sh}}} using *{{{sh env.sh}}}* until it stops reporting errors. 
   
 Once you have finished I recommend sourcing it into your current shell *{{{env.sh}}}* and building.
 
