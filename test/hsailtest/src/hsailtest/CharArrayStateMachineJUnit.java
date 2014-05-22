@@ -13,24 +13,24 @@ import static junit.framework.Assert.assertTrue;
 public class CharArrayStateMachineJUnit{
 
    static void dump(String type, char[][] _strings, int[] results){
-      JunitHelper.out(type+" ->");
+      JUnitHelper.out(type+" ->");
       boolean first = true;
       for (int i = 0; i<_strings.length; i++){
          if (results[i]>0){
             if (!first){
-               JunitHelper.out(", ");
+               JUnitHelper.out(", ");
             }else{
                first = false;
             }
 
             for (char c : _strings[i]){
-               JunitHelper.out(""+c);
+               JUnitHelper.out(""+c);
             }
-            JunitHelper.out("="+results[i]);
+            JUnitHelper.out("="+results[i]);
          }
 
       }
-      JunitHelper.nl();
+      JUnitHelper.nl();
    }
 
    static final int NON_ALPHA = 0;
@@ -45,11 +45,11 @@ public class CharArrayStateMachineJUnit{
          dataDir = new File("samples/dickens/data");
       }
       assertTrue("Data Dir Exists", dataDir.exists() && dataDir.isDirectory());
-      char[][] strings = JunitHelper.buildLowerCaseDictionaryChars(new File(dataDir, "names.txt"));
+      char[][] strings = JUnitHelper.buildLowerCaseDictionaryChars(new File(dataDir, "names.txt"));
       assertNotNull("names dictionary", strings);
       int len = strings.length;
 
-      char[] text = JunitHelper.getLowercaseTextChars(new File(dataDir, "dickens/OliverTwist.txt"));
+      char[] text = JUnitHelper.getLowercaseTextChars(new File(dataDir, "dickens/OliverTwist.txt"));
       assertNotNull("names dictionary", text);
       int[] counts = new int[len];
       Aparapi.IntTerminal ic = gid -> {
@@ -100,17 +100,17 @@ public class CharArrayStateMachineJUnit{
          Arrays.fill(counts, 0);
          start = System.currentTimeMillis();
          Device.hsa().forEach(len, ic);
-         JunitHelper.nl();
+         JUnitHelper.nl();
          dump("hsa"+i+"= "+(System.currentTimeMillis()-start), strings, counts);
       }
-      int[] hsaCounts = JunitHelper.copy(counts);
+      int[] hsaCounts = JUnitHelper.copy(counts);
 
       Arrays.fill(counts, 0);
       start = System.currentTimeMillis();
       Device.jtp().forEach(len, ic);
-      JunitHelper.nl();
+      JUnitHelper.nl();
       dump("jtp = "+(System.currentTimeMillis()-start), strings, counts);
-      JunitHelper.compare(hsaCounts, counts);
+      JUnitHelper.compare(hsaCounts, counts);
 
    }
 }

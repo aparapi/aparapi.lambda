@@ -11,7 +11,7 @@ public class AparapiParallelMapReduceJUnit{
    public void testMin(){
 
       int min = Aparapi.range(0, 12).parallel().map(i -> i).reduce((l, r) -> l<r?l:r);
-      JunitHelper.nl("min "+min);
+      JUnitHelper.nl("min "+min);
       assertTrue("min==0", min == 0);
 
    }
@@ -21,7 +21,7 @@ public class AparapiParallelMapReduceJUnit{
 
       int max = Aparapi.range(0, 12).parallel().map(i -> i*2).reduce((l, r) -> l>r?l:r);
 
-      JunitHelper.nl("max "+max);
+      JUnitHelper.nl("max "+max);
       assertTrue("max==0", max == 22);
 
    }
@@ -31,7 +31,7 @@ public class AparapiParallelMapReduceJUnit{
 
       int sum = Aparapi.range(0, 12).parallel().map(i -> i).reduce((l, r) -> l+r);
 
-      JunitHelper.nl("sum "+sum);
+      JUnitHelper.nl("sum "+sum);
       assertTrue("sum==0", sum == 66);
 
    }

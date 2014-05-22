@@ -23,15 +23,15 @@ public class IntVectorMultiplyAddJUnit{
       Device.hsa().forEach(in.length, id -> {
          out[id] = in[id]*m+a;
       });
-      JunitHelper.dump("hsa", in, out);
-      int[] hsaOut = JunitHelper.copy(out);
+      JUnitHelper.dump("hsa", in, out);
+      int[] hsaOut = JUnitHelper.copy(out);
       Arrays.fill(out, 0);
 
       Device.jtp().forEach(in.length, id -> {
          out[id] = in[id]*m+a;
       });
-      JunitHelper.dump("jtp", in, out);
-      assertTrue("HSA and JTP output match", JunitHelper.compare(out, hsaOut));
+      JUnitHelper.dump("jtp", in, out);
+      assertTrue("HSA and JTP output match", JUnitHelper.compare(out, hsaOut));
    }
 
 }

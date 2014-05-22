@@ -164,10 +164,10 @@ public class MandelJUnit{
 
          long endMs = System.currentTimeMillis();
          long elapsedMs = (endMs-startMs);
-         JunitHelper.nl((deviceIndex == 0?"jtp":"hsa")+" fps="+(((float)frameCount*1000)/elapsedMs));
+         JUnitHelper.nl((deviceIndex == 0?"jtp":"hsa")+" fps="+(((float)frameCount*1000)/elapsedMs));
       }
       for (int i = 0; i<FRAMES_PER_DEVICE; i++){
-         if (!JunitHelper.compare(frameRgb[0][i], frameRgb[1][i])){
+         if (!JUnitHelper.compare(frameRgb[0][i], frameRgb[1][i])){
             fail("failed at index "+i);
          }
       }

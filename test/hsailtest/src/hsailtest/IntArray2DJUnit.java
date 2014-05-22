@@ -10,7 +10,7 @@ public class IntArray2DJUnit{
 
    @Test
    public void test(){
-      final int len = JunitHelper.getPreferredArraySize();
+      final int len = JUnitHelper.getPreferredArraySize();
       int[][] matrix = new int[len][len];
 
       Aparapi.IntTerminal ic = gid -> {
@@ -19,12 +19,12 @@ public class IntArray2DJUnit{
          }
       };
       Device.hsa().forEach(len, ic);
-      int[][] hsaOut = JunitHelper.copy(matrix);
-      JunitHelper.dump("hsa", matrix);
+      int[][] hsaOut = JUnitHelper.copy(matrix);
+      JUnitHelper.dump("hsa", matrix);
       Device.jtp().forEach(len, ic);
-      JunitHelper.dump("jtp", matrix);
+      JUnitHelper.dump("jtp", matrix);
       Device.seq().forEach(len, ic);
-      JunitHelper.dump("seq", matrix);
-      assertTrue("HSA equals JTP results", JunitHelper.compare(hsaOut, matrix));
+      JUnitHelper.dump("seq", matrix);
+      assertTrue("HSA equals JTP results", JUnitHelper.compare(hsaOut, matrix));
    }
 }

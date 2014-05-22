@@ -306,48 +306,17 @@ public abstract class Kernel implements Cloneable{
        * This is meant to be used for debugging a kernel.
        */
       SEQ;
-      static boolean openCLAvailable;
 
-      static{
-         String arch = System.getProperty("os.arch");
-         logger.fine("arch = "+arch);
-
-         String libName = null;
-         try{
-
-            if (arch.equals("amd64") || arch.equals("x86_64")){
-               libName = "aparapi_opencl_x86_64";
-               logger.fine("attempting to array_load shared lib "+libName);
-               System.loadLibrary(libName);
-               openCLAvailable = true;
-            }else if (arch.equals("x86") || arch.equals("i386")){
-               libName = "aparapi_opencl_x86";
-               logger.fine("attempting to array_load shared lib "+libName);
-               System.loadLibrary(libName);
-               openCLAvailable = true;
-            }else{
-               logger.warning("Expected property os.arch to contain amd64 or x86 but found "+arch
-                     +" don't know which library to array_load.");
-
-            }
-         }catch (UnsatisfiedLinkError e){
-            logger.warning("Check your environment. Failed to array_load aparapi native library "
-                  +libName
-                  +" or possibly failed to locate opencl native library (opencl.dll/opencl.so). Ensure that both are in your PATH (windows) or in LD_LIBRARY_PATH (linux).");
-
-            openCLAvailable = false;
-         }
-      }
 
       static EXECUTION_MODE getDefaultExecutionMode(){
-         EXECUTION_MODE defaultExecutionMode = OpenCLJNI.getJNI().isOpenCLAvailable()?GPU:JTP;
+         EXECUTION_MODE defaultExecutionMode = OpenCLJNI.getOpenCLJNI().isOpenCLAvailable()?GPU:JTP;
          String executionMode = Config.executionMode;
          if (executionMode != null){
             try{
                EXECUTION_MODE requestedExecutionMode;
                requestedExecutionMode = getExecutionModeFromString(executionMode).iterator().next();
                logger.fine("requested execution mode =");
-               if ((OpenCLJNI.getJNI().isOpenCLAvailable() && requestedExecutionMode.isOpenCL())
+               if ((OpenCLJNI.getOpenCLJNI().isOpenCLAvailable() && requestedExecutionMode.isOpenCL())
                      || !requestedExecutionMode.isOpenCL()){
                   defaultExecutionMode = requestedExecutionMode;
                }
@@ -363,7 +332,7 @@ public abstract class Kernel implements Cloneable{
 
       static LinkedHashSet<EXECUTION_MODE> getDefaultExecutionModes(){
          LinkedHashSet<EXECUTION_MODE> defaultExecutionModes = new LinkedHashSet<EXECUTION_MODE>();
-         if (OpenCLJNI.getJNI().isOpenCLAvailable()){
+         if (OpenCLJNI.getOpenCLJNI().isOpenCLAvailable()){
             defaultExecutionModes.add(GPU);
             defaultExecutionModes.add(JTP);
          }else{
@@ -378,7 +347,7 @@ public abstract class Kernel implements Cloneable{
                for (EXECUTION_MODE mode : requestedExecutionModes){
                   logger.fine(" "+mode);
                }
-               if ((OpenCLJNI.getJNI().isOpenCLAvailable() && EXECUTION_MODE.anyOpenCL(requestedExecutionModes))
+               if ((OpenCLJNI.getOpenCLJNI().isOpenCLAvailable() && EXECUTION_MODE.anyOpenCL(requestedExecutionModes))
                      || !EXECUTION_MODE.anyOpenCL(requestedExecutionModes)){
                   defaultExecutionModes = requestedExecutionModes;
                }

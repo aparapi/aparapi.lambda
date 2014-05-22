@@ -22,7 +22,7 @@ public class ListRankingJUnit{
       for (int i = 0; i<_size; i++){
          links[i] = -1;
          if (_verbose){
-            JunitHelper.nl(i+" "+links[i]);
+            JUnitHelper.nl(i+" "+links[i]);
          }
       }
 
@@ -35,12 +35,12 @@ public class ListRankingJUnit{
          while (index>1 && links[index] == -1){
             int next = randint(0, index); // between 1 and index
             if (_verbose){
-               JunitHelper.nl(" linking "+index+" to "+next+" ");
+               JUnitHelper.nl(" linking "+index+" to "+next+" ");
             }
             index = links[index] = next;
             if (index<2 || (Math.random()*1000)<5){
                if (_verbose){
-                  JunitHelper.nl(" out! ");
+                  JUnitHelper.nl(" out! ");
                }
                break;
             }
@@ -48,7 +48,7 @@ public class ListRankingJUnit{
       }
       if (_verbose){
          for (int i = 0; i<_size; i++){
-            JunitHelper.nl(i+" "+links[i]);
+            JUnitHelper.nl(i+" "+links[i]);
          }
       }
       return (links);
@@ -59,19 +59,19 @@ public class ListRankingJUnit{
       int[] ranks = new int[_size];
       for (int i = 0; i<_size; i++){
          if (_verbose){
-            JunitHelper.nl(i+" ");
+            JUnitHelper.nl(i+" ");
          }
          ranks[i] = 0;
          int index = i;
          while (_links[index] != -1){
             if (_verbose){
-               JunitHelper.nl(" "+_links[index]);
+               JUnitHelper.nl(" "+_links[index]);
             }
             ranks[i]++;
             index = _links[index];
          }
          if (_verbose){
-            JunitHelper.nl(" #"+ranks[i]);
+            JUnitHelper.nl(" #"+ranks[i]);
          }
       }
       return (ranks);
@@ -115,34 +115,34 @@ public class ListRankingJUnit{
          });
 
          for (int i = 0; i<20; i++){
-            JunitHelper.outf(" %3d\n", i);
+            JUnitHelper.outf(" %3d\n", i);
          }
-         JunitHelper.nl(" // #");
+         JUnitHelper.nl(" // #");
          for (int i = 0; i<20; i++){
-            JunitHelper.outf(" %3d\n", links[i]);
+            JUnitHelper.outf(" %3d\n", links[i]);
          }
-         JunitHelper.nl(" // links orig");
+         JUnitHelper.nl(" // links orig");
          for (int i = 0; i<20; i++){
-            JunitHelper.outf(" %3d\n", linksX2[i*2+fromTo[0]]);
+            JUnitHelper.outf(" %3d\n", linksX2[i*2+fromTo[0]]);
          }
-         JunitHelper.nl(" // links[from]");
+         JUnitHelper.nl(" // links[from]");
          for (int i = 0; i<20; i++){
-            JunitHelper.outf(" %3d\n", linksX2[i*2+fromTo[1]]);
+            JUnitHelper.outf(" %3d\n", linksX2[i*2+fromTo[1]]);
          }
-         JunitHelper.nl(" // links[to]");
+         JUnitHelper.nl(" // links[to]");
          for (int i = 0; i<20; i++){
-            JunitHelper.outf(" %3d\n", ranksX2[i*2+fromTo[0]]);
+            JUnitHelper.outf(" %3d\n", ranksX2[i*2+fromTo[0]]);
          }
-         JunitHelper.nl(" // ranks[from]");
+         JUnitHelper.nl(" // ranks[from]");
          for (int i = 0; i<20; i++){
-            JunitHelper.outf(" %3d\n", ranksX2[i*2+fromTo[1]]);
+            JUnitHelper.outf(" %3d\n", ranksX2[i*2+fromTo[1]]);
          }
-         JunitHelper.nl(" // ranks[to]");
+         JUnitHelper.nl(" // ranks[to]");
          for (int i = 0; i<20; i++){
-            JunitHelper.outf(" %3d\n", referenceRanks[i]);
+            JUnitHelper.outf(" %3d\n", referenceRanks[i]);
          }
-         JunitHelper.nl(" // referenceRanks");
-         JunitHelper.nl("---------------");
+         JUnitHelper.nl(" // referenceRanks");
+         JUnitHelper.nl("---------------");
 
       }
       int[] outRanks = new int[size];
@@ -150,7 +150,7 @@ public class ListRankingJUnit{
          outRanks[i] = ranksX2[i*2+fromTo[1]];
       }
 
-      assertTrue("HSA equals JTP results", JunitHelper.compare(referenceRanks, outRanks));
+      assertTrue("HSA equals JTP results", JUnitHelper.compare(referenceRanks, outRanks));
 
    }
 }

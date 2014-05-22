@@ -49,7 +49,7 @@ class Book implements Comparable<Book>{
 
    void checkNames(Device _device, Name[] _names){
 
-      JunitHelper.nl("started "+title);
+      JUnitHelper.nl("started "+title);
       char[] textChars = this.textChars;
 
       _device.forEach(_names.length, gid -> { // process name array in parallel
@@ -142,7 +142,7 @@ public class DickensJUnit{
             hsaList.add(new Name((" "+line.trim()+" ")));
          }
          int padNames = Integer.getInteger("padNames", 64);
-         JunitHelper.nl("padName="+padNames);
+         JUnitHelper.nl("padName="+padNames);
          // We pad the name list to a group boundary.
          while (padNames>0 && (jtpList.size()%padNames) != 0){
             jtpList.add(new Name("xxxxx"));
@@ -159,12 +159,12 @@ public class DickensJUnit{
          Device device = devices[deviceIndex];
          Name[] names = nameLists[deviceIndex];
          long startMs = System.currentTimeMillis();
-         JunitHelper.nl("Starting on device "+device.getClass().getSimpleName());
+         JUnitHelper.nl("Starting on device "+device.getClass().getSimpleName());
          for (Book book : library){
             book.checkNames(device, names);
          }
          long endMs = System.currentTimeMillis();
-         JunitHelper.nl("Elapsed = "+(endMs-startMs));
+         JUnitHelper.nl("Elapsed = "+(endMs-startMs));
       }
 
       for (int nameIdx = 0; nameIdx<nameLists[0].length; nameIdx++){

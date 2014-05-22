@@ -44,10 +44,19 @@ class NameToBytes{
 };
 
 NameToBytes *head = NULL;
+extern "C"
+ JNIEXPORT
+  void JNICALL Java_com_amd_aparapi_AparapiJNI_dumpLoadedClassNames(JNIEnv *jenv, jobject instance){
+    int count=0;
+    for (NameToBytes *ptr = head; ptr != NULL; ptr=(NameToBytes *)ptr->getNext()){
+       fprintf(stdout, "%d %s\n", count, ptr->getName());
+       count++;
+    }
+}
 
 extern "C"
  JNIEXPORT
-  jbyteArray JNICALL Java_com_amd_aparapi_OpenCLJNI_getBytes(JNIEnv *jenv, jobject instance, jstring className){
+  jbyteArray JNICALL Java_com_amd_aparapi_AparapiJNI_getBytes(JNIEnv *jenv, jobject instance, jstring className){
       jbyteArray bytes = NULL;
       const char *nameChars = jenv->GetStringUTFChars(className, NULL);
       //fprintf(stdout, "inside getBytes(\"%s\")\n", nameChars);

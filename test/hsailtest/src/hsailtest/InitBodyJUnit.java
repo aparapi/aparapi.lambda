@@ -25,7 +25,7 @@ public class InitBodyJUnit{
    public void test(){
       int width = 200;
       int height = 200;
-      int len = JunitHelper.getPreferredArraySize();
+      int len = JUnitHelper.getPreferredArraySize();
       Body[] jtpBodies = new Body[len];
       Body[] hsaBodies = new Body[len];
       // we can't construct
@@ -40,13 +40,13 @@ public class InitBodyJUnit{
       });
 
       for (int i = 0; i<len; i++){
-         if (!JunitHelper.withinTolerance(jtpBodies[i].x, hsaBodies[i].x)){
+         if (!JUnitHelper.withinTolerance(jtpBodies[i].x, hsaBodies[i].x)){
             assertTrue("body["+i+"] dx", false);
          }
-         if (!JunitHelper.withinTolerance(jtpBodies[i].y, hsaBodies[i].y)){
+         if (!JUnitHelper.withinTolerance(jtpBodies[i].y, hsaBodies[i].y)){
             assertTrue("body["+i+"] dy", false);
          }
-         if (!JunitHelper.withinTolerance(jtpBodies[i].y, hsaBodies[i].y)){
+         if (!JUnitHelper.withinTolerance(jtpBodies[i].y, hsaBodies[i].y)){
             assertTrue("body["+i+"] dz", false);
          }
 

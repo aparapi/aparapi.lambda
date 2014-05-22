@@ -11,7 +11,7 @@ public class IntLocalJUnit{
 
    @Test
    public void test(){
-      final int len = JunitHelper.getPreferredArraySize();
+      final int len = JUnitHelper.getPreferredArraySize();
       int in[] = new int[len];
       Device.jtp().forEach(len, id -> in[id] = id);
       int out[] = new int[len];
@@ -26,12 +26,12 @@ public class IntLocalJUnit{
       };
      // Device.hsa().dump(ic);
       Device.hsa().forEach(len, ic);
-      int[] hsaOut = JunitHelper.copy(out);
-      JunitHelper.dump("hsa", in, out);
+      int[] hsaOut = JUnitHelper.copy(out);
+      JUnitHelper.dump("hsa", in, out);
       Device.jtp().forEach(len, gid -> out[gid] = in[gid]+1);
-      JunitHelper.dump("jtp", in, out);
+      JUnitHelper.dump("jtp", in, out);
 
-      assertTrue("HSA equals JTP results", JunitHelper.compare(hsaOut, out));
+      assertTrue("HSA equals JTP results", JUnitHelper.compare(hsaOut, out));
 
    }
 }

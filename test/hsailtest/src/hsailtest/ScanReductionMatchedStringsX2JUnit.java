@@ -197,40 +197,40 @@ public class ScanReductionMatchedStringsX2JUnit{
       int[] in = new int[len];
       Device.jtp().forEach(len, id -> inStrings[id] = ""+id);
       filter(inStrings, in);
-      int[] inCopy = JunitHelper.copy(in);
+      int[] inCopy = JUnitHelper.copy(in);
       scan(in, 1, 256);
       scan(in, 256, 256);
       scan(in, 65536, 4);
       fixup(in, 256, 4);
       fixup(in, 1, 256);
       int outCount = in[len-1];
-      JunitHelper.nl("number of strings="+outCount);
+      JUnitHelper.nl("number of strings="+outCount);
       String[] outStrings = new String[outCount];
       map(inStrings, in, outStrings);
       for (String s : outStrings){
-         JunitHelper.nl(s);
+         JUnitHelper.nl(s);
       }
       int hsaSum = in[len-1];
-      JunitHelper.nl("hsaSum "+hsaSum);
-      JunitHelper.out("rule");
+      JUnitHelper.nl("hsaSum "+hsaSum);
+      JUnitHelper.out("rule");
       for (int i = 0; i<1024; i++){
          if ((i%256) == 0){
-            JunitHelper.out(" V  ");
+            JUnitHelper.out(" V  ");
          }else{
-            JunitHelper.out(" .  ");
+            JUnitHelper.out(" .  ");
          }
       }
-      JunitHelper.nl();
-      JunitHelper.dump("orig", inCopy, "%3d", 1024);
-      JunitHelper.dump(" hsa", in, "%3d", 1024);
+      JUnitHelper.nl();
+      JUnitHelper.dump("orig", inCopy, "%3d", 1024);
+      JUnitHelper.dump(" hsa", in, "%3d", 1024);
       int[] out = new int[len];
       out[0] = inCopy[0];
       for (int i = 1; i<len; i++){
          out[i] = out[i-1]+inCopy[i];
       }
       int sum = out[len-1]+inCopy[len-1];
-      JunitHelper.nl("sum "+sum);
-      JunitHelper.dump(" seq", out, "%3d", 1024);
-      assertTrue("HSA equals JTP results", JunitHelper.compare(out, in));
+      JUnitHelper.nl("sum "+sum);
+      JUnitHelper.dump(" seq", out, "%3d", 1024);
+      assertTrue("HSA equals JTP results", JUnitHelper.compare(out, in));
    }
 }

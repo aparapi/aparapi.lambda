@@ -13,16 +13,16 @@ public class StaticFieldAccessJUnit{
    @Ignore("Static field access will fail. Need to pass a trampoline reference")
    @Test
    public void test(){
-      int len = JunitHelper.getPreferredArraySize();
+      int len = JUnitHelper.getPreferredArraySize();
       int[] out = new int[len];
       Aparapi.IntTerminal ic = gid -> {
          out[gid] = gid+value;
       };
       Device.hsa().forEach(len, ic);
-      int[] hsaOut = JunitHelper.copy(out);
-      JunitHelper.dump("hsa", out);
+      int[] hsaOut = JUnitHelper.copy(out);
+      JUnitHelper.dump("hsa", out);
       Device.jtp().forEach(len, ic);
-      JunitHelper.dump("jtp", out);
+      JUnitHelper.dump("jtp", out);
 
       //(new FieldAccess()).test();
       // Field field = StaticFieldAccessJUnit.class.getField("value");
@@ -36,7 +36,7 @@ public class StaticFieldAccessJUnit{
       // System.out.printf("local_value = %x\n",local_value);
       //  UnsafeWrapper.getUnsafe().putInt(address + offset, 8);
       //   System.out.printf("value = %x\n",fieldAccess.value);
-      assertTrue("HSA == JTP", JunitHelper.compare(out, hsaOut));
+      assertTrue("HSA == JTP", JUnitHelper.compare(out, hsaOut));
 
    }
 }

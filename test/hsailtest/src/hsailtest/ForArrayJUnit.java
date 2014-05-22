@@ -32,8 +32,8 @@ public class ForArrayJUnit{
 
          indices[value] = value;
       });
-      JunitHelper.dump("ref", refIndices);
-      JunitHelper.dump("hsa", indices);
-      assertTrue("HSA equals sequential results", JunitHelper.compare(indices, refIndices));
+      JUnitHelper.dump("ref", refIndices);
+      JUnitHelper.dump("hsa", indices);
+      assertTrue("HSA equals sequential results", JUnitHelper.compare(indices, refIndices));
    }
 }

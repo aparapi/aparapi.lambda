@@ -16,7 +16,7 @@ public class AparapiParallelMapReduceLongestStringJUnit{
          return (k>l);
       });
 
-      JunitHelper.nl("longest ="+str);
+      JUnitHelper.nl("longest ="+str);
 
       assertTrue("str==\"eleven\"", str.equals("eleven"));
 

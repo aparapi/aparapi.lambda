@@ -112,20 +112,20 @@ public class ScanReduction2JUnit{
       final int len = 256;
       int[] in = new int[len];
       Device.jtp().forEach(len, id -> in[id] = (Math.random()>.5)?1:0);
-      int[] inCopy = JunitHelper.copy(in);
+      int[] inCopy = JUnitHelper.copy(in);
 
       scan(in);
-      JunitHelper.dump("orig", inCopy);
-      JunitHelper.dump(" hsa", in);
+      JUnitHelper.dump("orig", inCopy);
+      JUnitHelper.dump(" hsa", in);
       int[] out = new int[len];
       out[0] = inCopy[0];
       for (int i = 1; i<len; i++){
          out[i] = out[i-1]+inCopy[i];
       }
 
-      JunitHelper.dump(" seq", out);
+      JUnitHelper.dump(" seq", out);
 
-      assertTrue("HSA equals JTP results", JunitHelper.compare(in, out));
+      assertTrue("HSA equals JTP results", JUnitHelper.compare(in, out));
 
    }
 }

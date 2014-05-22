@@ -7,7 +7,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertTrue;
 
 public class FieldIntSquaresJUnit{
-   public final int len = JunitHelper.getPreferredArraySize();
+   public final int len = JUnitHelper.getPreferredArraySize();
    public int in[] = new int[len];
    public int out[] = new int[len];
 
@@ -18,13 +18,13 @@ public class FieldIntSquaresJUnit{
          out[gid] = in[gid]*in[gid];
       };
       Device.hsa().forEach(len, ic);
-      int[] hsaOut = JunitHelper.copy(out);
-      JunitHelper.dump("hsa", in, out);
+      int[] hsaOut = JUnitHelper.copy(out);
+      JUnitHelper.dump("hsa", in, out);
       Device.jtp().forEach(len, ic);
-      JunitHelper.dump("jtp", in, out);
+      JUnitHelper.dump("jtp", in, out);
       Device.seq().forEach(len, ic);
-      JunitHelper.dump("seq", in, out);
-      assertTrue("HSA equals JTP results", JunitHelper.compare(hsaOut, out));
+      JUnitHelper.dump("seq", in, out);
+      assertTrue("HSA equals JTP results", JUnitHelper.compare(hsaOut, out));
    }
 
 }

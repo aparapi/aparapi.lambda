@@ -47,14 +47,14 @@ public class OopPointsJUnit{
    }
 
    static void dump(String type, P[] points){
-      JunitHelper.out(type+" ->");
+      JUnitHelper.out(type+" ->");
       for (int i = 0; i<points.length; i++){
          if (i != 0){
-            JunitHelper.out(", ");
+            JUnitHelper.out(", ");
          }
-         JunitHelper.out(""+points[i]);
+         JUnitHelper.out(""+points[i]);
       }
-      JunitHelper.nl();
+      JUnitHelper.nl();
    }
 
    @Test

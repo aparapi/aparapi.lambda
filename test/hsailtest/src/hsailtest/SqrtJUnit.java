@@ -12,7 +12,7 @@ public class SqrtJUnit{
 
    @Test
    public void test(){
-      final int len = JunitHelper.getPreferredArraySize();
+      final int len = JUnitHelper.getPreferredArraySize();
       double in[] = new double[len];
       double out[] = new double[len];
       Aparapi.IntTerminal ic = gid -> {
@@ -21,11 +21,11 @@ public class SqrtJUnit{
       };
       Device.hsa().forEach(len, ic);
       double[] hsaOut = Arrays.copyOf(out, out.length);
-      JunitHelper.dump("hsa", in, out);
+      JUnitHelper.dump("hsa", in, out);
       Device.jtp().forEach(len, ic);
-      JunitHelper.dump("jtp", in, out);
+      JUnitHelper.dump("jtp", in, out);
       Device.seq().forEach(len, ic);
-      JunitHelper.dump("seq", in, out);
-      assertTrue("HSA equals JTP results", JunitHelper.compare(hsaOut, out));
+      JUnitHelper.dump("seq", in, out);
+      assertTrue("HSA equals JTP results", JUnitHelper.compare(hsaOut, out));
    }
 }

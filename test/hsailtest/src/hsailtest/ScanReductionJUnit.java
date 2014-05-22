@@ -178,10 +178,10 @@ public class ScanReductionJUnit{
       final int len = 256;
       int[] in = new int[len];
       Device.jtp().forEach(len, id -> in[id] = (Math.random()>.5)?1:0);
-      int[] inCopy = JunitHelper.copy(in);
+      int[] inCopy = JUnitHelper.copy(in);
       int hsaSum = scan(in);
-      JunitHelper.dump("orig", inCopy);
-      JunitHelper.dump(" hsa", in);
+      JUnitHelper.dump("orig", inCopy);
+      JUnitHelper.dump(" hsa", in);
       int[] out = new int[len];
 
       for (int i = 1; i<len; i++){
@@ -189,7 +189,7 @@ public class ScanReductionJUnit{
       }
       int sum = out[len-1]+inCopy[len-1];
 
-      JunitHelper.dump(" seq", out);
+      JUnitHelper.dump(" seq", out);
 
       assertTrue("HSA equals JTP results", sum == hsaSum);
 

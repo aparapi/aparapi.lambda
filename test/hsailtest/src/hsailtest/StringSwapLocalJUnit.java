@@ -15,7 +15,7 @@ public class StringSwapLocalJUnit{
    public void test() throws Exception{
       String[] lines = new String[256];
       Device.jtp().forEach(lines.length, id -> lines[id] = Integer.toString(id));
-      JunitHelper.dump("before", lines);
+      JUnitHelper.dump("before", lines);
 
       Device.hsa().forEach(lines.length, id -> {
          String[] local = (String[])localObjectX1();
@@ -25,7 +25,7 @@ public class StringSwapLocalJUnit{
          lines[(id+1)%getCurrentWorkGroupSize()] = local[lid];
       });
 
-      JunitHelper.dump("after", lines);
+      JUnitHelper.dump("after", lines);
       String first = Integer.toString(255);
 
       assertTrue("HSA equals sequential results", lines[0].equals(first));

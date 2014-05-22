@@ -26,7 +26,7 @@ public class OpenCLKernel{
    }
 
    public void invoke(Object[] _args){
-      OpenCLJNI.getJNI().invoke(this, _args);
+      OpenCLJNI.getOpenCLJNI().invoke(this, _args);
 
    }
 

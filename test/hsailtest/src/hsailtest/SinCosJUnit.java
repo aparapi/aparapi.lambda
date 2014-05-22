@@ -10,7 +10,7 @@ public class SinCosJUnit{
 
    @Test
    public void test(){
-      final int len = JunitHelper.getPreferredArraySize();
+      final int len = JUnitHelper.getPreferredArraySize();
       double sin[] = new double[len];
       double cos[] = new double[len];
       Aparapi.IntTerminal ic = gid -> {
@@ -19,13 +19,13 @@ public class SinCosJUnit{
       };
       Device.hsa().forEach(len, ic);
 
-      JunitHelper.dump("hsa", sin, cos);
-      double[] hsaCos = JunitHelper.copy(cos);
-      double[] hsaSin = JunitHelper.copy(sin);
+      JUnitHelper.dump("hsa", sin, cos);
+      double[] hsaCos = JUnitHelper.copy(cos);
+      double[] hsaSin = JUnitHelper.copy(sin);
       Device.jtp().forEach(len, ic);
-      JunitHelper.dump("jtp", sin, cos);
+      JUnitHelper.dump("jtp", sin, cos);
 
-      assertTrue("HSA equals JTP results", JunitHelper.compare(hsaSin, sin));
-      assertTrue("HSA equals JTP results", JunitHelper.compare(hsaCos, cos));
+      assertTrue("HSA equals JTP results", JUnitHelper.compare(hsaSin, sin));
+      assertTrue("HSA equals JTP results", JUnitHelper.compare(hsaCos, cos));
    }
 }
