@@ -23,14 +23,14 @@ public class MatchedStringJUnit{
    }
 
    static void dump(String type, MatchableString[] _strings){
-      JunitHelper.out(type+" ->");
+      JUnitHelper.out(type+" ->");
       for (int i = 0; i<_strings.length; i++){
          if (i != 0){
-            JunitHelper.out(", ");
+            JUnitHelper.out(", ");
          }
-         JunitHelper.out(_strings[i].value+((_strings[i].matched)?"*":"?"));
+         JUnitHelper.out(_strings[i].value+((_strings[i].matched)?"*":"?"));
       }
-      JunitHelper.nl();
+      JUnitHelper.nl();
    }
 
    @Test

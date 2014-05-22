@@ -14,7 +14,7 @@ public class OddEvenFuncJUnit{
 
    @Test
    public void test(){
-      final int len = JunitHelper.getPreferredArraySize();
+      final int len = JUnitHelper.getPreferredArraySize();
       boolean out[] = new boolean[len];
 
       Aparapi.IntTerminal ic = gid -> {
@@ -22,12 +22,12 @@ public class OddEvenFuncJUnit{
       };
 
       Device.hsa().forEach(len, ic);
-      boolean[] hsaOut = JunitHelper.copy(out);
-      JunitHelper.dump("hsa", out);
+      boolean[] hsaOut = JUnitHelper.copy(out);
+      JUnitHelper.dump("hsa", out);
       Device.jtp().forEach(len, ic);
-      JunitHelper.dump("jtp", out);
+      JUnitHelper.dump("jtp", out);
       Device.seq().forEach(len, ic);
-      JunitHelper.dump("seq", out);
-      assertTrue("HSA equals JTP results", JunitHelper.compare(hsaOut, out));
+      JUnitHelper.dump("seq", out);
+      assertTrue("HSA equals JTP results", JUnitHelper.compare(hsaOut, out));
    }
 }

@@ -18,7 +18,7 @@ public class StringToIntJUnit{
       String[] strings = new String[256];
       int[] ints = new int[strings.length];
       Device.jtp().forEach(strings.length, id -> strings[id] = Integer.toString(id));
-      JunitHelper.dump("before", strings);
+      JUnitHelper.dump("before", strings);
 
       Device.hsa().forEach(strings.length, id -> {
          String[] local = (String[])localObjectX1();
@@ -28,7 +28,7 @@ public class StringToIntJUnit{
          ints[(id+1)%getCurrentWorkGroupSize()] = Integer.valueOf(local[lid]);
       });
 
-      JunitHelper.dump("after", ints);
+      JUnitHelper.dump("after", ints);
 
       assertTrue("HSA equals sequential results", ints[0] == 255);
    }

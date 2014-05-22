@@ -1,7 +1,6 @@
 package hsailtest;
 
 import com.amd.aparapi.Aparapi;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
@@ -13,7 +12,7 @@ public class AparapiParallelCountJUnit{
 
       int evenCount = Aparapi.range(0, 256).parallel().count(i -> i%2 == 0);
 
-      JunitHelper.nl("evenCount="+evenCount);
+      JUnitHelper.nl("evenCount="+evenCount);
       assertTrue("evenCount==128", evenCount == 128);
 
    }

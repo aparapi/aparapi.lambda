@@ -431,7 +431,7 @@ public class OpenCLDevice extends Device{
    }
 
    public OpenCLProgram createProgram(String source){
-      return (OpenCLJNI.getJNI().createProgram(this, source));
+      return (OpenCLJNI.getOpenCLJNI().createProgram(this, source));
    }
 
    final ConcurrentHashMap<Class, LambdaRunner> lambdaRunnerCache = new ConcurrentHashMap<Class, LambdaRunner>();

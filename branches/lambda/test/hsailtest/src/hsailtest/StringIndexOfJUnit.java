@@ -25,17 +25,17 @@ public class StringIndexOfJUnit{
 
       Arrays.fill(out, -1);
       Device.hsa().forEach(len, ic);
-      int[] hsaOut = JunitHelper.copy(out);
-      JunitHelper.dump("hsa", strings, out);
+      int[] hsaOut = JUnitHelper.copy(out);
+      JUnitHelper.dump("hsa", strings, out);
 
       Arrays.fill(out, -1);
       Device.seq().forEach(len, ic);
-      JunitHelper.dump("jtp", strings, out);
+      JUnitHelper.dump("jtp", strings, out);
 
       Arrays.fill(out, -1);
       Device.seq().forEach(len, ic);
-      JunitHelper.dump("seq", strings, out);
-      assertTrue("HSA equals JTP results", JunitHelper.compare(hsaOut, out));
+      JUnitHelper.dump("seq", strings, out);
+      assertTrue("HSA equals JTP results", JUnitHelper.compare(hsaOut, out));
 
    }
 }

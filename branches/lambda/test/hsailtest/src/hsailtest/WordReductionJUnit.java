@@ -75,7 +75,7 @@ public class WordReductionJUnit{
             sum += i;
          }
          hsaAverage = sum/lines.length;
-         JunitHelper.nl("hsa "+loop+" duration "+(System.currentTimeMillis()-start));
+         JUnitHelper.nl("hsa "+loop+" duration "+(System.currentTimeMillis()-start));
 
       }
       int sequentialAverage = 0;
@@ -93,7 +93,7 @@ public class WordReductionJUnit{
 
          }
          sequentialAverage = sum/lines.length;
-         JunitHelper.nl("seq "+loop+" duration "+(System.currentTimeMillis()-start));
+         JUnitHelper.nl("seq "+loop+" duration "+(System.currentTimeMillis()-start));
       }
       assertTrue("HSA equals sequential results", hsaAverage == sequentialAverage);
    }

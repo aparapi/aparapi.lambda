@@ -10,7 +10,7 @@ public class DoubleMinJUnit{
 
    @Test
    public void test(){
-      final int len = JunitHelper.getPreferredArraySize();
+      final int len = JUnitHelper.getPreferredArraySize();
       double in[] = new double[len];
       double out[] = new double[len];
       Aparapi.IntTerminal ic = gid -> {
@@ -18,13 +18,13 @@ public class DoubleMinJUnit{
          out[gid] = Math.min(4.0, in[gid]);
       };
       Device.hsa().forEach(len, ic);
-      double[] hsaOut = JunitHelper.copy(out);
-      JunitHelper.dump("hsa", in, out);
+      double[] hsaOut = JUnitHelper.copy(out);
+      JUnitHelper.dump("hsa", in, out);
       Device.jtp().forEach(len, ic);
-      JunitHelper.dump("jtp", in, out);
+      JUnitHelper.dump("jtp", in, out);
       Device.seq().forEach(len, ic);
-      JunitHelper.dump("seq", in, out);
-      assertTrue("HSA equals JTP results", JunitHelper.compare(hsaOut, out));
+      JUnitHelper.dump("seq", in, out);
+      assertTrue("HSA equals JTP results", JUnitHelper.compare(hsaOut, out));
 
    }
 }

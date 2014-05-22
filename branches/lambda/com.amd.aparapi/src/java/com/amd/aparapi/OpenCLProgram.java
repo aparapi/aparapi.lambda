@@ -31,7 +31,7 @@ public class OpenCLProgram{
    }
 
    public OpenCLKernel createKernel(String _kernelName, List<OpenCLArgDescriptor> args){
-      return (OpenCLJNI.getJNI().createKernel(this, _kernelName, args));
+      return (OpenCLJNI.getOpenCLJNI().createKernel(this, _kernelName, args));
    }
 
    private Map<Object, OpenCLMem> instanceToMem = new HashMap<Object, OpenCLMem>();
@@ -44,7 +44,7 @@ public class OpenCLProgram{
          mem = addressToMem.get(_instance);
          if (mem != null){
             System.out.println("object has been moved, we need to remap the buffer");
-            OpenCLJNI.getJNI().remap(this, mem, _address);
+            OpenCLJNI.getOpenCLJNI().remap(this, mem, _address);
          }
       }
       return (mem);

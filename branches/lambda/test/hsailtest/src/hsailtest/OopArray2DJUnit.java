@@ -28,24 +28,24 @@ public class OopArray2DJUnit{
    }
 
    static void dump(String type, P[][] points){
-      JunitHelper.out(type+" ->");
+      JUnitHelper.out(type+" ->");
       for (int x = 0; x<points.length; x++){
-         JunitHelper.out("[");
+         JUnitHelper.out("[");
 
          for (int y = 0; y<points[0].length; y++){
             if (y != 0){
-               JunitHelper.out(", ");
+               JUnitHelper.out(", ");
             }
-            JunitHelper.out(""+points[x][y]);
+            JUnitHelper.out(""+points[x][y]);
          }
-         JunitHelper.out("]");
+         JUnitHelper.out("]");
       }
-      JunitHelper.nl();
+      JUnitHelper.nl();
    }
 
    @Test
    public void test(){
-      final int len = JunitHelper.getPreferredArraySize();
+      final int len = JUnitHelper.getPreferredArraySize();
       P[][] matrix = new P[len][len];
       for (int x = 0; x<len; x++){
          for (int y = 0; y<len; y++){

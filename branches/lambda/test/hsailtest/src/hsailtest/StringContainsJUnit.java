@@ -22,15 +22,15 @@ public class StringContainsJUnit{
       };
       Arrays.fill(out, false);
       Device.hsa().forEach(len, ic);
-      boolean[] hsaOut = JunitHelper.copy(out);
-      JunitHelper.dump("hsa", strings, out);
+      boolean[] hsaOut = JUnitHelper.copy(out);
+      JUnitHelper.dump("hsa", strings, out);
       Arrays.fill(out, false);
       Device.jtp().forEach(len, ic);
-      JunitHelper.dump("jtp", strings, out);
+      JUnitHelper.dump("jtp", strings, out);
       Arrays.fill(out, false);
       Device.seq().forEach(len, ic);
-      JunitHelper.dump("seq", strings, out);
-      assertTrue("HSA equals JTP results", JunitHelper.compare(hsaOut, out));
+      JUnitHelper.dump("seq", strings, out);
+      assertTrue("HSA equals JTP results", JUnitHelper.compare(hsaOut, out));
 
    }
 }

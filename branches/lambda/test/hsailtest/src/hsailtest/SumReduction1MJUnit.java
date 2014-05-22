@@ -56,10 +56,10 @@ public class SumReduction1MJUnit{
       Device.jtp().forEach(len, id -> in[id] = (Math.random()>.5)?1:0);
       start = System.currentTimeMillis();
       int hsaSum = sum(in);
-      JunitHelper.nl("hsa = "+(System.currentTimeMillis()-start));
+      JUnitHelper.nl("hsa = "+(System.currentTimeMillis()-start));
       start = System.currentTimeMillis();
       hsaSum = sum(in);
-      JunitHelper.nl("hsa = "+(System.currentTimeMillis()-start));
+      JUnitHelper.nl("hsa = "+(System.currentTimeMillis()-start));
 
       int sum = 0;
 
@@ -67,7 +67,7 @@ public class SumReduction1MJUnit{
       for (int i = 0; i<len; i++){
          sum += in[i];
       }
-      JunitHelper.nl("seq = "+(System.currentTimeMillis()-start));
+      JUnitHelper.nl("seq = "+(System.currentTimeMillis()-start));
 
       assertTrue("HSA equals JTP results", sum == hsaSum);
 

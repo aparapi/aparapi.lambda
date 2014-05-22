@@ -19,17 +19,17 @@ public class StringCharAtJUnit{
          out[gid] = string.charAt(gid);
       };
       Arrays.fill(out, '?');
-      JunitHelper.nl(""+out);
+      JUnitHelper.nl(""+out);
       Device.hsa().forEach(len, ic);
-      char[] hsaOut = JunitHelper.copy(out);
-      JunitHelper.nl(""+out);
-      JunitHelper.dump("hsa", out);
+      char[] hsaOut = JUnitHelper.copy(out);
+      JUnitHelper.nl(""+out);
+      JUnitHelper.dump("hsa", out);
 
       Arrays.fill(out, '?');
-      JunitHelper.nl(""+out);
+      JUnitHelper.nl(""+out);
       Device.seq().forEach(len, ic);
-      JunitHelper.nl(""+out);
-      JunitHelper.dump("seq", out);
-      assertTrue("HSA equals JTP results", JunitHelper.compare(hsaOut, out));
+      JUnitHelper.nl(""+out);
+      JUnitHelper.dump("seq", out);
+      assertTrue("HSA equals JTP results", JUnitHelper.compare(hsaOut, out));
    }
 }

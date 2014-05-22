@@ -12,11 +12,11 @@ public class FloatSquaresFuncJUnit{
 
    static void dump(String type, float[] in, float[] out){
 
-      JunitHelper.out(type+" ->");
+      JUnitHelper.out(type+" ->");
       for (int i = 0; i<in.length; i++){
-         JunitHelper.out("("+in[i]+","+out[i]+"),");
+         JUnitHelper.out("("+in[i]+","+out[i]+"),");
       }
-      JunitHelper.nl();
+      JUnitHelper.nl();
    }
 
    static float mul(float lhs, float rhs){
@@ -29,7 +29,7 @@ public class FloatSquaresFuncJUnit{
 
    @Test
    public void test(){
-      final int len = JunitHelper.getPreferredArraySize();
+      final int len = JUnitHelper.getPreferredArraySize();
       float in[] = new float[len];
       float out[] = new float[len];
       for (int i = 0; i<len; i++){
@@ -40,11 +40,11 @@ public class FloatSquaresFuncJUnit{
          out[gid] = square(in[gid]);
       };
       Device.hsa().forEach(len, ic);
-      JunitHelper.dump("hsa", in, out);
+      JUnitHelper.dump("hsa", in, out);
       float[] hsaOut = Arrays.copyOf(out, out.length);
       Device.jtp().forEach(len, ic);
-      JunitHelper.dump("jtp", in, out);
-      assertTrue("HSA equals JTP results", JunitHelper.compare(hsaOut, out));
+      JUnitHelper.dump("jtp", in, out);
+      assertTrue("HSA equals JTP results", JUnitHelper.compare(hsaOut, out));
    }
 
 }

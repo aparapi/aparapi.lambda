@@ -12,7 +12,7 @@ import static org.junit.Assert.assertTrue;
 public class HypotJUnit{
    @Test
    public void testMain() throws Exception{
-      int len = JunitHelper.getPreferredArraySize();
+      int len = JUnitHelper.getPreferredArraySize();
       double in[] = new double[len];
       double out[] = new double[len];
       Aparapi.IntTerminal ic = gid -> {
@@ -20,11 +20,11 @@ public class HypotJUnit{
          out[gid] = Math.hypot(in[gid], 4.0);
       };
       Device.hsa().forEach(len, ic);
-      double[] hsaOut = JunitHelper.copy(out);
-      JunitHelper.dump("hsa", in, out);
+      double[] hsaOut = JUnitHelper.copy(out);
+      JUnitHelper.dump("hsa", in, out);
       Device.jtp().forEach(len, ic);
-      JunitHelper.dump("jtp", in, out);
+      JUnitHelper.dump("jtp", in, out);
 
-      assertTrue("HSA equals JTP results", JunitHelper.compare(hsaOut, out));
+      assertTrue("HSA equals JTP results", JUnitHelper.compare(hsaOut, out));
    }
 }

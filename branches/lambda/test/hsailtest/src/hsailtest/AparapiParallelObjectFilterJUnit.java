@@ -13,7 +13,7 @@ public class AparapiParallelObjectFilterJUnit{
 
       String[] substrings = Aparapi.range(strings).parallel().filter(s -> s.length() == 3);
 
-      JunitHelper.nl(substrings.length);
+      JUnitHelper.nl(substrings.length);
 
       assertTrue("substrings.length==4", substrings.length == 4);
 

@@ -8,7 +8,7 @@ public class CharAddJUnit{
 
    @Test
    public void test(){
-      final int len = JunitHelper.getPreferredArraySize();
+      final int len = JUnitHelper.getPreferredArraySize();
       char out[] = new char[len];
 
       Aparapi.IntTerminal ic = gid -> {
@@ -16,10 +16,10 @@ public class CharAddJUnit{
       };
 
       Device.hsa().forEach(len, ic);
-      JunitHelper.dump("hsa", out);
-      char[] hsaOut = JunitHelper.copy(out);
+      JUnitHelper.dump("hsa", out);
+      char[] hsaOut = JUnitHelper.copy(out);
       Device.jtp().forEach(len, ic);
-      JunitHelper.dump("jtp", out);
-      JunitHelper.compare(out, hsaOut);
+      JUnitHelper.dump("jtp", out);
+      JUnitHelper.compare(out, hsaOut);
    }
 }

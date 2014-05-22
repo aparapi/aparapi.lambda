@@ -21,7 +21,7 @@ import static junit.framework.Assert.fail;
 /**
  * Created by user1 on 1/30/14.
  */
-public class JunitHelper{
+public class JUnitHelper{
    static void dump(String type, String[] _strings, int[] results){
       if (verbose){
          s.print(type+" ->");

@@ -22,7 +22,7 @@ public class IntSquaresFuncJUnit{
 
    @Test
    public void testMain() throws Exception{
-      final int len = JunitHelper.getPreferredArraySize();
+      final int len = JUnitHelper.getPreferredArraySize();
       int in[] = new int[len];
       int out[] = new int[len];
       for (int i = 0; i<len; i++){
@@ -33,11 +33,11 @@ public class IntSquaresFuncJUnit{
          out[gid] = square(in[gid]);
       };
       Device.hsa().forEach(len, ic);
-      JunitHelper.dump("hsa", in, out);
-      int[] hsaOut = JunitHelper.copy(out);
+      JUnitHelper.dump("hsa", in, out);
+      int[] hsaOut = JUnitHelper.copy(out);
       Device.jtp().forEach(len, ic);
-      JunitHelper.dump("jtp", in, out);
-      assertTrue("HSA equals JTP results", JunitHelper.compare(hsaOut, out));
+      JUnitHelper.dump("jtp", in, out);
+      assertTrue("HSA equals JTP results", JUnitHelper.compare(hsaOut, out));
    }
 
 }

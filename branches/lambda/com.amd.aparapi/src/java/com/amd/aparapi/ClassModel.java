@@ -115,7 +115,7 @@ public class ClassModel{
       if (index>0){
          name = name.substring(0, index);
       }
-      byte[] _bytes = OpenCLJNI.getJNI().getBytes(name);
+      byte[] _bytes = AparapiJNI.getAparapiJNI().getBytes(name);
       clazz = _clazz;
       parse(new ByteArrayInputStream(_bytes));
    }

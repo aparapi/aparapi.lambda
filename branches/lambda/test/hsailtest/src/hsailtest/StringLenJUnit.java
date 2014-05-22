@@ -21,17 +21,17 @@ public class StringLenJUnit{
 
       };
       Arrays.fill(out, 0);
-      JunitHelper.nl(""+out);
+      JUnitHelper.nl(""+out);
       Device.hsa().forEach(len, ic);
-      int[] hsaOut = JunitHelper.copy(out);
+      int[] hsaOut = JUnitHelper.copy(out);
 
-      JunitHelper.nl(""+out);
-      JunitHelper.dump("hsa", strings, out);
+      JUnitHelper.nl(""+out);
+      JUnitHelper.dump("hsa", strings, out);
       Arrays.fill(out, 0);
       Device.seq().forEach(len, ic);
-      JunitHelper.nl(""+out);
-      JunitHelper.dump("seq", strings, out);
-      assertTrue("HSA equals JTP results", JunitHelper.compare(hsaOut, out));
+      JUnitHelper.nl(""+out);
+      JUnitHelper.dump("seq", strings, out);
+      assertTrue("HSA equals JTP results", JUnitHelper.compare(hsaOut, out));
 
    }
 }

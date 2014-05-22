@@ -15,7 +15,7 @@ public class FloatSwapLocalJUnit{
    public void test() throws Exception{
       float[] floats = new float[256];
       Device.jtp().forEach(floats.length, id -> floats[id] = id);
-      JunitHelper.dump("before", floats);
+      JUnitHelper.dump("before", floats);
 
       Device.hsa().forEach(floats.length, id -> {
          float[] local = localFloatX1();
@@ -25,7 +25,7 @@ public class FloatSwapLocalJUnit{
          floats[(id+1)%getCurrentWorkGroupSize()] = local[lid];
       });
 
-      JunitHelper.dump("after", floats);
+      JUnitHelper.dump("after", floats);
 
       assertTrue("HSA equals sequential results", floats[0] == 255f);
    }
